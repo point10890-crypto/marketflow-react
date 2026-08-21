@@ -286,6 +286,67 @@ def test_safe_artifact_reads_are_allowlisted(tmp_path, monkeypatch):
         autonomous_mcp.read_safe_artifact('secret.txt')
 
 
+def test_safe_artifact_redacts_nested_json_and_preserves_list_shape(tmp_path, monkeypatch):
+    safe_root = tmp_path / 'admin_mirofish'
+    run_dir = safe_root / 'runs' / 'mcp_test'
+    run_dir.mkdir(parents=True)
+    payload = {
+        'api_key': 'sk-json-secret-12345678',
+        'nested': {
+            'authorization': 'Bearer bearer-json-secret-12345678',
+            'token_count': 321,
+            'rows': list(range(125)),
+        },
+        'message': 'request used sk_inline_secret_12345678',
+    }
+    (run_dir / 'workflow.json').write_text(json.dumps(payload), encoding='utf-8')
+    monkeypatch.setattr(autonomous_mcp, 'SAFE_ARTIFACT_ROOT', safe_root)
+
+    result = autonomous_mcp.read_safe_artifact('runs/mcp_test/workflow.json')
+    serialized = json.dumps(result, ensure_ascii=False)
+
+    assert result['content']['api_key'] == '[REDACTED]'
+    assert result['content']['nested']['authorization'] == '[REDACTED]'
+    assert result['content']['nested']['token_count'] == 321
+    assert len(result['content']['nested']['rows']) == 125
+    assert result['content']['message'] == 'request used [REDACTED]'
+    assert 'sk-json-secret-12345678' not in serialized
+    assert 'bearer-json-secret-12345678' not in serialized
+    assert 'sk_inline_secret_12345678' not in serialized
+
+
+def test_safe_artifact_redacts_jsonl_and_text_credentials(tmp_path, monkeypatch):
+    safe_root = tmp_path / 'admin_mirofish'
+    run_dir = safe_root / 'runs' / 'mcp_test'
+    run_dir.mkdir(parents=True)
+    (run_dir / 'events.jsonl').write_text(
+        json.dumps({'event': 'ok', 'refresh_token': 'jsonl-secret-12345678'}) + '\n',
+        encoding='utf-8',
+    )
+    (run_dir / 'notes.md').write_text(
+        'normal evidence remains\npassword=hunter2-secret\n'
+        'Authorization: Bearer markdown-bearer-secret-12345678\n'
+        'endpoint?api_key=url-secret-12345678\n',
+        encoding='utf-8',
+    )
+    monkeypatch.setattr(autonomous_mcp, 'SAFE_ARTIFACT_ROOT', safe_root)
+
+    jsonl_result = autonomous_mcp.read_safe_artifact('runs/mcp_test/events.jsonl')
+    text_result = autonomous_mcp.read_safe_artifact('runs/mcp_test/notes.md')
+    serialized = json.dumps([jsonl_result, text_result], ensure_ascii=False)
+
+    assert jsonl_result['content'][0]['event'] == 'ok'
+    assert jsonl_result['content'][0]['refresh_token'] == '[REDACTED]'
+    assert 'normal evidence remains' in text_result['content']
+    for secret in (
+        'jsonl-secret-12345678',
+        'hunter2-secret',
+        'markdown-bearer-secret-12345678',
+        'url-secret-12345678',
+    ):
+        assert secret not in serialized
+
+
 def test_mutating_tools_require_guard_and_redact_secret(isolated_autonomous_paths, monkeypatch):
     monkeypatch.delenv(autonomous_mcp.MUTATION_ENV, raising=False)
 

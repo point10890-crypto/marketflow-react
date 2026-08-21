@@ -631,6 +631,17 @@ def test_commit_workflow_event_state_can_skip_dashboard_sync(tmp_path, monkeypat
     assert captured[0]['state_path'].endswith('scanner_event_state.json')
 
 
+def test_read_workflow_missing_id_does_not_create_directory(tmp_path, monkeypatch):
+    workflows_root = tmp_path / 'workflows'
+    missing_id = 'mcp_99999999999999_deadbeef'
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(workflows_root))
+
+    result = workflow.read_workflow(missing_id)
+
+    assert result is None
+    assert not (workflows_root / missing_id).exists()
+
+
 def test_admin_mirofish_workflow_routes_are_registered():
     app = Flask(__name__)
     app.register_blueprint(admin_mirofish_bp, url_prefix='/api/admin/mirofish')

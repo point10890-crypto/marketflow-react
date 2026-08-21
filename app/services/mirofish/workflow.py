@@ -1856,7 +1856,6 @@ def _workflow_dir(workflow_id: str) -> str:
     path = os.path.abspath(os.path.join(root, safe_id))
     if not path.startswith(root):
         raise ValueError('invalid workflow_id')
-    os.makedirs(path, exist_ok=True)
     return path
 
 

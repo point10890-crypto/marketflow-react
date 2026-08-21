@@ -75,6 +75,44 @@ SENSITIVE_KEY_PARTS = (
     'token',
 )
 
+_ARTIFACT_SENSITIVE_KEYS = {
+    'api_key',
+    'apikey',
+    'app_key',
+    'app_secret',
+    'authorization',
+    'client_secret',
+    'password',
+    'passwd',
+    'private_key',
+    'proxy_authorization',
+    'secret',
+    'token',
+}
+_ARTIFACT_SENSITIVE_SUFFIXES = (
+    '_api_key',
+    '_app_key',
+    '_app_secret',
+    '_password',
+    '_private_key',
+    '_secret',
+    '_token',
+)
+_ARTIFACT_ASSIGNMENT_KEY_PATTERN = (
+    r'(?:api[_-]?key|apikey|authorization|password|passwd|private[_-]?key|'
+    r'(?:[a-z0-9]+[_-])*(?:app[_-]?key|app[_-]?secret|secret|token))'
+)
+_ARTIFACT_QUOTED_ASSIGNMENT_RE = re.compile(
+    rf'(?im)(?P<prefix>["\']?{_ARTIFACT_ASSIGNMENT_KEY_PATTERN}["\']?\s*[:=]\s*)'
+    rf'(?P<quote>["\'])(?P<value>.*?)(?P=quote)',
+)
+_ARTIFACT_UNQUOTED_ASSIGNMENT_RE = re.compile(
+    rf'(?im)(?P<prefix>\b{_ARTIFACT_ASSIGNMENT_KEY_PATTERN}\b\s*[:=]\s*)'
+    r'(?P<value>[^\s,;]+)',
+)
+_ARTIFACT_BEARER_RE = re.compile(r'(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{8,}')
+_ARTIFACT_API_TOKEN_RE = re.compile(r'(?<![A-Za-z0-9])sk[-_][A-Za-z0-9_-]{8,}')
+
 
 ToolSender = Callable[[str], bool]
 
@@ -339,6 +377,7 @@ def read_safe_artifact(path: str) -> dict[str, Any]:
         ]
     else:
         content = text
+    content = _redact_artifact_content(content)
     return {
         'ok': True,
         'status': 'ok',
@@ -1293,6 +1332,46 @@ def _redact(value: Any) -> Any:
     if isinstance(value, str) and (value.startswith('sk_') or len(value) > 120 and 'token' in value.lower()):
         return '[REDACTED]'
     return value
+
+
+def _redact_artifact_content(value: Any) -> Any:
+    """Mask credentials in user-readable artifacts without truncating evidence."""
+    if isinstance(value, dict):
+        redacted: dict[Any, Any] = {}
+        for key, item in value.items():
+            if _is_sensitive_artifact_key(key):
+                redacted[key] = '[REDACTED]'
+            else:
+                redacted[key] = _redact_artifact_content(item)
+        return redacted
+    if isinstance(value, list):
+        return [_redact_artifact_content(item) for item in value]
+    if isinstance(value, str):
+        return _redact_artifact_text(value)
+    return value
+
+
+def _is_sensitive_artifact_key(value: Any) -> bool:
+    normalized = re.sub(r'[^a-z0-9]+', '_', str(value).strip().lower()).strip('_')
+    return normalized in _ARTIFACT_SENSITIVE_KEYS or normalized.endswith(
+        _ARTIFACT_SENSITIVE_SUFFIXES
+    )
+
+
+def _redact_artifact_text(value: str) -> str:
+    redacted = _ARTIFACT_BEARER_RE.sub('Bearer [REDACTED]', value)
+    redacted = _ARTIFACT_API_TOKEN_RE.sub('[REDACTED]', redacted)
+    redacted = _ARTIFACT_QUOTED_ASSIGNMENT_RE.sub(
+        lambda match: (
+            f'{match.group("prefix")}{match.group("quote")}'
+            f'[REDACTED]{match.group("quote")}'
+        ),
+        redacted,
+    )
+    return _ARTIFACT_UNQUOTED_ASSIGNMENT_RE.sub(
+        lambda match: f'{match.group("prefix")}[REDACTED]',
+        redacted,
+    )
 
 
 def _error_result(exc: Exception) -> dict[str, str]:
