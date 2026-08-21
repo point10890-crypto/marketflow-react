@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import threading
+import time
 from copy import deepcopy
 
 import pytest
@@ -36,11 +38,13 @@ def _artifacts() -> dict:
         'feature_vectors.json': {
             'run_id': RUN_ID,
             'lookahead_safe': True,
+            'feature_count': 1,
             'features': [{'symbol': '005930'}],
         },
         'evidence_ledger.json': {
             'run_id': RUN_ID,
             'lookahead_safe': True,
+            'candidate_count': 1,
             'items': [{'symbol': '005930'}],
         },
     }
@@ -138,6 +142,7 @@ def test_send_requires_exact_confirmation_before_private_delivery(scanner, tmp_p
         (lambda run, artifacts: run['candidates'][0].__setitem__('alpha_score', float('nan')), 'invalid_candidate_score'),
         (lambda run, artifacts: artifacts['feature_vectors.json'].__setitem__('lookahead_safe', False), 'feature_vectors_not_lookahead_safe'),
         (lambda run, artifacts: artifacts['evidence_ledger.json'].__setitem__('run_id', 'other-run'), 'evidence_ledger_identity_mismatch'),
+        (lambda run, artifacts: artifacts['feature_vectors.json'].__setitem__('feature_count', 0), 'feature_vectors_count_mismatch'),
     ],
 )
 def test_validation_rejects_identity_count_and_nonfinite_artifact_defects(scanner, mutate, expected_code):
@@ -241,11 +246,12 @@ def test_delivery_persists_safe_receipt_then_commits_events(scanner, tmp_path, m
         confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
         receipt_path=str(receipt_path),
     )
-    receipt = json.loads(receipt_path.read_text(encoding='utf-8'))
+    ledger = json.loads(receipt_path.read_text(encoding='utf-8'))
+    receipt = ledger['deliveries'][0]
 
     assert result['status'] == 'delivered'
     assert calls['commit'] == 1
-    assert receipt['schema_version'] == 1
+    assert ledger['schema_version'] == 2
     assert receipt['run_id'] == RUN_ID
     assert receipt['message_id'] == 99
     assert receipt['symbols'] == ['005930']
@@ -254,3 +260,159 @@ def test_delivery_persists_safe_receipt_then_commits_events(scanner, tmp_path, m
     assert 'directional candidate' not in rendered
     assert 'token' not in rendered
     assert 'chat_id' not in rendered
+
+
+@pytest.mark.parametrize('freshness', ['stale', 'missing', 'partial', 'unknown'])
+def test_all_alert_blocking_freshness_states_return_non_directional_preview(scanner, tmp_path, freshness):
+    """Relaxing any scanner blocking freshness state would leak a directional report."""
+    run, _, result, _ = scanner
+    run['freshness'] = {'status': freshness}
+    result.update(_scanner_result(run, blocked=True))
+    result['message'] = '<b>BUY candidate</b>'
+
+    preview = verified_delivery.run_verified_detection(receipt_path=str(tmp_path / 'receipt.json'))
+
+    assert preview['status'] == 'blocked'
+    assert preview['symbols'] == []
+    assert '검출 보류' in preview['message']
+
+
+def test_blocked_run_sends_one_status_message_only_with_exact_confirmation(scanner, tmp_path, monkeypatch):
+    """A blocked run still needs a guarded operational status delivery, never a candidate alert."""
+    run, _, result, calls = scanner
+    run['freshness'] = {'status': 'stale'}
+    result.update(_scanner_result(run, blocked=True))
+    sent = []
+    monkeypatch.setattr(
+        verified_delivery,
+        'post_private_telegram',
+        lambda message: sent.append(message) or {'ok': True, 'status': 'delivered', 'message_id': 55},
+    )
+
+    denied = verified_delivery.run_verified_detection(send=True, receipt_path=str(tmp_path / 'receipt.json'))
+    delivered = verified_delivery.run_verified_detection(
+        send=True,
+        confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+        receipt_path=str(tmp_path / 'receipt.json'),
+    )
+
+    assert denied['status'] == 'confirmation_required'
+    assert delivered['status'] == 'blocked_delivered'
+    assert sent == ['<b>검출 보류</b>\n스캐너 원천 데이터 freshness 검증이 통과하지 않았습니다.']
+    assert calls['commit'] == 0
+
+
+def test_scanner_typeerror_is_sanitized_without_second_run(scanner, monkeypatch, tmp_path):
+    """An internal scanner TypeError must not rerun scanner work or expose its text."""
+    attempts = []
+
+    def fail_once(*args, **kwargs):
+        attempts.append(1)
+        raise TypeError('token=secret')
+
+    monkeypatch.setattr(verified_delivery.alpha_scanner, 'run_scanner_alert_check', fail_once)
+
+    result = verified_delivery.run_verified_detection(receipt_path=str(tmp_path / 'receipt.json'))
+
+    assert result == {'ok': False, 'status': 'scanner_failed'}
+    assert attempts == [1]
+
+
+def test_claim_write_failure_prevents_telegram_send(scanner, monkeypatch, tmp_path):
+    """Sending before a durable pending claim makes an uncertain delivery retriable."""
+    monkeypatch.setattr(verified_delivery, 'write_json_atomic', lambda *args, **kwargs: (_ for _ in ()).throw(OSError('disk full')))
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+
+    result = verified_delivery.run_verified_detection(
+        send=True,
+        confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+        receipt_path=str(tmp_path / 'receipt.json'),
+    )
+
+    assert result == {'ok': False, 'status': 'receipt_claim_failed', 'run_id': RUN_ID, 'error_code': 'receipt_claim_write_failed', 'sent': False}
+
+
+def test_final_receipt_failure_leaves_uncertain_claim_and_blocks_resend(scanner, monkeypatch, tmp_path):
+    """A response after the pending claim but before final persistence is uncertain, not retryable."""
+    receipt_path = tmp_path / 'receipt.json'
+    real_write = verified_delivery.write_json_atomic
+    writes = []
+
+    def fail_final(path, payload, **kwargs):
+        writes.append(payload)
+        if len(writes) == 2:
+            raise OSError('disk full')
+        return real_write(path, payload, **kwargs)
+
+    sent = []
+    monkeypatch.setattr(verified_delivery, 'write_json_atomic', fail_final)
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', lambda message: sent.append(message) or {'ok': True, 'status': 'delivered', 'message_id': 77})
+
+    first = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
+    second = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
+
+    assert first['status'] == 'delivery_uncertain'
+    assert first['sent'] is None
+    assert second['status'] == 'delivery_uncertain'
+    assert sent == ['<b>Directional candidate</b>']
+
+
+def test_duplicate_recovers_failed_state_commit_without_resending(scanner, monkeypatch, tmp_path):
+    """A delivered receipt with uncommitted state must retry only the state commit."""
+    _, _, _, calls = scanner
+    receipt_path = tmp_path / 'receipt.json'
+    sent = []
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', lambda message: sent.append(message) or {'ok': True, 'status': 'delivered', 'message_id': 88})
+
+    monkeypatch.setattr(verified_delivery.alpha_scanner, 'commit_scanner_alert_events', lambda payload: (_ for _ in ()).throw(RuntimeError('commit failed')))
+    first = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
+    monkeypatch.setattr(verified_delivery.alpha_scanner, 'commit_scanner_alert_events', lambda payload: calls.__setitem__('commit', calls['commit'] + 1) or {'ok': True})
+    second = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
+
+    receipt = json.loads(receipt_path.read_text(encoding='utf-8'))['deliveries'][0]
+    assert first['status'] == 'state_commit_failed'
+    assert second['status'] == 'delivered_recovered'
+    assert sent == ['<b>Directional candidate</b>']
+    assert calls['commit'] == 1
+    assert receipt['state_committed'] is True
+
+
+def test_concurrent_same_digest_sends_once(scanner, monkeypatch, tmp_path):
+    """Two simultaneous operators must serialize on the receipt lock before transport."""
+    receipt_path = tmp_path / 'receipt.json'
+    sent = []
+    sent_lock = threading.Lock()
+
+    def post(message):
+        with sent_lock:
+            sent.append(message)
+        time.sleep(0.05)
+        return {'ok': True, 'status': 'delivered', 'message_id': 101}
+
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', post)
+    results = []
+    workers = [threading.Thread(target=lambda: results.append(verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path)))) for _ in range(2)]
+    for worker in workers:
+        worker.start()
+    for worker in workers:
+        worker.join()
+
+    assert sent == ['<b>Directional candidate</b>']
+    assert sorted(result['status'] for result in results) == ['delivered', 'duplicate_refused']
+
+
+def test_historical_receipts_refuse_original_digest_after_different_message(scanner, monkeypatch, tmp_path):
+    """Replacing a single latest receipt would forget an earlier delivery for the same run."""
+    _, _, result, _ = scanner
+    receipt_path = tmp_path / 'receipt.json'
+    sent = []
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', lambda message: sent.append(message) or {'ok': True, 'status': 'delivered', 'message_id': len(sent)})
+
+    first = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
+    result['message'] = '<b>changed candidate</b>'
+    second = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
+    result['message'] = '<b>Directional candidate</b>'
+    third = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
+
+    assert [first['status'], second['status'], third['status']] == ['delivered', 'delivered', 'duplicate_refused']
+    assert sent == ['<b>Directional candidate</b>', '<b>changed candidate</b>']
