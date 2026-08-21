@@ -152,3 +152,6 @@ schtask_result.txt
 !.dev.vars.example
 !.env.example
 frontend/
+
+# MarketFlow Claw runtime (db/heartbeat/pid/lock/reports)
+data/claw/

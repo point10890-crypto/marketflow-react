@@ -1,0 +1,509 @@
+<title>MarketFlow Claw 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #F2F4F7;
+    --surface: #FFFFFF;
+    --surface-2: #E9EDF2;
+    --ink: #16202B;
+    --ink-2: #4A5766;
+    --ink-3: #7B8793;
+    --line: #D5DCE4;
+    --accent: #0E6F66;
+    --accent-ink: #FFFFFF;
+    --accent-soft: #DDF0EC;
+    --up: #C8102E;        /* KRX: 상승 = 빨강 */
+    --down: #1F5FD0;      /* KRX: 하락 = 파랑 */
+    --warn: #B7791F;
+    --warn-soft: #FBF0D9;
+    --term-bg: #101820;
+    --term-ink: #D8E0E8;
+    --term-dim: #7F8C99;
+    --term-green: #7BD88F;
+    --term-amber: #F2C14E;
+    --term-red: #FF7A85;
+    --term-blue: #7FB2FF;
+    --tg-bg: #E7EBF0;
+    --tg-bubble: #FFFFFF;
+    --tg-meta: #8A96A3;
+    --grade-s: #B8860B;
+    --grade-a: #0E6F66;
+    --grade-b: #5B6B7B;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D1218;
+      --surface: #151C24;
+      --surface-2: #1C252F;
+      --ink: #E6ECF2;
+      --ink-2: #A7B3BF;
+      --ink-3: #73808D;
+      --line: #27323D;
+      --accent: #3BC9B5;
+      --accent-ink: #07221F;
+      --accent-soft: #123A36;
+      --up: #FF5C72;
+      --down: #6FA3FF;
+      --warn: #E2B04A;
+      --warn-soft: #3A2F14;
+      --term-bg: #0A0F14;
+      --tg-bg: #0F161D;
+      --tg-bubble: #1B2530;
+      --tg-meta: #6F7C89;
+      --grade-s: #E2B04A;
+      --grade-a: #3BC9B5;
+      --grade-b: #8A98A6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1218;
+    --surface: #151C24;
+    --surface-2: #1C252F;
+    --ink: #E6ECF2;
+    --ink-2: #A7B3BF;
+    --ink-3: #73808D;
+    --line: #27323D;
+    --accent: #3BC9B5;
+    --accent-ink: #07221F;
+    --accent-soft: #123A36;
+    --up: #FF5C72;
+    --down: #6FA3FF;
+    --warn: #E2B04A;
+    --warn-soft: #3A2F14;
+    --term-bg: #0A0F14;
+    --tg-bg: #0F161D;
+    --tg-bubble: #1B2530;
+    --tg-meta: #6F7C89;
+    --grade-s: #E2B04A;
+    --grade-a: #3BC9B5;
+    --grade-b: #8A98A6;
+  }
+
+  * { box-sizing: border-box; }
+  .tg-grid > *, .term-grid > *, .mem-grid > *, .rules > *, header.masthead > * { min-width: 0; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  code, pre, .mono { font-family: "IBM Plex Mono", "D2Coding", Consolas, monospace; }
+  a { color: var(--accent); }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 40px 24px 96px; }
+  header.masthead { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+  .eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  h1 { font-size: 34px; line-height: 1.15; margin: 6px 0 10px; font-weight: 700; letter-spacing: -.01em; text-wrap: balance; word-break: keep-all; }
+  @media (max-width: 760px) { header.masthead { grid-template-columns: 1fr; align-items: start; } h1 { font-size: 28px; } .sample-tag { max-width: none; } }
+  .lede { color: var(--ink-2); max-width: 62ch; margin: 0; word-break: keep-all; }
+  section > .sub, .phone .why, .rule .v { word-break: keep-all; }
+  .sample-tag { display: block; padding: 8px 12px; word-break: keep-all; border: 1px dashed var(--warn); color: var(--warn); background: var(--warn-soft); border-radius: 6px; font-size: 13px; line-height: 1.4; max-width: 34ch; }
+
+  nav.toc { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 16px 0; font-size: 13px; border-bottom: 1px solid var(--line); }
+  nav.toc a { color: var(--ink-2); text-decoration: none; }
+  nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); outline: none; text-decoration: underline; }
+
+  section { padding-top: 56px; }
+  section > h2 { font-size: 22px; margin: 0 0 6px; font-weight: 700; letter-spacing: -.005em; }
+  section > .sub { color: var(--ink-2); margin: 0 0 22px; max-width: 70ch; }
+
+  /* ── 타임라인 레일 ── */
+  .rail { position: relative; display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; min-width: 0; }
+  .rail::before { content: ""; position: absolute; left: 0; width: max(100%, 1056px); top: 13px; height: 2px; background: var(--line); }
+  .tick { position: relative; flex: 1 0 112px; min-width: 112px; padding-top: 30px; word-break: keep-all; }
+  .tick::before { content: ""; position: absolute; top: 7px; left: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); border: 3px solid var(--ink-3); }
+  .tick.send::before { border-color: var(--accent); background: var(--accent); }
+  .tick.loop::before { border-color: var(--accent); border-style: dotted; }
+  .tick.halt::before { border-color: var(--warn); }
+  .tick .t { font-family: "IBM Plex Mono", monospace; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tick .n { font-size: 13px; color: var(--ink-2); line-height: 1.4; }
+  .tick .k { font-size: 11px; color: var(--ink-3); letter-spacing: .04em; text-transform: uppercase; margin-top: 3px; }
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 18px; font-size: 12.5px; color: var(--ink-2); }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; border: 2px solid var(--ink-3); }
+  .legend .l-send::before { background: var(--accent); border-color: var(--accent); }
+  .legend .l-loop::before { border-color: var(--accent); border-style: dotted; }
+  .legend .l-halt::before { border-color: var(--warn); }
+
+  /* ── 텔레그램 ── */
+  .tg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 20px; }
+  .phone { background: var(--tg-bg); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .phone .when { font-size: 12px; color: var(--tg-meta); text-align: center; letter-spacing: .02em; }
+  .bubble { background: var(--tg-bubble); border-radius: 12px 12px 12px 4px; padding: 12px 14px; font-size: 13.5px; line-height: 1.55; white-space: pre-wrap; word-break: keep-all; box-shadow: 0 1px 0 rgba(0,0,0,.06); position: relative; }
+  .bubble .meta { display: block; text-align: right; font-size: 11px; color: var(--tg-meta); margin-top: 6px; }
+  .bubble b { font-weight: 600; }
+  .bubble .up { color: var(--up); font-weight: 600; }
+  .bubble .down { color: var(--down); font-weight: 600; }
+  .bubble .gS { color: var(--grade-s); font-weight: 700; }
+  .bubble .gA { color: var(--grade-a); font-weight: 700; }
+  .bubble .gB { color: var(--grade-b); font-weight: 700; }
+  .bubble .dim { color: var(--tg-meta); }
+  .bubble .halt { color: var(--warn); font-weight: 700; }
+  .phone .why { font-size: 12.5px; color: var(--ink-2); padding: 4px 4px 0; border-top: 1px dashed var(--line); margin-top: 2px; }
+  .phone .why strong { color: var(--ink); font-weight: 600; }
+
+  /* ── 터미널 ── */
+  .term-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 18px; }
+  .term.wide { grid-column: 1 / -1; }
+  .term { background: var(--term-bg); color: var(--term-ink); border-radius: 10px; border: 1px solid #1E2A36; overflow: hidden; }
+  .term .bar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #0C131A; border-bottom: 1px solid #1E2A36; font-size: 12px; color: var(--term-dim); }
+  .term .bar .cmd { color: var(--term-ink); font-family: "IBM Plex Mono", monospace; }
+  .term pre { margin: 0; padding: 14px 16px; font-size: 12.5px; line-height: 1.5; overflow-x: auto; font-variant-numeric: tabular-nums; }
+  .term .p { color: var(--term-dim); }
+  .term .g { color: var(--term-green); }
+  .term .a { color: var(--term-amber); }
+  .term .r { color: var(--term-red); }
+  .term .b { color: var(--term-blue); }
+  .term .h { color: #FFFFFF; font-weight: 600; }
+  .term .cap { padding: 0 16px 12px; font-size: 12px; color: var(--term-dim); }
+
+  /* ── 데이터 테이블 ── */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+  .card h3 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+  .card .hint { font-size: 13px; color: var(--ink-2); margin: 0 0 12px; }
+  .tbl-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-weight: 600; color: var(--ink-3); font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: top; color: var(--ink); background: transparent; }
+  table, tr { background: transparent; }
+  tr:last-child td { border-bottom: none; }
+  td.mono, th.mono { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; border: 1px solid currentColor; line-height: 1.5; }
+  .pill.s { color: var(--grade-s); }
+  .pill.a { color: var(--grade-a); }
+  .pill.b { color: var(--grade-b); }
+  .pill.ev { color: var(--ink-2); background: var(--surface-2); border-color: transparent; }
+  .num-up { color: var(--up); font-weight: 600; }
+  .num-down { color: var(--down); font-weight: 600; }
+  .mem-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; }
+  @media (max-width: 860px) { .mem-grid { grid-template-columns: 1fr; } .term-grid { grid-template-columns: 1fr; } }
+
+  /* ── 파일 트리 ── */
+  .tree { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; line-height: 1.65; white-space: pre; overflow-x: auto; margin: 0; color: var(--ink); }
+  .tree .c { color: var(--ink-3); }
+
+  /* ── 규칙 표 ── */
+  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .rule { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .rule .k { font-size: 12px; color: var(--accent); font-weight: 600; letter-spacing: .04em; }
+  .rule .v { font-size: 13.5px; color: var(--ink-2); margin-top: 4px; }
+  .rule .v b { color: var(--ink); font-weight: 600; }
+
+  footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-3); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  @media (prefers-reduced-motion: no-preference) { a { transition: color .15s; } }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div>
+      <div class="eyebrow">MarketFlow Claw · Phase 1 산출물 미리보기</div>
+      <h1>장중 주도주 자동화가 하루 동안 내놓는 것들</h1>
+      <p class="lede">텔레그램 메시지 5종, CLI 여섯 명령, SQLite 메모리, 파일 산출물을 하루 타임라인 순서로 보여드립니다. 스펙 §3의 설계가 실제로 어떻게 보이는지 확인하는 용도입니다.</p>
+    </div>
+    <div class="sample-tag">시안 데이터 — 2026-07-30 스크리너 스냅샷의 실제 종목·점수를 바탕으로 구성한 <b>가상 장중 시나리오</b>(08-21 금)입니다. 수치는 예시입니다.</div>
+  </header>
+
+  <nav class="toc">
+    <a href="#timeline">하루 타임라인</a>
+    <a href="#telegram">텔레그램 메시지</a>
+    <a href="#cli">CLI 출력</a>
+    <a href="#memory">메모리(SQLite)</a>
+    <a href="#files">파일 산출물</a>
+    <a href="#rules">보고 규칙</a>
+  </nav>
+
+  <!-- ───────── 타임라인 ───────── -->
+  <section id="timeline">
+    <h2>하루 타임라인 (KST, 평일)</h2>
+    <p class="sub">색이 채워진 점이 텔레그램으로 나가는 시점입니다. 장중 틱은 메시지가 아니라 메모리에만 쌓이고, 이벤트가 있을 때만 묶어서 발송합니다.</p>
+    <div class="rail">
+      <div class="tick"><div class="t">08:10</div><div class="n">market_gate 갱신</div><div class="k">내부</div></div>
+      <div class="tick send"><div class="t">08:20</div><div class="n">조간 브리핑</div><div class="k">발송 · morning</div></div>
+      <div class="tick loop"><div class="t">09:00</div><div class="n">장중 틱 시작 (5초)</div><div class="k">메모리</div></div>
+      <div class="tick send"><div class="t">09:41</div><div class="n">이벤트 묶음 #1</div><div class="k">발송 · event</div></div>
+      <div class="tick send"><div class="t">11:30</div><div class="n">정오 요약</div><div class="k">발송 · midday</div></div>
+      <div class="tick halt"><div class="t">13:04</div><div class="n">HALT 진입 (KIS 토큰 3연속 실패)</div><div class="k">발송 · halt</div></div>
+      <div class="tick halt"><div class="t">13:11</div><div class="n">HALT 해제</div><div class="k">발송 · halt</div></div>
+      <div class="tick send"><div class="t">15:45</div><div class="n">마감 요약</div><div class="k">발송 · close</div></div>
+      <div class="tick"><div class="t">16:30</div><div class="n">전일 이벤트 성과(D1/D5) 채움</div><div class="k">내부</div></div>
+    </div>
+    <div class="legend"><span class="l-send">텔레그램 발송</span><span class="l-loop">장중 루프 (메모리만)</span><span class="l-halt">HALT 상태 전이</span><span>내부 작업</span></div>
+  </section>
+
+  <!-- ───────── 텔레그램 ───────── -->
+  <section id="telegram">
+    <h2>텔레그램 메시지 5종</h2>
+    <p class="sub">전부 개인봇(<code>channel=False</code>)으로 나갑니다. 등급은 금색 S / 청록 A / 회색 B, 등락은 KRX 관례대로 상승 빨강·하락 파랑입니다.</p>
+    <div class="tg-grid">
+
+      <div class="phone">
+        <div class="when">08:20 · morning</div>
+        <div class="bubble">🦀 <b>Claw 조간 브리핑</b> · 08-21(금)
+
+레짐 <b>NEUTRAL</b> → 감시 강화
+환율 1,391.0 <span class="dim">(원화 약세 경계)</span>
+소스 KIS ✓ · market_gate 08:10 ✓ · daily_prices 08-20 ✓
+
+<b>어제 이벤트 성과</b> 9건 · D1 평균 <span class="up">+1.4%</span> · 양(+) 5/9
+ NEW_S 2건 <span class="up">+3.1%</span> · UPGRADE 3건 <span class="up">+0.9%</span> · CLUSTER 1건 <span class="down">-0.6%</span>
+
+<b>오늘 감시</b>
+ 바이오 — 셀트리온 <span class="gA">A</span> 유지(69점), 외인 순매수 5일 연속
+ 건설 — 금호건설 전일 상한가, 갭 후속 여부
+ <span class="dim">신용잔고 경고 0 · DART 악재 0</span><span class="meta">08:20</span></div>
+        <div class="why"><strong>왜 이 시각인가</strong> — market_gate(08:10)와 전일 성과 계산이 끝난 뒤, 장 시작 40분 전에 "오늘 무엇을 볼지"만 짧게.</div>
+      </div>
+
+      <div class="phone">
+        <div class="when">09:41 · event (묶음 발송, 최대 5건)</div>
+        <div class="bubble">⚡ <b>주도주 이벤트</b> 09:41 · 레짐 NEUTRAL
+
+<span class="gS">[NEW S]</span> 금호건설 002990 · 71점
+ <span class="up">+29.9%</span> · 거래대금 386억 · 거래량비 ×4,467
+ 수급 외인+기관 동시 · 건설 상승 3종목
+
+<span class="gA">[UP B→A]</span> 기가레인 049080 · 52→61점
+ <span class="up">+13.7%</span> · 거래대금 122억 · 거래량비 ×1,690
+
+<span class="gA">[CLUSTER]</span> 건설 — 금호건설·티웨이홀딩스·HDC 3종 S/A
+ <span class="dim">당일 최초 형성</span>
+
+<span class="dim">컨텍스트: 섹터RS 건설 84 · 신용잔고 경고 없음 · DART 악재 없음 · 블랙리스트 없음</span><span class="meta">09:41</span></div>
+        <div class="why"><strong>왜 묶는가</strong> — 같은 틱에서 여러 전이가 나면 하나로. 동일 (이벤트, 종목)은 당일 1회만. 09:00~09:05와 15:20 이후 신규는 억제.</div>
+      </div>
+
+      <div class="phone">
+        <div class="when">11:30 · midday</div>
+        <div class="bubble">🕦 <b>정오 요약</b> 11:30
+
+오전 이벤트 6건 · 신규 S 1 · 승격 3 · 이탈 1 · 군집 1
+<b>현재 S/A</b> 5종목
+ <span class="gS">S</span> 금호건설 <span class="up">+29.9%</span> · 유지 1h50m
+ <span class="gA">A</span> 셀트리온 <span class="up">+5.6%</span> · 거래대금 3,305억
+ <span class="gA">A</span> 기가레인 <span class="up">+12.1%</span>
+ <span class="gA">A</span> 티웨이홀딩스 <span class="up">+21.4%</span>
+ <span class="gA">A</span> HDC <span class="up">+8.0%</span>
+이탈: SK스퀘어 <span class="down">-6.0%</span> (B→목록 밖)
+
+레짐 NEUTRAL 유지 · breadth 상승 48%
+<span class="dim">KIS 호출 0회 (Flask 워커 산출물 소비 중)</span><span class="meta">11:30</span></div>
+        <div class="why"><strong>왜 필요한가</strong> — 이벤트는 변화만 알리므로, 오전 중 "지금 판이 어떻게 생겼는지"는 한 번 정리해 줍니다.</div>
+      </div>
+
+      <div class="phone">
+        <div class="when">13:04 → 13:11 · halt (상태 전이 시 1회씩)</div>
+        <div class="bubble">⏸ <span class="halt">검출 보류 (HALT)</span> 13:04
+
+사유: KIS 토큰 발급 3회 연속 실패 · 주도주 소스 5분 초과 stale
+레짐 입력(market_gate)은 정상이나 <b>주도주 경로 단독 판단 금지</b>
+
+보류 중 동작: 틱 저장 중단 · 이벤트 발행 중단 · 방향성 문구 없음
+다음 재시도 30초 후<span class="meta">13:04</span></div>
+        <div class="bubble">▶ <b>HALT 해제</b> 13:11 · 정지 7분
+
+재개 시각 13:11:05 · 공백 구간 틱 84개 없음
+공백 중 전이는 <b>재개 첫 틱에서 재평가</b> (중복 발행 없음)<span class="meta">13:11</span></div>
+        <div class="why"><strong>원칙</strong> — HALT 중엔 종목 코드가 들어간 방향성 문장을 만들 수 없습니다(템플릿 단위 테스트로 고정). verified_delivery의 <code>검출 보류</code>와 같은 규칙.</div>
+      </div>
+
+      <div class="phone">
+        <div class="when">15:45 · close</div>
+        <div class="bubble">🏁 <b>마감 요약</b> 08-21(금)
+
+레짐 NEUTRAL → <b>NEUTRAL</b> (변화 없음) · 환율 1,389.4
+이벤트 11건 · HALT 1회(7분) · 틱 4,596개 저장
+
+<b>오늘의 주도주 (마감 기준)</b>
+ <span class="gS">S</span> 금호건설 002990 <span class="up">+30.0%</span> 09:41 진입 · 종일 유지
+ <span class="gA">A</span> 티웨이홀딩스 004870 <span class="up">+29.9%</span> 10:12 승격
+ <span class="gA">A</span> 셀트리온 068270 <span class="up">+5.6%</span> 개장 전부터 A
+ <span class="gA">A</span> 기가레인 049080 <span class="up">+13.7%</span> 09:41 승격
+
+<b>이탈</b> SK스퀘어 <span class="down">-6.0%</span> · SK하이닉스 <span class="down">-5.6%</span>
+<b>섹터 군집</b> 건설(3) · 항공/지주(2)
+
+<span class="dim">내일 08:20 브리핑에서 오늘 이벤트의 D1 성과를 보고합니다.</span><span class="meta">15:45</span></div>
+        <div class="why"><strong>선택 옵션</strong> — 이 메시지만 <code>delivery.channel_kinds: [close]</code> 설정 시 채널에도 동시 발송. 기본값은 개인봇 전용.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ───────── CLI ───────── -->
+  <section id="cli">
+    <h2>CLI 출력</h2>
+    <p class="sub">모두 <code>python -m marketflow_claw &lt;명령&gt;</code>. <code>--json</code>을 붙이면 같은 내용이 기계용 JSON으로 나옵니다(Phase 2에서 MCP·OpenClaw가 읽는 형태).</p>
+    <div class="term-grid">
+
+      <div class="term">
+        <div class="bar"><span>PS C:\bitman_marketfloww&gt;</span><span class="cmd">python -m marketflow_claw status</span></div>
+<pre><span class="h">MarketFlow Claw</span>  v0.1.0  pid 18244  uptime 5h 02m
+heartbeat     <span class="g">ok</span>   data\claw\heartbeat.json  age 3s
+market        <span class="g">open</span> (KST 14:02, 마감까지 1h28m)
+leaders src   file  screener_leading_latest.json  age 4s   kis_calls_today 0
+regime        NEUTRAL  breadth 48%  fx 1,389.4 (weak_krw_watch)
+halt          <span class="g">no</span>   last: 13:04–13:11 (kis_token_failed x3)
+today         ticks 3,612 · events 9 · briefs 3/3 delivered
+llm           off (예산 0/20)
+delivery      personal bot · channel kinds: []
+kill switches CLAW_ENABLED=1 · CLAW_DELIVERY_ENABLED=1 · CLAW_LLM_ENABLED=0</pre>
+      </div>
+
+      <div class="term wide">
+        <div class="bar"><span>PS&gt;</span><span class="cmd">python -m marketflow_claw leaders --top 5</span></div>
+<pre><span class="p">snapshot 14:02:05 · market open · S1 A3 B6 · source file(age 4s)</span>
+ #  grade  code    name           score  chg%     trval(억)  volx   sector
+ 1  <span class="a">S</span>      002990  금호건설        71   <span class="r">+30.00</span>     386   ×4467  건설
+ 2  <span class="g">A</span>      004870  티웨이홀딩스    63   <span class="r">+29.91</span>      20   ×2155  항공
+ 3  <span class="g">A</span>      068270  셀트리온        69    <span class="r">+5.56</span>   3,305    ×97   바이오
+ 4  <span class="g">A</span>      049080  기가레인        61   <span class="r">+13.67</span>     122   ×1690  반도체장비
+ 5  B      402340  SK스퀘어        51    <span class="b">-6.00</span>  10,994   ×105   지주</pre>
+        <div class="cap">점수 분해는 <code>--detail</code>: trading_value 25 · momentum 25 · smart_money 8 · volume_surge 10 · sector 3 · new_high 0</div>
+      </div>
+
+      <div class="term">
+        <div class="bar"><span>PS&gt;</span><span class="cmd">python -m marketflow_claw regime</span></div>
+<pre>regime     <span class="h">NEUTRAL</span>          (market_gate 08:10 · score 54/100)
+breadth    48% 상승 · S/A 4종목 · 섹터 군집 2
+fx         USD/KRW 1,389.4  <span class="a">weak_krw_watch</span>  (yfinance KRW=X, 13:58)
+freshness  leaders 4s <span class="g">fresh</span> · daily_prices 2026-08-20 <span class="g">fresh</span> · market_gate 5h52m <span class="g">fresh</span>
+halt       <span class="g">false</span>
+reasons    -</pre>
+      </div>
+
+      <div class="term wide">
+        <div class="bar"><span>PS&gt;</span><span class="cmd">python -m marketflow_claw events --today</span></div>
+<pre>time   type            code    name         from→to  score  chg%    reported
+09:41  <span class="a">LEADER_NEW</span>      002990  금호건설      –→S     71    <span class="r">+29.9</span>   09:41 ✓
+09:41  LEADER_UPGRADE  049080  기가레인      B→A     61    <span class="r">+13.7</span>   09:41 ✓
+09:41  SECTOR_CLUSTER  –       건설(3)        –        –     –       09:41 ✓
+10:12  LEADER_UPGRADE  004870  티웨이홀딩스  B→A     63    <span class="r">+21.4</span>   10:12 ✓
+10:12  VOLUME_SURGE    004870  티웨이홀딩스  –       63    <span class="r">+21.4</span>   10:12 ✓
+10:47  LEADER_DROP     402340  SK스퀘어      B→–     –     <span class="b">-6.0</span>    10:47 ✓
+11:03  NEW_HIGH_BREAK  068270  셀트리온      –       69    <span class="r">+5.6</span>    11:03 ✓
+13:04  HALT_ENTER      –       kis_token_failed x3            13:04 ✓
+13:11  HALT_EXIT       –       resumed, gap 7m                13:11 ✓
+<span class="p">9 events · 0 pending · cooldown suppressed 14</span></pre>
+      </div>
+
+      <div class="term">
+        <div class="bar"><span>PS&gt;</span><span class="cmd">python -m marketflow_claw brief --kind close --dry-run</span></div>
+<pre><span class="p">[dry-run] 발송하지 않습니다. 리포트만 기록합니다.</span>
+kind        close
+digest      7f3a9c…e21b
+length      612 chars (1 chunk)
+saved       data\claw\reports\20260821\close_154500.md
+would send  personal bot (channel=False)
+<span class="p">--- preview ---</span>
+🏁 마감 요약 08-21(금)
+레짐 NEUTRAL → NEUTRAL (변화 없음) · 환율 1,389.4
+이벤트 11건 · HALT 1회(7분) · 틱 4,596개 저장
+…</pre>
+        <div class="cap">실제 발송은 <code>--send</code>가 있어야 하며, 같은 digest는 재발송되지 않습니다.</div>
+      </div>
+
+      <div class="term">
+        <div class="bar"><span>PS&gt;</span><span class="cmd">python -m marketflow_claw replay --date 20260821 --from-db</span></div>
+<pre>loading ticks  4,596 rows (09:00:03 → 15:30:01)
+replaying      events.diff over 4,595 pairs … done in 1.8s
+result         11 events  <span class="g">== stored 11</span>   (deterministic ✓)
+by type        LEADER_NEW 2 · UPGRADE 4 · DROP 2 · CLUSTER 1 · VOLUME_SURGE 1 · NEW_HIGH 1
+<span class="p">threshold what-if:</span>  --volume-surge 4.0 → VOLUME_SURGE 0 (-1)
+                    --cluster-min 2   → SECTOR_CLUSTER 3 (+2)</pre>
+        <div class="cap">임계치를 바꿔 "그날 이벤트가 몇 개였을지"를 다시 세어 봅니다. 노이즈 튜닝은 여기서 합니다.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ───────── 메모리 ───────── -->
+  <section id="memory">
+    <h2>메모리 — <code>data/claw/claw.db</code></h2>
+    <p class="sub">지금은 남지 않는 장중 틱이 여기 쌓입니다. 이벤트에는 다음 거래일 이후 D1/D5 수익률이 붙어 "어떤 이벤트 유형이 먹혔는지"를 조간 브리핑이 읽습니다.</p>
+    <div class="mem-grid">
+      <div class="card">
+        <h3>events</h3>
+        <p class="hint">UNIQUE(date, type, code) — 같은 날 같은 이벤트는 한 번만.</p>
+        <div class="tbl-wrap">
+        <table>
+          <tr><th>ts</th><th>type</th><th>code</th><th>name</th><th>from→to</th><th>score</th><th>sector</th><th>reported_at</th></tr>
+          <tr><td class="mono">09:41:05</td><td><span class="pill ev">LEADER_NEW</span></td><td class="mono">002990</td><td>금호건설</td><td><span class="pill s">S</span></td><td class="mono">71</td><td>건설</td><td class="mono">09:41:06</td></tr>
+          <tr><td class="mono">09:41:05</td><td><span class="pill ev">LEADER_UPGRADE</span></td><td class="mono">049080</td><td>기가레인</td><td><span class="pill b">B</span>→<span class="pill a">A</span></td><td class="mono">61</td><td>반도체장비</td><td class="mono">09:41:06</td></tr>
+          <tr><td class="mono">09:41:05</td><td><span class="pill ev">SECTOR_CLUSTER</span></td><td class="mono">—</td><td>건설 ×3</td><td>—</td><td class="mono">—</td><td>건설</td><td class="mono">09:41:06</td></tr>
+          <tr><td class="mono">10:12:40</td><td><span class="pill ev">LEADER_UPGRADE</span></td><td class="mono">004870</td><td>티웨이홀딩스</td><td><span class="pill b">B</span>→<span class="pill a">A</span></td><td class="mono">63</td><td>항공</td><td class="mono">10:12:41</td></tr>
+          <tr><td class="mono">10:47:15</td><td><span class="pill ev">LEADER_DROP</span></td><td class="mono">402340</td><td>SK스퀘어</td><td><span class="pill b">B</span>→—</td><td class="mono">—</td><td>지주</td><td class="mono">10:47:16</td></tr>
+          <tr><td class="mono">11:03:00</td><td><span class="pill ev">NEW_HIGH_BREAK</span></td><td class="mono">068270</td><td>셀트리온</td><td>—</td><td class="mono">69</td><td>바이오</td><td class="mono">11:03:01</td></tr>
+        </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3>outcomes (16:30 다음 거래일 이후 채움)</h3>
+        <p class="hint">이벤트 ts 이후 가격만 사용 — 룩어헤드 없음.</p>
+        <div class="tbl-wrap">
+        <table>
+          <tr><th>event</th><th>D1</th><th>D5</th><th>computed</th></tr>
+          <tr><td>NEW_S 금호건설</td><td class="num-up">+4.2%</td><td class="mono">—</td><td class="mono">08-22 16:30</td></tr>
+          <tr><td>UP 기가레인</td><td class="num-up">+1.1%</td><td class="mono">—</td><td class="mono">08-22 16:30</td></tr>
+          <tr><td>UP 티웨이홀딩스</td><td class="num-down">-3.8%</td><td class="mono">—</td><td class="mono">08-22 16:30</td></tr>
+          <tr><td>NEW_HIGH 셀트리온</td><td class="num-up">+0.9%</td><td class="mono">—</td><td class="mono">08-22 16:30</td></tr>
+        </table>
+        </div>
+        <h3 style="margin-top:18px">snapshots (틱)</h3>
+        <p class="hint">5초마다 1행, 상위 30종목 압축 JSON. 30일 보존.</p>
+        <div class="tbl-wrap">
+        <table>
+          <tr><th>ts</th><th>status</th><th>by_grade</th><th>top_json</th></tr>
+          <tr><td class="mono">14:02:05</td><td>open</td><td class="mono">S1 A3 B6</td><td class="mono">[{"c":"002990","g":"S","s":71,…}, …]</td></tr>
+          <tr><td class="mono">14:02:10</td><td>open</td><td class="mono">S1 A3 B6</td><td class="mono">[…]</td></tr>
+          <tr><td class="mono">14:02:15</td><td>open</td><td class="mono">S1 A3 B7</td><td class="mono">[…]</td></tr>
+        </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── 파일 ───────── -->
+  <section id="files">
+    <h2>파일 산출물</h2>
+    <p class="sub">전부 <code>data/claw/</code> 아래. 비밀값은 어디에도 저장되지 않습니다(토큰은 <code>.env</code>, 설정은 <code>claw.yaml</code>).</p>
+    <div class="card">
+<pre class="tree">C:\bitman_marketfloww\
+├── claw.yaml                          <span class="c"># 임계치·스케줄·발송 정책 (토큰 필드 없음, 스키마 검증)</span>
+└── data\claw\
+    ├── claw.db                        <span class="c"># snapshots · events · regimes · briefs · outcomes (WAL)</span>
+    ├── heartbeat.json                 <span class="c"># 10초 갱신 → 워치독이 180초 기준으로 감시</span>
+    ├── claw.pid                       <span class="c"># 단일 인스턴스 락</span>
+    ├── kis_poller.lock                <span class="c"># Flask 산출물이 stale일 때만 잡는 직접 호출 락</span>
+    ├── market_gate_latest.json        <span class="c"># 08:10 캐시</span>
+    └── reports\20260821\
+        ├── morning_082000.md
+        ├── event_094105.md
+        ├── midday_113000.md
+        ├── halt_130400.md · halt_131105.md
+        └── close_154500.md            <span class="c"># dry-run 이든 실발송이든 항상 남음 (digest 포함)</span></pre>
+    </div>
+  </section>
+
+  <!-- ───────── 규칙 ───────── -->
+  <section id="rules">
+    <h2>보고 규칙 요약</h2>
+    <p class="sub">메시지가 "언제 나가고 언제 안 나가는지"를 정한 규칙입니다. 전부 <code>claw.yaml</code>에서 조정 가능하고, 기본값은 보수적입니다.</p>
+    <div class="rules">
+      <div class="rule"><div class="k">발송 대상</div><div class="v">개인봇만. <b>close</b>만 옵션으로 채널 동시 발송.</div></div>
+      <div class="rule"><div class="k">이벤트 묶음</div><div class="v">같은 틱의 전이를 한 메시지로, <b>최대 5건</b>. 넘치면 다음 틱으로 이월.</div></div>
+      <div class="rule"><div class="k">중복 억제</div><div class="v">(이벤트, 종목) 당일 1회. 이탈 후 재진입은 <b>재진입 플래그</b>로 허용.</div></div>
+      <div class="rule"><div class="k">노이즈 창</div><div class="v">09:00~09:05 이벤트 억제 · <b>15:20 이후</b> 신규 진입 억제.</div></div>
+      <div class="rule"><div class="k">HALT</div><div class="v">주도주 소스 stale <b>그리고</b> 레짐 입력 실패, 또는 토큰 3연속 실패. 진입/해제 시 1회씩만 알림.</div></div>
+      <div class="rule"><div class="k">KIS 호출</div><div class="v">Flask 워커 산출물이 30초 이내면 <b>직접 호출 0회</b>. 단일 폴러.</div></div>
+      <div class="rule"><div class="k">LLM</div><div class="v">기본 off. 켜도 <b>서술 3문장</b>, 숫자·종목은 패킷 밖 값이 나오면 폐기.</div></div>
+      <div class="rule"><div class="k">매매</div><div class="v">주문·잔고 변경 코드 경로 <b>없음</b>. 테스트로 고정.</div></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>MarketFlow Claw · 설계 스펙 2026-08-21 §3 기준 시안</span>
+    <span>종목·점수: data/screener_leading_latest.json (2026-07-30) · 장중 시나리오는 가상</span>
+  </footer>
+</div>
