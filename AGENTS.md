@@ -197,6 +197,18 @@ localhost verification unless the user explicitly says the post is local-only.
 
 ## Git and Deployment
 
+## Verified Alpha / OpenClaw Operations
+
+- The committed source of truth for OpenClaw, main-PC verified Telegram, and
+  future MiniPC handoff is `skills/marketflow-openclaw-ops/`; install it only
+  through its safe junction installer when an operator explicitly requests it.
+- Development Flask remains port `5001`. The current Windows MiniPC launcher and
+  watchdog contract is `127.0.0.1:5003`; older `5001` MiniPC helper scripts are
+  unsafe until reconciled. MCP HTTP is `8765`.
+- Windows `C:\bitman_marketfloww` with Task Scheduler is current. Linux
+  `/srv/marketflow` and systemd are future-only design. Never use Spring or
+  port `8080` for MarketFlow.
+
 - Do not commit, push, or deploy unless the user asks.
 - Before committing, run the relevant tests and summarize the results.
 - For frontend deployment, use `frontend-react/npm run deploy`.

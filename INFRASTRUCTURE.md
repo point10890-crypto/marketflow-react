@@ -254,7 +254,19 @@ node -e "const d=require('/c/bitman_marketfloww/data/scheduler_last_run.json');c
 
 ---
 
-## 7. 변경 절차
+## 7. 검증 알파 / OpenClaw 운영 핸드오프
+
+- OpenClaw, 메인 PC 검증 Telegram, 향후 MiniPC 핸드오프의 커밋된 운영 정본은
+  `skills/marketflow-openclaw-ops/`이다. 실제 사용자 스킬 설치는 해당 safe
+  junction installer를 명시적으로 요청받은 경우에만 수행한다.
+- 개발 Flask 기본 포트는 `5001`이다. 현행 Windows MiniPC launcher/watchdog
+  계약은 `127.0.0.1:5003`이며, 기존 `5001` MiniPC helper script는 조정 전까지
+  안전하지 않다. MCP HTTP는 `8765`이다.
+- 현행 운영은 `C:\bitman_marketfloww` + Task Scheduler인 Windows이다.
+  `/srv/marketflow`와 systemd는 future Linux target일 뿐이며, MarketFlow는
+  Spring/`8080`을 절대 사용하지 않는다.
+
+## 8. 변경 절차
 
 이 문서를 변경할 때:
 
