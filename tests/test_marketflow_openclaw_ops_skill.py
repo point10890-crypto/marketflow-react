@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+import re
 from pathlib import Path
 
 import pytest
@@ -30,6 +31,12 @@ def _corpus() -> str:
     )
 
 
+def _powershell_code_lines(text: str) -> list[str]:
+    """Return non-empty command lines from PowerShell markdown blocks."""
+    blocks = re.findall(r"```powershell\n(.*?)```", text, flags=re.DOTALL)
+    return [line.strip() for block in blocks for line in block.splitlines() if line.strip()]
+
+
 def test_skill_routes_every_relevant_mode_to_one_level_references_in_safe_order() -> None:
     """Fails if a combined request is forced to choose only one required reference."""
     text = _read(SKILL / "SKILL.md")
@@ -52,11 +59,17 @@ def test_skill_routes_every_relevant_mode_to_one_level_references_in_safe_order(
 def test_telegram_reference_requires_preview_confirmation_and_private_only_delivery() -> None:
     """Fails if the confirmation gate or private-only boundary is removed."""
     text = _read(SKILL / "references" / "telegram-delivery.md")
-    assert ".\\.venv\\Scripts\\python.exe scripts/run_verified_alpha_telegram.py" in text
-    assert (
-        ".\\.venv\\Scripts\\python.exe scripts/run_verified_alpha_telegram.py "
-        "--send --confirm SEND_VERIFIED_ALPHA_TELEGRAM"
-    ) in text
+    preview = ".\\.venv\\Scripts\\python.exe scripts/run_verified_alpha_telegram.py"
+    send = f"{preview} --send --confirm SEND_VERIFIED_ALPHA_TELEGRAM"
+    verified_alpha_lines = [
+        line
+        for line in _powershell_code_lines(text)
+        if "scripts/run_verified_alpha_telegram.py" in line
+    ]
+    assert preview in verified_alpha_lines
+    assert send in verified_alpha_lines
+    assert preview != send
+    assert verified_alpha_lines == [preview, send]
     assert "private" in text.lower()
     assert "검출 보류" in text
     assert "stale" in text.lower()
@@ -154,7 +167,7 @@ def test_operational_state_records_current_windows_contract_and_safe_blockers() 
 
 
 @pytest.mark.skipif(shutil.which("powershell") is None, reason="PowerShell is required")
-def test_installer_creates_only_a_same_source_junction_and_refuses_unrelated_destination(
+def test_installer_creates_same_source_junction_idempotently_and_refuses_unrelated_destination(
     tmp_path: Path,
 ) -> None:
     """Fails if installer replaces or copies a destination instead of safely linking it."""
@@ -193,6 +206,19 @@ def test_installer_creates_only_a_same_source_junction_and_refuses_unrelated_des
     assert second.returncode == 0, second.stderr
 
     destination.rmdir()
+    destination.mkdir()
+    (destination / "unrelated.txt").write_text("do not replace", encoding="utf-8")
+    refused = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
+    assert refused.returncode != 0
+    assert (destination / "unrelated.txt").read_text(encoding="utf-8") == "do not replace"
+
+
+@pytest.mark.skipif(shutil.which("powershell") is None, reason="PowerShell is required")
+def test_installer_rejects_a_same_target_symbolic_link_when_supported(tmp_path: Path) -> None:
+    """Fails if a same-target symbolic link is accepted as the required junction."""
+    destination_root = tmp_path / "skills-root"
+    destination = destination_root / "marketflow-openclaw-ops"
+    destination_root.mkdir()
     symbolic_link = subprocess.run(
         [
             "powershell",
@@ -210,13 +236,16 @@ def test_installer_creates_only_a_same_source_junction_and_refuses_unrelated_des
     )
     if symbolic_link.returncode != 0:
         pytest.skip("symbolic-link creation is unavailable on this platform")
+    command = [
+        "powershell",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(INSTALLER),
+        "-DestinationRoot",
+        str(destination_root),
+    ]
     rejected_link = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
     assert rejected_link.returncode != 0
     assert destination.resolve() == SKILL.resolve()
-
-    destination.rmdir()
-    destination.mkdir()
-    (destination / "unrelated.txt").write_text("do not replace", encoding="utf-8")
-    refused = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
-    assert refused.returncode != 0
-    assert (destination / "unrelated.txt").read_text(encoding="utf-8") == "do not replace"
