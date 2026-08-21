@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import shutil
@@ -33,6 +34,7 @@ def verify_openclaw_readonly(
     commands: list[dict[str, Any]] = []
 
     try:
+        canonical_tools, mutating_tools = _load_canonical_tool_policy(repo)
         setup = _run_json(
             [
                 sys.executable,
@@ -47,7 +49,11 @@ def verify_openclaw_readonly(
             commands=commands,
             runner=runner,
         )
-        desired_server, desired_profile, tool_names = _validate_setup_preview(setup)
+        desired_server, desired_profile = _validate_setup_preview(
+            setup,
+            canonical_tools=canonical_tools,
+            mutating_tools=mutating_tools,
+        )
 
         prefix = _native_prefix(openclaw_command)
         config_validation = _run_json(
@@ -93,7 +99,7 @@ def verify_openclaw_readonly(
             commands=commands,
             runner=runner,
         )
-        _validate_probe(probe, tool_names)
+        _validate_probe(probe, canonical_tools)
 
         _run_text(
             [*prefix, "skills", "check", "--agent", TARGET_AGENT],
@@ -111,15 +117,15 @@ def verify_openclaw_readonly(
         if critical != 0:
             raise _CheckFailure("security_critical_present")
 
-        excludes = desired_server["toolFilter"].get("exclude") or []
-        mutation_count = len(set(tool_names).intersection(excludes))
+        live_tools = actual_server.get("toolFilter", {}).get("include") or []
+        mutation_count = len(set(live_tools).intersection(mutating_tools))
         non_target_count = len(inventory) - 1
         return {
             "ok": True,
             "status": "verified_read_only",
             "commands": commands,
             "invariants": {
-                "tool_count": len(tool_names),
+                "tool_count": len(canonical_tools),
                 "mutation_tool_count": mutation_count,
                 "binding_count": binding_count,
                 "sandbox": desired_profile["sandbox"]["mode"],
@@ -179,7 +185,43 @@ def _run_text(
     return completed.stdout
 
 
-def _validate_setup_preview(setup: Any) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
+def _load_canonical_tool_policy(repo: Path) -> tuple[list[str], list[str]]:
+    """Load the one committed tool policy used by the configuration writer."""
+    source = repo / "scripts" / "setup_openclaw_mcp.py"
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "marketflow_openclaw_canonical_setup",
+            source,
+        )
+        if spec is None or spec.loader is None:
+            raise ImportError
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        canonical = getattr(module, "READ_ONLY_TOOLS")
+        mutating = getattr(module, "MUTATING_TOOLS")
+    except Exception:
+        raise _CheckFailure("canonical_tool_policy_invalid") from None
+    if (
+        not isinstance(canonical, list)
+        or len(canonical) != 19
+        or len(set(canonical)) != 19
+        or not all(isinstance(name, str) and name for name in canonical)
+        or not isinstance(mutating, list)
+        or not mutating
+        or len(set(mutating)) != len(mutating)
+        or not all(isinstance(name, str) and name for name in mutating)
+        or set(canonical).intersection(mutating)
+    ):
+        raise _CheckFailure("canonical_tool_policy_invalid")
+    return list(canonical), list(mutating)
+
+
+def _validate_setup_preview(
+    setup: Any,
+    *,
+    canonical_tools: list[str],
+    mutating_tools: list[str],
+) -> tuple[dict[str, Any], dict[str, Any]]:
     if not isinstance(setup, dict):
         raise _CheckFailure("setup_preview_invalid")
     required_false = ("apply_requested", "applied", "config_applied", "verified")
@@ -214,7 +256,9 @@ def _validate_setup_preview(setup: Any) -> tuple[dict[str, Any], dict[str, Any],
         or server.get("codex", {}).get("agents") != [TARGET_AGENT]
     ):
         raise _CheckFailure("setup_preview_invalid")
-    expected_prefixed = [f"{TARGET_AGENT}__{name}" for name in tools]
+    if tools != canonical_tools or excludes != mutating_tools:
+        raise _CheckFailure("canonical_tool_policy_mismatch")
+    expected_prefixed = [f"{TARGET_AGENT}__{name}" for name in canonical_tools]
     if (
         profile.get("sandbox")
         != {"mode": "all", "scope": "agent", "workspaceAccess": "none"}
@@ -223,7 +267,7 @@ def _validate_setup_preview(setup: Any) -> tuple[dict[str, Any], dict[str, Any],
         != expected_prefixed
     ):
         raise _CheckFailure("setup_preview_invalid")
-    return server, profile, tools
+    return server, profile
 
 
 def _validate_agents(inventory: Any, configured: Any, profile: dict[str, Any]) -> int:
@@ -361,7 +405,8 @@ def _paths_overlap(left: str, right: str) -> bool:
 
 
 def _normalized_path(value: str) -> str:
-    return os.path.normcase(os.path.abspath(os.path.expandvars(os.path.expanduser(value))))
+    expanded = os.path.expanduser(value)
+    return os.path.normcase(os.path.abspath(os.path.realpath(expanded)))
 
 
 def _native_prefix(command: str) -> list[str]:

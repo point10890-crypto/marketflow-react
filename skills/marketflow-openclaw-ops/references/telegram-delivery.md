@@ -29,5 +29,6 @@ it must never send a directional candidate.
 The sanitized ignored ledger at
 `data/admin_mirofish/verified_delivery_receipt.json` must persist locally for
 dedupe, uncertain-delivery blocking, and state recovery. Never print, copy,
-stage, or commit that ledger. Never expose raw messages, recipients, chat IDs,
+stage, or commit that ledger. The public CLI reports only the sanitized status
+and `delivery_verified`; it never exposes raw messages, recipients, chat IDs,
 member data, secrets, Telegram response bodies, message IDs, or raw receipts.

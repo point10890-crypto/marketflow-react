@@ -5,7 +5,8 @@
 - Local development Flask remains 5001. MCP HTTP is 8765. MarketFlow must never
   use 8080 or Spring.
 - `/srv/marketflow` and systemd are future Linux design, not current operation.
-  The older 5001 MiniPC helper scripts are unsafe until reconciled.
+  The older 5001 MiniPC helper scripts remain quarantined and are not deployment
+  inputs; the authoritative Windows production contract is already 5003.
 - OpenClaw remains 19 MarketFlow read-only tools, zero mutation tools, zero
   bindings, sandbox `all`, workspace access `none`, and mutation env false.
   Future agent behavior must deny mutation. There is no Telegram/OpenClaw
@@ -14,7 +15,8 @@
   `message_digest` and confirmation phrase. Invalid runs never send. A valid
   stale-blocked run is `검출 보류` only. The ignored sanitized receipt ledger
   must persist locally for dedupe and recovery but must never be printed,
-  copied, staged, or committed.
+  copied, staged, or committed. The public CLI exposes `delivery_verified` but
+  never exposes a raw message, message ID, or receipt.
 - Deployment is blocked: tracked legacy documentation needs redaction and
   credential rotation confirmation. Do not copy credential-like plaintext,
   tokens, chat IDs, raw messages, member data, or receipts into this state.
@@ -52,14 +54,17 @@
 ## Host runtime stability gate
 
 - Host runtime stability risk is **HIGH** and substantially predates this
-  feature. Current evidence includes 18 Python Application Error crashes
-  (python.exe 16 + python3.13.exe 2): 17 predated the feature and one additional
-  python.exe crash occurred during the final single-process rerun. The
-  historical host record also contains 93 WHEA hardware errors. Recent WHEA
-  errors are predominantly CPU internal parity/TLB on APIC 16/17; crashes span
-  multiple Python distributions and other applications.
-- Historical diagnostic baseline at 2026-08-21 18:02:38 KST: Application Error
-  max RecordId 3440795 and WHEA-Logger max RecordId 101636. Immediately before
+  feature. Before 2026-08-21 17:05 KST, the matching count was 17 (python.exe
+  15 + python3.13.exe 2). Read-only evidence captured at 2026-08-21 18:02:38 KST
+  found 18 Python Application Error crashes (python.exe 16 + python3.13.exe 2)
+  and 93 WHEA hardware errors. The latest matching Application Error event
+  occurred at 2026-08-21 17:42 KST (17:42:03); the 18th is python.exe RecordId
+  3440795 during final test work. The current total remains 18 with no later
+  matching event. Recent WHEA errors are predominantly CPU internal parity/TLB
+  on APIC 16/17; crashes span multiple Python distributions and other
+  applications.
+- Historical diagnostic baseline: Application Error max RecordId 3440795 and
+  WHEA-Logger max RecordId 101636. Immediately before
   the three consecutive `pytest -q` and `pytest --collect-only -q` runs, capture
   the current maxima for matching events as the fresh release-test baseline.
   After all runs, FAIL if any matching Python Application Error Event ID 1000 or

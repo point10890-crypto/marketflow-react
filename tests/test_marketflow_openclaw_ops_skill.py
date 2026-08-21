@@ -26,6 +26,37 @@ REFERENCE_NAMES = (
     "operational-state.md",
 )
 
+CANONICAL_READ_ONLY_TOOLS = (
+    "get_autonomous_status",
+    "get_mcp_security_policy",
+    "get_market_clock",
+    "get_pipeline_operating_snapshot",
+    "get_mcp_resource_snapshot",
+    "get_repository_state",
+    "list_recent_scanner_runs",
+    "get_alpha_research_snapshot",
+    "list_recent_workflows",
+    "list_safe_artifacts",
+    "read_safe_artifact",
+    "get_top3_summary",
+    "get_alpha_scanner_diagnostics",
+    "get_tradingview_provider_status",
+    "get_outcomes_kpi",
+    "get_pipeline_today_snapshot",
+    "get_backtest_summary",
+    "resolve_target",
+    "search_targets",
+)
+
+CANONICAL_MUTATING_TOOLS = (
+    "run_candidate_detection_alert",
+    "run_autonomous_scan_analysis",
+    "refresh_learning_feedback",
+    "send_latest_workflow_telegram",
+    "run_multi_mcp_deep_research",
+    "run_multi_mcp_live_market_scan",
+)
+
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
@@ -52,12 +83,12 @@ def _load_verifier() -> ModuleType:
 
 
 def _verification_payloads(tmp_path: Path) -> dict[str, Any]:
-    repo = tmp_path / "repo"
+    repo = ROOT
     workspace = repo / "integrations" / "openclaw" / "workspace"
     main_workspace = tmp_path / "openclaw" / "workspace"
     main_agent_dir = tmp_path / "openclaw" / "agents" / "main" / "agent"
     target_agent_dir = tmp_path / "openclaw" / "agents" / "marketflow" / "agent"
-    tool_names = [f"read_tool_{index:02d}" for index in range(19)]
+    tool_names = list(CANONICAL_READ_ONLY_TOOLS)
     prefixed_tools = [f"marketflow__{name}" for name in tool_names]
     target_profile = {
         "name": "MarketFlow Read-Only",
@@ -83,7 +114,7 @@ def _verification_payloads(tmp_path: Path) -> dict[str, Any]:
         "supportsParallelToolCalls": False,
         "toolFilter": {
             "include": tool_names,
-            "exclude": ["run_mutation"],
+            "exclude": list(CANONICAL_MUTATING_TOOLS),
         },
         "codex": {"agents": ["marketflow"]},
     }
@@ -394,6 +425,157 @@ def test_openclaw_verifier_rejects_weakened_live_fixtures(
     assert "error" not in result
 
 
+def test_openclaw_verifier_rejects_a_self_consistent_known_mutation_tool_substitution(
+    tmp_path: Path,
+) -> None:
+    """Nineteen arbitrary tools must not masquerade as the canonical safe inventory."""
+    module = _load_verifier()
+    payloads = _verification_payloads(tmp_path)
+    removed_safe = "search_targets"
+    injected_mutation = "send_latest_workflow_telegram"
+
+    for server in (payloads["setup"]["server_config"], payloads["mcp_show"]):
+        include = server["toolFilter"]["include"]
+        include[include.index(removed_safe)] = injected_mutation
+        exclude = server["toolFilter"]["exclude"]
+        exclude[exclude.index(injected_mutation)] = removed_safe
+    for profile in (
+        payloads["setup"]["agent_profile"],
+        payloads["configured_agents"][1],
+    ):
+        for allowed in (
+            profile["tools"]["allow"],
+            profile["tools"]["sandbox"]["tools"]["alsoAllow"],
+        ):
+            safe_name = f"marketflow__{removed_safe}"
+            if safe_name in allowed:
+                allowed[allowed.index(safe_name)] = f"marketflow__{injected_mutation}"
+    probe_tools = payloads["probe"]["tools"]
+    probe_tools[probe_tools.index(f"marketflow__{removed_safe}")] = (
+        f"marketflow__{injected_mutation}"
+    )
+
+    result = module.verify_openclaw_readonly(
+        repo_root=payloads["repo"],
+        openclaw_command="openclaw-test",
+        runner=_VerifierRunner(payloads),
+    )
+
+    assert result["ok"] is False
+    assert result["failed_check"] == "canonical_tool_policy_mismatch"
+
+
+def test_openclaw_verifier_rejects_an_arbitrary_self_consistent_tool_substitution(
+    tmp_path: Path,
+) -> None:
+    """An unknown observational-sounding name is not part of the safe policy."""
+    module = _load_verifier()
+    payloads = _verification_payloads(tmp_path)
+    removed_safe = "search_targets"
+    injected = "read_everything"
+
+    for server in (payloads["setup"]["server_config"], payloads["mcp_show"]):
+        include = server["toolFilter"]["include"]
+        include[include.index(removed_safe)] = injected
+    for profile in (
+        payloads["setup"]["agent_profile"],
+        payloads["configured_agents"][1],
+    ):
+        for allowed in (
+            profile["tools"]["allow"],
+            profile["tools"]["sandbox"]["tools"]["alsoAllow"],
+        ):
+            safe_name = f"marketflow__{removed_safe}"
+            if safe_name in allowed:
+                allowed[allowed.index(safe_name)] = f"marketflow__{injected}"
+    probe_tools = payloads["probe"]["tools"]
+    probe_tools[probe_tools.index(f"marketflow__{removed_safe}")] = (
+        f"marketflow__{injected}"
+    )
+
+    result = module.verify_openclaw_readonly(
+        repo_root=payloads["repo"],
+        openclaw_command="openclaw-test",
+        runner=_VerifierRunner(payloads),
+    )
+
+    assert result["ok"] is False
+    assert result["failed_check"] == "canonical_tool_policy_mismatch"
+
+
+def test_openclaw_verifier_normalizes_paths_in_setup_security_order(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Removing realpath resolution would let a junction alias evade overlap checks."""
+    module = _load_verifier()
+    calls: list[str] = []
+
+    def stage(name: str):
+        def apply(value: str) -> str:
+            calls.append(name)
+            return value
+
+        return apply
+
+    monkeypatch.setattr(module.os.path, "expanduser", stage("expanduser"))
+    monkeypatch.setattr(module.os.path, "realpath", stage("realpath"))
+    monkeypatch.setattr(module.os.path, "abspath", stage("abspath"))
+    monkeypatch.setattr(module.os.path, "normcase", stage("normcase"))
+
+    assert module._normalized_path("alias") == "alias"
+    assert calls == ["expanduser", "realpath", "abspath", "normcase"]
+
+
+def test_openclaw_verifier_detects_a_realpath_alias_with_monkeypatch(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Alias overlap remains covered when Windows cannot create a test link."""
+    module = _load_verifier()
+    real_workspace = tmp_path / "real-workspace"
+    alias = tmp_path / "workspace-alias"
+    original_realpath = module.os.path.realpath
+
+    def resolve_alias(value: str) -> str:
+        rendered = str(value)
+        if rendered == str(alias):
+            return str(real_workspace)
+        if rendered.startswith(f"{alias}{module.os.sep}"):
+            return f"{real_workspace}{rendered[len(str(alias)):]}"
+        return original_realpath(value)
+
+    monkeypatch.setattr(module.os.path, "realpath", resolve_alias)
+
+    assert module._paths_overlap(str(real_workspace), str(alias / "nested")) is True
+
+
+def test_openclaw_verifier_rejects_a_real_symlink_alias_overlap(tmp_path: Path) -> None:
+    """A filesystem alias into another agent workspace must fail closed."""
+    module = _load_verifier()
+    real_workspace = tmp_path / "real-main-workspace"
+    nested = real_workspace / "nested"
+    nested.mkdir(parents=True)
+    alias = tmp_path / "workspace-alias"
+    try:
+        alias.symlink_to(real_workspace, target_is_directory=True)
+    except (NotImplementedError, OSError) as exc:
+        pytest.skip(f"directory symlink fixture unavailable: {exc}")
+
+    payloads = _verification_payloads(tmp_path)
+    payloads["inventory"][0]["workspace"] = str(real_workspace)
+    payloads["inventory"][1]["agentDir"] = str(alias / "nested")
+    payloads["configured_agents"][1]["agentDir"] = str(alias / "nested")
+
+    result = module.verify_openclaw_readonly(
+        repo_root=payloads["repo"],
+        openclaw_command="openclaw-test",
+        runner=_VerifierRunner(payloads),
+    )
+
+    assert result["ok"] is False
+    assert result["failed_check"] == "agent_paths_overlap"
+
+
 def test_openclaw_verifier_fails_fast_on_a_native_nonzero_exit(tmp_path: Path) -> None:
     """A failed command must stop later checks without echoing stderr."""
     module = _load_verifier()
@@ -493,8 +675,13 @@ def test_infrastructure_ssot_separates_windows_production_from_local_development
     assert "marketflow-api.bit-man.net` | → | `http://localhost:5001`" not in normalized
     assert "현행 — JUST BUY 라인 포함" not in text
     assert "marketflow-{flask,scheduler,backup}.service" not in text
+    top_correction = text.split("---", 1)[0]
+    assert "Future Linux design only" in top_correction
+    assert "미니PC 이전 시 MarketFlow 측 systemd" not in top_correction
     scheduler_section = text.split("## 5. 스케줄러", 1)[1].split("## 6.", 1)[0]
     assert "Get-ScheduledTask -TaskName MarketFlow-Scheduler" in scheduler_section
+    assert "logs/scheduler_watchdog.log" in scheduler_section
+    assert "watchdog_service.log" not in scheduler_section
     assert "scheduler.py --daemon &" not in scheduler_section
     assert "taskkill" not in scheduler_section.lower()
     change_section = text.split("## 8. 변경 절차", 1)[1]
@@ -513,6 +700,12 @@ def test_release_docs_preserve_hardware_gate_and_truthful_task_status() -> None:
     for text in (state, spec, plan):
         normalized = " ".join(text.split())
         for required in (
+            "Before 2026-08-21 17:05 KST, the matching count was 17 (python.exe 15 + python3.13.exe 2)",
+            "Read-only evidence captured at 2026-08-21 18:02:38 KST",
+            "18 Python Application Error crashes (python.exe 16 + python3.13.exe 2)",
+            "latest matching Application Error event occurred at 2026-08-21 17:42 KST",
+            "the 18th is python.exe RecordId 3440795 during final test work",
+            "current total remains 18 with no later matching event",
             "93 WHEA hardware errors",
             "Application Error max RecordId 3440795",
             "WHEA-Logger max RecordId 101636",
@@ -526,10 +719,12 @@ def test_release_docs_preserve_hardware_gate_and_truthful_task_status() -> None:
         ):
             assert required in normalized
         assert "requires greater RecordIds" not in normalized
-    for text in (state, plan):
-        normalized = " ".join(text.split())
-        assert "18 Python Application Error crashes (python.exe 16 + python3.13.exe 2)" in normalized
         assert "17 Python Application Error crashes" not in normalized
+        assert "17 predated the feature" not in normalized
+        assert "one additional python.exe crash" not in normalized
+        assert "crash occurred during the final single-process rerun" not in normalized
+        assert "port-SSOT reconciliation" not in normalized
+        assert "Task 4 is blocked only" not in normalized
     normalized_plan = " ".join(plan.split())
     assert "ed65734" in normalized_plan
     assert "71 verified-delivery" in normalized_plan
@@ -543,6 +738,40 @@ def test_release_docs_preserve_hardware_gate_and_truthful_task_status() -> None:
         assert f"- [x] **Step {completed_step}:" in task_four
     for incomplete_step in (1, 4, 5):
         assert f"- [ ] **Step {incomplete_step}:" in task_four
+
+
+def test_telegram_runbook_matches_current_bound_send_and_public_redaction_contract() -> None:
+    """The durable runbook must track the CLI contract implemented at current HEAD."""
+    help_result = subprocess.run(
+        [str(ROOT / ".venv" / "Scripts" / "python.exe"),
+         str(ROOT / "scripts" / "run_verified_alpha_telegram.py"), "--help"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    assert help_result.returncode == 0
+    assert "--run-id" in help_result.stdout
+    assert "--message-digest" in help_result.stdout
+    telegram = " ".join(
+        _read(SKILL / "references" / "telegram-delivery.md").split()
+    )
+    spec = " ".join(
+        _read(
+            ROOT
+            / "docs"
+            / "superpowers"
+            / "specs"
+            / "2026-08-21-verified-alpha-telegram-ops-design.md"
+        ).split()
+    )
+    for text in (telegram, spec):
+        assert "run_id" in text
+        assert "message_digest" in text
+        assert "delivery_verified" in text
+        assert "never exposes" in text.lower()
 
 
 @pytest.mark.skipif(shutil.which("powershell") is None, reason="PowerShell is required")

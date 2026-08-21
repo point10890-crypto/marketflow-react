@@ -14,9 +14,9 @@
 
 - Tasks 1–3 reached a historical local checkpoint through `ed65734`. Focused
   gates at that checkpoint passed: 71 verified-delivery tests and 149 related
-  regression tests. Independent review subsequently reopened the preview-bound
-  approval, cross-run dedupe/recovery, freshness, and OpenClaw proof gates; the
-  checkboxes below reflect the current release status. A
+  regression tests. The preview-bound approval, cross-run dedupe/recovery, and
+  public CLI redaction fixes are implemented through `276e49a`; current focused
+  results are recorded only after rerunning the gates below. A
   historical full pytest rerun through `33dc203` reached 100% and exited 0 with
   five pre-existing unawaited-coroutine warnings; a final full pytest rerun is
   not yet claimed through `ed65734`.
@@ -29,28 +29,34 @@
   warning), and the Codex skill Junction is installed and validated.
 - Scanner source data was stale; the safe price refresh hung and was interrupted
   with no data change, yielding zero candidates and `검출 보류` only.
-- Task 4 is blocked only on external Telegram unblock: authentication and
-  private-chat lookup were valid, but guarded sends and a write-capability probe
-  returned 403 because the recipient blocked the configured bot. No message ID
-  or delivery exists; known failed retryable records must not be retried until
-  unblock. No push or deployment occurred.
+- Task 4 remains incomplete at the stable-host/full verification gate, external
+  Telegram unblock, and final sanitized snapshot/commit gate. Authentication
+  and private-chat lookup were valid, but guarded sends and a write-capability
+  probe returned 403 because the recipient blocked the configured bot. No
+  message ID or delivery exists; known failed retryable records must not be
+  retried until unblock. No push or deployment occurred.
 - MiniPC deployment remains unauthorized and blocked by legacy credential
-  redaction/rotation and port-SSOT reconciliation. A read-only predeploy audit
-  exited 0: database `quick_check=ok` and required user schema is present, but
+  redaction/rotation, the stable-host verification gate, database integrity,
+  and backup proof. The port SSOT is already reconciled to Windows production
+  5003; legacy 5001 MiniPC helpers remain quarantined. A read-only predeploy
+  audit exited 0: database `quick_check=ok` and required user schema is present, but
   11 foreign-key violations remain (`post_images -> posts`); no configured
   backup roots/candidates were found; community file references have 0 missing
   and 8 unreferenced files; workflows completed 6/6 with no JSON errors; disk
   free is 63.15%. Deployment remains blocked until the FK violations and a
   verified backup are resolved/approved.
 - Host runtime stability risk is **HIGH** and substantially predates this
-  feature. Current evidence includes 18 Python Application Error crashes
-  (python.exe 16 + python3.13.exe 2): 17 predated the feature and one additional
-  python.exe crash occurred during the final single-process rerun. The
-  historical host record also contains 93 WHEA hardware errors. Recent WHEA
-  errors are predominantly CPU internal parity/TLB on APIC 16/17; crashes span
-  multiple Python distributions and other applications.
-  Historical diagnostic baseline at 2026-08-21 18:02:38 KST: Application Error
-  max RecordId 3440795 and WHEA-Logger max RecordId 101636. Immediately before
+  feature. Before 2026-08-21 17:05 KST, the matching count was 17 (python.exe
+  15 + python3.13.exe 2). Read-only evidence captured at 2026-08-21 18:02:38 KST
+  found 18 Python Application Error crashes (python.exe 16 + python3.13.exe 2)
+  and 93 WHEA hardware errors. The latest matching Application Error event
+  occurred at 2026-08-21 17:42 KST (17:42:03); the 18th is python.exe RecordId
+  3440795 during final test work. The current total remains 18 with no later
+  matching event. Recent WHEA errors are predominantly CPU internal parity/TLB
+  on APIC 16/17; crashes span multiple Python distributions and other
+  applications.
+  Historical diagnostic baseline: Application Error max RecordId 3440795 and
+  WHEA-Logger max RecordId 101636. Immediately before
   the three consecutive `pytest -q` and `pytest --collect-only -q` runs, capture
   the current maxima for matching events as the fresh release-test baseline.
   After all runs, FAIL if any matching Python Application Error Event ID 1000 or
@@ -68,7 +74,7 @@
 
 - Never print, copy, stage, or commit `.env`, tokens, chat IDs, member data, raw credentials, messages, or Telegram response bodies. The sanitized ignored receipt ledger must persist locally for dedupe/recovery but must not leave the host.
 - OpenClaw remains read-only with exactly 19 MarketFlow tools, zero mutation tools, zero bindings, sandbox `all`, workspace access `none`, and `MIROFISH_MCP_ALLOW_MUTATION=false`.
-- Telegram delivery is private only, bound to the exact previewed `run_id + message SHA-256`, cross-run event-deduplicated, and requires an explicit confirmation string.
+- Telegram delivery is private only, bound to the exact previewed `run_id + message_digest` (the message SHA-256), cross-run event-deduplicated, and requires an explicit confirmation string.
 - Invalid runs never send. A valid run blocked only by stale alert-required data can send only `검출 보류`, never a directional candidate report.
 - No public channel, AIbain, order, wallet, Git push, MiniPC connection, service restart, or deployment.
 - Preserve all unrelated dirty and untracked files; stage only intentional source, test, skill, and documentation files.
@@ -102,7 +108,7 @@ Run: `\.\.venv\Scripts\python.exe -m pytest tests/test_mirofish_verified_deliver
 Expected: collection failure because `app.services.mirofish.verified_delivery`
 does not exist.
 
-- [ ] **Step 3: Implement the reviewed operator service and CLI**
+- [x] **Step 3: Implement the reviewed operator service and CLI**
 
 Use `deepseek_rerank=False`, `commit_state=False`, and
 `block_on_stale=True` for preview. A send reloads the exact persisted run and

@@ -11,15 +11,19 @@ future Windows MiniPC handoff without pushing or deploying in this change.
 
 - OpenClaw remains read-only. It never receives scan, Telegram, order, wallet,
   deployment, or generic message tools.
-- The one-shot operator command defaults to preview. A real send requires an
-  explicit confirmation string and targets only the personal Telegram chat.
+- The one-shot operator command defaults to preview. A real send requires the
+  exact previewed `run_id`, `message_digest`, and explicit confirmation string,
+  and targets only the personal Telegram chat.
 - Candidate delivery requires a completed, replayable scanner run and fresh
   alert-required sources. If the run is blocked, the command may send one
   clearly labelled `검출 보류` status report instead of directional candidates.
-- The exact send unit is `run_id + SHA-256(message)`. A successful receipt makes
-  an identical resend fail closed.
+- The exact send unit is `run_id + message_digest`, where `message_digest` is
+  SHA-256 of the previewed message. A successful receipt makes an identical
+  resend fail closed.
 - Telegram success requires `HTTP 200`, `ok=true`, and a positive
-  `result.message_id`. Secrets and chat identifiers are never persisted.
+  `result.message_id` internally. The public CLI exposes `delivery_verified`
+  but never exposes the raw message, message ID, or receipt. Secrets and chat
+  identifiers are never persisted.
 - Scanner alert state is committed only after a verified Telegram delivery.
 - No KIS order, brokerage mutation, public Telegram channel, AIbain delivery,
   Git push, MiniPC connection, service restart, or deployment is in scope.
@@ -37,8 +41,11 @@ future Windows MiniPC handoff without pushing or deploying in this change.
    counts, finite scores, target identity, evidence, price date, and
    look-ahead-safe markers.
 5. Build either the verified candidate report or the blocked-status report.
-6. In preview mode, print only a sanitized JSON summary. In send mode, enforce
-   confirmation and deduplication before calling Telegram once.
+6. In preview mode, persist the scanner artifacts and print only sanitized JSON
+   containing the approvable `run_id` and `message_digest`. In send mode, reload
+   that exact persisted run, rebuild and verify the digest, enforce confirmation
+   and deduplication, and call Telegram once. Send mode never starts a scanner
+   run.
 7. Atomically persist a receipt containing timestamps, run ID, digest,
    delivery status, message ID, candidate/event counts, symbols, and freshness.
    Never persist tokens, chat IDs, raw environment values, or the full message.
@@ -74,9 +81,10 @@ and unchanged in responsibility.
   normal operator account, with Flask on `127.0.0.1:5003`.
 - Development default remains port `5001`; port `8080` belongs to another
   project and is forbidden.
-- Some legacy docs/scripts still point MiniPC operations at port `5001`; future
-  deployment is blocked until the live target and tunnel are rechecked and the
-  operational SSOT is reconciled.
+- The operational SSOT is reconciled: Windows MiniPC production and its tunnel
+  use port `5003`. Legacy `5001` MiniPC helpers remain quarantined and are not
+  deployment inputs; the live target and tunnel still require read-only health
+  verification before an authorized deployment.
 - Push only to `origin`; MiniPC pulls `origin/main` with `--ff-only`. Never push
   directly to the working-tree `minipc` remote and never use reset/clean force
   scripts.
@@ -114,9 +122,11 @@ and unchanged in responsibility.
   and a write-capability probe returned 403 because the recipient blocked the
   configured bot. No message ID or delivery exists; known failed retryable
   ledger records must not be retried until the recipient unblocks the bot.
-- Tasks 1–3 are complete. Task 4 is blocked only on that external Telegram
-  unblock. MiniPC deployment remains unauthorized and blocked by legacy
-  credential redaction/rotation plus port-SSOT reconciliation. A read-only
+- Tasks 1–3 are implemented through current HEAD. Task 4 remains incomplete at
+  the stable-host/full verification gate, the external Telegram unblock, and
+  the final sanitized snapshot/commit gate. MiniPC deployment remains
+  unauthorized and blocked by legacy credential redaction/rotation, the host
+  verification gate, database integrity, and backup proof. A read-only
   predeploy audit exited 0: database `quick_check=ok` and required user schema
   is present, but 11 foreign-key violations remain (`post_images -> posts`);
   no configured backup roots/candidates were found; community file references
@@ -124,13 +134,18 @@ and unchanged in responsibility.
   errors; disk free is 63.15%. Deployment remains blocked until the FK
   violations and a verified backup are resolved/approved; no push or deployment
   occurred.
-- Host runtime stability risk is **HIGH** and predates this feature: Windows
-  evidence at 2026-08-21 18:02:38 KST showed 17 Python Application Error
-  crashes (python.exe 15 + python3.13.exe 2) and 93 WHEA hardware errors before
-  feature work. Recent WHEA errors are predominantly CPU internal parity/TLB on
-  APIC 16/17; crashes span multiple Python distributions and other applications.
-  Historical diagnostic baseline at 2026-08-21 18:02:38 KST: Application Error
-  max RecordId 3440795 and WHEA-Logger max RecordId 101636. Immediately before
+- Host runtime stability risk is **HIGH** and substantially predates this
+  feature. Before 2026-08-21 17:05 KST, the matching count was 17 (python.exe
+  15 + python3.13.exe 2). Read-only evidence captured at 2026-08-21 18:02:38 KST
+  found 18 Python Application Error crashes (python.exe 16 + python3.13.exe 2)
+  and 93 WHEA hardware errors. The latest matching Application Error event
+  occurred at 2026-08-21 17:42 KST (17:42:03); the 18th is python.exe RecordId
+  3440795 during final test work. The current total remains 18 with no later
+  matching event. Recent WHEA errors are predominantly CPU internal parity/TLB
+  on APIC 16/17; crashes span multiple Python distributions and other
+  applications.
+  Historical diagnostic baseline: Application Error max RecordId 3440795 and
+  WHEA-Logger max RecordId 101636. Immediately before
   the three consecutive `pytest -q` and `pytest --collect-only -q` runs, capture
   the current maxima for matching events as the fresh release-test baseline.
   After all runs, FAIL if any matching Python Application Error Event ID 1000 or

@@ -6,7 +6,7 @@
 
 Last updated: 2026-08-21
 
-> **2026-04-08 정정**: 라이브 프로세스 검사 결과, 8080 포트는 MarketFlow 가 아닌 별도 프로젝트 JUST BUY (`C:\bitman_justbuy_project`) 의 `justbuy-api-1.0.0.jar` 가 점유하며 `api.bit-man.net` 도 JUST BUY 로 라우팅됨이 확인되었습니다. MarketFlow `backend/` 디렉토리는 dead code 로 분류하고, 8080 / Spring Boot 관련 항목을 SSOT 에서 제거했습니다. 미니PC 이전 시 MarketFlow 측 systemd unit 은 `marketflow-flask.service`, `marketflow-scheduler.service` 두 개만 만듭니다.
+> **2026-04-08 정정**: 라이브 프로세스 검사 결과, 8080 포트는 MarketFlow 가 아닌 별도 프로젝트 JUST BUY (`C:\bitman_justbuy_project`) 의 `justbuy-api-1.0.0.jar` 가 점유하며 `api.bit-man.net` 도 JUST BUY 로 라우팅됨이 확인되었습니다. MarketFlow `backend/` 디렉토리는 dead code 로 분류하고, 8080 / Spring Boot 관련 항목을 SSOT 에서 제거했습니다. **Future Linux design only**에서 systemd를 채택할 경우에도 MarketFlow unit은 `marketflow-flask.service`, `marketflow-scheduler.service` 두 개만 설계하며, 이는 현행 Windows MiniPC 운영 지시가 아닙니다.
 
 > **2026-08-21 운영 정정**: Windows MiniPC production은
 > `C:\bitman_marketfloww` + Task Scheduler이며 Flask는
@@ -78,7 +78,7 @@ Last updated: 2026-08-21
 - `5002`: 구 cloudflared 잘못된 라우팅의 흔적, 사용 안 함
 - `8080`: **MarketFlow가 사용하지 않음**. 이 PC에서는 별도 프로젝트(JUST BUY, `C:\bitman_justbuy_project`)의 Spring Boot JAR이 점유 중. MarketFlow `backend/` 디렉토리는 dead code이며, 실수로라도 `gradlew bootRun`을 띄우지 말 것 (JUST BUY와 충돌). JUST BUY의 `autostart.vbs`는 침범 시 자동 종료시키는 방어 로직(`KillStrayMarketflowOn8080`) 보유.
 
-### 2.2 포트 점유 확인 / 종료
+### 2.2 포트 점유 확인
 
 ```powershell
 # Windows MiniPC production 확인: 5003만 Flask production 계약이다.
@@ -210,7 +210,7 @@ VITE_API_BASE_URL=https://marketflow-api.bit-man.net
 
 - `scheduler.py --daemon` 인스턴스는 **PC당 정확히 1개**
 - PID 파일: `logs/scheduler.pid`
-- Watchdog: `logs/watchdog_service.log` 가 살아있어야 함
+- Watchdog: `logs/scheduler_watchdog.log` 가 살아있어야 함
 
 ### 5.2 현행 상태 확인
 
