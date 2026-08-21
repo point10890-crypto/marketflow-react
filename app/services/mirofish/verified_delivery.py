@@ -27,6 +27,7 @@ CONFIRMATION_PHRASE = 'SEND_VERIFIED_ALPHA_TELEGRAM'
 RECEIPT_SCHEMA_VERSION = 2
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_RECEIPT_PATH = REPO_ROOT / 'data' / 'admin_mirofish' / 'verified_delivery_receipt.json'
+DEFAULT_ALERT_STATE_PATH = REPO_ROOT / 'data' / 'admin_mirofish' / 'alpha_scanner_alert_state.json'
 
 
 def run_verified_detection(
@@ -416,6 +417,9 @@ def _canonicalize_alert(
     state_path = alert.get('state_path')
     if not isinstance(state_path, str) or not state_path.strip():
         return {}, 'invalid_state_path'
+    canonical_state_path = _canonical_alert_state_path(state_path)
+    if canonical_state_path is None:
+        return {}, 'state_path_mismatch'
     if blocked and raw_events:
         return {}, 'blocked_alert_has_events'
 
@@ -479,7 +483,7 @@ def _canonicalize_alert(
         'run': run,
         'events': canonical_events,
         'message': message,
-        'state_path': state_path,
+        'state_path': canonical_state_path,
         'new_event_count': len(canonical_events),
         'alert_blocked': blocked,
         'blocked_reason': blocked_reason,
@@ -490,6 +494,20 @@ def _candidate_event_key(candidate: dict[str, Any]) -> str:
     price = candidate.get('price') if isinstance(candidate.get('price'), dict) else {}
     price_date = _text(price.get('date')) or _text(candidate.get('generated_at'))[:10]
     return f"{_text(candidate.get('symbol'))}:{_text(candidate.get('action'))}:{price_date}"
+
+
+def _canonical_alert_state_path(value: str) -> str | None:
+    """Accept only a path resolving to the repository-owned default state file."""
+    try:
+        supplied = Path(value).resolve(strict=False)
+        trusted = DEFAULT_ALERT_STATE_PATH.resolve(strict=False)
+    except (OSError, RuntimeError):
+        return None
+    supplied_identity = os.path.normcase(os.path.normpath(str(supplied)))
+    trusted_identity = os.path.normcase(os.path.normpath(str(trusted)))
+    if supplied_identity != trusted_identity:
+        return None
+    return str(DEFAULT_ALERT_STATE_PATH)
 
 
 def _candidate_error(candidate: Any, *, generated_date: date) -> str | None:

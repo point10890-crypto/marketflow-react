@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import importlib.util
+import os
 import threading
 import time
 from copy import deepcopy
@@ -14,6 +15,9 @@ from app.services.mirofish import verified_delivery
 
 RUN_ID = 'scanner-verified-001'
 GENERATED_AT = '2026-08-21T00:00:00+00:00'
+CANONICAL_STATE_PATH = str(
+    Path(__file__).parents[1] / 'data' / 'admin_mirofish' / 'alpha_scanner_alert_state.json'
+)
 EXPECTED_MESSAGE = '\n'.join([
     '<b>MiroFish 알파 스캐너 신규 후보</b>',
     '신규 매수 후보: <b>1</b>건 / 전체 후보: 1건',
@@ -117,7 +121,7 @@ def _scanner_result(run: dict, *, blocked: bool = False) -> dict:
             'candidate': candidate,
         }] if not blocked else [],
         'message': '<b>Directional candidate</b>',
-        'state_path': 'not-used-in-test.json',
+        'state_path': CANONICAL_STATE_PATH,
         'new_event_count': 0 if blocked else 1,
         'alert_blocked': blocked,
         'blocked_reason': 'stale_source' if blocked else None,
@@ -310,6 +314,56 @@ def test_delivery_rejects_any_transient_run_difference_from_persisted(scanner, t
     assert delivered['status'] == 'invalid_run'
     assert delivered['error_code'] == 'run_content_mismatch'
     assert calls['commit'] == 0
+
+
+def test_delivery_rejects_untrusted_state_path_before_transport_or_commit(scanner, tmp_path, monkeypatch):
+    """A transient state path must not redirect the post-delivery scanner state write."""
+    _, _, result, calls = scanner
+    attacker_path = tmp_path / 'attacker-controlled-state.json'
+    receipt_path = tmp_path / 'receipt.json'
+    result['state_path'] = str(attacker_path)
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+
+    delivered = verified_delivery.run_verified_detection(
+        send=True,
+        confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+        receipt_path=str(receipt_path),
+    )
+
+    assert delivered == {
+        'ok': False,
+        'status': 'invalid_run',
+        'run_id': RUN_ID,
+        'error_code': 'state_path_mismatch',
+    }
+    assert calls['commit'] == 0
+    assert not attacker_path.exists()
+    assert not receipt_path.exists()
+
+
+def test_equivalent_state_path_is_canonicalized_before_commit(scanner, tmp_path, monkeypatch):
+    """Equivalent spelling may pass, but only the trusted canonical path reaches the commit."""
+    _, _, result, calls = scanner
+    canonical = Path(CANONICAL_STATE_PATH)
+    variant = os.path.join(str(canonical.parent), 'path-segment', '..', canonical.name)
+    if os.name == 'nt':
+        variant = variant.swapcase()
+    result['state_path'] = variant
+    monkeypatch.setattr(
+        verified_delivery,
+        'post_private_telegram',
+        lambda message: {'ok': True, 'status': 'delivered', 'message_id': 246},
+    )
+
+    delivered = verified_delivery.run_verified_detection(
+        send=True,
+        confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+        receipt_path=str(tmp_path / 'receipt.json'),
+    )
+
+    assert delivered['status'] == 'delivered'
+    assert calls['commit'] == 1
+    assert calls['payloads'][0]['state_path'] == CANONICAL_STATE_PATH
 
 
 def test_stale_run_with_corrupt_artifact_is_invalid_not_deliverable_hold(scanner, tmp_path, monkeypatch):
