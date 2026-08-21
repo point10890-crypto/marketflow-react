@@ -250,6 +250,7 @@ def scanner(monkeypatch, tmp_path):
         lambda: verified_delivery.datetime.fromisoformat('2026-08-21T00:10:00+00:00'),
     )
     monkeypatch.setattr(verified_delivery, 'DEFAULT_ALERT_STATE_PATH', tmp_path / 'alert_state.json')
+    monkeypatch.setattr(verified_delivery, 'DEFAULT_RECEIPT_PATH', tmp_path / 'receipt.json')
 
     def commit(payload):
         calls['commit'] += 1
@@ -445,6 +446,7 @@ def test_delivery_ignores_transient_event_metadata_mismatch(scanner, tmp_path, m
         lambda message: posted.append(message) or {'ok': True, 'status': 'delivered', 'message_id': 13},
     )
     receipt_path = tmp_path / f'{expected_code}.json'
+    monkeypatch.setattr(verified_delivery, 'DEFAULT_RECEIPT_PATH', receipt_path)
     preview = verified_delivery.run_verified_detection(receipt_path=str(receipt_path))
     delivered = _send_bound(receipt_path, preview=preview)
 
@@ -484,7 +486,9 @@ def test_delivery_ignores_untrusted_transient_state_path(scanner, tmp_path, monk
 
     assert delivered['status'] == 'delivered'
     assert calls['commit'] == 1
-    assert calls['payloads'][0]['state_path'] == str(verified_delivery.DEFAULT_ALERT_STATE_PATH)
+    assert calls['payloads'][0]['state_path'] == verified_delivery.alpha_scanner._canonical_delivery_path(
+        verified_delivery.DEFAULT_ALERT_STATE_PATH,
+    )
     assert not attacker_path.exists()
     assert receipt_path.exists()
 
@@ -509,7 +513,9 @@ def test_equivalent_state_path_is_canonicalized_before_commit(scanner, tmp_path,
 
     assert delivered['status'] == 'delivered'
     assert calls['commit'] == 1
-    assert calls['payloads'][0]['state_path'] == str(verified_delivery.DEFAULT_ALERT_STATE_PATH)
+    assert calls['payloads'][0]['state_path'] == verified_delivery.alpha_scanner._canonical_delivery_path(
+        verified_delivery.DEFAULT_ALERT_STATE_PATH,
+    )
 
 
 def test_stale_run_with_corrupt_artifact_is_invalid_not_deliverable_hold(scanner, tmp_path, monkeypatch):
@@ -906,11 +912,12 @@ def test_ambiguous_telegram_request_remains_uncertain_and_blocks_resend(scanner,
     assert attempts == [EXPECTED_MESSAGE]
 
 
-def test_private_telegram_marks_explicit_api_rejection_retryable(monkeypatch):
+@pytest.mark.parametrize('http_status', [400, 403, 404, 429])
+def test_private_telegram_marks_explicit_api_rejection_retryable(monkeypatch, http_status):
     """A Telegram `ok=false` response is explicit non-delivery, unlike a transport failure."""
 
     class Response:
-        status_code = 400
+        status_code = http_status
 
         @staticmethod
         def json():
@@ -1064,6 +1071,7 @@ def test_semantically_invalid_v2_entry_fails_closed_without_overwrite(scanner, m
 def test_strict_v2_entry_identity_and_retryability_fail_closed(scanner, monkeypatch, tmp_path, case, mutate):
     """Malformed identity or retryability fields must not reopen a Telegram send."""
     receipt_path = tmp_path / f'{case}.json'
+    monkeypatch.setattr(verified_delivery, 'DEFAULT_RECEIPT_PATH', receipt_path)
     entry = {
         'run_id': 'previous-run',
         'message_sha256': 'a' * 64,
@@ -1112,6 +1120,34 @@ def test_send_uses_exact_preview_run_and_digest_without_starting_another_scan(sc
     assert calls['scan'] == 1
 
 
+def test_send_revalidates_run_age_after_waiting_for_delivery_guard(scanner, monkeypatch, tmp_path):
+    """A preview that expires while queued behind another sender cannot reach Telegram."""
+    receipt_path = verified_delivery.DEFAULT_RECEIPT_PATH
+    times = iter([
+        '2026-08-21T00:10:00+00:00',  # preview validation
+        '2026-08-21T00:10:00+00:00',  # send preflight validation
+        '2026-08-21T01:00:00+00:00',  # in-transaction validation after lock wait
+    ])
+    monkeypatch.setattr(
+        verified_delivery,
+        '_utc_now',
+        lambda: verified_delivery.datetime.fromisoformat(next(times)),
+    )
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+    preview = verified_delivery.run_verified_detection(receipt_path=str(receipt_path))
+
+    result = _send_bound(receipt_path, preview=preview)
+
+    assert result == {
+        'ok': False,
+        'status': 'invalid_run',
+        'run_id': RUN_ID,
+        'error_code': 'run_expired',
+        'sent': False,
+    }
+    assert not receipt_path.exists()
+
+
 def test_send_rejects_preview_digest_mismatch_before_transport(scanner, monkeypatch, tmp_path):
     """Changing scanner state after preview must invalidate the operator's approval."""
     monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
@@ -1128,6 +1164,67 @@ def test_send_rejects_preview_digest_mismatch_before_transport(scanner, monkeypa
     assert result['status'] == 'preview_mismatch'
     assert result['sent'] is False
     assert 'message_digest' not in result
+
+
+def test_send_fails_before_transport_on_corrupt_canonical_state_version(scanner, monkeypatch):
+    """Verified transport must validate state metadata before Telegram and integer conversion."""
+    receipt_path = verified_delivery.DEFAULT_RECEIPT_PATH
+    preview = verified_delivery.run_verified_detection(receipt_path=str(receipt_path))
+    verified_delivery.DEFAULT_ALERT_STATE_PATH.write_text(json.dumps({
+        'version': 'bad',
+        'sent_events': {},
+    }), encoding='utf-8')
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+
+    result = _send_bound(receipt_path, preview=preview)
+
+    assert result == {
+        'ok': False,
+        'status': 'receipt_invalid',
+        'run_id': RUN_ID,
+        'error_code': 'alert_state_invalid',
+        'sent': False,
+    }
+
+
+def test_receipt_alias_is_validated_but_io_uses_trusted_default_path(scanner, monkeypatch, tmp_path):
+    """Atomic writes must never replace an approved symlink alias into a second ledger."""
+    trusted_path = verified_delivery.DEFAULT_RECEIPT_PATH
+    alias_path = tmp_path / 'receipt-alias.json'
+    preview = verified_delivery.run_verified_detection(receipt_path=str(alias_path))
+    captured = {}
+
+    monkeypatch.setattr(verified_delivery, '_same_path', lambda supplied, trusted: True)
+
+    def deliver(**kwargs):
+        captured.update(kwargs)
+        return {'ok': False, 'status': 'captured', 'sent': False}
+
+    monkeypatch.setattr(verified_delivery, '_deliver_with_receipt_lock', deliver)
+
+    result = _send_bound(alias_path, preview=preview)
+
+    assert result['status'] == 'captured'
+    assert captured['path'] == trusted_path
+    assert captured['path'] != alias_path
+
+
+def test_send_fails_before_transport_when_canonical_state_path_is_directory(scanner, monkeypatch):
+    """Only a truly absent state file may initialize empty; non-regular paths fail closed."""
+    receipt_path = verified_delivery.DEFAULT_RECEIPT_PATH
+    preview = verified_delivery.run_verified_detection(receipt_path=str(receipt_path))
+    verified_delivery.DEFAULT_ALERT_STATE_PATH.mkdir()
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+
+    result = _send_bound(receipt_path, preview=preview)
+
+    assert result == {
+        'ok': False,
+        'status': 'receipt_invalid',
+        'run_id': RUN_ID,
+        'error_code': 'alert_state_invalid',
+        'sent': False,
+    }
 
 
 def test_state_change_requires_a_new_preview_to_obtain_the_new_digest(scanner, monkeypatch, tmp_path):
@@ -1180,6 +1277,10 @@ def test_cross_run_uncertain_claim_blocks_transport(scanner, monkeypatch, tmp_pa
 
     assert result['status'] == 'delivery_uncertain'
     assert result['sent'] is None
+    assert result['blocking_run_id'] == 'older-run'
+    assert result['blocking_status'] == 'uncertain'
+    assert 'run_id' not in result
+    assert 'message_digest' not in result
 
 
 def test_cross_run_delivered_event_overlap_is_refused(scanner, monkeypatch, tmp_path):
@@ -1232,7 +1333,7 @@ def test_state_commit_receipt_split_brain_is_repaired_from_canonical_state(scann
     monkeypatch.setattr(
         verified_delivery,
         '_read_canonical_alert_state',
-        lambda: {'version': 2, 'sent_events': {
+        lambda *_args, **_kwargs: {'version': 2, 'sent_events': {
             '005930:BUY_CANDIDATE:2026-08-20': {'run_id': RUN_ID},
         }},
         raising=False,
@@ -1337,6 +1438,108 @@ def test_third_receipt_write_failure_recovers_from_state_written_by_commit(scann
     assert second['status'] == 'delivered_recovered'
     assert sent == [EXPECTED_MESSAGE]
     assert len(commits) == 1
+    assert repaired['state_committed'] is True
+
+
+def test_zero_event_third_receipt_write_failure_recovers_from_canonical_run_marker(
+    scanner,
+    monkeypatch,
+    tmp_path,
+):
+    """A zero-event send is proven by canonical last-run metadata after ledger write three fails."""
+    run, artifacts, _, _ = scanner
+    run['candidates'] = []
+    run['candidate_count'] = 0
+    artifacts['feature_vectors.json'].update({'feature_count': 0, 'features': []})
+    artifacts['evidence_ledger.json'].update({'candidate_count': 0, 'items': []})
+    receipt_path = tmp_path / 'receipt.json'
+    state_path = verified_delivery.DEFAULT_ALERT_STATE_PATH
+    real_write = verified_delivery.write_json_atomic
+    writes = []
+
+    def fail_third(path, payload, **kwargs):
+        writes.append(deepcopy(payload))
+        if len(writes) == 3:
+            raise OSError('disk full after zero-event state commit')
+        return real_write(path, payload, **kwargs)
+
+    commits = []
+
+    def commit(payload):
+        commits.append(deepcopy(payload))
+        state_path.write_text(json.dumps({
+            'version': 2,
+            'last_run_id': payload['run']['id'],
+            'last_new_event_count': 0,
+            'sent_events': {},
+        }), encoding='utf-8')
+        return {'ok': True}
+
+    sent = []
+    monkeypatch.setattr(verified_delivery, 'write_json_atomic', fail_third)
+    monkeypatch.setattr(verified_delivery.alpha_scanner, 'commit_scanner_alert_events', commit)
+    monkeypatch.setattr(
+        verified_delivery,
+        'post_private_telegram',
+        lambda message: sent.append(message) or {'ok': True, 'status': 'delivered', 'message_id': 711},
+    )
+    preview = verified_delivery.run_verified_detection(receipt_path=str(receipt_path))
+
+    first = _send_bound(receipt_path, preview=preview)
+    monkeypatch.setattr(verified_delivery, 'write_json_atomic', real_write)
+    second = _send_bound(receipt_path, preview=preview)
+
+    repaired = json.loads(receipt_path.read_text(encoding='utf-8'))['deliveries'][0]
+    assert first['status'] == 'state_commit_failed'
+    assert second['status'] == 'delivered_recovered'
+    assert second['run_id'] == RUN_ID
+    assert len(sent) == 1
+    assert len(commits) == 1
+    assert repaired['event_count'] == 0
+    assert repaired['state_committed'] is True
+
+
+def test_zero_event_recovery_survives_a_later_canonical_monitor_commit(scanner, monkeypatch, tmp_path):
+    """Bounded per-run markers retain zero-event proof after scalar last-run fields advance."""
+    receipt_path = verified_delivery.DEFAULT_RECEIPT_PATH
+    digest = 'd' * 64
+    delivered = {
+        'run_id': RUN_ID,
+        'message_sha256': digest,
+        'status': 'delivered',
+        'delivered': True,
+        'message_id': 712,
+        'candidate_count': 0,
+        'event_count': 0,
+        'symbols': [],
+        'event_keys': [],
+        'state_committed': False,
+    }
+    receipt_path.write_text(json.dumps({'schema_version': 2, 'deliveries': [delivered]}), encoding='utf-8')
+    verified_delivery.DEFAULT_ALERT_STATE_PATH.write_text(json.dumps({
+        'version': 2,
+        'last_run_id': 'later-monitor-run',
+        'last_new_event_count': 0,
+        'sent_events': {},
+        'committed_runs': {
+            RUN_ID: {'event_count': 0, 'committed_at': '2026-08-21T00:00:00+00:00'},
+            'later-monitor-run': {'event_count': 0, 'committed_at': '2026-08-21T00:05:00+00:00'},
+        },
+    }), encoding='utf-8')
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+    monkeypatch.setattr(verified_delivery.alpha_scanner, 'commit_scanner_alert_events', pytest.fail)
+
+    result = verified_delivery.run_verified_detection(
+        send=True,
+        confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+        run_id=RUN_ID,
+        message_digest=digest,
+        receipt_path=str(receipt_path),
+    )
+
+    assert result['status'] == 'delivered_recovered'
+    assert result['run_id'] == RUN_ID
+    repaired = json.loads(receipt_path.read_text(encoding='utf-8'))['deliveries'][0]
     assert repaired['state_committed'] is True
 
 
@@ -1628,6 +1831,23 @@ def test_validation_rejects_social_only_weak_or_low_confidence_evidence(scanner,
     assert validation['error_code'] == expected_code
 
 
+def test_validation_rejects_symbol_map_as_only_strong_evidence(scanner):
+    """Identity mapping is provenance, not analytical support for a directional signal."""
+    run, _, _, _ = scanner
+    candidate = run['candidates'][0]
+    candidate['evidence'] = [{
+        'source': 'ticker_to_yahoo_map.csv',
+        'field': 'market',
+        'score': 1.0,
+        'confidence': 0.95,
+    }]
+    candidate['replay_context']['data_sources'] = ['ticker_to_yahoo_map.csv']
+
+    validation = verified_delivery.validate_scanner_run(RUN_ID)
+
+    assert validation['error_code'] == 'missing_strong_evidence'
+
+
 def test_concurrent_different_run_ids_with_same_event_key_send_once(scanner, monkeypatch, tmp_path):
     """The receipt lock must dedupe an event even when simultaneous previews have different run IDs."""
     run_one, artifacts_one, _, calls = scanner
@@ -1683,6 +1903,143 @@ def test_concurrent_different_run_ids_with_same_event_key_send_once(scanner, mon
     assert len(sent) == 1
     assert sorted(result['status'] for result in results) == ['delivered', 'duplicate_refused']
     assert calls['commit'] == 1
+
+
+def test_concurrent_verified_sends_with_different_receipt_paths_send_once(
+    scanner,
+    monkeypatch,
+    tmp_path,
+):
+    """A caller-selected receipt path cannot create an independent delivery claim namespace."""
+    trusted_path = verified_delivery.DEFAULT_RECEIPT_PATH
+    untrusted_path = tmp_path / 'receipt-other.json'
+    preview = verified_delivery.run_verified_detection(receipt_path=str(trusted_path))
+    sent = []
+    sent_lock = threading.Lock()
+
+    def post(message):
+        with sent_lock:
+            sent.append(message)
+            message_id = len(sent)
+        time.sleep(0.05)
+        return {'ok': True, 'status': 'delivered', 'message_id': message_id}
+
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', post)
+    results = []
+    workers = [
+        threading.Thread(
+            target=lambda path=path: results.append(verified_delivery.run_verified_detection(
+                send=True,
+                confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+                run_id=preview['run_id'],
+                message_digest=preview['message_digest'],
+                receipt_path=str(path),
+            )),
+        )
+        for path in (trusted_path, untrusted_path)
+    ]
+    for worker in workers:
+        worker.start()
+    for worker in workers:
+        worker.join()
+
+    assert len(sent) == 1
+    assert sorted(result['status'] for result in results) == ['delivered', 'receipt_path_untrusted']
+    assert not untrusted_path.exists()
+
+
+def test_verified_delivery_and_realtime_monitor_share_one_atomic_send_transaction(
+    scanner,
+    monkeypatch,
+    tmp_path,
+):
+    """Verified and monitor transports racing on one event must produce one Telegram send."""
+    run, _, _, calls = scanner
+    receipt_path = verified_delivery.DEFAULT_RECEIPT_PATH
+    state_path = verified_delivery.DEFAULT_ALERT_STATE_PATH
+    preview = verified_delivery.run_verified_detection(receipt_path=str(receipt_path))
+    event_key = '005930:BUY_CANDIDATE:2026-08-20'
+
+    def scan_from_current_state(payload, **kwargs):
+        state = verified_delivery._read_canonical_alert_state()
+        assert state is not None
+        alert, error = verified_delivery._canonical_alert_from_state(run, state, blocked=False)
+        assert error is None
+        alert['state_path'] = str(state_path)
+        return alert
+
+    def commit_to_canonical_state(payload):
+        calls['commit'] += 1
+        current = verified_delivery._read_canonical_alert_state()
+        assert current is not None
+        updated = verified_delivery.alpha_scanner._update_alert_state(
+            current,
+            payload['run'],
+            payload.get('events') or [],
+        )
+        verified_delivery.write_json_atomic(str(state_path), updated, sort_keys=True)
+        return verified_delivery.alpha_scanner._alert_state_summary(updated, str(state_path))
+
+    monkeypatch.setattr(verified_delivery.alpha_scanner, 'run_scanner_alert_check', scan_from_current_state)
+    monkeypatch.setattr(verified_delivery.alpha_scanner, 'commit_scanner_alert_events', commit_to_canonical_state)
+    transport_barrier = threading.Barrier(2)
+    sent_by = []
+    sent_lock = threading.Lock()
+
+    def rendezvous(label):
+        try:
+            transport_barrier.wait(timeout=0.5)
+        except threading.BrokenBarrierError:
+            pass
+        with sent_lock:
+            sent_by.append(label)
+
+    def verified_post(message):
+        rendezvous('verified')
+        return {'ok': True, 'status': 'delivered', 'message_id': 901}
+
+    def monitor_post(message):
+        rendezvous('monitor')
+        return True
+
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', verified_post)
+    results = {}
+    errors = []
+    start = threading.Barrier(2)
+
+    def run_verified():
+        try:
+            start.wait(timeout=1)
+            results['verified'] = _send_bound(receipt_path, preview=preview)
+        except Exception as exc:  # pragma: no cover - surfaced below
+            errors.append(exc)
+
+    def run_monitor():
+        try:
+            start.wait(timeout=1)
+            results['monitor'] = verified_delivery.alpha_scanner.run_scanner_realtime_monitor_check(
+                {'limit': 5},
+                monitor_state_path=str(tmp_path / 'monitor_state.json'),
+                alert_state_path=str(state_path),
+                force=True,
+                send_fn=monitor_post,
+            )
+        except Exception as exc:  # pragma: no cover - surfaced below
+            errors.append(exc)
+
+    workers = [threading.Thread(target=run_verified), threading.Thread(target=run_monitor)]
+    for worker in workers:
+        worker.start()
+    for worker in workers:
+        worker.join(timeout=3)
+
+    assert not errors
+    assert all(not worker.is_alive() for worker in workers)
+    assert len(sent_by) == 1
+    assert event_key in json.loads(state_path.read_text(encoding='utf-8'))['sent_events']
+    assert {results['verified']['status'], results['monitor']['status']} <= {
+        'delivered', 'preview_mismatch', 'sent', 'no_new_events'
+    }
 
 
 def test_cli_send_omits_telegram_message_id_and_exposes_only_verified_boolean(monkeypatch, capsys):

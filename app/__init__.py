@@ -832,7 +832,11 @@ def _start_alpha_scanner_monitor_worker(app):
                     continue
 
                 from app.services.mirofish.alpha_scanner import run_scanner_realtime_monitor_check
-                from app.utils.scheduler import _send_telegram_long
+                send_fn = None
+                if _env_bool('ALPHA_SCANNER_TELEGRAM_ENABLED', 'false'):
+                    from app.utils.scheduler import _send_telegram_long
+
+                    send_fn = lambda message: _send_telegram_long(message, channel=False)
 
                 limit = int(os.environ.get('ALPHA_SCANNER_LIMIT', '20'))
                 min_alpha = float(os.environ.get('ALPHA_SCANNER_MIN_ALPHA', '70'))
@@ -846,7 +850,7 @@ def _start_alpha_scanner_monitor_worker(app):
                         max_risk=max_risk,
                         max_events=max_events,
                         retry_seconds=retry_seconds,
-                        send_fn=lambda message: _send_telegram_long(message, channel=False),
+                        send_fn=send_fn,
                     )
 
                 consecutive_errors = 0

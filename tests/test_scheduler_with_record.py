@@ -10,6 +10,7 @@ These tests pin the corrected behavior so a future refactor cannot
 re-introduce the silent-success regression.
 """
 import json
+from contextlib import nullcontext
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -34,6 +35,12 @@ def _make_task(return_value, name="fake_task"):
         return return_value
     task.__name__ = name
     return task
+
+
+def test_telegram_automation_defaults_are_fail_closed():
+    assert scheduler.Config.ALPHA_SCANNER_TELEGRAM_ENABLED is False
+    assert scheduler.Config.MIROFISH_WORKFLOW_TELEGRAM_ENABLED is False
+    assert scheduler.Config.ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED is False
 
 
 def test_with_record_true_is_success():
@@ -190,7 +197,8 @@ def test_interval_monitor_skips_inside_cooldown(monkeypatch):
     today.assert_not_called()
 
 
-def test_alpha_scanner_monitor_sends_telegram_for_new_events():
+def test_alpha_scanner_monitor_sends_telegram_for_new_events(monkeypatch):
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_TELEGRAM_ENABLED", True, raising=False)
     def fake_monitor(*args, send_fn=None, **kwargs):
         assert send_fn("alpha alert") is True
         return {
@@ -205,7 +213,8 @@ def test_alpha_scanner_monitor_sends_telegram_for_new_events():
     tg.assert_called_once_with("alpha alert", channel=False)
 
 
-def test_alpha_scanner_monitor_keeps_event_pending_when_telegram_fails():
+def test_alpha_scanner_monitor_keeps_event_pending_when_telegram_fails(monkeypatch):
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_TELEGRAM_ENABLED", True, raising=False)
     def fake_monitor(*args, send_fn=None, **kwargs):
         assert send_fn("alpha alert") is False
         return {
@@ -220,6 +229,37 @@ def test_alpha_scanner_monitor_keeps_event_pending_when_telegram_fails():
     tg.assert_called_once_with("alpha alert", channel=False)
 
 
+def test_alpha_scanner_monitor_default_mode_analyzes_without_transport(monkeypatch):
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_TELEGRAM_ENABLED", False, raising=False)
+
+    def fake_monitor(*args, send_fn=None, **kwargs):
+        assert send_fn is None
+        return {
+            "status": "pending_send",
+            "new_event_count": 1,
+            "run": {"id": "run-pending", "candidate_count": 1},
+        }
+
+    with patch("app.services.mirofish.alpha_scanner.run_scanner_realtime_monitor_check", side_effect=fake_monitor), \
+         patch("scheduler.send_telegram_long") as tg:
+        assert scheduler.run_alpha_scanner_monitor() is True
+
+    tg.assert_not_called()
+
+
+def test_alpha_scanner_monitor_default_mode_does_not_send_error_telegram(monkeypatch):
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_TELEGRAM_ENABLED", False, raising=False)
+
+    with patch(
+        "app.services.mirofish.alpha_scanner.run_scanner_realtime_monitor_check",
+        side_effect=RuntimeError("scanner failed"),
+    ), patch(
+        "scheduler.send_telegram",
+        side_effect=lambda *args, **kwargs: pytest.fail("disabled mode sent an error Telegram"),
+    ):
+        assert scheduler.run_alpha_scanner_monitor() is False
+
+
 def test_alpha_scanner_monitor_skips_telegram_without_new_events():
     result = {
         "status": "no_new_events",
@@ -232,7 +272,7 @@ def test_alpha_scanner_monitor_skips_telegram_without_new_events():
     tg.assert_not_called()
 
 
-def test_alpha_scanner_monitor_sends_current_top5_when_scan_has_candidates(monkeypatch, tmp_path):
+def test_alpha_scanner_monitor_never_sends_current_top5_without_new_events(monkeypatch, tmp_path):
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED", True)
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT", 5)
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES", 120)
@@ -255,19 +295,20 @@ def test_alpha_scanner_monitor_sends_current_top5_when_scan_has_candidates(monke
          patch("scheduler.send_telegram_long", return_value=True) as tg:
         assert scheduler.run_alpha_scanner_monitor() is True
 
-    build_msg.assert_called_once_with(result["run"], limit=5)
-    tg.assert_called_once_with("current top5", channel=False)
-    assert json.loads(state_path.read_text(encoding="utf-8"))["last_run_id"] == "run1"
+    build_msg.assert_not_called()
+    tg.assert_not_called()
+    assert not state_path.exists()
 
 
 def test_alpha_scanner_monitor_throttles_duplicate_current_top5(monkeypatch, tmp_path):
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_TELEGRAM_ENABLED", True, raising=False)
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED", True)
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT", 5)
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES", 120)
     state_path = tmp_path / "alpha_scanner_current_summary_state.json"
     monkeypatch.setattr(scheduler, "_alpha_current_summary_state_path", lambda: str(state_path))
     result = {
-        "status": "no_new_events",
+        "status": "sent",
         "new_event_count": 0,
         "run": {
             "id": "run1",
@@ -289,6 +330,7 @@ def test_alpha_scanner_monitor_throttles_duplicate_current_top5(monkeypatch, tmp
 
 
 def test_alpha_scanner_monitor_sends_changed_top5_after_cooldown(monkeypatch, tmp_path):
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_TELEGRAM_ENABLED", True, raising=False)
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED", True)
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT", 5)
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES", 120)
@@ -300,7 +342,7 @@ def test_alpha_scanner_monitor_sends_changed_top5_after_cooldown(monkeypatch, tm
         "last_fingerprint": "older",
     }), encoding="utf-8")
     result = {
-        "status": "no_new_events",
+        "status": "sent",
         "new_event_count": 0,
         "run": {
             "id": "run2",
@@ -432,6 +474,11 @@ def test_mirofish_workflow_monitor_sends_top3_and_commits_after_success(monkeypa
     with patch("app.services.mirofish.workflow.run_workflow_monitor_check", return_value=result), \
          patch("app.services.mirofish.workflow.build_workflow_top3_telegram_message", return_value="top3 message") as build_msg, \
          patch("app.services.mirofish.workflow.commit_workflow_event_state", return_value={"sent_event_count": 1}) as commit_state, \
+         patch("app.services.mirofish.alpha_scanner.scanner_alert_delivery_guard", return_value=nullcontext()), \
+         patch("app.services.mirofish.alpha_scanner.revalidate_scanner_alert_delivery", return_value={
+             "ok": True, "status": "ready", "event_keys": ["000001:BUY_CANDIDATE:2026-05-07"],
+             "conflicting_event_keys": [],
+         }), \
          patch("scheduler.send_telegram_long", return_value=True) as tg:
         assert scheduler.run_mirofish_workflow_monitor() is True
 
@@ -456,11 +503,78 @@ def test_mirofish_workflow_monitor_keeps_events_pending_when_top3_telegram_fails
     with patch("app.services.mirofish.workflow.run_workflow_monitor_check", return_value=result), \
          patch("app.services.mirofish.workflow.build_workflow_top3_telegram_message", return_value="top3 message"), \
          patch("app.services.mirofish.workflow.commit_workflow_event_state") as commit_state, \
+         patch("app.services.mirofish.alpha_scanner.scanner_alert_delivery_guard", return_value=nullcontext()), \
+         patch("app.services.mirofish.alpha_scanner.revalidate_scanner_alert_delivery", return_value={
+             "ok": True, "status": "ready", "event_keys": ["000001:BUY_CANDIDATE:2026-05-07"],
+             "conflicting_event_keys": [],
+         }), \
          patch("scheduler.send_telegram_long", return_value=False) as tg:
         assert scheduler.run_mirofish_workflow_monitor() is False
 
     tg.assert_called_once()
     commit_state.assert_not_called()
+
+
+def test_mirofish_workflow_monitor_skips_transport_on_canonical_overlap(monkeypatch):
+    monkeypatch.setattr(scheduler.Config, "MIROFISH_WORKFLOW_TELEGRAM_ENABLED", True)
+    result = {
+        "ok": True,
+        "status": "completed",
+        "id": "mcp_overlap",
+        "top3": [{"symbol": "000001", "target": "Alpha One"}],
+        "event_candidates": [{
+            "symbol": "000001", "action": "BUY_CANDIDATE", "price": {"date": "2026-05-07"},
+        }],
+    }
+    overlap = {
+        "ok": False,
+        "status": "event_overlap",
+        "event_keys": ["000001:BUY_CANDIDATE:2026-05-07"],
+        "conflicting_event_keys": ["000001:BUY_CANDIDATE:2026-05-07"],
+    }
+    with patch("app.services.mirofish.workflow.run_workflow_monitor_check", return_value=result), \
+         patch("app.services.mirofish.workflow.build_workflow_top3_telegram_message", return_value="top3 message"), \
+         patch("app.services.mirofish.workflow.commit_workflow_event_state", return_value={}) as commit_state, \
+         patch("app.services.mirofish.alpha_scanner.scanner_alert_delivery_guard", return_value=nullcontext()), \
+         patch("app.services.mirofish.alpha_scanner.revalidate_scanner_alert_delivery", return_value=overlap), \
+         patch("scheduler.send_telegram_long") as tg:
+        assert scheduler.run_mirofish_workflow_monitor() is True
+
+    tg.assert_not_called()
+    commit_state.assert_called_once_with(result, sync_dashboard=False)
+
+
+def test_mirofish_workflow_monitor_disabled_commits_only_workflow_dedupe(monkeypatch):
+    monkeypatch.setattr(scheduler.Config, "MIROFISH_WORKFLOW_TELEGRAM_ENABLED", False)
+    result = {
+        "ok": True,
+        "status": "completed",
+        "id": "mcp_disabled",
+        "top3": [{"symbol": "000001", "target": "Alpha One"}],
+        "event_candidates": [{
+            "symbol": "000001", "action": "BUY_CANDIDATE", "price": {"date": "2026-05-07"},
+        }],
+    }
+    with patch("app.services.mirofish.workflow.run_workflow_monitor_check", return_value=result), \
+         patch("app.services.mirofish.workflow.commit_workflow_event_state", return_value={}) as commit_state, \
+         patch("scheduler.send_telegram_long") as tg:
+        assert scheduler.run_mirofish_workflow_monitor() is True
+
+    tg.assert_not_called()
+    commit_state.assert_called_once_with(result, sync_dashboard=False)
+
+
+def test_mirofish_workflow_monitor_disabled_does_not_send_error_telegram(monkeypatch):
+    monkeypatch.setattr(scheduler.Config, "MIROFISH_WORKFLOW_TELEGRAM_ENABLED", False)
+
+    with patch(
+        "app.services.mirofish.workflow.run_workflow_monitor_check",
+        side_effect=RuntimeError("workflow failed"),
+    ), patch(
+        "scheduler.send_telegram",
+        side_effect=lambda *args, **kwargs: pytest.fail("disabled workflow sent an error Telegram"),
+    ):
+        assert scheduler.run_mirofish_workflow_monitor() is False
 
 
 def test_scheduler_registers_single_alpha_realtime_interval(monkeypatch):

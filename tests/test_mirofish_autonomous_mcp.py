@@ -1,4 +1,8 @@
 import json
+import json
+from contextlib import contextmanager
+from datetime import datetime, timezone
+from pathlib import Path
 
 import pytest
 from flask import Flask
@@ -33,6 +37,10 @@ def _workflow_result():
         'status': 'completed',
         'scanner_run_id': 'mfas_test',
         'event_count': 1,
+        'event_candidates': [{
+            **_candidate(),
+            'price': {'date': '2026-05-10'},
+        }],
         'analysis_runs': [{'symbol': '000001'}],
         'top3': [
             {
@@ -53,6 +61,7 @@ def isolated_autonomous_paths(tmp_path, monkeypatch):
     monkeypatch.setattr(autonomous_mcp, 'AUTONOMOUS_ROOT', root)
     monkeypatch.setattr(autonomous_mcp, 'AUDIT_LOG_PATH', root / 'audit.jsonl')
     monkeypatch.setattr(autonomous_mcp, 'LEARNING_FEEDBACK_PATH', root / 'learning_feedback.json')
+    monkeypatch.setattr(autonomous_mcp.alpha_scanner, 'DATA_ROOT', str(tmp_path / 'data'))
     return root
 
 
@@ -125,6 +134,390 @@ def test_candidate_detection_commits_when_aibain_send_succeeds(isolated_autonomo
     assert result['ok'] is True
     assert result['state_committed'] is True
     assert len(commit_calls) == 1
+
+
+def test_candidate_detection_no_send_cannot_claim_canonical_alert_state(
+    isolated_autonomous_paths,
+    monkeypatch,
+):
+    """`commit_state=true` is ignored unless a guarded transport actually delivered."""
+    monkeypatch.setenv(autonomous_mcp.MUTATION_ENV, 'true')
+    monkeypatch.setenv(autonomous_mcp.SHARED_SECRET_ENV, 'secret-1')
+    monkeypatch.setattr(
+        autonomous_mcp.alpha_scanner,
+        'run_scanner_alert_check',
+        lambda *args, **kwargs: {
+            'run': {'id': 'mfas_no_send', 'candidate_count': 1},
+            'events': [_event()],
+            'message': '<b>preview only</b>',
+            'alert_blocked': False,
+            'blocked_reason': None,
+        },
+    )
+    monkeypatch.setattr(
+        autonomous_mcp.alpha_scanner,
+        'commit_scanner_alert_events',
+        pytest.fail,
+    )
+
+    result = autonomous_mcp.run_candidate_detection_alert({
+        'dry_run': False,
+        'send_telegram': False,
+        'commit_state': True,
+        'api_key': 'secret-1',
+    })
+
+    assert result['status'] == 'checked'
+    assert result['state_committed'] is False
+    assert result['state_commit_skipped_reason'] == 'telegram_not_delivered'
+
+
+def test_candidate_detection_rejects_real_send_without_required_state_commit(
+    isolated_autonomous_paths,
+    monkeypatch,
+):
+    monkeypatch.setenv(autonomous_mcp.MUTATION_ENV, 'true')
+    monkeypatch.setenv(autonomous_mcp.SHARED_SECRET_ENV, 'secret-1')
+    monkeypatch.setattr(autonomous_mcp.alpha_scanner, 'run_scanner_alert_check', pytest.fail)
+
+    with pytest.raises(ValueError, match='commit_state'):
+        autonomous_mcp.run_candidate_detection_alert(
+            {
+                'dry_run': False,
+                'send_telegram': True,
+                'commit_state': False,
+                'confirmation': autonomous_mcp.CONFIRM_SEND_PHRASE,
+                'api_key': 'secret-1',
+            },
+            send_fn=pytest.fail,
+        )
+
+
+def test_candidate_detection_fails_before_transport_on_corrupt_canonical_state(
+    isolated_autonomous_paths,
+    monkeypatch,
+):
+    monkeypatch.setenv(autonomous_mcp.MUTATION_ENV, 'true')
+    monkeypatch.setenv(autonomous_mcp.SHARED_SECRET_ENV, 'secret-1')
+    state_path = Path(autonomous_mcp.alpha_scanner.DATA_ROOT) / 'admin_mirofish' / 'alpha_scanner_alert_state.json'
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path.write_text('{broken', encoding='utf-8')
+    generated_at = datetime.now(timezone.utc).isoformat()
+    monkeypatch.setattr(autonomous_mcp.alpha_scanner, 'create_scanner_run', lambda payload: {
+        'id': 'mfas_corrupt_state',
+        'generated_at': generated_at,
+        'candidate_count': 1,
+        'candidates': [{
+            **_candidate(),
+            'price': {'date': generated_at[:10]},
+        }],
+        'freshness': {'status': 'fresh'},
+    })
+
+    with pytest.raises(ValueError, match='canonical alert state'):
+        autonomous_mcp.run_candidate_detection_alert(
+            {
+                'dry_run': False,
+                'send_telegram': True,
+                'commit_state': True,
+                'confirmation': autonomous_mcp.CONFIRM_SEND_PHRASE,
+                'api_key': 'secret-1',
+            },
+            send_fn=pytest.fail,
+        )
+
+
+def test_candidate_detection_holds_canonical_guard_through_send_and_commit(
+    isolated_autonomous_paths,
+    monkeypatch,
+):
+    """The direct MCP candidate sender joins the same atomic alert transaction."""
+    monkeypatch.setenv(autonomous_mcp.MUTATION_ENV, 'true')
+    monkeypatch.setenv(autonomous_mcp.SHARED_SECRET_ENV, 'secret-1')
+    active = {'value': False, 'entries': 0}
+
+    @contextmanager
+    def guard(*args, **kwargs):
+        active['entries'] += 1
+        active['value'] = True
+        try:
+            yield 'canonical-state.json'
+        finally:
+            active['value'] = False
+
+    def scan(*args, **kwargs):
+        assert active['value'] is True
+        return {
+            'run': {'id': 'mfas_guard', 'candidate_count': 1},
+            'events': [_event()],
+            'message': '<b>scanner event</b>',
+            'alert_blocked': False,
+            'blocked_reason': None,
+        }
+
+    def commit(result):
+        assert active['value'] is True
+        return {'committed': True}
+
+    def send(message):
+        assert active['value'] is True
+        return True
+
+    def revalidate(candidates):
+        assert active['value'] is True
+        return {
+            'ok': True, 'status': 'ready',
+            'event_keys': ['000001:BUY_CANDIDATE:2026-05-10'],
+            'conflicting_event_keys': [],
+        }
+
+    monkeypatch.setattr(autonomous_mcp.alpha_scanner, 'scanner_alert_delivery_guard', guard)
+    monkeypatch.setattr(autonomous_mcp.alpha_scanner, 'revalidate_scanner_alert_delivery', revalidate)
+    monkeypatch.setattr(autonomous_mcp.alpha_scanner, 'run_scanner_alert_check', scan)
+    monkeypatch.setattr(autonomous_mcp.alpha_scanner, 'commit_scanner_alert_events', commit)
+    from app.utils import aibain_notify
+    monkeypatch.setattr(aibain_notify, 'send_scanner_alert', lambda message: False)
+
+    result = autonomous_mcp.run_candidate_detection_alert(
+        {
+            'dry_run': False,
+            'send_telegram': True,
+            'confirmation': autonomous_mcp.CONFIRM_SEND_PHRASE,
+            'api_key': 'secret-1',
+            'commit_state': True,
+        },
+        send_fn=send,
+    )
+
+    assert result['status'] == 'sent'
+    assert result['state_committed'] is True
+    assert active == {'value': False, 'entries': 1}
+
+
+def test_autonomous_workflow_holds_canonical_guard_through_send_and_commit(
+    isolated_autonomous_paths,
+    monkeypatch,
+):
+    """The synchronous Top3 sender cannot race canonical scanner event delivery."""
+    monkeypatch.setenv(autonomous_mcp.MUTATION_ENV, 'true')
+    monkeypatch.setenv(autonomous_mcp.SHARED_SECRET_ENV, 'secret-1')
+    active = {'value': False, 'entries': 0}
+
+    @contextmanager
+    def guard(*args, **kwargs):
+        active['entries'] += 1
+        active['value'] = True
+        try:
+            yield 'canonical-state.json'
+        finally:
+            active['value'] = False
+
+    def start(*args, **kwargs):
+        assert active['value'] is False
+        return _workflow_result()
+
+    def build_message(result):
+        assert active['value'] is False
+        return '<b>top3</b>'
+
+    def commit(result):
+        assert active['value'] is True
+        return {'committed': True}
+
+    def send(message):
+        assert active['value'] is True
+        return True
+
+    def revalidate(candidates):
+        assert active['value'] is True
+        return {
+            'ok': True, 'status': 'ready',
+            'event_keys': ['000001:BUY_CANDIDATE:2026-05-10'],
+            'conflicting_event_keys': [],
+        }
+
+    monkeypatch.setattr(autonomous_mcp.alpha_scanner, 'scanner_alert_delivery_guard', guard)
+    monkeypatch.setattr(autonomous_mcp.alpha_scanner, 'revalidate_scanner_alert_delivery', revalidate)
+    monkeypatch.setattr(autonomous_mcp.workflow, 'start_workflow_from_scanner_events', start)
+    monkeypatch.setattr(autonomous_mcp.workflow, 'build_workflow_top3_telegram_message', build_message)
+    monkeypatch.setattr(autonomous_mcp.workflow, 'commit_workflow_event_state', commit)
+    from app.utils import aibain_notify
+    monkeypatch.setattr(aibain_notify, 'send_workflow_top3', lambda message: False)
+
+    result = autonomous_mcp.run_autonomous_scan_analysis(
+        {
+            'dry_run': False,
+            'sync': True,
+            'send_telegram': True,
+            'confirmation': autonomous_mcp.CONFIRM_SEND_PHRASE,
+            'api_key': 'secret-1',
+            'commit_event_state': True,
+            'refresh_learning': False,
+        },
+        send_fn=send,
+    )
+
+    assert result['telegram_sent'] is True
+    assert result['event_state_committed'] is True
+    assert active == {'value': False, 'entries': 1}
+
+
+def test_autonomous_workflow_rejects_real_send_without_required_state_commit(
+    isolated_autonomous_paths,
+    monkeypatch,
+):
+    monkeypatch.setenv(autonomous_mcp.MUTATION_ENV, 'true')
+    monkeypatch.setenv(autonomous_mcp.SHARED_SECRET_ENV, 'secret-1')
+    monkeypatch.setattr(autonomous_mcp.workflow, 'start_workflow_from_scanner_events', pytest.fail)
+
+    with pytest.raises(ValueError, match='commit_event_state'):
+        autonomous_mcp.run_autonomous_scan_analysis(
+            {
+                'dry_run': False,
+                'sync': True,
+                'send_telegram': True,
+                'commit_event_state': False,
+                'confirmation': autonomous_mcp.CONFIRM_SEND_PHRASE,
+                'api_key': 'secret-1',
+            },
+            send_fn=pytest.fail,
+        )
+
+
+def test_autonomous_workflow_overlap_skips_transport_and_canonical_mirror(
+    isolated_autonomous_paths,
+    monkeypatch,
+):
+    """A canonical event delivered during analysis is not resent by autonomous Top3."""
+    monkeypatch.setenv(autonomous_mcp.MUTATION_ENV, 'true')
+    monkeypatch.setenv(autonomous_mcp.SHARED_SECRET_ENV, 'secret-1')
+    monkeypatch.setattr(
+        autonomous_mcp.workflow,
+        'start_workflow_from_scanner_events',
+        lambda *args, **kwargs: _workflow_result(),
+    )
+    monkeypatch.setattr(
+        autonomous_mcp.workflow,
+        'build_workflow_top3_telegram_message',
+        lambda result: '<b>top3</b>',
+    )
+    monkeypatch.setattr(
+        autonomous_mcp.alpha_scanner,
+        'revalidate_scanner_alert_delivery',
+        lambda candidates: {
+            'ok': False,
+            'status': 'event_overlap',
+            'event_keys': ['000001:BUY_CANDIDATE:2026-05-10'],
+            'conflicting_event_keys': ['000001:BUY_CANDIDATE:2026-05-10'],
+        },
+    )
+    commits = []
+    monkeypatch.setattr(
+        autonomous_mcp.workflow,
+        'commit_workflow_event_state',
+        lambda result, **kwargs: commits.append(kwargs) or {'committed': True},
+    )
+
+    result = autonomous_mcp.run_autonomous_scan_analysis(
+        {
+            'dry_run': False,
+            'sync': True,
+            'send_telegram': True,
+            'confirmation': autonomous_mcp.CONFIRM_SEND_PHRASE,
+            'api_key': 'secret-1',
+            'commit_event_state': True,
+            'refresh_learning': False,
+        },
+        send_fn=pytest.fail,
+    )
+
+    assert result['status'] == 'event_overlap'
+    assert result['telegram_sent'] is False
+    assert result['event_state_committed'] is True
+    assert commits == [{'sync_dashboard': False}]
+
+
+def test_send_latest_workflow_holds_canonical_guard_through_send_and_commit(
+    isolated_autonomous_paths,
+    monkeypatch,
+):
+    """The standalone MCP resend path must join the canonical alert transaction too."""
+    monkeypatch.setenv(autonomous_mcp.MUTATION_ENV, 'true')
+    monkeypatch.setenv(autonomous_mcp.SHARED_SECRET_ENV, 'secret-1')
+    active = {'value': False, 'entries': 0}
+
+    @contextmanager
+    def guard(*args, **kwargs):
+        active['entries'] += 1
+        active['value'] = True
+        try:
+            yield 'canonical-state.json'
+        finally:
+            active['value'] = False
+
+    def read_latest():
+        assert active['value'] is False
+        return _workflow_result()
+
+    def build_message(record):
+        assert active['value'] is False
+        return '<b>latest top3</b>'
+
+    def commit(record):
+        assert active['value'] is True
+        return {'committed': True}
+
+    def send(message):
+        assert active['value'] is True
+        return True
+
+    def revalidate(candidates):
+        assert active['value'] is True
+        return {
+            'ok': True, 'status': 'ready',
+            'event_keys': ['000001:BUY_CANDIDATE:2026-05-10'],
+            'conflicting_event_keys': [],
+        }
+
+    monkeypatch.setattr(autonomous_mcp.alpha_scanner, 'scanner_alert_delivery_guard', guard)
+    monkeypatch.setattr(autonomous_mcp.alpha_scanner, 'revalidate_scanner_alert_delivery', revalidate)
+    monkeypatch.setattr(autonomous_mcp.workflow, 'read_latest_workflow', read_latest)
+    monkeypatch.setattr(autonomous_mcp.workflow, 'build_workflow_top3_telegram_message', build_message)
+    monkeypatch.setattr(autonomous_mcp.workflow, 'commit_workflow_event_state', commit)
+    from app.utils import aibain_notify
+    monkeypatch.setattr(aibain_notify, 'send_workflow_top3', lambda message: False)
+
+    result = autonomous_mcp.send_latest_workflow_telegram(
+        {
+            'confirmation': autonomous_mcp.CONFIRM_SEND_PHRASE,
+            'api_key': 'secret-1',
+            'commit_event_state': True,
+        },
+        send_fn=send,
+    )
+
+    assert result['status'] == 'sent'
+    assert result['event_state_committed'] is True
+    assert active == {'value': False, 'entries': 1}
+
+
+def test_send_latest_workflow_rejects_send_without_required_state_commit(
+    isolated_autonomous_paths,
+    monkeypatch,
+):
+    monkeypatch.setenv(autonomous_mcp.MUTATION_ENV, 'true')
+    monkeypatch.setenv(autonomous_mcp.SHARED_SECRET_ENV, 'secret-1')
+    monkeypatch.setattr(autonomous_mcp.workflow, 'read_latest_workflow', pytest.fail)
+
+    with pytest.raises(ValueError, match='commit_event_state'):
+        autonomous_mcp.send_latest_workflow_telegram(
+            {
+                'confirmation': autonomous_mcp.CONFIRM_SEND_PHRASE,
+                'api_key': 'secret-1',
+                'commit_event_state': False,
+            },
+            send_fn=pytest.fail,
+        )
 
 
 def test_autonomous_status_exposes_safe_mcp_policy(monkeypatch):

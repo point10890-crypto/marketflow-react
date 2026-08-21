@@ -414,9 +414,12 @@ def run_candidate_detection_alert(
     payload = dict(payload or {})
     dry_run = _bool(payload.get('dry_run'), True)
     send_telegram = _bool(payload.get('send_telegram'), False)
+    commit_state = _bool(payload.get('commit_state'), send_telegram)
     try:
         if not dry_run and send_telegram:
             _require_mutation(payload, 'run_candidate_detection_alert', require_send_confirmation=True)
+            if not commit_state:
+                raise ValueError('commit_state must be true for a real Telegram send')
         elif not dry_run:
             _require_mutation(payload, 'run_candidate_detection_alert')
     except Exception as exc:
@@ -427,49 +430,48 @@ def run_candidate_detection_alert(
     min_alpha = _float(payload.get('min_alpha'), alpha_scanner.DEFAULT_ALERT_MIN_ALPHA)
     max_risk = _float(payload.get('max_risk'), alpha_scanner.DEFAULT_ALERT_MAX_RISK)
     max_events = _int(payload.get('max_events'), alpha_scanner.DEFAULT_ALERT_MAX_EVENTS, 1, MAX_EVENTS)
-    commit_state = _bool(payload.get('commit_state'), send_telegram)
     channel = _bool(payload.get('channel'), False)
     result: dict[str, Any] | None = None
     try:
-        result = alpha_scanner.run_scanner_alert_check(
-            scanner_payload,
-            min_alpha=min_alpha,
-            max_risk=max_risk,
-            max_events=max_events,
-            commit_state=False,
-            block_on_stale=not _bool(payload.get('allow_stale_sources'), False),
-        )
-        events = result.get('events') or []
-        result.update({
-            'ok': True,
-            'status': 'dry_run' if dry_run else 'checked',
-            'dry_run': dry_run,
-            'telegram_sent': False,
-            'state_committed': False,
-        })
-        if not dry_run and send_telegram and events:
-            scanner_message = result.get('message') or ''
-            ok = _send_message(scanner_message, send_fn=send_fn, channel=channel)
-            # AIbain_bot 병렬 알림 (설정 시) — 신규 5종 후보 알림
-            try:
-                from app.utils.aibain_notify import send_scanner_alert
-                aibain_sent = send_scanner_alert(scanner_message)
-                result['aibain_sent'] = aibain_sent
-            except Exception as exc:
-                result['aibain_sent'] = False
-                result['aibain_error'] = f'{type(exc).__name__}: {exc}'
-                aibain_sent = False
-            delivered = bool(ok or aibain_sent)
-            result['telegram_sent'] = ok
-            result['status'] = 'sent' if delivered else 'send_failed'
-            result['ok'] = delivered
-            if delivered and commit_state:
-                result['state'] = alpha_scanner.commit_scanner_alert_events(result)
-                result['state_committed'] = True
-        elif not dry_run and commit_state:
-            result['state'] = alpha_scanner.commit_scanner_alert_events(result)
-            result['state_committed'] = True
-        return _with_links(_summarize_detection_result(result))
+        with alpha_scanner.scanner_alert_delivery_guard():
+            result = alpha_scanner.run_scanner_alert_check(
+                scanner_payload,
+                min_alpha=min_alpha,
+                max_risk=max_risk,
+                max_events=max_events,
+                commit_state=False,
+                block_on_stale=not _bool(payload.get('allow_stale_sources'), False),
+            )
+            events = result.get('events') or []
+            result.update({
+                'ok': True,
+                'status': 'dry_run' if dry_run else 'checked',
+                'dry_run': dry_run,
+                'telegram_sent': False,
+                'state_committed': False,
+            })
+            if not dry_run and send_telegram and events:
+                scanner_message = result.get('message') or ''
+                ok = _send_message(scanner_message, send_fn=send_fn, channel=channel)
+                # AIbain_bot 병렬 알림 (설정 시) — 신규 5종 후보 알림
+                try:
+                    from app.utils.aibain_notify import send_scanner_alert
+                    aibain_sent = send_scanner_alert(scanner_message)
+                    result['aibain_sent'] = aibain_sent
+                except Exception as exc:
+                    result['aibain_sent'] = False
+                    result['aibain_error'] = f'{type(exc).__name__}: {exc}'
+                    aibain_sent = False
+                delivered = bool(ok or aibain_sent)
+                result['telegram_sent'] = ok
+                result['status'] = 'sent' if delivered else 'send_failed'
+                result['ok'] = delivered
+                if delivered and commit_state:
+                    result['state'] = alpha_scanner.commit_scanner_alert_events(result)
+                    result['state_committed'] = True
+            elif not dry_run and commit_state:
+                result['state_commit_skipped_reason'] = 'telegram_not_delivered'
+            return _with_links(_summarize_detection_result(result))
     except Exception as exc:
         _audit('run_candidate_detection_alert', payload, _error_result(exc), status='failed')
         raise
@@ -497,6 +499,8 @@ def run_autonomous_scan_analysis(
     try:
         if not dry_run and send_telegram:
             _require_mutation(payload, 'run_autonomous_scan_analysis', require_send_confirmation=True)
+            if not commit_event_state:
+                raise ValueError('commit_event_state must be true for a real Telegram send')
         elif not dry_run:
             _require_mutation(payload, 'run_autonomous_scan_analysis')
     except Exception as exc:
@@ -510,7 +514,7 @@ def run_autonomous_scan_analysis(
         result = workflow.start_workflow_from_scanner_events(
             workflow_payload,
             async_mode=(not sync) and (not dry_run),
-            commit_event_state=False if send_telegram else commit_event_state,
+            commit_event_state=False,
         )
         result = dict(result)
         result['dry_run'] = dry_run
@@ -523,36 +527,49 @@ def run_autonomous_scan_analysis(
                 result['learning_feedback'] = _learning_summary(learning)
             if send_telegram and result.get('top3'):
                 top3_message = workflow.build_workflow_top3_telegram_message(result)
-                ok = _send_message(
-                    top3_message,
-                    send_fn=send_fn,
-                    channel=_bool(payload.get('channel'), False),
-                )
-                # AIbain_bot 병렬 알림 (설정된 경우만, 실패해도 메인 흐름 무영향)
-                try:
-                    from app.utils.aibain_notify import send_workflow_top3
-                    aibain_sent = send_workflow_top3(top3_message)
-                    result['aibain_sent'] = aibain_sent
-                except Exception as exc:
-                    result['aibain_sent'] = False
-                    result['aibain_error'] = f'{type(exc).__name__}: {exc}'
-                    aibain_sent = False
-                delivered = bool(ok or aibain_sent)
-                result['telegram_sent'] = ok
-                result['telegram_sent_at'] = _now_iso() if delivered else None
-                if delivered and commit_event_state:
-                    result['event_state'] = workflow.commit_workflow_event_state(result)
-                    result['event_state_committed'] = True
-                elif not delivered:
-                    result['ok'] = False
-                    result['status'] = 'telegram_send_failed'
+                with alpha_scanner.scanner_alert_delivery_guard():
+                    delivery_check = alpha_scanner.revalidate_scanner_alert_delivery(
+                        _workflow_delivery_candidates(result),
+                    )
+                    result['canonical_delivery_check'] = delivery_check
+                    if not delivery_check.get('ok'):
+                        result['telegram_sent'] = False
+                        result['status'] = str(delivery_check.get('status') or 'delivery_revalidation_failed')
+                        result['ok'] = result['status'] == 'event_overlap'
+                        if result['status'] == 'event_overlap' and commit_event_state:
+                            result['event_state'] = workflow.commit_workflow_event_state(result, sync_dashboard=False)
+                            result['event_state_committed'] = True
+                    else:
+                        ok = _send_message(
+                            top3_message,
+                            send_fn=send_fn,
+                            channel=_bool(payload.get('channel'), False),
+                        )
+                        # AIbain_bot 병렬 알림 (설정된 경우만, 실패해도 메인 흐름 무영향)
+                        try:
+                            from app.utils.aibain_notify import send_workflow_top3
+                            aibain_sent = send_workflow_top3(top3_message)
+                            result['aibain_sent'] = aibain_sent
+                        except Exception as exc:
+                            result['aibain_sent'] = False
+                            result['aibain_error'] = f'{type(exc).__name__}: {exc}'
+                            aibain_sent = False
+                        delivered = bool(ok or aibain_sent)
+                        result['telegram_sent'] = ok
+                        result['telegram_sent_at'] = _now_iso() if delivered else None
+                        if delivered and commit_event_state:
+                            result['event_state'] = workflow.commit_workflow_event_state(result)
+                            result['event_state_committed'] = True
+                        elif not delivered:
+                            result['ok'] = False
+                            result['status'] = 'telegram_send_failed'
             elif commit_event_state:
-                result['event_state'] = workflow.commit_workflow_event_state(result)
+                result['event_state'] = workflow.commit_workflow_event_state(result, sync_dashboard=False)
                 result['event_state_committed'] = True
         elif send_telegram and not sync:
             result['telegram_skipped_reason'] = 'async_workflow_not_completed'
 
-        result.setdefault('ok', result.get('status') not in {'failed', 'telegram_send_failed'})
+        result.setdefault('ok', result.get('status') not in {'failed', 'telegram_send_failed', 'delivery_revalidation_failed'})
         return _with_links(_summarize_workflow_result(result))
     except Exception as exc:
         _audit('run_autonomous_scan_analysis', payload, _error_result(exc), status='failed')
@@ -670,8 +687,11 @@ def send_latest_workflow_telegram(
 ) -> dict[str, Any]:
     """Send the latest or selected workflow Top-N message to Telegram."""
     payload = dict(payload or {})
+    commit_event_state = _bool(payload.get('commit_event_state'), True)
     try:
         _require_mutation(payload, 'send_latest_workflow_telegram', require_send_confirmation=True)
+        if not commit_event_state:
+            raise ValueError('commit_event_state must be true for a real Telegram send')
     except Exception as exc:
         _audit('send_latest_workflow_telegram', payload, _error_result(exc), status='rejected')
         raise
@@ -680,29 +700,59 @@ def send_latest_workflow_telegram(
     if not isinstance(record, dict):
         raise ValueError('workflow not found')
     message = workflow.build_workflow_top3_telegram_message(record)
-    ok = _send_message(message, send_fn=send_fn, channel=_bool(payload.get('channel'), False))
-    # AIbain_bot 병렬 알림 (설정 시)
-    aibain_sent = False
-    try:
-        from app.utils.aibain_notify import send_workflow_top3
-        aibain_sent = send_workflow_top3(message)
-    except Exception:
-        aibain_sent = False
-    result = {
-        'ok': ok,
-        'status': 'sent' if ok else 'send_failed',
-        'workflow_id': record.get('id'),
-        'aibain_sent': aibain_sent,
-        'telegram_sent': ok,
-        'telegram_sent_at': _now_iso() if ok else None,
-        'message_chars': len(message),
-        'event_state_committed': False,
-    }
-    if ok and _bool(payload.get('commit_event_state'), True):
-        result['event_state'] = workflow.commit_workflow_event_state(record)
-        result['event_state_committed'] = True
+    with alpha_scanner.scanner_alert_delivery_guard():
+        delivery_check = alpha_scanner.revalidate_scanner_alert_delivery(
+            _workflow_delivery_candidates(record),
+        )
+        if not delivery_check.get('ok'):
+            status = str(delivery_check.get('status') or 'delivery_revalidation_failed')
+            result = {
+                'ok': status == 'event_overlap',
+                'status': status,
+                'workflow_id': record.get('id'),
+                'aibain_sent': False,
+                'telegram_sent': False,
+                'telegram_sent_at': None,
+                'message_chars': len(message),
+                'event_state_committed': False,
+                'canonical_delivery_check': delivery_check,
+            }
+            if status == 'event_overlap' and commit_event_state:
+                result['event_state'] = workflow.commit_workflow_event_state(record, sync_dashboard=False)
+                result['event_state_committed'] = True
+        else:
+            ok = _send_message(message, send_fn=send_fn, channel=_bool(payload.get('channel'), False))
+            # AIbain_bot 병렬 알림 (설정 시)
+            aibain_sent = False
+            try:
+                from app.utils.aibain_notify import send_workflow_top3
+                aibain_sent = send_workflow_top3(message)
+            except Exception:
+                aibain_sent = False
+            delivered = bool(ok or aibain_sent)
+            result = {
+                'ok': delivered,
+                'status': 'sent' if delivered else 'send_failed',
+                'workflow_id': record.get('id'),
+                'aibain_sent': aibain_sent,
+                'telegram_sent': ok,
+                'telegram_sent_at': _now_iso() if delivered else None,
+                'message_chars': len(message),
+                'event_state_committed': False,
+                'canonical_delivery_check': delivery_check,
+            }
+            if delivered and commit_event_state:
+                result['event_state'] = workflow.commit_workflow_event_state(record)
+                result['event_state_committed'] = True
     _audit('send_latest_workflow_telegram', payload, result, status=str(result['status']))
     return result
+
+
+def _workflow_delivery_candidates(record: dict[str, Any]) -> list[dict[str, Any]]:
+    candidates = record.get('event_candidates')
+    if not isinstance(candidates, list):
+        candidates = record.get('candidates')
+    return [item for item in (candidates or []) if isinstance(item, dict)]
 
 
 def _git_output(args: list[str], *, allow_failure: bool = False) -> str:
@@ -1232,6 +1282,7 @@ def _summarize_detection_result(result: dict[str, Any]) -> dict[str, Any]:
         'telegram_sent': bool(result.get('telegram_sent')),
         'aibain_sent': bool(result.get('aibain_sent')),
         'state_committed': bool(result.get('state_committed')),
+        'state_commit_skipped_reason': result.get('state_commit_skipped_reason'),
         'alert_blocked': bool(result.get('alert_blocked')),
         'blocked_reason': result.get('blocked_reason'),
         'message_chars': len(result.get('message') or ''),

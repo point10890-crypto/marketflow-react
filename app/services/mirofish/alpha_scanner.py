@@ -11,8 +11,11 @@ import re
 import threading
 import time as time_mod
 from collections import Counter
+from contextlib import contextmanager
 from datetime import datetime, time as dt_time, timedelta, timezone
 from typing import Any
+
+from filelock import FileLock, Timeout as FileLockTimeout
 
 import app.services.mirofish.blacklist as blacklist_service
 import app.services.mirofish.credit_balance as credit_balance_service
@@ -33,6 +36,8 @@ DEFAULT_ALERT_MIN_ALPHA = 70.0
 DEFAULT_ALERT_MAX_RISK = 45.0
 DEFAULT_ALERT_MAX_EVENTS = 8
 DEFAULT_MONITOR_RETRY_SECONDS = 300
+MAX_COMMITTED_RUN_MARKERS = 256
+SUPPORTED_ALERT_STATE_VERSIONS = frozenset({1, 2})
 # Dashboard "신규 이벤트" feed only surfaces alerts sent within this window. Without
 # this, feed_events was sliced by count (top-20) only, so on quiet weeks a handful
 # of days-old alerts stayed pinned at the top indefinitely, looking like fresh
@@ -116,6 +121,123 @@ SOURCE_FILE_POLICIES = {
         'max_age_days': 2,
     },
 }
+
+
+_ALERT_DELIVERY_GUARDS_LOCK = threading.Lock()
+_ALERT_DELIVERY_GUARDS: dict[str, tuple[threading.RLock, FileLock]] = {}
+
+
+def _canonical_delivery_path(path: str | os.PathLike[str]) -> str:
+    return os.path.normcase(os.path.realpath(os.path.abspath(os.path.expanduser(os.fspath(path)))))
+
+
+@contextmanager
+def scanner_alert_delivery_guard(
+    state_path: str | os.PathLike[str] | None = None,
+    *,
+    timeout: float = 30,
+):
+    """Serialize one alert selection/transport/commit transaction.
+
+    A process-local re-entrant lock and one cached ``FileLock`` instance per
+    canonical state path make this safe both across threads/processes and when
+    ``commit_scanner_alert_events`` joins an already-held transaction.
+    """
+    timeout_seconds = max(0.0, float(timeout))
+    deadline = time_mod.monotonic() + timeout_seconds
+    state_file = _canonical_delivery_path(state_path or _alert_state_path())
+    key = os.path.normcase(state_file)
+    with _ALERT_DELIVERY_GUARDS_LOCK:
+        guard = _ALERT_DELIVERY_GUARDS.get(key)
+        if guard is None:
+            lock_path = f'{state_file}.delivery.lock'
+            guard = (threading.RLock(), FileLock(lock_path))
+            _ALERT_DELIVERY_GUARDS[key] = guard
+    local_lock, file_lock = guard
+    parent = os.path.dirname(state_file)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    remaining = max(0.0, deadline - time_mod.monotonic())
+    if not local_lock.acquire(timeout=remaining):
+        raise FileLockTimeout(file_lock.lock_file)
+    try:
+        remaining = max(0.0, deadline - time_mod.monotonic())
+        with file_lock.acquire(timeout=remaining):
+            yield state_file
+    finally:
+        local_lock.release()
+
+
+def revalidate_scanner_alert_delivery(
+    candidates_or_events: list[dict[str, Any]],
+    *,
+    state_path: str | os.PathLike[str] | None = None,
+) -> dict[str, Any]:
+    """Fail closed when workflow BUY keys already exist in canonical state.
+
+    Callers must hold ``scanner_alert_delivery_guard`` from this check through
+    transport and commit. This keeps long workflow analysis outside the lock
+    while closing the final check/send TOCTOU window.
+    """
+    state_file = _canonical_delivery_path(state_path or _alert_state_path())
+    state = _read_alert_state_strict(state_file)
+    if state is None:
+        return {
+            'ok': False,
+            'status': 'invalid_alert_state',
+            'event_keys': [],
+            'conflicting_event_keys': [],
+        }
+    if not isinstance(candidates_or_events, list) or not candidates_or_events:
+        return {
+            'ok': False,
+            'status': 'missing_event_candidates',
+            'event_keys': [],
+            'conflicting_event_keys': [],
+        }
+
+    event_keys: set[str] = set()
+    recognized = 0
+    for item in candidates_or_events:
+        if not isinstance(item, dict):
+            return {
+                'ok': False,
+                'status': 'invalid_event_identity',
+                'event_keys': sorted(event_keys),
+                'conflicting_event_keys': [],
+            }
+        candidate = item.get('candidate') if isinstance(item.get('candidate'), dict) else item
+        recognized += 1
+        if str(candidate.get('action') or '').upper() != 'BUY_CANDIDATE':
+            continue
+        symbol = str(candidate.get('symbol') or '').strip()
+        price = candidate.get('price') if isinstance(candidate.get('price'), dict) else {}
+        price_date = str(price.get('date') or candidate.get('generated_at') or '')[:10]
+        expected_key = _candidate_event_key(candidate)
+        supplied_key = str(item.get('event_key') or '').strip() if candidate is not item else ''
+        if not symbol or not price_date or expected_key.startswith('None:') or (supplied_key and supplied_key != expected_key):
+            return {
+                'ok': False,
+                'status': 'invalid_event_identity',
+                'event_keys': sorted(event_keys),
+                'conflicting_event_keys': [],
+            }
+        event_keys.add(expected_key)
+    if recognized == 0 or not event_keys:
+        return {
+            'ok': False,
+            'status': 'missing_event_candidates',
+            'event_keys': [],
+            'conflicting_event_keys': [],
+        }
+    sent_events = state['sent_events']
+    conflicts = sorted(event_keys.intersection(sent_events))
+    return {
+        'ok': not conflicts,
+        'status': 'ready' if not conflicts else 'event_overlap',
+        'event_keys': sorted(event_keys),
+        'conflicting_event_keys': conflicts,
+    }
 WATCHED_SOURCE_FILES = tuple(SOURCE_FILE_POLICIES.keys())
 SCANNER_ARTIFACT_FILENAMES = {
     'feature_vectors.json',
@@ -649,6 +771,8 @@ def run_scanner_realtime_monitor_check(
     without touching Telegram. Alert state is committed only after send_fn
     succeeds, preventing missed retry after Telegram/API failures.
     """
+    if send_fn is not None and not commit_monitor_state:
+        raise ValueError('commit_monitor_state must be true when send_fn is provided')
     now = datetime.now(timezone.utc)
     now_iso = now.isoformat()
     monitor_file = monitor_state_path or _monitor_state_path()
@@ -708,46 +832,48 @@ def run_scanner_realtime_monitor_check(
             'state_committed': False,
         }
 
-    result = run_scanner_alert_check(
-        payload or {},
-        state_path=alert_state_path,
-        min_alpha=min_alpha,
-        max_risk=max_risk,
-        max_events=max_events,
-        commit_state=False,
-    )
-    events = result.get('events') or []
-    alert_blocked = bool(result.get('alert_blocked'))
-    telegram_sent = False
-    state_committed = False
-    alert_state = result.get('state')
-    status = 'blocked' if alert_blocked else 'no_new_events'
-    error = None
+    alert_state_file = alert_state_path or _alert_state_path()
+    with scanner_alert_delivery_guard(alert_state_file) as locked_alert_state_file:
+        result = run_scanner_alert_check(
+            payload or {},
+            state_path=locked_alert_state_file,
+            min_alpha=min_alpha,
+            max_risk=max_risk,
+            max_events=max_events,
+            commit_state=False,
+        )
+        events = result.get('events') or []
+        alert_blocked = bool(result.get('alert_blocked'))
+        telegram_sent = False
+        state_committed = False
+        alert_state = result.get('state')
+        status = 'blocked' if alert_blocked else 'no_new_events'
+        error = None
 
-    if events:
-        if send_fn is None:
-            status = 'pending_send'
-        else:
-            try:
-                telegram_sent = bool(send_fn(result.get('message') or ''))
-            except Exception as exc:
-                telegram_sent = False
-                error = f'{type(exc).__name__}: {exc}'
-            if telegram_sent:
-                if commit_monitor_state:
-                    alert_state = commit_scanner_alert_events(result)
-                    state_committed = True
-                else:
-                    alert_state = result.get('state')
-                status = 'sent'
+        if events:
+            if send_fn is None:
+                status = 'pending_send'
             else:
-                status = 'send_failed'
-    else:
-        if commit_monitor_state:
-            alert_state = commit_scanner_alert_events(result)
-            state_committed = True
+                try:
+                    telegram_sent = bool(send_fn(result.get('message') or ''))
+                except Exception as exc:
+                    telegram_sent = False
+                    error = f'{type(exc).__name__}: {exc}'
+                if telegram_sent:
+                    if commit_monitor_state:
+                        alert_state = commit_scanner_alert_events(result)
+                        state_committed = True
+                    else:
+                        alert_state = result.get('state')
+                    status = 'sent'
+                else:
+                    status = 'send_failed'
         else:
-            alert_state = result.get('state')
+            if commit_monitor_state:
+                alert_state = commit_scanner_alert_events(result)
+                state_committed = True
+            else:
+                alert_state = result.get('state')
 
     processed = status in {'sent', 'no_new_events', 'blocked'}
     next_state = dict(state)
@@ -818,43 +944,50 @@ def run_scanner_alert_check(
     run_payload.setdefault('limit', DEFAULT_ALERT_LIMIT)
     run = create_scanner_run(run_payload)
     state_file = state_path or _alert_state_path()
-    state = _read_alert_state(state_file)
-    freshness_status = ((run.get('freshness') or {}).get('status') or 'unknown').lower()
-    blocked_reason = None
-    if block_on_stale:
-        blocked_reason = _alert_block_reason(run)
-    if blocked_reason:
-        events = []
-    else:
-        events = _new_candidate_events(
-            run,
-            state,
-            min_alpha=float(min_alpha),
-            max_risk=float(max_risk),
-            actions=actions,
-            max_events=max_events,
-        )
-    updated_state = _update_alert_state(state, run, events)
-    if commit_state:
-        write_json_atomic(state_file, updated_state, sort_keys=True)
-    return {
-        'run': run,
-        'events': events,
-        'message': build_scanner_alert_message(
-            run,
-            events,
-            min_alpha=min_alpha,
-            max_risk=max_risk,
-            blocked_reason=blocked_reason,
-        ),
-        'state_path': state_file,
-        'state_committed': bool(commit_state),
-        'state': _alert_state_summary(updated_state, state_file),
-        'new_event_count': len(events),
-        'alert_blocked': bool(blocked_reason),
-        'blocked_reason': blocked_reason,
-        'source_warning': _source_warning(run, blocked_reason),
-    }
+    with scanner_alert_delivery_guard(state_file) as locked_state_file:
+        state_file = locked_state_file
+        if _canonical_delivery_path(state_file) == _canonical_delivery_path(_alert_state_path()):
+            state = _read_alert_state_strict(os.fspath(state_file))
+            if state is None:
+                raise ValueError('canonical alert state is invalid')
+        else:
+            state = _read_alert_state(os.fspath(state_file))
+        freshness_status = ((run.get('freshness') or {}).get('status') or 'unknown').lower()
+        blocked_reason = None
+        if block_on_stale:
+            blocked_reason = _alert_block_reason(run)
+        if blocked_reason:
+            events = []
+        else:
+            events = _new_candidate_events(
+                run,
+                state,
+                min_alpha=float(min_alpha),
+                max_risk=float(max_risk),
+                actions=actions,
+                max_events=max_events,
+            )
+        updated_state = _update_alert_state(state, run, events)
+        if commit_state:
+            write_json_atomic(state_file, updated_state, sort_keys=True)
+        return {
+            'run': run,
+            'events': events,
+            'message': build_scanner_alert_message(
+                run,
+                events,
+                min_alpha=min_alpha,
+                max_risk=max_risk,
+                blocked_reason=blocked_reason,
+            ),
+            'state_path': state_file,
+            'state_committed': bool(commit_state),
+            'state': _alert_state_summary(updated_state, state_file),
+            'new_event_count': len(events),
+            'alert_blocked': bool(blocked_reason),
+            'blocked_reason': blocked_reason,
+            'source_warning': _source_warning(run, blocked_reason),
+        }
 
 
 def commit_scanner_alert_events(result: dict[str, Any]) -> dict[str, Any]:
@@ -862,15 +995,17 @@ def commit_scanner_alert_events(result: dict[str, Any]) -> dict[str, Any]:
     state_file = str(result.get('state_path') or _alert_state_path())
     run = result.get('run') or {}
     events = [event for event in (result.get('events') or []) if isinstance(event, dict)]
-    state = _read_alert_state(state_file)
-    updated_state = _update_alert_state(state, run, events)
-    write_json_atomic(state_file, updated_state, sort_keys=True)
-    try:
-        from app.services.mirofish import scanner_deepverify  # lazy: avoid import cycle
-        scanner_deepverify.enqueue_new_events(events, run)
-    except Exception:  # noqa: BLE001 — enrichment must never break the commit
-        pass
-    return _alert_state_summary(updated_state, state_file)
+    with scanner_alert_delivery_guard(state_file) as locked_state_file:
+        state_file = locked_state_file
+        state = _read_alert_state(state_file)
+        updated_state = _update_alert_state(state, run, events)
+        write_json_atomic(state_file, updated_state, sort_keys=True)
+        try:
+            from app.services.mirofish import scanner_deepverify  # lazy: avoid import cycle
+            scanner_deepverify.enqueue_new_events(events, run)
+        except Exception:  # noqa: BLE001 — enrichment must never break the commit
+            pass
+        return _alert_state_summary(updated_state, state_file)
 
 
 def build_scanner_alert_message(
@@ -3816,6 +3951,49 @@ def _read_alert_state(path: str) -> dict[str, Any]:
     return data
 
 
+def _read_alert_state_strict(path: str) -> dict[str, Any] | None:
+    """Read canonical delivery state without treating corruption as empty."""
+    if not os.path.isfile(path):
+        if os.path.lexists(path):
+            return None
+        return {'version': 1, 'sent_events': {}}
+    try:
+        data = _read_json(path)
+    except (OSError, json.JSONDecodeError, ValueError):
+        return None
+    if not isinstance(data, dict) or not isinstance(data.get('sent_events'), dict):
+        return None
+    version = data.get('version')
+    if (
+        isinstance(version, bool)
+        or not isinstance(version, int)
+        or version not in SUPPORTED_ALERT_STATE_VERSIONS
+    ):
+        return None
+    if not all(
+        isinstance(key, str) and bool(key.strip()) and isinstance(value, dict)
+        for key, value in data['sent_events'].items()
+    ):
+        return None
+    committed_runs = data.get('committed_runs', {})
+    if not isinstance(committed_runs, dict):
+        return None
+    for run_id, marker in committed_runs.items():
+        if not isinstance(run_id, str) or not run_id.strip() or not isinstance(marker, dict):
+            return None
+        event_count = marker.get('event_count')
+        committed_at = marker.get('committed_at')
+        if (
+            isinstance(event_count, bool)
+            or not isinstance(event_count, int)
+            or event_count < 0
+            or not isinstance(committed_at, str)
+            or _parse_dt(committed_at) is None
+        ):
+            return None
+    return data
+
+
 def _read_monitor_state(path: str) -> dict[str, Any]:
     if not os.path.isfile(path):
         return {'version': 1}
@@ -3871,9 +4049,12 @@ def _update_alert_state(
     checked_at = run.get('generated_at')
     history = [item for item in (state.get('history') or []) if isinstance(item, dict)]
     new_history: list[dict[str, Any]] = []
+    applied_event_count = 0
     for event in events:
         candidate = event.get('candidate') or {}
         event_key = str(event.get('event_key') or _candidate_event_key(candidate))
+        if event_key in sent_events:
+            continue
         snapshot = _alert_event_snapshot(event, run, sent_at=checked_at)
         sent_events[event_key] = {
             'sent_at': checked_at,
@@ -3892,17 +4073,40 @@ def _update_alert_state(
             'signal_quality': candidate.get('signal_quality'),
         }
         new_history.append(snapshot)
+        applied_event_count += 1
     history = _merge_alert_history(history, new_history)
     last_sent_at = _latest_alert_sent_at(list(sent_events.values()) + history)
+    raw_committed_runs = state.get('committed_runs')
+    if not isinstance(raw_committed_runs, dict):
+        raw_committed_runs = {}
+    committed_runs = {
+        str(key): dict(value)
+        for key, value in raw_committed_runs.items()
+        if isinstance(key, str) and isinstance(value, dict)
+    }
+    run_id = str(run.get('id') or '').strip()
+    if run_id and run_id not in committed_runs:
+        committed_runs[run_id] = {
+            'event_count': applied_event_count,
+            'committed_at': checked_at,
+        }
+    if len(committed_runs) > MAX_COMMITTED_RUN_MARKERS:
+        ordered = sorted(
+            committed_runs.items(),
+            key=lambda item: str(item[1].get('committed_at') or ''),
+            reverse=True,
+        )[:MAX_COMMITTED_RUN_MARKERS]
+        committed_runs = dict(ordered)
     return {
         'version': max(2, int(state.get('version') or 1)),
         'last_checked_at': checked_at,
         'last_sent_at': last_sent_at,
         'last_run_id': run.get('id'),
         'last_candidate_count': run.get('candidate_count'),
-        'last_new_event_count': len(events),
+        'last_new_event_count': applied_event_count,
         'sent_events': sent_events,
         'history': history,
+        'committed_runs': committed_runs,
     }
 
 

@@ -1,9 +1,14 @@
 import json
+import threading
+import time
+from contextlib import contextmanager, nullcontext
 from datetime import datetime, timedelta, timezone
 
 import pytest
 from flask import Flask
 
+import app.routes.admin_mirofish as admin_mirofish_routes
+import app as marketflow_app
 from app.routes.admin_mirofish import admin_mirofish_bp
 from app.services.mirofish import alpha_research, alpha_scanner, deepseek_client, learning_policy
 
@@ -1112,6 +1117,185 @@ def test_alpha_scanner_alert_check_can_defer_state_until_send_success(tmp_path, 
     assert after_commit['new_event_count'] == 0
 
 
+def test_alert_delivery_guard_is_reentrant_when_commit_joins_transaction(tmp_path):
+    """The shared transport guard must allow its commit helper to join without deadlock."""
+    state_path = str(tmp_path / 'alert_state.json')
+    completed = []
+
+    def commit_inside_guard():
+        with alpha_scanner.scanner_alert_delivery_guard(state_path, timeout=1):
+            completed.append(alpha_scanner.commit_scanner_alert_events({
+                'run': {
+                    'id': 'guard-zero-event',
+                    'generated_at': '2026-08-21T00:00:00+00:00',
+                    'candidate_count': 0,
+                },
+                'events': [],
+                'state_path': state_path,
+            }))
+
+    worker = threading.Thread(target=commit_inside_guard, daemon=True)
+    worker.start()
+    worker.join(timeout=2)
+
+    assert not worker.is_alive(), 'nested commit deadlocked on the canonical delivery guard'
+    assert completed[0]['last_run_id'] == 'guard-zero-event'
+    persisted = json.loads((tmp_path / 'alert_state.json').read_text(encoding='utf-8'))
+    assert persisted['last_new_event_count'] == 0
+
+
+def test_alert_delivery_guard_timeout_bounds_local_thread_wait(tmp_path):
+    """The timeout covers the in-process RLock, not only the cross-process FileLock."""
+    state_path = str(tmp_path / 'alert_state.json')
+    holder_ready = threading.Event()
+    release_holder = threading.Event()
+    outcome = []
+
+    def holder():
+        with alpha_scanner.scanner_alert_delivery_guard(state_path, timeout=1):
+            holder_ready.set()
+            release_holder.wait(timeout=2)
+
+    def challenger():
+        started = time.monotonic()
+        try:
+            with alpha_scanner.scanner_alert_delivery_guard(state_path, timeout=0.1):
+                outcome.append(('acquired', time.monotonic() - started))
+        except Exception as exc:
+            outcome.append((type(exc).__name__, time.monotonic() - started))
+
+    owner = threading.Thread(target=holder, daemon=True)
+    contender = threading.Thread(target=challenger, daemon=True)
+    owner.start()
+    assert holder_ready.wait(timeout=1)
+    contender.start()
+    contender.join(timeout=0.4)
+    completed_within_deadline = not contender.is_alive()
+    release_holder.set()
+    owner.join(timeout=1)
+    contender.join(timeout=1)
+
+    assert completed_within_deadline is True
+    assert outcome[0][0] == 'Timeout'
+    assert outcome[0][1] < 0.35
+
+
+def test_canonical_alert_commit_preserves_first_writer_event_identity(tmp_path):
+    """A later workflow commit cannot overwrite the run that first delivered an event."""
+    state_path = str(tmp_path / 'alert_state.json')
+    candidate = {
+        'symbol': '000001',
+        'display_name': 'Alpha One',
+        'market': 'KOSPI',
+        'action': 'BUY_CANDIDATE',
+        'price': {'date': '2026-08-21', 'current_price': 100},
+    }
+    event = {
+        'event_key': '000001:BUY_CANDIDATE:2026-08-21',
+        'candidate': candidate,
+    }
+    first = {
+        'run': {'id': 'verified-first', 'generated_at': '2026-08-21T00:00:00+00:00', 'candidate_count': 1},
+        'events': [event],
+        'state_path': state_path,
+    }
+    later = {
+        'run': {'id': 'workflow-later', 'generated_at': '2026-08-21T00:05:00+00:00', 'candidate_count': 1},
+        'events': [event],
+        'state_path': state_path,
+    }
+
+    alpha_scanner.commit_scanner_alert_events(first)
+    summary = alpha_scanner.commit_scanner_alert_events(later)
+    persisted = json.loads((tmp_path / 'alert_state.json').read_text(encoding='utf-8'))
+
+    assert persisted['sent_events'][event['event_key']]['run_id'] == 'verified-first'
+    assert persisted['last_new_event_count'] == 0
+    assert summary['sent_event_count'] == 1
+    assert len(persisted['history']) == 1
+
+
+def test_workflow_delivery_revalidation_fails_closed_on_canonical_overlap(tmp_path):
+    """A workflow must re-check canonical BUY keys immediately before transport."""
+    state_path = str(tmp_path / 'alert_state.json')
+    event_key = '000001:BUY_CANDIDATE:2026-08-21'
+    (tmp_path / 'alert_state.json').write_text(json.dumps({
+        'version': 2,
+        'sent_events': {event_key: {'run_id': 'verified-first'}},
+    }), encoding='utf-8')
+    candidates = [{
+        'symbol': '000001',
+        'action': 'BUY_CANDIDATE',
+        'price': {'date': '2026-08-21'},
+    }]
+
+    check = alpha_scanner.revalidate_scanner_alert_delivery(candidates, state_path=state_path)
+
+    assert check == {
+        'ok': False,
+        'status': 'event_overlap',
+        'event_keys': [event_key],
+        'conflicting_event_keys': [event_key],
+    }
+
+
+@pytest.mark.parametrize(
+    'state_payload',
+    [
+        {'version': 'bad', 'sent_events': {}},
+        {'version': True, 'sent_events': {}},
+        {'version': 0, 'sent_events': {}},
+        {'version': 3, 'sent_events': {}},
+        {
+            'version': 2,
+            'sent_events': {},
+            'committed_runs': {
+                'run-bad-marker': {
+                    'event_count': '0',
+                    'committed_at': '2026-08-21T00:00:00+00:00',
+                },
+            },
+        },
+    ],
+)
+def test_workflow_delivery_revalidation_rejects_corrupt_canonical_state(tmp_path, state_payload):
+    """Transport callers must fail closed before sending when state metadata is corrupt."""
+    state_path = tmp_path / 'alert_state.json'
+    state_path.write_text(json.dumps(state_payload), encoding='utf-8')
+
+    check = alpha_scanner.revalidate_scanner_alert_delivery([{
+        'symbol': '000001',
+        'action': 'BUY_CANDIDATE',
+        'price': {'date': '2026-08-21'},
+    }], state_path=str(state_path))
+
+    assert check == {
+        'ok': False,
+        'status': 'invalid_alert_state',
+        'event_keys': [],
+        'conflicting_event_keys': [],
+    }
+
+
+def test_workflow_delivery_revalidation_requires_at_least_one_buy_event_key(tmp_path):
+    """WATCH-only analysis has no canonical claim identity and cannot be transported."""
+    state_path = tmp_path / 'alert_state.json'
+    state_path.write_text(json.dumps({'version': 2, 'sent_events': {}}), encoding='utf-8')
+
+    check = alpha_scanner.revalidate_scanner_alert_delivery([{
+        'symbol': '000001',
+        'action': 'WATCH',
+        'price': {'date': '2026-08-21'},
+    }], state_path=str(state_path))
+
+    assert check == {
+        'ok': False,
+        'status': 'missing_event_candidates',
+        'event_keys': [],
+        'conflicting_event_keys': [],
+    }
+
+
 def test_scanner_alert_state_keeps_pending_latest_run_out_of_feed(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
     monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
@@ -1516,6 +1700,291 @@ def test_alpha_scanner_realtime_monitor_dry_run_no_events_does_not_commit_state(
     assert result['monitor_state_committed'] is False
     assert not (tmp_path / 'monitor_state.json').exists()
     assert not (tmp_path / 'alert_state.json').exists()
+
+
+def test_admin_alert_route_holds_canonical_guard_through_transport_and_commit(monkeypatch):
+    """The manual admin sender must not release the shared guard between selection and commit."""
+    active = {'value': False, 'entries': 0}
+
+    @contextmanager
+    def guard(*args, **kwargs):
+        active['entries'] += 1
+        active['value'] = True
+        try:
+            yield 'canonical-state.json'
+        finally:
+            active['value'] = False
+
+    result = {
+        'run': {'id': 'admin-guard-run', 'candidate_count': 1},
+        'events': [{'event_key': '000001:BUY_CANDIDATE:2026-08-21'}],
+        'message': '<b>guarded</b>',
+        'state': {},
+        'alert_blocked': False,
+        'blocked_reason': None,
+    }
+
+    def scan(*args, **kwargs):
+        assert active['value'] is True
+        return result
+
+    def commit(payload):
+        assert active['value'] is True
+        return {'committed': True}
+
+    def send(message, **kwargs):
+        assert active['value'] is True
+        return True
+
+    monkeypatch.setattr(alpha_scanner, 'scanner_alert_delivery_guard', guard)
+    monkeypatch.setattr(admin_mirofish_routes.mirofish, 'run_scanner_alert_check', scan)
+    monkeypatch.setattr(admin_mirofish_routes.mirofish, 'commit_scanner_alert_events', commit)
+    from app.utils import scheduler
+    monkeypatch.setattr(scheduler, '_send_telegram_long', send)
+    app = Flask(__name__)
+
+    with app.test_request_context(
+        '/api/admin/mirofish/scanner/alerts/check',
+        method='POST',
+        json={'send_telegram': True},
+    ):
+        response = admin_mirofish_routes.check_scanner_alerts.__wrapped__()
+
+    assert response.get_json()['status'] == 'sent'
+    assert active == {'value': False, 'entries': 1}
+
+
+@pytest.mark.parametrize(
+    ('request_payload', 'expected_status'),
+    [
+        ({'dry_run': True, 'send_telegram': True}, 'dry_run'),
+        ({'dry_run': False, 'send_telegram': False}, 'preview'),
+    ],
+)
+def test_admin_alert_preview_and_dry_run_never_claim_canonical_state(
+    monkeypatch,
+    request_payload,
+    expected_status,
+):
+    """Read-only admin checks cannot occupy delivered event identities."""
+    result = {
+        'run': {'id': 'admin-read-only-run', 'candidate_count': 1},
+        'events': [{'event_key': '000001:BUY_CANDIDATE:2026-08-21'}],
+        'message': '<b>preview</b>',
+        'state': {'sent_event_count': 0},
+        'alert_blocked': False,
+        'blocked_reason': None,
+    }
+    monkeypatch.setattr(
+        alpha_scanner,
+        'scanner_alert_delivery_guard',
+        lambda *args, **kwargs: nullcontext('canonical-state.json'),
+    )
+    monkeypatch.setattr(admin_mirofish_routes.mirofish, 'run_scanner_alert_check', lambda *args, **kwargs: result)
+    monkeypatch.setattr(
+        admin_mirofish_routes.mirofish,
+        'commit_scanner_alert_events',
+        lambda *_args, **_kwargs: pytest.fail('read-only route committed canonical state'),
+    )
+    from app.utils import scheduler
+    monkeypatch.setattr(
+        scheduler,
+        '_send_telegram_long',
+        lambda *_args, **_kwargs: pytest.fail('read-only route sent Telegram'),
+    )
+    monkeypatch.setattr(admin_mirofish_routes, '_telegram_config_status', lambda: {'configured': False})
+    app = Flask(__name__)
+
+    with app.test_request_context(
+        '/api/admin/mirofish/scanner/alerts/check',
+        method='POST',
+        json=request_payload,
+    ):
+        response = admin_mirofish_routes.check_scanner_alerts.__wrapped__()
+
+    payload = response.get_json()
+    assert payload['status'] == expected_status
+    assert payload['telegram_sent'] is False
+    assert payload['state_committed'] is False
+
+
+def _minimal_corrupt_state_alert_run() -> dict:
+    generated_at = datetime.now(timezone.utc).isoformat()
+    return {
+        'id': 'mfas_corrupt_canonical',
+        'status': 'completed',
+        'generated_at': generated_at,
+        'candidate_count': 1,
+        'candidates': [{
+            'rank': 1,
+            'symbol': '000001',
+            'display_name': 'Alpha One',
+            'market': 'KOSPI',
+            'action': 'BUY_CANDIDATE',
+            'alpha_score': 82,
+            'risk_score': 24,
+            'price': {'date': generated_at[:10], 'current_price': 100},
+        }],
+        'freshness': {'status': 'fresh'},
+    }
+
+
+def test_realtime_monitor_fails_before_transport_on_malformed_canonical_state(tmp_path, monkeypatch):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    state_path = tmp_path / 'admin_mirofish' / 'alpha_scanner_alert_state.json'
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path.write_text('{broken', encoding='utf-8')
+    monkeypatch.setattr(alpha_scanner, 'create_scanner_run', lambda payload: _minimal_corrupt_state_alert_run())
+
+    with pytest.raises(ValueError, match='canonical alert state'):
+        alpha_scanner.run_scanner_realtime_monitor_check(
+            {},
+            force=True,
+            send_fn=pytest.fail,
+        )
+
+
+def test_realtime_monitor_rejects_transport_when_canonical_commit_is_disabled(monkeypatch):
+    """An exported caller cannot send successfully while leaving the event resendable."""
+    monkeypatch.setattr(alpha_scanner, 'create_scanner_run', pytest.fail)
+
+    with pytest.raises(ValueError, match='commit_monitor_state'):
+        alpha_scanner.run_scanner_realtime_monitor_check(
+            {},
+            force=True,
+            commit_monitor_state=False,
+            send_fn=pytest.fail,
+        )
+
+
+def test_alert_state_io_uses_guard_canonical_path_not_caller_alias(tmp_path, monkeypatch):
+    """Read/write/result paths must follow the guard's realpath to preserve one namespace."""
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    canonical_path = tmp_path / 'admin_mirofish' / 'alpha_scanner_alert_state.json'
+    alias_path = tmp_path / 'alert-state-alias.json'
+    writes = []
+
+    @contextmanager
+    def guard(*args, **kwargs):
+        yield str(canonical_path)
+
+    monkeypatch.setattr(alpha_scanner, 'scanner_alert_delivery_guard', guard)
+    monkeypatch.setattr(alpha_scanner, 'create_scanner_run', lambda payload: _minimal_corrupt_state_alert_run())
+    monkeypatch.setattr(
+        alpha_scanner,
+        'write_json_atomic',
+        lambda path, payload, **kwargs: writes.append((path, payload)),
+    )
+    from app.services.mirofish import scanner_deepverify
+    monkeypatch.setattr(scanner_deepverify, 'enqueue_new_events', lambda *args, **kwargs: None)
+
+    selected = alpha_scanner.run_scanner_alert_check(
+        {},
+        state_path=str(alias_path),
+        block_on_stale=False,
+    )
+
+    assert selected['state_path'] == str(canonical_path)
+    assert writes[0][0] == str(canonical_path)
+
+    writes.clear()
+    committed = alpha_scanner.commit_scanner_alert_events({
+        **selected,
+        'state_path': str(alias_path),
+    })
+
+    assert committed['state_path'] == str(canonical_path)
+    assert writes[0][0] == str(canonical_path)
+
+
+def test_admin_alert_sender_fails_before_transport_on_invalid_canonical_version(tmp_path, monkeypatch):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    state_path = tmp_path / 'admin_mirofish' / 'alpha_scanner_alert_state.json'
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path.write_text(json.dumps({'version': 'bad', 'sent_events': {}}), encoding='utf-8')
+    monkeypatch.setattr(alpha_scanner, 'create_scanner_run', lambda payload: _minimal_corrupt_state_alert_run())
+    from app.utils import scheduler
+    monkeypatch.setattr(scheduler, '_send_telegram_long', pytest.fail)
+    app = Flask(__name__)
+
+    with app.test_request_context(
+        '/api/admin/mirofish/scanner/alerts/check',
+        method='POST',
+        json={'send_telegram': True},
+    ):
+        response, status_code = admin_mirofish_routes.check_scanner_alerts.__wrapped__()
+
+    assert status_code == 400
+    assert 'canonical alert state' in response.get_json()['error']
+
+
+@pytest.mark.parametrize('telegram_enabled', [False, True])
+def test_flask_alpha_monitor_worker_requires_explicit_telegram_opt_in(monkeypatch, telegram_enabled):
+    """The app auto-start worker may scan by default but only an opt-in wires transport."""
+    captured = {}
+    sent_messages = []
+
+    class StopWorker(Exception):
+        pass
+
+    class CapturingThread:
+        def __init__(self, *, target, daemon, name):
+            captured.update({'target': target, 'daemon': daemon, 'name': name})
+
+        def start(self):
+            captured['started'] = True
+
+    class FakeApp:
+        @staticmethod
+        def app_context():
+            return nullcontext()
+
+    sleep_calls = {'count': 0}
+
+    def bounded_sleep(_seconds):
+        sleep_calls['count'] += 1
+        if sleep_calls['count'] > 1:
+            raise StopWorker()
+
+    def monitor(*args, send_fn=None, **kwargs):
+        captured['monitor_called'] = True
+        if telegram_enabled:
+            assert send_fn is not None
+            assert send_fn('<b>alert</b>') is True
+            status = 'sent'
+        else:
+            assert send_fn is None
+            status = 'pending_send'
+        captured['monitor_completed'] = True
+        return {
+            'status': status,
+            'new_event_count': 1,
+            'run': {'id': 'worker-run'},
+        }
+
+    monkeypatch.setenv('ALPHA_SCANNER_ENABLED', 'true')
+    monkeypatch.setenv('ALPHA_SCANNER_REALTIME_ENABLED', 'true')
+    monkeypatch.setenv('ALPHA_SCANNER_TELEGRAM_ENABLED', 'true' if telegram_enabled else 'false')
+    monkeypatch.setattr(threading, 'Thread', CapturingThread)
+    monkeypatch.setattr(time, 'sleep', bounded_sleep)
+    monkeypatch.setattr(alpha_scanner, 'run_scanner_realtime_monitor_check', monitor)
+    from app.services.mirofish import auto_runner
+    monkeypatch.setattr(auto_runner, 'start_worker', lambda: False)
+    from app.utils import scheduler as app_scheduler
+    monkeypatch.setattr(
+        app_scheduler,
+        '_send_telegram_long',
+        lambda message, channel=False: sent_messages.append((message, channel)) or True,
+    )
+
+    marketflow_app._start_alpha_scanner_monitor_worker(FakeApp())
+    assert captured['started'] is True
+    with pytest.raises(StopWorker):
+        captured['target']()
+
+    assert captured['monitor_called'] is True
+    assert captured['monitor_completed'] is True
+    assert sent_messages == ([('<b>alert</b>', False)] if telegram_enabled else [])
 
 
 def test_alpha_scanner_diagnostics_reports_missing_sources(tmp_path, monkeypatch):

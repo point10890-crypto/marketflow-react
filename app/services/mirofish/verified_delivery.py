@@ -246,7 +246,8 @@ def post_private_telegram(
     if status_code != 200 or not isinstance(payload, dict) or payload.get('ok') is not True:
         result = {'ok': False, 'status': 'rejected', 'error_code': 'telegram_response_rejected'}
         if (
-            status_code in {400, 403}
+            isinstance(status_code, int)
+            and 400 <= status_code < 500
             and isinstance(payload, dict)
             and payload.get('ok') is False
             and bool(_text(payload.get('description')))
@@ -279,153 +280,205 @@ def _deliver_or_preview(
 ) -> dict[str, Any]:
     """Preview or serialize one delivery attempt behind its durable claim."""
     if not send:
-        state = _read_canonical_alert_state()
-        if state is None:
-            return _result('invalid_run', run_id=_text(run.get('id')), error_code='alert_state_invalid', sent=False)
-        alert, alert_error = _canonical_alert_from_state(run, state, blocked=blocked)
-        if alert_error:
-            return _result('invalid_run', run_id=_text(run.get('id')), error_code=alert_error, sent=False)
-        message = alert['message']
-        base = _delivery_base(run, alert, message, blocked=blocked, error_code=error_code)
-        return _result('blocked' if blocked else 'preview', **base)
+        try:
+            with alpha_scanner.scanner_alert_delivery_guard(str(DEFAULT_ALERT_STATE_PATH), timeout=15) as locked_state_path:
+                state = _read_canonical_alert_state(locked_state_path)
+                if state is None:
+                    return _result('invalid_run', run_id=_text(run.get('id')), error_code='alert_state_invalid', sent=False)
+                alert, alert_error = _canonical_alert_from_state(
+                    run,
+                    state,
+                    blocked=blocked,
+                    state_path=locked_state_path,
+                )
+                if alert_error:
+                    return _result('invalid_run', run_id=_text(run.get('id')), error_code=alert_error, sent=False)
+                message = alert['message']
+                base = _delivery_base(run, alert, message, blocked=blocked, error_code=error_code)
+                return _result('blocked' if blocked else 'preview', **base)
+        except Exception:
+            return _result('invalid_run', run_id=_text(run.get('id')), error_code='alert_state_lock_failed', sent=False)
     if confirmation != CONFIRMATION_PHRASE:
         return _result('confirmation_required', run_id=_text(run.get('id')), sent=False)
 
     path = Path(receipt_path) if receipt_path else DEFAULT_RECEIPT_PATH
     try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with safe_write(str(path), timeout=15):
-            ledger = _read_ledger(path)
-            if ledger is None:
-                return _result('receipt_invalid', run_id=_text(run.get('id')), error_code='receipt_invalid', sent=False)
-            state = _read_canonical_alert_state()
-            if state is None:
-                return _result('receipt_invalid', run_id=_text(run.get('id')), error_code='alert_state_invalid', sent=False)
-            recovered = _recover_outstanding_state(
-                ledger,
-                path,
-                state,
-                requested_run_id=_text(run.get('id')),
+        with alpha_scanner.scanner_alert_delivery_guard(str(DEFAULT_ALERT_STATE_PATH), timeout=15) as locked_state_path:
+            if not _same_path(path, DEFAULT_RECEIPT_PATH):
+                return _result(
+                    'receipt_path_untrusted',
+                    error_code='receipt_path_untrusted',
+                    sent=False,
+                )
+            # Never atomically replace through a caller alias: replacing a
+            # symlink path can split the receipt into a second namespace.
+            path = Path(DEFAULT_RECEIPT_PATH)
+            locked_validation, locked_run = _validate_scanner_run_canonical(
+                _text(run.get('id')),
+                expected_run=run,
             )
-            if recovered is not None:
-                return recovered
-            existing = _find_delivery(ledger, _text(run.get('id')), _text(expected_message_digest))
-            if existing is not None and _text(existing.get('status')) in {'pending', 'uncertain'}:
+            locked_blocked = locked_validation.get('error_code') == 'blocked_freshness'
+            if not locked_validation.get('ok') and not locked_blocked:
                 return _result(
-                    'delivery_uncertain',
+                    'invalid_run',
                     run_id=_text(run.get('id')),
-                    message_digest=_text(expected_message_digest),
-                    sent=None,
-                    message_id=existing.get('message_id'),
-                )
-            if existing is not None and (
-                _text(existing.get('status')) != 'delivered'
-                or existing.get('state_committed') is True
-                or blocked
-            ):
-                return _result(
-                    'duplicate_refused',
-                    run_id=_text(run.get('id')),
-                    message_digest=_text(expected_message_digest),
-                    message_id=existing.get('message_id'),
-                    sent=False,
-                    state_committed=bool(existing.get('state_committed')),
-                )
-            if any(_text(item.get('status')) in {'pending', 'uncertain'} for item in ledger.get('deliveries') or []):
-                return _result(
-                    'delivery_uncertain',
-                    run_id=_text(run.get('id')),
-                    message_digest=_text(expected_message_digest),
-                    sent=None,
-                )
-
-            alert, alert_error = _canonical_alert_from_state(run, state, blocked=blocked)
-            if alert_error:
-                return _result('invalid_run', run_id=_text(run.get('id')), error_code=alert_error, sent=False)
-            message = alert['message']
-            digest = _message_digest(message)
-            base = _delivery_base(run, alert, message, blocked=blocked, error_code=error_code)
-            if digest != expected_message_digest:
-                return _result(
-                    'preview_mismatch',
-                    run_id=_text(run.get('id')),
-                    error_code='preview_mismatch',
+                    error_code=locked_validation.get('error_code'),
                     sent=False,
                 )
-            if existing is not None:
-                return _handle_existing_delivery(ledger, path, existing, alert, base, blocked)
-            if any(
-                _text(item.get('status')) == 'delivered' and item.get('state_committed') is not True
-                for item in ledger.get('deliveries') or []
-            ):
+            if not isinstance(locked_run, dict):
                 return _result(
-                    'state_recovery_required',
-                    **{**base, 'error_code': 'state_recovery_required', 'sent': False},
+                    'invalid_run',
+                    run_id=_text(run.get('id')),
+                    error_code='run_not_found',
+                    sent=False,
                 )
-            current_keys = set(base.get('event_keys') or [])
-            if current_keys and any(
-                _text(item.get('status')) == 'delivered'
-                and bool(current_keys.intersection(set(item.get('event_keys') or [])))
-                for item in ledger.get('deliveries') or []
-            ):
-                return _result('duplicate_refused', **{**base, 'sent': False})
-
-            claim = _delivery_entry(
-                status='pending',
-                run=run,
-                message_digest=digest,
-                event_count=base['event_count'],
-                symbols=base['symbols'],
-                event_keys=base['event_keys'],
-                blocked=blocked,
+            return _deliver_with_receipt_lock(
+                path=path,
+                run=locked_run,
+                expected_message_digest=_text(expected_message_digest),
+                blocked=locked_blocked,
+                error_code='blocked_freshness' if locked_blocked else error_code,
+                canonical_state_path=locked_state_path,
             )
-            ledger['deliveries'].append(claim)
-            try:
-                _write_ledger(path, ledger)
-            except Exception:
-                return _result(
-                    'receipt_claim_failed',
-                    run_id=base['run_id'],
-                    error_code='receipt_claim_write_failed',
-                    sent=False,
-                )
-
-            delivery = post_private_telegram(message)
-            if not delivery.get('ok'):
-                if delivery.get('retryable') is True:
-                    claim.update({'status': 'failed', 'retryable': True, 'updated_at': _now_iso()})
-                    try:
-                        _write_ledger(path, ledger)
-                    except Exception:
-                        return _result('delivery_uncertain', **{**base, 'sent': None, 'error_code': 'receipt_final_write_failed'})
-                    return _result('telegram_not_delivered', **{**base, 'sent': False, 'error_code': delivery.get('error_code')})
-                claim['status'] = 'uncertain'
-                claim['updated_at'] = _now_iso()
-                _best_effort_write_ledger(path, ledger)
-                return _result('delivery_uncertain', **{**base, 'sent': None, 'error_code': delivery.get('error_code')})
-            message_id = delivery.get('message_id')
-            if not _positive_int(message_id):
-                claim['status'] = 'uncertain'
-                claim['updated_at'] = _now_iso()
-                _best_effort_write_ledger(path, ledger)
-                return _result('delivery_uncertain', **{**base, 'sent': None, 'error_code': 'invalid_message_id'})
-
-            claim.update({
-                'status': 'blocked' if blocked else 'delivered',
-                'delivered': True,
-                'message_id': message_id,
-                'state_committed': False,
-                'updated_at': _now_iso(),
-            })
-            try:
-                _write_ledger(path, ledger)
-            except Exception:
-                return _result('delivery_uncertain', **{**base, 'sent': None, 'error_code': 'receipt_final_write_failed'})
-            if blocked:
-                return _result('blocked_delivered', **{**base, 'message_id': message_id, 'sent': True, 'state_committed': False})
-            return _commit_after_delivery(ledger, path, claim, alert, base)
     except Exception:
         return _result('receipt_lock_failed', run_id=_text(run.get('id')), error_code='receipt_lock_failed', sent=False)
+
+
+def _deliver_with_receipt_lock(
+    *,
+    path: Path,
+    run: dict[str, Any],
+    expected_message_digest: str,
+    blocked: bool,
+    error_code: str | None,
+    canonical_state_path: str | os.PathLike[str],
+) -> dict[str, Any]:
+    """Handle the durable receipt while the canonical alert guard is held."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with safe_write(str(path), timeout=15):
+        ledger = _read_ledger(path)
+        if ledger is None:
+            return _result('receipt_invalid', run_id=_text(run.get('id')), error_code='receipt_invalid', sent=False)
+        state = _read_canonical_alert_state(canonical_state_path)
+        if state is None:
+            return _result('receipt_invalid', run_id=_text(run.get('id')), error_code='alert_state_invalid', sent=False)
+        recovered = _recover_outstanding_state(ledger, path, state)
+        if recovered is not None:
+            return recovered
+        existing = _find_delivery(ledger, _text(run.get('id')), expected_message_digest)
+        if existing is not None and _text(existing.get('status')) in {'pending', 'uncertain'}:
+            return _blocking_delivery_result(existing)
+        if existing is not None and (
+            _text(existing.get('status')) != 'delivered'
+            or existing.get('state_committed') is True
+            or blocked
+        ):
+            return _result(
+                'duplicate_refused',
+                run_id=_text(run.get('id')),
+                message_digest=expected_message_digest,
+                message_id=existing.get('message_id'),
+                sent=False,
+                state_committed=bool(existing.get('state_committed')),
+            )
+        blocking = next(
+            (
+                item for item in ledger.get('deliveries') or []
+                if _text(item.get('status')) in {'pending', 'uncertain'}
+            ),
+            None,
+        )
+        if blocking is not None:
+            return _blocking_delivery_result(blocking)
+
+        alert, alert_error = _canonical_alert_from_state(
+            run,
+            state,
+            blocked=blocked,
+            state_path=canonical_state_path,
+        )
+        if alert_error:
+            return _result('invalid_run', run_id=_text(run.get('id')), error_code=alert_error, sent=False)
+        message = alert['message']
+        digest = _message_digest(message)
+        base = _delivery_base(run, alert, message, blocked=blocked, error_code=error_code)
+        if digest != expected_message_digest:
+            return _result(
+                'preview_mismatch',
+                run_id=_text(run.get('id')),
+                error_code='preview_mismatch',
+                sent=False,
+            )
+        if existing is not None:
+            return _handle_existing_delivery(ledger, path, existing, alert, base, blocked)
+        outstanding = [
+            item for item in ledger.get('deliveries') or []
+            if _text(item.get('status')) == 'delivered' and item.get('state_committed') is not True
+        ]
+        if outstanding:
+            return _state_recovery_required_result(outstanding)
+        current_keys = set(base.get('event_keys') or [])
+        if current_keys and any(
+            _text(item.get('status')) == 'delivered'
+            and bool(current_keys.intersection(set(item.get('event_keys') or [])))
+            for item in ledger.get('deliveries') or []
+        ):
+            return _result('duplicate_refused', **{**base, 'sent': False})
+
+        claim = _delivery_entry(
+            status='pending',
+            run=run,
+            message_digest=digest,
+            event_count=base['event_count'],
+            symbols=base['symbols'],
+            event_keys=base['event_keys'],
+            blocked=blocked,
+        )
+        ledger['deliveries'].append(claim)
+        try:
+            _write_ledger(path, ledger)
+        except Exception:
+            return _result(
+                'receipt_claim_failed',
+                run_id=base['run_id'],
+                error_code='receipt_claim_write_failed',
+                sent=False,
+            )
+
+        delivery = post_private_telegram(message)
+        if not delivery.get('ok'):
+            if delivery.get('retryable') is True:
+                claim.update({'status': 'failed', 'retryable': True, 'updated_at': _now_iso()})
+                try:
+                    _write_ledger(path, ledger)
+                except Exception:
+                    return _result('delivery_uncertain', **{**base, 'sent': None, 'error_code': 'receipt_final_write_failed'})
+                return _result('telegram_not_delivered', **{**base, 'sent': False, 'error_code': delivery.get('error_code')})
+            claim['status'] = 'uncertain'
+            claim['updated_at'] = _now_iso()
+            _best_effort_write_ledger(path, ledger)
+            return _result('delivery_uncertain', **{**base, 'sent': None, 'error_code': delivery.get('error_code')})
+        message_id = delivery.get('message_id')
+        if not _positive_int(message_id):
+            claim['status'] = 'uncertain'
+            claim['updated_at'] = _now_iso()
+            _best_effort_write_ledger(path, ledger)
+            return _result('delivery_uncertain', **{**base, 'sent': None, 'error_code': 'invalid_message_id'})
+
+        claim.update({
+            'status': 'blocked' if blocked else 'delivered',
+            'delivered': True,
+            'message_id': message_id,
+            'state_committed': False,
+            'updated_at': _now_iso(),
+        })
+        try:
+            _write_ledger(path, ledger)
+        except Exception:
+            return _result('delivery_uncertain', **{**base, 'sent': None, 'error_code': 'receipt_final_write_failed'})
+        if blocked:
+            return _result('blocked_delivered', **{**base, 'message_id': message_id, 'sent': True, 'state_committed': False})
+        return _commit_after_delivery(ledger, path, claim, alert, base)
 
 
 def _handle_existing_delivery(
@@ -438,7 +491,7 @@ def _handle_existing_delivery(
 ) -> dict[str, Any]:
     status = _text(entry.get('status'))
     if status in {'pending', 'uncertain'}:
-        return _result('delivery_uncertain', **{**base, 'sent': None, 'message_id': entry.get('message_id')})
+        return _blocking_delivery_result(entry)
     if status == 'delivered' and not entry.get('state_committed') and not blocked:
         recovered = _commit_after_delivery(ledger, path, entry, alert, base)
         if recovered.get('status') == 'delivered':
@@ -454,8 +507,6 @@ def _recover_outstanding_state(
     ledger: dict[str, Any],
     path: Path,
     state: dict[str, Any],
-    *,
-    requested_run_id: str,
 ) -> dict[str, Any] | None:
     """Repair a ledger write lost after canonical scanner state was committed."""
     outstanding = [
@@ -464,8 +515,7 @@ def _recover_outstanding_state(
     ]
     if not outstanding:
         return None
-    sent_events = state.get('sent_events') if isinstance(state.get('sent_events'), dict) else {}
-    matching = [entry for entry in outstanding if _state_confirms_delivery(sent_events, entry)]
+    matching = [entry for entry in outstanding if _state_confirms_delivery(state, entry)]
     if not matching:
         return None
     now = _now_iso()
@@ -476,9 +526,9 @@ def _recover_outstanding_state(
     try:
         _write_ledger(path, ledger)
     except Exception:
-        return _result('state_recovery_required', run_id=requested_run_id, error_code='state_recovery_required', sent=False)
+        return _state_recovery_required_result(outstanding)
     if len(matching) != len(outstanding):
-        return _result('state_recovery_required', run_id=requested_run_id, error_code='state_recovery_required', sent=False)
+        return _state_recovery_required_result(outstanding)
     fields: dict[str, Any] = {
         'sent': False,
         'state_committed': True,
@@ -488,6 +538,29 @@ def _recover_outstanding_state(
         fields['run_id'] = _text(matching[0].get('run_id'))
         fields['message_id'] = matching[0].get('message_id')
     return _result('delivered_recovered', **fields)
+
+
+def _blocking_delivery_result(entry: dict[str, Any]) -> dict[str, Any]:
+    """Identify the durable blocking claim without echoing a requested preview."""
+    fields: dict[str, Any] = {
+        'sent': None,
+        'blocking_status': _text(entry.get('status')) or 'unknown',
+    }
+    blocking_run_id = _text(entry.get('run_id'))
+    if blocking_run_id:
+        fields['blocking_run_id'] = blocking_run_id
+    return _result('delivery_uncertain', **fields)
+
+
+def _state_recovery_required_result(entries: list[dict[str, Any]]) -> dict[str, Any]:
+    fields: dict[str, Any] = {
+        'error_code': 'state_recovery_required',
+        'sent': False,
+    }
+    run_ids = {_text(entry.get('run_id')) for entry in entries if _text(entry.get('run_id'))}
+    if len(run_ids) == 1:
+        fields['blocking_run_id'] = next(iter(run_ids))
+    return _result('state_recovery_required', **fields)
 
 
 def _commit_after_delivery(
@@ -518,6 +591,7 @@ def _canonical_alert_from_state(
     state: dict[str, Any],
     *,
     blocked: bool,
+    state_path: str | os.PathLike[str] | None = None,
 ) -> tuple[dict[str, Any], str | None]:
     """Build events/message only from a persisted run and trusted state."""
     sent_events = state.get('sent_events') if isinstance(state.get('sent_events'), dict) else None
@@ -566,7 +640,7 @@ def _canonical_alert_from_state(
         'run': run,
         'events': canonical_events,
         'message': message,
-        'state_path': str(DEFAULT_ALERT_STATE_PATH),
+        'state_path': str(state_path or DEFAULT_ALERT_STATE_PATH),
         'new_event_count': len(canonical_events),
         'alert_blocked': blocked,
         'blocked_reason': blocked_reason,
@@ -597,30 +671,56 @@ def _delivery_base(
     return base
 
 
-def _read_canonical_alert_state() -> dict[str, Any] | None:
+def _read_canonical_alert_state(
+    state_path: str | os.PathLike[str] | None = None,
+) -> dict[str, Any] | None:
     """Read only the repository-owned state and fail closed on corruption."""
-    path = DEFAULT_ALERT_STATE_PATH
-    if not path.exists():
-        return {'version': 1, 'sent_events': {}}
-    try:
-        payload = json.loads(path.read_text(encoding='utf-8'))
-    except (OSError, ValueError):
-        return None
-    if not isinstance(payload, dict) or not isinstance(payload.get('sent_events'), dict):
-        return None
-    if not all(isinstance(key, str) and isinstance(value, dict) for key, value in payload['sent_events'].items()):
-        return None
-    return payload
+    return alpha_scanner._read_alert_state_strict(str(state_path or DEFAULT_ALERT_STATE_PATH))
 
 
-def _state_confirms_delivery(sent_events: dict[str, Any], entry: dict[str, Any]) -> bool:
+def _state_confirms_delivery(state: dict[str, Any], entry: dict[str, Any]) -> bool:
+    sent_events = state.get('sent_events') if isinstance(state.get('sent_events'), dict) else {}
     keys = entry.get('event_keys') if isinstance(entry.get('event_keys'), list) else []
     run_id = _text(entry.get('run_id'))
-    return bool(keys) and all(
-        isinstance(sent_events.get(key), dict)
-        and _text(sent_events[key].get('run_id')) == run_id
-        for key in keys
+    if keys:
+        return all(
+            isinstance(sent_events.get(key), dict)
+            and _text(sent_events[key].get('run_id')) == run_id
+            for key in keys
+        )
+    event_count = entry.get('event_count')
+    last_new_event_count = state.get('last_new_event_count')
+    committed_runs = state.get('committed_runs') if isinstance(state.get('committed_runs'), dict) else {}
+    marker = committed_runs.get(run_id) if isinstance(committed_runs.get(run_id), dict) else None
+    marker_count = marker.get('event_count') if isinstance(marker, dict) else None
+    marker_confirms = (
+        isinstance(marker_count, int)
+        and not isinstance(marker_count, bool)
+        and marker_count == 0
+        and bool(_text(marker.get('committed_at')))
     )
+    return (
+        isinstance(event_count, int)
+        and not isinstance(event_count, bool)
+        and event_count == 0
+        and (
+            marker_confirms
+            or (
+                _text(state.get('last_run_id')) == run_id
+                and isinstance(last_new_event_count, int)
+                and not isinstance(last_new_event_count, bool)
+                and last_new_event_count == 0
+            )
+        )
+    )
+
+
+def _same_path(left: str | os.PathLike[str], right: str | os.PathLike[str]) -> bool:
+    def canonical(value: str | os.PathLike[str]) -> str:
+        expanded = os.path.expanduser(os.fspath(value))
+        return os.path.normcase(os.path.realpath(os.path.abspath(expanded)))
+
+    return canonical(left) == canonical(right)
 
 
 def _candidate_event_key(candidate: dict[str, Any]) -> str:
@@ -659,9 +759,11 @@ def _source_files_status(
             or item.get('max_age_days') != policy.get('max_age_days')
         ):
             return 'alert_source_policy_mismatch', False, set()
+        is_analytical_source = _text(policy.get('role')) in {'price_history', 'leading_screener'}
         if item.get('exists') is not True:
             blocked = True
-            strong_sources.add(name)
+            if is_analytical_source:
+                strong_sources.add(name)
             continue
         observed_at = _parse_source_timestamp(item.get('generated_at') or item.get('modified_at'))
         if observed_at is None:
@@ -671,7 +773,8 @@ def _source_files_status(
         max_age = timedelta(days=int(policy['max_age_days']))
         if generated_at - observed_at > max_age or _text(item.get('freshness')).lower() != 'fresh':
             blocked = True
-        strong_sources.add(name)
+        if is_analytical_source:
+            strong_sources.add(name)
     return None, blocked, strong_sources
 
 

@@ -406,6 +406,7 @@ class Config:
     US_AI_CHART_TIME = os.environ.get('US_AI_CHART_TIME', '04:30')       # AI Chart Analysis US (Gemini Vision) — 04:00 US 마켓갱신과 분리하여 리소스 경합 회피
     HISTORY_TIME = os.environ.get('KR_MARKET_HISTORY_TIME', '10:00')
     ALPHA_SCANNER_ENABLED = os.environ.get('ALPHA_SCANNER_ENABLED', 'true').lower() == 'true'
+    ALPHA_SCANNER_TELEGRAM_ENABLED = os.environ.get('ALPHA_SCANNER_TELEGRAM_ENABLED', 'false').lower() == 'true'
     ALPHA_SCANNER_TIMES = [
         item.strip()
         for item in os.environ.get('ALPHA_SCANNER_TIMES', '09:20,11:20,14:20,15:40,16:10').split(',')
@@ -422,7 +423,9 @@ class Config:
     ALPHA_SCANNER_MAX_EVENTS = int(os.environ.get('ALPHA_SCANNER_MAX_EVENTS', '8'))
     ALPHA_SCANNER_RETRY_SECONDS = int(os.environ.get('ALPHA_SCANNER_RETRY_SECONDS', '300'))
     ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES = int(os.environ.get('ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES', '5'))
-    ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED = os.environ.get('ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED', 'true').lower() == 'true'
+    # The canonical alert is the default single report. Current-TopN is an
+    # explicit operator opt-in follow-up and is never sent for no-new-event runs.
+    ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED = os.environ.get('ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED', 'false').lower() == 'true'
     ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT = int(os.environ.get('ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT', '5'))
     ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES = int(os.environ.get('ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES', '120'))
     ALPHA_BACKTEST_ENABLED = os.environ.get('ALPHA_BACKTEST_ENABLED', 'true').lower() == 'true'
@@ -445,7 +448,7 @@ class Config:
     # CIO opinion (BUY/HOLD/SELL).  Alert quality remains visible in the
     # workflow summary instead of silently shrinking TOP 3 to BUY-only rows.
     MIROFISH_WORKFLOW_REQUIRE_BUY = os.environ.get('MIROFISH_WORKFLOW_REQUIRE_BUY', 'false').lower() == 'true'
-    MIROFISH_WORKFLOW_TELEGRAM_ENABLED = os.environ.get('MIROFISH_WORKFLOW_TELEGRAM_ENABLED', 'true').lower() == 'true'
+    MIROFISH_WORKFLOW_TELEGRAM_ENABLED = os.environ.get('MIROFISH_WORKFLOW_TELEGRAM_ENABLED', 'false').lower() == 'true'
     MIROFISH_WORKFLOW_TELEGRAM_CHANNEL = os.environ.get('MIROFISH_WORKFLOW_TELEGRAM_CHANNEL', 'false').lower() == 'true'
     CRYPTO_TIMES = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']  # 매 4시간
     MORNING_REPORT_TIME = os.environ.get('MORNING_REPORT_TIME', '09:00')   # 일별 상태 리포트
@@ -875,13 +878,18 @@ def run_alpha_scanner_monitor() -> bool:
             max_risk=max_risk,
             max_events=Config.ALPHA_SCANNER_MAX_EVENTS,
             retry_seconds=Config.ALPHA_SCANNER_RETRY_SECONDS,
-            send_fn=lambda message: send_telegram_long(message, channel=False),
+            send_fn=(
+                (lambda message: send_telegram_long(message, channel=False))
+                if Config.ALPHA_SCANNER_TELEGRAM_ENABLED
+                else None
+            ),
         )
         status = result.get('status')
         run = result.get('run') or {}
         if (
-            Config.ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED
-            and status in {'sent', 'no_new_events'}
+            Config.ALPHA_SCANNER_TELEGRAM_ENABLED
+            and Config.ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED
+            and status == 'sent'
             and (run.get('candidates') or [])
         ):
             try:
@@ -956,13 +964,14 @@ def run_alpha_scanner_monitor() -> bool:
         return status in {'no_new_events', 'blocked', 'pending_send'}
     except Exception as e:
         logger.error(f"MiroFish alpha scanner monitor failed: {e}", exc_info=True)
-        try:
-            send_telegram(
-                f"MiroFish alpha scanner failed\n{type(e).__name__}: {e}",
-                channel=False,
-            )
-        except Exception:
-            pass
+        if Config.ALPHA_SCANNER_TELEGRAM_ENABLED:
+            try:
+                send_telegram(
+                    f"MiroFish alpha scanner failed\n{type(e).__name__}: {e}",
+                    channel=False,
+                )
+            except Exception:
+                pass
         return False
 
 
@@ -1082,6 +1091,7 @@ def run_mirofish_workflow_monitor() -> bool:
             commit_workflow_event_state,
             run_workflow_monitor_check,
         )
+        from app.services.mirofish import alpha_scanner as alpha_scanner_service
 
         result = run_workflow_monitor_check({
             'limit': Config.ALPHA_SCANNER_LIMIT,
@@ -1103,28 +1113,56 @@ def run_mirofish_workflow_monitor() -> bool:
             top3 = result.get('top3') or []
             if Config.MIROFISH_WORKFLOW_TELEGRAM_ENABLED and top3:
                 message = build_workflow_top3_telegram_message(result)
-                sent = send_telegram_long(
-                    message,
-                    channel=Config.MIROFISH_WORKFLOW_TELEGRAM_CHANNEL,
-                )
-                if not sent:
-                    logger.warning(
-                        "MiroFish MCP workflow Telegram failed; event state not committed, workflow=%s",
-                        result.get('id'),
+                with alpha_scanner_service.scanner_alert_delivery_guard():
+                    event_candidates = result.get('event_candidates')
+                    if not isinstance(event_candidates, list):
+                        event_candidates = result.get('candidates')
+                    delivery_check = alpha_scanner_service.revalidate_scanner_alert_delivery(
+                        [item for item in (event_candidates or []) if isinstance(item, dict)],
                     )
-                    return False
-                result['telegram_sent'] = True
-                result['telegram_sent_at'] = datetime.now().isoformat()
-                logger.info(
-                    "MiroFish MCP workflow Top %s Telegram sent: workflow=%s scanner=%s",
-                    len(top3),
-                    result.get('id'),
-                    result.get('scanner_run_id'),
-                )
-            elif not Config.MIROFISH_WORKFLOW_TELEGRAM_ENABLED:
+                    result['canonical_delivery_check'] = delivery_check
+                    if not delivery_check.get('ok'):
+                        reason = str(delivery_check.get('status') or 'delivery_revalidation_failed')
+                        result['telegram_sent'] = False
+                        result['telegram_skipped_reason'] = reason
+                        if reason == 'event_overlap':
+                            commit_workflow_event_state(result, sync_dashboard=False)
+                            logger.info(
+                                "MiroFish MCP workflow Telegram skipped on canonical overlap: workflow=%s",
+                                result.get('id'),
+                            )
+                            return True
+                        logger.warning(
+                            "MiroFish MCP workflow delivery revalidation failed: workflow=%s reason=%s",
+                            result.get('id'),
+                            reason,
+                        )
+                        return False
+                    sent = send_telegram_long(
+                        message,
+                        channel=Config.MIROFISH_WORKFLOW_TELEGRAM_CHANNEL,
+                    )
+                    if not sent:
+                        logger.warning(
+                            "MiroFish MCP workflow Telegram failed; event state not committed, workflow=%s",
+                            result.get('id'),
+                        )
+                        return False
+                    result['telegram_sent'] = True
+                    result['telegram_sent_at'] = datetime.now().isoformat()
+                    commit_workflow_event_state(result)
+                    logger.info(
+                        "MiroFish MCP workflow Top %s Telegram sent: workflow=%s scanner=%s",
+                        len(top3),
+                        result.get('id'),
+                        result.get('scanner_run_id'),
+                    )
+            else:
                 result['telegram_sent'] = False
-                result['telegram_skipped_reason'] = 'disabled'
-            commit_workflow_event_state(result)
+                result['telegram_skipped_reason'] = (
+                    'disabled' if not Config.MIROFISH_WORKFLOW_TELEGRAM_ENABLED else 'no_top3'
+                )
+                commit_workflow_event_state(result, sync_dashboard=False)
             return True
         if status in {'queued', 'running'}:
             logger.info(
@@ -1144,13 +1182,14 @@ def run_mirofish_workflow_monitor() -> bool:
         return bool(result.get('ok'))
     except Exception as e:
         logger.error(f"MiroFish MCP workflow monitor failed: {e}", exc_info=True)
-        try:
-            send_telegram(
-                f"MiroFish MCP workflow failed\n{type(e).__name__}: {e}",
-                channel=False,
-            )
-        except Exception:
-            pass
+        if Config.MIROFISH_WORKFLOW_TELEGRAM_ENABLED:
+            try:
+                send_telegram(
+                    f"MiroFish MCP workflow failed\n{type(e).__name__}: {e}",
+                    channel=False,
+                )
+            except Exception:
+                pass
         return False
 
 

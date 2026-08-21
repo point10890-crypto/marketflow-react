@@ -472,6 +472,40 @@ def test_workflow_monitor_check_can_run_sync_without_committing_event_state(tmp_
     assert commit_calls == []
 
 
+def test_analysis_only_workflow_commit_never_mirrors_canonical_alert_state(tmp_path, monkeypatch):
+    """Workflow completion without transport may update only its private dedupe state."""
+    candidates = [_candidate('000001', 'Alpha One', 80, 20, 1)]
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(workflow.alpha_scanner, 'run_scanner_alert_check', lambda *args, **kwargs: _scanner_result(candidates))
+    monkeypatch.setattr(workflow, '_create_analysis_run', lambda candidate, agent_count, mode: _analysis_run(candidate))
+    commits = []
+    real_commit = workflow.commit_workflow_event_state
+
+    def commit(record, **kwargs):
+        commits.append(kwargs)
+        return real_commit(record, **kwargs)
+
+    monkeypatch.setattr(workflow, 'commit_workflow_event_state', commit)
+    monkeypatch.setattr(
+        workflow.alpha_scanner,
+        'commit_scanner_alert_events',
+        lambda result: {'sent_event_count': len(result.get('events') or [])},
+    )
+
+    result = workflow.run_workflow_monitor_check({
+        'limit': 20,
+        'sync': True,
+        'commit_event_state': True,
+        'top_n': 1,
+        'max_parallel': 1,
+    })
+
+    assert result['status'] == 'completed'
+    assert commits == [{'sync_dashboard': False}]
+    assert result['dashboard_event_state_committed'] is False
+
+
 def test_build_workflow_top3_telegram_message_names_exact_targets():
     candidate = _candidate('000001', 'Alpha One', 80, 20, 1)
     message = workflow.build_workflow_top3_telegram_message({
@@ -531,12 +565,45 @@ def test_commit_workflow_event_state_mirrors_dashboard_alert_state(tmp_path, mon
 
     assert state == {'sent_event_count': 1}
     assert len(captured) == 2
-    assert captured[0]['state_path'].endswith('scanner_event_state.json')
-    assert 'state_path' not in captured[1]
+    assert 'state_path' not in captured[0]
+    assert captured[1]['state_path'].endswith('scanner_event_state.json')
     assert captured[0]['run']['id'] == 'mfas_test'
     assert captured[1]['run']['id'] == 'mfas_test'
     assert captured[0]['events'][0]['event_key'] == '000001:BUY_CANDIDATE:2026-05-07'
     assert captured[1]['events'][0]['event_key'] == '000001:BUY_CANDIDATE:2026-05-07'
+
+
+def test_commit_workflow_event_state_preserves_canonical_claim_when_private_write_fails(
+    tmp_path,
+    monkeypatch,
+):
+    """A successful transport cannot become resendable when workflow-private state fails."""
+    candidate = _candidate('000001', 'Alpha One', 80, 20, 1)
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    canonical_commits = []
+
+    def fake_commit(result):
+        if 'state_path' in result:
+            raise OSError('private workflow state unavailable')
+        canonical_commits.append(result)
+        return {'sent_event_count': len(result['events'])}
+
+    monkeypatch.setattr(workflow.alpha_scanner, 'commit_scanner_alert_events', fake_commit)
+
+    with pytest.raises(OSError, match='private workflow state unavailable'):
+        workflow.commit_workflow_event_state({
+            'id': 'mcp_private_failure',
+            'created_at': '2026-05-07T12:00:00+00:00',
+            'scanner_run_id': 'mfas_private_failure',
+            'scanner_candidate_count': 1,
+            'event_count': 1,
+            'candidates': [candidate],
+            'top3': [],
+        })
+
+    assert len(canonical_commits) == 1
+    assert canonical_commits[0]['events'][0]['event_key'] == '000001:BUY_CANDIDATE:2026-05-07'
 
 
 def test_commit_workflow_event_state_keeps_watch_out_of_dashboard_alert_state(tmp_path, monkeypatch):
@@ -565,10 +632,10 @@ def test_commit_workflow_event_state_keeps_watch_out_of_dashboard_alert_state(tm
     assert len(captured) == 2
     assert [event['event_key'] for event in captured[0]['events']] == [
         '000001:BUY_CANDIDATE:2026-05-07',
-        '000002:WATCH:2026-05-07',
     ]
     assert [event['event_key'] for event in captured[1]['events']] == [
         '000001:BUY_CANDIDATE:2026-05-07',
+        '000002:WATCH:2026-05-07',
     ]
 
 

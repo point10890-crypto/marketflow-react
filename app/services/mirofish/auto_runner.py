@@ -45,6 +45,8 @@ import time
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from filelock import Timeout as FileLockTimeout
+
 from app.services.mirofish import agent_actions, alpha_scanner, workflow as workflow_svc
 from app.utils.atomic_json import write_json_atomic
 
@@ -117,7 +119,7 @@ def _tunables() -> dict[str, Any]:
         'circuit_open_minutes': max(5, _env_int('MIROFISH_AUTO_RUNNER_CB_MIN', 60)),
         'est_cost_per_trigger_usd': _env_float('MIROFISH_AUTO_RUNNER_COST_PER_TRIGGER', 0.07),
         'analysis_timeout_seconds': max(60, _env_int('MIROFISH_AUTO_RUNNER_TIMEOUT', 180)),
-        'dry_run': _env_bool('MIROFISH_AUTO_RUNNER_DRY_RUN', False),
+        'dry_run': _env_bool('MIROFISH_AUTO_RUNNER_DRY_RUN', True),
         'allow_outside_market_hours': _env_bool('MIROFISH_AUTO_RUNNER_ALLOW_OUTSIDE', False),
         'allow_stale_sources': _env_bool('MIROFISH_AUTO_RUNNER_ALLOW_STALE', False),
         'min_top_score': _env_float(
@@ -416,6 +418,11 @@ def _execute_cycle(force: bool = False) -> dict[str, Any]:
 
 
 def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: dict[str, Any], started: float, *, force: bool = False) -> dict[str, Any]:
+    """Run analysis first, then guard only final revalidate/send/commit."""
+    return _fire_workflow_transaction(tuning, gates, cycle_record, started, force=force)
+
+
+def _fire_workflow_transaction(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: dict[str, Any], started: float, *, force: bool = False) -> dict[str, Any]:
     with _state_lock:
         state = _read_state()
         state['phase'] = 'TRIGGERED'
@@ -526,19 +533,64 @@ def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: 
     aibain_ok = False
     if message and top3:
         try:
-            # AI Brain 알파 스캐너 TOP 3 메세지 — 개인봇만, 채널 발송 금지
-            # (사용자 요청: t.me/+gC5JgpGLsPJhZWJl 채널에는 알파 스캐너 메세지 보내지 않음)
-            from app.utils.scheduler import _send_telegram_long
-            telegram_ok = bool(_send_telegram_long(message, channel=False))
-        except Exception as exc:
-            logger.warning(f'[auto_runner] telegram send failed: {exc}')
+            with alpha_scanner.scanner_alert_delivery_guard():
+                event_candidates = result.get('event_candidates')
+                if not isinstance(event_candidates, list):
+                    event_candidates = result.get('candidates')
+                delivery_check = alpha_scanner.revalidate_scanner_alert_delivery(event_candidates)
+                cycle_record['canonical_delivery_check'] = delivery_check
+                if not delivery_check.get('ok'):
+                    reason = str(delivery_check.get('status') or 'delivery_revalidation_failed')
+                    if reason == 'event_overlap':
+                        if workflow_id:
+                            try:
+                                workflow_svc.commit_workflow_event_state(result, sync_dashboard=False)
+                            except Exception as exc:
+                                logger.warning(f'[auto_runner] commit overlapping workflow state failed: {exc}')
+                        _record_quality_hold(cycle_record, started, reason, tuning, top3_count=len(top3))
+                        return {
+                            'fired': True,
+                            'success': True,
+                            'workflow_id': workflow_id,
+                            'top3_count': len(top3),
+                            'telegram_ok': False,
+                            'canonical_hold': True,
+                            'quality_reason': reason,
+                        }
+                    _record_failure(cycle_record, started, reason, tuning)
+                    return {
+                        'fired': True,
+                        'success': False,
+                        'workflow_id': workflow_id,
+                        'telegram_ok': False,
+                        'error': reason,
+                    }
 
-        # AIbain parallel — failure doesn't break main flow
-        try:
-            from app.utils.aibain_notify import send_workflow_top3
-            aibain_ok = bool(send_workflow_top3(message))
+                # AI Brain 알파 스캐너 TOP 3 메세지 — 개인봇만, 채널 발송 금지
+                # (사용자 요청: t.me/+gC5JgpGLsPJhZWJl 채널에는 알파 스캐너 메세지 보내지 않음)
+                from app.utils.scheduler import _send_telegram_long
+                telegram_ok = bool(_send_telegram_long(message, channel=False))
+
+                # AIbain parallel — failure doesn't break main flow
+                try:
+                    from app.utils.aibain_notify import send_workflow_top3
+                    aibain_ok = bool(send_workflow_top3(message))
+                except Exception as exc:
+                    logger.debug(f'[auto_runner] aibain send failed: {exc}')
+
+                if (telegram_ok or aibain_ok) and workflow_id:
+                    workflow_svc.commit_workflow_event_state(result)
+        except FileLockTimeout:
+            _record_failure(cycle_record, started, 'alert_delivery_guard_timeout', tuning)
+            return {
+                'fired': True,
+                'success': False,
+                'workflow_id': workflow_id,
+                'telegram_ok': False,
+                'error': 'alert_delivery_guard_timeout',
+            }
         except Exception as exc:
-            logger.debug(f'[auto_runner] aibain send failed: {exc}')
+            logger.warning(f'[auto_runner] guarded telegram delivery failed: {exc}')
 
     cycle_record['telegram_ok'] = telegram_ok
     cycle_record['aibain_ok'] = aibain_ok
@@ -546,12 +598,6 @@ def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: 
     delivered = bool(telegram_ok or aibain_ok)
 
     if delivered and workflow_id:
-        # Commit event state so the same candidates don't trigger again
-        try:
-            workflow_svc.commit_workflow_event_state(result)
-        except Exception as exc:
-            logger.warning(f'[auto_runner] commit_workflow_event_state failed: {exc}')
-
         # Deep enrich — TOP 3 각 종목에 대해 뉴스/공시/네이버 메타 수집해서
         # follow-up 메시지로 발송 (메인 텔레그램 메시지는 그대로, 추가 보강만)
         try:

@@ -6,6 +6,7 @@ from flask import Blueprint, Response, jsonify, request
 
 from app.auth.decorators import admin_required, admin_or_aibain_required
 from app.services import mirofish
+from app.services.mirofish import alpha_scanner as alpha_scanner_service
 from app.services.mirofish import events as mf_events
 
 
@@ -698,16 +699,38 @@ def check_scanner_alerts():
     scanner_payload['limit'] = limit
 
     try:
-        result = mirofish.run_scanner_alert_check(
-            scanner_payload,
-            min_alpha=min_alpha,
-            max_risk=max_risk,
-            max_events=max_events,
-            commit_state=False,
-        )
+        with alpha_scanner_service.scanner_alert_delivery_guard():
+            return _execute_scanner_alert_check(
+                scanner_payload=scanner_payload,
+                min_alpha=min_alpha,
+                max_risk=max_risk,
+                max_events=max_events,
+                dry_run=dry_run,
+                send_telegram=send_telegram,
+                channel=channel,
+            )
     except ValueError as exc:
         return jsonify({'error': str(exc)}), 400
 
+
+def _execute_scanner_alert_check(
+    *,
+    scanner_payload: dict,
+    min_alpha: float,
+    max_risk: float,
+    max_events: int,
+    dry_run: bool,
+    send_telegram: bool,
+    channel: bool,
+):
+    """Select, transport, and commit while the caller holds the alert guard."""
+    result = mirofish.run_scanner_alert_check(
+        scanner_payload,
+        min_alpha=min_alpha,
+        max_risk=max_risk,
+        max_events=max_events,
+        commit_state=False,
+    )
     events = result.get('events') or []
     telegram_sent = False
     state_committed = False
@@ -739,8 +762,6 @@ def check_scanner_alerts():
     elif events and not send_telegram:
         status = 'preview'
     else:
-        state = mirofish.commit_scanner_alert_events(result)
-        state_committed = True
         status = 'no_new_events'
 
     return jsonify({

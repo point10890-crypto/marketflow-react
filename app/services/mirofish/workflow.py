@@ -633,10 +633,6 @@ def commit_workflow_event_state(
         **base_result,
         'state_path': _event_state_path(),
     }
-    state = alpha_scanner.commit_scanner_alert_events(workflow_state_result)
-    record['event_state_committed'] = True
-    record['event_state_committed_at'] = datetime.now(timezone.utc).isoformat()
-    record['event_state'] = state
     if sync_dashboard:
         dashboard_events = [
             event for event in base_result['events']
@@ -660,6 +656,13 @@ def commit_workflow_event_state(
             record['dashboard_event_state_skipped_reason'] = 'no_buy_candidate_events'
     else:
         record['dashboard_event_state_committed'] = False
+    # For a guarded successful transport, preserve the canonical delivered
+    # identity before touching workflow-private dedupe state. A private disk
+    # failure must never leave an already-sent BUY alert eligible for resend.
+    state = alpha_scanner.commit_scanner_alert_events(workflow_state_result)
+    record['event_state_committed'] = True
+    record['event_state_committed_at'] = datetime.now(timezone.utc).isoformat()
+    record['event_state'] = state
     _write_workflow(record)
     return state
 
@@ -1170,7 +1173,10 @@ def _complete_workflow(
     })
     if workflow.get('event_state_commit_requested') and not workflow.get('event_state_committed'):
         try:
-            commit_workflow_event_state(workflow)
+            # Analysis completion alone is not delivery. Update only the
+            # workflow-private dedupe state; canonical dashboard sent_events
+            # is reserved for a guarded successful transport.
+            commit_workflow_event_state(workflow, sync_dashboard=False)
         except Exception as exc:
             workflow['event_state_commit_error'] = f'{type(exc).__name__}: {exc}'
     _write_workflow(workflow)
