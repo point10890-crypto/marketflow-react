@@ -98,10 +98,11 @@ and unchanged in responsibility.
 
 ## Execution outcome — 2026-08-21 KST
 
-- Code was validated through `33dc203`. Focused tests exited 0; a full pytest
-  rerun reached 100% and exited 0 with five pre-existing unawaited-coroutine
-  warnings. Two separate CPython 3.12 native intermittent crashes (access
-  violation/illegal instruction) remain an environment risk.
+- Code was validated through `ed65734`. Focused gates passed: 71
+  verified-delivery tests and 149 related regression tests. A historical full
+  pytest rerun through `33dc203` reached 100% and exited 0 with five
+  pre-existing unawaited-coroutine warnings; a final full pytest rerun is not
+  yet claimed through `ed65734`.
 - Frontend validation passed: 17 files / 90 tests and the build. OpenClaw
   `2026.7.1-2` config validated; MCP doctor/probe passed; its boundary remains
   19 read-only tools, zero bindings, mutation false, sandbox `all`, workspace
@@ -124,13 +125,18 @@ and unchanged in responsibility.
   violations and a verified backup are resolved/approved; no push or deployment
   occurred.
 - Host runtime stability risk is **HIGH** and predates this feature: Windows
-  evidence showed 15 Python crashes and 93 WHEA hardware errors before feature
-  work. Recent WHEA errors are predominantly CPU internal parity/TLB on APIC
-  16/17; crashes span multiple Python distributions and other applications.
-  No dependency, pytest, or native-FFI configuration changed here, so rollback
-  is not indicated. Future MiniPC release requires an independent stable-PC/CI
-  rerun; after main-PC stabilization, require `pytest -q` and
-  `pytest --collect-only -q` three consecutive times with no new WHEA or
-  Application Error. Save work, use BIOS defaults/standard performance and a
-  cold boot, run vendor/Intel CPU diagnostics, preserve event logs, and service
-  or RMA if WHEA recurs.
+  evidence at 2026-08-21 18:02:38 KST showed 17 Python Application Error
+  crashes (python.exe 15 + python3.13.exe 2) and 93 WHEA hardware errors before
+  feature work. Recent WHEA errors are predominantly CPU internal parity/TLB on
+  APIC 16/17; crashes span multiple Python distributions and other applications.
+  Reproducible baseline: Application Error max RecordId 3440795 and
+  WHEA-Logger max RecordId 101636. The no-new-events gate requires greater
+  RecordIds after hardware stabilization while `pytest -q` and
+  `pytest --collect-only -q` pass three consecutive times. No dependency,
+  pytest, or native-FFI configuration changed here, so rollback is not
+  indicated. Future MiniPC release requires an independent stable-PC/CI rerun.
+  BIOS defaults/standard performance and a cold boot are an operator-only
+  recommendation, never an agent action. Any system-setting or reboot action
+  requires separate explicit authorization and vendor recovery/BitLocker/virtualization prep.
+  This handoff performs none. Save work, run vendor/Intel
+  CPU diagnostics, preserve event logs, and service or RMA if WHEA recurs.

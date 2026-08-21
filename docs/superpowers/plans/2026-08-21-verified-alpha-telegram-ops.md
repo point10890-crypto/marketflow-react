@@ -12,10 +12,11 @@
 
 ## Execution status — 2026-08-21 KST
 
-- Tasks 1–3 are complete and locally committed. Focused tests exited 0; a full
-  pytest rerun reached 100% and exited 0 with five pre-existing
-  unawaited-coroutine warnings. Two separate CPython 3.12 native intermittent
-  crashes (access violation/illegal instruction) remain an environment risk.
+- Tasks 1–3 are complete and locally committed through `ed65734`. Focused gates
+  passed: 71 verified-delivery tests and 149 related regression tests. A
+  historical full pytest rerun through `33dc203` reached 100% and exited 0 with
+  five pre-existing unawaited-coroutine warnings; a final full pytest rerun is
+  not yet claimed through `ed65734`.
 - Frontend verification passed: 17 files / 90 tests and build. OpenClaw
   `2026.7.1-2` validated with MCP doctor/probe passing and the required
   read-only 19-tool / zero-binding / mutation-false / sandbox-all /
@@ -37,16 +38,21 @@
   free is 63.15%. Deployment remains blocked until the FK violations and a
   verified backup are resolved/approved.
 - Host runtime stability risk is **HIGH** and predates this feature: Windows
-  evidence showed 15 Python crashes and 93 WHEA hardware errors before feature
-  work. Recent WHEA errors are predominantly CPU internal parity/TLB on APIC
-  16/17; crashes span multiple Python distributions and other applications.
-  This change touched no dependency, pytest, or native-FFI configuration, so
-  rollback is not indicated. Before MiniPC deployment, independently rerun on
-  a stable PC/CI; after main-PC stabilization, require `pytest -q` and
-  `pytest --collect-only -q` three consecutive times with no new WHEA or
-  Application Error. Save work, use BIOS defaults/standard performance and a
-  cold boot, run vendor/Intel CPU diagnostics, preserve event logs, and service
-  or RMA if WHEA recurs.
+  evidence at 2026-08-21 18:02:38 KST showed 17 Python Application Error
+  crashes (python.exe 15 + python3.13.exe 2) and 93 WHEA hardware errors before
+  feature work. Recent WHEA errors are predominantly CPU internal parity/TLB on
+  APIC 16/17; crashes span multiple Python distributions and other applications.
+  Reproducible baseline: Application Error max RecordId 3440795 and
+  WHEA-Logger max RecordId 101636. The no-new-events gate requires greater
+  RecordIds after hardware stabilization while `pytest -q` and
+  `pytest --collect-only -q` pass three consecutive times. This change touched
+  no dependency, pytest, or native-FFI configuration, so rollback is not
+  indicated. Before MiniPC deployment, independently rerun on a stable PC/CI.
+  BIOS defaults/standard performance and a cold boot are an operator-only
+  recommendation, never an agent action. Any system-setting or reboot action
+  requires separate explicit authorization and vendor recovery/BitLocker/virtualization prep.
+  This handoff performs none. Save work, run vendor/Intel
+  CPU diagnostics, preserve event logs, and service or RMA if WHEA recurs.
 
 ## Global Constraints
 
@@ -71,28 +77,28 @@
 - Consumes: `alpha_scanner.run_scanner_alert_check`, persisted scanner artifacts, `write_json_atomic`, personal Telegram environment variables.
 - Produces: `run_verified_detection(...) -> dict`, `validate_scanner_run(...) -> dict`, `post_private_telegram(...) -> dict`, and a CLI returning sanitized JSON.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Cover preview-without-send, stale candidate suppression, explicit confirmation,
 artifact identity/count/finite-score validation, private-only Telegram payload,
 `message_id` verification, duplicate digest refusal, success-only receipt and
 scanner-state commit, and secret-free output.
 
-- [ ] **Step 2: Run the focused tests and confirm RED**
+- [x] **Step 2: Run the focused tests and confirm RED**
 
 Run: `\.\.venv\Scripts\python.exe -m pytest tests/test_mirofish_verified_delivery.py -q`
 
 Expected: collection failure because `app.services.mirofish.verified_delivery`
 does not exist.
 
-- [ ] **Step 3: Implement the minimal operator service and CLI**
+- [x] **Step 3: Implement the minimal operator service and CLI**
 
 Use `deepseek_rerank=False`, `commit_state=False`, and
 `block_on_stale=True`. A successful Telegram response must return a positive
 integer `message_id`. Store only the receipt schema described by the spec using
 the repository atomic JSON helper.
 
-- [ ] **Step 4: Run focused tests and existing scanner/Telegram regressions**
+- [x] **Step 4: Run focused tests and existing scanner/Telegram regressions**
 
 Run:
 
@@ -113,26 +119,26 @@ Expected: all pass.
 - Consumes: existing OpenClaw config preview/apply reconciliation.
 - Produces: collision-safe inventory validation, temporary UTF-8 batch-file config application, sanitized command reporting, and non-target deny preservation.
 
-- [ ] **Step 1: Add failing regression tests**
+- [x] **Step 1: Add failing regression tests**
 
 Add cases for target/non-target `agentDir` equality and overlap, a reconciled
 configuration larger than 32 KiB with Windows metacharacters, batch-file cleanup
 on success/failure, payload absence from JSON output, and deny preservation for
 every non-target agent.
 
-- [ ] **Step 2: Run the focused tests and confirm RED**
+- [x] **Step 2: Run the focused tests and confirm RED**
 
 Run: `\.\.venv\Scripts\python.exe -m pytest tests/test_setup_openclaw_mcp.py -q`
 
 Expected: new collision and batch transport assertions fail.
 
-- [ ] **Step 3: Implement one reviewed issue at a time**
+- [x] **Step 3: Implement one reviewed issue at a time**
 
 First reject unsafe agent directories, then replace inline `--batch-json` with a
 closed temporary UTF-8 `--batch-file`, then reconcile deny lists without
 overwriting unrelated policies. Always delete the temporary file in `finally`.
 
-- [ ] **Step 4: Run focused OpenClaw tests**
+- [x] **Step 4: Run focused OpenClaw tests**
 
 Run: `\.\.venv\Scripts\python.exe -m pytest tests/test_setup_openclaw_mcp.py tests/test_mirofish_mcp_multi_tools.py tests/test_mirofish_mcp_resource_catalog.py -q`
 
@@ -155,20 +161,20 @@ Expected: all pass.
 - Consumes: the verified-delivery CLI and hardened OpenClaw setup commands.
 - Produces: one discoverable `marketflow-openclaw-ops` skill and a no-secret future Windows MiniPC runbook.
 
-- [ ] **Step 1: Pressure-test the missing skill and add failing structural tests**
+- [x] **Step 1: Pressure-test the missing skill and add failing structural tests**
 
 Demonstrate that an unassisted operator can choose stale or force deployment
 paths incorrectly. Add tests that require the skill's explicit ports, no-reset,
 origin/FF-only, private-Telegram, OpenClaw invariants, credential-redaction gate,
 and installer source-of-truth behavior.
 
-- [ ] **Step 2: Run tests and confirm RED**
+- [x] **Step 2: Run tests and confirm RED**
 
 Run: `\.\.venv\Scripts\python.exe -m pytest tests/test_marketflow_openclaw_ops_skill.py -q`
 
 Expected: fail because the skill and installer do not exist.
 
-- [ ] **Step 3: Implement the minimal skill and documentation**
+- [x] **Step 3: Implement the minimal skill and documentation**
 
 Keep `SKILL.md` short and route details into one-level reference files. The
 installer creates or refreshes a user-skill junction/copy from the committed
@@ -176,14 +182,16 @@ source and refuses to overwrite an unrelated destination. Add only concise
 SSOT pointers to `AGENTS.md` and reconcile dev 5001 versus Windows MiniPC 5003
 in `INFRASTRUCTURE.md` without changing live services.
 
-- [ ] **Step 4: Validate structure and pressure-test with the skill**
+- [x] **Step 4: Validate structure and pressure-test with the skill**
 
 Run:
 
 ```powershell
 $env:PYTHONUTF8='1'
 $env:PYTHONIOENCODING='utf-8'
-python C:\Users\dynas\.codex\skills\.system\skill-creator\scripts\quick_validate.py C:\bitman_marketfloww\skills\marketflow-openclaw-ops
+$codexSkillsRoot = Join-Path $env:USERPROFILE '.codex\skills'
+$validator = Join-Path $codexSkillsRoot '.system\skill-creator\scripts\quick_validate.py'
+python $validator (Join-Path (Get-Location) 'skills\marketflow-openclaw-ops')
 .\.venv\Scripts\python.exe -m pytest tests/test_marketflow_openclaw_ops_skill.py -q
 ```
 
@@ -199,10 +207,12 @@ Expected: validator and tests pass; pressure-test operator selects the safe path
 - Consumes: Tasks 1-3.
 - Produces: verified local runtime evidence, one Telegram receipt, and one scoped local Git commit.
 
-- [ ] **Step 1: Run focused and full regression gates**
+- [x] **Step 1: Run focused and full regression gates**
 
-Run the task-specific tests, full `pytest -q`, and `frontend-react` tests/build
-because the current local main already includes an unpushed frontend commit.
+Run the task-specific focused tests and `frontend-react` tests/build. Preserve
+the historical full-suite evidence, but keep a final `pytest -q` rerun through
+the current verified code state as an explicit release gate rather than claiming
+it complete here.
 
 - [x] **Step 2: Run local OpenClaw verification**
 
@@ -210,7 +220,7 @@ Run setup preview, then config validation, MCP doctor/probe, skills check,
 bindings inventory, and security audit using the portable CLI. Apply setup only
 when an explicitly required and authorized configuration change exists.
 
-- [ ] **Step 3: Run the one-shot operator in preview**
+- [x] **Step 3: Run the one-shot operator in preview**
 
 If alert-required sources are stale, attempt only the explicitly safe core
 refresh. Re-run preview and inspect the sanitized result without exposing
@@ -223,7 +233,7 @@ the truthful `검출 보류` report. Confirm a positive Telegram message ID and 
 matching atomic receipt. If recipient blocking returns 403, record only the
 sanitized no-delivery result and do not retry until unblocked.
 
-- [ ] **Step 5: Update the sanitized operational snapshot and commit**
+- [x] **Step 5: Update the sanitized operational snapshot and commit**
 
 Record commit/tool/test/delivery status without tokens, chat IDs, PII, or raw
 messages. Re-run the final verification, stage only intentional files, and make

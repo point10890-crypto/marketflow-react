@@ -122,6 +122,10 @@ def test_installer_requires_an_existing_same_target_link_to_be_a_junction() -> N
     text = _read(INSTALLER)
     assert "LinkType" in text
     assert "Junction" in text
+    assert "source=" not in text
+    assert "destination=" not in text
+    assert "C:\\Users\\" not in text
+    assert "dynas" not in text.lower()
 
 
 def test_deployment_reference_fails_closed_on_unsafe_git_platform_and_health_gaps() -> None:
@@ -166,6 +170,51 @@ def test_operational_state_records_current_windows_contract_and_safe_blockers() 
         assert required in text
 
 
+def test_release_docs_preserve_hardware_gate_and_truthful_task_status() -> None:
+    """Fails if an agent can prescribe host changes or overstate the release gate."""
+    state = _read(SKILL / "references" / "operational-state.md")
+    spec = _read(
+        ROOT / "docs" / "superpowers" / "specs" / "2026-08-21-verified-alpha-telegram-ops-design.md"
+    )
+    plan_path = ROOT / "docs" / "superpowers" / "plans" / "2026-08-21-verified-alpha-telegram-ops.md"
+    plan = _read(plan_path)
+    for text in (state, spec, plan):
+        normalized = " ".join(text.split())
+        for required in (
+            "17 Python Application Error crashes (python.exe 15 + python3.13.exe 2)",
+            "93 WHEA hardware errors",
+            "Application Error max RecordId 3440795",
+            "WHEA-Logger max RecordId 101636",
+            "greater RecordIds",
+            "operator-only recommendation",
+            "separate explicit authorization",
+            "vendor recovery/BitLocker/virtualization prep",
+            "three consecutive",
+        ):
+            assert required in normalized
+    normalized_plan = " ".join(plan.split())
+    assert "ed65734" in normalized_plan
+    assert "71 verified-delivery" in normalized_plan
+    assert "149 related regression" in normalized_plan
+    assert "final full pytest rerun is not yet claimed" in normalized_plan
+    assert "C:\\Users\\" not in plan
+    assert "$env:USERPROFILE" in plan
+
+    for task_number in (1, 2, 3):
+        next_task_number = task_number + 1
+        section = plan.split(f"### Task {task_number}:", 1)[1].split(
+            f"### Task {next_task_number}:", 1
+        )[0]
+        assert "- [ ] **Step" not in section
+        assert "- [x] **Step 1:" in section
+        assert "- [x] **Step 4:" in section
+
+    task_four = plan.split("### Task 4:", 1)[1]
+    for completed_step in (1, 2, 3, 5):
+        assert f"- [x] **Step {completed_step}:" in task_four
+    assert "- [ ] **Step 4:" in task_four
+
+
 @pytest.mark.skipif(shutil.which("powershell") is None, reason="PowerShell is required")
 def test_installer_creates_same_source_junction_idempotently_and_refuses_unrelated_destination(
     tmp_path: Path,
@@ -184,6 +233,7 @@ def test_installer_creates_same_source_junction_idempotently_and_refuses_unrelat
     ]
     first = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
     assert first.returncode == 0, first.stderr
+    assert first.stdout.strip() == "status=created-junction"
     destination = destination_root / "marketflow-openclaw-ops"
     assert destination.is_dir()
     assert destination.resolve() == SKILL.resolve()
@@ -204,6 +254,7 @@ def test_installer_creates_same_source_junction_idempotently_and_refuses_unrelat
 
     second = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
     assert second.returncode == 0, second.stderr
+    assert second.stdout.strip() == "status=existing-junction"
 
     destination.rmdir()
     destination.mkdir()
