@@ -60,9 +60,12 @@
   and 93 WHEA hardware errors. The latest matching Application Error event
   occurred at 2026-08-21 17:42 KST (17:42:03); the 18th is python.exe RecordId
   3440795 during final test work. The current total remains 18 with no later
-  matching event. Recent WHEA errors are predominantly CPU internal parity/TLB
-  on APIC 16/17; crashes span multiple Python distributions and other
-  applications.
+  matching event. **Fresh gate failed** for the attempted current release
+  evidence: the current count became 94 WHEA hardware errors after WHEA-Logger
+  Event ID 19, RecordId 102348, at 2026-08-21 19:15:51 KST. The historical
+  2026-08-21 18:02:38 KST WHEA snapshot remains 93 with max RecordId 101636.
+  Recent WHEA errors are predominantly CPU internal parity/TLB on APIC 16/17;
+  crashes span multiple Python distributions and other applications.
 - Historical diagnostic baseline: Application Error max RecordId 3440795 and
   WHEA-Logger max RecordId 101636. Immediately before
   the three consecutive `pytest -q` and `pytest --collect-only -q` runs, capture

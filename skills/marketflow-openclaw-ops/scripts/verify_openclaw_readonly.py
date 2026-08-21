@@ -15,6 +15,35 @@ from typing import Any, Callable
 
 COMMAND_TIMEOUT_SECONDS = 180
 TARGET_AGENT = "marketflow"
+PINNED_READ_ONLY_TOOLS = (
+    "get_autonomous_status",
+    "get_mcp_security_policy",
+    "get_market_clock",
+    "get_pipeline_operating_snapshot",
+    "get_mcp_resource_snapshot",
+    "get_repository_state",
+    "list_recent_scanner_runs",
+    "get_alpha_research_snapshot",
+    "list_recent_workflows",
+    "list_safe_artifacts",
+    "read_safe_artifact",
+    "get_top3_summary",
+    "get_alpha_scanner_diagnostics",
+    "get_tradingview_provider_status",
+    "get_outcomes_kpi",
+    "get_pipeline_today_snapshot",
+    "get_backtest_summary",
+    "resolve_target",
+    "search_targets",
+)
+PINNED_MUTATING_TOOLS = (
+    "run_candidate_detection_alert",
+    "run_autonomous_scan_analysis",
+    "refresh_learning_feedback",
+    "send_latest_workflow_telegram",
+    "run_multi_mcp_deep_research",
+    "run_multi_mcp_live_market_scan",
+)
 
 
 class _CheckFailure(RuntimeError):
@@ -34,7 +63,10 @@ def verify_openclaw_readonly(
     commands: list[dict[str, Any]] = []
 
     try:
-        canonical_tools, mutating_tools = _load_canonical_tool_policy(repo)
+        setup_tools, setup_mutating_tools = _load_canonical_tool_policy(repo)
+        _validate_pinned_tool_policy(setup_tools, setup_mutating_tools)
+        canonical_tools = list(PINNED_READ_ONLY_TOOLS)
+        mutating_tools = list(PINNED_MUTATING_TOOLS)
         setup = _run_json(
             [
                 sys.executable,
@@ -214,6 +246,17 @@ def _load_canonical_tool_policy(repo: Path) -> tuple[list[str], list[str]]:
     ):
         raise _CheckFailure("canonical_tool_policy_invalid")
     return list(canonical), list(mutating)
+
+
+def _validate_pinned_tool_policy(
+    setup_tools: list[str],
+    setup_mutating_tools: list[str],
+) -> None:
+    if (
+        setup_tools != list(PINNED_READ_ONLY_TOOLS)
+        or setup_mutating_tools != list(PINNED_MUTATING_TOOLS)
+    ):
+        raise _CheckFailure("canonical_tool_policy_mismatch")
 
 
 def _validate_setup_preview(

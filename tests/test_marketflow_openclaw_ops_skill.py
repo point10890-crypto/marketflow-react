@@ -465,6 +465,50 @@ def test_openclaw_verifier_rejects_a_self_consistent_known_mutation_tool_substit
     assert result["failed_check"] == "canonical_tool_policy_mismatch"
 
 
+def test_openclaw_verifier_rejects_coordinated_setup_and_live_policy_tamper(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A compromised setup import cannot redefine the verifier's safe anchor."""
+    module = _load_verifier()
+    payloads = _verification_payloads(tmp_path)
+    removed_safe = "search_targets"
+    injected_mutation = "send_latest_workflow_telegram"
+    tampered_read_only = list(CANONICAL_READ_ONLY_TOOLS)
+    tampered_read_only[tampered_read_only.index(removed_safe)] = injected_mutation
+    tampered_mutating = list(CANONICAL_MUTATING_TOOLS)
+    tampered_mutating[tampered_mutating.index(injected_mutation)] = removed_safe
+
+    for server in (payloads["setup"]["server_config"], payloads["mcp_show"]):
+        server["toolFilter"]["include"] = list(tampered_read_only)
+        server["toolFilter"]["exclude"] = list(tampered_mutating)
+    prefixed = [f"marketflow__{name}" for name in tampered_read_only]
+    for profile in (
+        payloads["setup"]["agent_profile"],
+        payloads["configured_agents"][1],
+    ):
+        profile["tools"]["allow"] = list(prefixed)
+        profile["tools"]["sandbox"]["tools"]["alsoAllow"] = list(prefixed)
+    payloads["probe"]["tools"] = sorted(prefixed)
+    monkeypatch.setattr(
+        module,
+        "_load_canonical_tool_policy",
+        lambda _repo: (list(tampered_read_only), list(tampered_mutating)),
+    )
+
+    runner = _VerifierRunner(payloads)
+    result = module.verify_openclaw_readonly(
+        repo_root=payloads["repo"],
+        openclaw_command="openclaw-test",
+        runner=runner,
+    )
+
+    assert result["ok"] is False
+    assert result["failed_check"] == "canonical_tool_policy_mismatch"
+    assert result["commands"] == []
+    assert runner.calls == []
+
+
 def test_openclaw_verifier_rejects_an_arbitrary_self_consistent_tool_substitution(
     tmp_path: Path,
 ) -> None:
@@ -707,6 +751,10 @@ def test_release_docs_preserve_hardware_gate_and_truthful_task_status() -> None:
             "the 18th is python.exe RecordId 3440795 during final test work",
             "current total remains 18 with no later matching event",
             "93 WHEA hardware errors",
+            "Fresh gate failed",
+            "94 WHEA hardware errors",
+            "WHEA-Logger Event ID 19, RecordId 102348, at 2026-08-21 19:15:51 KST",
+            "historical 2026-08-21 18:02:38 KST WHEA snapshot remains 93 with max RecordId 101636",
             "Application Error max RecordId 3440795",
             "WHEA-Logger max RecordId 101636",
             "fresh pre-test maximum",
