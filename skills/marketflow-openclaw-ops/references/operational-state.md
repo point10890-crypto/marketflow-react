@@ -52,10 +52,13 @@
   crashes (python.exe 15 + python3.13.exe 2) and 93 WHEA hardware errors before
   feature work. Recent WHEA errors are predominantly CPU internal parity/TLB on
   APIC 16/17; crashes span multiple Python distributions and other applications.
-- Reproducible baseline: Application Error max RecordId 3440795 and
-  WHEA-Logger max RecordId 101636. The no-new-events gate requires greater
-  RecordIds after hardware stabilization while `pytest -q` and
-  `pytest --collect-only -q` pass three consecutive times.
+- Historical diagnostic baseline at 2026-08-21 18:02:38 KST: Application Error
+  max RecordId 3440795 and WHEA-Logger max RecordId 101636. Immediately before
+  the three consecutive `pytest -q` and `pytest --collect-only -q` runs, capture
+  the current maxima for matching events as the fresh release-test baseline.
+  After all runs, FAIL if any matching Python Application Error Event ID 1000 or
+  WHEA-Logger event has RecordId greater than its fresh pre-test maximum; pass
+  only if none do. System time is not primary.
 - This change touched no dependency, pytest, or native-FFI configuration, so
   rollback is not indicated. Before MiniPC deployment, independently rerun on a
   stable PC/CI.

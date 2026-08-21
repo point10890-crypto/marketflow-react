@@ -185,13 +185,16 @@ def test_release_docs_preserve_hardware_gate_and_truthful_task_status() -> None:
             "93 WHEA hardware errors",
             "Application Error max RecordId 3440795",
             "WHEA-Logger max RecordId 101636",
-            "greater RecordIds",
+            "fresh pre-test maximum",
+            "FAIL if any matching Python Application Error Event ID 1000 or WHEA-Logger event has RecordId greater than its fresh pre-test maximum",
+            "pass only if none do",
             "operator-only recommendation",
             "separate explicit authorization",
             "vendor recovery/BitLocker/virtualization prep",
             "three consecutive",
         ):
             assert required in normalized
+        assert "requires greater RecordIds" not in normalized
     normalized_plan = " ".join(plan.split())
     assert "ed65734" in normalized_plan
     assert "71 verified-delivery" in normalized_plan
