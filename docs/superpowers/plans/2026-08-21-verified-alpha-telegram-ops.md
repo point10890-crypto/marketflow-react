@@ -4,7 +4,7 @@
 
 **Goal:** Build, verify, and locally operate a fail-closed alpha-scanner-to-private-Telegram path while hardening OpenClaw and storing a reusable MiniPC handoff skill.
 
-**Architecture:** A standalone operator module wraps the existing deterministic alpha scanner, validates persisted artifacts, and owns explicit-confirmation Telegram delivery plus an atomic sanitized receipt. OpenClaw setup remains a separate read-only boundary and is hardened against identity-directory collisions, oversized Windows command lines, and cross-agent tool exposure. A committed Codex skill routes future operators through the exact main-PC and MiniPC gates.
+**Architecture:** A standalone operator module wraps the existing deterministic alpha scanner, persists and validates preview artifacts, and binds explicit-confirmation Telegram delivery to the exact previewed run ID and digest plus an atomic sanitized local ledger. OpenClaw setup remains a separate read-only boundary and is hardened against identity-directory collisions, oversized Windows command lines, and cross-agent tool exposure. A committed Codex skill and parsed verifier route future operators through the exact main-PC and MiniPC gates.
 
 **Tech Stack:** Python 3, pytest, PowerShell, OpenClaw CLI, Markdown Codex skills, atomic JSON helpers.
 
@@ -12,15 +12,20 @@
 
 ## Execution status — 2026-08-21 KST
 
-- Tasks 1–3 are complete and locally committed through `ed65734`. Focused gates
-  passed: 71 verified-delivery tests and 149 related regression tests. A
+- Tasks 1–3 reached a historical local checkpoint through `ed65734`. Focused
+  gates at that checkpoint passed: 71 verified-delivery tests and 149 related
+  regression tests. Independent review subsequently reopened the preview-bound
+  approval, cross-run dedupe/recovery, freshness, and OpenClaw proof gates; the
+  checkboxes below reflect the current release status. A
   historical full pytest rerun through `33dc203` reached 100% and exited 0 with
   five pre-existing unawaited-coroutine warnings; a final full pytest rerun is
   not yet claimed through `ed65734`.
 - Frontend verification passed: 17 files / 90 tests and build. OpenClaw
-  `2026.7.1-2` validated with MCP doctor/probe passing and the required
+  `2026.7.1-2` passed the committed parsed fail-fast verifier: all nine
+  setup/native checks exited 0 and live agent/config/MCP data proved the
   read-only 19-tool / zero-binding / mutation-false / sandbox-all /
-  workspace-none boundary. Audit was critical 0 / warn 1 (trusted-proxy
+  workspace-none boundary, every non-target deny, MCP ownership, and
+  non-overlapping agent paths. Audit was critical 0 / warn 1 (trusted-proxy
   warning), and the Codex skill Junction is installed and validated.
 - Scanner source data was stale; the safe price refresh hung and was interrupted
   with no data change, yielding zero candidates and `검출 보류` only.
@@ -37,11 +42,13 @@
   and 8 unreferenced files; workflows completed 6/6 with no JSON errors; disk
   free is 63.15%. Deployment remains blocked until the FK violations and a
   verified backup are resolved/approved.
-- Host runtime stability risk is **HIGH** and predates this feature: Windows
-  evidence at 2026-08-21 18:02:38 KST showed 17 Python Application Error
-  crashes (python.exe 15 + python3.13.exe 2) and 93 WHEA hardware errors before
-  feature work. Recent WHEA errors are predominantly CPU internal parity/TLB on
-  APIC 16/17; crashes span multiple Python distributions and other applications.
+- Host runtime stability risk is **HIGH** and substantially predates this
+  feature. Current evidence includes 18 Python Application Error crashes
+  (python.exe 16 + python3.13.exe 2): 17 predated the feature and one additional
+  python.exe crash occurred during the final single-process rerun. The
+  historical host record also contains 93 WHEA hardware errors. Recent WHEA
+  errors are predominantly CPU internal parity/TLB on APIC 16/17; crashes span
+  multiple Python distributions and other applications.
   Historical diagnostic baseline at 2026-08-21 18:02:38 KST: Application Error
   max RecordId 3440795 and WHEA-Logger max RecordId 101636. Immediately before
   the three consecutive `pytest -q` and `pytest --collect-only -q` runs, capture
@@ -59,10 +66,10 @@
 
 ## Global Constraints
 
-- Never print, persist, stage, or commit `.env`, tokens, chat IDs, member data, or raw credentials.
+- Never print, copy, stage, or commit `.env`, tokens, chat IDs, member data, raw credentials, messages, or Telegram response bodies. The sanitized ignored receipt ledger must persist locally for dedupe/recovery but must not leave the host.
 - OpenClaw remains read-only with exactly 19 MarketFlow tools, zero mutation tools, zero bindings, sandbox `all`, workspace access `none`, and `MIROFISH_MCP_ALLOW_MUTATION=false`.
-- Telegram delivery is private only, exactly once per `run_id + message SHA-256`, and requires an explicit confirmation string.
-- A stale or invalid run must never be presented as a directional candidate report.
+- Telegram delivery is private only, bound to the exact previewed `run_id + message SHA-256`, cross-run event-deduplicated, and requires an explicit confirmation string.
+- Invalid runs never send. A valid run blocked only by stale alert-required data can send only `검출 보류`, never a directional candidate report.
 - No public channel, AIbain, order, wallet, Git push, MiniPC connection, service restart, or deployment.
 - Preserve all unrelated dirty and untracked files; stage only intentional source, test, skill, and documentation files.
 - Development API port is 5001, Windows MiniPC Flask port is 5003, MCP HTTP port is 8765, and port 8080 is forbidden.
@@ -78,11 +85,12 @@
 
 **Interfaces:**
 - Consumes: `alpha_scanner.run_scanner_alert_check`, persisted scanner artifacts, `write_json_atomic`, personal Telegram environment variables.
-- Produces: `run_verified_detection(...) -> dict`, `validate_scanner_run(...) -> dict`, `post_private_telegram(...) -> dict`, and a CLI returning sanitized JSON.
+- Produces: preview `run_verified_detection(...) -> dict`, exact `run_id` + `message_digest`-bound send, `validate_scanner_run(...) -> dict`, `post_private_telegram(...) -> dict`, and a CLI returning sanitized JSON.
 
 - [x] **Step 1: Write failing tests**
 
-Cover preview-without-send, stale candidate suppression, explicit confirmation,
+Cover preview-without-send, preview artifact persistence, exact run/digest-bound
+send, stale candidate suppression, invalid-run no-send, explicit confirmation,
 artifact identity/count/finite-score validation, private-only Telegram payload,
 `message_id` verification, duplicate digest refusal, success-only receipt and
 scanner-state commit, and secret-free output.
@@ -94,14 +102,16 @@ Run: `\.\.venv\Scripts\python.exe -m pytest tests/test_mirofish_verified_deliver
 Expected: collection failure because `app.services.mirofish.verified_delivery`
 does not exist.
 
-- [x] **Step 3: Implement the minimal operator service and CLI**
+- [ ] **Step 3: Implement the reviewed operator service and CLI**
 
 Use `deepseek_rerank=False`, `commit_state=False`, and
-`block_on_stale=True`. A successful Telegram response must return a positive
-integer `message_id`. Store only the receipt schema described by the spec using
-the repository atomic JSON helper.
+`block_on_stale=True` for preview. A send reloads the exact persisted run and
+requires the previewed digest; it must not create a replacement scanner run.
+A successful Telegram response must return a positive integer `message_id`.
+Store only the sanitized ignored ledger schema using the repository atomic JSON
+helper; never print or copy the ledger or a raw receipt.
 
-- [x] **Step 4: Run focused tests and existing scanner/Telegram regressions**
+- [ ] **Step 4: Run focused tests and existing scanner/Telegram regressions**
 
 Run:
 
@@ -155,6 +165,7 @@ Expected: all pass.
 - Create: `skills/marketflow-openclaw-ops/references/telegram-delivery.md`
 - Create: `skills/marketflow-openclaw-ops/references/minipc-deployment.md`
 - Create: `skills/marketflow-openclaw-ops/references/operational-state.md`
+- Create: `skills/marketflow-openclaw-ops/scripts/verify_openclaw_readonly.py`
 - Create: `scripts/install_marketflow_codex_skill.ps1`
 - Create: `tests/test_marketflow_openclaw_ops_skill.py`
 - Modify: `AGENTS.md`
@@ -162,7 +173,7 @@ Expected: all pass.
 
 **Interfaces:**
 - Consumes: the verified-delivery CLI and hardened OpenClaw setup commands.
-- Produces: one discoverable `marketflow-openclaw-ops` skill and a no-secret future Windows MiniPC runbook.
+- Produces: one discoverable `marketflow-openclaw-ops` skill, a parsed fail-fast read-only OpenClaw verifier, and a no-secret future Windows MiniPC runbook.
 
 - [x] **Step 1: Pressure-test the missing skill and add failing structural tests**
 
@@ -196,6 +207,7 @@ $codexSkillsRoot = Join-Path $env:USERPROFILE '.codex\skills'
 $validator = Join-Path $codexSkillsRoot '.system\skill-creator\scripts\quick_validate.py'
 python $validator (Join-Path (Get-Location) 'skills\marketflow-openclaw-ops')
 .\.venv\Scripts\python.exe -m pytest tests/test_marketflow_openclaw_ops_skill.py -q
+.\.venv\Scripts\python.exe skills/marketflow-openclaw-ops/scripts/verify_openclaw_readonly.py
 ```
 
 Expected: validator and tests pass; pressure-test operator selects the safe path.
@@ -210,7 +222,7 @@ Expected: validator and tests pass; pressure-test operator selects the safe path
 - Consumes: Tasks 1-3.
 - Produces: verified local runtime evidence, one Telegram receipt, and one scoped local Git commit.
 
-- [x] **Step 1: Run focused and full regression gates**
+- [ ] **Step 1: Run focused and full regression gates**
 
 Run the task-specific focused tests and `frontend-react` tests/build. Preserve
 the historical full-suite evidence, but keep a final `pytest -q` rerun through
@@ -219,24 +231,34 @@ it complete here.
 
 - [x] **Step 2: Run local OpenClaw verification**
 
-Run setup preview, then config validation, MCP doctor/probe, skills check,
-bindings inventory, and security audit using the portable CLI. Apply setup only
+Run the committed parsed fail-fast verifier. It must check every native command
+exit code and parse live agents/config/MCP/probe/security data. Apply setup only
 when an explicitly required and authorized configuration change exists.
 
 - [x] **Step 3: Run the one-shot operator in preview**
 
 If alert-required sources are stale, attempt only the explicitly safe core
-refresh. Re-run preview and inspect the sanitized result without exposing
-environment values.
+refresh. Re-run preview, retain the sanitized JSON object, and inspect it
+without exposing environment values. Preview persists scanner run artifacts;
+it is non-sending, not filesystem-non-mutating.
 
 - [ ] **Step 4: Send exactly one private report — blocked on recipient unblock**
 
-Use the explicit confirmation string. If candidate validation is blocked, send
-the truthful `검출 보류` report. Confirm a positive Telegram message ID and a
-matching atomic receipt. If recipient blocking returns 403, record only the
+Use only the exact preview object:
+
+```powershell
+$preview = .\.venv\Scripts\python.exe scripts/run_verified_alpha_telegram.py | ConvertFrom-Json
+.\.venv\Scripts\python.exe scripts/run_verified_alpha_telegram.py --send --run-id $preview.run_id --message-digest $preview.message_digest --confirm SEND_VERIFIED_ALPHA_TELEGRAM
+```
+
+Invalid runs never send. If a valid run is blocked only by stale alert-required
+data, send the truthful `검출 보류` report. Verify delivery internally, but do
+not expose a message ID or raw receipt. The ignored sanitized ledger must
+persist locally for dedupe and recovery and must never be printed, copied,
+staged, or committed. If recipient blocking returns 403, record only the
 sanitized no-delivery result and do not retry until unblocked.
 
-- [x] **Step 5: Update the sanitized operational snapshot and commit**
+- [ ] **Step 5: Update the sanitized operational snapshot and commit**
 
 Record commit/tool/test/delivery status without tokens, chat IDs, PII, or raw
 messages. Re-run the final verification, stage only intentional files, and make

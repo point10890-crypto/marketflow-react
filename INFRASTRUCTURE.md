@@ -4,9 +4,15 @@
 > 어떤 코드/문서가 이 파일과 충돌하면 **이 파일이 옳고**, 코드를 이 파일에 맞춰 수정합니다.
 > 변경 시 반드시 이 파일을 먼저 갱신하고 PR/커밋합니다.
 
-Last updated: 2026-04-08
+Last updated: 2026-08-21
 
 > **2026-04-08 정정**: 라이브 프로세스 검사 결과, 8080 포트는 MarketFlow 가 아닌 별도 프로젝트 JUST BUY (`C:\bitman_justbuy_project`) 의 `justbuy-api-1.0.0.jar` 가 점유하며 `api.bit-man.net` 도 JUST BUY 로 라우팅됨이 확인되었습니다. MarketFlow `backend/` 디렉토리는 dead code 로 분류하고, 8080 / Spring Boot 관련 항목을 SSOT 에서 제거했습니다. 미니PC 이전 시 MarketFlow 측 systemd unit 은 `marketflow-flask.service`, `marketflow-scheduler.service` 두 개만 만듭니다.
+
+> **2026-08-21 운영 정정**: Windows MiniPC production은
+> `C:\bitman_marketfloww` + Task Scheduler이며 Flask는
+> `127.0.0.1:5003`이다. `5001`은 Local development only이다. Linux
+> `/srv/marketflow`와 systemd는 Future Linux design only이며 현재 운영값이
+> 아니다. 이 구분과 충돌하는 예전 helper는 배포에 사용하지 않는다.
 
 ---
 
@@ -22,11 +28,11 @@ Last updated: 2026-04-08
 | 로그 디렉토리 | `C:\bitman_marketfloww\logs` | `/c/bitman_marketfloww/logs` |
 | 프론트엔드 | `C:\bitman_marketfloww\frontend-react` | `/c/bitman_marketfloww/frontend-react` |
 | ~~백엔드 (Spring)~~ | `C:\bitman_marketfloww\backend` (**DEAD CODE — 운영 배포 없음**) | 동일 |
-| Cloudflared 설정 | `C:\Users\dynas\.cloudflared\config.yml` | `/c/Users/dynas/.cloudflared/config.yml` |
-| Cloudflared 자격 | `C:\Users\dynas\.cloudflared\678e9c60-9f8d-4f49-9fba-a49400ef4ca0.json` | 동일 |
+| Cloudflared 설정 | 운영자 프로필의 `.cloudflared\config.yml` | 운영자 프로필 아래 동일 파일 |
+| Cloudflared 자격 | 운영자 프로필의 비추적 자격 파일 | 비추적; 문서/출력/커밋 금지 |
 | Crypto 분석 | `C:\bitman_marketfloww\crypto-analytics\crypto_market` | 동일 |
 
-### 1.2 Linux (홈서버 이전 후 — 미니PC)
+### 1.2 Future Linux design only (현재 배포 대상 아님)
 
 | 항목 | 절대 경로 (Linux) |
 |---|---|
@@ -36,10 +42,9 @@ Last updated: 2026-04-08
 | 로그 디렉토리 | `/srv/marketflow/logs` |
 | 프론트엔드 | `/srv/marketflow/frontend-react` |
 | Cloudflared 설정 | `/etc/cloudflared/config.yml` |
-| Cloudflared 자격 | `/etc/cloudflared/678e9c60-9f8d-4f49-9fba-a49400ef4ca0.json` |
+| Cloudflared 자격 | `/etc/cloudflared/<operator-managed-credential>.json` |
 | Crypto 분석 | `/srv/marketflow/crypto-analytics/crypto_market` |
-| systemd unit | `/etc/systemd/system/marketflow-{flask,scheduler,backup}.service` |
-| systemd timer | `/etc/systemd/system/marketflow-backup.timer` |
+| systemd unit | `/etc/systemd/system/marketflow-{flask,scheduler}.service` |
 | logrotate | `/etc/logrotate.d/marketflow` |
 
 **OS 분기 패턴**:
@@ -58,15 +63,16 @@ Last updated: 2026-04-08
 
 ---
 
-## 2. 홈서버 네트워크 (FIXED)
+## 2. Windows MiniPC production 네트워크 (FIXED)
 
 ### 2.1 로컬 서비스 포트 (LAN/Localhost only)
 
 | 포트 | 서비스 | 프로세스 | 시작 명령 | 외부 노출 |
 |---|---|---|---|---|
-| **5001** | Flask API (메인) | `flask_app.py` | `cd /c/bitman_marketfloww && PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe flask_app.py` | 터널 경유 (`marketflow-api.bit-man.net`) |
-| **5173** | Vite dev (개발용) | `frontend-react` | `cd /c/bitman_marketfloww/frontend-react && npm run dev` | 로컬만 |
-| **N/A** | Scheduler 데몬 | `scheduler.py --daemon` | `cd /c/bitman_marketfloww && PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scheduler.py --daemon` | 없음 (백그라운드 잡) |
+| **5003** | Flask API (Windows MiniPC production) | `flask_app.py` | Task `MarketFlow-Flask` → `scripts\start_flask_task.ps1` | 터널 경유 (`marketflow-api.bit-man.net`) |
+| **5001** | Flask API (Local development only) | `flask_app.py` | `FLASK_PORT=5001` 또는 기본 로컬 실행 | 로컬만 |
+| **5173** | Vite dev (Local development only) | `frontend-react` | `npm run dev` | 로컬만 |
+| **N/A** | Scheduler 데몬 (Windows MiniPC production) | `scheduler.py --daemon` | Task `MarketFlow-Scheduler` | 없음 (백그라운드 잡) |
 
 **금지/외부 점유 포트**:
 - `5002`: 구 cloudflared 잘못된 라우팅의 흔적, 사용 안 함
@@ -74,12 +80,12 @@ Last updated: 2026-04-08
 
 ### 2.2 포트 점유 확인 / 종료
 
-```bash
-# 확인 (MarketFlow는 5001/5173만; 8080은 외부 프로젝트 점유라 무시)
-netstat -ano | grep -E "LISTENING.*:(5001|5173) "
+```powershell
+# Windows MiniPC production 확인: 5003만 Flask production 계약이다.
+Get-NetTCPConnection -State Listen -LocalPort 5003 -ErrorAction SilentlyContinue
 
-# 종료 (예: 5001)
-netstat -ano | grep ":5001" | grep LISTEN | awk '{print $5}' | sort -u | xargs -I{} taskkill //F //PID {}
+# 개발 PC 확인: 5001/5173은 Local development only이다.
+Get-NetTCPConnection -State Listen -LocalPort 5001,5173 -ErrorAction SilentlyContinue
 ```
 
 ### 2.3 단일 인스턴스 보장
@@ -87,8 +93,8 @@ netstat -ano | grep ":5001" | grep LISTEN | awk '{print $5}' | sort -u | xargs -
 | 서비스 | PID 파일 | 락 메커니즘 |
 |---|---|---|
 | Scheduler | `logs/scheduler.pid` | PID 파일 + 포트 락 |
-| Flask | (없음 — taskkill로 정리) | OS 포트 바인딩 |
-| Cloudflared | (없음) | tunnel UUID 단일 |
+| Flask production | Task `MarketFlow-Flask` | OS `127.0.0.1:5003` 바인딩 |
+| Cloudflared | Task/서비스 운영 계약 | 구성된 tunnel 단일 |
 
 ---
 
@@ -99,9 +105,9 @@ netstat -ano | grep ":5001" | grep LISTEN | awk '{print $5}' | sort -u | xargs -
 | 항목 | 값 |
 |---|---|
 | Tunnel Name | `bitman-api` |
-| Tunnel UUID | `678e9c60-9f8d-4f49-9fba-a49400ef4ca0` |
-| Config | `C:\Users\dynas\.cloudflared\config.yml` |
-| Credentials | `C:\Users\dynas\.cloudflared\678e9c60-9f8d-4f49-9fba-a49400ef4ca0.json` |
+| Tunnel ID | 운영자 비추적 구성에서만 조회; 문서/출력/커밋 금지 |
+| Config | 운영자 프로필의 `.cloudflared\config.yml` (비추적) |
+| Credentials | 운영자 프로필의 자격 파일 (비추적; rotation 확인 전 배포 차단) |
 | 연결 수 | 4 (icn05 ×2, icn06 ×2) |
 
 > **참고**: 같은 PC에 별도 프로젝트(JUST BUY)가 자기 터널(`justbuy-tunnel`)을 함께 운영합니다. MarketFlow 운영상 무관하므로 이 SSOT는 추적하지 않습니다.
@@ -110,37 +116,48 @@ netstat -ano | grep ":5001" | grep LISTEN | awk '{print $5}' | sort -u | xargs -
 
 | 외부 호스트 | → | 로컬 서비스 | 용도 |
 |---|---|---|---|
-| `https://marketflow-api.bit-man.net` | → | `http://localhost:5001` | Flask API (메인 전체) |
+| `https://marketflow-api.bit-man.net` | → | `http://127.0.0.1:5003` | Windows MiniPC production Flask API |
 | (그 외 MarketFlow 호스트) | → | `http_status:404` | 차단 |
 
 > `api.bit-man.net` 은 동일 config.yml 에 ingress 로 남아있지만 **JUST BUY 프로젝트의 :8080 JAR 로 라우팅** 됩니다. MarketFlow 코드/문서/배포에서 이 호스트를 호출하거나 재정의하지 마세요. config.yml 상의 의존성은 JUST BUY 측 변경 권한에 둡니다.
 
-### 3.3 config.yml (현행 — JUST BUY 라인 포함)
+### 3.3 config.yml 계약 (민감값을 제거한 설명용 예시)
 
 ```yaml
-tunnel: 678e9c60-9f8d-4f49-9fba-a49400ef4ca0
-credentials-file: C:\Users\dynas\.cloudflared\678e9c60-9f8d-4f49-9fba-a49400ef4ca0.json
+tunnel: <operator-managed-tunnel-id>
+credentials-file: <operator-managed-untracked-credential-file>
 
 ingress:
-  - hostname: api.bit-man.net               # JUST BUY 소유 (MarketFlow 무관)
-    service: http://localhost:8080
-  - hostname: marketflow-api.bit-man.net    # MarketFlow Flask
-    service: http://localhost:5001
+  - hostname: marketflow-api.bit-man.net
+    service: http://127.0.0.1:5003
   - service: http_status:404
 ```
 
+이 블록은 자격 파일에 복사할 수 있는 완전한 설정이 아니다. 같은 호스트의
+JUST BUY ingress는 그 프로젝트 소유이며 MarketFlow가 수정하지 않는다.
+
 ### 3.4 운영 명령
 
-```bash
-# 시작
-cloudflared tunnel --config "C:\Users\dynas\.cloudflared\config.yml" run 678e9c60-9f8d-4f49-9fba-a49400ef4ca0
+```powershell
+# 로컬 Flask health (Windows MiniPC production)
+Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 http://127.0.0.1:5003/healthz
+Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 http://127.0.0.1:5003/api/health
 
-# 종료 (전부)
-taskkill //F //IM cloudflared.exe
-
-# 헬스체크
-curl -s -o /dev/null -w "Flask:  %{http_code}\n" https://marketflow-api.bit-man.net/api/kr/jongga-v2/latest
+# 공개 tunnel health
+Invoke-WebRequest -UseBasicParsing -TimeoutSec 10 https://marketflow-api.bit-man.net/healthz
+Invoke-WebRequest -UseBasicParsing -TimeoutSec 10 https://marketflow-api.bit-man.net/api/health
 ```
+
+현행 파일/작업 계약:
+
+- Flask launcher: Task `MarketFlow-Flask` → `scripts\start_flask_task.ps1` →
+  `FLASK_HOST=127.0.0.1`, `FLASK_PORT=5003`.
+- Flask watchdog: Task `MarketFlow-Flask-Watchdog` →
+  `scripts\flask_watchdog_v2.ps1` → local `/healthz` on 5003.
+- Tunnel watchdog: Task `MarketFlow-Tunnel-Watchdog` →
+  `scripts\tunnel_watchdog.ps1` → public `/healthz` plus local 5003 isolation.
+- Tunnel connector: Task `MarketFlow-Cloudflared` and its operator-owned,
+  untracked config. Do not print or copy config/credential contents.
 
 ---
 
@@ -170,7 +187,11 @@ npx wrangler pages deploy dist --project-name=bitman-marketflow --branch=main --
 VITE_API_BASE_URL=https://marketflow-api.bit-man.net
 ```
 
-> 프론트엔드는 **모든 API 호출을 `marketflow-api.bit-man.net`(Flask) 로** 보냅니다. MarketFlow 에는 자체 Spring Boot 백엔드가 없으며, 모든 엔드포인트(KR/US/Crypto/Wave/Briefing 전부)는 Flask `:5001` 한 곳에서 서빙됩니다. `api.bit-man.net` 은 별도 프로젝트(JUST BUY) 소속이므로 호출 금지.
+> 프론트엔드는 **모든 production API 호출을
+> `marketflow-api.bit-man.net`(Flask) 로** 보냅니다. 터널 뒤 Windows MiniPC
+> production Flask는 `127.0.0.1:5003`이며, 개발 PC의 직접 실행만
+> `127.0.0.1:5001`을 사용합니다. MarketFlow에는 자체 Spring Boot 백엔드가
+> 없고 `api.bit-man.net`은 별도 프로젝트(JUST BUY) 소속이므로 호출 금지입니다.
 
 ### 4.4 CI/CD
 
@@ -191,16 +212,17 @@ VITE_API_BASE_URL=https://marketflow-api.bit-man.net
 - PID 파일: `logs/scheduler.pid`
 - Watchdog: `logs/watchdog_service.log` 가 살아있어야 함
 
-### 5.2 시작/종료
+### 5.2 현행 상태 확인
 
-```bash
-# 시작
-cd /c/bitman_marketfloww && PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scheduler.py --daemon &
+Windows MiniPC production은 Task `MarketFlow-Scheduler`만 사용한다. 아래는
+읽기 전용 확인이며, 시작/종료/재등록은 별도 승인이 필요하다.
 
-# 종료
-cat logs/scheduler.pid | xargs -I{} taskkill //F //PID {}
-# 또는
-taskkill //F //IM python.exe //FI "WINDOWTITLE eq scheduler*"
+```powershell
+Get-ScheduledTask -TaskName MarketFlow-Scheduler -ErrorAction SilentlyContinue
+Get-ScheduledTaskInfo -TaskName MarketFlow-Scheduler -ErrorAction SilentlyContinue
+Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandLine -like '*scheduler.py*--daemon*' } |
+    Select-Object ProcessId,CreationDate
 ```
 
 ### 5.3 잡 스케줄 (KST)
@@ -226,30 +248,39 @@ taskkill //F //IM python.exe //FI "WINDOWTITLE eq scheduler*"
 
 ---
 
-## 6. 검증 체크리스트 (5분 안에 인프라 상태 점검)
+## 6. Windows MiniPC production 검증 체크리스트
 
-```bash
+아래는 상태 확인만 수행한다. 재시작, task 재등록, tunnel 변경은 별도 승인이
+필요하다.
+
+```powershell
 # 1. 경로
-ls /c/bitman_marketfloww/.venv/Scripts/python.exe && echo "[OK] Python venv"
-ls /c/bitman_marketfloww/data/scheduler_last_run.json && echo "[OK] Manifest"
+Test-Path C:\bitman_marketfloww\.venv\Scripts\python.exe
+Test-Path C:\bitman_marketfloww\data\scheduler_last_run.json
 
-# 2. 로컬 포트
-netstat -ano | grep -q ":5001.*LISTENING" && echo "[OK] Flask 5001" || echo "[FAIL] Flask 5001"
+# 2. 로컬 production Flask: 반드시 5003
+Get-NetTCPConnection -State Listen -LocalAddress 127.0.0.1 -LocalPort 5003 -ErrorAction SilentlyContinue
+Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 http://127.0.0.1:5003/healthz
+Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 http://127.0.0.1:5003/api/health
 
-# 3. 스케줄러
-test -f /c/bitman_marketfloww/logs/scheduler.pid && echo "[OK] Scheduler PID" || echo "[FAIL] Scheduler PID"
-PID=$(cat /c/bitman_marketfloww/logs/scheduler.pid 2>/dev/null)
-tasklist | grep -q "$PID" && echo "[OK] Scheduler alive" || echo "[FAIL] Scheduler dead"
+# 3. Task Scheduler 계약
+Get-ScheduledTask -TaskName MarketFlow-Flask,MarketFlow-Flask-Watchdog,MarketFlow-Scheduler,MarketFlow-Cloudflared,MarketFlow-Tunnel-Watchdog -ErrorAction SilentlyContinue
 
-# 4. 터널
-tasklist | grep -qi cloudflared && echo "[OK] Cloudflared running" || echo "[FAIL] Cloudflared dead"
+# 4. 프로세스와 공개 tunnel health
+Get-Process -Name cloudflared -ErrorAction SilentlyContinue
+Invoke-WebRequest -UseBasicParsing -TimeoutSec 10 https://marketflow-api.bit-man.net/healthz
+Invoke-WebRequest -UseBasicParsing -TimeoutSec 10 https://marketflow-api.bit-man.net/api/health
 
-# 5. 외부 도달
-curl -s -o /dev/null -w "[%{http_code}] Flask via tunnel\n" https://marketflow-api.bit-man.net/api/kr/jongga-v2/latest
-curl -s -o /dev/null -w "[%{http_code}] Frontend\n" https://bit-man.net/
+# 5. 로그/manifest 신선도는 내용을 노출하지 않고 파일 metadata로 확인
+Get-Item C:\bitman_marketfloww\logs\flask_task.control.log,C:\bitman_marketfloww\logs\flask_watchdog.log,C:\bitman_marketfloww\logs\tunnel_watchdog.log,C:\bitman_marketfloww\data\scheduler_last_run.json -ErrorAction SilentlyContinue | Select-Object FullName,LastWriteTime,Length
+```
 
-# 6. Manifest 신선도 (24h 이내)
-node -e "const d=require('/c/bitman_marketfloww/data/scheduler_last_run.json');const now=Date.now();for(const[k,v]of Object.entries(d)){const age=(now-new Date(v).getTime())/3600e3;console.log(\`\${age>24?'[STALE]':'[OK]'} \${k}: \${age.toFixed(1)}h\`)}"
+Local development only 확인은 별도로 수행한다:
+
+```powershell
+$env:FLASK_HOST='127.0.0.1'
+$env:FLASK_PORT='5001'
+.\.venv\Scripts\python.exe flask_app.py
 ```
 
 ---
@@ -274,6 +305,7 @@ node -e "const d=require('/c/bitman_marketfloww/data/scheduler_last_run.json');c
 2. 코드/설정을 이 파일에 맞춰 수정
 3. 6번 검증 체크리스트 실행
 4. `git commit -m "infra: <변경 요약>"`
-5. 변경된 것이 배포 영향 있으면 4.2 명령으로 재배포
+5. 배포 영향과 남은 gate를 기록한다. 배포는 사용자가 별도로 명시적으로
+   승인한 경우에만 해당 배포 절차를 실행한다.
 
 이 파일과 다른 곳(CLAUDE.md, README, .env)이 충돌하면 **이 파일이 우선**이며 다른 곳을 이 파일에 맞춰 수정합니다.

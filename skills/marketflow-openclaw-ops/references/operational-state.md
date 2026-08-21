@@ -10,8 +10,11 @@
   bindings, sandbox `all`, workspace access `none`, and mutation env false.
   Future agent behavior must deny mutation. There is no Telegram/OpenClaw
   coupling.
-- Telegram remains private, confirmation-gated, digest-deduplicated, and
-  receipt-verified; stale/invalid results are `검출 보류` only.
+- Telegram remains private and requires the exact previewed `run_id` plus
+  `message_digest` and confirmation phrase. Invalid runs never send. A valid
+  stale-blocked run is `검출 보류` only. The ignored sanitized receipt ledger
+  must persist locally for dedupe and recovery but must never be printed,
+  copied, staged, or committed.
 - Deployment is blocked: tracked legacy documentation needs redaction and
   credential rotation confirmation. Do not copy credential-like plaintext,
   tokens, chat IDs, raw messages, member data, or receipts into this state.
@@ -24,10 +27,11 @@
   pre-existing unawaited-coroutine warnings; a final full pytest rerun is not
   yet claimed through `ed65734`.
 - Frontend verification passed: 17 files / 90 tests and the production build.
-- OpenClaw `2026.7.1-2` config validated; MCP doctor/probe passed; inventory is
-  exactly 19 read-only tools, zero bindings, mutation false, sandbox `all`, and
-  workspace `none`. Security audit reported critical 0 and warn 1
-  (trusted-proxy warning). The Codex skill Junction is installed and validated.
+- OpenClaw `2026.7.1-2` passed the committed parsed fail-fast verifier. All nine
+  setup/native checks exited 0; live agent/config/MCP data proves exactly 19
+  read-only tools, zero mutation tools, zero bindings, mutation false, sandbox
+  `all`, workspace `none`, one non-target deny, non-overlapping agent paths, and
+  security critical 0. The Codex skill Junction is installed and validated.
 - Scanner alert-required source data was stale. A safe price refresh hung and
   was interrupted without changing data, so the outcome is zero candidates and
   `검출 보류` only.
@@ -37,7 +41,7 @@
   ledger contains known failed retryable records; do not retry until the
   recipient unblocks the bot.
 - MiniPC deployment is not authorized. It remains blocked by legacy credential
-  redaction/rotation and port-SSOT reconciliation. A read-only predeploy audit
+  redaction/rotation; older 5001 MiniPC helpers remain quarantined. A read-only predeploy audit
   exited 0: database `quick_check=ok` and required user schema is present, but
   11 foreign-key violations remain (`post_images -> posts`); no configured
   backup roots/candidates were found; community file references have 0 missing
@@ -47,11 +51,13 @@
 
 ## Host runtime stability gate
 
-- Host runtime stability risk is **HIGH** and predates this feature: Windows
-  evidence at 2026-08-21 18:02:38 KST showed 17 Python Application Error
-  crashes (python.exe 15 + python3.13.exe 2) and 93 WHEA hardware errors before
-  feature work. Recent WHEA errors are predominantly CPU internal parity/TLB on
-  APIC 16/17; crashes span multiple Python distributions and other applications.
+- Host runtime stability risk is **HIGH** and substantially predates this
+  feature. Current evidence includes 18 Python Application Error crashes
+  (python.exe 16 + python3.13.exe 2): 17 predated the feature and one additional
+  python.exe crash occurred during the final single-process rerun. The
+  historical host record also contains 93 WHEA hardware errors. Recent WHEA
+  errors are predominantly CPU internal parity/TLB on APIC 16/17; crashes span
+  multiple Python distributions and other applications.
 - Historical diagnostic baseline at 2026-08-21 18:02:38 KST: Application Error
   max RecordId 3440795 and WHEA-Logger max RecordId 101636. Immediately before
   the three consecutive `pytest -q` and `pytest --collect-only -q` runs, capture
