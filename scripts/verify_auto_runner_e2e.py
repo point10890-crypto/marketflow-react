@@ -9,7 +9,10 @@
 사용:
   python scripts/verify_auto_runner_e2e.py             # Phase 1만 (안전, LLM 없음)
   python scripts/verify_auto_runner_e2e.py --full      # 실 분석 + 메시지 빌드
-  python scripts/verify_auto_runner_e2e.py --full --send  # 텔레그램 실제 전송 (마지막 단계)
+
+실제 전송은 이 진단 스크립트에서 지원하지 않습니다. 검증된 one-shot
+operator(`scripts/run_verified_alpha_telegram.py`)의 preview/confirm 절차만
+사용하십시오.
 """
 import os
 import sys
@@ -19,9 +22,11 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
-# .env 강제 로드 (텔레그램 토큰 등)
-env_path = ROOT / ".env"
-if env_path.exists():
+def _load_local_env() -> None:
+    """Load analysis credentials only after unsafe transport flags are rejected."""
+    env_path = ROOT / ".env"
+    if not env_path.exists():
+        return
     for line in env_path.read_text(encoding="utf-8").splitlines():
         if line and not line.startswith("#") and "=" in line:
             k, v = line.split("=", 1)
@@ -32,7 +37,13 @@ if env_path.exists():
 
 def main():
     full = "--full" in sys.argv
-    send = "--send" in sys.argv
+    if "--send" in sys.argv:
+        print("[BLOCKED] 이 진단 스크립트의 직접 Telegram/AIbain 전송은 비활성화되었습니다.")
+        print("먼저 scripts/run_verified_alpha_telegram.py preview를 실행한 뒤,")
+        print("정확한 run_id/message_digest와 SEND_VERIFIED_ALPHA_TELEGRAM 확인 절차를 사용하십시오.")
+        return 3
+
+    _load_local_env()
 
     from app.services.mirofish import alpha_scanner, workflow as workflow_svc
 
@@ -152,19 +163,7 @@ def main():
         print(f"  | {line}")
     print("  " + "─" * 60)
 
-    if send:
-        print("\n=== Phase 4: 실제 텔레그램 송신 (개인봇 + AIbain) ===")
-        from app.utils.scheduler import _send_telegram_long
-        ok = _send_telegram_long(msg, channel=False)  # 개인봇만 (채널 오염 방지)
-        print(f"  personal bot    : {ok}")
-        try:
-            from app.utils.aibain_notify import send_workflow_top3
-            ab = send_workflow_top3(msg)
-            print(f"  AIbain_bot      : {ab}")
-        except Exception as exc:
-            print(f"  AIbain error    : {type(exc).__name__}: {exc}")
-    else:
-        print("\n[INFO] --send 미지정 - 텔레그램 실송신 생략")
+    print("\n[INFO] 실송신은 비활성화됨 - 검증된 one-shot operator만 사용")
 
     print("\n[OK] 전체 검증 PASS")
     return 0
