@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import threading
 import time
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 
@@ -298,6 +300,7 @@ def test_blocked_run_sends_one_status_message_only_with_exact_confirmation(scann
 
     assert denied['status'] == 'confirmation_required'
     assert delivered['status'] == 'blocked_delivered'
+    assert delivered['ok'] is True
     assert sent == ['<b>검출 보류</b>\n스캐너 원천 데이터 freshness 검증이 통과하지 않았습니다.']
     assert calls['commit'] == 0
 
@@ -357,21 +360,26 @@ def test_final_receipt_failure_leaves_uncertain_claim_and_blocks_resend(scanner,
     assert sent == ['<b>Directional candidate</b>']
 
 
-def test_duplicate_recovers_failed_state_commit_without_resending(scanner, monkeypatch, tmp_path):
-    """A delivered receipt with uncommitted state must retry only the state commit."""
-    _, _, _, calls = scanner
+def test_new_run_recovers_matching_uncommitted_event_without_resending(scanner, monkeypatch, tmp_path):
+    """A newly-created scanner run must recover a delivered event by its stable event key."""
+    run, artifacts, result, calls = scanner
     receipt_path = tmp_path / 'receipt.json'
     sent = []
     monkeypatch.setattr(verified_delivery, 'post_private_telegram', lambda message: sent.append(message) or {'ok': True, 'status': 'delivered', 'message_id': 88})
 
     monkeypatch.setattr(verified_delivery.alpha_scanner, 'commit_scanner_alert_events', lambda payload: (_ for _ in ()).throw(RuntimeError('commit failed')))
     first = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
+    run['id'] = 'scanner-verified-002'
+    result['run'] = run
+    artifacts['feature_vectors.json']['run_id'] = run['id']
+    artifacts['evidence_ledger.json']['run_id'] = run['id']
     monkeypatch.setattr(verified_delivery.alpha_scanner, 'commit_scanner_alert_events', lambda payload: calls.__setitem__('commit', calls['commit'] + 1) or {'ok': True})
     second = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
 
     receipt = json.loads(receipt_path.read_text(encoding='utf-8'))['deliveries'][0]
     assert first['status'] == 'state_commit_failed'
     assert second['status'] == 'delivered_recovered'
+    assert second['ok'] is True
     assert sent == ['<b>Directional candidate</b>']
     assert calls['commit'] == 1
     assert receipt['state_committed'] is True
@@ -416,3 +424,95 @@ def test_historical_receipts_refuse_original_digest_after_different_message(scan
 
     assert [first['status'], second['status'], third['status']] == ['delivered', 'delivered', 'duplicate_refused']
     assert sent == ['<b>Directional candidate</b>', '<b>changed candidate</b>']
+
+
+def test_known_telegram_nondelivery_is_recorded_retryable_and_can_send(scanner, monkeypatch, tmp_path):
+    """A missing config or explicit API rejection is known not to have delivered a message."""
+    receipt_path = tmp_path / 'receipt.json'
+    responses = [
+        {'ok': False, 'status': 'not_configured', 'error_code': 'personal_telegram_not_configured', 'retryable': True},
+        {'ok': True, 'status': 'delivered', 'message_id': 144},
+    ]
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', lambda message: responses.pop(0))
+
+    first = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
+    second = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
+
+    ledger = json.loads(receipt_path.read_text(encoding='utf-8'))
+    assert first['status'] == 'telegram_not_delivered'
+    assert second['status'] == 'delivered'
+    assert [entry['status'] for entry in ledger['deliveries']] == ['failed', 'delivered']
+
+
+def test_ambiguous_telegram_request_remains_uncertain_and_blocks_resend(scanner, monkeypatch, tmp_path):
+    """A request failure can have reached Telegram, so the pending claim must block a retry."""
+    receipt_path = tmp_path / 'receipt.json'
+    attempts = []
+    monkeypatch.setattr(
+        verified_delivery,
+        'post_private_telegram',
+        lambda message: attempts.append(message) or {'ok': False, 'status': 'request_failed', 'error_code': 'telegram_request_failed'},
+    )
+
+    first = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
+    second = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
+
+    assert [first['status'], second['status']] == ['delivery_uncertain', 'delivery_uncertain']
+    assert attempts == ['<b>Directional candidate</b>']
+
+
+def test_private_telegram_marks_explicit_api_rejection_retryable(monkeypatch):
+    """A Telegram `ok=false` response is explicit non-delivery, unlike a transport failure."""
+
+    class Response:
+        status_code = 400
+
+        @staticmethod
+        def json():
+            return {'ok': False, 'description': 'bad request'}
+
+    monkeypatch.setenv('TELEGRAM_BOT_TOKEN', 'personal-token')
+    monkeypatch.setenv('TELEGRAM_CHAT_ID', 'personal-chat')
+
+    result = verified_delivery.post_private_telegram('verified', request_post=lambda url, **kwargs: Response())
+
+    assert result == {'ok': False, 'status': 'rejected', 'error_code': 'telegram_response_rejected', 'retryable': True}
+
+
+@pytest.mark.parametrize('status', ['blocked_delivered', 'delivered_recovered'])
+def test_cli_returns_success_for_recovered_and_blocked_delivery(status, monkeypatch, capsys):
+    """Operator CLI must not report a successful guarded delivery as a failed process."""
+    script_path = Path(__file__).parents[1] / 'scripts' / 'run_verified_alpha_telegram.py'
+    spec = importlib.util.spec_from_file_location(f'verified_cli_{status}', script_path)
+    assert spec and spec.loader
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+    monkeypatch.setattr(cli, '_load_dotenv', lambda: None)
+    monkeypatch.setattr(cli, 'run_verified_detection', lambda **kwargs: {'ok': True, 'status': status})
+
+    assert cli.main([]) == 0
+    assert json.loads(capsys.readouterr().out)['status'] == status
+
+
+@pytest.mark.parametrize(
+    'contents',
+    [
+        '{not valid json',
+        json.dumps({'schema_version': 2, 'deliveries': {}}),
+        json.dumps({'schema_version': 999, 'deliveries': []}),
+    ],
+)
+def test_invalid_existing_ledger_fails_closed_without_telegram(scanner, monkeypatch, tmp_path, contents):
+    """A corrupt receipt cannot be treated as an empty dedupe ledger."""
+    receipt_path = tmp_path / 'receipt.json'
+    receipt_path.write_text(contents, encoding='utf-8')
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+
+    result = verified_delivery.run_verified_detection(
+        send=True,
+        confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+        receipt_path=str(receipt_path),
+    )
+
+    assert result == {'ok': False, 'status': 'receipt_invalid', 'run_id': RUN_ID, 'error_code': 'receipt_invalid', 'sent': False}
+    assert receipt_path.read_text(encoding='utf-8') == contents

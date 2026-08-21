@@ -159,7 +159,7 @@ def post_private_telegram(
     token = os.getenv('TELEGRAM_BOT_TOKEN')
     chat_id = os.getenv('TELEGRAM_CHAT_ID')
     if not token or not chat_id:
-        return {'ok': False, 'status': 'not_configured', 'error_code': 'personal_telegram_not_configured'}
+        return {'ok': False, 'status': 'not_configured', 'error_code': 'personal_telegram_not_configured', 'retryable': True}
     post = request_post or requests.post
     try:
         response = post(
@@ -178,7 +178,7 @@ def post_private_telegram(
     telegram_result = payload.get('result') if isinstance(payload, dict) else None
     message_id = telegram_result.get('message_id') if isinstance(telegram_result, dict) else None
     if getattr(response, 'status_code', None) != 200 or not isinstance(payload, dict) or payload.get('ok') is not True:
-        return {'ok': False, 'status': 'rejected', 'error_code': 'telegram_response_rejected'}
+        return {'ok': False, 'status': 'rejected', 'error_code': 'telegram_response_rejected', 'retryable': True}
     if not _positive_int(message_id):
         return {'ok': False, 'status': 'rejected', 'error_code': 'invalid_message_id'}
     return {'ok': True, 'status': 'delivered', 'message_id': message_id}
@@ -198,6 +198,7 @@ def _deliver_or_preview(
     """Preview or serialize one delivery attempt behind its durable claim."""
     events = [] if blocked else _events(alert)
     symbols = [] if blocked else _event_symbols(events)
+    event_keys = [] if blocked else _event_keys(events)
     digest = _message_digest(message)
     base = {
         'run_id': _text(run.get('id')),
@@ -206,6 +207,7 @@ def _deliver_or_preview(
         'candidate_count': 0 if blocked else _candidate_count(run),
         'event_count': len(events),
         'symbols': symbols,
+        'event_keys': event_keys,
         'freshness': _freshness(run),
         'sent': False,
     }
@@ -221,6 +223,11 @@ def _deliver_or_preview(
         path.parent.mkdir(parents=True, exist_ok=True)
         with safe_write(str(path), timeout=15):
             ledger = _read_ledger(path)
+            if ledger is None:
+                return _result('receipt_invalid', run_id=base['run_id'], error_code='receipt_invalid', sent=False)
+            recovered = _recover_outstanding_state(ledger, path, alert, base, blocked)
+            if recovered is not None:
+                return recovered
             existing = _find_delivery(ledger, base['run_id'], digest)
             if existing is not None:
                 return _handle_existing_delivery(ledger, path, existing, alert, base, blocked)
@@ -231,6 +238,7 @@ def _deliver_or_preview(
                 message_digest=digest,
                 event_count=len(events),
                 symbols=symbols,
+                event_keys=event_keys,
                 blocked=blocked,
             )
             ledger['deliveries'].append(claim)
@@ -246,6 +254,13 @@ def _deliver_or_preview(
 
             delivery = post_private_telegram(message)
             if not delivery.get('ok'):
+                if delivery.get('retryable') is True:
+                    claim.update({'status': 'failed', 'retryable': True, 'updated_at': _now_iso()})
+                    try:
+                        _write_ledger(path, ledger)
+                    except Exception:
+                        return _result('delivery_uncertain', **{**base, 'sent': None, 'error_code': 'receipt_final_write_failed'})
+                    return _result('telegram_not_delivered', **{**base, 'sent': False, 'error_code': delivery.get('error_code')})
                 claim['status'] = 'uncertain'
                 claim['updated_at'] = _now_iso()
                 _best_effort_write_ledger(path, ledger)
@@ -294,6 +309,45 @@ def _handle_existing_delivery(
     return _result(
         'duplicate_refused',
         **{**base, 'message_id': entry.get('message_id'), 'sent': False, 'state_committed': bool(entry.get('state_committed'))},
+    )
+
+
+def _recover_outstanding_state(
+    ledger: dict[str, Any],
+    path: Path,
+    alert: dict[str, Any],
+    base: dict[str, Any],
+    blocked: bool,
+) -> dict[str, Any] | None:
+    """Recover pending scanner event state before considering any new delivery."""
+    if blocked:
+        return None
+    outstanding = [
+        entry for entry in ledger.get('deliveries') or []
+        if _text(entry.get('status')) == 'delivered' and entry.get('state_committed') is not True
+    ]
+    if not outstanding:
+        return None
+    current_keys = set(base.get('event_keys') or [])
+    matching = [entry for entry in outstanding if set(entry.get('event_keys') or []) == current_keys and current_keys]
+    if len(matching) != len(outstanding):
+        return _result('state_recovery_required', run_id=base['run_id'], error_code='state_recovery_required', sent=False)
+    try:
+        alpha_scanner.commit_scanner_alert_events(alert)
+    except Exception:
+        return _result('state_recovery_required', run_id=base['run_id'], error_code='state_recovery_required', sent=False)
+    now = _now_iso()
+    for entry in matching:
+        entry['state_committed'] = True
+        entry['state_recovered_at'] = now
+        entry['updated_at'] = now
+    try:
+        _write_ledger(path, ledger)
+    except Exception:
+        return _result('state_recovery_required', run_id=base['run_id'], error_code='state_recovery_required', sent=False)
+    return _result(
+        'delivered_recovered',
+        **{**base, 'message_id': matching[0].get('message_id'), 'sent': False, 'state_committed': True},
     )
 
 
@@ -392,6 +446,7 @@ def _delivery_entry(
     message_digest: str,
     event_count: int,
     symbols: list[str],
+    event_keys: list[str],
     blocked: bool,
 ) -> dict[str, Any]:
     now = _now_iso()
@@ -406,25 +461,30 @@ def _delivery_entry(
         'candidate_count': 0 if blocked else _candidate_count(run),
         'event_count': event_count,
         'symbols': symbols,
+        'event_keys': event_keys,
         'freshness': _freshness(run),
         'state_committed': False,
     }
 
 
-def _read_ledger(path: Path) -> dict[str, Any]:
+def _read_ledger(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return {'schema_version': RECEIPT_SCHEMA_VERSION, 'updated_at': _now_iso(), 'deliveries': []}
     try:
         payload = json.loads(path.read_text(encoding='utf-8'))
     except (OSError, ValueError):
-        return {'schema_version': RECEIPT_SCHEMA_VERSION, 'updated_at': _now_iso(), 'deliveries': []}
+        return None
     if not isinstance(payload, dict):
-        return {'schema_version': RECEIPT_SCHEMA_VERSION, 'updated_at': _now_iso(), 'deliveries': []}
+        return None
     deliveries = payload.get('deliveries')
-    if isinstance(deliveries, list):
-        return {'schema_version': RECEIPT_SCHEMA_VERSION, 'updated_at': payload.get('updated_at') or _now_iso(), 'deliveries': [item for item in deliveries if isinstance(item, dict)]}
+    if payload.get('schema_version') == RECEIPT_SCHEMA_VERSION:
+        if not isinstance(deliveries, list) or not all(isinstance(item, dict) for item in deliveries):
+            return None
+        return {'schema_version': RECEIPT_SCHEMA_VERSION, 'updated_at': payload.get('updated_at') or _now_iso(), 'deliveries': deliveries}
     # Safely retain a receipt written by the first release as a historical entry.
-    if _text(payload.get('run_id')) and _text(payload.get('message_sha256')):
+    if payload.get('schema_version') == 1 and _text(payload.get('run_id')) and _text(payload.get('message_sha256')):
         return {'schema_version': RECEIPT_SCHEMA_VERSION, 'updated_at': _now_iso(), 'deliveries': [payload]}
-    return {'schema_version': RECEIPT_SCHEMA_VERSION, 'updated_at': _now_iso(), 'deliveries': []}
+    return None
 
 
 def _write_ledger(path: Path, ledger: dict[str, Any]) -> None:
@@ -441,10 +501,30 @@ def _best_effort_write_ledger(path: Path, ledger: dict[str, Any]) -> None:
 
 
 def _find_delivery(ledger: dict[str, Any], run_id: str, digest: str) -> dict[str, Any] | None:
-    for entry in ledger.get('deliveries') or []:
-        if _text(entry.get('run_id')) == run_id and _text(entry.get('message_sha256')) == digest:
+    for entry in reversed(ledger.get('deliveries') or []):
+        if (
+            _text(entry.get('run_id')) == run_id
+            and _text(entry.get('message_sha256')) == digest
+            and _text(entry.get('status')) != 'failed'
+        ):
             return entry
     return None
+
+
+def _event_keys(events: list[dict[str, Any]]) -> list[str]:
+    keys = set()
+    for event in events:
+        supplied = _text(event.get('event_key'))
+        if supplied:
+            keys.add(supplied)
+            continue
+        candidate = event.get('candidate') if isinstance(event.get('candidate'), dict) else {}
+        symbol = _text(candidate.get('symbol'))
+        price = candidate.get('price') if isinstance(candidate.get('price'), dict) else {}
+        price_date = _text(price.get('date')) or _text(candidate.get('generated_at'))[:10]
+        if symbol and price_date:
+            keys.add(f"{symbol}:{_text(candidate.get('action'))}:{price_date}")
+    return sorted(keys)
 
 
 def _now_iso() -> str:
@@ -472,4 +552,4 @@ def _invalid(error_code: str) -> dict[str, Any]:
 
 
 def _result(status: str, **fields: Any) -> dict[str, Any]:
-    return {'ok': status in {'preview', 'delivered', 'blocked'}, 'status': status, **fields}
+    return {'ok': status in {'preview', 'delivered', 'blocked', 'blocked_delivered', 'delivered_recovered'}, 'status': status, **fields}
