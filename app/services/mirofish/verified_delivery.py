@@ -12,7 +12,7 @@ import json
 import math
 import os
 import re
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -60,33 +60,25 @@ def run_verified_detection(
     if not run_id:
         return _result('invalid_run', error_code='missing_run_id')
 
-    validation = validate_scanner_run(run_id, expected_run=run)
-    stale = bool(alert.get('alert_blocked')) or validation.get('error_code') == 'blocked_freshness'
-    if stale:
-        return _deliver_or_preview(
-            run=run,
-            alert=alert,
-            message='<b>검출 보류</b>\n스캐너 원천 데이터 freshness 검증이 통과하지 않았습니다.',
-            send=send,
-            confirmation=confirmation,
-            receipt_path=receipt_path,
-            blocked=True,
-            error_code=validation.get('error_code') or _text(alert.get('blocked_reason')) or 'blocked_freshness',
-        )
-    if not validation.get('ok'):
+    validation, persisted = _validate_scanner_run_canonical(run_id, expected_run=run)
+    blocked = validation.get('error_code') == 'blocked_freshness'
+    if not validation.get('ok') and not blocked:
         return _result('invalid_run', run_id=run_id, error_code=validation.get('error_code'))
-
-    message = _text(alert.get('message'))
-    if not message:
-        return _result('invalid_run', run_id=run_id, error_code='missing_alert_message')
+    if not isinstance(persisted, dict):
+        return _result('invalid_run', run_id=run_id, error_code='run_not_found')
+    canonical_alert, alert_error = _canonicalize_alert(alert, persisted, blocked=blocked)
+    if alert_error:
+        return _result('invalid_run', run_id=run_id, error_code=alert_error)
+    message = canonical_alert['message']
     return _deliver_or_preview(
-        run=run,
-        alert=alert,
+        run=persisted,
+        alert=canonical_alert,
         message=message,
         send=send,
         confirmation=confirmation,
         receipt_path=receipt_path,
-        blocked=False,
+        blocked=blocked,
+        error_code='blocked_freshness' if blocked else None,
     )
 
 
@@ -99,56 +91,72 @@ def validate_scanner_run(
     if isinstance(run_id, dict):
         expected_run = run_id
         run_id = _text(run_id.get('id'))
+    validation, _ = _validate_scanner_run_canonical(run_id, expected_run=expected_run)
+    return validation
+
+
+def _validate_scanner_run_canonical(
+    run_id: str,
+    *,
+    expected_run: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    """Return validation metadata plus the one persisted run used downstream."""
     clean_id = _text(run_id)
     if not clean_id:
-        return _invalid('missing_run_id')
+        return _invalid('missing_run_id'), None
     try:
         persisted = alpha_scanner.read_scanner_run(clean_id)
     except Exception:
-        return _invalid('run_read_failed')
+        return _invalid('run_read_failed'), None
     if not isinstance(persisted, dict):
-        return _invalid('run_not_found')
+        return _invalid('run_not_found'), None
     if _text(persisted.get('id')) != clean_id:
-        return _invalid('run_identity_mismatch')
+        return _invalid('run_identity_mismatch'), persisted
     if persisted.get('status') != 'completed':
-        return _invalid('run_not_completed')
-    if expected_run is not None:
-        if _text(expected_run.get('id')) != _text(persisted.get('id')):
-            return _invalid('run_identity_mismatch')
-        if _text(expected_run.get('generated_at')) != _text(persisted.get('generated_at')):
-            return _invalid('generated_at_mismatch')
-        if expected_run.get('candidate_count') != persisted.get('candidate_count'):
-            return _invalid('candidate_count_mismatch')
+        return _invalid('run_not_completed'), persisted
+    if expected_run is not None and expected_run != persisted:
+        return _invalid('run_content_mismatch'), persisted
     generated_at = _text(persisted.get('generated_at'))
     if not generated_at:
-        return _invalid('missing_generated_at')
+        return _invalid('missing_generated_at'), persisted
+    generated_dt = _parse_timestamp(generated_at)
+    if generated_dt is None:
+        return _invalid('invalid_generated_at'), persisted
     candidates = persisted.get('candidates')
     count = persisted.get('candidate_count')
     if not isinstance(candidates, list) or not isinstance(count, int) or isinstance(count, bool) or count != len(candidates):
-        return _invalid('candidate_count_mismatch')
-    if _freshness(persisted) in alpha_scanner.ALERT_BLOCKING_FRESHNESS:
-        return _invalid('blocked_freshness')
+        return _invalid('candidate_count_mismatch'), persisted
     for candidate in candidates:
-        error = _candidate_error(candidate)
+        error = _candidate_error(candidate, generated_date=generated_dt.date())
         if error:
-            return _invalid(error)
+            return _invalid(error), persisted
 
     try:
         features = alpha_scanner.read_scanner_run_artifact(clean_id, 'feature_vectors.json')
         ledger = alpha_scanner.read_scanner_run_artifact(clean_id, 'evidence_ledger.json')
     except Exception:
-        return _invalid('artifact_read_failed')
-    artifact_error = _artifact_error(features, clean_id, 'feature_vectors', count)
+        return _invalid('artifact_read_failed'), persisted
+    artifact_error = _artifact_error(features, clean_id, generated_at, 'feature_vectors', count)
     if artifact_error:
-        return _invalid(artifact_error)
-    artifact_error = _artifact_error(ledger, clean_id, 'evidence_ledger', count)
+        return _invalid(artifact_error), persisted
+    artifact_error = _artifact_error(ledger, clean_id, generated_at, 'evidence_ledger', count)
     if artifact_error:
-        return _invalid(artifact_error)
-    if not _candidate_symbols_present(candidates, features.get('features')):
-        return _invalid('feature_vectors_symbol_mismatch')
-    if not _candidate_symbols_present(candidates, ledger.get('items')):
-        return _invalid('evidence_ledger_symbol_mismatch')
-    return {'ok': True, 'run_id': clean_id, 'generated_at': generated_at, 'candidate_count': count, 'freshness': _freshness(persisted)}
+        return _invalid(artifact_error), persisted
+    artifact_error = _feature_vectors_error(features.get('features'), candidates, generated_dt.date())
+    if artifact_error:
+        return _invalid(artifact_error), persisted
+    artifact_error = _evidence_ledger_error(ledger.get('items'), candidates, generated_dt.date())
+    if artifact_error:
+        return _invalid(artifact_error), persisted
+    if _freshness(persisted) in alpha_scanner.ALERT_BLOCKING_FRESHNESS:
+        return _invalid('blocked_freshness'), persisted
+    return ({
+        'ok': True,
+        'run_id': clean_id,
+        'generated_at': generated_at,
+        'candidate_count': count,
+        'freshness': _freshness(persisted),
+    }, persisted)
 
 
 def post_private_telegram(
@@ -158,8 +166,14 @@ def post_private_telegram(
 ) -> dict[str, Any]:
     """Deliver one HTML message with the personal bot only and verify Telegram's ID."""
     token = os.getenv('TELEGRAM_BOT_TOKEN')
-    chat_id = os.getenv('TELEGRAM_CHAT_ID')
-    if not token or not chat_id:
+    configured_chat_id = os.getenv('TELEGRAM_CHAT_ID')
+    if not token or not configured_chat_id:
+        return {'ok': False, 'status': 'not_configured', 'error_code': 'personal_telegram_not_configured', 'retryable': True}
+    try:
+        chat_id = int(configured_chat_id.strip())
+    except (TypeError, ValueError):
+        chat_id = 0
+    if chat_id <= 0:
         return {'ok': False, 'status': 'not_configured', 'error_code': 'personal_telegram_not_configured', 'retryable': True}
     post = request_post or requests.post
     try:
@@ -182,6 +196,15 @@ def post_private_telegram(
         return {'ok': False, 'status': 'rejected', 'error_code': 'telegram_response_rejected', 'retryable': True}
     if not _positive_int(message_id):
         return {'ok': False, 'status': 'rejected', 'error_code': 'invalid_message_id'}
+    response_chat = telegram_result.get('chat') if isinstance(telegram_result, dict) else None
+    response_chat_id = response_chat.get('id') if isinstance(response_chat, dict) else None
+    if (
+        not isinstance(response_chat, dict)
+        or not _positive_int(response_chat_id)
+        or response_chat_id != chat_id
+        or response_chat.get('type') != 'private'
+    ):
+        return {'ok': False, 'status': 'rejected', 'error_code': 'private_chat_verification_failed'}
     return {'ok': True, 'status': 'delivered', 'message_id': message_id}
 
 
@@ -203,7 +226,6 @@ def _deliver_or_preview(
     digest = _message_digest(message)
     base = {
         'run_id': _text(run.get('id')),
-        'message': message,
         'message_digest': digest,
         'candidate_count': 0 if blocked else _candidate_count(run),
         'event_count': len(events),
@@ -375,28 +397,140 @@ def _commit_after_delivery(
     return _result('delivered', **{**base, 'message_id': entry.get('message_id'), 'sent': True, 'state_committed': True})
 
 
-def _candidate_error(candidate: Any) -> str | None:
+def _canonicalize_alert(
+    alert: dict[str, Any],
+    run: dict[str, Any],
+    *,
+    blocked: bool,
+) -> tuple[dict[str, Any], str | None]:
+    """Validate transient event metadata and rebuild one persisted-run alert."""
+    raw_blocked = alert.get('alert_blocked')
+    if not isinstance(raw_blocked, bool) or raw_blocked != blocked:
+        return {}, 'freshness_alert_mismatch'
+    raw_events = alert.get('events')
+    if not isinstance(raw_events, list):
+        return {}, 'invalid_alert_events'
+    event_count = alert.get('new_event_count')
+    if not isinstance(event_count, int) or isinstance(event_count, bool) or event_count != len(raw_events):
+        return {}, 'event_count_mismatch'
+    state_path = alert.get('state_path')
+    if not isinstance(state_path, str) or not state_path.strip():
+        return {}, 'invalid_state_path'
+    if blocked and raw_events:
+        return {}, 'blocked_alert_has_events'
+
+    candidates = run.get('candidates') if isinstance(run.get('candidates'), list) else []
+    candidate_by_symbol: dict[str, dict[str, Any]] = {}
+    for candidate in candidates:
+        symbol = _text(candidate.get('symbol')) if isinstance(candidate, dict) else ''
+        if not symbol or symbol in candidate_by_symbol:
+            return {}, 'candidate_identity_mismatch'
+        candidate_by_symbol[symbol] = candidate
+
+    canonical_events: list[dict[str, Any]] = []
+    seen_keys: set[str] = set()
+    for raw_event in raw_events:
+        if not isinstance(raw_event, dict):
+            return {}, 'invalid_alert_event'
+        raw_candidate = raw_event.get('candidate')
+        if not isinstance(raw_candidate, dict):
+            return {}, 'event_candidate_mismatch'
+        symbol = _text(raw_candidate.get('symbol'))
+        candidate = candidate_by_symbol.get(symbol)
+        if candidate is None or raw_candidate != candidate:
+            return {}, 'event_candidate_mismatch'
+        if raw_event.get('run_id') != run.get('id'):
+            return {}, 'event_run_id_mismatch'
+        if raw_event.get('generated_at') != run.get('generated_at'):
+            return {}, 'event_generated_at_mismatch'
+        expected_key = _candidate_event_key(candidate)
+        if raw_event.get('event_key') != expected_key:
+            return {}, 'event_key_mismatch'
+        if expected_key in seen_keys:
+            return {}, 'duplicate_event_key'
+        if (
+            candidate.get('action') != 'BUY_CANDIDATE'
+            or float(candidate['alpha_score']) < alpha_scanner.DEFAULT_ALERT_MIN_ALPHA
+            or float(candidate['risk_score']) > alpha_scanner.DEFAULT_ALERT_MAX_RISK
+        ):
+            return {}, 'ineligible_alert_event'
+        seen_keys.add(expected_key)
+        canonical_events.append({
+            'event_key': expected_key,
+            'run_id': run['id'],
+            'generated_at': run['generated_at'],
+            'candidate': candidate,
+        })
+
+    blocked_reason = 'blocked_freshness' if blocked else None
+    try:
+        message = alpha_scanner.build_scanner_alert_message(
+            run,
+            canonical_events,
+            min_alpha=alpha_scanner.DEFAULT_ALERT_MIN_ALPHA,
+            max_risk=alpha_scanner.DEFAULT_ALERT_MAX_RISK,
+            blocked_reason=blocked_reason,
+        )
+    except Exception:
+        return {}, 'message_build_failed'
+    if not _text(message):
+        return {}, 'message_build_failed'
+    return ({
+        'run': run,
+        'events': canonical_events,
+        'message': message,
+        'state_path': state_path,
+        'new_event_count': len(canonical_events),
+        'alert_blocked': blocked,
+        'blocked_reason': blocked_reason,
+    }, None)
+
+
+def _candidate_event_key(candidate: dict[str, Any]) -> str:
+    price = candidate.get('price') if isinstance(candidate.get('price'), dict) else {}
+    price_date = _text(price.get('date')) or _text(candidate.get('generated_at'))[:10]
+    return f"{_text(candidate.get('symbol'))}:{_text(candidate.get('action'))}:{price_date}"
+
+
+def _candidate_error(candidate: Any, *, generated_date: date) -> str | None:
     if not isinstance(candidate, dict):
         return 'invalid_candidate'
     if not _text(candidate.get('symbol')) or not (_text(candidate.get('display_name')) or _text(candidate.get('name'))):
         return 'invalid_candidate_identity'
     if not _text(candidate.get('market')):
         return 'invalid_candidate_market'
-    if not _finite(candidate.get('alpha_score')) or not _finite(candidate.get('risk_score')):
+    if (
+        not _finite(candidate.get('alpha_score'))
+        or not _finite(candidate.get('risk_score'))
+        or not _finite(candidate.get('ranking_score'))
+    ):
         return 'invalid_candidate_score'
-    if not isinstance(candidate.get('evidence'), list) or not candidate['evidence']:
+    if not _valid_evidence(candidate.get('evidence')):
         return 'invalid_candidate_evidence'
     price = candidate.get('price')
-    if not isinstance(price, dict) or not _text(price.get('date')):
+    if not isinstance(price, dict) or not _finite(price.get('current_price')):
+        return 'invalid_candidate_price'
+    price_date = _parse_date(price.get('date'))
+    if price_date is None:
         return 'invalid_candidate_price_date'
+    if price_date > generated_date:
+        return 'candidate_price_after_run'
     return None
 
 
-def _artifact_error(artifact: Any, run_id: str, label: str, candidate_count: int) -> str | None:
+def _artifact_error(
+    artifact: Any,
+    run_id: str,
+    generated_at: str,
+    label: str,
+    candidate_count: int,
+) -> str | None:
     if not isinstance(artifact, dict):
         return f'{label}_missing'
     if _text(artifact.get('run_id')) != run_id:
         return f'{label}_identity_mismatch'
+    if _text(artifact.get('generated_at')) != generated_at:
+        return f'{label}_generated_at_mismatch'
     if artifact.get('lookahead_safe') is not True:
         return f'{label}_not_lookahead_safe'
     entries_key = 'features' if label == 'feature_vectors' else 'items'
@@ -416,11 +550,121 @@ def _artifact_error(artifact: Any, run_id: str, label: str, candidate_count: int
     return None
 
 
-def _candidate_symbols_present(candidates: list[Any], entries: Any) -> bool:
+def _feature_vectors_error(entries: Any, candidates: list[Any], generated_date: date) -> str | None:
     if not isinstance(entries, list):
-        return False
-    actual = {_text(item.get('symbol')) for item in entries if isinstance(item, dict)}
-    return {_text(item.get('symbol')) for item in candidates if isinstance(item, dict)}.issubset(actual)
+        return 'feature_vectors_count_mismatch'
+    candidate_by_symbol = {
+        _text(candidate.get('symbol')): candidate
+        for candidate in candidates
+        if isinstance(candidate, dict)
+    }
+    if len(candidate_by_symbol) != len(candidates):
+        return 'feature_vectors_symbol_mismatch'
+    seen: set[str] = set()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            return 'invalid_feature_vector'
+        symbol = _text(entry.get('symbol'))
+        candidate = candidate_by_symbol.get(symbol)
+        if candidate is None or symbol in seen:
+            return 'feature_vectors_symbol_mismatch'
+        error = _feature_vector_error(entry, generated_date)
+        if error:
+            return error
+        if not _artifact_candidate_core_matches(entry, candidate):
+            return 'feature_vectors_candidate_mismatch'
+        seen.add(symbol)
+    if seen != set(candidate_by_symbol):
+        return 'feature_vectors_symbol_mismatch'
+    return None
+
+
+def _evidence_ledger_error(entries: Any, candidates: list[Any], generated_date: date) -> str | None:
+    if not isinstance(entries, list):
+        return 'evidence_ledger_count_mismatch'
+    selected = [entry for entry in entries if isinstance(entry, dict) and entry.get('selection_status') != 'rejected']
+    if len(selected) != len(candidates):
+        return 'evidence_ledger_count_mismatch'
+    candidate_by_symbol = {
+        _text(candidate.get('symbol')): candidate
+        for candidate in candidates
+        if isinstance(candidate, dict)
+    }
+    seen: set[str] = set()
+    for entry in selected:
+        symbol = _text(entry.get('symbol'))
+        candidate = candidate_by_symbol.get(symbol)
+        if (
+            entry.get('selection_status') != 'selected'
+            or candidate is None
+            or symbol in seen
+            or not _valid_evidence(entry.get('evidence'))
+            or not _artifact_candidate_core_matches(entry, candidate)
+            or entry.get('evidence') != candidate.get('evidence')
+        ):
+            return 'invalid_evidence_ledger_item'
+        feature = entry.get('feature_vector')
+        if not isinstance(feature, dict) or _feature_vector_error(feature, generated_date):
+            return 'invalid_evidence_ledger_item'
+        if not _artifact_candidate_core_matches(feature, candidate):
+            return 'invalid_evidence_ledger_item'
+        seen.add(symbol)
+    if seen != set(candidate_by_symbol):
+        return 'evidence_ledger_symbol_mismatch'
+    return None
+
+
+def _feature_vector_error(entry: dict[str, Any], generated_date: date) -> str | None:
+    if (
+        not _text(entry.get('symbol'))
+        or not _text(entry.get('name'))
+        or not _text(entry.get('market'))
+        or not _text(entry.get('action'))
+        or entry.get('lookahead_safe') is not True
+    ):
+        return 'invalid_feature_vector'
+    for field in ('alpha_score', 'risk_score', 'ranking_score', 'current_price'):
+        if not _finite(entry.get(field)):
+            return 'invalid_feature_vector'
+    price_date = _parse_date(entry.get('price_date'))
+    if price_date is None or price_date > generated_date:
+        return 'invalid_feature_vector'
+    return None
+
+
+def _artifact_candidate_core_matches(entry: dict[str, Any], candidate: dict[str, Any]) -> bool:
+    price = candidate.get('price') if isinstance(candidate.get('price'), dict) else {}
+    return (
+        _text(entry.get('symbol')) == _text(candidate.get('symbol'))
+        and _text(entry.get('name')) == _text(candidate.get('name') or candidate.get('display_name'))
+        and _text(entry.get('market')) == _text(candidate.get('market'))
+        and _text(entry.get('action')) == _text(candidate.get('action'))
+        and entry.get('alpha_score') == candidate.get('alpha_score')
+        and entry.get('risk_score') == candidate.get('risk_score')
+        and entry.get('ranking_score') == candidate.get('ranking_score')
+        and (
+            'price_date' not in entry
+            or _text(entry.get('price_date')) == _text(price.get('date'))
+        )
+        and (
+            'current_price' not in entry
+            or entry.get('current_price') == price.get('current_price')
+        )
+    )
+
+
+def _valid_evidence(evidence: Any) -> bool:
+    return (
+        isinstance(evidence, list)
+        and bool(evidence)
+        and all(
+            isinstance(item, dict)
+            and bool(_text(item.get('source')))
+            and bool(_text(item.get('field')))
+            and _finite(item.get('score'))
+            for item in evidence
+        )
+    )
 
 
 def _events(alert: dict[str, Any]) -> list[dict[str, Any]]:
@@ -578,6 +822,29 @@ def _now_iso() -> str:
 
 def _message_digest(message: str) -> str:
     return hashlib.sha256(message.encode('utf-8')).hexdigest()
+
+
+def _parse_timestamp(value: Any) -> datetime | None:
+    text = _text(value)
+    if not text:
+        return None
+    if text.endswith('Z'):
+        text = f'{text[:-1]}+00:00'
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return None
+    return parsed.astimezone(timezone.utc)
+
+
+def _parse_date(value: Any) -> date | None:
+    text = _text(value)
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        return None
 
 
 def _finite(value: Any) -> bool:

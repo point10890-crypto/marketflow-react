@@ -14,6 +14,27 @@ from app.services.mirofish import verified_delivery
 
 RUN_ID = 'scanner-verified-001'
 GENERATED_AT = '2026-08-21T00:00:00+00:00'
+EXPECTED_MESSAGE = '\n'.join([
+    '<b>MiroFish 알파 스캐너 신규 후보</b>',
+    '신규 매수 후보: <b>1</b>건 / 전체 후보: 1건',
+    '기준: alpha &gt;= 70, risk &lt;= 45, 로컬 데이터 아티팩트 기반',
+    f'Run ID: <code>{RUN_ID}</code>',
+    f'생성 시각: {GENERATED_AT}',
+    '',
+    '#1 <b>삼성전자</b> (<code>005930</code> KOSPI)',
+    '알파 <b>82.0</b> / 리스크 <b>21.0</b> / 랭킹 70.45',
+    '판정: <b>매수 후보</b> / 기간: 스윙 5-20일',
+    '현재가: 70,000 (+1.50%) / 태그: 추세 품질',
+    '근거: price_history return_20d=0.8',
+])
+EXPECTED_BLOCKED_MESSAGE = '\n'.join([
+    '<b>MiroFish 알파 스캐너 신규 후보</b>',
+    '신규 매수 후보: <b>0</b>건 / 전체 후보: 1건',
+    '기준: alpha &gt;= 70, risk &lt;= 45, 로컬 데이터 아티팩트 기반',
+    f'Run ID: <code>{RUN_ID}</code>',
+    f'생성 시각: {GENERATED_AT}',
+    '알림 차단: 원천 데이터 freshness=stale. 데이터 갱신 후 재시도하세요.',
+])
 
 
 def _run(*, freshness: str = 'fresh') -> dict:
@@ -24,38 +45,77 @@ def _run(*, freshness: str = 'fresh') -> dict:
         'candidate_count': 1,
         'freshness': {'status': freshness},
         'candidates': [{
+            'rank': 1,
             'symbol': '005930',
+            'name': '삼성전자',
             'display_name': '삼성전자',
             'market': 'KOSPI',
-            'alpha_score': 0.82,
-            'risk_score': 0.21,
+            'alpha_score': 82.0,
+            'risk_score': 21.0,
+            'ranking_score': 70.45,
+            'action': 'BUY_CANDIDATE',
+            'horizon': 'swing_5_20d',
+            'strategy_tags': ['trend_quality'],
             'evidence': [{'source': 'price_history', 'field': 'return_20d', 'score': 0.8}],
-            'price': {'date': '2026-08-20', 'current_price': 70000},
+            'price': {'date': '2026-08-20', 'current_price': 70000, 'change_rate': 1.5},
+            'generated_at': GENERATED_AT,
         }],
     }
 
 
 def _artifacts() -> dict:
+    feature = {
+        'symbol': '005930',
+        'name': '삼성전자',
+        'market': 'KOSPI',
+        'action': 'BUY_CANDIDATE',
+        'alpha_score': 82.0,
+        'risk_score': 21.0,
+        'ranking_score': 70.45,
+        'price_date': '2026-08-20',
+        'current_price': 70000,
+        'lookahead_safe': True,
+    }
     return {
         'feature_vectors.json': {
             'run_id': RUN_ID,
+            'generated_at': GENERATED_AT,
             'lookahead_safe': True,
             'feature_count': 1,
-            'features': [{'symbol': '005930'}],
+            'features': [feature],
         },
         'evidence_ledger.json': {
             'run_id': RUN_ID,
+            'generated_at': GENERATED_AT,
             'lookahead_safe': True,
             'candidate_count': 1,
-            'items': [{'symbol': '005930'}],
+            'rejected_candidate_count': 0,
+            'items': [{
+                'symbol': '005930',
+                'name': '삼성전자',
+                'market': 'KOSPI',
+                'selection_status': 'selected',
+                'action': 'BUY_CANDIDATE',
+                'alpha_score': 82.0,
+                'risk_score': 21.0,
+                'ranking_score': 70.45,
+                'evidence': [{'source': 'price_history', 'field': 'return_20d', 'score': 0.8}],
+                'feature_vector': deepcopy(feature),
+            }],
         },
     }
 
 
 def _scanner_result(run: dict, *, blocked: bool = False) -> dict:
+    candidate = run['candidates'][0]
     return {
         'run': run,
-        'events': [{'candidate': run['candidates'][0]}] if not blocked else [],
+        'events': [{
+            'event_key': '005930:BUY_CANDIDATE:2026-08-20',
+            'run_id': run['id'],
+            'generated_at': run['generated_at'],
+            'candidate': candidate,
+        }] if not blocked else [],
         'message': '<b>Directional candidate</b>',
         'state_path': 'not-used-in-test.json',
         'new_event_count': 0 if blocked else 1,
@@ -64,12 +124,24 @@ def _scanner_result(run: dict, *, blocked: bool = False) -> dict:
     }
 
 
+def _assert_public_result_sanitized(result: dict) -> None:
+    assert 'message' not in result
+    rendered = json.dumps(result).lower()
+    assert 'token' not in rendered
+    assert 'chat_id' not in rendered
+
+
 @pytest.fixture
 def scanner(monkeypatch):
     run = _run()
     artifacts = _artifacts()
     result = _scanner_result(run)
-    calls = {'commit': 0}
+    calls = {'commit': 0, 'payloads': []}
+
+    def commit(payload):
+        calls['commit'] += 1
+        calls['payloads'].append(deepcopy(payload))
+        return {'ok': True}
 
     monkeypatch.setattr(
         verified_delivery.alpha_scanner,
@@ -85,7 +157,7 @@ def scanner(monkeypatch):
     monkeypatch.setattr(
         verified_delivery.alpha_scanner,
         'commit_scanner_alert_events',
-        lambda payload: calls.__setitem__('commit', calls['commit'] + 1) or {'ok': True},
+        commit,
     )
     return run, artifacts, result, calls
 
@@ -102,8 +174,7 @@ def test_preview_returns_sanitized_candidate_report_without_send_or_receipt(scan
     assert result['candidate_count'] == 1
     assert result['sent'] is False
     assert not receipt_path.exists()
-    assert 'token' not in json.dumps(result).lower()
-    assert 'chat_id' not in json.dumps(result).lower()
+    _assert_public_result_sanitized(result)
 
 
 def test_stale_run_suppresses_directional_candidates(scanner, tmp_path, monkeypatch):
@@ -119,8 +190,7 @@ def test_stale_run_suppresses_directional_candidates(scanner, tmp_path, monkeypa
     assert preview['status'] == 'blocked'
     assert preview['candidate_count'] == 0
     assert preview['event_count'] == 0
-    assert '검출 보류' in preview['message']
-    assert 'BUY candidate' not in preview['message']
+    _assert_public_result_sanitized(preview)
 
 
 def test_send_requires_exact_confirmation_before_private_delivery(scanner, tmp_path, monkeypatch):
@@ -135,6 +205,7 @@ def test_send_requires_exact_confirmation_before_private_delivery(scanner, tmp_p
 
     assert result['status'] == 'confirmation_required'
     assert result['sent'] is False
+    _assert_public_result_sanitized(result)
 
 
 @pytest.mark.parametrize(
@@ -145,6 +216,18 @@ def test_send_requires_exact_confirmation_before_private_delivery(scanner, tmp_p
         (lambda run, artifacts: artifacts['feature_vectors.json'].__setitem__('lookahead_safe', False), 'feature_vectors_not_lookahead_safe'),
         (lambda run, artifacts: artifacts['evidence_ledger.json'].__setitem__('run_id', 'other-run'), 'evidence_ledger_identity_mismatch'),
         (lambda run, artifacts: artifacts['feature_vectors.json'].__setitem__('feature_count', 0), 'feature_vectors_count_mismatch'),
+        (lambda run, artifacts: run.__setitem__('generated_at', 'not-a-timestamp'), 'invalid_generated_at'),
+        (lambda run, artifacts: artifacts['feature_vectors.json'].__setitem__('generated_at', '2026-08-20T00:00:00+00:00'), 'feature_vectors_generated_at_mismatch'),
+        (lambda run, artifacts: artifacts['evidence_ledger.json'].__setitem__('generated_at', 'not-a-timestamp'), 'evidence_ledger_generated_at_mismatch'),
+        (lambda run, artifacts: run['candidates'][0]['price'].__setitem__('date', '2026-08-22'), 'candidate_price_after_run'),
+        (lambda run, artifacts: run['candidates'][0]['price'].__setitem__('date', 'not-a-date'), 'invalid_candidate_price_date'),
+        (lambda run, artifacts: run['candidates'][0]['evidence'][0].__setitem__('score', float('nan')), 'invalid_candidate_evidence'),
+        (lambda run, artifacts: run['candidates'][0]['evidence'][0].__setitem__('source', ''), 'invalid_candidate_evidence'),
+        (lambda run, artifacts: artifacts['feature_vectors.json']['features'][0].__setitem__('ranking_score', float('nan')), 'invalid_feature_vector'),
+        (lambda run, artifacts: artifacts['feature_vectors.json']['features'][0].__setitem__('price_date', 'not-a-date'), 'invalid_feature_vector'),
+        (lambda run, artifacts: artifacts['evidence_ledger.json']['items'][0]['evidence'][0].__setitem__('field', ''), 'invalid_evidence_ledger_item'),
+        (lambda run, artifacts: artifacts['evidence_ledger.json']['items'][0].__setitem__('risk_score', float('nan')), 'invalid_evidence_ledger_item'),
+        (lambda run, artifacts: artifacts['evidence_ledger.json']['items'][0].__setitem__('feature_vector', []), 'invalid_evidence_ledger_item'),
     ],
 )
 def test_validation_rejects_identity_count_and_nonfinite_artifact_defects(scanner, mutate, expected_code):
@@ -157,7 +240,123 @@ def test_validation_rejects_identity_count_and_nonfinite_artifact_defects(scanne
     assert validation == {'ok': False, 'error_code': expected_code, 'details': {}}
 
 
-def test_private_telegram_payload_requires_personal_message_id(monkeypatch):
+def test_delivery_rejects_transient_event_and_message_for_another_symbol(scanner, tmp_path, monkeypatch):
+    """A persisted 005930 run must never deliver or commit a transient 000660 event."""
+    _, _, result, calls = scanner
+    transient = deepcopy(result['events'][0]['candidate'])
+    transient.update({'symbol': '000660', 'name': 'SK하이닉스', 'display_name': 'SK하이닉스'})
+    result['events'][0].update({
+        'event_key': '000660:BUY_CANDIDATE:2026-08-20',
+        'candidate': transient,
+    })
+    result['message'] = '<b>000660 transient candidate</b>'
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+
+    delivered = verified_delivery.run_verified_detection(
+        send=True,
+        confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+        receipt_path=str(tmp_path / 'receipt.json'),
+    )
+
+    assert delivered == {
+        'ok': False,
+        'status': 'invalid_run',
+        'run_id': RUN_ID,
+        'error_code': 'event_candidate_mismatch',
+    }
+    assert calls['commit'] == 0
+    _assert_public_result_sanitized(delivered)
+
+
+@pytest.mark.parametrize(
+    ('mutate', 'expected_code'),
+    [
+        (lambda event: event.__setitem__('run_id', 'other-run'), 'event_run_id_mismatch'),
+        (lambda event: event.__setitem__('generated_at', '2026-08-20T00:00:00+00:00'), 'event_generated_at_mismatch'),
+        (lambda event: event.__setitem__('event_key', 'wrong:key'), 'event_key_mismatch'),
+    ],
+)
+def test_delivery_rejects_transient_event_metadata_mismatch(scanner, tmp_path, monkeypatch, mutate, expected_code):
+    """Transient event metadata must bind exactly to the persisted run and candidate."""
+    _, _, result, calls = scanner
+    mutate(result['events'][0])
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+
+    delivered = verified_delivery.run_verified_detection(
+        send=True,
+        confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+        receipt_path=str(tmp_path / 'receipt.json'),
+    )
+
+    assert delivered['status'] == 'invalid_run'
+    assert delivered['error_code'] == expected_code
+    assert calls['commit'] == 0
+    _assert_public_result_sanitized(delivered)
+
+
+def test_delivery_rejects_any_transient_run_difference_from_persisted(scanner, tmp_path, monkeypatch):
+    """Checking only ID/count/timestamp leaves unverified candidate fields trusted."""
+    _, _, result, calls = scanner
+    result['run'] = deepcopy(result['run'])
+    result['run']['candidates'][0]['risk_score'] = 1.0
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+
+    delivered = verified_delivery.run_verified_detection(
+        send=True,
+        confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+        receipt_path=str(tmp_path / 'receipt.json'),
+    )
+
+    assert delivered['status'] == 'invalid_run'
+    assert delivered['error_code'] == 'run_content_mismatch'
+    assert calls['commit'] == 0
+
+
+def test_stale_run_with_corrupt_artifact_is_invalid_not_deliverable_hold(scanner, tmp_path, monkeypatch):
+    """Freshness must not mask missing proof artifacts behind a sendable hold."""
+    run, artifacts, result, calls = scanner
+    run['freshness'] = {'status': 'stale'}
+    result.update(_scanner_result(run, blocked=True))
+    artifacts['feature_vectors.json'] = None
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+
+    delivered = verified_delivery.run_verified_detection(
+        send=True,
+        confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+        receipt_path=str(tmp_path / 'receipt.json'),
+    )
+
+    assert delivered == {
+        'ok': False,
+        'status': 'invalid_run',
+        'run_id': RUN_ID,
+        'error_code': 'feature_vectors_missing',
+    }
+    assert calls['commit'] == 0
+
+
+@pytest.mark.parametrize(('freshness', 'alert_blocked'), [('fresh', True), ('stale', False)])
+def test_persisted_and_transient_freshness_block_state_must_agree(
+    scanner, tmp_path, monkeypatch, freshness, alert_blocked,
+):
+    """Neither a transient false hold nor a transient bypass may override persisted freshness."""
+    run, _, result, calls = scanner
+    run['freshness'] = {'status': freshness}
+    result.update(_scanner_result(run, blocked=alert_blocked))
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+
+    delivered = verified_delivery.run_verified_detection(
+        send=True,
+        confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+        receipt_path=str(tmp_path / 'receipt.json'),
+    )
+
+    assert delivered['status'] == 'invalid_run'
+    assert delivered['error_code'] == 'freshness_alert_mismatch'
+    assert calls['commit'] == 0
+
+
+def test_private_telegram_payload_requires_matching_private_chat_and_message_id(monkeypatch):
     """Treating a channel payload or response without a message id as delivered is unsafe."""
     captured = {}
 
@@ -166,14 +365,14 @@ def test_private_telegram_payload_requires_personal_message_id(monkeypatch):
 
         @staticmethod
         def json():
-            return {'ok': True, 'result': {'message_id': 321}}
+            return {'ok': True, 'result': {'message_id': 321, 'chat': {'id': 12345, 'type': 'private'}}}
 
     def post(url, *, json, timeout):
         captured.update(url=url, payload=json, timeout=timeout)
         return Response()
 
     monkeypatch.setenv('TELEGRAM_BOT_TOKEN', 'personal-token')
-    monkeypatch.setenv('TELEGRAM_CHAT_ID', 'personal-chat')
+    monkeypatch.setenv('TELEGRAM_CHAT_ID', '12345')
     monkeypatch.setenv('TELEGRAM_CHANNEL_BOT_TOKEN', 'channel-token')
     monkeypatch.setenv('TELEGRAM_CHANNEL_CHAT_ID', 'channel-chat')
 
@@ -182,7 +381,7 @@ def test_private_telegram_payload_requires_personal_message_id(monkeypatch):
     assert delivered == {'ok': True, 'status': 'delivered', 'message_id': 321}
     assert captured['url'].endswith('/botpersonal-token/sendMessage')
     assert captured['payload'] == {
-        'chat_id': 'personal-chat',
+        'chat_id': 12345,
         'text': '<b>verified</b>',
         'parse_mode': 'HTML',
         'disable_web_page_preview': True,
@@ -200,11 +399,59 @@ def test_private_telegram_rejects_malformed_message_id_response(monkeypatch):
             return {'ok': True, 'result': []}
 
     monkeypatch.setenv('TELEGRAM_BOT_TOKEN', 'personal-token')
-    monkeypatch.setenv('TELEGRAM_CHAT_ID', 'personal-chat')
+    monkeypatch.setenv('TELEGRAM_CHAT_ID', '12345')
 
     result = verified_delivery.post_private_telegram('verified', request_post=lambda url, **kwargs: Response())
 
     assert result == {'ok': False, 'status': 'rejected', 'error_code': 'invalid_message_id'}
+
+
+@pytest.mark.parametrize('configured', ['0', '-100123', 'not-a-chat'])
+def test_private_telegram_rejects_nonpositive_or_noninteger_config_without_request(monkeypatch, configured):
+    """A group/channel-style or malformed configured ID must never reach Telegram."""
+    monkeypatch.setenv('TELEGRAM_BOT_TOKEN', 'personal-token')
+    monkeypatch.setenv('TELEGRAM_CHAT_ID', configured)
+
+    result = verified_delivery.post_private_telegram('verified', request_post=pytest.fail)
+
+    assert result == {
+        'ok': False,
+        'status': 'not_configured',
+        'error_code': 'personal_telegram_not_configured',
+        'retryable': True,
+    }
+    assert configured not in json.dumps(result)
+
+
+@pytest.mark.parametrize(
+    'chat',
+    [
+        {'id': 12345, 'type': 'group'},
+        {'id': -100123, 'type': 'channel'},
+        {'id': 54321, 'type': 'private'},
+        None,
+    ],
+)
+def test_private_telegram_rejects_unverified_response_chat(monkeypatch, chat):
+    """A valid message ID is not proof that Telegram delivered to the configured private chat."""
+
+    class Response:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            result = {'message_id': 321}
+            if chat is not None:
+                result['chat'] = chat
+            return {'ok': True, 'result': result}
+
+    monkeypatch.setenv('TELEGRAM_BOT_TOKEN', 'personal-token')
+    monkeypatch.setenv('TELEGRAM_CHAT_ID', '12345')
+
+    result = verified_delivery.post_private_telegram('verified', request_post=lambda url, **kwargs: Response())
+
+    assert result == {'ok': False, 'status': 'rejected', 'error_code': 'private_chat_verification_failed'}
+    assert '12345' not in json.dumps(result)
 
 
 def test_duplicate_run_message_digest_is_refused_before_second_delivery(scanner, tmp_path, monkeypatch):
@@ -237,10 +484,11 @@ def test_delivery_persists_safe_receipt_then_commits_events(scanner, tmp_path, m
     """Committing scanner alerts before a durable verified receipt would lose failed deliveries."""
     _, _, _, calls = scanner
     receipt_path = tmp_path / 'receipt.json'
+    posted = []
     monkeypatch.setattr(
         verified_delivery,
         'post_private_telegram',
-        lambda message: {'ok': True, 'status': 'delivered', 'message_id': 99},
+        lambda message: posted.append(message) or {'ok': True, 'status': 'delivered', 'message_id': 99},
     )
 
     result = verified_delivery.run_verified_detection(
@@ -253,6 +501,12 @@ def test_delivery_persists_safe_receipt_then_commits_events(scanner, tmp_path, m
 
     assert result['status'] == 'delivered'
     assert calls['commit'] == 1
+    assert posted == [EXPECTED_MESSAGE]
+    assert calls['payloads'][0]['run'] == _run()
+    assert calls['payloads'][0]['events'][0]['candidate'] == _run()['candidates'][0]
+    assert calls['payloads'][0]['events'][0]['event_key'] == '005930:BUY_CANDIDATE:2026-08-20'
+    assert calls['payloads'][0]['message'] == EXPECTED_MESSAGE
+    _assert_public_result_sanitized(result)
     assert ledger['schema_version'] == 2
     assert receipt['run_id'] == RUN_ID
     assert receipt['message_id'] == 99
@@ -276,7 +530,7 @@ def test_all_alert_blocking_freshness_states_return_non_directional_preview(scan
 
     assert preview['status'] == 'blocked'
     assert preview['symbols'] == []
-    assert '검출 보류' in preview['message']
+    _assert_public_result_sanitized(preview)
 
 
 def test_blocked_run_sends_one_status_message_only_with_exact_confirmation(scanner, tmp_path, monkeypatch):
@@ -301,8 +555,10 @@ def test_blocked_run_sends_one_status_message_only_with_exact_confirmation(scann
     assert denied['status'] == 'confirmation_required'
     assert delivered['status'] == 'blocked_delivered'
     assert delivered['ok'] is True
-    assert sent == ['<b>검출 보류</b>\n스캐너 원천 데이터 freshness 검증이 통과하지 않았습니다.']
+    assert sent == [EXPECTED_BLOCKED_MESSAGE.replace('freshness=stale', f'freshness={run["freshness"]["status"]}')]
     assert calls['commit'] == 0
+    _assert_public_result_sanitized(denied)
+    _assert_public_result_sanitized(delivered)
 
 
 def test_scanner_typeerror_is_sanitized_without_second_run(scanner, monkeypatch, tmp_path):
@@ -319,6 +575,7 @@ def test_scanner_typeerror_is_sanitized_without_second_run(scanner, monkeypatch,
 
     assert result == {'ok': False, 'status': 'scanner_failed'}
     assert attempts == [1]
+    _assert_public_result_sanitized(result)
 
 
 def test_claim_write_failure_prevents_telegram_send(scanner, monkeypatch, tmp_path):
@@ -357,7 +614,9 @@ def test_final_receipt_failure_leaves_uncertain_claim_and_blocks_resend(scanner,
     assert first['status'] == 'delivery_uncertain'
     assert first['sent'] is None
     assert second['status'] == 'delivery_uncertain'
-    assert sent == ['<b>Directional candidate</b>']
+    assert sent == [EXPECTED_MESSAGE]
+    _assert_public_result_sanitized(first)
+    _assert_public_result_sanitized(second)
 
 
 def test_new_run_recovers_matching_uncommitted_event_without_resending(scanner, monkeypatch, tmp_path):
@@ -371,6 +630,7 @@ def test_new_run_recovers_matching_uncommitted_event_without_resending(scanner, 
     first = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
     run['id'] = 'scanner-verified-002'
     result['run'] = run
+    result['events'][0]['run_id'] = run['id']
     artifacts['feature_vectors.json']['run_id'] = run['id']
     artifacts['evidence_ledger.json']['run_id'] = run['id']
     monkeypatch.setattr(verified_delivery.alpha_scanner, 'commit_scanner_alert_events', lambda payload: calls.__setitem__('commit', calls['commit'] + 1) or {'ok': True})
@@ -380,7 +640,7 @@ def test_new_run_recovers_matching_uncommitted_event_without_resending(scanner, 
     assert first['status'] == 'state_commit_failed'
     assert second['status'] == 'delivered_recovered'
     assert second['ok'] is True
-    assert sent == ['<b>Directional candidate</b>']
+    assert sent == [EXPECTED_MESSAGE]
     assert calls['commit'] == 1
     assert receipt['state_committed'] is True
 
@@ -405,12 +665,12 @@ def test_concurrent_same_digest_sends_once(scanner, monkeypatch, tmp_path):
     for worker in workers:
         worker.join()
 
-    assert sent == ['<b>Directional candidate</b>']
+    assert sent == [EXPECTED_MESSAGE]
     assert sorted(result['status'] for result in results) == ['delivered', 'duplicate_refused']
 
 
-def test_historical_receipts_refuse_original_digest_after_different_message(scanner, monkeypatch, tmp_path):
-    """Replacing a single latest receipt would forget an earlier delivery for the same run."""
+def test_transient_message_changes_cannot_change_canonical_digest_or_resend(scanner, monkeypatch, tmp_path):
+    """Transient message text must not create a second digest for one persisted run."""
     _, _, result, _ = scanner
     receipt_path = tmp_path / 'receipt.json'
     sent = []
@@ -419,11 +679,13 @@ def test_historical_receipts_refuse_original_digest_after_different_message(scan
     first = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
     result['message'] = '<b>changed candidate</b>'
     second = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
-    result['message'] = '<b>Directional candidate</b>'
+    result['message'] = '<b>000660 attacker-controlled candidate</b>'
     third = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
 
-    assert [first['status'], second['status'], third['status']] == ['delivered', 'delivered', 'duplicate_refused']
-    assert sent == ['<b>Directional candidate</b>', '<b>changed candidate</b>']
+    assert [first['status'], second['status'], third['status']] == ['delivered', 'duplicate_refused', 'duplicate_refused']
+    assert sent == [EXPECTED_MESSAGE]
+    for item in (first, second, third):
+        _assert_public_result_sanitized(item)
 
 
 def test_known_telegram_nondelivery_is_recorded_retryable_and_can_send(scanner, monkeypatch, tmp_path):
@@ -442,6 +704,8 @@ def test_known_telegram_nondelivery_is_recorded_retryable_and_can_send(scanner, 
     assert first['status'] == 'telegram_not_delivered'
     assert second['status'] == 'delivered'
     assert [entry['status'] for entry in ledger['deliveries']] == ['failed', 'delivered']
+    _assert_public_result_sanitized(first)
+    _assert_public_result_sanitized(second)
 
 
 def test_ambiguous_telegram_request_remains_uncertain_and_blocks_resend(scanner, monkeypatch, tmp_path):
@@ -458,7 +722,7 @@ def test_ambiguous_telegram_request_remains_uncertain_and_blocks_resend(scanner,
     second = verified_delivery.run_verified_detection(send=True, confirmation='SEND_VERIFIED_ALPHA_TELEGRAM', receipt_path=str(receipt_path))
 
     assert [first['status'], second['status']] == ['delivery_uncertain', 'delivery_uncertain']
-    assert attempts == ['<b>Directional candidate</b>']
+    assert attempts == [EXPECTED_MESSAGE]
 
 
 def test_private_telegram_marks_explicit_api_rejection_retryable(monkeypatch):
@@ -472,7 +736,7 @@ def test_private_telegram_marks_explicit_api_rejection_retryable(monkeypatch):
             return {'ok': False, 'description': 'bad request'}
 
     monkeypatch.setenv('TELEGRAM_BOT_TOKEN', 'personal-token')
-    monkeypatch.setenv('TELEGRAM_CHAT_ID', 'personal-chat')
+    monkeypatch.setenv('TELEGRAM_CHAT_ID', '12345')
 
     result = verified_delivery.post_private_telegram('verified', request_post=lambda url, **kwargs: Response())
 
@@ -488,10 +752,16 @@ def test_cli_returns_success_for_recovered_and_blocked_delivery(status, monkeypa
     cli = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(cli)
     monkeypatch.setattr(cli, '_load_dotenv', lambda: None)
-    monkeypatch.setattr(cli, 'run_verified_detection', lambda **kwargs: {'ok': True, 'status': status})
+    monkeypatch.setattr(
+        cli,
+        'run_verified_detection',
+        lambda **kwargs: {'ok': True, 'status': status, 'message': '<b>private transport content</b>'},
+    )
 
     assert cli.main([]) == 0
-    assert json.loads(capsys.readouterr().out)['status'] == status
+    payload = json.loads(capsys.readouterr().out)
+    assert payload['status'] == status
+    assert 'message' not in payload
 
 
 def test_cli_reconfigures_stdout_to_utf8_before_printing(monkeypatch):

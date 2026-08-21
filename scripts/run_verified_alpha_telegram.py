@@ -40,6 +40,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     _load_dotenv()
     result = run_verified_detection(send=args.send, confirmation=args.confirm)
+    result = {key: value for key, value in result.items() if key != 'message'}
     _configure_stdout_utf8()
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0 if result.get('ok') else 2
