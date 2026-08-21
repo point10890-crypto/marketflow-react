@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import re
@@ -19,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills" / "marketflow-openclaw-ops"
 INSTALLER = ROOT / "scripts" / "install_marketflow_codex_skill.ps1"
 VERIFIER = SKILL / "scripts" / "verify_openclaw_readonly.py"
+EXCLUSIVITY_VERIFIER = SKILL / "scripts" / "verify_delivery_exclusivity.py"
 REFERENCE_NAMES = (
     "main-pc-validation.md",
     "telegram-delivery.md",
@@ -80,6 +82,37 @@ def _load_verifier() -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _run_exclusivity_verifier(
+    env_file: Path,
+    *,
+    overrides: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    env = dict(os.environ)
+    for name in (
+        "ALPHA_SCANNER_TELEGRAM_ENABLED",
+        "MIROFISH_WORKFLOW_TELEGRAM_ENABLED",
+        "ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED",
+        "MIROFISH_AUTO_RUNNER_DRY_RUN",
+    ):
+        env.pop(name, None)
+    env.update(overrides or {})
+    return subprocess.run(
+        [
+            str(ROOT / ".venv" / "Scripts" / "python.exe"),
+            str(EXCLUSIVITY_VERIFIER),
+            "--env-file",
+            str(env_file),
+        ],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
 
 
 def _verification_payloads(tmp_path: Path) -> dict[str, Any]:
@@ -221,6 +254,178 @@ def test_skill_routes_every_relevant_mode_to_one_level_references_in_safe_order(
     )
 
 
+def test_delivery_exclusivity_verifier_missing_values_resolve_to_safe_defaults(
+    tmp_path: Path,
+) -> None:
+    """Missing flags must preserve the four core fail-closed defaults."""
+    result = _run_exclusivity_verifier(tmp_path / "missing.env")
+
+    assert result.returncode == 0
+    assert result.stderr == ""
+    assert json.loads(result.stdout) == {
+        "ok": True,
+        "status": "verified_exclusive",
+        "flags": {
+            "ALPHA_SCANNER_TELEGRAM_ENABLED": {
+                "resolved": False,
+                "source": "default",
+            },
+            "MIROFISH_WORKFLOW_TELEGRAM_ENABLED": {
+                "resolved": False,
+                "source": "default",
+            },
+            "ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED": {
+                "resolved": False,
+                "source": "default",
+            },
+            "MIROFISH_AUTO_RUNNER_DRY_RUN": {
+                "resolved": True,
+                "source": "default",
+            },
+        },
+    }
+
+
+def test_delivery_exclusivity_verifier_reports_only_sanitized_boolean_and_source(
+    tmp_path: Path,
+) -> None:
+    """Raw dotenv values, paths, and unrelated secrets must never escape."""
+    private_dir = tmp_path / "classified-location"
+    private_dir.mkdir()
+    env_file = private_dir / ".env"
+    secret = "telegram-secret-that-must-not-escape"
+    env_file.write_text(
+        "\n".join(
+            (
+                "ALPHA_SCANNER_TELEGRAM_ENABLED=off",
+                "MIROFISH_WORKFLOW_TELEGRAM_ENABLED=on",
+                "ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED=0",
+                "MIROFISH_AUTO_RUNNER_DRY_RUN=1",
+                f"TELEGRAM_BOT_TOKEN={secret}",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    result = _run_exclusivity_verifier(
+        env_file,
+        overrides={"MIROFISH_WORKFLOW_TELEGRAM_ENABLED": "false"},
+    )
+
+    assert result.returncode == 0
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["flags"] == {
+        "ALPHA_SCANNER_TELEGRAM_ENABLED": {
+            "resolved": False,
+            "source": "dotenv",
+        },
+        "MIROFISH_WORKFLOW_TELEGRAM_ENABLED": {
+            "resolved": False,
+            "source": "process",
+        },
+        "ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED": {
+            "resolved": False,
+            "source": "dotenv",
+        },
+        "MIROFISH_AUTO_RUNNER_DRY_RUN": {
+            "resolved": True,
+            "source": "dotenv",
+        },
+    }
+    rendered = result.stdout + result.stderr
+    assert secret not in rendered
+    assert str(env_file) not in rendered
+    assert "TELEGRAM_BOT_TOKEN" not in rendered
+    assert "\"off\"" not in rendered
+    assert "\"on\"" not in rendered
+
+
+@pytest.mark.parametrize(
+    ("name", "unsafe_value"),
+    (
+        ("ALPHA_SCANNER_TELEGRAM_ENABLED", "true"),
+        ("MIROFISH_WORKFLOW_TELEGRAM_ENABLED", "1"),
+        ("ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED", "yes"),
+        ("MIROFISH_AUTO_RUNNER_DRY_RUN", "false"),
+    ),
+)
+def test_delivery_exclusivity_verifier_fails_on_explicit_unsafe_values(
+    tmp_path: Path,
+    name: str,
+    unsafe_value: str,
+) -> None:
+    """Any enabled legacy transport or live auto-runner must block one-shot use."""
+    result = _run_exclusivity_verifier(
+        tmp_path / "missing.env",
+        overrides={name: unsafe_value},
+    )
+
+    assert result.returncode != 0
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["status"] == "unsafe_delivery_environment"
+    assert payload["flags"][name]["source"] == "process"
+
+
+def test_delivery_exclusivity_verifier_rejects_dotenv_interpolation(
+    tmp_path: Path,
+) -> None:
+    """A dotenv expression must not expand into an enabled transport behind the gate."""
+    env_file = tmp_path / ".env"
+    raw_expression = "${ENABLE_SEND}"
+    env_file.write_text(
+        "\n".join(
+            (
+                "ENABLE_SEND=true",
+                f"ALPHA_SCANNER_TELEGRAM_ENABLED={raw_expression}",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    result = _run_exclusivity_verifier(env_file)
+
+    assert result.returncode != 0
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["status"] == "invalid_flag_value"
+    assert payload["flags"]["ALPHA_SCANNER_TELEGRAM_ENABLED"] == {
+        "resolved": None,
+        "source": "dotenv",
+    }
+    assert raw_expression not in result.stdout
+    assert "ENABLE_SEND" not in result.stdout
+
+
+@pytest.mark.parametrize(
+    "name",
+    (
+        "ALPHA_SCANNER_TELEGRAM_ENABLED",
+        "MIROFISH_WORKFLOW_TELEGRAM_ENABLED",
+        "ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED",
+        "MIROFISH_AUTO_RUNNER_DRY_RUN",
+    ),
+)
+def test_delivery_exclusivity_verifier_rejects_unknown_process_tokens(
+    tmp_path: Path,
+    name: str,
+) -> None:
+    """Unknown process values cannot silently resolve to a safe-looking false."""
+    raw_value = "operator-maybe"
+    result = _run_exclusivity_verifier(
+        tmp_path / "missing.env",
+        overrides={name: raw_value},
+    )
+
+    assert result.returncode != 0
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["status"] == "invalid_flag_value"
+    assert payload["flags"][name] == {"resolved": None, "source": "process"}
+    assert raw_value not in result.stdout
+
+
 def test_telegram_reference_requires_preview_confirmation_and_private_only_delivery() -> None:
     """Fails if delivery is not bound to the exact previewed run and digest."""
     text = _read(SKILL / "references" / "telegram-delivery.md")
@@ -250,6 +455,60 @@ def test_telegram_reference_requires_preview_confirmation_and_private_only_deliv
     assert "verified_delivery_receipt.json" in text
     assert "must persist locally" in normalized
     assert "never print, copy, stage, or commit" in normalized
+
+
+def test_operator_references_enforce_exclusive_flags_and_preserve_pending_gates() -> None:
+    """Future operators must not confuse legacy opt-ins with verified delivery."""
+    main = " ".join(_read(SKILL / "references" / "main-pc-validation.md").split())
+    telegram = " ".join(_read(SKILL / "references" / "telegram-delivery.md").split())
+    state = " ".join(_read(SKILL / "references" / "operational-state.md").split())
+    minipc = " ".join(_read(SKILL / "references" / "minipc-deployment.md").split())
+    plan = " ".join(
+        _read(
+            ROOT
+            / "docs"
+            / "superpowers"
+            / "plans"
+            / "2026-08-21-verified-alpha-telegram-ops.md"
+        ).split()
+    )
+    spec = " ".join(
+        _read(
+            ROOT
+            / "docs"
+            / "superpowers"
+            / "specs"
+            / "2026-08-21-verified-alpha-telegram-ops-design.md"
+        ).split()
+    )
+
+    for text in (main, telegram):
+        assert "scripts/verify_delivery_exclusivity.py" in text
+        for contract in (
+            "ALPHA_SCANNER_TELEGRAM_ENABLED=false",
+            "MIROFISH_WORKFLOW_TELEGRAM_ENABLED=false",
+            "ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED=false",
+            "MIROFISH_AUTO_RUNNER_DRY_RUN=true",
+        ):
+            assert contract in text
+        assert "sanitized boolean" in text
+        assert "invalid_flag_value" in text
+        assert "interpolated" in text
+        assert "scripts/verify_auto_runner_e2e.py --send" in text
+        assert "fails closed" in text
+        assert "verified one-shot operator" in text
+
+    for text in (state, minipc, plan, spec):
+        assert "6fb75cb" in text
+        assert "legacy boolean sender" in text
+        assert "timeout-after-accept ambiguity" in text
+        assert "shared verified-delivery ledger" in text
+        assert "MiniPC deployment" in text
+        assert "blocked" in text
+        assert "follow-up" in text
+        assert "full test" in text
+        assert "Telegram" in text
+        assert "pending" in text
 
 
 def test_skill_preserves_openclaw_ports_and_separation_invariants() -> None:

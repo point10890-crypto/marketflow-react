@@ -20,6 +20,12 @@
   historical full pytest rerun through `33dc203` reached 100% and exited 0 with
   five pre-existing unawaited-coroutine warnings; a final full pytest rerun is
   not yet claimed through `ed65734`.
+- Core commit `6fb75cb` added canonical delivery serialization and explicit
+  opt-in defaults; its focused bundle reported 269 green. The current full test
+  gate and actual Telegram delivery remain pending and are not complete.
+- The committed read-only exclusivity verifier passed locally with the required
+  false/false/false/true values, all from safe defaults, without raw values or
+  paths.
 - Frontend verification passed: 17 files / 90 tests and build. OpenClaw
   `2026.7.1-2` passed the committed parsed fail-fast verifier: all nine
   setup/native checks exited 0 and live agent/config/MCP data proved the
@@ -45,6 +51,10 @@
   and 8 unreferenced files; workflows completed 6/6 with no JSON errors; disk
   free is 63.15%. Deployment remains blocked until the FK violations and a
   verified backup are resolved/approved.
+- MiniPC deployment is additionally blocked because legacy boolean sender paths
+  retain timeout-after-accept ambiguity and are not integrated with the shared
+  verified-delivery ledger. Their migration or removal remains a follow-up gate;
+  `6fb75cb` only makes them disabled by default.
 - Host runtime stability risk is **HIGH** and substantially predates this
   feature. Before 2026-08-21 17:05 KST, the matching count was 17 (python.exe
   15 + python3.13.exe 2). Read-only evidence captured at 2026-08-21 18:02:38 KST
@@ -78,6 +88,7 @@
 - Never print, copy, stage, or commit `.env`, tokens, chat IDs, member data, raw credentials, messages, or Telegram response bodies. The sanitized ignored receipt ledger must persist locally for dedupe/recovery but must not leave the host.
 - OpenClaw remains read-only with exactly 19 MarketFlow tools, zero mutation tools, zero bindings, sandbox `all`, workspace access `none`, and `MIROFISH_MCP_ALLOW_MUTATION=false`.
 - Telegram delivery is private only, bound to the exact previewed `run_id + message_digest` (the message SHA-256), cross-run event-deduplicated, and requires an explicit confirmation string.
+- Before any verified one-shot preview or send, the sanitized exclusivity verifier must resolve `ALPHA_SCANNER_TELEGRAM_ENABLED=false`, `MIROFISH_WORKFLOW_TELEGRAM_ENABLED=false`, `ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED=false`, and `MIROFISH_AUTO_RUNNER_DRY_RUN=true`.
 - Invalid runs never send. A valid run blocked only by stale alert-required data can send only `검출 보류`, never a directional candidate report.
 - No public channel, AIbain, order, wallet, Git push, MiniPC connection, service restart, or deployment.
 - Preserve all unrelated dirty and untracked files; stage only intentional source, test, skill, and documentation files.
@@ -175,6 +186,7 @@ Expected: all pass.
 - Create: `skills/marketflow-openclaw-ops/references/minipc-deployment.md`
 - Create: `skills/marketflow-openclaw-ops/references/operational-state.md`
 - Create: `skills/marketflow-openclaw-ops/scripts/verify_openclaw_readonly.py`
+- Create: `skills/marketflow-openclaw-ops/scripts/verify_delivery_exclusivity.py`
 - Create: `scripts/install_marketflow_codex_skill.ps1`
 - Create: `tests/test_marketflow_openclaw_ops_skill.py`
 - Modify: `AGENTS.md`
@@ -182,7 +194,9 @@ Expected: all pass.
 
 **Interfaces:**
 - Consumes: the verified-delivery CLI and hardened OpenClaw setup commands.
-- Produces: one discoverable `marketflow-openclaw-ops` skill, a parsed fail-fast read-only OpenClaw verifier, and a no-secret future Windows MiniPC runbook.
+- Produces: one discoverable `marketflow-openclaw-ops` skill, parsed fail-fast
+  OpenClaw and delivery-exclusivity verifiers, and a no-secret future Windows
+  MiniPC runbook.
 
 - [x] **Step 1: Pressure-test the missing skill and add failing structural tests**
 
@@ -246,10 +260,16 @@ when an explicitly required and authorized configuration change exists.
 
 - [x] **Step 3: Run the one-shot operator in preview**
 
-If alert-required sources are stale, attempt only the explicitly safe core
+First run
+`skills/marketflow-openclaw-ops/scripts/verify_delivery_exclusivity.py`; continue
+only for the exact false/false/false/true contract recorded above. If
+alert-required sources are stale, attempt only the explicitly safe core
 refresh. Re-run preview, retain the sanitized JSON object, and inspect it
 without exposing environment values. Preview persists scanner run artifacts;
 it is non-sending, not filesystem-non-mutating.
+
+`scripts/verify_auto_runner_e2e.py --send` fails closed. It is a diagnostic,
+never an alternative to the verified one-shot operator.
 
 - [ ] **Step 4: Send exactly one private report — blocked on recipient unblock**
 

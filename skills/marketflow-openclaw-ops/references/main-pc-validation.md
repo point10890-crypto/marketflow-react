@@ -1,8 +1,27 @@
 # Main-PC verification
 
-Use the verified-alpha operator only from the repository root. The default is a
-non-sending preview, but preview persists scanner run artifacts for validation
-and later run/digest-bound approval:
+Use the verified-alpha operator only from the repository root. Before every
+verified one-shot preview or send, run the read-only exclusivity verifier:
+
+```powershell
+.\.venv\Scripts\python.exe skills/marketflow-openclaw-ops/scripts/verify_delivery_exclusivity.py
+```
+
+It reads only the four relevant values from process environment and `.env`,
+then returns each resolved sanitized boolean and its source without raw values,
+paths, or secrets. Continue only when it exits 0 and reports exactly:
+
+- `ALPHA_SCANNER_TELEGRAM_ENABLED=false`
+- `MIROFISH_WORKFLOW_TELEGRAM_ENABLED=false`
+- `ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED=false`
+- `MIROFISH_AUTO_RUNNER_DRY_RUN=true`
+
+Only explicit known true/false tokens are valid. Empty, unknown, `$`-bearing,
+or interpolated values fail closed with `invalid_flag_value`; do not rewrite or
+expand them to make the gate pass.
+
+The default operator action is a non-sending preview, but preview persists
+scanner run artifacts for validation and later run/digest-bound approval:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/run_verified_alpha_telegram.py
@@ -12,6 +31,10 @@ Do not send, deploy, restart, or connect remotely during validation. Check the
 preview's freshness and validity evidence. Invalid runs never send. A valid run
 blocked only by stale alert-required data is `검출 보류`, never a directional
 candidate.
+
+`scripts/verify_auto_runner_e2e.py --send` fails closed and is not an alternate
+delivery path. Any real delivery uses only the verified one-shot operator and
+its preview/run/digest/confirmation contract.
 
 Verify OpenClaw with the committed parsed fail-fast verifier:
 

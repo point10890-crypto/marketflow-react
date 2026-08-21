@@ -17,17 +17,30 @@
   must persist locally for dedupe and recovery but must never be printed,
   copied, staged, or committed. The public CLI exposes `delivery_verified` but
   never exposes a raw message, message ID, or receipt.
+- Core commit `6fb75cb` makes scheduler and Flask realtime Telegram transport
+  explicit opt-in. Before the verified one-shot operator, require
+  `ALPHA_SCANNER_TELEGRAM_ENABLED=false`,
+  `MIROFISH_WORKFLOW_TELEGRAM_ENABLED=false`,
+  `ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED=false`, and
+  `MIROFISH_AUTO_RUNNER_DRY_RUN=true`, verified only through the sanitized
+  read-only exclusivity script.
 - Deployment is blocked: tracked legacy documentation needs redaction and
   credential rotation confirmation. Do not copy credential-like plaintext,
   tokens, chat IDs, raw messages, member data, or receipts into this state.
 
 ## 2026-08-21 KST validation snapshot
 
-- Verified code state: through `ed65734`. Focused gates passed: 71
+- Historical focused checkpoint: through `ed65734`. Its gates passed: 71
   verified-delivery tests and 149 related regression tests. A historical full
   pytest rerun through `33dc203` reached 100% and exited 0 with five
   pre-existing unawaited-coroutine warnings; a final full pytest rerun is not
   yet claimed through `ed65734`.
+- Core serialization and opt-in defaults are committed through `6fb75cb`; its
+  focused bundle reported 269 green. The current full test gate and actual
+  Telegram delivery are still pending, so neither is marked complete.
+- The local read-only exclusivity verifier exited 0 with the required
+  false/false/false/true values, each resolved from its safe default; it emitted
+  no raw environment value or path.
 - Frontend verification passed: 17 files / 90 tests and the production build.
 - OpenClaw `2026.7.1-2` passed the committed parsed fail-fast verifier. All nine
   setup/native checks exited 0; live agent/config/MCP data proves exactly 19
@@ -50,6 +63,10 @@
   and 8 unreferenced files; workflows completed 6/6 with no JSON errors; disk
   free is 63.15%. Deployment remains blocked until the FK violations and a
   verified backup are resolved/approved. No push or deployment was performed.
+- MiniPC deployment is also blocked because legacy boolean sender paths retain
+  timeout-after-accept ambiguity and do not use the shared verified-delivery
+  ledger. Migrating or removing those opt-in paths is a follow-up gate even
+  though `6fb75cb` leaves them disabled by default.
 
 ## Host runtime stability gate
 

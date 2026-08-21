@@ -25,28 +25,36 @@ future Windows MiniPC handoff without pushing or deploying in this change.
   but never exposes the raw message, message ID, or receipt. Secrets and chat
   identifiers are never persisted.
 - Scanner alert state is committed only after a verified Telegram delivery.
+- Before a preview or send, the read-only exclusivity verifier must resolve
+  `ALPHA_SCANNER_TELEGRAM_ENABLED=false`,
+  `MIROFISH_WORKFLOW_TELEGRAM_ENABLED=false`,
+  `ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED=false`, and
+  `MIROFISH_AUTO_RUNNER_DRY_RUN=true` without exposing raw values or paths.
 - No KIS order, brokerage mutation, public Telegram channel, AIbain delivery,
   Git push, MiniPC connection, service restart, or deployment is in scope.
 
 ## One-shot flow
 
-1. Load `.env` without displaying values and confirm that the personal bot
+1. Run `skills/marketflow-openclaw-ops/scripts/verify_delivery_exclusivity.py`
+   and stop unless its sanitized boolean/source result matches the exclusive
+   false/false/false/true contract above.
+2. Load `.env` without displaying values and confirm that the personal bot
    token and chat ID are configured.
-2. Optionally refresh only the alert-required price and leading-screener
+3. Optionally refresh only the alert-required price and leading-screener
    sources. Do not call the broad KR update because it posts community content,
    sends unrelated Telegram messages, and can push Git state.
-3. Run `alpha_scanner.run_scanner_alert_check` with deterministic reranking,
+4. Run `alpha_scanner.run_scanner_alert_check` with deterministic reranking,
    `commit_state=False`, and `block_on_stale=True`.
-4. Re-read the persisted run and analysis artifacts and validate identity,
+5. Re-read the persisted run and analysis artifacts and validate identity,
    counts, finite scores, target identity, evidence, price date, and
    look-ahead-safe markers.
-5. Build either the verified candidate report or the blocked-status report.
-6. In preview mode, persist the scanner artifacts and print only sanitized JSON
+6. Build either the verified candidate report or the blocked-status report.
+7. In preview mode, persist the scanner artifacts and print only sanitized JSON
    containing the approvable `run_id` and `message_digest`. In send mode, reload
    that exact persisted run, rebuild and verify the digest, enforce confirmation
    and deduplication, and call Telegram once. Send mode never starts a scanner
    run.
-7. Atomically persist a receipt containing timestamps, run ID, digest,
+8. Atomically persist a receipt containing timestamps, run ID, digest,
    delivery status, message ID, candidate/event counts, symbols, and freshness.
    Never persist tokens, chat IDs, raw environment values, or the full message.
 
@@ -91,6 +99,11 @@ and unchanged in responsibility.
 - Tracked legacy documentation contains credential-like plaintext. Values must
   not be copied into the skill or evidence; redaction and credential rotation
   remain a deployment gate.
+- Core commit `6fb75cb` disables automated transports by default, but legacy
+  boolean sender paths retain timeout-after-accept ambiguity and do not use the
+  shared verified-delivery ledger. MiniPC deployment stays blocked until that
+  follow-up is resolved, the full test gate passes, and pending Telegram
+  delivery is completed or explicitly waived.
 
 ## Verification
 
@@ -101,16 +114,25 @@ and unchanged in responsibility.
   can affect the already-ahead frontend commit.
 - Local OpenClaw config validation, MCP doctor/probe, skill visibility, agent
   bindings, and security audit.
+- Sanitized delivery-exclusivity verification before every preview/send.
+- `scripts/verify_auto_runner_e2e.py --send` fails closed; only the verified
+  one-shot operator may perform the confirmed delivery.
 - One final main-PC operator run. If fresh, send verified candidates; if
   blocked, send the truthful hold report. Record the Telegram receipt.
 
 ## Execution outcome — 2026-08-21 KST
 
-- Code was validated through `ed65734`. Focused gates passed: 71
+- A historical focused checkpoint through `ed65734` passed 71
   verified-delivery tests and 149 related regression tests. A historical full
   pytest rerun through `33dc203` reached 100% and exited 0 with five
   pre-existing unawaited-coroutine warnings; a final full pytest rerun is not
   yet claimed through `ed65734`.
+- Core commit `6fb75cb` added canonical serialization and explicit transport
+  opt-ins; its focused bundle reported 269 green. The current full test gate and
+  actual Telegram operation remain pending and are not complete.
+- The read-only exclusivity verifier passed locally with the required
+  false/false/false/true values, all resolved from safe defaults, and emitted no
+  raw environment value or path.
 - Frontend validation passed: 17 files / 90 tests and the build. OpenClaw
   `2026.7.1-2` config validated; MCP doctor/probe passed; its boundary remains
   19 read-only tools, zero bindings, mutation false, sandbox `all`, workspace
@@ -134,6 +156,10 @@ and unchanged in responsibility.
   errors; disk free is 63.15%. Deployment remains blocked until the FK
   violations and a verified backup are resolved/approved; no push or deployment
   occurred.
+- MiniPC deployment also remains blocked on the legacy boolean sender
+  timeout-after-accept ambiguity and missing shared verified-delivery ledger;
+  migration or removal is a follow-up even though `6fb75cb` defaults those
+  paths off.
 - Host runtime stability risk is **HIGH** and substantially predates this
   feature. Before 2026-08-21 17:05 KST, the matching count was 17 (python.exe
   15 + python3.13.exe 2). Read-only evidence captured at 2026-08-21 18:02:38 KST
