@@ -25,6 +25,14 @@ def _load_dotenv() -> None:
     load_dotenv(REPO_ROOT / '.env', override=False)
 
 
+def _configure_stdout_utf8(stream=None) -> None:
+    """Use a deterministic encoding when the active text stream supports it."""
+    stream = sys.stdout if stream is None else stream
+    reconfigure = getattr(stream, 'reconfigure', None)
+    if callable(reconfigure):
+        reconfigure(encoding='utf-8')
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--send', action='store_true', help='perform one private Telegram delivery')
@@ -32,6 +40,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     _load_dotenv()
     result = run_verified_detection(send=args.send, confirmation=args.confirm)
+    _configure_stdout_utf8()
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0 if result.get('ok') else 2
 

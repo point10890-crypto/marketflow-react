@@ -494,6 +494,54 @@ def test_cli_returns_success_for_recovered_and_blocked_delivery(status, monkeypa
     assert json.loads(capsys.readouterr().out)['status'] == status
 
 
+def test_cli_reconfigures_stdout_to_utf8_before_printing(monkeypatch):
+    """Windows callers decoding UTF-8 must receive readable non-ASCII JSON."""
+    script_path = Path(__file__).parents[1] / 'scripts' / 'run_verified_alpha_telegram.py'
+    spec = importlib.util.spec_from_file_location('verified_cli_utf8', script_path)
+    assert spec and spec.loader
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+
+    class ReconfigurableStream:
+        encoding = 'cp949'
+
+        def __init__(self):
+            self.value = ''
+
+        def reconfigure(self, *, encoding):
+            self.encoding = encoding
+
+        def write(self, value):
+            self.value += value
+            return len(value)
+
+        def flush(self):
+            return None
+
+    stream = ReconfigurableStream()
+    monkeypatch.setattr(cli, '_load_dotenv', lambda: None)
+    monkeypatch.setattr(cli, 'run_verified_detection', lambda **kwargs: {'ok': True, 'status': '검출 보류'})
+    monkeypatch.setattr(cli.sys, 'stdout', stream)
+
+    assert cli.main([]) == 0
+    assert stream.encoding == 'utf-8'
+    assert json.loads(stream.value)['status'] == '검출 보류'
+
+
+def test_stdout_utf8_configuration_is_optional_for_streams_without_reconfigure():
+    """Redirected or embedded streams without reconfigure remain supported."""
+    script_path = Path(__file__).parents[1] / 'scripts' / 'run_verified_alpha_telegram.py'
+    spec = importlib.util.spec_from_file_location('verified_cli_plain_stdout', script_path)
+    assert spec and spec.loader
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+
+    class PlainStream:
+        pass
+
+    cli._configure_stdout_utf8(PlainStream())
+
+
 @pytest.mark.parametrize(
     'contents',
     [
