@@ -123,3 +123,14 @@ and unchanged in responsibility.
   errors; disk free is 63.15%. Deployment remains blocked until the FK
   violations and a verified backup are resolved/approved; no push or deployment
   occurred.
+- Host runtime stability risk is **HIGH** and predates this feature: Windows
+  evidence showed 15 Python crashes and 93 WHEA hardware errors before feature
+  work. Recent WHEA errors are predominantly CPU internal parity/TLB on APIC
+  16/17; crashes span multiple Python distributions and other applications.
+  No dependency, pytest, or native-FFI configuration changed here, so rollback
+  is not indicated. Future MiniPC release requires an independent stable-PC/CI
+  rerun; after main-PC stabilization, require `pytest -q` and
+  `pytest --collect-only -q` three consecutive times with no new WHEA or
+  Application Error. Save work, use BIOS defaults/standard performance and a
+  cold boot, run vendor/Intel CPU diagnostics, preserve event logs, and service
+  or RMA if WHEA recurs.

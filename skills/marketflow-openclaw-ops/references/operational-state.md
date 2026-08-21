@@ -44,3 +44,19 @@
   and 8 unreferenced files; workflows completed 6/6 with no JSON errors; disk
   free is 63.15%. Deployment remains blocked until the FK violations and a
   verified backup are resolved/approved. No push or deployment was performed.
+
+## Host runtime stability gate
+
+- Host runtime stability risk is **HIGH** and predates this feature: Windows
+  evidence showed 15 Python crashes and 93 WHEA hardware errors before feature
+  work. Recent WHEA errors are predominantly CPU internal parity/TLB on APIC
+  16/17; crashes span multiple Python distributions and other applications.
+- This change touched no dependency, pytest, or native-FFI configuration, so
+  rollback is not indicated. Before MiniPC deployment, independently rerun on a
+  stable PC/CI. After main-PC hardware stabilization, require `pytest -q` and
+  `pytest --collect-only -q` three consecutive times with no new WHEA or
+  Application Error.
+- Concise remediation: save work, use BIOS defaults/standard performance and a
+  cold boot, run vendor/Intel CPU diagnostics, preserve event logs, and service
+  or RMA if WHEA recurs. Do not alter logs or system settings as part of this
+  operational handoff.
