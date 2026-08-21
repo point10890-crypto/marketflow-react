@@ -155,3 +155,5 @@ frontend/
 
 # MarketFlow Claw runtime (db/heartbeat/pid/lock/reports)
 data/claw/
+# .env backups written by scripts/apply_claw_env.ps1 (contain secrets)
+.env.bak*
