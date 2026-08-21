@@ -539,9 +539,10 @@ def _valid_delivery_entry(entry: Any) -> bool:
     status = entry.get('status')
     if status not in {'pending', 'uncertain', 'failed', 'delivered', 'blocked'}:
         return False
-    if not _text(entry.get('run_id')) or not isinstance(entry.get('message_sha256'), str):
+    run_id = entry.get('run_id')
+    if not isinstance(run_id, str) or not run_id.strip() or not isinstance(entry.get('message_sha256'), str):
         return False
-    if re.fullmatch(r'[0-9a-fA-F]{64}', entry['message_sha256']) is None:
+    if re.fullmatch(r'[0-9a-f]{64}', entry['message_sha256']) is None:
         return False
     if not isinstance(entry.get('delivered'), bool) or not isinstance(entry.get('state_committed'), bool):
         return False
@@ -561,6 +562,8 @@ def _valid_delivery_entry(entry: Any) -> bool:
     elif entry['delivered'] or message_id is not None:
         return False
     if status == 'failed' and entry.get('retryable') is not True:
+        return False
+    if status != 'failed' and 'retryable' in entry and entry['retryable'] is not False:
         return False
     if status == 'blocked' and entry['state_committed']:
         return False

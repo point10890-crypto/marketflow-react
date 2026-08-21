@@ -558,3 +558,42 @@ def test_semantically_invalid_v2_entry_fails_closed_without_overwrite(scanner, m
 
     assert result == {'ok': False, 'status': 'receipt_invalid', 'run_id': RUN_ID, 'error_code': 'receipt_invalid', 'sent': False}
     assert receipt_path.read_text(encoding='utf-8') == contents
+
+
+@pytest.mark.parametrize(
+    ('case', 'mutate'),
+    [
+        ('non_string_run_id', lambda entry: entry.__setitem__('run_id', 123)),
+        ('uppercase_message_sha256', lambda entry: entry.__setitem__('message_sha256', 'A' * 64)),
+        ('retryable_non_failed_state', lambda entry: entry.__setitem__('status', 'pending')),
+    ],
+)
+def test_strict_v2_entry_identity_and_retryability_fail_closed(scanner, monkeypatch, tmp_path, case, mutate):
+    """Malformed identity or retryability fields must not reopen a Telegram send."""
+    receipt_path = tmp_path / f'{case}.json'
+    entry = {
+        'run_id': 'previous-run',
+        'message_sha256': 'a' * 64,
+        'status': 'failed',
+        'delivered': False,
+        'message_id': None,
+        'candidate_count': 1,
+        'event_count': 1,
+        'symbols': ['005930'],
+        'event_keys': ['005930:BUY_CANDIDATE:2026-08-20'],
+        'state_committed': False,
+        'retryable': True,
+    }
+    mutate(entry)
+    contents = json.dumps({'schema_version': 2, 'deliveries': [entry]})
+    receipt_path.write_text(contents, encoding='utf-8')
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+
+    result = verified_delivery.run_verified_detection(
+        send=True,
+        confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+        receipt_path=str(receipt_path),
+    )
+
+    assert result == {'ok': False, 'status': 'receipt_invalid', 'run_id': RUN_ID, 'error_code': 'receipt_invalid', 'sent': False}
+    assert receipt_path.read_text(encoding='utf-8') == contents
