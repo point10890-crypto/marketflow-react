@@ -12,7 +12,7 @@ import json
 import math
 import os
 import re
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -28,6 +28,8 @@ RECEIPT_SCHEMA_VERSION = 2
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_RECEIPT_PATH = REPO_ROOT / 'data' / 'admin_mirofish' / 'verified_delivery_receipt.json'
 DEFAULT_ALERT_STATE_PATH = REPO_ROOT / 'data' / 'admin_mirofish' / 'alpha_scanner_alert_state.json'
+MAX_RUN_AGE = timedelta(minutes=30)
+MAX_FUTURE_SKEW = timedelta(seconds=60)
 
 
 def run_verified_detection(
@@ -35,14 +37,44 @@ def run_verified_detection(
     *,
     send: bool = False,
     confirmation: str | None = None,
+    run_id: str | None = None,
+    message_digest: str | None = None,
     receipt_path: str | os.PathLike[str] | None = None,
 ) -> dict[str, Any]:
-    """Run a scanner check, validate persisted artifacts, then optionally deliver.
+    """Preview a new scan or deliver one exact previously-previewed run.
 
-    Preview is the default and omits delivery and receipt writes. Scanner run
-    artifacts are intentionally persisted by the scanner itself. A send is
-    allowed only with the exact operator confirmation phrase.
+    Preview persists scanner artifacts but performs no delivery/receipt write.
+    A send never starts a scan: it re-reads the caller-selected persisted run
+    and requires both the preview digest and the exact confirmation phrase.
     """
+    if send:
+        clean_run_id = _text(run_id)
+        clean_digest = _text(message_digest)
+        if confirmation != CONFIRMATION_PHRASE:
+            return _result('confirmation_required', run_id=clean_run_id or None, sent=False)
+        if not clean_run_id or re.fullmatch(r'[0-9a-f]{64}', clean_digest) is None:
+            return _result(
+                'preview_binding_required',
+                run_id=clean_run_id or None,
+                error_code='preview_binding_required',
+                sent=False,
+            )
+        validation, persisted = _validate_scanner_run_canonical(clean_run_id)
+        blocked = validation.get('error_code') == 'blocked_freshness'
+        if not validation.get('ok') and not blocked:
+            return _result('invalid_run', run_id=clean_run_id, error_code=validation.get('error_code'), sent=False)
+        if not isinstance(persisted, dict):
+            return _result('invalid_run', run_id=clean_run_id, error_code='run_not_found', sent=False)
+        return _deliver_or_preview(
+            run=persisted,
+            send=True,
+            confirmation=confirmation,
+            expected_message_digest=clean_digest,
+            receipt_path=receipt_path,
+            blocked=blocked,
+            error_code='blocked_freshness' if blocked else None,
+        )
+
     scan_payload = dict(payload or {})
     scan_payload['deepseek_rerank'] = False
     try:
@@ -67,16 +99,11 @@ def run_verified_detection(
         return _result('invalid_run', run_id=run_id, error_code=validation.get('error_code'))
     if not isinstance(persisted, dict):
         return _result('invalid_run', run_id=run_id, error_code='run_not_found')
-    canonical_alert, alert_error = _canonicalize_alert(alert, persisted, blocked=blocked)
-    if alert_error:
-        return _result('invalid_run', run_id=run_id, error_code=alert_error)
-    message = canonical_alert['message']
     return _deliver_or_preview(
         run=persisted,
-        alert=canonical_alert,
-        message=message,
-        send=send,
-        confirmation=confirmation,
+        send=False,
+        confirmation=None,
+        expected_message_digest=None,
         receipt_path=receipt_path,
         blocked=blocked,
         error_code='blocked_freshness' if blocked else None,
@@ -123,12 +150,29 @@ def _validate_scanner_run_canonical(
     generated_dt = _parse_timestamp(generated_at)
     if generated_dt is None:
         return _invalid('invalid_generated_at'), persisted
+    now = _utc_now()
+    if generated_dt > now + MAX_FUTURE_SKEW:
+        return _invalid('run_generated_in_future'), persisted
+    if now - generated_dt > MAX_RUN_AGE:
+        return _invalid('run_expired'), persisted
+
+    source_error, source_blocked, strong_sources = _source_files_status(persisted, generated_dt)
+    if source_error:
+        return _invalid(source_error), persisted
     candidates = persisted.get('candidates')
     count = persisted.get('candidate_count')
     if not isinstance(candidates, list) or not isinstance(count, int) or isinstance(count, bool) or count != len(candidates):
         return _invalid('candidate_count_mismatch'), persisted
+    candidate_blocked = False
     for candidate in candidates:
-        error = _candidate_error(candidate, generated_date=generated_dt.date())
+        error = _candidate_error(
+            candidate,
+            generated_at=generated_dt,
+            strong_sources=strong_sources,
+        )
+        if error == 'blocked_freshness':
+            candidate_blocked = True
+            continue
         if error:
             return _invalid(error), persisted
 
@@ -146,10 +190,15 @@ def _validate_scanner_run_canonical(
     artifact_error = _feature_vectors_error(features.get('features'), candidates, generated_dt.date())
     if artifact_error:
         return _invalid(artifact_error), persisted
-    artifact_error = _evidence_ledger_error(ledger.get('items'), candidates, generated_dt.date())
+    artifact_error = _evidence_ledger_error(
+        ledger.get('items'),
+        candidates,
+        generated_dt.date(),
+        features.get('features'),
+    )
     if artifact_error:
         return _invalid(artifact_error), persisted
-    if _freshness(persisted) in alpha_scanner.ALERT_BLOCKING_FRESHNESS:
+    if source_blocked or candidate_blocked:
         return _invalid('blocked_freshness'), persisted
     return ({
         'ok': True,
@@ -193,8 +242,17 @@ def post_private_telegram(
         return {'ok': False, 'status': 'request_failed', 'error_code': 'telegram_request_failed'}
     telegram_result = payload.get('result') if isinstance(payload, dict) else None
     message_id = telegram_result.get('message_id') if isinstance(telegram_result, dict) else None
-    if getattr(response, 'status_code', None) != 200 or not isinstance(payload, dict) or payload.get('ok') is not True:
-        return {'ok': False, 'status': 'rejected', 'error_code': 'telegram_response_rejected', 'retryable': True}
+    status_code = getattr(response, 'status_code', None)
+    if status_code != 200 or not isinstance(payload, dict) or payload.get('ok') is not True:
+        result = {'ok': False, 'status': 'rejected', 'error_code': 'telegram_response_rejected'}
+        if (
+            status_code in {400, 403}
+            and isinstance(payload, dict)
+            and payload.get('ok') is False
+            and bool(_text(payload.get('description')))
+        ):
+            result['retryable'] = True
+        return result
     if not _positive_int(message_id):
         return {'ok': False, 'status': 'rejected', 'error_code': 'invalid_message_id'}
     response_chat = telegram_result.get('chat') if isinstance(telegram_result, dict) else None
@@ -212,35 +270,26 @@ def post_private_telegram(
 def _deliver_or_preview(
     *,
     run: dict[str, Any],
-    alert: dict[str, Any],
-    message: str,
     send: bool,
     confirmation: str | None,
+    expected_message_digest: str | None,
     receipt_path: str | os.PathLike[str] | None,
     blocked: bool,
     error_code: str | None = None,
 ) -> dict[str, Any]:
     """Preview or serialize one delivery attempt behind its durable claim."""
-    events = [] if blocked else _events(alert)
-    symbols = [] if blocked else _event_symbols(events)
-    event_keys = [] if blocked else _event_keys(events)
-    digest = _message_digest(message)
-    base = {
-        'run_id': _text(run.get('id')),
-        'message_digest': digest,
-        'candidate_count': 0 if blocked else _candidate_count(run),
-        'event_count': len(events),
-        'symbols': symbols,
-        'event_keys': event_keys,
-        'freshness': _freshness(run),
-        'sent': False,
-    }
-    if error_code:
-        base['error_code'] = error_code
     if not send:
+        state = _read_canonical_alert_state()
+        if state is None:
+            return _result('invalid_run', run_id=_text(run.get('id')), error_code='alert_state_invalid', sent=False)
+        alert, alert_error = _canonical_alert_from_state(run, state, blocked=blocked)
+        if alert_error:
+            return _result('invalid_run', run_id=_text(run.get('id')), error_code=alert_error, sent=False)
+        message = alert['message']
+        base = _delivery_base(run, alert, message, blocked=blocked, error_code=error_code)
         return _result('blocked' if blocked else 'preview', **base)
     if confirmation != CONFIRMATION_PHRASE:
-        return _result('confirmation_required', **base)
+        return _result('confirmation_required', run_id=_text(run.get('id')), sent=False)
 
     path = Path(receipt_path) if receipt_path else DEFAULT_RECEIPT_PATH
     try:
@@ -248,21 +297,86 @@ def _deliver_or_preview(
         with safe_write(str(path), timeout=15):
             ledger = _read_ledger(path)
             if ledger is None:
-                return _result('receipt_invalid', run_id=base['run_id'], error_code='receipt_invalid', sent=False)
-            recovered = _recover_outstanding_state(ledger, path, alert, base, blocked)
+                return _result('receipt_invalid', run_id=_text(run.get('id')), error_code='receipt_invalid', sent=False)
+            state = _read_canonical_alert_state()
+            if state is None:
+                return _result('receipt_invalid', run_id=_text(run.get('id')), error_code='alert_state_invalid', sent=False)
+            recovered = _recover_outstanding_state(
+                ledger,
+                path,
+                state,
+                requested_run_id=_text(run.get('id')),
+            )
             if recovered is not None:
                 return recovered
-            existing = _find_delivery(ledger, base['run_id'], digest)
+            existing = _find_delivery(ledger, _text(run.get('id')), _text(expected_message_digest))
+            if existing is not None and _text(existing.get('status')) in {'pending', 'uncertain'}:
+                return _result(
+                    'delivery_uncertain',
+                    run_id=_text(run.get('id')),
+                    message_digest=_text(expected_message_digest),
+                    sent=None,
+                    message_id=existing.get('message_id'),
+                )
+            if existing is not None and (
+                _text(existing.get('status')) != 'delivered'
+                or existing.get('state_committed') is True
+                or blocked
+            ):
+                return _result(
+                    'duplicate_refused',
+                    run_id=_text(run.get('id')),
+                    message_digest=_text(expected_message_digest),
+                    message_id=existing.get('message_id'),
+                    sent=False,
+                    state_committed=bool(existing.get('state_committed')),
+                )
+            if any(_text(item.get('status')) in {'pending', 'uncertain'} for item in ledger.get('deliveries') or []):
+                return _result(
+                    'delivery_uncertain',
+                    run_id=_text(run.get('id')),
+                    message_digest=_text(expected_message_digest),
+                    sent=None,
+                )
+
+            alert, alert_error = _canonical_alert_from_state(run, state, blocked=blocked)
+            if alert_error:
+                return _result('invalid_run', run_id=_text(run.get('id')), error_code=alert_error, sent=False)
+            message = alert['message']
+            digest = _message_digest(message)
+            base = _delivery_base(run, alert, message, blocked=blocked, error_code=error_code)
+            if digest != expected_message_digest:
+                return _result(
+                    'preview_mismatch',
+                    run_id=_text(run.get('id')),
+                    error_code='preview_mismatch',
+                    sent=False,
+                )
             if existing is not None:
                 return _handle_existing_delivery(ledger, path, existing, alert, base, blocked)
+            if any(
+                _text(item.get('status')) == 'delivered' and item.get('state_committed') is not True
+                for item in ledger.get('deliveries') or []
+            ):
+                return _result(
+                    'state_recovery_required',
+                    **{**base, 'error_code': 'state_recovery_required', 'sent': False},
+                )
+            current_keys = set(base.get('event_keys') or [])
+            if current_keys and any(
+                _text(item.get('status')) == 'delivered'
+                and bool(current_keys.intersection(set(item.get('event_keys') or [])))
+                for item in ledger.get('deliveries') or []
+            ):
+                return _result('duplicate_refused', **{**base, 'sent': False})
 
             claim = _delivery_entry(
                 status='pending',
                 run=run,
                 message_digest=digest,
-                event_count=len(events),
-                symbols=symbols,
-                event_keys=event_keys,
+                event_count=base['event_count'],
+                symbols=base['symbols'],
+                event_keys=base['event_keys'],
                 blocked=blocked,
             )
             ledger['deliveries'].append(claim)
@@ -311,7 +425,7 @@ def _deliver_or_preview(
                 return _result('blocked_delivered', **{**base, 'message_id': message_id, 'sent': True, 'state_committed': False})
             return _commit_after_delivery(ledger, path, claim, alert, base)
     except Exception:
-        return _result('receipt_lock_failed', run_id=base['run_id'], error_code='receipt_lock_failed', sent=False)
+        return _result('receipt_lock_failed', run_id=_text(run.get('id')), error_code='receipt_lock_failed', sent=False)
 
 
 def _handle_existing_delivery(
@@ -339,27 +453,21 @@ def _handle_existing_delivery(
 def _recover_outstanding_state(
     ledger: dict[str, Any],
     path: Path,
-    alert: dict[str, Any],
-    base: dict[str, Any],
-    blocked: bool,
+    state: dict[str, Any],
+    *,
+    requested_run_id: str,
 ) -> dict[str, Any] | None:
-    """Recover pending scanner event state before considering any new delivery."""
-    if blocked:
-        return None
+    """Repair a ledger write lost after canonical scanner state was committed."""
     outstanding = [
         entry for entry in ledger.get('deliveries') or []
         if _text(entry.get('status')) == 'delivered' and entry.get('state_committed') is not True
     ]
     if not outstanding:
         return None
-    current_keys = set(base.get('event_keys') or [])
-    matching = [entry for entry in outstanding if set(entry.get('event_keys') or []) == current_keys and current_keys]
-    if len(matching) != len(outstanding):
-        return _result('state_recovery_required', run_id=base['run_id'], error_code='state_recovery_required', sent=False)
-    try:
-        alpha_scanner.commit_scanner_alert_events(alert)
-    except Exception:
-        return _result('state_recovery_required', run_id=base['run_id'], error_code='state_recovery_required', sent=False)
+    sent_events = state.get('sent_events') if isinstance(state.get('sent_events'), dict) else {}
+    matching = [entry for entry in outstanding if _state_confirms_delivery(sent_events, entry)]
+    if not matching:
+        return None
     now = _now_iso()
     for entry in matching:
         entry['state_committed'] = True
@@ -368,11 +476,18 @@ def _recover_outstanding_state(
     try:
         _write_ledger(path, ledger)
     except Exception:
-        return _result('state_recovery_required', run_id=base['run_id'], error_code='state_recovery_required', sent=False)
-    return _result(
-        'delivered_recovered',
-        **{**base, 'message_id': matching[0].get('message_id'), 'sent': False, 'state_committed': True},
-    )
+        return _result('state_recovery_required', run_id=requested_run_id, error_code='state_recovery_required', sent=False)
+    if len(matching) != len(outstanding):
+        return _result('state_recovery_required', run_id=requested_run_id, error_code='state_recovery_required', sent=False)
+    fields: dict[str, Any] = {
+        'sent': False,
+        'state_committed': True,
+        'recovered_count': len(matching),
+    }
+    if len(matching) == 1:
+        fields['run_id'] = _text(matching[0].get('run_id'))
+        fields['message_id'] = matching[0].get('message_id')
+    return _result('delivered_recovered', **fields)
 
 
 def _commit_after_delivery(
@@ -398,73 +513,41 @@ def _commit_after_delivery(
     return _result('delivered', **{**base, 'message_id': entry.get('message_id'), 'sent': True, 'state_committed': True})
 
 
-def _canonicalize_alert(
-    alert: dict[str, Any],
+def _canonical_alert_from_state(
     run: dict[str, Any],
+    state: dict[str, Any],
     *,
     blocked: bool,
 ) -> tuple[dict[str, Any], str | None]:
-    """Validate transient event metadata and rebuild one persisted-run alert."""
-    raw_blocked = alert.get('alert_blocked')
-    if not isinstance(raw_blocked, bool) or raw_blocked != blocked:
-        return {}, 'freshness_alert_mismatch'
-    raw_events = alert.get('events')
-    if not isinstance(raw_events, list):
-        return {}, 'invalid_alert_events'
-    event_count = alert.get('new_event_count')
-    if not isinstance(event_count, int) or isinstance(event_count, bool) or event_count != len(raw_events):
-        return {}, 'event_count_mismatch'
-    state_path = alert.get('state_path')
-    if not isinstance(state_path, str) or not state_path.strip():
-        return {}, 'invalid_state_path'
-    canonical_state_path = _canonical_alert_state_path(state_path)
-    if canonical_state_path is None:
-        return {}, 'state_path_mismatch'
-    if blocked and raw_events:
-        return {}, 'blocked_alert_has_events'
-
+    """Build events/message only from a persisted run and trusted state."""
+    sent_events = state.get('sent_events') if isinstance(state.get('sent_events'), dict) else None
+    if sent_events is None:
+        return {}, 'alert_state_invalid'
     candidates = run.get('candidates') if isinstance(run.get('candidates'), list) else []
-    candidate_by_symbol: dict[str, dict[str, Any]] = {}
-    for candidate in candidates:
-        symbol = _text(candidate.get('symbol')) if isinstance(candidate, dict) else ''
-        if not symbol or symbol in candidate_by_symbol:
-            return {}, 'candidate_identity_mismatch'
-        candidate_by_symbol[symbol] = candidate
-
     canonical_events: list[dict[str, Any]] = []
-    seen_keys: set[str] = set()
-    for raw_event in raw_events:
-        if not isinstance(raw_event, dict):
-            return {}, 'invalid_alert_event'
-        raw_candidate = raw_event.get('candidate')
-        if not isinstance(raw_candidate, dict):
-            return {}, 'event_candidate_mismatch'
-        symbol = _text(raw_candidate.get('symbol'))
-        candidate = candidate_by_symbol.get(symbol)
-        if candidate is None or raw_candidate != candidate:
-            return {}, 'event_candidate_mismatch'
-        if raw_event.get('run_id') != run.get('id'):
-            return {}, 'event_run_id_mismatch'
-        if raw_event.get('generated_at') != run.get('generated_at'):
-            return {}, 'event_generated_at_mismatch'
-        expected_key = _candidate_event_key(candidate)
-        if raw_event.get('event_key') != expected_key:
-            return {}, 'event_key_mismatch'
-        if expected_key in seen_keys:
-            return {}, 'duplicate_event_key'
-        if (
-            candidate.get('action') != 'BUY_CANDIDATE'
-            or float(candidate['alpha_score']) < alpha_scanner.DEFAULT_ALERT_MIN_ALPHA
-            or float(candidate['risk_score']) > alpha_scanner.DEFAULT_ALERT_MAX_RISK
-        ):
-            return {}, 'ineligible_alert_event'
-        seen_keys.add(expected_key)
-        canonical_events.append({
-            'event_key': expected_key,
-            'run_id': run['id'],
-            'generated_at': run['generated_at'],
-            'candidate': candidate,
-        })
+    if not blocked:
+        seen_keys: set[str] = set()
+        for candidate in candidates:
+            if not isinstance(candidate, dict):
+                return {}, 'invalid_candidate'
+            if (
+                candidate.get('action') != 'BUY_CANDIDATE'
+                or float(candidate['alpha_score']) < alpha_scanner.DEFAULT_ALERT_MIN_ALPHA
+                or float(candidate['risk_score']) > alpha_scanner.DEFAULT_ALERT_MAX_RISK
+            ):
+                continue
+            expected_key = _candidate_event_key(candidate)
+            if expected_key in sent_events or expected_key in seen_keys:
+                continue
+            seen_keys.add(expected_key)
+            canonical_events.append({
+                'event_key': expected_key,
+                'run_id': run['id'],
+                'generated_at': run['generated_at'],
+                'candidate': candidate,
+            })
+            if len(canonical_events) >= alpha_scanner.DEFAULT_ALERT_MAX_EVENTS:
+                break
 
     blocked_reason = 'blocked_freshness' if blocked else None
     try:
@@ -483,11 +566,61 @@ def _canonicalize_alert(
         'run': run,
         'events': canonical_events,
         'message': message,
-        'state_path': canonical_state_path,
+        'state_path': str(DEFAULT_ALERT_STATE_PATH),
         'new_event_count': len(canonical_events),
         'alert_blocked': blocked,
         'blocked_reason': blocked_reason,
     }, None)
+
+
+def _delivery_base(
+    run: dict[str, Any],
+    alert: dict[str, Any],
+    message: str,
+    *,
+    blocked: bool,
+    error_code: str | None,
+) -> dict[str, Any]:
+    events = [] if blocked else _events(alert)
+    base = {
+        'run_id': _text(run.get('id')),
+        'message_digest': _message_digest(message),
+        'candidate_count': 0 if blocked else _candidate_count(run),
+        'event_count': len(events),
+        'symbols': [] if blocked else _event_symbols(events),
+        'event_keys': [] if blocked else _event_keys(events),
+        'freshness': _freshness(run),
+        'sent': False,
+    }
+    if error_code:
+        base['error_code'] = error_code
+    return base
+
+
+def _read_canonical_alert_state() -> dict[str, Any] | None:
+    """Read only the repository-owned state and fail closed on corruption."""
+    path = DEFAULT_ALERT_STATE_PATH
+    if not path.exists():
+        return {'version': 1, 'sent_events': {}}
+    try:
+        payload = json.loads(path.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(payload, dict) or not isinstance(payload.get('sent_events'), dict):
+        return None
+    if not all(isinstance(key, str) and isinstance(value, dict) for key, value in payload['sent_events'].items()):
+        return None
+    return payload
+
+
+def _state_confirms_delivery(sent_events: dict[str, Any], entry: dict[str, Any]) -> bool:
+    keys = entry.get('event_keys') if isinstance(entry.get('event_keys'), list) else []
+    run_id = _text(entry.get('run_id'))
+    return bool(keys) and all(
+        isinstance(sent_events.get(key), dict)
+        and _text(sent_events[key].get('run_id')) == run_id
+        for key in keys
+    )
 
 
 def _candidate_event_key(candidate: dict[str, Any]) -> str:
@@ -496,21 +629,58 @@ def _candidate_event_key(candidate: dict[str, Any]) -> str:
     return f"{_text(candidate.get('symbol'))}:{_text(candidate.get('action'))}:{price_date}"
 
 
-def _canonical_alert_state_path(value: str) -> str | None:
-    """Accept only a path resolving to the repository-owned default state file."""
-    try:
-        supplied = Path(value).resolve(strict=False)
-        trusted = DEFAULT_ALERT_STATE_PATH.resolve(strict=False)
-    except (OSError, RuntimeError):
-        return None
-    supplied_identity = os.path.normcase(os.path.normpath(str(supplied)))
-    trusted_identity = os.path.normcase(os.path.normpath(str(trusted)))
-    if supplied_identity != trusted_identity:
-        return None
-    return str(DEFAULT_ALERT_STATE_PATH)
+def _source_files_status(
+    run: dict[str, Any],
+    generated_at: datetime,
+) -> tuple[str | None, bool, set[str]]:
+    items = run.get('source_files')
+    if not isinstance(items, list):
+        return 'missing_source_files', False, set()
+    expected = {
+        name: policy
+        for name, policy in alpha_scanner.SOURCE_FILE_POLICIES.items()
+        if policy.get('alert_required')
+    }
+    alert_items = [item for item in items if isinstance(item, dict) and item.get('alert_required') is True]
+    names = [_text(item.get('file')).removeprefix('data/') for item in alert_items]
+    if len(names) != len(set(names)) or set(names) != set(expected):
+        return 'alert_source_files_mismatch', False, set()
+
+    blocked = False
+    strong_sources: set[str] = set()
+    by_name = dict(zip(names, alert_items, strict=True))
+    for name, policy in expected.items():
+        item = by_name[name]
+        if (
+            not isinstance(item.get('exists'), bool)
+            or _text(item.get('role')) != _text(policy.get('role'))
+            or item.get('required') is not bool(policy.get('required'))
+            or item.get('alert_required') is not True
+            or item.get('max_age_days') != policy.get('max_age_days')
+        ):
+            return 'alert_source_policy_mismatch', False, set()
+        if item.get('exists') is not True:
+            blocked = True
+            strong_sources.add(name)
+            continue
+        observed_at = _parse_source_timestamp(item.get('generated_at') or item.get('modified_at'))
+        if observed_at is None:
+            return 'invalid_source_observation', False, set()
+        if observed_at > generated_at:
+            return 'source_observation_after_run', False, set()
+        max_age = timedelta(days=int(policy['max_age_days']))
+        if generated_at - observed_at > max_age or _text(item.get('freshness')).lower() != 'fresh':
+            blocked = True
+        strong_sources.add(name)
+    return None, blocked, strong_sources
 
 
-def _candidate_error(candidate: Any, *, generated_date: date) -> str | None:
+def _candidate_error(
+    candidate: Any,
+    *,
+    generated_at: datetime,
+    strong_sources: set[str],
+) -> str | None:
     if not isinstance(candidate, dict):
         return 'invalid_candidate'
     if not _text(candidate.get('symbol')) or not (_text(candidate.get('display_name')) or _text(candidate.get('name'))):
@@ -525,14 +695,50 @@ def _candidate_error(candidate: Any, *, generated_date: date) -> str | None:
         return 'invalid_candidate_score'
     if not _valid_evidence(candidate.get('evidence')):
         return 'invalid_candidate_evidence'
+    candidate_generated_at = _parse_timestamp(candidate.get('generated_at'))
+    if candidate_generated_at is None or candidate_generated_at != generated_at:
+        return 'candidate_generated_at_mismatch'
+    replay = candidate.get('replay_context')
+    if not isinstance(replay, dict):
+        return 'invalid_replay_context'
+    if replay.get('lookahead_safe') is not True:
+        return 'candidate_not_lookahead_safe'
+    replay_generated_at = _parse_timestamp(replay.get('generated_at'))
+    if replay_generated_at is None or replay_generated_at != generated_at:
+        return 'replay_generated_at_mismatch'
+    data_sources = replay.get('data_sources')
+    if (
+        not isinstance(data_sources, list)
+        or not data_sources
+        or not all(isinstance(source, str) and source.strip() for source in data_sources)
+    ):
+        return 'invalid_candidate_data_sources'
     price = candidate.get('price')
     if not isinstance(price, dict) or not _finite(price.get('current_price')):
         return 'invalid_candidate_price'
     price_date = _parse_date(price.get('date'))
     if price_date is None:
         return 'invalid_candidate_price_date'
-    if price_date > generated_date:
+    if price_date > generated_at.date():
         return 'candidate_price_after_run'
+    if _text(replay.get('price_date')) != _text(price.get('date')):
+        return 'replay_price_date_mismatch'
+    price_max_age = int(alpha_scanner.SOURCE_FILE_POLICIES['daily_prices.csv']['max_age_days'])
+    if (generated_at.date() - price_date).days > price_max_age:
+        return 'blocked_freshness'
+    evidence = candidate['evidence']
+    strong_evidence = [
+        item for item in evidence
+        if _text(item.get('source')) in strong_sources
+        and _text(item.get('source')) in set(data_sources)
+        and float(item.get('confidence')) >= 0.5
+    ]
+    if not strong_evidence:
+        return 'missing_strong_evidence'
+    profile = candidate.get('analysis_profile')
+    quality = profile.get('evidence_quality') if isinstance(profile, dict) else None
+    if not isinstance(quality, dict) or _text(quality.get('grade')).lower() not in {'moderate', 'strong'}:
+        return 'weak_evidence_quality'
     return None
 
 
@@ -589,7 +795,7 @@ def _feature_vectors_error(entries: Any, candidates: list[Any], generated_date: 
         error = _feature_vector_error(entry, generated_date)
         if error:
             return error
-        if not _artifact_candidate_core_matches(entry, candidate):
+        if entry != alpha_scanner._feature_vector(candidate):
             return 'feature_vectors_candidate_mismatch'
         seen.add(symbol)
     if seen != set(candidate_by_symbol):
@@ -597,7 +803,12 @@ def _feature_vectors_error(entries: Any, candidates: list[Any], generated_date: 
     return None
 
 
-def _evidence_ledger_error(entries: Any, candidates: list[Any], generated_date: date) -> str | None:
+def _evidence_ledger_error(
+    entries: Any,
+    candidates: list[Any],
+    generated_date: date,
+    feature_entries: Any,
+) -> str | None:
     if not isinstance(entries, list):
         return 'evidence_ledger_count_mismatch'
     selected = [entry for entry in entries if isinstance(entry, dict) and entry.get('selection_status') != 'rejected']
@@ -608,23 +819,45 @@ def _evidence_ledger_error(entries: Any, candidates: list[Any], generated_date: 
         for candidate in candidates
         if isinstance(candidate, dict)
     }
+    feature_by_symbol = {
+        _text(feature.get('symbol')): feature
+        for feature in feature_entries or []
+        if isinstance(feature, dict)
+    }
     seen: set[str] = set()
     for entry in selected:
         symbol = _text(entry.get('symbol'))
         candidate = candidate_by_symbol.get(symbol)
-        if (
-            entry.get('selection_status') != 'selected'
-            or candidate is None
-            or symbol in seen
-            or not _valid_evidence(entry.get('evidence'))
-            or not _artifact_candidate_core_matches(entry, candidate)
-            or entry.get('evidence') != candidate.get('evidence')
-        ):
+        if candidate is None or symbol in seen:
             return 'invalid_evidence_ledger_item'
         feature = entry.get('feature_vector')
         if not isinstance(feature, dict) or _feature_vector_error(feature, generated_date):
             return 'invalid_evidence_ledger_item'
-        if not _artifact_candidate_core_matches(feature, candidate):
+        if feature != feature_by_symbol.get(symbol):
+            return 'evidence_feature_vector_mismatch'
+        profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
+        expected = {
+            'symbol': candidate.get('symbol'),
+            'name': candidate.get('name') or candidate.get('display_name'),
+            'market': candidate.get('market'),
+            'rank': candidate.get('rank'),
+            'pool_rank': candidate.get('pool_rank'),
+            'selection_status': 'selected',
+            'rejection_reasons': [],
+            'action': candidate.get('action'),
+            'alpha_score': candidate.get('alpha_score'),
+            'risk_score': candidate.get('risk_score'),
+            'ranking_score': candidate.get('ranking_score'),
+            'signal_quality': candidate.get('signal_quality'),
+            'strategy_tags': candidate.get('strategy_tags') or [],
+            'evidence_quality': candidate.get('evidence_quality') or profile.get('evidence_quality'),
+            'confidence_cap': profile.get('confidence_cap') or feature.get('confidence_cap'),
+            'freshness': candidate.get('freshness'),
+            'data_sources': (candidate.get('replay_context') or {}).get('data_sources') or feature.get('data_sources') or [],
+            'evidence': candidate.get('evidence') or [],
+            'feature_vector': feature,
+        }
+        if entry != expected or not _valid_evidence(entry.get('evidence')):
             return 'invalid_evidence_ledger_item'
         seen.add(symbol)
     if seen != set(candidate_by_symbol):
@@ -650,27 +883,6 @@ def _feature_vector_error(entry: dict[str, Any], generated_date: date) -> str | 
     return None
 
 
-def _artifact_candidate_core_matches(entry: dict[str, Any], candidate: dict[str, Any]) -> bool:
-    price = candidate.get('price') if isinstance(candidate.get('price'), dict) else {}
-    return (
-        _text(entry.get('symbol')) == _text(candidate.get('symbol'))
-        and _text(entry.get('name')) == _text(candidate.get('name') or candidate.get('display_name'))
-        and _text(entry.get('market')) == _text(candidate.get('market'))
-        and _text(entry.get('action')) == _text(candidate.get('action'))
-        and entry.get('alpha_score') == candidate.get('alpha_score')
-        and entry.get('risk_score') == candidate.get('risk_score')
-        and entry.get('ranking_score') == candidate.get('ranking_score')
-        and (
-            'price_date' not in entry
-            or _text(entry.get('price_date')) == _text(price.get('date'))
-        )
-        and (
-            'current_price' not in entry
-            or entry.get('current_price') == price.get('current_price')
-        )
-    )
-
-
 def _valid_evidence(evidence: Any) -> bool:
     return (
         isinstance(evidence, list)
@@ -680,6 +892,8 @@ def _valid_evidence(evidence: Any) -> bool:
             and bool(_text(item.get('source')))
             and bool(_text(item.get('field')))
             and _finite(item.get('score'))
+            and _finite(item.get('confidence'))
+            and 0.0 <= float(item.get('confidence')) <= 1.0
             for item in evidence
         )
     )
@@ -835,7 +1049,11 @@ def _valid_delivery_entry(entry: Any) -> bool:
 
 
 def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return _utc_now().isoformat()
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 def _message_digest(message: str) -> str:
@@ -854,6 +1072,21 @@ def _parse_timestamp(value: Any) -> datetime | None:
         return None
     if parsed.tzinfo is None:
         return None
+    return parsed.astimezone(timezone.utc)
+
+
+def _parse_source_timestamp(value: Any) -> datetime | None:
+    text = _text(value)
+    if not text:
+        return None
+    if text.endswith('Z'):
+        text = f'{text[:-1]}+00:00'
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=alpha_scanner.KST)
     return parsed.astimezone(timezone.utc)
 
 

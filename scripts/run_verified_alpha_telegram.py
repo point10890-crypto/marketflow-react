@@ -37,10 +37,22 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--send', action='store_true', help='perform one private Telegram delivery')
     parser.add_argument('--confirm', default='', help=f'required phrase: {CONFIRMATION_PHRASE}')
+    parser.add_argument('--run-id', default='', help='run ID printed by the exact preview being approved')
+    parser.add_argument('--message-digest', default='', help='SHA-256 digest printed by that preview')
     args = parser.parse_args(argv)
+    if args.send and (not args.run_id.strip() or not args.message_digest.strip()):
+        parser.error('--send requires both --run-id and --message-digest from the exact preview')
     _load_dotenv()
-    result = run_verified_detection(send=args.send, confirmation=args.confirm)
-    result = {key: value for key, value in result.items() if key != 'message'}
+    result = run_verified_detection(
+        send=args.send,
+        confirmation=args.confirm,
+        run_id=args.run_id or None,
+        message_digest=args.message_digest or None,
+    )
+    delivery_verified = result.get('sent') is True and result.get('status') in {'delivered', 'blocked_delivered'}
+    result = {key: value for key, value in result.items() if key not in {'message', 'message_id', 'receipt'}}
+    if args.send:
+        result['delivery_verified'] = delivery_verified
     _configure_stdout_utf8()
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0 if result.get('ok') else 2
