@@ -15,3 +15,32 @@
 - Deployment is blocked: tracked legacy documentation needs redaction and
   credential rotation confirmation. Do not copy credential-like plaintext,
   tokens, chat IDs, raw messages, member data, or receipts into this state.
+
+## 2026-08-21 KST validation snapshot
+
+- Verified code state: through `33dc203`. Focused tests exited 0; a full pytest
+  rerun reached 100% and exited 0 with five pre-existing unawaited-coroutine
+  warnings. Two separate CPython 3.12 native intermittent crashes (access
+  violation/illegal instruction) were also observed and remain an environment
+  risk.
+- Frontend verification passed: 17 files / 90 tests and the production build.
+- OpenClaw `2026.7.1-2` config validated; MCP doctor/probe passed; inventory is
+  exactly 19 read-only tools, zero bindings, mutation false, sandbox `all`, and
+  workspace `none`. Security audit reported critical 0 and warn 1
+  (trusted-proxy warning). The Codex skill Junction is installed and validated.
+- Scanner alert-required source data was stale. A safe price refresh hung and
+  was interrupted without changing data, so the outcome is zero candidates and
+  `검출 보류` only.
+- Telegram authentication and private-chat lookup were valid, but both guarded
+  sends and the write-capability probe returned 403 because the recipient has
+  blocked the configured bot. There is no message ID and no delivery. The
+  ledger contains known failed retryable records; do not retry until the
+  recipient unblocks the bot.
+- MiniPC deployment is not authorized. It remains blocked by legacy credential
+  redaction/rotation and port-SSOT reconciliation. A read-only predeploy audit
+  exited 0: database `quick_check=ok` and required user schema is present, but
+  11 foreign-key violations remain (`post_images -> posts`); no configured
+  backup roots/candidates were found; community file references have 0 missing
+  and 8 unreferenced files; workflows completed 6/6 with no JSON errors; disk
+  free is 63.15%. Deployment remains blocked until the FK violations and a
+  verified backup are resolved/approved. No push or deployment was performed.
