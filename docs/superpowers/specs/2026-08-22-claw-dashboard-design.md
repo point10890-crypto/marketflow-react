@@ -124,3 +124,12 @@
 - 프론트: `src/lib/claw.ts`(타입·표시 규칙·`<b>`만 허용 렌더러), `pages/dashboard/aibain/ClawLiveCard.tsx`(AI Brain 압축 카드, 가상 매매 시그널과 오늘의 검출 사이), `pages/dashboard/kr/claw/{KrClawPage,ClawLeadersCard,ClawEventsCard,ClawBriefsCard}.tsx`, 라우트 `kr/claw`, 사이드바 KR → Claw LIVE.
 - 검증: pytest 18 + vitest 95 통과, `tsc -b`·`vite build` 성공. 로컬 Flask 5001 + Vite 4000 에서 실제 `claw.db` 데이터로 AI Brain 카드·전체 화면 DOM 확인(4타일·주도주 9행·이벤트 2·브리핑 탭 3, 가로 스크롤 없음).
 - 배포 순서: miniPC `git pull --ff-only` + Flask 재기동(재부팅) → `npm run deploy`. 프론트를 먼저 배포해도 카드는 "백엔드 준비 중" 한 줄로 조용히 대기한다(계약 검사 `isClawOverview`).
+
+## 10. 브랜드 테마 (2026-08-22 후속)
+
+- **마스코트**: MarketFlow 고유 캐릭터(원본 SVG 크랩, 상승 캔들을 집음). 외부 브랜드(OpenClaw) 자산 미사용. 톤 = 브랜드 레드(`#ff5a3c` 계열) + 붉은 아우라. 상태가 표정: running(집게·깜빡임·바운스) / idle(숨·zz) / halt(앰버·"!") / dead(회색·"?"). `prefers-reduced-motion` 시 정지.
+- **ASCII 집게 배경**: 캔버스 거리장으로 절차 생성(`ClawAsciiBackdrop`), live 일 때만 미세 일렁임, 탭 숨김 시 정지.
+- **헤드라인**: "**진짜** 주식 분석하는 인공지능 에이전트." — '진짜'는 Nanum Brush Script 악센트. 캡션 "관찰 전용 · 사용자 PC에서 실행 · 매매 없음".
+- **메인 타이틀 고정**: `ClawBrandBar`(compact 히어로)를 `DashboardLayout`이 모든 `/dashboard/*` 페이지 상단에 렌더(Claw LIVE 페이지=풀 히어로, W Pattern=제외). 상태는 `useClawState` 60초 공유 폴링 1개.
+- **셸 테마**: `.claw-theme` 루트 + `.claw-shell-bg`(점 격자 + 상단 붉은 아우라), BitMan 로고/헤더 그라디언트 브랜드 레드. 페이지별 의미색(등급 S/A/B, KRX 등락, 섹션 아이콘 색)은 유지 — 전 페이지 개별 리스킨은 후속 과제.
+- **신뢰 칩**: 관찰 전용·3틱 확정·중복 차단·룩어헤드 없음·발송 원장 n/m — 전부 코드/테스트로 고정된 규칙.
