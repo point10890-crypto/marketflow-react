@@ -118,15 +118,15 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <>
             {/* Brand */}
             <Link to="/dashboard" className="h-[72px] flex items-center px-5 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer">
-                <div className="relative w-10 h-10 bg-gradient-to-br from-yellow-300 via-amber-500 to-yellow-600 rounded-xl flex items-center justify-center text-white font-extrabold text-2xl shadow-lg shadow-amber-500/30 mr-3.5 ring-1 ring-amber-400/20 drop-shadow-sm">
+                <div className="relative w-10 h-10 bg-gradient-to-br from-[#ff8a6b] via-[#ff5a3c] to-[#b91c1c] rounded-xl flex items-center justify-center text-white font-extrabold text-2xl shadow-lg shadow-[#ff5a3c]/30 mr-3.5 ring-1 ring-[#ff8a6b]/25 drop-shadow-sm">
                     <div className="absolute inset-0.5 rounded-[10px] ring-1 ring-white/10" />
                     <span className="relative">B</span>
                 </div>
                 <div className="flex flex-col leading-none">
                     <span className="text-[24px] font-extrabold tracking-tight">
-                        <span className="bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 bg-clip-text text-transparent">Bit</span><span className="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">Man</span>
+                        <span className="bg-gradient-to-r from-[#ffb4a3] via-[#ff7a5c] to-[#ff5a3c] bg-clip-text text-transparent">Bit</span><span className="bg-gradient-to-r from-[#ff7a5c] to-[#ffb4a3] bg-clip-text text-transparent">Man</span>
                     </span>
-                    <div className="w-full h-px bg-gradient-to-r from-amber-500/50 via-amber-400/20 to-transparent mt-1 mb-[3px]" />
+                    <div className="w-full h-px bg-gradient-to-r from-[#ff5a3c]/50 via-[#ff7a5c]/20 to-transparent mt-1 mb-[3px]" />
                     <span className="text-[13px] font-semibold tracking-[0.18em] bg-gradient-to-r from-gray-300 via-slate-400 to-gray-500 bg-clip-text text-transparent">MarketFlow</span>
                 </div>
             </Link>
@@ -135,7 +135,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             <nav className="flex-1 px-3.5 py-4 pb-8 overflow-y-scroll sidebar-scroll">
                 {/* ── Global Tools ── */}
                 <div className="px-2 mb-2.5 text-[10px] font-semibold uppercase tracking-[0.2em]">
-                    <span className="bg-gradient-to-r from-amber-400/70 to-yellow-500/50 bg-clip-text text-transparent">Market</span>
+                    <span className="bg-gradient-to-r from-[#ff8a6b]/80 to-[#ff5a3c]/50 bg-clip-text text-transparent">Market</span>
                     <span className="text-gray-500 ml-0.5">Flow</span>
                 </div>
                 <div className="space-y-1 mb-1">

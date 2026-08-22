@@ -9,11 +9,11 @@ import { useEffect, useRef } from 'react';
 
 const RAMP = ' .:-=+x#@';
 
-interface Props { live?: boolean; tone?: 'teal' | 'amber' | 'gray'; className?: string; }
+interface Props { live?: boolean; tone?: 'red' | 'teal' | 'amber' | 'gray'; className?: string; }
 
-const TONES = { teal: [45, 212, 191], amber: [251, 191, 36], gray: [156, 163, 175] } as const;
+const TONES = { red: [255, 90, 60], teal: [45, 212, 191], amber: [251, 191, 36], gray: [156, 163, 175] } as const;
 
-export default function ClawAsciiBackdrop({ live = false, tone = 'teal', className = '' }: Props) {
+export default function ClawAsciiBackdrop({ live = false, tone = 'red', className = '' }: Props) {
     const ref = useRef<HTMLCanvasElement | null>(null);
 
     useEffect(() => {

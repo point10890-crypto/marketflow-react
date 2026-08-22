@@ -702,11 +702,25 @@ body {
 .claw-card-in:nth-child(4) { animation-delay: .18s; }
 
 .claw-title-gradient {
-  background: linear-gradient(92deg, #99f6e4 0%, #5eead4 45%, #22d3ee 100%);
+  background: linear-gradient(92deg, #ffb4a3 0%, #ff7a5c 45%, #ff5a3c 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .claw-brush { font-family: 'Nanum Brush Script', 'Pretendard Variable', cursive; font-style: italic; letter-spacing: -.01em; }
-.claw-hero-glow { background: radial-gradient(60% 80% at 20% 50%, rgba(45,212,191,.14), rgba(45,212,191,0) 70%); }
+.claw-hero-glow { background: radial-gradient(60% 80% at 20% 50%, rgba(255,90,60,.14), rgba(255,90,60,0) 70%); }
+
+/* ── Claw 테마 (대시보드 셸 전역) ─────────────────────────────────────
+   점 격자 + 상단 붉은 아우라. 페이지별 의미색(등급·KRX 등락)은 건드리지 않는다. */
+.claw-theme { --accent: #ff5a3c; }
+.claw-theme .claw-shell-bg {
+  background-color: #07080c;
+  background-image:
+    radial-gradient(70% 45% at 50% -10%, rgba(255,90,60,.16), rgba(255,90,60,0) 70%),
+    radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size: 100% 100%, 22px 22px;
+  background-position: 0 0, 0 0;
+}
+.claw-theme .claw-brand-bar { background: linear-gradient(180deg, rgba(255,90,60,.08), rgba(255,90,60,.02)); border-color: rgba(255,90,60,.18); }
+.claw-theme .claw-brand-bar canvas { opacity: .55; }
 
 @media (prefers-reduced-motion: reduce) {
   .claw-mascot *, .claw-card-in { animation: none !important; }

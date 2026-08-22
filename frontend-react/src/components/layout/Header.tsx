@@ -109,11 +109,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
                         }}
                         className="md:hidden flex items-center gap-2 active:scale-95 transition-transform duration-150"
                     >
-                        <div className="relative w-7 h-7 bg-gradient-to-br from-yellow-300 via-amber-500 to-yellow-600 rounded-lg flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-amber-500/20 ring-1 ring-amber-400/20">
+                        <div className="relative w-7 h-7 bg-gradient-to-br from-[#ff8a6b] via-[#ff5a3c] to-[#b91c1c] rounded-lg flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-[#ff5a3c]/20 ring-1 ring-[#ff8a6b]/25">
                             <span className="relative">B</span>
                         </div>
                         <span className="text-[15px] font-extrabold tracking-tight">
-                            <span className="bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 bg-clip-text text-transparent">Bit</span><span className="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">Man</span>
+                            <span className="bg-gradient-to-r from-[#ffb4a3] via-[#ff7a5c] to-[#ff5a3c] bg-clip-text text-transparent">Bit</span><span className="bg-gradient-to-r from-[#ff7a5c] to-[#ffb4a3] bg-clip-text text-transparent">Man</span>
                         </span>
                     </button>
 

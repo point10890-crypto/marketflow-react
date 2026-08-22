@@ -18,8 +18,9 @@ interface Props {
 }
 
 const TONE: Record<string, { body1: string; body2: string; claw: string; eye: string; glow: string }> = {
-    running: { body1: '#5eead4', body2: '#0f766e', claw: '#2dd4bf', eye: '#0b1220', glow: 'rgba(45,212,191,.35)' },
-    idle: { body1: '#7dd3c8', body2: '#1f5f58', claw: '#5fb8ad', eye: '#0b1220', glow: 'rgba(45,212,191,.18)' },
+    // 브랜드 레드 — 레퍼런스(빨간 크랩 + 붉은 아우라)와 같은 톤
+    running: { body1: '#ff8a6b', body2: '#b91c1c', claw: '#ff5a3c', eye: '#1a0a08', glow: 'rgba(255,90,60,.45)' },
+    idle: { body1: '#f0836a', body2: '#8f1d1d', claw: '#e0553c', eye: '#1a0a08', glow: 'rgba(255,90,60,.22)' },
     halt: { body1: '#fcd34d', body2: '#b45309', claw: '#fbbf24', eye: '#1a1200', glow: 'rgba(251,191,36,.35)' },
     dead: { body1: '#9ca3af', body2: '#4b5563', claw: '#6b7280', eye: '#111827', glow: 'rgba(156,163,175,.18)' },
 };
@@ -68,7 +69,7 @@ export default function ClawMascot({ state, size = 72, className = '', title }: 
                         <rect x="0" y="12" width="4" height="10" rx="1" fill="#6fa3ff" />
                         <rect x="6" y="7" width="4" height="15" rx="1" fill="#ff5c72" />
                         <rect x="12" y="1" width="4" height="21" rx="1" fill="#ff5c72" />
-                        <path d="M2 10 L2 12 M8 4 L8 7 M14 -3 L14 1" stroke="#ff9fb0" strokeWidth="1.5" strokeLinecap="round" />
+                        <path d="M2 10 L2 12 M8 4 L8 7 M14 -3 L14 1" stroke="#ffd1c9" strokeWidth="1.5" strokeLinecap="round" />
                     </g>
                 </g>
 

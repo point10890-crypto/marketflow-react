@@ -13,6 +13,9 @@ import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 import { useSmartRefresh } from '@/hooks/useAutoRefresh';
 import { useNotification } from '@/contexts/NotificationContext';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
+import { ClawBrandBar } from '@/components/claw/ClawHero';
+import { useClawState } from '@/hooks/useClawState';
+import { useAuth } from '@/contexts/AuthContext';
 
 const SWIPE_TABS = [
     { href: '/dashboard' },
@@ -42,6 +45,10 @@ export default function DashboardLayout() {
     const location = useLocation();
     const pathname = location.pathname ?? '';
     const { notify } = useNotification();
+    const { token } = useAuth();
+    const claw = useClawState(token);
+    // 메인 타이틀(브랜드 바)은 모든 대시보드 페이지에 고정. Claw LIVE 페이지는 자체 풀 히어로, W Pattern은 전체화면 캔버스라 제외
+    const showBrandBar = pathname !== '/dashboard/kr/claw' && !pathname.startsWith('/dashboard/wave');
 
     // 전역 데이터 변경 감지 → 알림 발생
     const handleDataChanged = useCallback((changedFiles: string[]) => {
@@ -68,7 +75,7 @@ export default function DashboardLayout() {
 
     return (
         <PullToRefreshProvider onRefreshRef={refreshFnRef}>
-            <div className="flex h-screen w-full bg-black overflow-hidden">
+            <div className="claw-theme flex h-screen w-full bg-black overflow-hidden">
                 {/* Desktop Sidebar */}
                 <div className="hidden md:flex">
                     <Sidebar />
@@ -82,7 +89,7 @@ export default function DashboardLayout() {
                 />
 
                 {/* Main Content */}
-                <main className="flex-1 min-w-0 flex flex-col h-full overflow-hidden bg-[#09090b] relative">
+                <main className="claw-shell-bg flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
                     <Header
                         onMenuClick={() => setSidebarOpen(true)}
                     />
@@ -99,6 +106,7 @@ export default function DashboardLayout() {
                                 ? { transform: `translateY(${pullDistance}px)`, transition: 'none' }
                                 : { transition: 'transform 0.3s ease' }}
                         >
+                            {showBrandBar && <ClawBrandBar data={claw} />}
                             <PageErrorBoundary resetKey={pathname}>
                                 <div key={pathname} className={`page-enter dashboard-mobile-page ${isWavePage ? 'h-full' : ''}`}>
                                     <Outlet />

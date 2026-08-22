@@ -1,8 +1,9 @@
 /**
- * Claw LIVE 히어로 — 랜딩급 이미지 메이킹.
+ * Claw 브랜드 히어로 — 레퍼런스 톤(빨간 크랩 + 붉은 아우라 + ASCII 집게)으로 통일.
  *
- * 중앙 마스코트(상태가 곧 표정) + 절차 생성 ASCII 집게 텍스처 + 한 줄 헤드라인
- * "진짜 주식 분석하는 인공지능 에이전트." + 검증 가능한 약속(신뢰 칩).
+ * variant
+ *  - full    : Claw LIVE 페이지 상단. 큰 마스코트 + 헤드라인 + 상태 문장 + 신뢰 칩
+ *  - compact : 대시보드 전 페이지 공통 브랜드 바(DashboardLayout). 한 줄 높이, 같은 마스코트·헤드라인
  * 외부 브랜드 자산·이미지 파일 없음 — 전부 코드로 그린다.
  */
 import { Link } from 'react-router-dom';
@@ -17,40 +18,58 @@ const MOOD: Record<string, { line: string; sub: string }> = {
     dead: { line: '루프 응답이 없어요. 워치독이 재기동을 기다립니다.', sub: '복구되면 이 자리에서 바로 다시 시작합니다.' },
 };
 
+function badgeOf(state: string | null): string {
+    return state === 'running' ? 'LIVE' : state === 'halt' ? 'HOLD' : state === 'dead' ? 'OFFLINE' : 'REST';
+}
+function toneOf(state: string | null): 'red' | 'amber' | 'gray' {
+    return state === 'halt' ? 'amber' : state === 'dead' ? 'gray' : 'red';
+}
+function dotOf(state: string | null): string {
+    return state === 'running' ? 'bg-[#ff5a3c]' : state === 'halt' ? 'bg-amber-400' : state === 'dead' ? 'bg-gray-500' : 'bg-[#c2410c]';
+}
+
+export function Headline({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
+    const cls = size === 'lg'
+        ? 'text-[30px] font-black leading-[1.12] tracking-tight text-white sm:text-[44px]'
+        : 'text-[17px] font-black leading-none tracking-tight text-white sm:text-[20px]';
+    return (
+        <span className={cls}>
+            <span className={`claw-brush text-[#ff6b57] ${size === 'lg' ? 'mr-2 text-[1.18em]' : 'mr-1.5 text-[1.2em]'} font-normal`}>진짜</span>
+            주식 분석하는 인공지능 에이전트<span className="text-[#ff6b57]">.</span>
+        </span>
+    );
+}
+
+function LiveBadge({ state }: { state: string | null }) {
+    return (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#ff5a3c]/30 bg-[#ff5a3c]/10 px-3 py-1 text-[11px] font-bold text-[#ffb4a3]">
+            <span className="relative grid h-2 w-2 place-items-center">
+                <span className={`absolute inline-flex h-2 w-2 rounded-full ${state === 'running' ? 'bg-[#ff5a3c]/60 animate-ping' : ''}`} />
+                <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${dotOf(state)}`} />
+            </span>
+            Claw LIVE · {badgeOf(state)}
+        </span>
+    );
+}
+
 export function ClawHero({ data, heartbeatAge }: { data: ClawOverview | null; heartbeatAge: number | null }) {
     const state = data?.loop.state ?? null;
     const mood = MOOD[state ?? 'idle'];
-    const tone = state === 'halt' ? 'amber' : state === 'dead' ? 'gray' : 'teal';
-    const badge = state === 'running' ? 'LIVE' : state === 'halt' ? 'HOLD' : state === 'dead' ? 'OFFLINE' : 'REST';
     return (
-        <section className="relative overflow-hidden rounded-3xl border border-white/[0.06] bg-[#0a0c11]">
-            <ClawAsciiBackdrop live={state === 'running'} tone={tone} />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_70%_at_50%_45%,rgba(45,212,191,.10),rgba(0,0,0,0)_70%)]" />
+        <section className="relative overflow-hidden rounded-3xl border border-[#ff5a3c]/15 bg-[#0a0709]">
+            <ClawAsciiBackdrop live={state === 'running'} tone={toneOf(state)} />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_65%_at_50%_42%,rgba(255,90,60,.22),rgba(255,90,60,0)_70%)]" />
 
             <div className="relative flex flex-col items-center px-5 pb-6 pt-9 text-center sm:px-8 sm:pt-11">
-                <ClawMascot state={state} size={112} className="drop-shadow-[0_14px_36px_rgba(45,212,191,.22)]" />
-
-                <p className="mt-4 font-mono text-[11px] tracking-[0.28em] text-gray-400 sm:text-[12px]">
-                    관찰 전용 · 사용자 PC에서 실행 · 매매 없음
-                </p>
-
-                <h1 className="mt-3 text-[30px] font-black leading-[1.12] tracking-tight text-white sm:text-[44px]">
-                    <span className="claw-brush mr-2 text-[1.18em] font-normal text-[#ff6b57]">진짜</span>
-                    주식 분석하는 인공지능 에이전트<span className="text-[#ff6b57]">.</span>
-                </h1>
+                <ClawMascot state={state} size={116} className="drop-shadow-[0_16px_40px_rgba(255,90,60,.35)]" />
+                <p className="mt-4 font-mono text-[11px] tracking-[0.28em] text-gray-400 sm:text-[12px]">관찰 전용 · 사용자 PC에서 실행 · 매매 없음</p>
+                <h1 className="mt-3"><Headline size="lg" /></h1>
 
                 <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-400/25 bg-teal-500/10 px-3 py-1 text-[11px] font-bold text-teal-300">
-                        <span className="relative grid h-2 w-2 place-items-center">
-                            <span className={`absolute inline-flex h-2 w-2 rounded-full ${state === 'running' ? 'bg-teal-400/60 animate-ping' : ''}`} />
-                            <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${state === 'running' ? 'bg-teal-400' : state === 'halt' ? 'bg-amber-400' : state === 'dead' ? 'bg-red-500' : 'bg-gray-500'}`} />
-                        </span>
-                        Claw LIVE · {badge}
-                    </span>
+                    <LiveBadge state={state} />
                     <span className="text-[14px] font-semibold text-gray-100">{data ? mood.line : '불러오는 중이에요…'}</span>
                     {data && <span className="text-[12px] text-gray-400">{mood.sub}</span>}
                 </div>
-
                 {data && (
                     <p className="mt-2 text-[11px] text-gray-500">
                         {data.loop.last_tick_ts ? `마지막 틱 ${data.loop.last_tick_ts.slice(5, 16).replace('T', ' ')}` : '아직 틱 없음'}
@@ -58,14 +77,37 @@ export function ClawHero({ data, heartbeatAge }: { data: ClawOverview | null; he
                         {heartbeatAge != null && ` · 하트비트 ${fmtAge(heartbeatAge)} 전`}
                     </p>
                 )}
-
                 {data && <TrustChips data={data} />}
-
                 <Link to="/dashboard/kr/leading-stocks" className="mt-4 inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2 text-[12px] font-bold text-gray-300 transition-colors hover:bg-white/[0.08] hover:text-white">
                     <i className="fas fa-chart-line text-[11px]" />주도주LIVE 열기
                 </Link>
             </div>
         </section>
+    );
+}
+
+/** 대시보드 전 페이지 공통 브랜드 바 — 메인 타이틀 고정. 링크는 Claw LIVE 전체 화면. */
+export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
+    const state = data?.loop.state ?? null;
+    const mood = MOOD[state ?? 'idle'];
+    return (
+        <Link
+            to="/dashboard/kr/claw"
+            className="claw-brand-bar group relative mb-3 block overflow-hidden rounded-2xl border bg-[#0a0709] transition-colors hover:border-[#ff5a3c]/35 md:mb-4"
+            aria-label="Claw LIVE 열기"
+        >
+            <ClawAsciiBackdrop live={state === 'running'} tone={toneOf(state)} />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(40%_120%_at_12%_50%,rgba(255,90,60,.22),rgba(255,90,60,0)_70%)]" />
+            <div className="relative flex items-center gap-3 px-3.5 py-2.5 sm:gap-4 sm:px-5">
+                <ClawMascot state={state} size={46} className="shrink-0 drop-shadow-[0_6px_18px_rgba(255,90,60,.35)]" />
+                <div className="min-w-0 flex-1">
+                    <div className="truncate"><Headline size="sm" /></div>
+                    <div className="mt-0.5 hidden truncate text-[11px] text-gray-400 sm:block">{data ? mood.line : '관찰 전용 · 사용자 PC에서 실행 · 매매 없음'}</div>
+                </div>
+                <LiveBadge state={state} />
+                <i className="fas fa-chevron-right hidden text-[11px] text-gray-600 transition-colors group-hover:text-gray-300 sm:block" />
+            </div>
+        </Link>
     );
 }
 
@@ -82,8 +124,8 @@ export function TrustChips({ data }: { data: ClawOverview }) {
     return (
         <ul className="mt-4 flex flex-wrap justify-center gap-1.5">
             {chips.map(c => (
-                <li key={c.text} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${c.tone === 'ok' ? 'border-teal-400/25 bg-teal-500/[0.08] text-teal-200' : 'border-white/[0.08] bg-white/[0.03] text-gray-300'}`}>
-                    <i className={`fas ${c.icon} text-[10px] ${c.tone === 'ok' ? 'text-teal-300' : 'text-gray-500'}`} />{c.text}
+                <li key={c.text} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${c.tone === 'ok' ? 'border-[#ff5a3c]/30 bg-[#ff5a3c]/[0.10] text-[#ffc6ba]' : 'border-white/[0.08] bg-white/[0.03] text-gray-300'}`}>
+                    <i className={`fas ${c.icon} text-[10px] ${c.tone === 'ok' ? 'text-[#ff8a6b]' : 'text-gray-500'}`} />{c.text}
                 </li>
             ))}
         </ul>
