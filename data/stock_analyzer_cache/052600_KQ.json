@@ -2,32 +2,32 @@
   "name": "한네트",
   "ticker": "052600.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-09 21:47:47",
-  "elapsed": 2.2,
+  "date": "2026-08-16 15:55:09",
+  "elapsed": 3.0,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 3725.0,
+    "current": 3100.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 3725.0,
+  "current_price": 3100.0,
   "upside_potential": null,
   "key_stats": {
     "name": "HANNET",
     "sector": "Industrials",
     "industry": "Specialty Business Services",
-    "market_cap": 43074781184,
+    "market_cap": 35847471104,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 4.78,
+    "dividend_yield": 5.81,
     "beta": 0.2,
-    "fifty_two_week_high": 5830.0,
-    "fifty_two_week_low": 3055.0,
+    "fifty_two_week_high": 5040.0,
+    "fifty_two_week_low": 2730.0,
     "revenue": 27319109632,
     "profit_margin": 0.036849998,
     "currency": "KRW"
@@ -36,6 +36,10 @@
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 6594997310
+    },
     {
       "date": "2025-12",
       "value": 7040810590
@@ -47,13 +51,13 @@
     {
       "date": "2025-06",
       "value": 7105314830
-    },
-    {
-      "date": "2025-03",
-      "value": 6331275670
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 1014512400
+    },
     {
       "date": "2025-12",
       "value": 946729170
@@ -65,10 +69,6 @@
     {
       "date": "2025-06",
       "value": 954354290
-    },
-    {
-      "date": "2025-03",
-      "value": 800378700
     }
   ],
   "news": []

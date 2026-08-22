@@ -1,47 +1,51 @@
 {
   "name": "한화솔루션",
   "ticker": "009830.KS",
-  "result": "중립",
-  "date": "2026-04-05 23:43:17",
-  "elapsed": 1.9,
-  "consensus_score": 3.19,
-  "analyst_count": 16,
+  "result": "매수",
+  "date": "2026-08-19 22:10:15",
+  "elapsed": 2.8,
+  "consensus_score": 4.0,
+  "analyst_count": 18,
   "recommendation_detail": {
-    "strongBuy": 1,
-    "buy": 6,
-    "hold": 6,
+    "strongBuy": 6,
+    "buy": 7,
+    "hold": 4,
     "sell": 1,
-    "strongSell": 2
+    "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 39050.0,
+    "current": 34650.0,
     "high": 67000.0,
-    "low": 17000.0,
-    "mean": 41625.0,
-    "median": 43000.0
+    "low": 18400.0,
+    "mean": 46877.777,
+    "median": 46500.0
   },
-  "current_price": 39050.0,
-  "upside_potential": 6.6,
+  "current_price": 34650.0,
+  "upside_potential": 35.3,
   "key_stats": {
     "name": "HANWHA SOLUTIONS",
     "sector": "Technology",
     "industry": "Solar",
-    "market_cap": 6712417845248,
+    "market_cap": 7796238581760,
     "pe_ratio": null,
-    "forward_pe": 10.595807,
-    "dividend_yield": 1.13,
-    "beta": 1.425,
+    "forward_pe": 10.322209,
+    "dividend_yield": null,
+    "beta": null,
     "fifty_two_week_high": 59300.0,
-    "fifty_two_week_low": 19040.0,
-    "revenue": 13333054881792,
-    "profit_margin": -0.06565,
+    "fifty_two_week_low": 22000.0,
+    "revenue": 27987055476736,
+    "profit_margin": 0.13712,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 3881952000000
+    },
     {
       "date": "2025-12",
       "value": 3756998000000
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 3117265000000
-    },
-    {
-      "date": "2025-03",
-      "value": 3094476000000
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": -48911000000
+    },
     {
       "date": "2025-12",
       "value": -392322000000
@@ -71,13 +75,23 @@
     {
       "date": "2025-06",
       "value": -201596000000
-    },
-    {
-      "date": "2025-03",
-      "value": -44467000000
     }
   ],
   "news": [
+    {
+      "title": "Hanwha Solutions Corp (XKRX:009830) Q2 2026 Earnings Call Highlights: Strong Sales Growth ...",
+      "summary": "Despite significant sales growth and profitability improvements, Hanwha Solutions Corp (XKRX:009830) faces challenges with increased financial obligations and market volatility.",
+      "url": "https://finance.yahoo.com/energy/articles/hanwha-solutions-corp-xkrx-009830-130053393.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-07-29T13:00:53Z"
+    },
+    {
+      "title": "Anthropic Eyes South Korea Growth Ahead Of IPO With Seoul Office, New Partnerships",
+      "summary": "Anthropic said Wednesday it had opened a Seoul office and announced a series of partnerships across South Korea’s artificial intelligence ecosystem as the Claude developer expands its presence in Asia",
+      "url": "https://finance.yahoo.com/technology/ai/articles/anthropic-eyes-south-korea-growth-180051493.html",
+      "provider": "Benzinga",
+      "pub_time": "2026-06-20T18:00:51Z"
+    },
     {
       "title": "Hanwha Solutions Corp (XKRX:009830) Q4 2025 Earnings Call Highlights: Record Sales Amidst ...",
       "summary": "Despite a challenging quarter for the renewable division, Hanwha Solutions Corp (XKRX:009830) achieved record sales and anticipates a return to profitability in early 2026.",
@@ -98,20 +112,6 @@
       "url": "https://finance.yahoo.com/news/south-korean-solar-firm-cuts-232054093.html",
       "provider": "Associated Press Finance",
       "pub_time": "2025-11-07T23:20:54Z"
-    },
-    {
-      "title": "Hanwha Solutions Corp (XKRX:009830) Q3 2025 Earnings Call Highlights: Navigating Challenges in ...",
-      "summary": "Despite a rise in consolidated sales, Hanwha Solutions Corp faces profitability challenges and increased liabilities, with strategic plans to address market pressures.",
-      "url": "https://finance.yahoo.com/news/hanwha-solutions-corp-xkrx-009830-110041607.html",
-      "provider": "GuruFocus.com",
-      "pub_time": "2025-11-05T11:00:41Z"
-    },
-    {
-      "title": "What To Expect From Hanwha Solutions Corp (XKRX:009830) Q3 2025 Earnings",
-      "summary": "Hanwha Solutions Corp (XKRX:009830) is set to release its Q3 2025 earnings on Nov 5, 2025.  The consensus estimate for Q3 2025 revenue is $3.42 billion, and the earnings are expected to come in at -$1",
-      "url": "https://finance.yahoo.com/news/expect-hanwha-solutions-corp-xkrx-121617046.html",
-      "provider": "GuruFocus.com",
-      "pub_time": "2025-11-04T12:16:17Z"
     }
   ]
 }

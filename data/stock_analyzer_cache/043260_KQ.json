@@ -1,33 +1,39 @@
 {
   "name": "성호전자",
   "ticker": "043260.KQ",
-  "result": "데이터 없음",
-  "date": "2026-04-13 20:58:49",
-  "elapsed": 2.1,
-  "consensus_score": null,
-  "analyst_count": 0,
-  "recommendation_detail": null,
-  "recommendation_period": null,
-  "price_targets": {
-    "current": 48000.0,
-    "high": null,
-    "low": null,
-    "mean": null,
-    "median": null
+  "result": "매수",
+  "date": "2026-07-17 12:21:20",
+  "elapsed": 1.8,
+  "consensus_score": 4.0,
+  "analyst_count": 1,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 1,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
   },
-  "current_price": 48000.0,
-  "upside_potential": null,
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 17830.0,
+    "high": 100000.0,
+    "low": 100000.0,
+    "mean": 100000.0,
+    "median": 100000.0
+  },
+  "current_price": 17830.0,
+  "upside_potential": 460.9,
   "key_stats": {
     "name": "SUNGHO",
     "sector": "",
     "industry": "",
-    "market_cap": 3404295569408,
+    "market_cap": 1264553951232,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
     "beta": null,
     "fifty_two_week_high": 59600.0,
-    "fifty_two_week_low": 988.0,
+    "fifty_two_week_low": 1021.0,
     "revenue": null,
     "profit_margin": null,
     "currency": "KRW"
@@ -36,6 +42,10 @@
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 66001284600
+    },
     {
       "date": "2025-12",
       "value": 60156842860
@@ -47,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 56551289700
-    },
-    {
-      "date": "2025-03",
-      "value": 59265858350
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 319473920160
+    },
     {
       "date": "2025-12",
       "value": 85728094760
@@ -65,10 +75,6 @@
     {
       "date": "2025-06",
       "value": 3191375760
-    },
-    {
-      "date": "2025-03",
-      "value": 10174540
     }
   ],
   "news": []

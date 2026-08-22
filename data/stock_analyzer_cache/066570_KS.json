@@ -2,46 +2,50 @@
   "name": "LG전자",
   "ticker": "066570.KS",
   "result": "매수",
-  "date": "2026-04-07 07:36:07",
-  "elapsed": 2.8,
-  "consensus_score": 4.19,
-  "analyst_count": 27,
+  "date": "2026-08-16 15:54:51",
+  "elapsed": 3.1,
+  "consensus_score": 4.27,
+  "analyst_count": 26,
   "recommendation_detail": {
-    "strongBuy": 10,
-    "buy": 12,
-    "hold": 5,
+    "strongBuy": 11,
+    "buy": 11,
+    "hold": 4,
     "sell": 0,
     "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 109400.0,
-    "high": 170000.0,
-    "low": 77500.0,
-    "mean": 119425.93,
-    "median": 120000.0
+    "current": 215000.0,
+    "high": 350000.0,
+    "low": 130000.0,
+    "mean": 216923.08,
+    "median": 195000.0
   },
-  "current_price": 109400.0,
-  "upside_potential": 9.2,
+  "current_price": 215000.0,
+  "upside_potential": 0.9,
   "key_stats": {
     "name": "LGELECTRONICS",
     "sector": "Technology",
     "industry": "Consumer Electronics",
-    "market_cap": 19699213533184,
+    "market_cap": 38613832171520,
     "pe_ratio": null,
-    "forward_pe": 8.997191,
-    "dividend_yield": 1.24,
-    "beta": 1.275,
-    "fifty_two_week_high": 151900.0,
-    "fifty_two_week_low": 63200.0,
-    "revenue": 89200883924992,
-    "profit_margin": 0.0107700005,
+    "forward_pe": 13.171422,
+    "dividend_yield": 0.63,
+    "beta": 2.022,
+    "fifty_two_week_high": 438000.0,
+    "fifty_two_week_low": 72000.0,
+    "revenue": 90188298584064,
+    "profit_margin": 0.01084,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "LG전자에 대해 27명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 119,426원으로, 현재가 대비 약 9.2%의 상승 여력이 존재합니다. 투자 판단은 제시된 정보를 바탕으로 투자자 본인이 결정해야 합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 23727227000000
+    },
     {
       "date": "2025-12",
       "value": 23852154000000
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 20735142000000
-    },
-    {
-      "date": "2025-03",
-      "value": 22739812000000
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 815703000000
+    },
     {
       "date": "2025-12",
       "value": -828236000000
@@ -71,47 +75,43 @@
     {
       "date": "2025-06",
       "value": 604619000000
-    },
-    {
-      "date": "2025-03",
-      "value": 799006000000
     }
   ],
   "news": [
     {
-      "title": "Nokia’s Sisvel POS Pool Role And What It May Mean For The Share Price",
-      "summary": "Nokia Oyj has joined Huawei and LG Electronics as a founder licensor in Sisvel’s new Point of Sale (POS) patent pool for 2G to 5G technologies. The pool aims to streamline access to essential cellular",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/nokia-sisvel-pos-pool-role-201256431.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2026-04-02T20:12:56Z"
+      "title": "LG Electronics on Track for Recovery After Solid Earnings Growth",
+      "summary": "The consumer-electronics giant posted a double-digit increase in second-quarter net profit that narrowly missed market expectations.",
+      "url": "https://www.wsj.com/business/earnings/lg-electronics-posts-solid-quarterly-net-profit-9c3e15f0?siteid=yhoof2&yptr=yahoo",
+      "provider": "The Wall Street Journal",
+      "pub_time": "2026-07-30T09:43:00Z"
     },
     {
-      "title": "Qualcomm leads new 6G coalition",
-      "summary": "An aim of the wide consortium - among its many objectives - is to address future connected mobility in vehicles.",
-      "url": "https://www.just-auto.com/news/qualcomm-leads-new-6g-coalition/",
-      "provider": "Just Auto",
-      "pub_time": "2026-03-04T11:43:22Z"
+      "title": "LG Electronics Expects Quarterly Earnings to Surge, Buoyed by Tariff Refund",
+      "summary": "The South Korean consumer-electronics company projected a more than twofold increase in second-quarter operating profit, driven by a U.S. tariff refund and resilient profitability.",
+      "url": "https://www.wsj.com/business/earnings/lg-electronics-expects-quarterly-earnings-to-more-than-double-796a01cb?siteid=yhoof2&yptr=yahoo",
+      "provider": "The Wall Street Journal",
+      "pub_time": "2026-07-07T04:10:00Z"
     },
     {
-      "title": "SWKS to Showcase 6G Power Amplifier: Will its Prospects Get a Boost?",
-      "summary": "Skyworks Solutions' 6G demo with MediaTek, the Qorvo deal and a new Q2 outlook could shape what is next for the chipmaker.",
-      "url": "https://finance.yahoo.com/news/swks-showcase-6g-power-amplifier-161000092.html",
-      "provider": "Zacks",
-      "pub_time": "2026-03-03T16:10:00Z"
+      "title": "LG Electronics Teams With Arbitrum for Blockchain-Based Ad Platform",
+      "summary": "The South Korean tech giant built a custom layer-2 network with Arbitrum for an advertising platform set to launch this year.",
+      "url": "https://decrypt.co/370866/lg-electronics-teams-with-arbitrum-for-blockchain-based-ad-platform",
+      "provider": "decrypt",
+      "pub_time": "2026-06-12T10:23:39Z"
     },
     {
-      "title": "Exclusive-Volvo Cars to recall 40,000 electric SUVs over battery fire risk",
-      "summary": "STOCKHOLM, Feb 23 (Reuters) - Volvo Cars will recall over 40,000 of its flagship electric EX30 SUVs because their battery packs risk overheating, it told Reuters on Monday, a move that could dent the ",
-      "url": "https://finance.yahoo.com/news/exclusive-volvo-cars-recall-40-153415347.html",
-      "provider": "Reuters",
-      "pub_time": "2026-02-23T15:34:15Z"
+      "title": "LG Wants to Put the $700 Billion Ad Industry On-Chain With Arbitrum",
+      "summary": "LG Electronics builds a blockchain ad network on its own Arbitrum layer-2 to automate the $740 billion digital ad market.",
+      "url": "https://beincrypto.com/lg-electronics-blockchain-ad-network-arbitrum/",
+      "provider": "BeInCrypto",
+      "pub_time": "2026-06-11T20:30:00Z"
     },
     {
-      "title": "LG India quarterly profit drops as appliances, air unit slows",
-      "summary": "Feb 11 (Reuters) - LG Electronics India reported a near 62% drop in third-quarter profit on Wednesday, hit by weaker demand in its home appliances and air solutions business as cooler weather hurt",
-      "url": "https://sg.finance.yahoo.com/news/lg-electronics-indias-quarterly-profit-133024522.html",
-      "provider": "Reuters",
-      "pub_time": "2026-02-11T15:01:49Z"
+      "title": "Exclusive: Consumer device giant LG Electronics to launch blockchain to place and sell ads",
+      "summary": "LG Electronics worked with the crypto protocol Arbitrum to develop its own blockchain.",
+      "url": "https://finance.yahoo.com/markets/crypto/articles/exclusive-consumer-device-giant-lg-180000187.html",
+      "provider": "Fortune",
+      "pub_time": "2026-06-11T18:00:00Z"
     }
   ]
 }

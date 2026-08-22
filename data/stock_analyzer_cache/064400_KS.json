@@ -1,47 +1,51 @@
 {
   "name": "LG씨엔에스",
   "ticker": "064400.KS",
-  "result": "매수",
-  "date": "2026-04-13 23:58:03",
-  "elapsed": 3.6,
-  "consensus_score": 4.17,
-  "analyst_count": 6,
+  "result": "적극 매수",
+  "date": "2026-08-06 23:34:13",
+  "elapsed": 1.7,
+  "consensus_score": 4.38,
+  "analyst_count": 13,
   "recommendation_detail": {
-    "strongBuy": 2,
-    "buy": 3,
+    "strongBuy": 6,
+    "buy": 6,
     "hold": 1,
     "sell": 0,
     "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 60900.0,
-    "high": 93000.0,
-    "low": 65000.0,
-    "mean": 86666.664,
-    "median": 90500.0
+    "current": 72100.0,
+    "high": 125000.0,
+    "low": 80000.0,
+    "mean": 99153.84,
+    "median": 96000.0
   },
-  "current_price": 60900.0,
-  "upside_potential": 42.3,
+  "current_price": 72100.0,
+  "upside_potential": 37.5,
   "key_stats": {
     "name": "LG CNS",
     "sector": "Technology",
     "industry": "Information Technology Services",
-    "market_cap": 5900354453504,
+    "market_cap": 6985476997120,
     "pe_ratio": null,
-    "forward_pe": 11.379624,
-    "dividend_yield": 2.92,
+    "forward_pe": 13.127198,
+    "dividend_yield": 2.96,
     "beta": null,
-    "fifty_two_week_high": 100800.0,
-    "fifty_two_week_low": 48600.0,
-    "revenue": 6129542758400,
-    "profit_margin": 0.071440004,
+    "fifty_two_week_high": 153300.0,
+    "fifty_two_week_low": 54100.0,
+    "revenue": 6233159368704,
+    "profit_margin": 0.07405,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "LG씨엔에스(064400.KS)에 대해 6명의 애널리스트가 제시한 컨센서스는 매수(4.17/5.0)입니다. 평균 목표 주가는 86,667 KRW로, 현재 주가 대비 42.3% 상승 여력이 있습니다. 이는 애널리스트들이 LG씨엔에스의 성장 가능성을 긍정적으로 평가하고 있음을 시사합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 1314997598000
+    },
     {
       "date": "2025-12",
       "value": 1935660349000
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 1460159054000
-    },
-    {
-      "date": "2025-03",
-      "value": 1211380726000
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 80471761000
+    },
     {
       "date": "2025-12",
       "value": 177528301000
@@ -71,13 +75,30 @@
     {
       "date": "2025-06",
       "value": 98668692000
-    },
-    {
-      "date": "2025-03",
-      "value": 56768073000
     }
   ],
   "news": [
+    {
+      "title": "Zcash Sealed $1.7B – Here's Everything You Need to Know",
+      "summary": "Zcash activated its Ironwood upgrade, sealing roughly $1.7 billion in ZEC behind a one-way turnstile after a researcher found a flaw that could have minted counterfeit coins. Here’s everything you nee",
+      "url": "http://videos.coindesk.com/previews/9azdw8Xf",
+      "provider": "CoinDesk",
+      "pub_time": "2026-07-30T19:20:41Z"
+    },
+    {
+      "title": "JPMorgan, South Korea's KB Kookmin are moving payments onchain",
+      "summary": "Scott Melker discusses the reported payment service collaboration between KB Kookmin Bank (KB) — South Korea's largest bank — and JPMorgan Chase's (JPM) Kinexys platform. \"The Daily Wolf with Scott Me",
+      "url": "https://finance.yahoo.com/video/jpmorgan-south-koreas-kb-kookmin-193000819.html",
+      "provider": "Yahoo Finance Video",
+      "pub_time": "2026-07-27T19:30:00Z"
+    },
+    {
+      "title": "Anthropic Eyes South Korea Growth Ahead Of IPO With Seoul Office, New Partnerships",
+      "summary": "Anthropic said Wednesday it had opened a Seoul office and announced a series of partnerships across South Korea’s artificial intelligence ecosystem as the Claude developer expands its presence in Asia",
+      "url": "https://finance.yahoo.com/technology/ai/articles/anthropic-eyes-south-korea-growth-180051493.html",
+      "provider": "Benzinga",
+      "pub_time": "2026-06-20T18:00:51Z"
+    },
     {
       "title": "How New Mission‑Critical AI Partnerships At Palantir Technologies (PLTR) Have Changed Its Investment Story",
       "summary": "In recent days, GE Aerospace, Centrus Energy, Ondas, World View, LG CNS and others have announced expanded multi‑year collaborations that deepen their use of Palantir’s AI platforms across defense, en",
@@ -91,20 +112,6 @@
       "url": "https://finance.yahoo.com/news/palantir-deepens-ai-partnership-lg-182051109.html",
       "provider": "GuruFocus.com",
       "pub_time": "2026-03-12T18:20:51Z"
-    },
-    {
-      "title": "Palantir And LG CNS Expand AI Partnership To Deepen Industrial Footprint",
-      "summary": "Palantir Technologies (NasdaqGS:PLTR) and LG CNS expanded their partnership to roll out AI and data platforms across the wider LG Group. The agreement targets group wide digital transformation across ",
-      "url": "https://finance.yahoo.com/news/palantir-lg-cns-expand-ai-120858217.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2026-03-12T12:08:58Z"
-    },
-    {
-      "title": "Did Udemy’s AI Microlearning and LG CNS Deal Just Shift UDMY’s Enterprise Growth Narrative?",
-      "summary": "Earlier this month, Udemy announced an AI-powered microlearning rollout and a new partnership with LG CNS that brings its AI skills platform to more than 500 Korean enterprises and millions of profess",
-      "url": "https://finance.yahoo.com/news/did-udemy-ai-microlearning-lg-100552335.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2025-12-17T10:05:52Z"
     }
   ]
 }

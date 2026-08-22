@@ -1,47 +1,51 @@
 {
   "name": "삼성전기",
   "ticker": "009150.KS",
-  "result": "적극 매수",
-  "date": "2026-04-14 11:30:41",
-  "elapsed": 2.8,
-  "consensus_score": 4.32,
-  "analyst_count": 28,
+  "result": "매수",
+  "date": "2026-08-06 22:59:32",
+  "elapsed": 2.3,
+  "consensus_score": 4.26,
+  "analyst_count": 27,
   "recommendation_detail": {
     "strongBuy": 10,
-    "buy": 17,
-    "hold": 1,
+    "buy": 16,
+    "hold": 0,
     "sell": 0,
-    "strongSell": 0
+    "strongSell": 1
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 580500.0,
-    "high": 700000.0,
-    "low": 310000.0,
-    "mean": 538500.0,
-    "median": 550000.0
+    "current": 1229000.0,
+    "high": 3300000.0,
+    "low": 950000.0,
+    "mean": 2332222.2,
+    "median": 2400000.0
   },
-  "current_price": 581000.0,
-  "upside_potential": -7.3,
+  "current_price": 1229000.0,
+  "upside_potential": 89.8,
   "key_stats": {
     "name": "SamsungElecMech",
     "sector": "Technology",
     "industry": "Electronic Components",
-    "market_cap": 43855177056256,
+    "market_cap": 92847571206144,
     "pe_ratio": null,
-    "forward_pe": 26.422476,
-    "dividend_yield": 0.41,
-    "beta": 1.252,
-    "fifty_two_week_high": 603000.0,
-    "fifty_two_week_low": 116200.0,
-    "revenue": 11314459049984,
-    "profit_margin": 0.06241,
+    "forward_pe": 29.875614,
+    "dividend_yield": 0.17,
+    "beta": 2.926,
+    "fifty_two_week_high": 2417000.0,
+    "fifty_two_week_low": 153800.0,
+    "revenue": 11987059736576,
+    "profit_margin": 0.07484,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "삼성전기는 애널리스트 컨센서스 '적극 매수' 의견을 받고 있으며, 28명의 애널리스트가 참여했습니다. 목표가 평균은 538,500원으로 현재가 대비 약 7.3% 하락 여력이 있습니다. 투자 판단은 제시된 정보를 바탕으로 신중하게 결정해야 합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 3209113412580
+    },
     {
       "date": "2025-12",
       "value": 2902145249470
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 2784629132130
-    },
-    {
-      "date": "2025-03",
-      "value": 2738649099830
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 249167906070
+    },
     {
       "date": "2025-12",
       "value": 222810585890
@@ -71,47 +75,43 @@
     {
       "date": "2025-06",
       "value": 129722699980
-    },
-    {
-      "date": "2025-03",
-      "value": 133731358140
     }
   ],
   "news": [
     {
-      "title": "Samsung Electro-Mechanics Co Ltd (XKRX:009150) Q4 2025 Earnings Call Highlights: Strong ...",
-      "summary": "Despite a slight quarterly dip in operating profit, Samsung Electro-Mechanics Co Ltd (XKRX:009150) reports robust annual growth driven by high demand in AI and automotive sectors.",
-      "url": "https://finance.yahoo.com/news/samsung-electro-mechanics-co-ltd-110035889.html",
+      "title": "Samsung Electro-Mechanics Co Ltd (XKRX:009150) (Q2 2026) Earnings Call Highlights: ...",
+      "summary": "Strong Q2 results, driven by AI server and automotive MLCC demand, set the stage for a record-breaking Q3 as supply tightens and earnings momentum accelerates.",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/samsung-electro-mechanics-co-ltd-130018137.html",
       "provider": "GuruFocus.com",
-      "pub_time": "2026-01-23T11:00:35Z"
+      "pub_time": "2026-07-30T13:00:18Z"
     },
     {
-      "title": "Samsung Electro-Mechanics Co Ltd (XKRX:009150) Q3 2025 Earnings Call Highlights: Strong Revenue ...",
-      "summary": "Samsung Electro-Mechanics Co Ltd (XKRX:009150) reports robust Q3 performance with significant gains in operating profit and strategic expansions in high-growth sectors.",
-      "url": "https://finance.yahoo.com/news/samsung-electro-mechanics-co-ltd-192954575.html",
+      "title": "Jim Cramer sends strong signal to Nvidia stock investors amid rumors",
+      "summary": "On July 6, a research report landed and immediately started moving stocks. Japan's Ibiden dropped as much as 10%. Kingboard Laminates fell 18% in Hong Kong. Samsung Electro-Mechanics slid 11% in Seoul",
+      "url": "https://www.thestreet.com/investing/stocks/jim-cramer-sends-a-strong-signal-to-nvidia-stock-investors-bullish-buy",
+      "provider": "TheStreet",
+      "pub_time": "2026-07-07T21:03:00Z"
+    },
+    {
+      "title": "Jim Cramer Says Buy Nvidia as Chipmaker Rejects 2028 AI Delay Claims",
+      "summary": "Jim Cramer urges investors to buy Nvidia as the chipmaker disputes SemiAnalysis claims of AI rack delays to 2028.",
+      "url": "https://beincrypto.com/jim-cramer-buy-nvidia-delay-claims/",
+      "provider": "BeInCrypto",
+      "pub_time": "2026-07-06T22:30:00Z"
+    },
+    {
+      "title": "Nvidia Kyber Delay Hits Asian AI Suppliers",
+      "summary": "Nvidia's next-generation Kyber NVL144 system is reportedly delayed by more than 12 months, triggering sharp regional tech declines.",
+      "url": "https://finance.yahoo.com/technology/ai/articles/nvidia-kyber-delay-hits-asian-134103513.html",
       "provider": "GuruFocus.com",
-      "pub_time": "2025-10-30T19:29:54Z"
+      "pub_time": "2026-07-06T13:41:03Z"
     },
     {
-      "title": "Samsung Electro-Mechanics Co Ltd (XKRX:009150) Q2 2025 Earnings Call Highlights: Strong Revenue ...",
-      "summary": "Samsung Electro-Mechanics Co Ltd (XKRX:009150) reports robust Q2 revenue growth, driven by component and package solutions, despite optics division challenges and external uncertainties.",
-      "url": "https://finance.yahoo.com/news/samsung-electro-mechanics-co-ltd-070058860.html",
+      "title": "Samsung Pushes Deeper Into AI Memory",
+      "summary": "Chips, displays and batteries drive expansion.",
+      "url": "https://finance.yahoo.com/technology/ai/articles/samsung-pushes-deeper-ai-memory-180002430.html",
       "provider": "GuruFocus.com",
-      "pub_time": "2025-08-01T07:00:58Z"
-    },
-    {
-      "title": "High-bandwidth memory demand set to surge in 2026 as AI powers up: UBS",
-      "summary": "Investing.com -- High-bandwidth memory, or HBM, is poised for a breakthrough year in 2026 as AI’s compute-hungry needs continues to reshape the memory landscape, UBS analysts said in a recent note.",
-      "url": "https://finance.yahoo.com/news/high-bandwidth-memory-demand-set-213150512.html",
-      "provider": "Investing.com",
-      "pub_time": "2025-07-17T21:31:50Z"
-    },
-    {
-      "title": "Samsung cancels Mexican auto parts plant",
-      "summary": "Project abandoned due to uncertainty over US trade policies.",
-      "url": "https://www.just-auto.com/news/samsung-cancels-mexican-auto-parts-plant/",
-      "provider": "Just Auto",
-      "pub_time": "2025-07-07T11:28:43Z"
+      "pub_time": "2026-07-02T18:00:02Z"
     }
   ]
 }

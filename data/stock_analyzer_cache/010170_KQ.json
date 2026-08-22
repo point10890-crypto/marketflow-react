@@ -2,40 +2,44 @@
   "name": "대한광통신",
   "ticker": "010170.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-13 00:26:28",
-  "elapsed": 2.2,
+  "date": "2026-08-07 12:05:00",
+  "elapsed": 2.9,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 17770.0,
-    "high": 2150.0,
-    "low": 2150.0,
-    "mean": 2150.0,
-    "median": 2150.0
+    "current": 11140.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
   },
-  "current_price": 17770.0,
-  "upside_potential": -87.9,
+  "current_price": 11140.0,
+  "upside_potential": null,
   "key_stats": {
     "name": "TaihanFiberoptics",
     "sector": "Technology",
     "industry": "Communication Equipment",
-    "market_cap": 2447681781760,
+    "market_cap": 1732110319616,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 0.732,
-    "fifty_two_week_high": 18340.0,
-    "fifty_two_week_low": 499.0,
-    "revenue": 139446730752,
-    "profit_margin": -0.2006,
+    "beta": 1.865,
+    "fifty_two_week_high": 31500.0,
+    "fifty_two_week_low": 923.0,
+    "revenue": 148301758464,
+    "profit_margin": -0.16595,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 34248640060
+    },
     {
       "date": "2025-12",
       "value": 29116470020
@@ -47,13 +51,13 @@
     {
       "date": "2025-06",
       "value": 41638182680
-    },
-    {
-      "date": "2025-03",
-      "value": 25393611150
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": -3671887420
+    },
     {
       "date": "2025-12",
       "value": -11670439120
@@ -65,10 +69,6 @@
     {
       "date": "2025-06",
       "value": -1081437140
-    },
-    {
-      "date": "2025-03",
-      "value": -7034360750
     }
   ],
   "news": []

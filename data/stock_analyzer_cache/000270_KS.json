@@ -2,46 +2,50 @@
   "name": "기아",
   "ticker": "000270.KS",
   "result": "적극 매수",
-  "date": "2026-04-07 00:45:10",
-  "elapsed": 2.2,
-  "consensus_score": 4.35,
-  "analyst_count": 31,
+  "date": "2026-07-25 20:42:35",
+  "elapsed": 2.8,
+  "consensus_score": 4.37,
+  "analyst_count": 30,
   "recommendation_detail": {
     "strongBuy": 11,
-    "buy": 20,
+    "buy": 19,
     "hold": 0,
     "sell": 0,
     "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 151600.0,
-    "high": 300000.0,
-    "low": 145000.0,
-    "mean": 213225.81,
-    "median": 210000.0
+    "current": 130500.0,
+    "high": 290000.0,
+    "low": 180000.0,
+    "mean": 228566.67,
+    "median": 230000.0
   },
-  "current_price": 151600.0,
-  "upside_potential": 40.7,
+  "current_price": 130500.0,
+  "upside_potential": 75.1,
   "key_stats": {
     "name": "KIA CORP.",
     "sector": "Consumer Cyclical",
     "industry": "Auto Manufacturers",
-    "market_cap": 58612126842880,
+    "market_cap": 50719612731392,
     "pe_ratio": null,
-    "forward_pe": 6.3672404,
-    "dividend_yield": 4.52,
-    "beta": 1.088,
+    "forward_pe": 5.4972634,
+    "dividend_yield": 5.21,
+    "beta": 1.014,
     "fifty_two_week_high": 212500.0,
-    "fifty_two_week_low": 81300.0,
-    "revenue": 114140920152064,
-    "profit_margin": 0.06624,
+    "fifty_two_week_low": 100000.0,
+    "revenue": 115625292726272,
+    "profit_margin": 0.060539998,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "기아(000270.KS)에 대해 31명의 애널리스트가 적극 매수 의견(4.35/5.0)을 제시했습니다. 평균 목표 주가는 213,226원으로, 현재 주가 대비 40.7% 상승 여력이 있는 것으로 분석됩니다. 이는 컨센서스 기반의 데이터 요약입니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 29501881000000
+    },
     {
       "date": "2025-12",
       "value": 28087737000000
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 29349635000000
-    },
-    {
-      "date": "2025-03",
-      "value": 28017510000000
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 1831412000000
+    },
     {
       "date": "2025-12",
       "value": 1474347000000
@@ -71,47 +75,43 @@
     {
       "date": "2025-06",
       "value": 2268846000000
-    },
-    {
-      "date": "2025-03",
-      "value": 2392963000000
     }
   ],
   "news": [
     {
-      "title": "Hyundai Motor flags export disruptions as Middle East conflict hits shipping",
-      "summary": "PYEONGTAEK, South Korea, April 3 (Reuters) - Hyundai Motor said on Friday that exports to Europe and North Africa, which typically transit through the Middle East, were being disrupted by the conflict",
-      "url": "https://finance.yahoo.com/news/hyundai-motor-flags-export-disruptions-073001120.html",
+      "title": "Hyundai Motor reports 21% drop in Q2 operating profit, misses forecasts",
+      "summary": "SEOUL, July 23 () - Hyundai Motor reported a 21% fall in second-quarter operating ‌profit on Thursday, missing analysts' estimates, ‌as weaker vehicle sales, production disruptions and higher costs ​o",
+      "url": "https://finance.yahoo.com/news/hyundai-motor-reports-21-drop-051334409.html",
       "provider": "Reuters",
-      "pub_time": "2026-04-03T07:30:01Z"
+      "pub_time": "2026-07-23T05:19:44Z"
     },
     {
-      "title": "Automakers unveil new EVs for US market despite sales downturn",
-      "summary": "<body><p>STORY: Major automakers unveiled new electric vehicles at this week's New York Auto Show, as they face lagging consumer demand and a drop in sales after the Trump administration scrapped EV t",
-      "url": "https://finance.yahoo.com/video/automakers-unveil-evs-us-market-183247024.html",
-      "provider": "Reuters Videos",
-      "pub_time": "2026-04-02T18:32:47Z"
+      "title": "US EV Sales Jump 15% as Toyota, Subaru Launch New Electric Models",
+      "summary": "New EV launches lifted second-quarter U.S. sales, while used EV prices climbed 12% amid stronger demand.",
+      "url": "https://finance.yahoo.com/energy/articles/us-ev-sales-jump-15-122246270.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-07-16T12:22:46Z"
     },
     {
-      "title": "Kia to launch 13 BEV models globally by 2030",
-      "summary": "The South Korean automaker plans to increase overseas production capacity.",
-      "url": "https://www.just-auto.com/news/kia-to-launch-13-bev-models-globally-by-2030/",
-      "provider": "Just Auto",
-      "pub_time": "2026-03-30T09:21:57Z"
+      "title": "Kia Sales Jump Over 4% as Global Auto Demand Falls",
+      "summary": "Kia says higher gasoline prices boosted EV demand in Europe and hybrid demand in the US.",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/kia-sales-jump-over-4-174219065.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-06-26T17:42:19Z"
     },
     {
-      "title": "Auto demand seems strained. Could EVs make a comeback?",
-      "summary": "Cox Automotive anticipates slower 2026 auto sales due to pressures from gas (RB=F) prices and interest rates.Yahoo Finance Senior Autos Reporter Pras Subramanian outlines the details, highlighting how",
-      "url": "https://finance.yahoo.com/video/auto-demand-seems-strained-could-evs-make-a-comeback-203508967.html",
-      "provider": "Yahoo Finance Video",
-      "pub_time": "2026-03-25T20:35:08Z"
+      "title": "BYD Plans Europe Launch After Great Tang Tops 150,000 Orders",
+      "summary": "The Chinese EV maker could bring its seven-seat SUV to Europe by year-end or early 2027.",
+      "url": "https://finance.yahoo.com/technology/articles/byd-plans-europe-launch-great-163102247.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-06-18T16:31:02Z"
     },
     {
-      "title": "Plant owned by a Hyundai-Kia engine parts supplier destroyed by fire",
-      "summary": "South Korean automaker looks for alternative supplies of engine valves.",
-      "url": "https://www.just-auto.com/news/plant-owned-by-a-hyundai-kia-engine-parts-supplier-destroyed-by-fire/",
-      "provider": "Just Auto",
-      "pub_time": "2026-03-24T09:52:34Z"
+      "title": "Adapting AI to auto dealership operations is a work in progress",
+      "summary": "Ohio dealer Kyle Pisani uses artificial intelligence to maximize sales, fine-tune operations and measure performance.",
+      "url": "https://www.wardsauto.com/news/adapting-ai-to-auto-dealership-operations-is-a-work-in-progress/822726/",
+      "provider": "Wards Auto",
+      "pub_time": "2026-06-15T11:06:00Z"
     }
   ]
 }

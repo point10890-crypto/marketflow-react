@@ -2,46 +2,54 @@
   "name": "LG에너지솔루션",
   "ticker": "373220.KS",
   "result": "매수",
-  "date": "2026-03-28 13:36:04",
-  "elapsed": 2.2,
-  "consensus_score": 3.93,
+  "date": "2026-07-23 08:03:54",
+  "elapsed": 2.8,
+  "consensus_score": 4.07,
   "analyst_count": 30,
   "recommendation_detail": {
-    "strongBuy": 9,
-    "buy": 14,
-    "hold": 5,
-    "sell": 0,
-    "strongSell": 2
+    "strongBuy": 10,
+    "buy": 15,
+    "hold": 3,
+    "sell": 1,
+    "strongSell": 1
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 394500.0,
-    "high": 600000.0,
+    "current": 321000.0,
+    "high": 620000.0,
     "low": 300000.0,
-    "mean": 484241.38,
-    "median": 500000.0
+    "mean": 508233.34,
+    "median": 540000.0
   },
-  "current_price": 394500.0,
-  "upside_potential": 22.7,
+  "current_price": 321000.0,
+  "upside_potential": 58.3,
   "key_stats": {
     "name": "LG Energy Solution",
     "sector": "Industrials",
     "industry": "Electrical Equipment & Parts",
-    "market_cap": 92312998772736,
+    "market_cap": 75114003562496,
     "pe_ratio": null,
-    "forward_pe": 41.30408,
+    "forward_pe": 37.045383,
     "dividend_yield": null,
-    "beta": 1.061,
+    "beta": 0.988,
     "fifty_two_week_high": 527000.0,
-    "fifty_two_week_low": 266000.0,
-    "revenue": 23671758389248,
-    "profit_margin": -0.04532,
+    "fifty_two_week_low": 309500.0,
+    "revenue": 23504015589376,
+    "profit_margin": -0.0682,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "LG에너지솔루션(373220.KS)에 대해 30명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 484,241 KRW로, 현재가 394,500 KRW 대비 22.7%의 상승 여력이 있는 것으로 분석됩니다. 투자 결정은 개인의 판단에 따라 신중하게 이루어져야 합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 6554967000000
+    },
+    {
+      "date": "2025-12",
+      "value": 6141483000000
+    },
     {
       "date": "2025-09",
       "value": 5699873000000
@@ -49,17 +57,17 @@
     {
       "date": "2025-06",
       "value": 5565408000000
-    },
-    {
-      "date": "2025-03",
-      "value": 6264995000000
-    },
-    {
-      "date": "2024-12",
-      "value": 6451162000000
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": -675980000000
+    },
+    {
+      "date": "2025-12",
+      "value": -876804000000
+    },
     {
       "date": "2025-09",
       "value": 247180000000
@@ -67,51 +75,43 @@
     {
       "date": "2025-06",
       "value": -297446000000
-    },
-    {
-      "date": "2025-03",
-      "value": -145740000000
-    },
-    {
-      "date": "2024-12",
-      "value": -679661000000
     }
   ],
   "news": [
     {
-      "title": "Livium CEO on recycling demand “Hockey Stick” - ASX SMIDcaps Conference",
-      "summary": "Livium Limited CEO & Managing Director Simon Linge talked with Kerry Stevenson from Proactive at the Small and Mid-Cap Conference about the company’s expanding role in battery recycling and its growth",
-      "url": "https://finance.yahoo.com/video/livium-ceo-recycling-demand-hockey-221016064.html",
-      "provider": "Proactive",
-      "pub_time": "2026-03-24T22:10:16Z"
-    },
-    {
-      "title": "US Government Confirms $4.3 Billion Battery Deal Between Tesla (TSLA) and LG Energy Solution, Reuters Reports",
-      "summary": "Tesla, Inc. (NASDAQ:TSLA) is one of the best long term stocks to invest in according to billionaires. Reuters reported on March 16 that the US government announced on Monday a supply agreement between",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/us-government-confirms-4-3-203701922.html",
-      "provider": "Insider Monkey",
-      "pub_time": "2026-03-20T20:37:01Z"
-    },
-    {
-      "title": "Trump Administration Confirms Tesla Will Build $4.3 Billion Battery Plant In Michigan With LG Energy",
-      "summary": "The President Donald Trump administration’s Department of the Interior (DOI) has revealed a series of deals totaling around $56 billion, including a deal between Tesla Inc. and South Korea’s LG Energy",
-      "url": "https://finance.yahoo.com/news/trump-administration-confirms-tesla-build-143035849.html",
-      "provider": "Benzinga",
-      "pub_time": "2026-03-18T14:30:35Z"
-    },
-    {
-      "title": "The Investment Case for Tesla After $4.3B Team-Up With LG Energy",
-      "summary": "TSLA's $4.3B LG Energy deal boosts domestic battery supply for Megapack, but EV weakness and rising spending cloud the stock's appeal.",
-      "url": "https://finance.yahoo.com/news/investment-case-tesla-4-3b-124300640.html",
-      "provider": "Zacks",
-      "pub_time": "2026-03-18T12:43:00Z"
-    },
-    {
-      "title": "LG, GM to make LFP ESS batteries in Tennessee, recall 700 laid off workers",
-      "summary": "The changeover is set to bring back about 700 employees who were temporarily laid off in January 2026, when demand for electric vehicles softened.",
-      "url": "https://www.just-auto.com/news/lg-gm-lfp-ess-batteries-tennessee/",
+      "title": "Ultium Cells launches production of LFP batteries for Energy Storage Systems",
+      "summary": "The Spring Hill plant will produce ESS batteries alongside EV batteries.",
+      "url": "https://www.just-auto.com/news/ultium-cells-launches-production-of-lfp-batteries-for-energy-storage-systems/",
       "provider": "Just Auto",
-      "pub_time": "2026-03-18T12:16:48Z"
+      "pub_time": "2026-07-09T08:42:44Z"
+    },
+    {
+      "title": "LG Energy Misses Estimates as Profit Drops to 113.3 Billion Won",
+      "summary": "Battery maker's quarterly profit missed forecasts despite 25% revenue growth as EV weakness offset rising ESS demand.",
+      "url": "https://finance.yahoo.com/energy/articles/lg-energy-misses-estimates-profit-191652303.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-07-07T19:16:52Z"
+    },
+    {
+      "title": "L-H Battery begins ESS battery production at its Ohio plant",
+      "summary": "The LGES-Honda joint venture will also produce HEV batteries at the facility.",
+      "url": "https://www.just-auto.com/news/l-h-battery-begins-ess-battery-production-at-its-ohio-plant/",
+      "provider": "Just Auto",
+      "pub_time": "2026-07-06T10:47:14Z"
+    },
+    {
+      "title": "General Motors vs. Lucid: Which Automotive Stock Is a Better Buy in 2026?",
+      "summary": "General Motors posts steady profits and invests in new tech, while Lucid pursues rapid growth with a key Saudi contract but faces ongoing losses.",
+      "url": "https://www.fool.com/coverage/better-buy/2026/07/04/general-motors-vs-lucid-which-automotive-stock-is-a-better-buy-in-2026/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-07-04T13:05:02Z"
+    },
+    {
+      "title": "Even Honda is pivoting to data centers",
+      "summary": "Honda wants in on the lucrative energy storage market. This week it began producing batteries destined for data centers, not driveways.",
+      "url": "https://finance.yahoo.com/energy/articles/even-honda-pivoting-data-centers-171345916.html",
+      "provider": "TechCrunch",
+      "pub_time": "2026-07-01T17:13:45Z"
     }
   ]
 }

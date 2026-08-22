@@ -2,46 +2,50 @@
   "name": "하이브",
   "ticker": "352820.KS",
   "result": "적극 매수",
-  "date": "2026-03-30 16:46:03",
-  "elapsed": 2.4,
-  "consensus_score": 4.35,
-  "analyst_count": 26,
+  "date": "2026-07-12 03:14:34",
+  "elapsed": 2.0,
+  "consensus_score": 4.38,
+  "analyst_count": 24,
   "recommendation_detail": {
     "strongBuy": 9,
-    "buy": 17,
+    "buy": 15,
     "hold": 0,
     "sell": 0,
     "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 302500.0,
-    "high": 520000.0,
-    "low": 380000.0,
-    "mean": 453884.62,
-    "median": 452500.0
+    "current": 220500.0,
+    "high": 450000.0,
+    "low": 300000.0,
+    "mean": 378666.66,
+    "median": 386500.0
   },
-  "current_price": 302500.0,
-  "upside_potential": 50.0,
+  "current_price": 220500.0,
+  "upside_potential": 71.7,
   "key_stats": {
     "name": "HYBE",
     "sector": "Communication Services",
     "industry": "Entertainment",
-    "market_cap": 12564967718912,
+    "market_cap": 9385342402560,
     "pe_ratio": null,
-    "forward_pe": 28.263386,
-    "dividend_yield": 0.16,
-    "beta": 1.02,
+    "forward_pe": 22.412115,
+    "dividend_yield": 0.23,
+    "beta": 0.772,
     "fifty_two_week_high": 405500.0,
-    "fifty_two_week_low": 209500.0,
-    "revenue": 2649870303232,
-    "profit_margin": -0.089540005,
+    "fifty_two_week_low": 174600.0,
+    "revenue": 2847605260288,
+    "profit_margin": -0.16011,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "하이브(352820.KS)에 대해 26명의 애널리스트가 제시한 컨센서스는 '적극 매수' 의견입니다. 목표가 평균은 453,885 KRW으로, 현재가 302,500 KRW 대비 50% 상승 여력이 있습니다. 이는 애널리스트들이 하이브의 추가적인 성장 가능성을 높게 평가하고 있음을 시사합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 698348369000
+    },
     {
       "date": "2025-12",
       "value": 716426933000
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 705649177000
-    },
-    {
-      "date": "2025-03",
-      "value": 500613449000
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": -158480754000
+    },
     {
       "date": "2025-12",
       "value": -265244469000
@@ -71,13 +75,23 @@
     {
       "date": "2025-06",
       "value": 18060024000
-    },
-    {
-      "date": "2025-03",
-      "value": 60173300000
     }
   ],
   "news": [
+    {
+      "title": "Popular K-pop company behind BTS merch sells all its Bitcoin",
+      "summary": "K Wave Media (NASDAQ: KWM), a Korean entertainment company known for K-drama and K-pop content licensing, sold all of its Bitcoin (BTC) holdings on May 6. According to a Form F-3 on June 30, the sale ",
+      "url": "https://www.thestreet.com/crypto/markets/popular-k-pop-company-behind-bts-merch-sells-all-its-bitcoin",
+      "provider": "TheStreet",
+      "pub_time": "2026-07-03T15:30:00Z"
+    },
+    {
+      "title": "HYBE (XKRX:352820) Q1 2026 Earnings Call Highlights: Record Revenue Driven by BTS Comeback",
+      "summary": "HYBE (XKRX:352820) reports a 40% revenue increase, fueled by BTS's success and Weverse's growth, despite challenges in concert sales.",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/hybe-xkrx-352820-q1-2026-070347682.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-04-30T07:03:47Z"
+    },
     {
       "title": "Kpop agency HYBE shares drop after boyband BTS comeback concert",
       "summary": "<body><p>STORY: Shares in Kpop agency HYBE tumbled on Monday after a weaker than expected turnout at its supergroup BTS's comeback concert.</p><p>Shares fell more than 15.5% to their lowest level sinc",
@@ -98,13 +112,6 @@
       "url": "https://finance.yahoo.com/news/hybe-xkrx-352820-q3-2025-150057226.html",
       "provider": "GuruFocus.com",
       "pub_time": "2025-11-10T15:00:57Z"
-    },
-    {
-      "title": "HYBE (XKRX:352820) Q2 2025 Earnings Call Highlights: Strong Revenue Growth Amid Strategic ...",
-      "summary": "HYBE (XKRX:352820) reports a 10% revenue increase, driven by global tours and strategic market expansions, despite challenges in recorded music sales.",
-      "url": "https://finance.yahoo.com/news/hybe-xkrx-352820-q2-2025-070219689.html",
-      "provider": "GuruFocus.com",
-      "pub_time": "2025-08-07T07:02:19Z"
     }
   ]
 }

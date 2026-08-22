@@ -2,46 +2,50 @@
   "name": "에코프로비엠",
   "ticker": "247540.KQ",
   "result": "중립",
-  "date": "2026-04-12 19:12:13",
+  "date": "2026-08-18 18:42:11",
   "elapsed": 3.0,
-  "consensus_score": 2.8,
-  "analyst_count": 25,
+  "consensus_score": 3.08,
+  "analyst_count": 24,
   "recommendation_detail": {
-    "strongBuy": 4,
-    "buy": 3,
-    "hold": 7,
+    "strongBuy": 5,
+    "buy": 6,
+    "hold": 3,
     "sell": 6,
-    "strongSell": 5
+    "strongSell": 4
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 201500.0,
-    "high": 270000.0,
-    "low": 76000.0,
-    "mean": 159804.34,
-    "median": 130000.0
+    "current": 109100.0,
+    "high": 300000.0,
+    "low": 62000.0,
+    "mean": 166562.5,
+    "median": 150000.0
   },
-  "current_price": 201500.0,
-  "upside_potential": -20.7,
+  "current_price": 109100.0,
+  "upside_potential": 52.7,
   "key_stats": {
     "name": "ECOPROBM",
     "sector": "Industrials",
     "industry": "Electrical Equipment & Parts",
-    "market_cap": 19692490063872,
+    "market_cap": 10672663429120,
     "pe_ratio": null,
-    "forward_pe": 196.03996,
-    "dividend_yield": 0.05,
-    "beta": 1.05,
+    "forward_pe": 135.1753,
+    "dividend_yield": 0.09,
+    "beta": 1.201,
     "fifty_two_week_high": 260000.0,
-    "fifty_two_week_low": 81100.0,
-    "revenue": 2531576512512,
-    "profit_margin": 0.01555,
+    "fifty_two_week_low": 88300.0,
+    "revenue": 2507149148160,
+    "profit_margin": 0.02283,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "에코프로비엠에 대한 애널리스트 컨센서스는 2.8/5.0으로 중립 의견을 보이고 있습니다. 25명의 애널리스트가 참여한 목표가 평균은 159,804원으로, 현재가 대비 -20.7% 하락 여력이 있는 것으로 분석됩니다. 투자 결정 시 이러한 분석 데이터를 참고하시기 바랍니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 605361464990
+    },
     {
       "date": "2025-12",
       "value": 497011031850
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 779716508200
-    },
-    {
-      "date": "2025-03",
-      "value": 629788701180
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 3904951780
+    },
     {
       "date": "2025-12",
       "value": 18919042820
@@ -71,10 +75,6 @@
     {
       "date": "2025-06",
       "value": 11458050610
-    },
-    {
-      "date": "2025-03",
-      "value": -13961596530
     }
   ],
   "news": [
@@ -91,13 +91,6 @@
       "url": "https://www.just-auto.com/news/ecopro-completes-initial-battery-materials-investment-in-indonesia/",
       "provider": "Just Auto",
       "pub_time": "2025-09-19T09:00:27Z"
-    },
-    {
-      "title": "SK On signs domestic lithium deal with EcoPro",
-      "summary": "South Korean battery maker moves to reduce dependence on Chinese suppliers.",
-      "url": "https://www.just-auto.com/news/sk-on-signs-domestic-lithium-deal-with-ecopro/",
-      "provider": "Just Auto",
-      "pub_time": "2025-07-18T09:01:44Z"
     }
   ]
 }

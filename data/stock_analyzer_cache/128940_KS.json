@@ -2,46 +2,54 @@
   "name": "한미약품",
   "ticker": "128940.KS",
   "result": "적극 매수",
-  "date": "2026-03-27 22:55:42",
+  "date": "2026-07-11 14:55:35",
   "elapsed": 2.0,
-  "consensus_score": 4.5,
-  "analyst_count": 16,
+  "consensus_score": 4.46,
+  "analyst_count": 13,
   "recommendation_detail": {
-    "strongBuy": 8,
-    "buy": 8,
-    "hold": 0,
+    "strongBuy": 7,
+    "buy": 5,
+    "hold": 1,
     "sell": 0,
     "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 549000.0,
-    "high": 720000.0,
-    "low": 370000.0,
-    "mean": 558750.0,
-    "median": 550000.0
+    "current": 389000.0,
+    "high": 740000.0,
+    "low": 510000.0,
+    "mean": 624615.4,
+    "median": 600000.0
   },
-  "current_price": 549000.0,
-  "upside_potential": 1.8,
+  "current_price": 389000.0,
+  "upside_potential": 60.6,
   "key_stats": {
     "name": "HanmiPharm",
     "sector": "Healthcare",
     "industry": "Drug Manufacturers - Specialty & Generic",
-    "market_cap": 6961437343744,
+    "market_cap": 4932603215872,
     "pe_ratio": null,
-    "forward_pe": 31.04409,
-    "dividend_yield": 0.36,
-    "beta": 0.564,
+    "forward_pe": 23.419323,
+    "dividend_yield": 0.51,
+    "beta": 0.46,
     "fifty_two_week_high": 647000.0,
-    "fifty_two_week_low": 214500.0,
-    "revenue": 1466177683456,
-    "profit_margin": 0.079450004,
+    "fifty_two_week_low": 267500.0,
+    "revenue": 1549508542464,
+    "profit_margin": 0.11129,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "한미약품(128940.KS)에 대해 16명의 애널리스트가 적극 매수 의견을 제시했습니다. 컨센서스 점수는 5.0 만점에 4.5점입니다. 목표가 평균은 558,750원으로 현재가 대비 약 1.8% 상승 여력이 있습니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 392925587040
+    },
+    {
+      "date": "2025-12",
+      "value": 432960488770
+    },
     {
       "date": "2025-09",
       "value": 362345363920
@@ -49,17 +57,17 @@
     {
       "date": "2025-06",
       "value": 361277145260
-    },
-    {
-      "date": "2025-03",
-      "value": 390948100810
-    },
-    {
-      "date": "2024-12",
-      "value": 351607089690
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 45490304170
+    },
+    {
+      "date": "2025-12",
+      "value": 48115729450
+    },
     {
       "date": "2025-09",
       "value": 40128494130
@@ -67,30 +75,43 @@
     {
       "date": "2025-06",
       "value": 38704447000
-    },
-    {
-      "date": "2025-03",
-      "value": 42605659850
-    },
-    {
-      "date": "2024-12",
-      "value": -4954576640
     }
   ],
   "news": [
     {
-      "title": "Aptose Secures US$11.9M Loan Extension to Advance Tuspetinib AML Trial",
-      "summary": "Aptose Biosciences (APS.TO) Monday said it has entered into a US$11.9 million loan amended facility",
-      "url": "https://finance.yahoo.com/news/aptose-secures-us-11-9m-120950817.html",
-      "provider": "MT Newswires",
-      "pub_time": "2025-09-22T12:09:50Z"
+      "title": "How Lilly is defending its GLP empire",
+      "summary": "Eli Lilly's recent GLP-2 deal with Hanmi Pharm is another step in the drugmaker’s quest to grow its GLP franchise beyond weight loss and deepen its push into gastrointestinal disease.",
+      "url": "https://www.pharmavoice.com/news/how-lilly-defending-glp-empire-drug-obesity/822959/",
+      "provider": "Pharma Voice",
+      "pub_time": "2026-06-16T09:15:17Z"
     },
     {
-      "title": "Aptose Biosciences Moves to Higher Dose in Phase 1/2 Cancer Study After Positive Safety Review",
-      "summary": "Aptose Biosciences (APS.TO) said Wednesday afternoon the cohort safety review committee overseeing i",
-      "url": "https://finance.yahoo.com/news/aptose-biosciences-moves-higher-dose-205239316.html",
-      "provider": "MT Newswires",
-      "pub_time": "2025-08-06T20:52:39Z"
+      "title": "Eli Lilly Expands Beyond Obesity With US$4b Vaccine And Genetic Bets",
+      "summary": "Eli Lilly (NYSE:LLY) has agreed to acquire three vaccine and infectious disease companies, Curevo, LimmaTech Biologics, and Vaccine Company, in deals totaling nearly US$4b. The acquisitions expand Eli",
+      "url": "https://finance.yahoo.com/sectors/healthcare/articles/eli-lilly-expands-beyond-obesity-041932851.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-06-07T04:19:32Z"
+    },
+    {
+      "title": "Eli Lilly Broadens Beyond Obesity Drugs With Vaccine And Genetic Bets",
+      "summary": "Eli Lilly (NYSE:LLY) is pushing beyond its obesity drug franchise with plans to acquire three vaccine focused biotech companies. The company has also entered new collaborations in genetic and RNA base",
+      "url": "https://finance.yahoo.com/sectors/healthcare/articles/eli-lilly-broadens-beyond-obesity-021341652.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-06-06T02:13:41Z"
+    },
+    {
+      "title": "Eli Lilly Deepens Innovation Push Through New Biopharma Collaborations",
+      "summary": "Eli Lilly and Co. announced separate licensing and research agreements with South Korea-based Hanmi Pharm and China-based Haisco Pharmaceutical Group, expanding its access to new drug candidates and d",
+      "url": "https://finance.yahoo.com/sectors/healthcare/articles/eli-lilly-deepens-innovation-push-183104134.html",
+      "provider": "Benzinga",
+      "pub_time": "2026-06-03T18:31:04Z"
+    },
+    {
+      "title": "Lilly and Hanmi sign $1.26bn licensing deal for sonefpeglutide",
+      "summary": "Hanmi will receive $75m upfront and may earn up to $1.185bn in milestone payments for development and approvals.",
+      "url": "https://www.pharmaceutical-technology.com/news/lilly-hanmi-licensing-deal-sonefpeglutide/",
+      "provider": "Pharmaceutical Technology",
+      "pub_time": "2026-06-01T10:16:41Z"
     }
   ]
 }

@@ -2,46 +2,50 @@
   "name": "현대글로비스",
   "ticker": "086280.KS",
   "result": "매수",
-  "date": "2026-04-08 16:19:39",
-  "elapsed": 2.0,
-  "consensus_score": 4.0,
-  "analyst_count": 21,
+  "date": "2026-08-08 06:42:27",
+  "elapsed": 2.3,
+  "consensus_score": 4.26,
+  "analyst_count": 19,
   "recommendation_detail": {
     "strongBuy": 5,
-    "buy": 13,
-    "hold": 2,
+    "buy": 14,
+    "hold": 0,
     "sell": 0,
-    "strongSell": 1
+    "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 220500.0,
-    "high": 370000.0,
-    "low": 143000.0,
-    "mean": 295523.8,
-    "median": 319000.0
+    "current": 207500.0,
+    "high": 380000.0,
+    "low": 250000.0,
+    "mean": 312894.75,
+    "median": 320000.0
   },
-  "current_price": 220500.0,
-  "upside_potential": 34.0,
+  "current_price": 207500.0,
+  "upside_potential": 50.8,
   "key_stats": {
     "name": "HYUNDAIGLOVIS",
     "sector": "Industrials",
     "industry": "Integrated Freight & Logistics",
-    "market_cap": 16537499992064,
+    "market_cap": 15562500472832,
     "pe_ratio": null,
-    "forward_pe": 8.670918,
-    "dividend_yield": 2.79,
-    "beta": 1.096,
+    "forward_pe": 8.275863,
+    "dividend_yield": 2.8,
+    "beta": 1.016,
     "fifty_two_week_high": 296000.0,
-    "fifty_two_week_low": 104500.0,
-    "revenue": 29566410162176,
-    "profit_margin": 0.05864,
+    "fifty_two_week_low": 156100.0,
+    "revenue": 31345109630976,
+    "profit_margin": 0.04923,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "현대글로비스(086280.KS)에 대해 21명의 애널리스트가 제시한 컨센서스는 매수 의견입니다. 목표가 평균은 295,524원으로, 현재가 220,500원 대비 34.0%의 상승 여력이 있는 것으로 분석됩니다. 이는 전반적으로 긍정적인 시장 전망을 반영합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 7812730333570
+    },
     {
       "date": "2025-12",
       "value": 7471997778660
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 7515967179640
-    },
-    {
-      "date": "2025-03",
-      "value": 7223390117790
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 340261621660
+    },
     {
       "date": "2025-12",
       "value": 440700261560
@@ -71,13 +75,23 @@
     {
       "date": "2025-06",
       "value": 503242282920
-    },
-    {
-      "date": "2025-03",
-      "value": 397933438850
     }
   ],
   "news": [
+    {
+      "title": "Hyundai to buy SoftBank's remaining stake in Boston Dynamics for $325 million, newspaper says",
+      "summary": "Hyundai Motor Group plans to buy SoftBank Group's ‌remaining 9.65% stake in Boston ‌Dynamics for $325 million to make the U.S. robotics ​firm a wholly owned subsidiary, South Korea's Maeil Business Ne",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/hyundai-buy-softbanks-remaining-stake-015022894.html",
+      "provider": "Reuters",
+      "pub_time": "2026-06-19T01:50:22Z"
+    },
+    {
+      "title": "Hyundai Glovis to establish regional logistics hub in Amsterdam",
+      "summary": "Hyundai Motor Group moves to strengthen its EU distribution operations.",
+      "url": "https://www.just-auto.com/news/hyundai-glovis-to-establish-regional-logistics-hub-in-amsterdam/",
+      "provider": "Just Auto",
+      "pub_time": "2026-06-08T08:34:11Z"
+    },
     {
       "title": "Wilh. Wilhelmsen Holding ASA (STU:WML2) Q4 2025 Earnings Call Highlights: Strong Shareholder ...",
       "summary": "Wilh. Wilhelmsen Holding ASA (STU:WML2) reports a robust 49% total shareholder return for 2025, with strategic investments and significant debt reduction despite macroeconomic challenges.",
@@ -98,13 +112,6 @@
       "url": "https://finance.yahoo.com/news/hyundai-motor-shares-hit-records-175641807.html",
       "provider": "GuruFocus.com",
       "pub_time": "2026-01-13T17:56:41Z"
-    },
-    {
-      "title": "Hyundai is taking on Tesla and others in race to mass-produce humanoid robots",
-      "summary": "Hyundai said it's working to develop a system to mass-produce Boston Dynamics' Atlas robot by 2028.",
-      "url": "https://finance.yahoo.com/news/hyundai-is-taking-on-tesla-and-others-in-race-to-mass-produce-humanoid-robots-210056155.html",
-      "provider": "Yahoo Finance",
-      "pub_time": "2026-01-05T21:00:56Z"
     }
   ]
 }

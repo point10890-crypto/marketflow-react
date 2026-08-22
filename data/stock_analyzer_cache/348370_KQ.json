@@ -2,40 +2,44 @@
   "name": "엔켐",
   "ticker": "348370.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-14 00:02:48",
-  "elapsed": 4.5,
+  "date": "2026-08-06 23:33:16",
+  "elapsed": 1.9,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 36950.0,
+    "current": 20950.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 36950.0,
+  "current_price": 20950.0,
   "upside_potential": null,
   "key_stats": {
     "name": "Enchem",
     "sector": "Industrials",
     "industry": "Electrical Equipment & Parts",
-    "market_cap": 804307075072,
+    "market_cap": 459035279360,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 0.87,
+    "beta": 0.781,
     "fifty_two_week_high": 105000.0,
-    "fifty_two_week_low": 29950.0,
-    "revenue": 312794054656,
-    "profit_margin": -0.21646,
+    "fifty_two_week_low": 14020.0,
+    "revenue": 328682045440,
+    "profit_margin": -0.41492,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 84111624650
+    },
     {
       "date": "2025-12",
       "value": 90245258320
@@ -47,13 +51,13 @@
     {
       "date": "2025-06",
       "value": 64072848150
-    },
-    {
-      "date": "2025-03",
-      "value": 68223627670
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": -10439858110
+    },
     {
       "date": "2025-12",
       "value": -70282620260
@@ -65,10 +69,6 @@
     {
       "date": "2025-06",
       "value": -19715447620
-    },
-    {
-      "date": "2025-03",
-      "value": 58223820130
     }
   ],
   "news": []

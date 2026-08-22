@@ -2,46 +2,50 @@
   "name": "삼성전자",
   "ticker": "005930.KS",
   "result": "매수",
-  "date": "2026-04-12 11:24:06",
-  "elapsed": 2.7,
-  "consensus_score": 4.22,
+  "date": "2026-08-19 17:35:01",
+  "elapsed": 1.9,
+  "consensus_score": 4.27,
   "analyst_count": 37,
   "recommendation_detail": {
-    "strongBuy": 12,
-    "buy": 23,
+    "strongBuy": 11,
+    "buy": 25,
     "hold": 1,
     "sell": 0,
-    "strongSell": 1
+    "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 206000.0,
-    "high": 340000.0,
-    "low": 110000.0,
-    "mean": 239873.48,
-    "median": 250000.0
+    "current": 247500.0,
+    "high": 725000.0,
+    "low": 210000.0,
+    "mean": 470155.62,
+    "median": 450000.0
   },
-  "current_price": 206000.0,
-  "upside_potential": 16.4,
+  "current_price": 247500.0,
+  "upside_potential": 90.0,
   "key_stats": {
     "name": "SamsungElec",
     "sector": "Technology",
     "industry": "Consumer Electronics",
-    "market_cap": 1359256888541184,
+    "market_cap": 1625224483176448,
     "pe_ratio": null,
-    "forward_pe": 7.1708107,
-    "dividend_yield": 1.1,
-    "beta": 1.211,
-    "fifty_two_week_high": 223000.0,
-    "fifty_two_week_low": 53700.0,
-    "revenue": 333605947572224,
-    "profit_margin": 0.13267,
+    "forward_pe": 3.676881,
+    "dividend_yield": 0.56,
+    "beta": 1.557,
+    "fifty_two_week_high": 374500.0,
+    "fifty_two_week_low": 67500.0,
+    "revenue": 485238895542272,
+    "profit_margin": 0.30858,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "삼성전자는 현재 애널리스트 컨센서스 '매수' 의견이며, 37명의 애널리스트가 참여하여 5점 만점에 4.22점을 기록했습니다. 평균 목표 주가는 239,873원으로, 현재 주가 대비 16.4% 상승 여력이 있습니다. 이는 애널리스트들이 삼성전자의 추가적인 주가 상승을 예상하고 있음을 시사합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 133873444000000
+    },
     {
       "date": "2025-12",
       "value": 93837371000000
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 74566317000000
-    },
-    {
-      "date": "2025-03",
-      "value": 79140503000000
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 47101190000000
+    },
     {
       "date": "2025-12",
       "value": 19292054000000
@@ -71,47 +75,43 @@
     {
       "date": "2025-06",
       "value": 4934034000000
-    },
-    {
-      "date": "2025-03",
-      "value": 8028407000000
     }
   ],
   "news": [
     {
-      "title": "Samsung’s New AI Galaxy A Series Puts Valuation And Margins In Focus",
-      "summary": "Samsung Electronics (KOSE:A005930) has introduced the Galaxy A57 5G and A37 5G with AI-powered features. The new models bring voice, image, productivity and security tools previously focused on premiu",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/samsung-ai-galaxy-series-puts-060718241.html",
+      "title": "Kospi Triggers Another Sidecar as Chip Rebound Stalls, Falls Over 6%",
+      "summary": "Kospi fell 6.45% Wednesday as chip stocks slid, triggering another Korea Exchange sell-side sidecar halt on the benchmark.",
+      "url": "https://beincrypto.com/kospi-sidecar-chip-rebound-stalls/",
+      "provider": "BeInCrypto",
+      "pub_time": "2026-08-19T07:25:00Z"
+    },
+    {
+      "title": "SK Hynix stock jumps amid $29B treasury buyback plan",
+      "summary": "SK Hynix said on Wednesday it would buy back and cancel 40 trillion won ($28.61 billion) ‌worth of treasury shares and allocate more than 50% ‌of free cash flow generated between 2025 and 2027 to boos",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/sk-hynix-stock-jumps-amid-29b-treasury-buyback-plan-070906682.html",
+      "provider": "Reuters",
+      "pub_time": "2026-08-19T07:09:06Z"
+    },
+    {
+      "title": "MU, SNDK Dip Overnight: KOSPI Hits Halt Amid Asian Tech Chip Rout, SoftBank, Samsung, SK Hynix Retreat",
+      "summary": "Global tech stocks dropped on Wednesday as bond yields in the U.S. and elsewhere scored fresh milestones.",
+      "url": "https://stocktwits.com/news-articles/markets/equity/mu-sndk-dip-overnight-kospi-hits-halt-amid-asian-tech-chip-rout-soft-bank-samsung-sk-hynix-retreat/cZYdEEaRJkB",
+      "provider": "Stocktwits",
+      "pub_time": "2026-08-19T05:24:38Z"
+    },
+    {
+      "title": "Samsung Electronics (KOSE:A005930) Opens New AI Chip Design Tools For Foundry Customers",
+      "summary": "Samsung Electronics (KOSE:A005930) has expanded its Advanced Foundry Ecosystem through a new collaboration with Movellus Circuits focused on AI and high performance computing chip designs. The partner",
+      "url": "https://finance.yahoo.com/technology/ai/articles/samsung-electronics-kose-a005930-opens-050915449.html",
       "provider": "Simply Wall St.",
-      "pub_time": "2026-04-11T06:07:18Z"
+      "pub_time": "2026-08-19T05:09:15Z"
     },
     {
-      "title": "Evaluating Samsung Electronics (KOSE:A005930) Valuation After Strong Recent Share Price Momentum",
-      "summary": "Samsung Electronics (KOSE:A005930) has drawn fresh attention after its shares closed at ₩206,000, with returns over the past month and past 3 months standing at 8.4% and 48.2% respectively. See our la",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/evaluating-samsung-electronics-kose-a005930-050748307.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2026-04-11T05:07:48Z"
-    },
-    {
-      "title": "Taiwan Semiconductor Manufacturing (TSM): The Best Under-The-Radar AI Stock in Billionaire Ken Fisher’s Portfolio?",
-      "summary": "We just covered Billionaire Ken Fisher’s Latest Portfolio: 10 Best AI Stocks to Buy. Taiwan Semiconductor Manufacturing Company Limited (NYSE:TSM) ranks #6 (see the 5 Best AI Stocks to Buy). Billionai",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/taiwan-semiconductor-manufacturing-tsm-best-212423173.html",
-      "provider": "Insider Monkey",
-      "pub_time": "2026-04-10T21:24:23Z"
-    },
-    {
-      "title": "Tweedy Browne International Value Reduces Stake in Samsung Electronics Co Ltd by 39.48%",
-      "summary": "Insights from the First Quarter of 2026 N-PORT Filing",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/tweedy-browne-international-value-reduces-210225344.html",
-      "provider": "GuruFocus.com",
-      "pub_time": "2026-04-10T21:02:25Z"
-    },
-    {
-      "title": "The Week in Numbers: oil prices swing wildly, AI boom motors on",
-      "summary": "<body><p>STORY: From wild swings in oil prices to the AI boom driving revenues... this is The Week in Numbers.</p><p>:: 11%</p><p>More than 11% was how far Brent Crude prices slid&nbsp;after a two-wee",
-      "url": "https://finance.yahoo.com/video/week-numbers-oil-prices-swing-104740612.html",
-      "provider": "Reuters Videos",
-      "pub_time": "2026-04-10T10:47:40Z"
+      "title": "Shares fall in Asia, with Kospi down 5.7%, while oil prices jump",
+      "summary": "Shares slipped Wednesday in Asia after Wall Street pulled further from its all-time high as artificial-intelligence stocks resumed their decline.  Samsung Electronics shed 7.5%, while memory chipmaker",
+      "url": "https://finance.yahoo.com/markets/articles/shares-fall-asia-kospi-down-030536178.html",
+      "provider": "Associated Press",
+      "pub_time": "2026-08-19T03:05:36Z"
     }
   ]
 }

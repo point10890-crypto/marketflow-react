@@ -2,32 +2,32 @@
   "name": "펩트론",
   "ticker": "087010.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-07 08:59:21",
-  "elapsed": 2.3,
+  "date": "2026-08-07 15:27:07",
+  "elapsed": 1.9,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 272000.0,
+    "current": 180600.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 272000.0,
+  "current_price": 180600.0,
   "upside_potential": null,
   "key_stats": {
     "name": "PEPTRON",
     "sector": "",
     "industry": "",
-    "market_cap": 6322201296896,
+    "market_cap": 4197755912192,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
     "beta": null,
     "fifty_two_week_high": 392500.0,
-    "fifty_two_week_low": 106000.0,
+    "fifty_two_week_low": 98000.0,
     "revenue": null,
     "profit_margin": null,
     "currency": "KRW"
@@ -36,6 +36,10 @@
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 1966633280
+    },
     {
       "date": "2025-12",
       "value": 987282450
@@ -47,13 +51,13 @@
     {
       "date": "2025-06",
       "value": 1425607750
-    },
-    {
-      "date": "2025-03",
-      "value": 1620246560
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": -6114865270
+    },
     {
       "date": "2025-12",
       "value": -4680156280
@@ -65,10 +69,6 @@
     {
       "date": "2025-06",
       "value": -3797726290
-    },
-    {
-      "date": "2025-03",
-      "value": -3321703000
     }
   ],
   "news": []

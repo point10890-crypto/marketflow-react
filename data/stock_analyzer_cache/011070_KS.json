@@ -2,46 +2,50 @@
   "name": "LG이노텍",
   "ticker": "011070.KS",
   "result": "매수",
-  "date": "2026-04-10 19:37:14",
-  "elapsed": 1.8,
-  "consensus_score": 4.15,
-  "analyst_count": 27,
+  "date": "2026-08-17 18:09:57",
+  "elapsed": 3.8,
+  "consensus_score": 4.27,
+  "analyst_count": 26,
   "recommendation_detail": {
-    "strongBuy": 9,
-    "buy": 14,
-    "hold": 3,
+    "strongBuy": 11,
+    "buy": 12,
+    "hold": 2,
     "sell": 1,
     "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 380000.0,
-    "high": 460000.0,
-    "low": 190000.0,
-    "mean": 340269.22,
-    "median": 351500.0
+    "current": 654000.0,
+    "high": 2000000.0,
+    "low": 350000.0,
+    "mean": 1084230.8,
+    "median": 1000000.0
   },
-  "current_price": 380000.0,
-  "upside_potential": -10.5,
+  "current_price": 654000.0,
+  "upside_potential": 65.8,
   "key_stats": {
     "name": "LG Innotek",
     "sector": "Technology",
     "industry": "Electronic Components",
-    "market_cap": 8992513327104,
+    "market_cap": 15476588544000,
     "pe_ratio": null,
-    "forward_pe": 12.458923,
-    "dividend_yield": 0.55,
-    "beta": 0.603,
-    "fifty_two_week_high": 383500.0,
-    "fifty_two_week_low": 121000.0,
-    "revenue": 21896603107328,
-    "profit_margin": 0.01559,
+    "forward_pe": 13.942223,
+    "dividend_yield": 0.29,
+    "beta": 2.289,
+    "fifty_two_week_high": 1788000.0,
+    "fifty_two_week_low": 157600.0,
+    "revenue": 22448598679552,
+    "profit_margin": 0.0216,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "LG이노텍은 현재 애널리스트 컨센서스가 '매수' 의견으로 긍정적입니다. (컨센서스 점수 4.15/5.0, 참여 애널리스트 27명) 하지만, 목표가 평균은 340,269원으로 현재 주가 대비 -10.5% 하락 여력이 있습니다. 투자 결정 시 컨센서스와 목표가의 차이를 고려해야 합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 5534835000000
+    },
     {
       "date": "2025-12",
       "value": 7609756000000
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 3934575006460
-    },
-    {
-      "date": "2025-03",
-      "value": 4982840285150
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 229143000000
+    },
     {
       "date": "2025-12",
       "value": 135937000000
@@ -71,13 +75,23 @@
     {
       "date": "2025-06",
       "value": -8676988140
-    },
-    {
-      "date": "2025-03",
-      "value": 85613325580
     }
   ],
   "news": [
+    {
+      "title": "SK Hynix Drops Near 11% as KOSPI Hits 37th Sidecar of 2026",
+      "summary": "SK Hynix shares dropped 10.95% in Seoul as the KOSPI triggered its 37th sidecar of 2026 during a chip stock selloff.",
+      "url": "https://beincrypto.com/sk-hynix-drops-kospi-sidecar-2026/",
+      "provider": "BeInCrypto",
+      "pub_time": "2026-07-16T01:59:30Z"
+    },
+    {
+      "title": "LG Innotek secures automotive Wi-Fi 7 supply agreement",
+      "summary": "The module will be installed in audio, video and navigation (AVN) systems that will in turn be supplied to an unnamed global original equipment manufacturer (OEM).",
+      "url": "https://www.just-auto.com/news/lg-innotek-automotive-wi-fi-7-supply-agreement/",
+      "provider": "Just Auto",
+      "pub_time": "2026-04-21T15:26:45Z"
+    },
     {
       "title": "Applied Intuition and LG Innotek strike autonomous vehicle development partnership",
       "summary": "The arrangement is intended to fine-tune Applied Intuition’s Self Driving System (SDS) so it operates effectively with LG Innotek’s camera, lidar and radar sensors.",
@@ -98,20 +112,6 @@
       "url": "https://finance.yahoo.com/news/look-aeva-technologies-aeva-valuation-031507811.html",
       "provider": "Simply Wall St.",
       "pub_time": "2026-01-07T03:15:07Z"
-    },
-    {
-      "title": "What AEVA's New Auto Contract Means for Its Growth Outlook",
-      "summary": "AEVA secures a Tier-1 deal with a major European automaker, positioning its 4D LiDAR as a global standard across models.",
-      "url": "https://finance.yahoo.com/news/aevas-auto-contract-means-growth-142500168.html",
-      "provider": "Zacks",
-      "pub_time": "2025-12-10T14:25:00Z"
-    },
-    {
-      "title": "Will AEVA's $50M LG Alliance Fast-Track Multi-Sector Growth?",
-      "summary": "Aeva Technologies teams with LG Innotek in a $50M deal to scale LiDAR into cars, automation, robotics, and consumer tech.",
-      "url": "https://finance.yahoo.com/news/aevas-50m-lg-alliance-fast-123600205.html",
-      "provider": "Zacks",
-      "pub_time": "2025-08-11T12:36:00Z"
     }
   ]
 }

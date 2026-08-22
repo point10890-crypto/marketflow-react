@@ -2,34 +2,34 @@
   "name": "대원전선",
   "ticker": "006340.KS",
   "result": "데이터 없음",
-  "date": "2026-03-29 08:11:01",
-  "elapsed": 1.7,
+  "date": "2026-08-10 22:42:29",
+  "elapsed": 1.6,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 5270.0,
+    "current": 14950.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 5270.0,
+  "current_price": 14950.0,
   "upside_potential": null,
   "key_stats": {
     "name": "DaewonCbl",
     "sector": "Industrials",
     "industry": "Electrical Equipment & Parts",
-    "market_cap": 413243965440,
+    "market_cap": 1172295516160,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 1.275,
-    "fifty_two_week_high": 7490.0,
-    "fifty_two_week_low": 2310.0,
-    "revenue": 624542482432,
-    "profit_margin": 0.014049999,
+    "beta": 2.684,
+    "fifty_two_week_high": 20300.0,
+    "fifty_two_week_low": 2765.0,
+    "revenue": 662517972992,
+    "profit_margin": 0.01884,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -37,23 +37,31 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
+      "date": "2026-03",
+      "value": 189242394690
+    },
+    {
+      "date": "2025-12",
+      "value": 167063842050
+    },
+    {
       "date": "2025-09",
       "value": 154792176130
     },
     {
       "date": "2025-06",
       "value": 151419534770
-    },
-    {
-      "date": "2025-03",
-      "value": 151266934460
-    },
-    {
-      "date": "2024-12",
-      "value": 137276568550
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 8583858290
+    },
+    {
+      "date": "2025-12",
+      "value": -1131070680
+    },
     {
       "date": "2025-09",
       "value": 1128985380
@@ -61,17 +69,30 @@
     {
       "date": "2025-06",
       "value": 3903293090
-    },
-    {
-      "date": "2025-03",
-      "value": 4874904940
-    },
-    {
-      "date": "2024-12",
-      "value": 1136660000
     }
   ],
   "news": [
+    {
+      "title": "Nanjing Develop Advanced Manufacturing Leads 3 Undiscovered Gems in Asia",
+      "summary": "As global markets grapple with rising inflation and geopolitical uncertainties, the Asian market continues to present unique opportunities for investors, particularly in the small-cap sector. In this ",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/nanjing-develop-advanced-manufacturing-leads-223314671.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-05-17T22:33:14Z"
+    },
+    {
+      "title": "Three Undiscovered Gems In Asia To Enhance Your Portfolio",
+      "summary": "As global markets navigate geopolitical uncertainties and shifting economic conditions, the Asian market continues to present unique opportunities for investors seeking growth outside traditional West",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/three-undiscovered-gems-asia-enhance-043311098.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-04-27T04:33:11Z"
+    },
+    {
+      "title": "Discovering Asia's Undiscovered Stock Gems In April 2026",
+      "summary": "As global markets experience a relief rally amid easing geopolitical tensions, Asian stocks have been buoyed by positive sentiment and renewed investor interest. In this environment, identifying promi",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/discovering-asias-undiscovered-stock-gems-223251458.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-04-12T22:32:51Z"
+    },
     {
       "title": "Three Undiscovered Gems in Asia Backed By Strong Fundamentals",
       "summary": "As global markets grapple with AI-related concerns and fluctuating economic indicators, the Asian market presents unique opportunities for investors seeking growth. In this environment, identifying st",
@@ -85,27 +106,6 @@
       "url": "https://finance.yahoo.com/news/exploring-hunan-hualian-china-industry-223615670.html",
       "provider": "Simply Wall St.",
       "pub_time": "2025-11-17T22:36:15Z"
-    },
-    {
-      "title": "Zhongyuan Bank And 2 Other Undiscovered Gems In Asia With Promising Potential",
-      "summary": "As global markets navigate a landscape marked by fluctuating consumer sentiment and economic indicators, Asian stocks have shown resilience, with easing U.S.-China trade tensions boosting confidence i",
-      "url": "https://finance.yahoo.com/news/zhongyuan-bank-2-other-undiscovered-043323404.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2025-11-13T04:33:23Z"
-    },
-    {
-      "title": "Exploring 3 Undiscovered Gems in Asia for Savvy Investors",
-      "summary": "As global markets grapple with fluctuating consumer sentiment and economic uncertainties, Asia's stock markets present a unique landscape where easing trade tensions and strategic pragmatism are foste",
-      "url": "https://finance.yahoo.com/news/exploring-3-undiscovered-gems-asia-223342306.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2025-11-12T22:33:42Z"
-    },
-    {
-      "title": "Suzhou Sepax Technologies And 2 Other Undiscovered Gems In Asia",
-      "summary": "As global markets navigate a landscape marked by volatile equity movements and cautious monetary policies, investors are increasingly turning their attention to Asia's small-cap sector for potential o",
-      "url": "https://finance.yahoo.com/news/suzhou-sepax-technologies-2-other-223301831.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2025-10-19T22:33:01Z"
     }
   ]
 }

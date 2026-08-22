@@ -1,47 +1,45 @@
 {
   "name": "현대무벡스",
   "ticker": "319400.KQ",
-  "result": "매수",
-  "date": "2026-04-12 14:37:54",
+  "result": "데이터 없음",
+  "date": "2026-07-27 17:50:38",
   "elapsed": 2.6,
-  "consensus_score": 4.0,
-  "analyst_count": 1,
-  "recommendation_detail": {
-    "strongBuy": 0,
-    "buy": 1,
-    "hold": 0,
-    "sell": 0,
-    "strongSell": 0
-  },
-  "recommendation_period": "0m",
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
   "price_targets": {
-    "current": 30250.0,
-    "high": 13000.0,
-    "low": 13000.0,
-    "mean": 13000.0,
-    "median": 13000.0
+    "current": 21850.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
   },
-  "current_price": 30250.0,
-  "upside_potential": -57.0,
+  "current_price": 21850.0,
+  "upside_potential": null,
   "key_stats": {
     "name": "HYUNDAI MOVEX",
     "sector": "Financial Services",
     "industry": "Shell Companies",
-    "market_cap": 3318182051840,
+    "market_cap": 2406703955968,
     "pe_ratio": null,
-    "forward_pe": 76.582275,
-    "dividend_yield": 0.17,
-    "beta": 2.485,
+    "forward_pe": null,
+    "dividend_yield": 0.26,
+    "beta": 2.449,
     "fifty_two_week_high": 50400.0,
-    "fifty_two_week_low": 3550.0,
-    "revenue": 393940631552,
-    "profit_margin": 0.028670002,
+    "fifty_two_week_low": 4310.0,
+    "revenue": 391193001984,
+    "profit_margin": 0.02587,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "현재 현대무벡스에 대해 1명의 애널리스트가 매수 의견을 제시했습니다. 컨센서스 점수는 5점 만점에 4.0점입니다. 하지만 목표가 평균은 13,000원으로, 현재 주가 대비 -57.0% 하락 여력이 있는 것으로 분석됩니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 74964780480
+    },
     {
       "date": "2025-12",
       "value": 113899959660
@@ -53,13 +51,13 @@
     {
       "date": "2025-06",
       "value": 98851089050
-    },
-    {
-      "date": "2025-03",
-      "value": 77712421020
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": -180653910
+    },
     {
       "date": "2025-12",
       "value": 1193883230
@@ -71,10 +69,6 @@
     {
       "date": "2025-06",
       "value": 4100240270
-    },
-    {
-      "date": "2025-03",
-      "value": 992880920
     }
   ],
   "news": []

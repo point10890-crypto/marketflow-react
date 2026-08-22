@@ -1,47 +1,55 @@
 {
   "name": "LIG넥스원",
   "ticker": "079550.KS",
-  "result": "매수",
-  "date": "2026-03-28 10:14:15",
-  "elapsed": 2.3,
-  "consensus_score": 4.16,
+  "result": "적극 매수",
+  "date": "2026-07-25 20:43:22",
+  "elapsed": 2.1,
+  "consensus_score": 4.37,
   "analyst_count": 19,
   "recommendation_detail": {
-    "strongBuy": 6,
+    "strongBuy": 8,
     "buy": 10,
-    "hold": 3,
+    "hold": 1,
     "sell": 0,
     "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 735000.0,
-    "high": 930000.0,
-    "low": 480000.0,
-    "mean": 629333.3,
-    "median": 611500.0
+    "current": 762000.0,
+    "high": 1360000.0,
+    "low": 640000.0,
+    "mean": 1051052.6,
+    "median": 1050000.0
   },
-  "current_price": 735000.0,
-  "upside_potential": -14.4,
+  "current_price": 762000.0,
+  "upside_potential": 37.9,
   "key_stats": {
-    "name": "LIG Nex1",
+    "name": "LIG Defense&Aerospace",
     "sector": "Industrials",
     "industry": "Aerospace & Defense",
-    "market_cap": 16056259182592,
+    "market_cap": 16646080036864,
     "pe_ratio": null,
-    "forward_pe": 31.845404,
-    "dividend_yield": 0.4,
-    "beta": null,
-    "fifty_two_week_high": 899000.0,
-    "fifty_two_week_low": 235000.0,
-    "revenue": 4306936004608,
-    "profit_margin": 0.05883,
+    "forward_pe": 31.384161,
+    "dividend_yield": 0.39,
+    "beta": 0.768,
+    "fifty_two_week_high": 1118000.0,
+    "fifty_two_week_low": 360000.0,
+    "revenue": 4567170285568,
+    "profit_margin": 0.06808,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "LIG넥스원에 대해 19명의 애널리스트가 매수 의견(4.16/5.0)을 제시했습니다. 현재 주가는 735,000 KRW이며, 목표가 평균은 629,333 KRW로 현재가 대비 -14.4% 하락 여력이 있습니다. 애널리스트들은 전반적으로 긍정적인 전망을 유지하고 있으나, 목표 주가는 현재 주가보다 낮게 설정되어 있습니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 1167856701280
+    },
+    {
+      "date": "2025-12",
+      "value": 1404764639530
+    },
     {
       "date": "2025-09",
       "value": 1049197515920
@@ -49,17 +57,17 @@
     {
       "date": "2025-06",
       "value": 945351323740
-    },
-    {
-      "date": "2025-03",
-      "value": 907622648220
-    },
-    {
-      "date": "2024-12",
-      "value": 1167822559060
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 139913394830
+    },
+    {
+      "date": "2025-12",
+      "value": 4634396820
+    },
     {
       "date": "2025-09",
       "value": 59312961330
@@ -67,15 +75,22 @@
     {
       "date": "2025-06",
       "value": 105184670690
-    },
-    {
-      "date": "2025-03",
-      "value": 84223792040
-    },
-    {
-      "date": "2024-12",
-      "value": 72487461730
     }
   ],
-  "news": []
+  "news": [
+    {
+      "title": "Honeywell International Inc. (HON): One of the Best Military Drone Stocks to Buy Right Now",
+      "summary": "Honeywell International Inc. (NASDAQ:HON) is among the 10 Best Military Drone Stocks to Buy Right Now. On March 31, the company announced that it had partnered with Odys Aviation to deliver a counter-",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/honeywell-international-inc-hon-one-212814840.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-04-17T21:28:14Z"
+    },
+    {
+      "title": "Indo-Pacific Defence: the top-performing defence trade in Europe - and most investors are missing it",
+      "summary": "HANetf co-CEO Hector McNeil joined Proactive's Stephen Gunnion to make the case for the Future of Defence Indo-Pacific ex-China UCITS ETF (ISE:QUAD) - which he says is the best-performing defence prod",
+      "url": "https://finance.yahoo.com/video/indo-pacific-defence-top-performing-134821848.html",
+      "provider": "Proactive",
+      "pub_time": "2026-04-14T13:48:21Z"
+    }
+  ]
 }

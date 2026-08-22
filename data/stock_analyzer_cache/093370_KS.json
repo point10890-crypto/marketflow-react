@@ -1,41 +1,51 @@
 {
   "name": "후성",
   "ticker": "093370.KS",
-  "result": "데이터 없음",
-  "date": "2026-04-14 11:29:51",
-  "elapsed": 2.4,
-  "consensus_score": null,
-  "analyst_count": 0,
-  "recommendation_detail": null,
-  "recommendation_period": null,
-  "price_targets": {
-    "current": 11010.0,
-    "high": 12000.0,
-    "low": 12000.0,
-    "mean": 12000.0,
-    "median": 12000.0
+  "result": "적극 매수",
+  "date": "2026-08-18 23:28:56",
+  "elapsed": 3.5,
+  "consensus_score": 5.0,
+  "analyst_count": 1,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 0,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
   },
-  "current_price": 11010.0,
-  "upside_potential": 9.0,
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 12970.0,
+    "high": 20000.0,
+    "low": 20000.0,
+    "mean": 20000.0,
+    "median": 20000.0
+  },
+  "current_price": 12970.0,
+  "upside_potential": 54.2,
   "key_stats": {
     "name": "FOOSUNG",
     "sector": "Basic Materials",
-    "industry": "Chemicals",
-    "market_cap": 1180880076800,
+    "industry": "Specialty Chemicals",
+    "market_cap": 1391101607936,
     "pe_ratio": null,
-    "forward_pe": 30.668524,
+    "forward_pe": 31.177885,
     "dividend_yield": null,
-    "beta": 0.973,
-    "fifty_two_week_high": 11950.0,
-    "fifty_two_week_low": 3875.0,
-    "revenue": 471564288000,
-    "profit_margin": 0.01126,
+    "beta": 1.633,
+    "fifty_two_week_high": 23550.0,
+    "fifty_two_week_low": 5450.0,
+    "revenue": 505893322752,
+    "profit_margin": -0.00903,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 141446479950
+    },
     {
       "date": "2025-12",
       "value": 119253483170
@@ -47,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 124206380450
-    },
-    {
-      "date": "2025-03",
-      "value": 107117451810
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": -9961591550
+    },
     {
       "date": "2025-12",
       "value": 11460654690
@@ -65,10 +75,6 @@
     {
       "date": "2025-06",
       "value": -19606704490
-    },
-    {
-      "date": "2025-03",
-      "value": -81693580
     }
   ],
   "news": []

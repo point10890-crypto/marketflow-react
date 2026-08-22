@@ -2,46 +2,50 @@
   "name": "금호타이어",
   "ticker": "073240.KS",
   "result": "매수",
-  "date": "2026-04-05 23:42:53",
-  "elapsed": 2.1,
-  "consensus_score": 4.0,
+  "date": "2026-07-10 14:14:53",
+  "elapsed": 2.4,
+  "consensus_score": 3.88,
   "analyst_count": 8,
   "recommendation_detail": {
     "strongBuy": 0,
-    "buy": 8,
-    "hold": 0,
+    "buy": 7,
+    "hold": 1,
     "sell": 0,
     "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 5910.0,
+    "current": 7800.0,
     "high": 10000.0,
-    "low": 6500.0,
-    "mean": 7975.0,
-    "median": 7650.0
+    "low": 5800.0,
+    "mean": 8112.5,
+    "median": 8250.0
   },
-  "current_price": 5910.0,
-  "upside_potential": 34.9,
+  "current_price": 7800.0,
+  "upside_potential": 4.0,
   "key_stats": {
     "name": "KUMHOTIRE",
     "sector": "Consumer Cyclical",
     "industry": "Auto Parts",
-    "market_cap": 1697708244992,
+    "market_cap": 2240630226944,
     "pe_ratio": null,
-    "forward_pe": 4.0523863,
+    "forward_pe": 5.922551,
     "dividend_yield": null,
-    "beta": 0.627,
-    "fifty_two_week_high": 7650.0,
-    "fifty_two_week_low": 4060.0,
-    "revenue": 4701282107392,
-    "profit_margin": 0.07389,
+    "beta": 0.374,
+    "fifty_two_week_high": 7800.0,
+    "fifty_two_week_low": 4220.0,
+    "revenue": 4662879059968,
+    "profit_margin": 0.07419,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 1167810102390
+    },
     {
       "date": "2025-12",
       "value": 1160070248770
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 1221253035000
-    },
-    {
-      "date": "2025-03",
-      "value": 1206213100000
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 94998124090
+    },
     {
       "date": "2025-12",
       "value": 169097613430
@@ -71,10 +75,6 @@
     {
       "date": "2025-06",
       "value": -974660890
-    },
-    {
-      "date": "2025-03",
-      "value": 96452861070
     }
   ],
   "news": [
@@ -84,20 +84,6 @@
       "url": "https://www.just-auto.com/news/kumho-a2z-collaborate-in-autonomous-vehicle-segment/",
       "provider": "Just Auto",
       "pub_time": "2025-09-19T09:02:17Z"
-    },
-    {
-      "title": "Kumho tyre plant in Gwangju destroyed by fire",
-      "summary": "Deliveries to major automakers will be affected.",
-      "url": "https://www.just-auto.com/news/kumho-tyre-plant-in-gwangju-destroyed-by-fire/",
-      "provider": "Just Auto",
-      "pub_time": "2025-05-20T09:40:30Z"
-    },
-    {
-      "title": "Kumho to build European tyre plant by 2027",
-      "summary": "Company has shortlisted three countries for US$700m investment.",
-      "url": "https://www.just-auto.com/news/kumho-to-build-european-tyre-plant-by-2027/",
-      "provider": "Just Auto",
-      "pub_time": "2025-04-17T09:00:24Z"
     }
   ]
 }

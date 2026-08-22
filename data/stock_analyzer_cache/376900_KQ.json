@@ -2,34 +2,34 @@
   "name": "로킷헬스케어",
   "ticker": "376900.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-07 08:59:53",
-  "elapsed": 1.7,
+  "date": "2026-07-22 00:41:04",
+  "elapsed": 3.2,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 105100.0,
+    "current": 53100.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 105100.0,
+  "current_price": 53100.0,
   "upside_potential": null,
   "key_stats": {
     "name": "ROKIT",
     "sector": "Healthcare",
     "industry": "Medical Care Facilities",
-    "market_cap": 1620099596288,
+    "market_cap": 833337556992,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
     "beta": null,
     "fifty_two_week_high": 153800.0,
-    "fifty_two_week_low": 13740.0,
-    "revenue": 26247012352,
-    "profit_margin": -0.1084,
+    "fifty_two_week_low": 14120.0,
+    "revenue": 30610456576,
+    "profit_margin": -0.14115,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -37,23 +37,31 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
+      "date": "2026-03",
+      "value": 8058778590
+    },
+    {
+      "date": "2025-12",
+      "value": 9584462090
+    },
+    {
       "date": "2025-09",
       "value": 6954615620
     },
     {
       "date": "2025-06",
       "value": 6012600150
-    },
-    {
-      "date": "2025-03",
-      "value": 3695333820
-    },
-    {
-      "date": "2024-12",
-      "value": 3665466200
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": -1833696050
+    },
+    {
+      "date": "2025-12",
+      "value": -355235980
+    },
     {
       "date": "2025-09",
       "value": -1159874150
@@ -61,14 +69,6 @@
     {
       "date": "2025-06",
       "value": -972006820
-    },
-    {
-      "date": "2025-03",
-      "value": -358090300
-    },
-    {
-      "date": "2024-12",
-      "value": -4843030720
     }
   ],
   "news": []

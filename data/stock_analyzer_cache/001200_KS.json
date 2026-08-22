@@ -2,34 +2,34 @@
   "name": "유진투자증권",
   "ticker": "001200.KS",
   "result": "데이터 없음",
-  "date": "2026-04-09 20:49:25",
-  "elapsed": 1.8,
+  "date": "2026-07-07 05:51:14",
+  "elapsed": 2.6,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 4745.0,
+    "current": 4550.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 4745.0,
+  "current_price": 4550.0,
   "upside_potential": null,
   "key_stats": {
     "name": "EUGENEIS",
     "sector": "Financial Services",
     "industry": "Capital Markets",
-    "market_cap": 435776749568,
+    "market_cap": 417868120064,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 3.61,
-    "beta": 1.482,
-    "fifty_two_week_high": 6760.0,
-    "fifty_two_week_low": 2145.0,
-    "revenue": 1413114363904,
-    "profit_margin": 0.04524,
+    "dividend_yield": 4.06,
+    "beta": 1.356,
+    "fifty_two_week_high": 6920.0,
+    "fifty_two_week_low": 2992.0,
+    "revenue": 2144426524672,
+    "profit_margin": 0.05187,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -37,23 +37,31 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
+      "date": "2026-03",
+      "value": 173391331310
+    },
+    {
+      "date": "2025-12",
+      "value": 132664961780
+    },
+    {
       "date": "2025-09",
       "value": 84054892430
     },
     {
       "date": "2025-06",
       "value": 135897597060
-    },
-    {
-      "date": "2025-03",
-      "value": 56936256990
-    },
-    {
-      "date": "2024-12",
-      "value": 86529483910
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 52712838000
+    },
+    {
+      "date": "2025-12",
+      "value": 6748918170
+    },
     {
       "date": "2025-09",
       "value": 18198371000
@@ -61,14 +69,6 @@
     {
       "date": "2025-06",
       "value": 33567715640
-    },
-    {
-      "date": "2025-03",
-      "value": 6023260000
-    },
-    {
-      "date": "2024-12",
-      "value": 6133883570
     }
   ],
   "news": [

@@ -2,46 +2,50 @@
   "name": "한올바이오파마",
   "ticker": "009420.KS",
   "result": "적극 매수",
-  "date": "2026-03-26 11:14:17",
-  "elapsed": 4.0,
-  "consensus_score": 4.4,
-  "analyst_count": 5,
+  "date": "2026-08-17 00:01:30",
+  "elapsed": 3.1,
+  "consensus_score": 4.33,
+  "analyst_count": 6,
   "recommendation_detail": {
     "strongBuy": 2,
-    "buy": 3,
+    "buy": 4,
     "hold": 0,
     "sell": 0,
     "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 64700.0,
-    "high": 76000.0,
-    "low": 42000.0,
-    "mean": 60200.0,
-    "median": 64000.0
+    "current": 59700.0,
+    "high": 130000.0,
+    "low": 70000.0,
+    "mean": 90000.0,
+    "median": 84500.0
   },
-  "current_price": 64700.0,
-  "upside_potential": -7.0,
+  "current_price": 59700.0,
+  "upside_potential": 50.8,
   "key_stats": {
     "name": "HANALL BIOPHARMA",
     "sector": "Healthcare",
     "industry": "Drug Manufacturers - Specialty & Generic",
-    "market_cap": 3283839090688,
+    "market_cap": 3036234383360,
     "pe_ratio": null,
-    "forward_pe": 154.29742,
+    "forward_pe": 514.58124,
     "dividend_yield": null,
-    "beta": 0.896,
-    "fifty_two_week_high": 66600.0,
-    "fifty_two_week_low": 24000.0,
-    "revenue": 155184529408,
-    "profit_margin": -0.03582,
+    "beta": 0.882,
+    "fifty_two_week_high": 73000.0,
+    "fifty_two_week_low": 28050.0,
+    "revenue": 159064719360,
+    "profit_margin": -0.03192,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "한올바이오파마(009420.KS)에 대해 5명의 애널리스트가 적극 매수 의견(4.4/5.0)을 제시했습니다. 현재 주가는 64,700 KRW입니다. 목표가 평균은 60,200 KRW로, 현재 주가 대비 -7.0% 하락 여력이 있습니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 40030619640
+    },
     {
       "date": "2025-12",
       "value": 37548994440
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 40681535260
-    },
-    {
-      "date": "2025-03",
-      "value": 36150425040
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 275003830
+    },
     {
       "date": "2025-12",
       "value": -6249378550
@@ -71,13 +75,16 @@
     {
       "date": "2025-06",
       "value": 598772440
-    },
-    {
-      "date": "2025-03",
-      "value": -207514540
     }
   ],
   "news": [
+    {
+      "title": "IMVT Stock Falls 2.4% as Batoclimab Misses Late-Stage Study Endpoints",
+      "summary": "Immunovant slips 2.4% after batoclimab misses key phase III endpoints in thyroid eye disease trials, despite stable safety and signs of biological activity.",
+      "url": "https://finance.yahoo.com/sectors/healthcare/articles/imvt-stock-falls-2-4-170600481.html",
+      "provider": "Zacks",
+      "pub_time": "2026-04-06T17:06:00Z"
+    },
     {
       "title": "Discovering Hanall Biopharma And Two Other Asian Stocks Estimated Below Intrinsic Value",
       "summary": "As global markets navigate a period of cautious investor sentiment and mixed economic signals, Asian stock markets have shown resilience, with some indices recording gains despite broader uncertaintie",

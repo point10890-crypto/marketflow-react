@@ -1,47 +1,55 @@
 {
   "name": "코리아써키트",
   "ticker": "007810.KS",
-  "result": "적극 매수",
-  "date": "2026-03-30 07:16:13",
-  "elapsed": 2.9,
-  "consensus_score": 4.33,
-  "analyst_count": 3,
+  "result": "매수",
+  "date": "2026-08-17 16:25:36",
+  "elapsed": 3.0,
+  "consensus_score": 4.25,
+  "analyst_count": 4,
   "recommendation_detail": {
     "strongBuy": 1,
-    "buy": 2,
+    "buy": 3,
     "hold": 0,
     "sell": 0,
     "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 84000.0,
-    "high": 93000.0,
+    "current": 63100.0,
+    "high": 150000.0,
     "low": 82000.0,
-    "mean": 89000.0,
-    "median": 92000.0
+    "mean": 104500.0,
+    "median": 93000.0
   },
-  "current_price": 84000.0,
-  "upside_potential": 6.0,
+  "current_price": 63100.0,
+  "upside_potential": 65.6,
   "key_stats": {
     "name": "KorCirc",
     "sector": "Technology",
     "industry": "Electronic Components",
-    "market_cap": 2329405030400,
+    "market_cap": 1749826666496,
     "pe_ratio": null,
-    "forward_pe": 15.57671,
-    "dividend_yield": 0.12,
-    "beta": null,
-    "fifty_two_week_high": 75800.0,
-    "fifty_two_week_low": 8768.0,
-    "revenue": 1509725175808,
-    "profit_margin": 0.0313,
+    "forward_pe": 11.28196,
+    "dividend_yield": 0.16,
+    "beta": 1.472,
+    "fifty_two_week_high": 148300.0,
+    "fifty_two_week_low": 11260.0,
+    "revenue": 1575037960192,
+    "profit_margin": 0.04528,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "코리아써키트는 현재 84,000원에 거래되고 있으며, 3명의 애널리스트 컨센서스는 5점 만점에 4.33점으로 '적극 매수' 의견을 보이고 있습니다. 목표가 평균은 89,000원으로, 현재 주가 대비 약 6% 상승 여력이 있는 것으로 분석됩니다. 투자 판단은 개인의 책임 하에 신중하게 이루어져야 합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 419900611490
+    },
+    {
+      "date": "2025-12",
+      "value": 448137713950
+    },
     {
       "date": "2025-09",
       "value": 375651814660
@@ -49,17 +57,17 @@
     {
       "date": "2025-06",
       "value": 331347811710
-    },
-    {
-      "date": "2025-03",
-      "value": 354587792750
-    },
-    {
-      "date": "2024-12",
-      "value": 335294573580
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 25177050030
+    },
+    {
+      "date": "2025-12",
+      "value": 27506176050
+    },
     {
       "date": "2025-09",
       "value": 11637141480
@@ -67,23 +75,43 @@
     {
       "date": "2025-06",
       "value": 6990891880
-    },
-    {
-      "date": "2025-03",
-      "value": 1117572590
-    },
-    {
-      "date": "2024-12",
-      "value": -104431661550
     }
   ],
   "news": [
     {
-      "title": "Discover 3 Asian Growth Companies With High Insider Ownership",
-      "summary": "As global markets navigate a complex landscape marked by interest rate expectations and economic shifts, Asian markets continue to capture investor attention with their unique growth opportunities. In",
-      "url": "https://finance.yahoo.com/news/discover-3-asian-growth-companies-223802994.html",
+      "title": "3 Asian Stocks Estimated To Be Trading At Up To 23.6% Discount",
+      "summary": "As global markets navigate a landscape marked by inflation concerns and geopolitical tensions, Asian equities present intriguing opportunities for investors seeking value. In this context, identifying",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/3-asian-stocks-estimated-trading-043750921.html",
       "provider": "Simply Wall St.",
-      "pub_time": "2025-12-07T22:38:02Z"
+      "pub_time": "2026-05-26T04:37:50Z"
+    },
+    {
+      "title": "Uncovering 3 Asian Stocks That May Be Trading Below Their Estimated Value",
+      "summary": "As global markets navigate a complex landscape marked by inflation concerns and geopolitical tensions, Asian equities present a mixed picture with some indices showing resilience while others face gro",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/uncovering-3-asian-stocks-may-223438353.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-05-25T22:34:38Z"
+    },
+    {
+      "title": "Asian Market Gems: Nanjing Vazyme Biotech And 2 More Stocks That May Be Trading At A Discount",
+      "summary": "As the Asian markets navigate through a period of economic uncertainty and geopolitical tensions, investors are increasingly on the lookout for opportunities that may be trading at a discount. Identif",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/asian-market-gems-nanjing-vazyme-043825439.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-05-25T04:38:25Z"
+    },
+    {
+      "title": "3 Asian Stocks Estimated To Be Trading At Discounts Ranging From 26.1% To 45.8%",
+      "summary": "As global markets navigate through economic uncertainties and geopolitical tensions, the Asian stock market has seen varied performances, with some indices facing pressure due to growth concerns and i",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/3-asian-stocks-estimated-trading-223416690.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-05-24T22:34:16Z"
+    },
+    {
+      "title": "Asian Stocks That May Be Undervalued In May 2026",
+      "summary": "As of early May 2026, Asian markets have shown signs of resilience, with Chinese equities advancing and Japanese indices reaching record highs amid positive sentiment around AI-related demand and easi",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/asian-stocks-may-undervalued-may-043801848.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-05-11T04:38:01Z"
     }
   ]
 }

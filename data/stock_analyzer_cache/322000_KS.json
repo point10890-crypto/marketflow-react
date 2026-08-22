@@ -1,13 +1,13 @@
 {
   "name": "HD현대에너지솔루션",
   "ticker": "322000.KS",
-  "result": "매수",
-  "date": "2026-03-31 10:09:58",
-  "elapsed": 2.4,
-  "consensus_score": 4.0,
-  "analyst_count": 1,
+  "result": "적극 매수",
+  "date": "2026-08-19 18:16:56",
+  "elapsed": 3.2,
+  "consensus_score": 4.5,
+  "analyst_count": 2,
   "recommendation_detail": {
-    "strongBuy": 0,
+    "strongBuy": 1,
     "buy": 1,
     "hold": 0,
     "sell": 0,
@@ -15,33 +15,37 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 135400.0,
-    "high": 150000.0,
+    "current": 129400.0,
+    "high": 275000.0,
     "low": 150000.0,
-    "mean": 150000.0,
-    "median": 150000.0
+    "mean": 212500.0,
+    "median": 212500.0
   },
-  "current_price": 135400.0,
-  "upside_potential": 10.8,
+  "current_price": 129400.0,
+  "upside_potential": 64.2,
   "key_stats": {
     "name": "HD HYUNDAI ENERGY SOLUTIONS",
     "sector": "Technology",
     "industry": "Solar",
-    "market_cap": 1516479971328,
+    "market_cap": 1449280012288,
     "pe_ratio": null,
-    "forward_pe": 13.235581,
+    "forward_pe": 11.730045,
     "dividend_yield": null,
-    "beta": 1.354,
-    "fifty_two_week_high": 150900.0,
-    "fifty_two_week_low": 22150.0,
-    "revenue": 492659867648,
-    "profit_margin": 0.0846,
+    "beta": 1.209,
+    "fifty_two_week_high": 256000.0,
+    "fifty_two_week_low": 41300.0,
+    "revenue": 567298883584,
+    "profit_margin": 0.1146,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "HD현대에너지솔루션(322000.KS)에 대해 1명의 애널리스트가 매수 의견을 제시했습니다. 컨센서스 점수는 5점 만점에 4.0점입니다. 목표가 평균은 150,000원으로, 현재가 대비 10.8% 상승 여력이 있습니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 159891480290
+    },
     {
       "date": "2025-12",
       "value": 152645481440
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 133712996230
-    },
-    {
-      "date": "2025-03",
-      "value": 85252492690
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 22252984000
+    },
     {
       "date": "2025-12",
       "value": 19394484800
@@ -71,10 +75,6 @@
     {
       "date": "2025-06",
       "value": 11394765000
-    },
-    {
-      "date": "2025-03",
-      "value": -1083782000
     }
   ],
   "news": []

@@ -2,32 +2,32 @@
   "name": "에스피지",
   "ticker": "058610.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-10 23:44:54",
-  "elapsed": 2.1,
+  "date": "2026-08-03 13:22:22",
+  "elapsed": 2.6,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 107400.0,
+    "current": 107800.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 107400.0,
+  "current_price": 107800.0,
   "upside_potential": null,
   "key_stats": {
     "name": "SPG",
     "sector": "",
     "industry": "",
-    "market_cap": 2381848510464,
+    "market_cap": 2390719463424,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
     "beta": null,
     "fifty_two_week_high": 165700.0,
-    "fifty_two_week_low": 20150.0,
+    "fifty_two_week_low": 22500.0,
     "revenue": null,
     "profit_margin": null,
     "currency": "KRW"
@@ -36,6 +36,10 @@
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 80831733470
+    },
     {
       "date": "2025-12",
       "value": 83825530730
@@ -47,13 +51,13 @@
     {
       "date": "2025-06",
       "value": 80467181960
-    },
-    {
-      "date": "2025-03",
-      "value": 93295288620
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 3463975300
+    },
     {
       "date": "2025-12",
       "value": -38593130
@@ -65,10 +69,6 @@
     {
       "date": "2025-06",
       "value": 2408250930
-    },
-    {
-      "date": "2025-03",
-      "value": 3117701390
     }
   ],
   "news": [

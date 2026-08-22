@@ -2,32 +2,32 @@
   "name": "우리기술",
   "ticker": "032820.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-10 17:01:51",
-  "elapsed": 2.5,
+  "date": "2026-08-10 22:42:47",
+  "elapsed": 1.7,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 21000.0,
+    "current": 12250.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 21000.0,
+  "current_price": 12250.0,
   "upside_potential": null,
   "key_stats": {
     "name": "WooriTG, Inc.",
     "sector": "",
     "industry": "",
-    "market_cap": 3491677339648,
+    "market_cap": 2095909961728,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
     "beta": null,
     "fifty_two_week_high": 30200.0,
-    "fifty_two_week_low": 1453.0,
+    "fifty_two_week_low": 3155.0,
     "revenue": null,
     "profit_margin": null,
     "currency": "KRW"
@@ -36,6 +36,10 @@
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 16957106440
+    },
     {
       "date": "2025-12",
       "value": 24831558510
@@ -47,13 +51,13 @@
     {
       "date": "2025-06",
       "value": 22584360190
-    },
-    {
-      "date": "2025-03",
-      "value": 18536464900
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 28889458160
+    },
     {
       "date": "2025-12",
       "value": -15271754300
@@ -65,10 +69,6 @@
     {
       "date": "2025-06",
       "value": 21830450000
-    },
-    {
-      "date": "2025-03",
-      "value": -3853904040
     }
   ],
   "news": [

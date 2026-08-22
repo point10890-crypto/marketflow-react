@@ -1,47 +1,51 @@
 {
   "name": "올릭스",
   "ticker": "226950.KQ",
-  "result": "매수",
-  "date": "2026-04-07 08:01:11",
-  "elapsed": 2.2,
-  "consensus_score": 4.0,
-  "analyst_count": 1,
+  "result": "데이터 없음",
+  "date": "2026-07-12 03:13:18",
+  "elapsed": 2.5,
+  "consensus_score": null,
+  "analyst_count": 0,
   "recommendation_detail": {
     "strongBuy": 0,
-    "buy": 1,
+    "buy": 0,
     "hold": 0,
     "sell": 0,
     "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 157300.0,
-    "high": 160000.0,
-    "low": 160000.0,
-    "mean": 160000.0,
-    "median": 160000.0
+    "current": 123200.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
   },
-  "current_price": 157300.0,
-  "upside_potential": 1.7,
+  "current_price": 123200.0,
+  "upside_potential": null,
   "key_stats": {
     "name": "OliX",
     "sector": "Healthcare",
     "industry": "Biotechnology",
-    "market_cap": 3164055535616,
+    "market_cap": 2501032017920,
     "pe_ratio": null,
-    "forward_pe": -125.23885,
+    "forward_pe": -81.860466,
     "dividend_yield": null,
     "beta": null,
     "fifty_two_week_high": 217000.0,
-    "fifty_two_week_low": 34500.0,
+    "fifty_two_week_low": 36350.0,
     "revenue": 136000304,
     "profit_margin": 0.0,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "올릭스(226950.KQ)에 대해 1명의 애널리스트가 매수 의견을 제시했습니다. 목표가 평균은 160,000원으로 현재가 대비 약 1.7% 상승 여력이 있습니다. 컨센서스 점수는 5점 만점 중 4.0점입니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 3572219760
+    },
     {
       "date": "2025-12",
       "value": 4530569780
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 6251081390
-    },
-    {
-      "date": "2025-03",
-      "value": 976551950
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": -9769991230
+    },
     {
       "date": "2025-12",
       "value": 15391791910
@@ -71,10 +75,6 @@
     {
       "date": "2025-06",
       "value": -9204795050
-    },
-    {
-      "date": "2025-03",
-      "value": -13265115920
     }
   ],
   "news": []

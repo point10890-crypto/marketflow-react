@@ -2,40 +2,44 @@
   "name": "한일사료",
   "ticker": "005860.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-09 20:48:36",
+  "date": "2026-07-27 15:47:12",
   "elapsed": 2.6,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 3955.0,
+    "current": 2365.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 3955.0,
+  "current_price": 2365.0,
   "upside_potential": null,
   "key_stats": {
     "name": "HanilFeed",
     "sector": "Consumer Defensive",
     "industry": "Packaged Foods",
-    "market_cap": 155841576960,
+    "market_cap": 93189709824,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 1.98,
-    "beta": -0.93,
+    "dividend_yield": 2.86,
+    "beta": -0.954,
     "fifty_two_week_high": 5340.0,
-    "fifty_two_week_low": 2895.0,
-    "revenue": 454852182016,
-    "profit_margin": 0.01402,
+    "fifty_two_week_low": 2080.0,
+    "revenue": 471970185216,
+    "profit_margin": 0.01587,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 125478412030
+    },
     {
       "date": "2025-12",
       "value": 114051287780
@@ -47,13 +51,13 @@
     {
       "date": "2025-06",
       "value": 107899181160
-    },
-    {
-      "date": "2025-03",
-      "value": 108360406670
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 1817857500
+    },
     {
       "date": "2025-12",
       "value": 1698026270
@@ -65,10 +69,6 @@
     {
       "date": "2025-06",
       "value": 1787125680
-    },
-    {
-      "date": "2025-03",
-      "value": 703940810
     }
   ],
   "news": []

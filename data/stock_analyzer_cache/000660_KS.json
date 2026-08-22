@@ -2,46 +2,50 @@
   "name": "SK하이닉스",
   "ticker": "000660.KS",
   "result": "매수",
-  "date": "2026-04-08 20:08:39",
-  "elapsed": 2.2,
-  "consensus_score": 4.15,
-  "analyst_count": 39,
+  "date": "2026-07-27 09:44:50",
+  "elapsed": 2.9,
+  "consensus_score": 4.27,
+  "analyst_count": 37,
   "recommendation_detail": {
     "strongBuy": 11,
     "buy": 25,
-    "hold": 2,
+    "hold": 1,
     "sell": 0,
-    "strongSell": 1
+    "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 1033000.0,
-    "high": 2500000.0,
-    "low": 255245.0,
-    "mean": 1341704.5,
-    "median": 1400000.0
+    "current": 1766000.0,
+    "high": 5300000.0,
+    "low": 1200000.0,
+    "mean": 3408502.2,
+    "median": 3500000.0
   },
-  "current_price": 1033000.0,
-  "upside_potential": 29.9,
+  "current_price": 1766000.0,
+  "upside_potential": 93.0,
   "key_stats": {
     "name": "SK hynix",
     "sector": "Technology",
     "industry": "Semiconductors",
-    "market_cap": 713240321458176,
+    "market_cap": 1253603780067328,
     "pe_ratio": null,
-    "forward_pe": 4.388263,
-    "dividend_yield": 0.33,
-    "beta": 1.751,
-    "fifty_two_week_high": 1099000.0,
-    "fifty_two_week_low": 162700.0,
-    "revenue": 97146674085888,
-    "profit_margin": 0.4418,
+    "forward_pe": 3.9145494,
+    "dividend_yield": 0.17,
+    "beta": 2.027,
+    "fifty_two_week_high": 2987000.0,
+    "fifty_two_week_low": 245000.0,
+    "revenue": 132083817119744,
+    "profit_margin": 0.5689,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "SK하이닉스(000660.KS)에 대해 39명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 1,341,704 KRW로, 현재가 1,033,000 KRW 대비 29.9% 상승 여력이 있습니다. 이는 애널리스트들이 SK하이닉스의 추가적인 주가 상승을 기대하고 있음을 시사합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 52576287000000
+    },
     {
       "date": "2025-12",
       "value": 32826653000000
@@ -53,13 +57,13 @@
     {
       "date": "2025-06",
       "value": 22231952000000
-    },
-    {
-      "date": "2025-03",
-      "value": 17639141000000
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 40330176000000
+    },
     {
       "date": "2025-12",
       "value": 15219783000000
@@ -71,47 +75,43 @@
     {
       "date": "2025-06",
       "value": 6997228000000
-    },
-    {
-      "date": "2025-03",
-      "value": 8107081000000
     }
   ],
   "news": [
     {
-      "title": "Is Western Digital Corporation (WDC) at Threat from Google’s TurboQuant?",
-      "summary": "​Western Digital Corporation (NASDAQ:WDC) is one of the Unstoppable Technology Stocks to Buy Now. According to a March 26 report by CNBC, memory stocks saw a sell-off after Google unveiled its TurboQu",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/western-digital-corporation-wdc-threat-094400975.html",
-      "provider": "Insider Monkey",
-      "pub_time": "2026-04-08T09:44:00Z"
+      "title": "Nvidia just locked down deal that changes AI race",
+      "summary": "South Korean President Lee Jae Myung flew to San Francisco on July 24 for a summit with the most powerful names in artificial intelligence. Jensen Huang was there. Sam Altman was there. The heads of S",
+      "url": "https://www.thestreet.com/technology/nvidia-just-locked-down-a-deal-that-changes-the-ai-race-sk-hynix",
+      "provider": "TheStreet",
+      "pub_time": "2026-07-26T21:07:00Z"
     },
     {
-      "title": "SK Hynix shares jump 15% after Samsung projects blowout earnings",
-      "summary": "<body><p>STORY: SK Hynix shares surged on Wednesday (April 8).</p><p>Investors bought in after its fellow South Korean chipmaker Samsung forecast a big quarterly earnings jump.</p><p>It led markets to",
-      "url": "https://finance.yahoo.com/video/sk-hynix-shares-jump-15-083435049.html",
-      "provider": "Reuters Videos",
-      "pub_time": "2026-04-08T08:34:35Z"
+      "title": "SK Hynix’s US share premium flashes another AI bubble warning",
+      "summary": "Investing.com -- SK Hynix’s newly listed American depositary receipts are trading at a steep premium to the company’s South Korean shares, offering another sign of speculative demand surrounding artif",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/sk-hynix-us-share-premium-053342286.html",
+      "provider": "Investing.com",
+      "pub_time": "2026-07-26T05:33:42Z"
     },
     {
-      "title": "SK Hynix shares jump 15% after peer Samsung projects blowout earnings",
-      "summary": "Shares of South Korean chipmaker SK Hynix ‌surged on Wednesday after peer ‌Samsung Electronics forecast market-beating quarterly earnings, fuelling expectations ​about SK Hynix's results. Samsung Elec",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/sk-hynix-shares-jump-15-045647322.html",
-      "provider": "Reuters",
-      "pub_time": "2026-04-08T04:56:47Z"
+      "title": "CXMT set for historic Shanghai debut after $9.8 billion IPO",
+      "summary": "Investing.com -- Chinese memory-chip maker CXMT Corp. could become the mainland’s most valuable listed company shortly after its Shanghai debut, following a heavily oversubscribed 66.6 billion yuan ($",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/cxmt-set-historic-shanghai-debut-043642218.html",
+      "provider": "Investing.com",
+      "pub_time": "2026-07-26T04:36:42Z"
     },
     {
-      "title": "Pain or Gain Ahead of South Korea ETFs?",
-      "summary": "South Korea ETFs at a crossroads -- chip-led rebound meets geopolitical risk as AI optimism clashes with Iran war uncertainty.",
-      "url": "https://finance.yahoo.com/markets/world-indices/articles/pain-gain-ahead-south-korea-140000484.html",
-      "provider": "Zacks",
-      "pub_time": "2026-04-07T14:00:00Z"
+      "title": "Another Bubble Warning: Paying More for the Same Stock in Different Places",
+      "summary": "Earlier this month, to much fanfare, the chip maker introduced American depositary receipts to add to its longstanding listing in Korea.  Its new ADRs are each backed by one-tenth of a Seoul-listed sh",
+      "url": "https://www.wsj.com/finance/stocks/another-bubble-warning-paying-more-for-the-same-stock-in-different-places-a3533ffe?siteid=yhoof2&yptr=yahoo",
+      "provider": "The Wall Street Journal",
+      "pub_time": "2026-07-26T02:00:00Z"
     },
     {
-      "title": "Samsung Profit Rises 700% as Memory Chip Demand Surges. Micron Stock Drops.",
-      "summary": "Samsung expects a more than eightfold increase in first-quarter profit, boding well for memory-chip rival Micron.",
-      "url": "https://www.barrons.com/articles/micron-stock-price-samsung-profit-memory-chip-b64598dc?siteid=yhoof2&yptr=yahoo",
-      "provider": "Barrons.com",
-      "pub_time": "2026-04-07T13:48:00Z"
+      "title": "Memory Frenzy Primes China Champion CXMT for Historic Debut",
+      "summary": "(Bloomberg) -- Investor excitement over the memory chip trade is setting outsize expectations for the Shanghai debut of CXMT Corp., which is on the brink of making history after a near-record initial ",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/memory-frenzy-primes-china-champion-000000045.html",
+      "provider": "Bloomberg",
+      "pub_time": "2026-07-26T00:00:00Z"
     }
   ]
 }

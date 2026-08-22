@@ -2,40 +2,44 @@
   "name": "제닉",
   "ticker": "123330.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-09 02:02:56",
-  "elapsed": 2.1,
+  "date": "2026-07-11 22:21:34",
+  "elapsed": 1.5,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 28000.0,
+    "current": 25950.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 28000.0,
+  "current_price": 25950.0,
   "upside_potential": null,
   "key_stats": {
     "name": "Genic",
     "sector": "Consumer Defensive",
     "industry": "Household & Personal Products",
-    "market_cap": 219091206144,
+    "market_cap": 203050598400,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 0.888,
-    "fifty_two_week_high": 44100.0,
+    "beta": 0.42,
+    "fifty_two_week_high": 42000.0,
     "fifty_two_week_low": 15570.0,
-    "revenue": 78198464512,
-    "profit_margin": 0.24152,
+    "revenue": 89726820352,
+    "profit_margin": 0.21004999,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2026-03",
+      "value": 29356408950
+    },
     {
       "date": "2025-12",
       "value": 12166097430
@@ -47,13 +51,13 @@
     {
       "date": "2025-06",
       "value": 24648863700
-    },
-    {
-      "date": "2025-03",
-      "value": 17828052050
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2026-03",
+      "value": 3476045140
+    },
     {
       "date": "2025-12",
       "value": 6093570640
@@ -65,10 +69,6 @@
     {
       "date": "2025-06",
       "value": 3999656410
-    },
-    {
-      "date": "2025-03",
-      "value": 3515624300
     }
   ],
   "news": []
