@@ -63,8 +63,9 @@ Get-Content data\claw\heartbeat.json
 
 ```powershell
 .\scripts\apply_claw_env.ps1 -EnableDelivery
-# 루프는 .env를 시작 시 읽으므로 Claw만 재기동:
-Stop-ScheduledTask -TaskName MarketFlow-Claw; Start-ScheduledTask -TaskName MarketFlow-Claw
+# 루프는 .env를 시작 시 읽으므로 Claw만 재기동. Stop/Start-ScheduledTask 는 wscript만 끝내고 python 은 구 환경으로 남는다
+# (2026-08-23 실측) → 커맨드라인 매칭으로 죽이고 다시 띄우는 전용 스크립트(관리자 권한):
+Start-Process powershell -Verb RunAs -ArgumentList '-ExecutionPolicy Bypass -File C:\bitman_marketfloww\scripts\restart_claw.ps1'
 .\.venv\Scripts\python.exe -m marketflow_claw brief --kind close --send   # 수신 확인용 1건
 ```
 동일 본문은 `duplicate_digest`로 재발송되지 않는다.
@@ -73,6 +74,7 @@ Stop-ScheduledTask -TaskName MarketFlow-Claw; Start-ScheduledTask -TaskName Mark
 
 ```powershell
 Stop-ScheduledTask -TaskName MarketFlow-Claw
+Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'marketflow_claw start' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 Unregister-ScheduledTask -TaskName MarketFlow-Claw -Confirm:$false
 Unregister-ScheduledTask -TaskName MarketFlow-Claw-Watchdog -Confirm:$false
 Copy-Item .env.bak_claw_<timestamp> .env     # .env 원복이 필요할 때만

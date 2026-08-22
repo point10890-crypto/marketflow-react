@@ -76,7 +76,8 @@ Get-Content data\claw\heartbeat.json
 
 # 7) 발송 ON (dry-run 하루 관찰 후 권장)
 .\scripts\apply_claw_env.ps1 -EnableDelivery
-Stop-ScheduledTask -TaskName MarketFlow-Claw; Start-ScheduledTask -TaskName MarketFlow-Claw
+#    Stop/Start-ScheduledTask 만으로는 python 루프가 구 환경으로 살아남는다(2026-08-23 실측) → 전용 스크립트(관리자):
+Start-Process powershell -Verb RunAs -ArgumentList '-ExecutionPolicy Bypass -File C:\bitman_marketfloww\scripts\restart_claw.ps1'
 .\.venv\Scripts\python.exe -m marketflow_claw brief --kind close --send     # 수신 확인 1건
 
 # 8) 프론트 배포 (wrangler 가 있는 PC에서)
@@ -90,6 +91,7 @@ cd frontend-react; npm run deploy
 - **텔레그램 봇 2개**: `TELEGRAM_CHANNEL_BOT_TOKEN` = **@bitman75_bot**(사용자가 쓰는 봇, 채널+개인 DM). 구 `TELEGRAM_BOT_TOKEN` = **@bitmanHermes_bot**(사용자가 대화방을 삭제해 403 — "차단"이 아니라 삭제). 본PC는 이미 교체됨, miniPC는 위 2)에서 교체. 사용자 개인 채팅 ID = 기존 `TELEGRAM_CHAT_ID`(표시명 "master").
 - **포트**: 운영 Flask **5003**(5001은 개발용), MCP 8765, **8080은 JUST BUY — 절대 건드리지 말 것**.
 - **운영 규칙**: miniPC Flask는 SSH 재시작 금지(phantom socket) → 재부팅. `git pull --ff-only`만. 커밋은 `git push origin main`. CF Pages는 push와 무관하게 `npm run deploy` 필요.
+- **Claw 재시작**: `.env` 변경 후에는 `scripts/restart_claw.ps1`(관리자)로. `Stop-ScheduledTask`는 `wscript.exe`만 끝내고 `cmd→python` 자식은 구 환경으로 계속 돌며, 새 인스턴스는 단일폴러 락으로 종료된다(2026-08-23 PID 8124 잔존 실측).
 - **Claw 안전장치**: 매매 코드 경로 없음 · 발송은 `--send` + `CLAW_DELIVERY_ENABLED=1` 둘 다 필요 · 동일 digest 재발송 차단 · DROP은 `CLAW_DROP_CONFIRM_TICKS`(3) 연속 확정 · Flask ScreenerWorker 산출물이 30초 이내면 KIS 직접호출 0회 · 킬스위치 `CLAW_ENABLED / CLAW_DELIVERY_ENABLED / CLAW_LLM_ENABLED`.
 - **실측 함정**: KIS 모의서버(`KIS_PAPER`)는 틱당 53~73초 + `inquire-investor` 타임아웃이 가짜 DROP을 만든다. `kis_screener.volume_ratio`는 %와 원시 거래량이 섞인 필드. 스크리너 결과에 섹터 필드 없음(SECTOR_CLUSTER 미구현).
 - **OpenClaw**: 본PC에 2026.7.1-2 설치돼 있으나 게이트웨이 미기동·모델 인증 없음·Docker 없음. Claw는 OpenClaw를 쓰지 않는 순수 Python. OpenClaw 브리지는 Phase 2(선택). 마스코트는 OpenClaw 자산이 아닌 원본.
