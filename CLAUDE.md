@@ -914,3 +914,18 @@ for ep in "${endpoints[@]}"; do
 done
 echo "=== Done ==="
 ```
+
+---
+
+## 16. MarketFlow Claw (장중 주도주 자동화) + 대시보드 테마 — 2026-08-22
+
+> **miniPC 인수인계서(먼저 읽기):** `docs/superpowers/handoff/2026-08-22-minipc-claude-handoff.md`
+> 적용 런북: `docs/superpowers/plans/2026-08-22-claw-minipc-handoff.md` · 설계: `docs/superpowers/specs/2026-08-21-marketflow-claw-intraday-automation-design.md`, `docs/superpowers/specs/2026-08-22-claw-dashboard-design.md`
+
+- `marketflow_claw/` = OpenClaw **없이** 돌아가는 순수 Python 장중 루프: KIS 주도주 틱 → SQLite(`data/claw/claw.db`) → 상태전이 이벤트(NEW/UP/DROP 3틱 확정/VOL/HIGH) → 레짐·HALT → 브리핑 → 텔레그램 개인 DM. 매매 코드 경로 없음.
+- CLI: `python -m marketflow_claw {status|doctor|leaders|regime|events|brief|start|replay}` (기본 dry-run, 발송은 `--send` + `CLAW_DELIVERY_ENABLED=1`).
+- API: `GET /api/kr/claw/overview` (`@pro_required`, 읽기전용, no-cache). FE: AI Brain `ClawLiveCard`, `/dashboard/kr/claw`, 전 페이지 고정 브랜드 배너(`DashboardLayout` → `ClawBrandBar`, `useClawState` 60s).
+- `.env` 계약은 `scripts/apply_claw_env.ps1`이 멱등 적용(`CLAW_TELEGRAM_BOT_TOKEN_KEY`, `CLAW_TELEGRAM_CHAT_ID`, `CLAW_DROP_CONFIRM_TICKS`, `CLAW_DELIVERY_ENABLED`; `-SwapPersonalBotToken`으로 개인봇을 @bitman75_bot 토큰으로). 비밀값은 git에 없음.
+- miniPC Task: `deploy/register_claw_task.ps1` → `MarketFlow-Claw`(SYSTEM·AtStartup) + `MarketFlow-Claw-Watchdog`(5분, heartbeat 180s). 호스트 가드 `MINIPC-NQYLP`.
+- 텔레그램 봇: `TELEGRAM_CHANNEL_BOT_TOKEN`=@bitman75_bot(사용자 봇). 구 개인봇 @bitmanHermes_bot은 대화방 삭제로 403 → 토큰 교체로 해소(본PC 완료, miniPC는 apply 스크립트).
+- 대시보드 테마: 페이지 JSX 무수정, `frontend-react/src/index.css`의 `.claw-theme` 레이어. 등급/KRX/경고 의미색 유지.
