@@ -59,7 +59,7 @@ export default function BottomTabBar() {
                                 to={tab.href}
                                 className={`relative flex min-h-[58px] min-w-[64px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl px-2 transition-all active:scale-95 ${
                                     selected
-                                        ? `${activeColors[tab.color]} bg-white/[0.06]`
+                                        ? `claw-tab-active ${activeColors[tab.color]} bg-white/[0.06]`
                                         : 'text-zinc-600'
                                 }`}
                             >

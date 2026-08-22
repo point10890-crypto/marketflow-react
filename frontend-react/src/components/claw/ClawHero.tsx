@@ -30,7 +30,7 @@ function dotOf(state: string | null): string {
 
 export function Headline({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
     const cls = size === 'lg'
-        ? 'text-[30px] font-black leading-[1.12] tracking-tight text-white sm:text-[44px]'
+        ? 'text-[26px] font-black leading-[1.12] tracking-tight text-white sm:text-[44px]'
         : 'text-[17px] font-black leading-none tracking-tight text-white sm:text-[20px]';
     return (
         <span className={cls}>
@@ -60,15 +60,15 @@ export function ClawHero({ data, heartbeatAge }: { data: ClawOverview | null; he
             <ClawAsciiBackdrop live={state === 'running'} tone={toneOf(state)} />
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_65%_at_50%_42%,rgba(255,90,60,.22),rgba(255,90,60,0)_70%)]" />
 
-            <div className="relative flex flex-col items-center px-5 pb-6 pt-9 text-center sm:px-8 sm:pt-11">
-                <ClawMascot state={state} size={116} className="drop-shadow-[0_16px_40px_rgba(255,90,60,.35)]" />
-                <p className="mt-4 font-mono text-[11px] tracking-[0.28em] text-gray-400 sm:text-[12px]">관찰 전용 · 사용자 PC에서 실행 · 매매 없음</p>
+            <div className="relative flex flex-col items-center px-4 pb-5 pt-6 text-center sm:px-8 sm:pb-6 sm:pt-11">
+                <ClawMascot state={state} size={116} className="drop-shadow-[0_16px_40px_rgba(255,90,60,.35)] max-sm:h-[84px] max-sm:w-[84px]" />
+                <p className="mt-3 font-mono text-[10px] tracking-[0.22em] text-gray-400 sm:mt-4 sm:text-[12px] sm:tracking-[0.28em]">관찰 전용 · 사용자 PC에서 실행 · 매매 없음</p>
                 <h1 className="mt-3"><Headline size="lg" /></h1>
 
                 <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
                     <LiveBadge state={state} />
                     <span className="text-[14px] font-semibold text-gray-100">{data ? mood.line : '불러오는 중이에요…'}</span>
-                    {data && <span className="text-[12px] text-gray-400">{mood.sub}</span>}
+                    {data && <span className="hidden text-[12px] text-gray-400 sm:inline">{mood.sub}</span>}
                 </div>
                 {data && (
                     <p className="mt-2 text-[11px] text-gray-500">
@@ -102,7 +102,7 @@ export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
                 <ClawMascot state={state} size={46} className="shrink-0 drop-shadow-[0_6px_18px_rgba(255,90,60,.35)]" />
                 <div className="min-w-0 flex-1">
                     <div className="truncate"><Headline size="sm" /></div>
-                    <div className="mt-0.5 hidden truncate text-[11px] text-gray-400 sm:block">{data ? mood.line : '관찰 전용 · 사용자 PC에서 실행 · 매매 없음'}</div>
+                    <div className="claw-brand-mood mt-0.5 hidden truncate text-[11px] text-gray-400 sm:block">{data ? mood.line : '관찰 전용 · 사용자 PC에서 실행 · 매매 없음'}</div>
                 </div>
                 <LiveBadge state={state} />
                 <i className="fas fa-chevron-right hidden text-[11px] text-gray-600 transition-colors group-hover:text-gray-300 sm:block" />

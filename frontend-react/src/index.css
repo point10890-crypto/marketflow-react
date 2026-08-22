@@ -726,3 +726,72 @@ body {
   .claw-mascot *, .claw-card-in { animation: none !important; }
   .claw-card-in { opacity: 1; transform: none; }
 }
+
+/* ========================================
+   Claw 테마 — 셸 레벨 전역 리스킨
+   페이지 JSX를 건드리지 않고, 모든 페이지가 공유하는 패턴만 재정의한다.
+   의미색(등급 S/A/B, KRX 상승/하락, 성공/경고)은 건드리지 않는다.
+   ======================================== */
+/* 1) 카드 표면: 가장 흔한 다크 카드 배경 → 따뜻한 흑적 톤 + 붉은 헤어라인 */
+.claw-theme [class*="bg-[#13151f]"], .claw-theme [class*="bg-[#1c1c1e]"], .claw-theme [class*="bg-[#16161a]"],
+.claw-theme [class*="bg-[#141416]"], .claw-theme [class*="bg-[#13151b]"], .claw-theme [class*="bg-[#141418]"],
+.claw-theme [class*="bg-[#11141c]"], .claw-theme [class*="bg-[#0e0e11]"], .claw-theme [class*="bg-[#0f1118]"] {
+  background-color: #110d10;
+}
+.claw-theme [class*="rounded-2xl"][class*="border-white/"], .claw-theme [class*="rounded-3xl"][class*="border-white/"],
+.claw-theme [class*="rounded-xl"][class*="border-white/"] {
+  border-color: rgba(255, 120, 95, 0.10);
+}
+.claw-theme [class*="rounded-2xl"][class*="border-cyan-"], .claw-theme [class*="rounded-2xl"][class*="border-teal-"] {
+  border-color: rgba(255, 120, 95, 0.18);
+}
+.claw-theme [class*="rounded-2xl"]:hover, .claw-theme [class*="rounded-3xl"]:hover { transition: border-color .2s; }
+
+/* 2) 섹션 제목 악센트: "Market Overview" 류의 노랑/앰버 그라디언트 단어 → 브랜드 레드 */
+.claw-theme h1 [class*="from-yellow-"], .claw-theme h1 [class*="from-amber-"], .claw-theme h1 [class*="from-orange-"],
+.claw-theme h2 [class*="from-yellow-"], .claw-theme h2 [class*="from-amber-"], .claw-theme h2 [class*="from-orange-"],
+.claw-theme h3 [class*="from-yellow-"], .claw-theme h3 [class*="from-amber-"],
+/* 제목 태그 밖의 악센트 단어("Market Overview" 류): bg-clip-text 그라디언트 텍스트는 장식 악센트이므로 전부 브랜드 레드로 */
+.claw-theme [class*="bg-clip-text"][class*="from-yellow-"], .claw-theme [class*="bg-clip-text"][class*="from-amber-"],
+.claw-theme [class*="bg-clip-text"][class*="from-orange-"] {
+  background-image: linear-gradient(92deg, #ffb4a3 0%, #ff7a5c 50%, #ff5a3c 100%);
+}
+.claw-theme h1 > [class*="text-orange-4"], .claw-theme h1 > [class*="text-amber-4"], .claw-theme h1 > [class*="text-yellow-4"],
+.claw-theme h2 > [class*="text-orange-4"], .claw-theme h2 > [class*="text-amber-4"], .claw-theme h2 > [class*="text-yellow-4"] {
+  color: #ff7a5c;
+}
+
+/* 3) 내비게이션: 사이드바 활성 항목 / 하단 탭 활성 */
+.claw-theme .claw-nav-active {
+  background-image: linear-gradient(90deg, rgba(255,90,60,.18), rgba(255,90,60,.04)) !important;
+  border-color: rgba(255,90,60,.28) !important;
+  box-shadow: inset 3px 0 0 #ff5a3c;
+}
+.claw-theme .claw-tab-active { color: #ffb4a3 !important; }
+.claw-theme .claw-tab-active .claw-tab-dot { background: #ff5a3c !important; }
+.claw-theme .claw-tab-active i { color: #ff7a5c !important; }
+
+/* 4) 크롬: 헤더/검색/스크롤바/사이드바 라벨 */
+.claw-theme header [class*="bg-[#18181b]"] { background-color: #14101a; border-color: rgba(255,120,95,.14); }
+.claw-theme header [class*="bg-[#18181b]"]:hover { border-color: rgba(255,120,95,.32); }
+.claw-theme ::-webkit-scrollbar-thumb { background: rgba(255,120,95,.25); }
+.claw-theme .claw-section-label { color: #ff8a6b; opacity: .85; }
+
+/* 5) 브랜드 바: 스크롤해도 상단 고정 + 모바일 세로 압축 */
+.claw-theme .claw-brand-bar { position: sticky; top: 0; z-index: 30; backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); background-color: rgba(10,7,9,.82); }
+@media (max-width: 640px) {
+  .claw-theme .claw-brand-bar { border-radius: 14px; }
+  .claw-theme .claw-brand-bar .claw-brand-mood { display: none; }
+  .claw-theme .claw-brand-bar svg.claw-mascot { width: 36px; height: 36px; }
+  .claw-theme .claw-brand-bar canvas { opacity: .4; }
+}
+/* 6) 모바일 세로: 페이지 여백·카드 반경·히어로 크기 */
+@media (max-width: 640px) {
+  .claw-theme .dashboard-shell-scroll { padding-left: 10px; padding-right: 10px; }
+  .claw-theme [class*="rounded-3xl"] { border-radius: 18px; }
+}
+
+/* 7) 인라인 스타일 그라디언트 악센트(Summary "Overview" 등) — 인라인은 !important 로만 덮인다 */
+.claw-theme .bg-clip-text.text-transparent[style*="linear-gradient"] {
+  background-image: linear-gradient(92deg, #ffb4a3 0%, #ff7a5c 50%, #ff5a3c 100%) !important;
+}

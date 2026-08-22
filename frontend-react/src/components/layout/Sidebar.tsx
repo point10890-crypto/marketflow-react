@@ -134,7 +134,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             {/* Navigation */}
             <nav className="flex-1 px-3.5 py-4 pb-8 overflow-y-scroll sidebar-scroll">
                 {/* ── Global Tools ── */}
-                <div className="px-2 mb-2.5 text-[10px] font-semibold uppercase tracking-[0.2em]">
+                <div className="claw-section-label px-2 mb-2.5 text-[10px] font-semibold uppercase tracking-[0.2em]">
                     <span className="bg-gradient-to-r from-[#ff8a6b]/80 to-[#ff5a3c]/50 bg-clip-text text-transparent">Market</span>
                     <span className="text-gray-500 ml-0.5">Flow</span>
                 </div>
@@ -147,7 +147,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                             <Link key={item.name} to={item.href} onClick={onNavigate}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-all border ${
                                     isActive
-                                        ? `bg-gradient-to-r ${item.bg} text-white border-white/10`
+                                        ? `claw-nav-active bg-gradient-to-r ${item.bg} text-white border-white/10`
                                         : 'text-gray-400 hover:text-white hover:bg-white/[0.03] border-transparent'
                                 }`}
                             >
@@ -215,7 +215,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                                 <Link to={item.href} onClick={onNavigate}
                                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-all border ${
                                         isActive
-                                            ? `bg-gradient-to-r ${item.bg} text-white border-white/10`
+                                            ? `claw-nav-active bg-gradient-to-r ${item.bg} text-white border-white/10`
                                             : 'text-gray-400 hover:text-white hover:bg-white/[0.03] border-transparent'
                                     }`}
                                 >
@@ -261,7 +261,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                             <Link key={item.name} to={item.href} onClick={onNavigate}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-all border ${
                                     isActive
-                                        ? `bg-gradient-to-r ${item.bg} text-white border-white/10`
+                                        ? `claw-nav-active bg-gradient-to-r ${item.bg} text-white border-white/10`
                                         : 'text-gray-400 hover:text-white hover:bg-white/[0.03] border-transparent'
                                 }`}
                             >
