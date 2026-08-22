@@ -12,7 +12,7 @@ export default function ClawEventsCard({ data }: { data: ClawOverview }) {
     const items = data.events.items.slice().reverse().filter(e => filter === 'ALL' || e.type === filter);
 
     return (
-        <section className="rounded-2xl border border-white/[0.06] bg-[#13151f] p-5 lg:col-span-5">
+        <section className="claw-card-in rounded-3xl border border-white/[0.06] bg-[#13151f] p-5 lg:col-span-5">
             <h2 className="mb-3 flex items-center gap-2 text-[15px] font-bold text-white">
                 <i className="fas fa-bolt text-[13px] text-teal-400" />
                 이벤트 타임라인
@@ -30,7 +30,7 @@ export default function ClawEventsCard({ data }: { data: ClawOverview }) {
             </div>
             {items.length === 0 ? (
                 <p className="py-5 text-center text-[13px] text-gray-500">
-                    {data.events.items.length ? '이 유형의 이벤트 없음' : data.leaders.rows.length ? '오늘 전이 없음' : '아직 이벤트 없음'}
+                    {data.events.items.length ? '이 유형의 이벤트 없음' : data.leaders.rows.length ? '아직 조용해요 — 등급이 바뀌면 바로 여기 올라옵니다' : '첫 이벤트를 기다리는 중이에요'}
                 </p>
             ) : (
                 <ul className="divide-y divide-white/[0.06]">

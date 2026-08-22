@@ -1,5 +1,5 @@
 <title>Claw LIVE 대시보드</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Nanum+Brush+Script&display=swap">
 <style>
   /* MarketFlow 앱의 다크 디자인 시스템을 그대로 사용 — 의도적으로 단일 테마 */
   :root {
@@ -135,6 +135,44 @@
   details summary:focus-visible { outline: 2px solid var(--teal); border-radius: 6px; }
 
   footer { margin-top: 28px; font-size: 11.5px; color: var(--ink-3); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
+  /* ── 히어로 (마스코트 + ASCII 집게 + 헤드라인) ── */
+  .claw-hero { position: relative; overflow: hidden; border-radius: 20px; border: 1px solid var(--line); background: #0a0c11; margin-bottom: 16px; }
+  .claw-hero canvas { position: absolute; inset: 0; pointer-events: none; }
+  .claw-hero .glow { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(60% 70% at 50% 45%, rgba(45,212,191,.10), rgba(0,0,0,0) 70%); }
+  .claw-hero .in { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px 20px 24px; }
+  .claw-hero .cap { margin-top: 14px; font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: .28em; color: var(--ink-2); }
+  .claw-hero h1 { margin: 12px 0 0; font-size: clamp(30px, 4.2vw, 44px); font-weight: 900; letter-spacing: -.02em; line-height: 1.12; color: #fff; word-break: keep-all; }
+  .claw-hero h1 .brush { font-family: "Nanum Brush Script", cursive; font-style: italic; font-weight: 400; font-size: 1.18em; color: #ff6b57; margin-right: .2em; }
+  .claw-hero h1 .dot { color: #ff6b57; }
+  .claw-hero .mood { margin-top: 14px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 12px; }
+  .claw-hero .mood .line { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .claw-hero .mood .sub { font-size: 12px; color: var(--ink-2); }
+  .claw-hero .chips { margin-top: 14px; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; list-style: none; padding: 0; }
+  .claw-hero .chips li { border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.03); color: var(--ink-2); border-radius: 999px; padding: 4px 10px; font-size: 11px; font-weight: 600; }
+  .claw-hero .chips li.ok { border-color: rgba(45,212,191,.25); background: rgba(45,212,191,.08); color: #99f6e4; }
+  .claw-mascot { filter: drop-shadow(0 14px 36px rgba(45,212,191,.22)); }
+  @keyframes claw-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  @keyframes claw-breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.025); } }
+  @keyframes claw-pinch-l { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-10deg); } }
+  @keyframes claw-pinch-r { 0%,100% { transform: rotate(0); } 50% { transform: rotate(10deg); } }
+  @keyframes claw-blink { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(.08); } }
+  @keyframes claw-zz { 0% { transform: translateY(2px); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-8px); opacity: 0; } }
+  @keyframes claw-halt-l { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-22deg); } }
+  @keyframes claw-halt-r { 0%,100% { transform: rotate(0); } 50% { transform: rotate(22deg); } }
+  @keyframes claw-badge { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+  .claw-mascot .claw-body, .claw-mascot .claw-left, .claw-mascot .claw-right, .claw-mascot .claw-eyes, .claw-mascot .claw-zz, .claw-mascot .claw-badge { transform-box: fill-box; transform-origin: 50% 50%; }
+  .claw-mascot .claw-body { transform-origin: 50% 60%; }
+  .claw-anim-run .claw-body { animation: claw-bob 2.4s ease-in-out infinite; }
+  .claw-anim-run .claw-left { animation: claw-pinch-l 1.6s ease-in-out infinite; }
+  .claw-anim-run .claw-right { animation: claw-pinch-r 1.6s ease-in-out infinite .2s; }
+  .claw-anim-run .claw-eyes { animation: claw-blink 4.5s ease-in-out infinite; }
+  .claw-anim-idle .claw-body { animation: claw-breathe 4s ease-in-out infinite; }
+  .claw-anim-idle .claw-zz { animation: claw-zz 2.6s ease-out infinite; }
+  .claw-anim-halt .claw-left { animation: claw-halt-l 1.8s ease-in-out infinite; }
+  .claw-anim-halt .claw-right { animation: claw-halt-r 1.8s ease-in-out infinite; }
+  .claw-anim-halt .claw-badge { animation: claw-badge 1.2s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .claw-mascot * { animation: none !important; } }
   .ico { display:inline-block; font-style:normal; line-height:1; }
 </style>
 
@@ -148,7 +186,18 @@
     <button data-state="empty" aria-pressed="false">첫날(데이터 없음)</button>
   </div>
 
-  <header>
+
+  <section class="claw-hero" id="hero">
+    <canvas id="ascii"></canvas><div class="glow"></div>
+    <div class="in">
+      <div id="mascot"></div>
+      <p class="cap">관찰 전용 · 사용자 PC에서 실행 · 매매 없음</p>
+      <h1><span class="brush">진짜</span>주식 분석하는 인공지능 에이전트<span class="dot">.</span></h1>
+      <div class="mood"><span class="badge teal" id="hero-badge">Claw LIVE · REST</span><span class="line" id="hero-line"></span><span class="sub" id="hero-sub"></span></div>
+      <ul class="chips" id="hero-chips"></ul>
+    </div>
+  </section>
+  <header style="display:none">
     <div class="title">
       <span class="dot" id="dot"><i class="ping"></i><i class="core"></i></span>
       <h1>Claw LIVE</h1>
@@ -203,6 +252,48 @@
 
 <script>
 const DATA = {"snapshot": {"ts": "2026-08-22T00:59:20.901121", "market_status": "closed", "source": "file", "error": null, "by_grade": {"S": 2, "A": 7, "B": 6}, "rows": [{"code": "001210", "name": "금호전기", "grade": "S", "score": 85, "chg": 12.33, "trval_eok": 2464.0, "volx": 317.4, "price": 8380.0, "high_52w": 9690.0, "rank": 1}, {"code": "181710", "name": "NHN", "grade": "S", "score": 80, "chg": 4.59, "trval_eok": 314.0, "volx": 43993800.0, "price": 75200.0, "high_52w": 78200.0, "rank": 2}, {"code": "032830", "name": "삼성생명", "grade": "A", "score": 70, "chg": 10.61, "trval_eok": 3278.0, "volx": 178.6, "price": 328500.0, "high_52w": 516500.0, "rank": 3}, {"code": "294570", "name": "쿠콘", "grade": "A", "score": 70, "chg": 23.17, "trval_eok": 179.0, "volx": 69433300.0, "price": 26850.0, "high_52w": 39850.0, "rank": 4}, {"code": "005935", "name": "삼성전자우", "grade": "A", "score": 69, "chg": 8.26, "trval_eok": 21684.0, "volx": 285.5, "price": 207000.0, "high_52w": 243500.0, "rank": 5}, {"code": "005930", "name": "삼성전자", "grade": "A", "score": 68, "chg": 3.87, "trval_eok": 77032.0, "volx": 106.3, "price": 281500.0, "high_52w": 374500.0, "rank": 6}, {"code": "008290", "name": "원풍물산", "grade": "A", "score": 63, "chg": 29.85, "trval_eok": 31.0, "volx": 604880400.0, "price": 535.0, "high_52w": 1144.0, "rank": 7}, {"code": "028260", "name": "삼성물산", "grade": "A", "score": 62, "chg": 5.75, "trval_eok": 2268.0, "volx": 126.3, "price": 395500.0, "high_52w": 565000.0, "rank": 8}, {"code": "000660", "name": "SK하이닉스", "grade": "A", "score": 60, "chg": 2.31, "trval_eok": 74307.0, "volx": 78.4, "price": 1730000.0, "high_52w": 2987000.0, "rank": 9}, {"code": "001510", "name": "SK증권", "grade": "B", "score": 54, "chg": 5.16, "trval_eok": 2733.0, "volx": 778.2, "price": 2955.0, "high_52w": 6190.0, "rank": 10}, {"code": "459550", "name": "알트", "grade": "B", "score": 54, "chg": 6.95, "trval_eok": 526.0, "volx": 2138729500.0, "price": 2385.0, "high_52w": 5260.0, "rank": 11}, {"code": "153890", "name": "져스텍", "grade": "B", "score": 50, "chg": 3.76, "trval_eok": 725.0, "volx": 524710600.0, "price": 13230.0, "high_52w": 42500.0, "rank": 12}, {"code": "033340", "name": "좋은사람들", "grade": "B", "score": 49, "chg": 6.44, "trval_eok": 269.0, "volx": 4343034800.0, "price": 595.0, "high_52w": 2380.0, "rank": 13}, {"code": "950220", "name": "네오이뮨텍", "grade": "B", "score": 45, "chg": 29.84, "trval_eok": 43.0, "volx": 152590500.0, "price": 2850.0, "high_52w": 4375.0, "rank": 14}, {"code": "049470", "name": "비트플래닛", "grade": "B", "score": 45, "chg": 15.59, "trval_eok": 41.0, "volx": 175573400.0, "price": 2335.0, "high_52w": 7365.0, "rank": 15}], "file_age_s": 29545.6}, "gate": {"available": true, "status": "RED", "label": "BEARISH", "score": 70, "kospi_close": 6977.94, "kospi_change_pct": 2.42, "updated_at": "2026-08-17T18:44:03.347207", "age_hours": 110.5}, "regime": {"regime": "RISK_OFF", "gate_status": "RED", "gate_score": 70, "gate_age_hours": 110.5, "kospi_close": 6977.94, "breadth_pct": 100, "leader_count": 9, "halt": false, "reasons": ["market_gate stale/missing"]}, "heartbeat": {"ts": "2026-08-22T01:23:10", "pid": 47368, "state": "idle"}, "events": [{"ts": "2026-08-22T00:59:20.901121", "type": "LEADER_DROP", "code": "153890", "name": "져스텍", "grade_from": "A", "grade_to": "B", "score": 50, "chg": 3.76, "reported_at": "2026-08-22T00:59:20"}, {"ts": "2026-08-22T00:59:20.901121", "type": "LEADER_DROP", "code": "459550", "name": "알트", "grade_from": "A", "grade_to": "B", "score": 54, "chg": 6.95, "reported_at": "2026-08-22T00:59:20"}], "stats": {"snapshots": 3, "events": 2, "briefs": 3, "briefs_delivered": 1, "last_snapshot_ts": "2026-08-22T00:59:20.901121", "last_source": "file"}, "briefs": [{"ts": "2026-08-22T00:59:24", "kind": "morning", "digest": "c65f0abc29648f5d51e569ac3e6a6af03003dd89c4db67610f26b651ed2fa2f0", "path": "morning_005924.md", "delivered": 0, "error": null, "text": "🦀 <b>Claw 조간 브리핑</b> · 08-22(Sat)\n레짐 <b>RISK_OFF</b> · gate RED 70점 · breadth 상승 100% · KOSPI 6,978\n\n<b>전 세션 이벤트</b> 2건\n DROP 2\n\n<b>감시 목록</b> (마지막 스냅샷 00:59, file)\n 🟡S 금호전기 001210 · 85점 · +12.3%\n 🟡S NHN 181710 · 80점 · +4.6%\n 🟢A 삼성생명 032830 · 70점 · +10.6%\n 🟢A 쿠콘 294570 · 70점 · +23.2%\n 🟢A 삼성전자우 005935 · 69점 · +8.3%\n 🟢A 삼성전자 005930 · 68점 · +3.9%"}, {"ts": "2026-08-22T00:59:23", "kind": "close", "digest": "8766e5390a83b9db50622c3b3f70695948ad223de8b5e6465ab5798968c03055", "path": "close_005923.md", "delivered": 1, "error": null, "text": "🏁 <b>마감 요약</b> 08-22(Sat)\n레짐 <b>RISK_OFF</b> · gate RED 70점 · breadth 상승 100% · KOSPI 6,978\n이벤트 2건 · 스냅샷 2개 저장\n\n<b>마감 기준 주도주</b>\n 🟡S 금호전기 001210 +12.3% · 85점 · 2,464억\n 🟡S NHN 181710 +4.6% · 80점 · 314억\n 🟢A 삼성생명 032830 +10.6% · 70점 · 3,278억\n 🟢A 쿠콘 294570 +23.2% · 70점 · 179억\n 🟢A 삼성전자우 005935 +8.3% · 69점 · 21,684억\n 🟢A 삼성전자 005930 +3.9% · 68점 · 77,032억\n 🟢A 원풍물산 008290 +29.9% · 63점 · 31억\n 🟢A 삼성물산 028260 +5.8% · 62점 · 2,268억\n<b>이탈</b> 져스텍 +3.8% · 알트 +7.0%\n\n다음 세션 조간 브리핑에서 이벤트 성과(D1)를 보고합니다."}, {"ts": "2026-08-22T00:59:20", "kind": "event", "digest": "5b3d5bb87f2b873cde67604f4f8e54d1646d1a76ee2b611faec8f6acd37d464b", "path": "event_005920.md", "delivered": 0, "error": null, "text": "⚡ <b>주도주 이벤트</b> 00:59 · 레짐 <b>RISK_OFF</b> · gate RED 70점 · breadth 상승 100% · KOSPI 6,978\n\n[DROP] A→B ⚪B 져스텍 153890 · 50점\n  +3.8% · 거래대금 725억\n[DROP] A→B ⚪B 알트 459550 · 54점\n  +7.0% · 거래대금 526억"}], "route": {"mode": "direct-dm", "token_key": "TELEGRAM_CHANNEL_BOT_TOKEN", "token_set": true, "chat_set": true}, "db_bytes": 45056, "delivery_enabled": false};
+// ── 마스코트 SVG (원본) ──────────────────────────────────────────────
+const TONE = { running:['#5eead4','#0f766e','#2dd4bf','#0b1220'], idle:['#7dd3c8','#1f5f58','#5fb8ad','#0b1220'], halt:['#fcd34d','#b45309','#fbbf24','#1a1200'], dead:['#9ca3af','#4b5563','#6b7280','#111827'] };
+function mascot(st, size) {
+  const [b1,b2,cl,eye] = TONE[st] || TONE.idle; const an = {running:'claw-anim-run', idle:'claw-anim-idle', halt:'claw-anim-halt', dead:'claw-anim-dead'}[st] || 'claw-anim-idle';
+  const mouth = st==='halt' ? `<path d="M52 76 Q60 72 68 76" stroke="${eye}" stroke-width="2.5" stroke-linecap="round" fill="none"/>` : st==='dead' ? `<path d="M53 76 L67 76" stroke="${eye}" stroke-width="2.5" stroke-linecap="round"/>` : `<path d="M52 74 Q60 80 68 74" stroke="${eye}" stroke-width="2.5" stroke-linecap="round" fill="none"/>`;
+  const lids = st==='idle' ? `<g fill="${b2}" opacity=".9"><path d="M39 31 A7 7 0 0 1 53 31 L53 33 L39 33 Z"/><path d="M67 31 A7 7 0 0 1 81 31 L81 33 L67 33 Z"/></g>` : st==='dead' ? `<g stroke="${eye}" stroke-width="2" stroke-linecap="round"><path d="M43 30 L49 36 M49 30 L43 36"/><path d="M71 30 L77 36 M77 30 L71 36"/></g>` : '';
+  const badge = st==='halt' ? `<g class="claw-badge"><circle cx="98" cy="22" r="11" fill="#fbbf24"/><text x="98" y="27" text-anchor="middle" font-size="15" font-weight="800" fill="#1a1200" font-family="system-ui">!</text></g>` : st==='dead' ? `<g><circle cx="98" cy="22" r="11" fill="#6b7280"/><text x="98" y="27" text-anchor="middle" font-size="14" font-weight="800" fill="#f3f4f6" font-family="system-ui">?</text></g>` : st==='idle' ? `<g class="claw-zz" fill="#9ca3af" font-family="system-ui" font-weight="800"><text x="92" y="30" font-size="11">z</text><text x="100" y="20" font-size="14">z</text></g>` : '';
+  return `<svg width="${size}" height="${size}" viewBox="0 0 120 120" class="claw-mascot ${an}" role="img" aria-label="Claw 마스코트">
+   <defs><radialGradient id="g-${st}" cx="50%" cy="55%" r="50%"><stop offset="0%" stop-color="${cl}" stop-opacity=".35"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient>
+   <linearGradient id="b-${st}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${b1}"/><stop offset="100%" stop-color="${b2}"/></linearGradient></defs>
+   <circle cx="60" cy="66" r="54" fill="url(#g-${st})"/>
+   <g class="claw-body">
+    <g stroke="${b2}" stroke-width="3" stroke-linecap="round" opacity=".9"><path d="M38 84 L30 94"/><path d="M46 88 L42 99"/><path d="M54 90 L53 101"/><path d="M82 84 L90 94"/><path d="M74 88 L78 99"/><path d="M66 90 L67 101"/></g>
+    <g class="claw-left"><path d="M34 68 L26 56 A13 13 0 1 0 26 80 Z" fill="${cl}"/><circle cx="25" cy="68" r="4" fill="${b2}" opacity=".35"/></g>
+    <g class="claw-right"><path d="M86 68 L94 56 A13 13 0 1 1 94 80 Z" fill="${cl}"/><g transform="translate(92 50)"><rect x="0" y="12" width="4" height="10" rx="1" fill="#6fa3ff"/><rect x="6" y="7" width="4" height="15" rx="1" fill="#ff5c72"/><rect x="12" y="1" width="4" height="21" rx="1" fill="#ff5c72"/><path d="M2 10 L2 12 M8 4 L8 7 M14 -3 L14 1" stroke="#ff9fb0" stroke-width="1.5" stroke-linecap="round"/></g></g>
+    <ellipse cx="60" cy="68" rx="30" ry="22" fill="url(#b-${st})"/><ellipse cx="60" cy="62" rx="22" ry="11" fill="rgba(255,255,255,.10)"/>
+    <g stroke="${b2}" stroke-width="3" stroke-linecap="round"><path d="M50 50 L46 36"/><path d="M70 50 L74 36"/></g>
+    <g class="claw-eyes"><circle cx="46" cy="33" r="7" fill="#fff"/><circle cx="74" cy="33" r="7" fill="#fff"/><circle cx="47.5" cy="34" r="3" fill="${eye}"/><circle cx="75.5" cy="34" r="3" fill="${eye}"/>${lids}</g>
+    ${mouth}
+   </g>${badge}</svg>`;
+}
+// ── ASCII 집게 캔버스 (절차 생성) ─────────────────────────────────────
+const RAMP = ' .:-=+x#@'; let asciiPhase = 0, asciiTimer = 0, asciiLive = false, asciiTone = [45,212,191];
+function clawField(x,y,cx,cy,R,openTo){ const dx=x-cx, dy=y-cy, d=Math.hypot(dx,dy); const ring=Math.exp(-((d-R)**2)/(2*(R*0.16)**2)); const ang=Math.atan2(dy,dx); let diff=Math.abs(ang-openTo); if(diff>Math.PI) diff=2*Math.PI-diff; const mouth=diff<0.55?0:Math.min(1,(diff-0.55)/0.35); const inner=d<R*0.55?Math.exp(-((d-R*0.35)**2)/(2*(R*0.12)**2))*0.45:0; return Math.max(ring*mouth, inner*mouth); }
+function drawAscii(){ const c=document.getElementById('ascii'), hero=document.getElementById('hero'); if(!c||!hero) return; const W=hero.clientWidth, H=hero.clientHeight, dpr=Math.min(2,devicePixelRatio||1); c.width=W*dpr; c.height=H*dpr; c.style.width=W+'px'; c.style.height=H+'px'; const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H); ctx.font='11px "JetBrains Mono", monospace'; ctx.textBaseline='middle'; const cw=13, ch=16, R=Math.min(H*0.42, W*0.22); const [r,g,b]=asciiTone;
+  for(let y=ch/2;y<H;y+=ch) for(let x=cw/2;x<W;x+=cw){ let v=Math.max(clawField(x,y,W*0.22,H*0.52,R,0), clawField(x,y,W*0.78,H*0.52,R,Math.PI)); if(asciiLive) v*=0.85+0.15*Math.sin(asciiPhase+x*0.05+y*0.03); const cx=Math.abs(x-W/2)/(W*0.18), cy=(y-H*0.5)/(H*0.5); v*=1-Math.exp(-(cx*cx+cy*cy)*1.6);
+    if(v<0.06){ if(((x/cw)|0)%2===((y/ch)|0)%2){ ctx.fillStyle=`rgba(${r},${g},${b},0.07)`; ctx.fillText('·',x-2,y);} continue; }
+    const idx=Math.min(RAMP.length-1, Math.floor(v*(RAMP.length-1))); ctx.fillStyle=`rgba(${r},${g},${b},${(0.12+v*0.55).toFixed(3)})`; ctx.fillText(RAMP[idx],x-3,y); } }
+function asciiLoop(){ asciiPhase+=0.12; drawAscii(); asciiTimer=setTimeout(asciiLoop,125); }
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function renderHero(L, briefs){
+  const st=L.state; document.getElementById('mascot').innerHTML = mascot(st, 112);
+  document.getElementById('hero-badge').textContent = 'Claw LIVE · ' + ({running:'LIVE',halt:'HOLD',dead:'OFFLINE'}[st]||'REST');
+  const MOOD={running:['지금 장을 5초마다 보고 있어요.','주도주 등급이 바뀌는 순간만 알립니다.'],idle:['지금은 장외예요. 09:00에 다시 깨어납니다.','아래는 마지막 세션 기준입니다.'],halt:['데이터가 불안해서 판단을 멈췄어요.','확실하지 않으면 말하지 않는 것이 Claw의 규칙입니다.'],dead:['루프 응답이 없어요. 워치독이 재기동을 기다립니다.','복구되면 이 자리에서 바로 다시 시작합니다.']}[st]||['',''];
+  document.getElementById('hero-line').textContent=MOOD[0]; document.getElementById('hero-sub').textContent=MOOD[1];
+  const delivered=(briefs||[]).filter(b=>b.delivered).length, total=(briefs||[]).length;
+  document.getElementById('hero-chips').innerHTML = [['관찰 전용 · 매매 없음',''],['이탈은 3틱 연속일 때만 확정',''],['같은 알림 두 번 안 보냄',''],['룩어헤드 없는 성과 기록',''],[`발송 원장 공개 · 오늘 ${delivered}/${total}`, total?'ok':'']].map(([t,c])=>`<li class="${c}">${t}</li>`).join('');
+  asciiLive = st==='running' && !REDUCED; asciiTone = st==='halt'?[251,191,36]:st==='dead'?[156,163,175]:[45,212,191];
+  clearTimeout(asciiTimer); if(asciiLive) asciiLoop(); else drawAscii();
+}
+addEventListener('resize', drawAscii);
+
 const TYPE = { LEADER_NEW:['NEW','new'], LEADER_UPGRADE:['UP','up'], LEADER_DROP:['DROP','drop'], VOLUME_SURGE:['VOL','vol'], NEW_HIGH_BREAK:['HIGH','high'], HALT_ENTER:['HALT','halt'], HALT_EXIT:['HALT','halt'] };
 const REG = { RISK_ON:'ON', NEUTRAL:'NEUTRAL', RISK_OFF:'OFF', UNKNOWN:'UNKNOWN' };
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -228,6 +319,7 @@ function scenario() {
 function render() {
   const d = scenario();
   const L = d.loop, R = d.regime, S = d.snapshot;
+  renderHero(L, d.briefs);
   // 헤더
   const dot = document.getElementById('dot'); dot.className = 'dot ' + (L.state === 'running' ? 'run' : L.state === 'halt' ? 'halt' : L.state === 'dead' ? 'dead' : '');
   document.getElementById('sub').textContent = S.ts ? `마지막 틱 ${S.ts.slice(5,16).replace('T',' ')} · ${L.source} ${age(L.source_age_s)} 전` : '아직 틱 없음';

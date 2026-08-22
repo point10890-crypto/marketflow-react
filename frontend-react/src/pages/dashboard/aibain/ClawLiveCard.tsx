@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI } from '@/lib/api';
+import ClawMascot from '@/components/claw/ClawMascot';
 import {
     CLAW_OVERVIEW_ENDPOINT, ClawOverview, GRADE_CHIP, LOOP_LABEL, REGIME_LABEL,
     chgClass, eventChip, fmtEok, fmtHeld, fmtPct, hhmm, isClawOverview,
@@ -141,14 +142,12 @@ export default function ClawLiveCard() {
 }
 
 function Header({ state }: { state: ClawOverview['loop']['state'] | null }) {
-    const live = state === 'running';
+    const label = state === 'running' ? 'LIVE' : state === 'halt' ? 'HOLD' : state === 'dead' ? 'OFFLINE' : 'REST';
     return (
-        <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-white">
-            <span className="relative grid h-2.5 w-2.5 place-items-center">
-                <span className={`absolute inline-flex h-2.5 w-2.5 rounded-full ${live ? 'bg-teal-400/60 animate-ping' : ''}`} />
-                <span className={`relative inline-flex h-2 w-2 rounded-full ${live ? 'bg-teal-400' : state === 'halt' ? 'bg-amber-400' : state === 'dead' ? 'bg-red-500' : 'bg-gray-600'}`} />
-            </span>
-            Claw LIVE
+        <h2 className="mb-3 flex items-center gap-2.5 text-base font-bold text-white">
+            <ClawMascot state={state} size={34} className="-my-1 shrink-0" />
+            <span className="claw-title-gradient">Claw LIVE</span>
+            <span className="rounded-full border border-teal-400/25 bg-teal-500/10 px-2 py-0.5 text-[10px] font-bold text-teal-300">{label}</span>
             <span className="text-[11px] font-medium text-gray-500">장중 주도주 전이 감시</span>
         </h2>
     );

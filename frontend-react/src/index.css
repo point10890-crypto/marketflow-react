@@ -660,3 +660,55 @@ body {
     margin-bottom: 2px;
 }
 .pub-ad:has(ins[data-ad-status="unfilled"]) { display: none; }
+
+/* ========================================
+   Claw LIVE — 마스코트 · 등장 모션
+   (prefers-reduced-motion 이면 전부 정지)
+   ======================================== */
+@keyframes claw-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes claw-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025); } }
+@keyframes claw-pinch-l { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-10deg); } }
+@keyframes claw-pinch-r { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(10deg); } }
+@keyframes claw-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.08); } }
+@keyframes claw-zz { 0% { transform: translateY(2px); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-8px); opacity: 0; } }
+@keyframes claw-halt-raise { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-22deg); } }
+@keyframes claw-halt-raise-r { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(22deg); } }
+@keyframes claw-badge { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@keyframes claw-glow { 0%, 100% { opacity: .7; } 50% { opacity: 1; } }
+@keyframes claw-card-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.claw-mascot .claw-body, .claw-mascot .claw-left, .claw-mascot .claw-right, .claw-mascot .claw-eyes,
+.claw-mascot .claw-zz, .claw-mascot .claw-badge, .claw-mascot .claw-glow { transform-box: fill-box; }
+.claw-mascot .claw-body { transform-origin: 50% 60%; }
+.claw-mascot .claw-eyes { transform-origin: 50% 50%; }
+.claw-mascot .claw-badge { transform-origin: 50% 50%; }
+
+.claw-anim-run .claw-body { animation: claw-bob 2.4s ease-in-out infinite; }
+.claw-anim-run .claw-left { animation: claw-pinch-l 1.6s ease-in-out infinite; }
+.claw-anim-run .claw-right { animation: claw-pinch-r 1.6s ease-in-out infinite .2s; }
+.claw-anim-run .claw-eyes { animation: claw-blink 4.5s ease-in-out infinite; }
+.claw-anim-run .claw-glow { animation: claw-glow 2.4s ease-in-out infinite; }
+
+.claw-anim-idle .claw-body { animation: claw-breathe 4s ease-in-out infinite; }
+.claw-anim-idle .claw-zz { animation: claw-zz 2.6s ease-out infinite; }
+
+.claw-anim-halt .claw-left { animation: claw-halt-raise 1.8s ease-in-out infinite; }
+.claw-anim-halt .claw-right { animation: claw-halt-raise-r 1.8s ease-in-out infinite; }
+.claw-anim-halt .claw-badge { animation: claw-badge 1.2s ease-in-out infinite; }
+
+.claw-card-in { animation: claw-card-in .5s cubic-bezier(.2,.7,.2,1) both; }
+.claw-card-in:nth-child(2) { animation-delay: .06s; }
+.claw-card-in:nth-child(3) { animation-delay: .12s; }
+.claw-card-in:nth-child(4) { animation-delay: .18s; }
+
+.claw-title-gradient {
+  background: linear-gradient(92deg, #99f6e4 0%, #5eead4 45%, #22d3ee 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.claw-brush { font-family: 'Nanum Brush Script', 'Pretendard Variable', cursive; font-style: italic; letter-spacing: -.01em; }
+.claw-hero-glow { background: radial-gradient(60% 80% at 20% 50%, rgba(45,212,191,.14), rgba(45,212,191,0) 70%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .claw-mascot *, .claw-card-in { animation: none !important; }
+  .claw-card-in { opacity: 1; transform: none; }
+}

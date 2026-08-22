@@ -41,7 +41,7 @@ export default function ClawLeadersCard({ data }: Props) {
     };
 
     return (
-        <section className="relative rounded-2xl border border-white/[0.06] bg-[#13151f] p-5 lg:col-span-7">
+        <section className="claw-card-in relative rounded-3xl border border-white/[0.06] bg-[#13151f] p-5 lg:col-span-7">
             <h2 className="mb-3 flex items-center gap-2 text-[15px] font-bold text-white">
                 <i className="fas fa-crown text-[13px] text-teal-400" />
                 주도주
@@ -55,7 +55,7 @@ export default function ClawLeadersCard({ data }: Props) {
             </div>
             <div className={halted ? 'opacity-40' : ''}>
                 {lead.length === 0 ? (
-                    <p className="py-5 text-center text-[13px] text-gray-500">{rows.length ? `현재 S/A 주도주 없음 — 마지막 스냅샷 ${hhmm(data.leaders.snapshot_ts)}` : '아직 스냅샷 없음 — 루프가 첫 틱을 저장하면 여기 표시됩니다'}</p>
+                    <p className="py-5 text-center text-[13px] text-gray-500">{rows.length ? `현재 S/A 주도주 없음 — 마지막 스냅샷 ${hhmm(data.leaders.snapshot_ts)}` : '아직 첫 틱을 기다리는 중이에요 — 루프가 돌기 시작하면 여기에 주도주가 나타납니다'}</p>
                 ) : lead.map(r => <Row key={r.code} r={r} />)}
                 {bs.length > 0 && (
                     <div className="mt-2 border-t border-white/[0.06] pt-2">

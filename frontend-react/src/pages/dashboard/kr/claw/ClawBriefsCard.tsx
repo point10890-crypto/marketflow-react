@@ -9,7 +9,7 @@ export default function ClawBriefsCard({ data }: { data: ClawOverview }) {
     const cur = list[tab];
 
     return (
-        <section className="rounded-2xl border border-white/[0.06] bg-[#13151f] p-5 lg:col-span-8">
+        <section className="claw-card-in rounded-3xl border border-white/[0.06] bg-[#13151f] p-5 lg:col-span-8">
             <h2 className="mb-3 flex items-center gap-2 text-[15px] font-bold text-white">
                 <i className="fab fa-telegram text-[13px] text-teal-400" />
                 브리핑
@@ -29,7 +29,7 @@ export default function ClawBriefsCard({ data }: { data: ClawOverview }) {
                 </div>
             )}
             <div className="max-h-72 overflow-auto whitespace-pre-wrap break-keep rounded-xl rounded-bl-[4px] border border-white/[0.06] bg-[#181b27] px-3.5 py-3 text-[13px] leading-relaxed text-gray-200">
-                {cur ? renderTelegramText(cur.text) : <span className="text-gray-500">아직 브리핑 없음 — 08:20 조간 브리핑부터 쌓입니다</span>}
+                {cur ? renderTelegramText(cur.text) : <span className="text-gray-500">아직 브리핑이 없어요 — 08:20 조간 브리핑부터 차곡차곡 쌓입니다</span>}
             </div>
         </section>
     );

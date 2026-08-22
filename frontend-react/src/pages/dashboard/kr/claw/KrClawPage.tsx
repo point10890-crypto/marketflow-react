@@ -6,11 +6,11 @@
  * 설계: docs/superpowers/specs/2026-08-22-claw-dashboard-design.md
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI } from '@/lib/api';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { CLAW_OVERVIEW_ENDPOINT, ClawOverview, LOOP_LABEL, REGIME_LABEL, eventChip, fmtAge, hhmm, isClawOverview } from '@/lib/claw';
+import { ClawHero } from '@/components/claw/ClawHero';
 import ClawLeadersCard from './ClawLeadersCard';
 import ClawEventsCard from './ClawEventsCard';
 import ClawBriefsCard from './ClawBriefsCard';
@@ -42,7 +42,7 @@ export default function KrClawPage() {
     return (
         <div className="min-h-screen bg-[#09090b] p-4 text-white sm:p-6 lg:p-8">
             <div className="mx-auto max-w-[1200px] space-y-4">
-                <Header data={data} tick={tick} fetchedAt={fetchedAt.current} />
+                <ClawHero data={data} heartbeatAge={heartbeatAge(data, tick, fetchedAt.current)} />
                 {loading && <Skeleton />}
                 {!loading && error && (
                     <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 text-center">
@@ -68,33 +68,10 @@ export default function KrClawPage() {
     );
 }
 
-function Header({ data, tick, fetchedAt }: { data: ClawOverview | null; tick: number; fetchedAt: number }) {
-    const state = data?.loop.state ?? null;
-    const live = state === 'running';
+function heartbeatAge(data: ClawOverview | null, tick: number, fetchedAt: number): number | null {
     // 서버 age + 마지막 fetch 이후 경과초(tick 으로 1초마다 재계산) → 살아있음을 보여준다
     void tick;
-    const age = data?.loop.heartbeat_age_s != null ? data.loop.heartbeat_age_s + Math.max(0, Math.round((Date.now() - fetchedAt) / 1000)) : null;
-    return (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2.5">
-                <span className="relative grid h-2.5 w-2.5 place-items-center">
-                    <span className={`absolute inline-flex h-2.5 w-2.5 rounded-full ${live ? 'bg-teal-400/60 animate-ping' : ''}`} />
-                    <span className={`relative inline-flex h-2 w-2 rounded-full ${live ? 'bg-teal-400' : state === 'halt' ? 'bg-amber-400' : state === 'dead' ? 'bg-red-500' : 'bg-gray-600'}`} />
-                </span>
-                <h1 className="text-xl font-black tracking-tight sm:text-2xl">Claw LIVE</h1>
-                {data && (
-                    <span className="text-[11px] text-gray-500">
-                        {data.loop.last_tick_ts ? `마지막 틱 ${data.loop.last_tick_ts.slice(5, 16).replace('T', ' ')}` : '아직 틱 없음'}
-                        {data.loop.source && ` · ${data.loop.source} ${fmtAge(data.loop.source_age_s)} 전`}
-                        {age != null && ` · 하트비트 ${fmtAge(age)} 전`}
-                    </span>
-                )}
-            </div>
-            <Link to="/dashboard/kr/leading-stocks" className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12px] font-bold text-gray-300 hover:bg-white/[0.08] hover:text-white">
-                <i className="fas fa-chart-line text-[11px]" />주도주LIVE 열기
-            </Link>
-        </div>
-    );
+    return data?.loop.heartbeat_age_s != null ? data.loop.heartbeat_age_s + Math.max(0, Math.round((Date.now() - fetchedAt) / 1000)) : null;
 }
 
 function StatusStrip({ data }: { data: ClawOverview }) {
@@ -104,7 +81,7 @@ function StatusStrip({ data }: { data: ClawOverview }) {
     const halted = L.state === 'halt';
     const counts = Object.entries(data.events.counts);
     const tile = (warn: 'none' | 'warn' | 'bad' = 'none') =>
-        `rounded-2xl border bg-[#13151f] px-4 py-3.5 min-h-[92px] flex flex-col gap-1.5 ${warn === 'bad' ? 'border-red-500/50' : warn === 'warn' || halted ? 'border-amber-400/45' : 'border-white/[0.06]'}`;
+        `claw-card-in rounded-3xl border bg-[#13151f] px-4 py-3.5 min-h-[92px] flex flex-col gap-1.5 ${warn === 'bad' ? 'border-red-500/50' : warn === 'warn' || halted ? 'border-amber-400/45' : 'border-white/[0.06]'}`;
     const k = 'text-[11px] font-semibold uppercase tracking-wider text-gray-500';
     const v = 'flex flex-wrap items-baseline gap-2 text-[22px] font-extrabold leading-none tracking-tight';
     const d = 'flex flex-wrap items-center gap-1.5 text-[12px] text-gray-400';
@@ -152,7 +129,7 @@ function SystemCard({ data }: { data: ClawOverview }) {
         ['킬스위치', Object.entries(s.kill_switches).map(([k, v]) => `${k.replace('CLAW_', '').replace('_ENABLED', '')} ${v ? 'on' : 'off'}`).join(' · ')],
     ];
     return (
-        <section className="rounded-2xl border border-white/[0.06] bg-[#13151f] p-5 lg:col-span-4">
+        <section className="claw-card-in rounded-3xl border border-white/[0.06] bg-[#13151f] p-5 lg:col-span-4">
             <button type="button" onClick={() => setOpen(v => !v)} aria-expanded={open} className="flex w-full items-center justify-between text-[12px] font-bold text-gray-500 hover:text-gray-300">
                 <span><i className="fas fa-microchip mr-2 text-[10px]" />시스템</span>
                 <i className={`fas fa-chevron-${open ? 'up' : 'down'} text-[10px]`} />
