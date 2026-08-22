@@ -6,6 +6,7 @@
  *  - compact : 대시보드 전 페이지 공통 브랜드 바(DashboardLayout). 한 줄 높이, 같은 마스코트·헤드라인
  * 외부 브랜드 자산·이미지 파일 없음 — 전부 코드로 그린다.
  */
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ClawMascot from '@/components/claw/ClawMascot';
 import ClawAsciiBackdrop from '@/components/claw/ClawAsciiBackdrop';
@@ -86,26 +87,48 @@ export function ClawHero({ data, heartbeatAge }: { data: ClawOverview | null; he
     );
 }
 
-/** 대시보드 전 페이지 공통 브랜드 바 — 메인 타이틀 고정. 링크는 Claw LIVE 전체 화면. */
+/** 대시보드 전 페이지 공통 고정 타이틀 — 이미지 컨셉(중앙 마스코트 + 양옆 ASCII 집게 + 붉은 아우라).
+ *  상단에서는 배너(약 170px), 스크롤하면 같은 요소가 한 줄(64px)로 접힌다. 링크는 Claw LIVE 전체 화면. */
 export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
     const state = data?.loop.state ?? null;
     const mood = MOOD[state ?? 'idle'];
+    const ref = useRef<HTMLAnchorElement | null>(null);
+    const [compact, setCompact] = useState(false);
+
+    useEffect(() => {
+        const el = ref.current;
+        const scroller = el?.closest('.dashboard-shell-scroll') as HTMLElement | null;
+        if (!scroller) return;
+        let raf = 0;
+        const onScroll = () => {
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => setCompact(scroller.scrollTop > 40));
+        };
+        onScroll();
+        scroller.addEventListener('scroll', onScroll, { passive: true });
+        return () => { cancelAnimationFrame(raf); scroller.removeEventListener('scroll', onScroll); };
+    }, []);
+
     return (
         <Link
+            ref={ref}
             to="/dashboard/kr/claw"
-            className="claw-brand-bar group relative mb-3 block overflow-hidden rounded-2xl border bg-[#0a0709] transition-colors hover:border-[#ff5a3c]/35 md:mb-4"
+            className={`claw-brand-bar group relative block overflow-hidden rounded-2xl border bg-[#0a0709] transition-[border-color] hover:border-[#ff5a3c]/35 ${compact ? 'is-compact' : ''}`}
             aria-label="Claw LIVE 열기"
         >
             <ClawAsciiBackdrop live={state === 'running'} tone={toneOf(state)} />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(40%_120%_at_12%_50%,rgba(255,90,60,.22),rgba(255,90,60,0)_70%)]" />
-            <div className="relative flex items-center gap-3 px-3.5 py-2.5 sm:gap-4 sm:px-5">
-                <ClawMascot state={state} size={46} className="shrink-0 drop-shadow-[0_6px_18px_rgba(255,90,60,.35)]" />
-                <div className="min-w-0 flex-1">
-                    <div className="truncate"><Headline size="sm" /></div>
-                    <div className="claw-brand-mood mt-0.5 hidden truncate text-[11px] text-gray-400 sm:block">{data ? mood.line : '관찰 전용 · 사용자 PC에서 실행 · 매매 없음'}</div>
+            <div className="claw-brand-aura pointer-events-none absolute inset-0 bg-[radial-gradient(45%_90%_at_50%_40%,rgba(255,90,60,.26),rgba(255,90,60,0)_72%)]" />
+            <div className="claw-brand-inner relative flex items-center justify-center gap-3 px-4 text-center">
+                <ClawMascot state={state} size={84} className="claw-brand-mascot shrink-0 drop-shadow-[0_10px_28px_rgba(255,90,60,.38)]" />
+                <div className="claw-brand-text min-w-0">
+                    <div className="claw-brand-cap font-mono text-[10px] tracking-[0.26em] text-gray-400">관찰 전용 · 사용자 PC에서 실행 · 매매 없음</div>
+                    <div className="claw-brand-headline truncate"><Headline size="sm" /></div>
+                    <div className="claw-brand-mood mt-1 flex flex-wrap items-center justify-center gap-2">
+                        <LiveBadge state={state} />
+                        <span className="truncate text-[11px] text-gray-400">{data ? mood.line : '불러오는 중이에요…'}</span>
+                    </div>
                 </div>
-                <LiveBadge state={state} />
-                <i className="fas fa-chevron-right hidden text-[11px] text-gray-600 transition-colors group-hover:text-gray-300 sm:block" />
+                <span className="claw-brand-badge-compact hidden"><LiveBadge state={state} /></span>
             </div>
         </Link>
     );
