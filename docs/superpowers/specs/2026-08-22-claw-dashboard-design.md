@@ -1,7 +1,7 @@
 # Claw LIVE 대시보드 설계
 
 작성: 2026-08-22 (KST) · 대상 시스템: `marketflow_claw/` Phase 1 (origin/main `a030586`)
-상태: 설계 + 실데이터 프로토타입 완료, React/Flask 구현은 승인 대기
+상태: **구현 완료·본PC 검증(2026-08-22)** — `GET /api/kr/claw/overview`, AI Brain 페이지 ClawLiveCard, `/dashboard/kr/claw` 전체 화면. Cloudflare Pages 배포와 miniPC 적용은 대기
 프로토타입(실제 `claw.db` 데이터 렌더): `docs/superpowers/specs/2026-08-22-claw-dashboard-preview.html`
 
 ---
@@ -112,8 +112,15 @@
 | API 오류 | 빨강 카드 + 다시 시도 | – | – | – |
 | 데이터 없음(첫날) | 회색 | "아직 스냅샷 없음" | "아직 이벤트 없음" | "아직 브리핑 없음" |
 
-## 8. 구현 순서 (승인 후)
+## 8. 구현 순서 (완료 — 2026-08-22)
 1. `app/routes/kr_claw.py` overview 엔드포인트 + 테스트(픽스처 DB) — 읽기전용, 비밀값 0
 2. React 페이지 6파일 + 사이드바 항목 + 라우트
 3. 상태 매트릭스 7행을 Storybook 없이 `?mock=halt|idle|dead|empty` 쿼리로 강제 렌더해 육안 검증
 4. `npm run build` → Cloudflare Pages 배포(`feedback_cloudflare_pages_deploy`), miniPC Flask는 런북과 함께 적용
+
+## 9. 구현 결과 (2026-08-22)
+
+- 백엔드: `marketflow_claw/overview.py` + `app/routes/kr_claw.py` (`/api/kr/claw/overview`, `@pro_required`, `Cache-Control: no-cache`). 기존 엔드포인트·서비스 무수정.
+- 프론트: `src/lib/claw.ts`(타입·표시 규칙·`<b>`만 허용 렌더러), `pages/dashboard/aibain/ClawLiveCard.tsx`(AI Brain 압축 카드, 가상 매매 시그널과 오늘의 검출 사이), `pages/dashboard/kr/claw/{KrClawPage,ClawLeadersCard,ClawEventsCard,ClawBriefsCard}.tsx`, 라우트 `kr/claw`, 사이드바 KR → Claw LIVE.
+- 검증: pytest 18 + vitest 95 통과, `tsc -b`·`vite build` 성공. 로컬 Flask 5001 + Vite 4000 에서 실제 `claw.db` 데이터로 AI Brain 카드·전체 화면 DOM 확인(4타일·주도주 9행·이벤트 2·브리핑 탭 3, 가로 스크롤 없음).
+- 배포 순서: miniPC `git pull --ff-only` + Flask 재기동(재부팅) → `npm run deploy`. 프론트를 먼저 배포해도 카드는 "백엔드 준비 중" 한 줄로 조용히 대기한다(계약 검사 `isClawOverview`).
