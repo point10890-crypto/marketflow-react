@@ -51,6 +51,7 @@ const marketCards: NavItem[] = [
             { name: 'Overview', href: '/dashboard/kr', color: 'bg-blue-500' },
             { name: 'VCP Signals', href: '/dashboard/kr/vcp', color: 'bg-rose-500' },
             { name: '주도주LIVE', href: '/dashboard/kr/leading-stocks', color: 'bg-orange-500' },
+            { name: 'Claw LIVE', href: '/dashboard/kr/claw', color: 'bg-teal-500' },
             { name: '종가베팅', href: '/dashboard/kr/closing-bet', color: 'bg-violet-500' },
             { name: '성과 히스토리', href: '/dashboard/kr/closing-bet/history', color: 'bg-fuchsia-500' },
             { name: 'Track Record', href: '/dashboard/kr/track-record', color: 'bg-yellow-500' },

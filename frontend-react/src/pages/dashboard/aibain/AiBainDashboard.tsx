@@ -4,6 +4,7 @@ import { fetchAuthAPI } from '@/lib/api';
 import DetectionsCard from './DetectionsCard';
 import PerformanceCard from './PerformanceCard';
 import PaperTradingCard, { PaperOverview } from './PaperTradingCard';
+import ClawLiveCard from './ClawLiveCard';
 
 interface AiBainOverview {
     generated_at: string;
@@ -96,6 +97,9 @@ export default function AiBainDashboard() {
                     <>
                         {/* 핵심: 가상 매매 시그널 (국면·보유·성과) — 사용자가 매일 보는 것 */}
                         {paper && <PaperTradingCard data={paper} />}
+
+                        {/* Claw LIVE — 장중 주도주 전이 감시 (자체 폴링, 기존 엔드포인트와 독립) */}
+                        <ClawLiveCard />
 
                         {/* 검출 Top3 */}
                         {overview && <DetectionsCard data={overview.detections} />}

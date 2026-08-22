@@ -69,6 +69,10 @@ def register_blueprints(app):
     from app.routes.stock_analyzer import stock_analyzer_bp
     app.register_blueprint(stock_analyzer_bp, url_prefix='/api/stock-analyzer')
 
+    # Claw LIVE read-only overview (marketflow_claw) — 대시보드 폴링 전용
+    from app.routes.kr_claw import kr_claw_bp
+    app.register_blueprint(kr_claw_bp, url_prefix='/api/kr/claw')
+
     # Manual Stock Analysis routes (legacy Excel workflow as a service)
     from app.routes.manual_stock_analysis import manual_stock_analysis_bp
     app.register_blueprint(manual_stock_analysis_bp, url_prefix='/api/manual-stock-analysis')

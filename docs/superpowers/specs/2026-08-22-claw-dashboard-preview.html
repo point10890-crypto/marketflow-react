@@ -1,0 +1,290 @@
+<title>Claw LIVE 대시보드</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  /* MarketFlow 앱의 다크 디자인 시스템을 그대로 사용 — 의도적으로 단일 테마 */
+  :root {
+    --page: #09090b; --card: #13151f; --card-2: #181b27; --line: rgba(255,255,255,.06); --line-2: rgba(255,255,255,.12);
+    --ink: #f5f5f7; --ink-2: #a1a1aa; --ink-3: #6b6b74;
+    --teal: #2dd4bf; --teal-soft: rgba(45,212,191,.12);
+    --amber: #fbbf24; --amber-soft: rgba(251,191,36,.12);
+    --red: #ff453a; --red-soft: rgba(255,69,58,.12);
+    --up: #ff5c72; --down: #6fa3ff;            /* KRX: 상승 빨강 · 하락 파랑 */
+    --s: #fb7185; --s-bg: rgba(244,63,94,.10); --s-bd: rgba(244,63,94,.30);
+    --a: #fbbf24; --a-bg: rgba(245,158,11,.10); --a-bd: rgba(245,158,11,.30);
+    --b: #60a5fa; --b-bg: rgba(59,130,246,.10); --b-bd: rgba(59,130,246,.30);
+    --ev-new: #2dd4bf; --ev-up: #4ade80; --ev-drop: #6fa3ff; --ev-vol: #c084fc; --ev-high: #fb923c; --ev-halt: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font-family: "IBM Plex Sans KR", -apple-system, "Segoe UI", sans-serif; font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .mono { font-family: "JetBrains Mono", Consolas, monospace; font-variant-numeric: tabular-nums; }
+  .num { font-variant-numeric: tabular-nums; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 20px 20px 72px; }
+
+  /* 시안 제어판 (프로토타입 전용 — 실제 페이지엔 없음) */
+  .proto { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 18px; padding: 10px 12px; border: 1px dashed var(--amber); border-radius: 10px; background: var(--amber-soft); font-size: 12px; color: var(--amber); }
+  .proto b { font-weight: 700; }
+  .proto button { border: 1px solid rgba(251,191,36,.45); background: transparent; color: var(--amber); border-radius: 999px; padding: 3px 10px; font: inherit; font-weight: 600; cursor: pointer; }
+  .proto button[aria-pressed="true"] { background: var(--amber); color: #1a1200; }
+  .proto button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+  /* 헤더 */
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  header .title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  header h1 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; margin: 0; }
+  .dot { position: relative; width: 10px; height: 10px; display: grid; place-items: center; }
+  .dot i { position: absolute; border-radius: 50%; }
+  .dot .core { width: 8px; height: 8px; background: var(--ink-3); }
+  .dot .ping { width: 10px; height: 10px; opacity: 0; }
+  .dot.run .core { background: var(--teal); } .dot.run .ping { background: rgba(45,212,191,.6); animation: ping 1.6s cubic-bezier(0,0,.2,1) infinite; }
+  .dot.halt .core { background: var(--amber); } .dot.dead .core { background: var(--red); }
+  @keyframes ping { 75%,100% { transform: scale(2.2); opacity: 0; } 0% { opacity: .8; } }
+  @media (prefers-reduced-motion: reduce) { .dot .ping { animation: none; } }
+  header .sub { font-size: 12px; color: var(--ink-3); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line-2); background: rgba(255,255,255,.04); color: var(--ink-2); border-radius: 10px; padding: 6px 12px; font-size: 12px; font-weight: 600; text-decoration: none; }
+  .btn:hover, .btn:focus-visible { color: var(--ink); background: rgba(255,255,255,.08); outline: none; }
+
+  /* 그리드 */
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+  .grid > * { min-width: 0; }
+  .c3 { grid-column: span 3; } .c4 { grid-column: span 4; } .c5 { grid-column: span 5; } .c7 { grid-column: span 7; } .c8 { grid-column: span 8; } .c12 { grid-column: span 12; }
+  @media (max-width: 900px) { .c3 { grid-column: span 6; } .c4, .c5, .c7, .c8 { grid-column: span 12; } }
+  @media (max-width: 480px) { .c3 { grid-column: span 12; } .wrap { padding: 14px 12px 64px; } }
+
+  /* 카드 */
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; position: relative; }
+  .card h2 { margin: 0 0 12px; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card h2 i { color: var(--teal); font-size: 13px; }
+  .card h2 .meta { font-size: 11px; font-weight: 500; color: var(--ink-3); margin-left: auto; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 2px 9px; font-size: 11px; font-weight: 700; letter-spacing: .02em; }
+  .badge.teal { background: var(--teal-soft); color: var(--teal); }
+  .badge.amber { background: var(--amber-soft); color: var(--amber); }
+  .badge.gray { background: rgba(255,255,255,.06); color: var(--ink-2); }
+  .badge.red { background: var(--red-soft); color: var(--red); }
+
+  /* 상태 스트립 */
+  .tile { padding: 14px 16px; min-height: 92px; display: flex; flex-direction: column; gap: 6px; transition: border-color .2s; }
+  .tile .k { font-size: 11px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+  .tile .v { font-size: 22px; font-weight: 800; letter-spacing: -.01em; line-height: 1.1; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .tile .v small { font-size: 12px; font-weight: 600; color: var(--ink-2); }
+  .tile .d { font-size: 12px; color: var(--ink-2); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .strip.halt .tile { border-color: rgba(251,191,36,.45); }
+  .tile.warn { border-color: rgba(251,191,36,.45); } .tile.bad { border-color: rgba(255,69,58,.5); }
+  .reg-ON { color: #4ade80; } .reg-NEUTRAL { color: var(--ink); } .reg-OFF { color: var(--down); } .reg-UNKNOWN { color: var(--ink-3); }
+  .chip { display: inline-block; border-radius: 6px; padding: 1px 6px; font-size: 11px; font-weight: 700; }
+  .chip.new { background: rgba(45,212,191,.14); color: var(--ev-new); } .chip.up { background: rgba(74,222,128,.14); color: var(--ev-up); }
+  .chip.drop { background: rgba(111,163,255,.14); color: var(--ev-drop); } .chip.vol { background: rgba(192,132,252,.14); color: var(--ev-vol); }
+  .chip.high { background: rgba(251,146,60,.14); color: var(--ev-high); } .chip.halt { background: rgba(251,191,36,.14); color: var(--ev-halt); }
+
+  /* 주도주 */
+  .row { display: grid; grid-template-columns: 34px minmax(0,1.3fr) minmax(120px,1fr) 72px 72px minmax(0,1fr); gap: 10px; align-items: center; padding: 9px 8px; border-radius: 10px; border: 1px solid transparent; text-decoration: none; color: inherit; }
+  .row:hover, .row:focus-visible { background: rgba(255,255,255,.03); border-color: var(--line); outline: none; }
+  .row + .row { margin-top: 2px; }
+  .grade { width: 30px; height: 24px; border-radius: 7px; display: grid; place-items: center; font-weight: 800; font-size: 12px; border: 1px solid; }
+  .grade.S { color: var(--s); background: var(--s-bg); border-color: var(--s-bd); } .grade.A { color: var(--a); background: var(--a-bg); border-color: var(--a-bd); } .grade.B { color: var(--b); background: var(--b-bg); border-color: var(--b-bd); }
+  .nm { display: flex; flex-direction: column; min-width: 0; }
+  .nm b { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nm span { font-size: 11px; color: var(--ink-3); }
+  .bar { display: flex; align-items: center; gap: 8px; }
+  .bar .track { flex: 1; height: 6px; border-radius: 3px; background: rgba(255,255,255,.07); overflow: hidden; }
+  .bar .fill { height: 100%; border-radius: 3px; }
+  .bar .fill.S { background: var(--s); } .bar .fill.A { background: var(--a); } .bar .fill.B { background: var(--b); }
+  .bar b { width: 26px; text-align: right; font-size: 12px; }
+  .chg { text-align: right; font-weight: 700; } .chg.up { color: var(--up); } .chg.down { color: var(--down); }
+  .tv { text-align: right; color: var(--ink-2); font-size: 12.5px; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; font-size: 11px; color: var(--ink-3); }
+  .rowhead { display: grid; grid-template-columns: 34px minmax(0,1.3fr) minmax(120px,1fr) 72px 72px minmax(0,1fr); gap: 10px; padding: 0 8px 6px; font-size: 10.5px; color: var(--ink-3); letter-spacing: .05em; text-transform: uppercase; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+  .rowhead > :nth-child(4), .rowhead > :nth-child(5), .rowhead > :nth-child(6) { text-align: right; }
+  @media (max-width: 640px) { .row, .rowhead { grid-template-columns: 30px minmax(0,1fr) 64px 60px; } .row > .bar, .row > .tags, .rowhead > :nth-child(3), .rowhead > :nth-child(6) { display: none; } }
+  .fold { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .fold button { background: none; border: 0; color: var(--ink-3); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+  .fold button:hover, .fold button:focus-visible { color: var(--ink); background: rgba(255,255,255,.04); outline: none; }
+  .overlay { position: absolute; inset: 0; border-radius: 16px; display: none; place-items: center; background: rgba(9,9,11,.72); backdrop-filter: blur(2px); text-align: center; padding: 20px; }
+  .overlay .box { border: 1px solid rgba(251,191,36,.45); background: var(--amber-soft); color: var(--amber); border-radius: 12px; padding: 12px 16px; font-weight: 700; font-size: 13px; }
+  .card.halted .overlay { display: grid; }
+  .empty { color: var(--ink-3); font-size: 13px; padding: 18px 6px; text-align: center; }
+
+  /* 이벤트 */
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .filters button { border: 1px solid var(--line-2); background: transparent; color: var(--ink-2); border-radius: 999px; padding: 2px 10px; font: inherit; font-size: 11.5px; font-weight: 600; cursor: pointer; }
+  .filters button[aria-pressed="true"] { background: rgba(255,255,255,.1); color: var(--ink); }
+  .filters button:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .ev { display: grid; grid-template-columns: 48px 48px minmax(0,1fr) auto 18px; gap: 8px; align-items: center; padding: 7px 6px; border-radius: 8px; font-size: 13px; }
+  .ev + .ev { border-top: 1px solid var(--line); }
+  .ev .t { color: var(--ink-3); font-size: 12px; }
+  .ev .n { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ev .n span { color: var(--ink-3); font-size: 11px; margin-left: 6px; }
+  .ev .tr { color: var(--ink-2); font-size: 12px; white-space: nowrap; }
+  .ev .ok { color: var(--teal); font-size: 11px; text-align: right; } .ev .ok.no { color: var(--ink-3); }
+  .ev.halt-row { background: var(--amber-soft); }
+
+  /* 브리핑 */
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .tabs button { border: 1px solid var(--line-2); background: transparent; color: var(--ink-2); border-radius: 10px; padding: 5px 11px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+  .tabs button[aria-selected="true"] { background: rgba(255,255,255,.08); color: var(--ink); border-color: var(--line-2); }
+  .tabs button:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .tabs .ok { color: var(--teal); } .tabs .dry { color: var(--amber); }
+  .bubble { background: var(--card-2); border: 1px solid var(--line); border-radius: 12px 12px 12px 4px; padding: 12px 14px; font-size: 13px; line-height: 1.55; white-space: pre-wrap; word-break: keep-all; max-height: 290px; overflow: auto; }
+  .bubble b { font-weight: 700; }
+
+  /* 시스템 */
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 12.5px; }
+  .kv dt { color: var(--ink-3); } .kv dd { margin: 0; color: var(--ink-2); text-align: right; }
+  details summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--ink-3); }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary { margin-bottom: 10px; color: var(--ink-2); }
+  details summary:focus-visible { outline: 2px solid var(--teal); border-radius: 6px; }
+
+  footer { margin-top: 28px; font-size: 11.5px; color: var(--ink-3); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .ico { display:inline-block; font-style:normal; line-height:1; }
+</style>
+
+<div class="wrap">
+  <div class="proto" role="group" aria-label="상태 시뮬레이터">
+    <b>시안 제어</b> — 실제 <code>claw.db</code>(08-22 00:59 스냅샷) 데이터. 상태 매트릭스(스펙 §7)를 강제 렌더:
+    <button data-state="idle" aria-pressed="true">장외(idle)</button>
+    <button data-state="running" aria-pressed="false">장중 정상</button>
+    <button data-state="halt" aria-pressed="false">HALT</button>
+    <button data-state="dead" aria-pressed="false">루프 끊김</button>
+    <button data-state="empty" aria-pressed="false">첫날(데이터 없음)</button>
+  </div>
+
+  <header>
+    <div class="title">
+      <span class="dot" id="dot"><i class="ping"></i><i class="core"></i></span>
+      <h1>Claw LIVE</h1>
+      <span class="sub" id="sub">마지막 틱 —</span>
+    </div>
+    <a class="btn" href="#"><span class="ico">↗</span> 주도주LIVE 열기</a>
+  </header>
+
+  <div class="grid strip" id="strip">
+    <section class="card tile c3" id="t-loop"><div class="k">루프 · 시장</div><div class="v" id="loop-v">—</div><div class="d" id="loop-d"></div></section>
+    <section class="card tile c3" id="t-reg"><div class="k">레짐</div><div class="v" id="reg-v">—</div><div class="d" id="reg-d"></div></section>
+    <section class="card tile c3" id="t-ev"><div class="k">오늘 이벤트</div><div class="v" id="ev-v">—</div><div class="d" id="ev-d"></div></section>
+    <section class="card tile c3" id="t-send"><div class="k">발송</div><div class="v" id="send-v">—</div><div class="d" id="send-d"></div></section>
+  </div>
+
+  <div class="grid" style="margin-top:16px">
+    <section class="card c7" id="leaders">
+      <h2><span class="ico">♛</span> 주도주 <span class="meta" id="leaders-meta"></span></h2>
+      <div class="rowhead"><span></span><span>종목</span><span>점수</span><span>등락</span><span>거래대금</span><span>오늘</span></div>
+      <div id="leaders-body"></div>
+      <div class="fold" id="leaders-fold"></div>
+      <div class="overlay"><div class="box"><span class="ico">⏸</span> 검출 보류 중 — 방향성 판단 없음<br><span id="halt-reason" style="font-weight:500;font-size:12px"></span></div></div>
+    </section>
+
+    <section class="card c5" id="events">
+      <h2><span class="ico">⚡</span> 이벤트 타임라인 <span class="meta" id="events-meta"></span></h2>
+      <div class="filters" id="filters">
+        <button data-f="ALL" aria-pressed="true">전체</button><button data-f="LEADER_NEW" aria-pressed="false">NEW</button><button data-f="LEADER_UPGRADE" aria-pressed="false">UP</button><button data-f="LEADER_DROP" aria-pressed="false">DROP</button><button data-f="VOLUME_SURGE" aria-pressed="false">VOL</button><button data-f="NEW_HIGH_BREAK" aria-pressed="false">HIGH</button>
+      </div>
+      <div id="events-body"></div>
+    </section>
+
+    <section class="card c8" id="briefs">
+      <h2><span class="ico">✈</span> 브리핑 <span class="meta" id="briefs-meta"></span></h2>
+      <div class="tabs" id="tabs" role="tablist"></div>
+      <div class="bubble" id="bubble"></div>
+    </section>
+
+    <section class="card c4" id="system">
+      <details>
+        <summary><span><span class="ico" style="margin-right:6px">▣</span>시스템</span><span class="ico" style="font-size:10px">▾</span></summary>
+        <dl class="kv" id="kv"></dl>
+      </details>
+    </section>
+  </div>
+
+  <footer>
+    <span>Claw LIVE · 스펙 2026-08-22 §2~§7 · 데이터: data/claw/claw.db + heartbeat.json + screener_leading_latest.json</span>
+    <span>등급 색 = 주도주LIVE GRADE_STYLE · 등락 = KRX 관례</span>
+  </footer>
+</div>
+
+<script>
+const DATA = {"snapshot": {"ts": "2026-08-22T00:59:20.901121", "market_status": "closed", "source": "file", "error": null, "by_grade": {"S": 2, "A": 7, "B": 6}, "rows": [{"code": "001210", "name": "금호전기", "grade": "S", "score": 85, "chg": 12.33, "trval_eok": 2464.0, "volx": 317.4, "price": 8380.0, "high_52w": 9690.0, "rank": 1}, {"code": "181710", "name": "NHN", "grade": "S", "score": 80, "chg": 4.59, "trval_eok": 314.0, "volx": 43993800.0, "price": 75200.0, "high_52w": 78200.0, "rank": 2}, {"code": "032830", "name": "삼성생명", "grade": "A", "score": 70, "chg": 10.61, "trval_eok": 3278.0, "volx": 178.6, "price": 328500.0, "high_52w": 516500.0, "rank": 3}, {"code": "294570", "name": "쿠콘", "grade": "A", "score": 70, "chg": 23.17, "trval_eok": 179.0, "volx": 69433300.0, "price": 26850.0, "high_52w": 39850.0, "rank": 4}, {"code": "005935", "name": "삼성전자우", "grade": "A", "score": 69, "chg": 8.26, "trval_eok": 21684.0, "volx": 285.5, "price": 207000.0, "high_52w": 243500.0, "rank": 5}, {"code": "005930", "name": "삼성전자", "grade": "A", "score": 68, "chg": 3.87, "trval_eok": 77032.0, "volx": 106.3, "price": 281500.0, "high_52w": 374500.0, "rank": 6}, {"code": "008290", "name": "원풍물산", "grade": "A", "score": 63, "chg": 29.85, "trval_eok": 31.0, "volx": 604880400.0, "price": 535.0, "high_52w": 1144.0, "rank": 7}, {"code": "028260", "name": "삼성물산", "grade": "A", "score": 62, "chg": 5.75, "trval_eok": 2268.0, "volx": 126.3, "price": 395500.0, "high_52w": 565000.0, "rank": 8}, {"code": "000660", "name": "SK하이닉스", "grade": "A", "score": 60, "chg": 2.31, "trval_eok": 74307.0, "volx": 78.4, "price": 1730000.0, "high_52w": 2987000.0, "rank": 9}, {"code": "001510", "name": "SK증권", "grade": "B", "score": 54, "chg": 5.16, "trval_eok": 2733.0, "volx": 778.2, "price": 2955.0, "high_52w": 6190.0, "rank": 10}, {"code": "459550", "name": "알트", "grade": "B", "score": 54, "chg": 6.95, "trval_eok": 526.0, "volx": 2138729500.0, "price": 2385.0, "high_52w": 5260.0, "rank": 11}, {"code": "153890", "name": "져스텍", "grade": "B", "score": 50, "chg": 3.76, "trval_eok": 725.0, "volx": 524710600.0, "price": 13230.0, "high_52w": 42500.0, "rank": 12}, {"code": "033340", "name": "좋은사람들", "grade": "B", "score": 49, "chg": 6.44, "trval_eok": 269.0, "volx": 4343034800.0, "price": 595.0, "high_52w": 2380.0, "rank": 13}, {"code": "950220", "name": "네오이뮨텍", "grade": "B", "score": 45, "chg": 29.84, "trval_eok": 43.0, "volx": 152590500.0, "price": 2850.0, "high_52w": 4375.0, "rank": 14}, {"code": "049470", "name": "비트플래닛", "grade": "B", "score": 45, "chg": 15.59, "trval_eok": 41.0, "volx": 175573400.0, "price": 2335.0, "high_52w": 7365.0, "rank": 15}], "file_age_s": 29545.6}, "gate": {"available": true, "status": "RED", "label": "BEARISH", "score": 70, "kospi_close": 6977.94, "kospi_change_pct": 2.42, "updated_at": "2026-08-17T18:44:03.347207", "age_hours": 110.5}, "regime": {"regime": "RISK_OFF", "gate_status": "RED", "gate_score": 70, "gate_age_hours": 110.5, "kospi_close": 6977.94, "breadth_pct": 100, "leader_count": 9, "halt": false, "reasons": ["market_gate stale/missing"]}, "heartbeat": {"ts": "2026-08-22T01:23:10", "pid": 47368, "state": "idle"}, "events": [{"ts": "2026-08-22T00:59:20.901121", "type": "LEADER_DROP", "code": "153890", "name": "져스텍", "grade_from": "A", "grade_to": "B", "score": 50, "chg": 3.76, "reported_at": "2026-08-22T00:59:20"}, {"ts": "2026-08-22T00:59:20.901121", "type": "LEADER_DROP", "code": "459550", "name": "알트", "grade_from": "A", "grade_to": "B", "score": 54, "chg": 6.95, "reported_at": "2026-08-22T00:59:20"}], "stats": {"snapshots": 3, "events": 2, "briefs": 3, "briefs_delivered": 1, "last_snapshot_ts": "2026-08-22T00:59:20.901121", "last_source": "file"}, "briefs": [{"ts": "2026-08-22T00:59:24", "kind": "morning", "digest": "c65f0abc29648f5d51e569ac3e6a6af03003dd89c4db67610f26b651ed2fa2f0", "path": "morning_005924.md", "delivered": 0, "error": null, "text": "🦀 <b>Claw 조간 브리핑</b> · 08-22(Sat)\n레짐 <b>RISK_OFF</b> · gate RED 70점 · breadth 상승 100% · KOSPI 6,978\n\n<b>전 세션 이벤트</b> 2건\n DROP 2\n\n<b>감시 목록</b> (마지막 스냅샷 00:59, file)\n 🟡S 금호전기 001210 · 85점 · +12.3%\n 🟡S NHN 181710 · 80점 · +4.6%\n 🟢A 삼성생명 032830 · 70점 · +10.6%\n 🟢A 쿠콘 294570 · 70점 · +23.2%\n 🟢A 삼성전자우 005935 · 69점 · +8.3%\n 🟢A 삼성전자 005930 · 68점 · +3.9%"}, {"ts": "2026-08-22T00:59:23", "kind": "close", "digest": "8766e5390a83b9db50622c3b3f70695948ad223de8b5e6465ab5798968c03055", "path": "close_005923.md", "delivered": 1, "error": null, "text": "🏁 <b>마감 요약</b> 08-22(Sat)\n레짐 <b>RISK_OFF</b> · gate RED 70점 · breadth 상승 100% · KOSPI 6,978\n이벤트 2건 · 스냅샷 2개 저장\n\n<b>마감 기준 주도주</b>\n 🟡S 금호전기 001210 +12.3% · 85점 · 2,464억\n 🟡S NHN 181710 +4.6% · 80점 · 314억\n 🟢A 삼성생명 032830 +10.6% · 70점 · 3,278억\n 🟢A 쿠콘 294570 +23.2% · 70점 · 179억\n 🟢A 삼성전자우 005935 +8.3% · 69점 · 21,684억\n 🟢A 삼성전자 005930 +3.9% · 68점 · 77,032억\n 🟢A 원풍물산 008290 +29.9% · 63점 · 31억\n 🟢A 삼성물산 028260 +5.8% · 62점 · 2,268억\n<b>이탈</b> 져스텍 +3.8% · 알트 +7.0%\n\n다음 세션 조간 브리핑에서 이벤트 성과(D1)를 보고합니다."}, {"ts": "2026-08-22T00:59:20", "kind": "event", "digest": "5b3d5bb87f2b873cde67604f4f8e54d1646d1a76ee2b611faec8f6acd37d464b", "path": "event_005920.md", "delivered": 0, "error": null, "text": "⚡ <b>주도주 이벤트</b> 00:59 · 레짐 <b>RISK_OFF</b> · gate RED 70점 · breadth 상승 100% · KOSPI 6,978\n\n[DROP] A→B ⚪B 져스텍 153890 · 50점\n  +3.8% · 거래대금 725억\n[DROP] A→B ⚪B 알트 459550 · 54점\n  +7.0% · 거래대금 526억"}], "route": {"mode": "direct-dm", "token_key": "TELEGRAM_CHANNEL_BOT_TOKEN", "token_set": true, "chat_set": true}, "db_bytes": 45056, "delivery_enabled": false};
+const TYPE = { LEADER_NEW:['NEW','new'], LEADER_UPGRADE:['UP','up'], LEADER_DROP:['DROP','drop'], VOLUME_SURGE:['VOL','vol'], NEW_HIGH_BREAK:['HIGH','high'], HALT_ENTER:['HALT','halt'], HALT_EXIT:['HALT','halt'] };
+const REG = { RISK_ON:'ON', NEUTRAL:'NEUTRAL', RISK_OFF:'OFF', UNKNOWN:'UNKNOWN' };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const safeHtml = s => esc(s).replace(/&lt;(\/?)b&gt;/g, '<$1b>');   // 텔레그램 HTML 중 <b>만 허용
+const pct = v => (v == null ? '-' : (v >= 0 ? '+' : '') + v.toFixed(1) + '%');
+const hhmm = ts => (ts || '').slice(11, 16);
+const age = s => s == null ? '-' : s < 90 ? `${Math.round(s)}s` : s < 5400 ? `${Math.round(s/60)}m` : `${(s/3600).toFixed(1)}h`;
+let state = 'idle', filter = 'ALL', tab = 0, showB = false;
+
+function scenario() {
+  // 실제 데이터를 바탕으로 상태 매트릭스의 각 행을 만든다
+  const base = JSON.parse(JSON.stringify(DATA));
+  const s = { ...base, loop: { state: 'idle', market_open: false, heartbeat_age_s: 41, source: base.snapshot.source, source_age_s: Math.round(base.snapshot.file_age_s || 0) } };
+  if (state === 'running') { s.loop = { state:'running', market_open:true, heartbeat_age_s:3, source:'file', source_age_s:4 }; s.snapshot.market_status = 'open'; s.regime.regime = 'NEUTRAL'; s.regime.gate_status='YELLOW'; s.regime.gate_score=54; s.regime.reasons=[];
+    s.events = [ ...s.events, {ts:'2026-08-22T09:41:05', type:'LEADER_NEW', code:'001210', name:'금호전기', grade_from:'', grade_to:'S', score:85, chg:12.3, reported_at:'2026-08-22T09:41:06'}, {ts:'2026-08-22T10:12:40', type:'VOLUME_SURGE', code:'032830', name:'삼성생명', grade_from:'', grade_to:'', score:70, chg:10.6, reported_at:'2026-08-22T10:12:41'} ]; }
+  if (state === 'halt') { s.loop = { state:'halt', market_open:true, heartbeat_age_s:5, source:'file', source_age_s:412 }; s.regime.halt = true; s.regime.reasons = ['leaders source error: kis_token_failed x3', 'leaders file stale 412s'];
+    s.events = [ ...s.events, {ts:'2026-08-22T13:04:00', type:'HALT_ENTER', code:'', name:'kis_token_failed x3', grade_from:'', grade_to:'', score:null, chg:0, reported_at:'2026-08-22T13:04:01'} ]; }
+  if (state === 'dead') { s.loop = { state:'dead', market_open:true, heartbeat_age_s:612, source:'file', source_age_s:640 }; }
+  if (state === 'empty') { s.snapshot.rows = []; s.snapshot.by_grade = {}; s.events = []; s.briefs = []; s.stats = { snapshots:0, events:0, briefs:0, briefs_delivered:0 }; s.regime.regime='UNKNOWN'; s.regime.gate_status=null; s.regime.gate_score=null; s.regime.breadth_pct=null; }
+  return s;
+}
+
+function render() {
+  const d = scenario();
+  const L = d.loop, R = d.regime, S = d.snapshot;
+  // 헤더
+  const dot = document.getElementById('dot'); dot.className = 'dot ' + (L.state === 'running' ? 'run' : L.state === 'halt' ? 'halt' : L.state === 'dead' ? 'dead' : '');
+  document.getElementById('sub').textContent = S.ts ? `마지막 틱 ${S.ts.slice(5,16).replace('T',' ')} · ${L.source} ${age(L.source_age_s)} 전` : '아직 틱 없음';
+  // 스트립
+  const strip = document.getElementById('strip'); strip.classList.toggle('halt', L.state === 'halt');
+  const loopT = document.getElementById('t-loop'); loopT.className = 'card tile c3' + (L.state === 'dead' ? ' bad' : L.state === 'halt' ? ' warn' : '');
+  document.getElementById('loop-v').innerHTML = { running:'장중 <small>5s 틱</small>', idle:'장외 <small>다음 09:00</small>', halt:'<span style="color:var(--amber)">검출 보류</span>', dead:'<span style="color:var(--red)">루프 응답 없음</span>' }[L.state];
+  document.getElementById('loop-d').innerHTML = L.state === 'halt' ? `<span class="chip halt">HALT</span> ${esc(R.reasons[0] || '')}` : L.state === 'dead' ? `하트비트 ${age(L.heartbeat_age_s)} 전 · 워치독 재기동 대기` : `하트비트 ${age(L.heartbeat_age_s)} 전 · 소스 ${esc(L.source)}`;
+  const regKey = REG[R.regime] || 'UNKNOWN';
+  document.getElementById('reg-v').innerHTML = `<span class="reg-${regKey}">${regKey === 'ON' ? 'RISK ON' : regKey === 'OFF' ? 'RISK OFF' : regKey}</span>` + (R.gate_score != null ? `<small>gate ${esc(R.gate_status)} ${R.gate_score}</small>` : '<small>입력 없음</small>');
+  document.getElementById('reg-d').textContent = (R.breadth_pct != null ? `breadth 상승 ${R.breadth_pct}% · ` : '') + `S/A ${R.leader_count ?? 0}종목` + (R.reasons.length && L.state !== 'halt' ? ` · ${R.reasons[0]}` : '');
+  const counts = {}; d.events.forEach(e => counts[e.type] = (counts[e.type] || 0) + 1);
+  document.getElementById('ev-v').innerHTML = `${d.events.length}<small>건</small>`;
+  document.getElementById('ev-d').innerHTML = d.events.length ? Object.entries(counts).map(([k,v]) => `<span class="chip ${TYPE[k]?.[1] || 'new'}">${TYPE[k]?.[0] || k} ${v}</span>`).join('') : '아직 없음';
+  const delivered = d.briefs.filter(b => b.delivered).length;
+  document.getElementById('send-v').innerHTML = `${delivered}<small>/ ${d.briefs.length} 브리핑</small>`;
+  document.getElementById('send-d').innerHTML = `@bitman75 DM` + (d.route.mode === 'direct-dm' ? '' : ' (개인봇)') + (DATA.delivery_enabled ? '' : ' <span class="badge amber">dry-run</span>');
+  // 주도주
+  const leaders = document.getElementById('leaders'); leaders.classList.toggle('halted', L.state === 'halt');
+  document.getElementById('halt-reason').textContent = R.reasons.join(' · ');
+  document.getElementById('leaders-meta').innerHTML = S.ts ? `${L.market_open ? '' : '<span class="badge gray">전 세션 기준</span> '}스냅샷 ${hhmm(S.ts)} · S${S.by_grade.S||0} A${S.by_grade.A||0} B${S.by_grade.B||0}` : '';
+  const todayEv = {}; d.events.forEach(e => { if (e.code && !todayEv[e.code]) todayEv[e.code] = e; });
+  const rows = S.rows.slice().sort((a,b) => ({S:3,A:2,B:1}[b.grade]||0) - ({S:3,A:2,B:1}[a.grade]||0) || b.score - a.score);
+  const lead = rows.filter(r => r.grade === 'S' || r.grade === 'A'), bs = rows.filter(r => r.grade === 'B');
+  const rowHtml = r => { const e = todayEv[r.code]; return `<a class="row" href="#${r.code}">
+      <span class="grade ${r.grade}">${r.grade}</span>
+      <span class="nm"><b>${esc(r.name)}</b><span class="mono">${r.code}</span></span>
+      <span class="bar"><span class="track"><span class="fill ${r.grade}" style="width:${Math.min(100, r.score)}%"></span></span><b class="num">${r.score}</b></span>
+      <span class="chg num ${r.chg >= 0 ? 'up' : 'down'}">${pct(r.chg)}</span>
+      <span class="tv num">${Math.round(r.trval_eok).toLocaleString('ko-KR')}억</span>
+      <span class="tags">${e ? `<span class="chip ${TYPE[e.type][1]}">${TYPE[e.type][0]} ${hhmm(e.ts)}</span>` : ''}${L.market_open && r.grade !== 'B' ? `<span>유지 ${Math.max(1, Math.round((Date.parse('2026-08-22T14:02:00') - Date.parse(e ? e.ts : '2026-08-22T09:00:00')) / 60000))}m</span>` : ''}</span>
+    </a>`; };
+  document.getElementById('leaders-body').innerHTML = lead.length ? lead.map(rowHtml).join('') : `<div class="empty">${S.rows.length ? '현재 S/A 주도주 없음' : '아직 스냅샷 없음 — 루프가 첫 틱을 저장하면 여기 표시됩니다'}</div>`;
+  const fold = document.getElementById('leaders-fold');
+  fold.innerHTML = bs.length ? `<button id="fold-btn" aria-expanded="${showB}"><span class="ico" style="margin-right:6px">${showB ? '▴' : '▾'}</span>B등급 ${bs.length}종목 ${showB ? '접기' : '보기'}</button>${showB ? bs.map(rowHtml).join('') : ''}` : '';
+  fold.style.display = bs.length ? '' : 'none';
+  const fb = document.getElementById('fold-btn'); if (fb) fb.onclick = () => { showB = !showB; render(); };
+  // 이벤트
+  const evs = d.events.slice().reverse().filter(e => filter === 'ALL' || e.type === filter);
+  document.getElementById('events-meta').innerHTML = L.market_open ? '실시간' : '<span class="badge gray">전 세션 이벤트</span>';
+  document.getElementById('events-body').innerHTML = evs.length ? evs.map(e => { const [lab, cls] = TYPE[e.type] || [e.type, 'new']; const tr = (e.grade_from || e.grade_to) ? `${e.grade_from || '–'}→${e.grade_to || '–'}` : '';
+      return `<div class="ev ${cls === 'halt' ? 'halt-row' : ''}"><span class="t mono">${hhmm(e.ts)}</span><span class="chip ${cls}">${lab}</span><span class="n">${esc(e.name)}${e.code ? `<span class="mono">${e.code}</span>` : ''}</span><span class="tr mono">${tr}${e.score != null && e.chg != null ? ` · ${pct(e.chg)}` : ''}</span><span class="ok ${e.reported_at ? '' : 'no'}"><span class="ico">✓</span></span></div>`; }).join('')
+    : `<div class="empty">${d.events.length ? '이 유형의 이벤트 없음' : (S.rows.length ? '오늘 전이 없음' : '아직 이벤트 없음')}</div>`;
+  // 브리핑
+  const kinds = ['morning','event','close']; const label = { morning:'조간', event:'이벤트', close:'마감', halt:'보류' };
+  const list = d.briefs.slice().sort((a,b) => a.ts.localeCompare(b.ts));
+  if (tab >= list.length) tab = Math.max(0, list.length - 1);
+  document.getElementById('briefs-meta').textContent = list.length ? `${list.length}건` : '';
+  document.getElementById('tabs').innerHTML = list.map((b, i) => `<button role="tab" aria-selected="${i === tab}" data-i="${i}">${label[b.kind] || b.kind} ${hhmm(b.ts)} <span class="${b.delivered ? 'ok' : 'dry'}"><span class="ico" style="font-size:10px">✓</span> ${b.delivered ? '발송' : 'dry-run'}</span></button>`).join('');
+  document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => { tab = +b.dataset.i; render(); });
+  const cur = list[tab];
+  document.getElementById('bubble').innerHTML = cur ? safeHtml(cur.text) : '<span style="color:var(--ink-3)">아직 브리핑 없음 — 08:20 조간 브리핑부터 쌓입니다</span>';
+  // 시스템
+  const kv = [['하트비트', `${age(L.heartbeat_age_s)} 전`], ['소스', `${L.source} · ${age(L.source_age_s)}`], ['오늘 스냅샷', d.stats.snapshots], ['오늘 KIS 직접호출', S.source === 'kis' ? 1 : 0], ['DB', `${(d.db_bytes/1024).toFixed(0)} KB`], ['DROP 확정', '3 틱'], ['발송 경로', `${d.route.mode} · ${d.route.token_key}`], ['킬스위치', `DELIVERY ${DATA.delivery_enabled ? 'on' : 'off'} · LLM off`]];
+  document.getElementById('kv').innerHTML = kv.map(([k,v]) => `<dt>${k}</dt><dd class="num">${esc(v)}</dd>`).join('');
+}
+document.querySelectorAll('.proto button').forEach(b => b.onclick = () => { state = b.dataset.state; document.querySelectorAll('.proto button').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); });
+document.querySelectorAll('#filters button').forEach(b => b.onclick = () => { filter = b.dataset.f; document.querySelectorAll('#filters button').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); });
+render();
+</script>

@@ -24,6 +24,7 @@ const KrChatbotPage = lazy(() => import('@/pages/dashboard/kr/KrChatbotPage'));
 const KrTrackRecordPage = lazy(() => import('@/pages/dashboard/kr/TrackRecordPage'));
 const KrClosingBetHistoryPage = lazy(() => import('@/pages/dashboard/kr/ClosingBetHistoryPage'));
 const KrLeadingStocksPage = lazy(() => import('@/pages/dashboard/kr/KrLeadingStocksPage'));
+const KrClawPage = lazy(() => import('@/pages/dashboard/kr/claw/KrClawPage'));
 const KrAIChartAnalysisPage = lazy(() => import('@/pages/dashboard/kr/AIChartAnalysisPage'));
 const UsOverviewPage = lazy(() => import('@/pages/dashboard/us/UsOverviewPage'));
 const UsVcpPage = lazy(() => import('@/pages/dashboard/us/UsVcpPage'));
@@ -190,6 +191,7 @@ export default function App() {
                         <Route path="kr/closing-bet" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrClosingBetPage /></Suspense></ProGuard>} />
                         <Route path="kr/closing-bet/history" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrClosingBetHistoryPage /></Suspense></ProGuard>} />
                         <Route path="kr/leading-stocks" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrLeadingStocksPage /></Suspense></ProGuard>} />
+                        <Route path="kr/claw" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrClawPage /></Suspense></ProGuard>} />
                         <Route path="kr/chatbot" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrChatbotPage /></Suspense></ProGuard>} />
                         <Route path="kr/track-record" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrTrackRecordPage /></Suspense></ProGuard>} />
                         <Route path="kr/ai-chart" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrAIChartAnalysisPage /></Suspense></ProGuard>} />
