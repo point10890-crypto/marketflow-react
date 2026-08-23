@@ -777,32 +777,36 @@ body {
 .claw-theme ::-webkit-scrollbar-thumb { background: rgba(255,120,95,.25); }
 .claw-theme .claw-section-label { color: #ff8a6b; opacity: .85; }
 
-/* 5) 고정 타이틀 배너: 상단 = 이미지 컨셉(중앙 마스코트 + 양옆 ASCII 집게), 스크롤 = 한 줄로 접힘 */
-.claw-theme .claw-brand-bar { position: sticky; top: 0; z-index: 30; margin-bottom: 14px; backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); background-color: rgba(10,7,9,.86); }
-.claw-theme .claw-brand-inner { min-height: 172px; flex-direction: column; padding-top: 14px; padding-bottom: 14px; transition: min-height .35s cubic-bezier(.2,.7,.2,1), padding .35s; }
-.claw-theme .claw-brand-mascot { width: 84px; height: 84px; transition: width .35s cubic-bezier(.2,.7,.2,1), height .35s cubic-bezier(.2,.7,.2,1); }
+/* 5) 타이틀 배너 + 접힌 한 줄 바
+   스크롤 성능 규칙: 배너는 일반 흐름(높이 고정, 애니메이션 없음). 접힌 바는 높이 0 sticky 래퍼 안의 overlay 로
+   transform/opacity 만 전환한다 — 레이아웃 재배치·콘텐츠 점프·backdrop blur 없음. */
+.claw-theme .claw-brand-bar { margin-bottom: 14px; }
+.claw-theme .claw-brand-inner { min-height: 172px; padding-top: 14px; padding-bottom: 14px; }
+.claw-theme .claw-brand-mascot { width: 84px; height: 84px; }
 .claw-theme .claw-brand-cap { margin-top: 6px; }
 .claw-theme .claw-brand-headline { margin-top: 4px; }
-.claw-theme .claw-brand-bar canvas { transition: opacity .35s; }
-/* 접힘 */
-.claw-theme .claw-brand-bar.is-compact .claw-brand-inner { min-height: 64px; flex-direction: row; padding-top: 8px; padding-bottom: 8px; text-align: left; justify-content: flex-start; }
-.claw-theme .claw-brand-bar.is-compact .claw-brand-mascot { width: 40px; height: 40px; }
-.claw-theme .claw-brand-bar.is-compact .claw-brand-cap, .claw-theme .claw-brand-bar.is-compact .claw-brand-mood { display: none; }
-.claw-theme .claw-brand-bar.is-compact .claw-brand-text { flex: 1; }
-.claw-theme .claw-brand-bar.is-compact .claw-brand-headline { margin-top: 0; }
-.claw-theme .claw-brand-bar.is-compact .claw-brand-badge-compact { display: inline-flex; }
-.claw-theme .claw-brand-bar.is-compact canvas { opacity: .45; }
-.claw-theme .claw-brand-bar.is-compact .claw-brand-aura { opacity: .6; }
+.claw-theme .claw-brand-sticky { position: sticky; top: 0; height: 0; z-index: 30; pointer-events: none; }
+.claw-theme .claw-brand-compact {
+  position: absolute; left: 0; right: 0; top: 0; height: 56px;
+  display: flex; align-items: center; gap: 10px; padding: 0 14px;
+  border-radius: 14px; border: 1px solid rgba(255,90,60,.22);
+  background: linear-gradient(180deg, rgba(255,90,60,.10), rgba(255,90,60,0)) , #0d0809;
+  box-shadow: 0 8px 24px rgba(0,0,0,.45);
+  opacity: 0; transform: translateY(-12px); pointer-events: none;
+  transition: opacity .18s ease, transform .24s cubic-bezier(.2,.7,.2,1);
+  will-change: transform, opacity;
+}
+.claw-theme .claw-brand-compact.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.claw-theme .claw-brand-compact:hover { border-color: rgba(255,90,60,.38); }
 @media (max-width: 640px) {
   .claw-theme .claw-brand-bar { border-radius: 14px; margin-bottom: 10px; }
   .claw-theme .claw-brand-inner { min-height: 132px; padding-top: 10px; padding-bottom: 10px; }
   .claw-theme .claw-brand-mascot { width: 64px; height: 64px; }
   .claw-theme .claw-brand-cap { display: none; }
   .claw-theme .claw-brand-mood span:last-child { display: none; }
-  .claw-theme .claw-brand-bar.is-compact .claw-brand-inner { min-height: 56px; }
-  .claw-theme .claw-brand-bar.is-compact .claw-brand-mascot { width: 34px; height: 34px; }
+  .claw-theme .claw-brand-compact { height: 48px; padding: 0 10px; border-radius: 12px; }
 }
-@media (prefers-reduced-motion: reduce) { .claw-theme .claw-brand-inner, .claw-theme .claw-brand-mascot, .claw-theme .claw-brand-bar canvas { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .claw-theme .claw-brand-compact { transition: none; } }
 /* 6) 모바일 세로: 페이지 여백·카드 반경·히어로 크기 */
 @media (max-width: 640px) {
   .claw-theme .dashboard-shell-scroll { padding-left: 10px; padding-right: 10px; }

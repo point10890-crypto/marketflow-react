@@ -87,22 +87,37 @@ export function ClawHero({ data, heartbeatAge }: { data: ClawOverview | null; he
     );
 }
 
-/** 대시보드 전 페이지 공통 고정 타이틀 — 이미지 컨셉(중앙 마스코트 + 양옆 ASCII 집게 + 붉은 아우라).
- *  상단에서는 배너(약 170px), 스크롤하면 같은 요소가 한 줄(64px)로 접힌다. 링크는 Claw LIVE 전체 화면. */
+/** 대시보드 전 페이지 공통 타이틀 — 이미지 컨셉(중앙 마스코트 + 양옆 ASCII 집게 + 붉은 아우라).
+ *
+ *  스크롤 성능 원칙 (2026-08-23 버벅임 수정):
+ *   - 상단 배너(약 172px)는 일반 흐름에 두어 콘텐츠와 함께 자연스럽게 올라간다. 높이·패딩을 애니메이션하지 않는다.
+ *   - 접힌 한 줄 바는 높이 0 인 sticky 래퍼 안의 overlay. 보이고 숨기는 것은 transform/opacity 뿐이라
+ *     레이아웃 재배치·콘텐츠 점프가 없고, backdrop blur 도 쓰지 않는다(컴포지터 비용 0에 가깝게).
+ *   - 임계값에 히스테리시스를 둬(배너가 거의 다 올라간 뒤 접고, 맨 위 근처에서만 펼침) 짧은 페이지에서의 진동을 막는다.
+ *  링크는 Claw LIVE 전체 화면. */
 export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
     const state = data?.loop.state ?? null;
     const mood = MOOD[state ?? 'idle'];
-    const ref = useRef<HTMLAnchorElement | null>(null);
+    const bannerRef = useRef<HTMLAnchorElement | null>(null);
     const [compact, setCompact] = useState(false);
 
     useEffect(() => {
-        const el = ref.current;
-        const scroller = el?.closest('.dashboard-shell-scroll') as HTMLElement | null;
-        if (!scroller) return;
+        const banner = bannerRef.current;
+        const scroller = banner?.closest('.dashboard-shell-scroll') as HTMLElement | null;
+        if (!banner || !scroller) return;
         let raf = 0;
+        let current = false;
         const onScroll = () => {
             cancelAnimationFrame(raf);
-            raf = requestAnimationFrame(() => setCompact(scroller.scrollTop > 40));
+            raf = requestAnimationFrame(() => {
+                const y = scroller.scrollTop;
+                // 배너 하단이 뷰포트 위로 나가는 지점(offsetTop + 높이). 접힘/펼침 임계를 48px 벌려 진동 방지.
+                // 배너가 아직 레이아웃되지 않았으면(높이 0) 접지 않는다.
+                const h = banner.offsetHeight;
+                const bottom = banner.offsetTop + h;
+                const next = h > 0 && (current ? y > bottom - 56 : y > bottom - 8);
+                if (next !== current) { current = next; setCompact(next); }
+            });
         };
         onScroll();
         scroller.addEventListener('scroll', onScroll, { passive: true });
@@ -110,27 +125,45 @@ export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
     }, []);
 
     return (
-        <Link
-            ref={ref}
-            to="/dashboard/kr/claw"
-            className={`claw-brand-bar group relative block overflow-hidden rounded-2xl border bg-[#0a0709] transition-[border-color] hover:border-[#ff5a3c]/35 ${compact ? 'is-compact' : ''}`}
-            aria-label="Claw LIVE 열기"
-        >
-            <ClawAsciiBackdrop live={state === 'running'} tone={toneOf(state)} />
-            <div className="claw-brand-aura pointer-events-none absolute inset-0 bg-[radial-gradient(45%_90%_at_50%_40%,rgba(255,90,60,.26),rgba(255,90,60,0)_72%)]" />
-            <div className="claw-brand-inner relative flex items-center justify-center gap-3 px-4 text-center">
-                <ClawMascot state={state} size={84} className="claw-brand-mascot shrink-0 drop-shadow-[0_10px_28px_rgba(255,90,60,.38)]" />
-                <div className="claw-brand-text min-w-0">
-                    <div className="claw-brand-cap font-mono text-[10px] tracking-[0.26em] text-gray-400">관찰 전용 · 사용자 PC에서 실행 · 매매 없음</div>
-                    <div className="claw-brand-headline truncate"><Headline size="sm" /></div>
-                    <div className="claw-brand-mood mt-1 flex flex-wrap items-center justify-center gap-2">
-                        <LiveBadge state={state} />
-                        <span className="truncate text-[11px] text-gray-400">{data ? mood.line : '불러오는 중이에요…'}</span>
+        <>
+            {/* 접힌 한 줄 바 — 높이 0 sticky 래퍼(레이아웃 기여 없음) + overlay. 배너보다 앞에 두어 항상 상단에 고정 */}
+            <div className="claw-brand-sticky" aria-hidden={!compact}>
+                <Link
+                    to="/dashboard/kr/claw"
+                    tabIndex={compact ? 0 : -1}
+                    className={`claw-brand-compact group ${compact ? 'is-on' : ''}`}
+                    aria-label="Claw LIVE 열기"
+                    data-testid="claw-brand-compact"
+                >
+                    <ClawMascot state={state} size={40} className="shrink-0 drop-shadow-[0_6px_16px_rgba(255,90,60,.35)]" />
+                    <div className="min-w-0 flex-1 truncate"><Headline size="sm" /></div>
+                    <LiveBadge state={state} />
+                </Link>
+            </div>
+
+            {/* 상단 배너 — 일반 흐름, 콘텐츠와 함께 스크롤. 크기 애니메이션 없음 */}
+            <Link
+                ref={bannerRef}
+                to="/dashboard/kr/claw"
+                className="claw-brand-bar group relative block overflow-hidden rounded-2xl border bg-[#0a0709] transition-[border-color] hover:border-[#ff5a3c]/35"
+                aria-label="Claw LIVE 열기"
+                data-testid="claw-brand-banner"
+            >
+                <ClawAsciiBackdrop live={state === 'running'} tone={toneOf(state)} />
+                <div className="claw-brand-aura pointer-events-none absolute inset-0 bg-[radial-gradient(45%_90%_at_50%_40%,rgba(255,90,60,.26),rgba(255,90,60,0)_72%)]" />
+                <div className="claw-brand-inner relative flex flex-col items-center justify-center gap-3 px-4 text-center">
+                    <ClawMascot state={state} size={84} className="claw-brand-mascot shrink-0 drop-shadow-[0_10px_28px_rgba(255,90,60,.38)]" />
+                    <div className="claw-brand-text min-w-0">
+                        <div className="claw-brand-cap font-mono text-[10px] tracking-[0.26em] text-gray-400">관찰 전용 · 사용자 PC에서 실행 · 매매 없음</div>
+                        <div className="claw-brand-headline truncate"><Headline size="sm" /></div>
+                        <div className="claw-brand-mood mt-1 flex flex-wrap items-center justify-center gap-2">
+                            <LiveBadge state={state} />
+                            <span className="truncate text-[11px] text-gray-400">{data ? mood.line : '불러오는 중이에요…'}</span>
+                        </div>
                     </div>
                 </div>
-                <span className="claw-brand-badge-compact hidden"><LiveBadge state={state} /></span>
-            </div>
-        </Link>
+            </Link>
+        </>
     );
 }
 
