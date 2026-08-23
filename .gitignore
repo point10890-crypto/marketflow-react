@@ -157,3 +157,6 @@ frontend/
 data/claw/
 # .env backups written by scripts/apply_claw_env.ps1 (contain secrets)
 .env.bak*
+
+# local handoff kit (bundles + memory copies) — never commit
+handoff_kit/
