@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI, briefingAPI, commonAPI, communityAPI, type AIBriefing, type MarketIndexItem, type KRAIChartAnalysisResponse, type USAIChartAnalysisResponse, type CommunitySummary } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 import { useAuth } from '@/contexts/AuthContext';
+import { canAccessAiBain } from '@/lib/auth';
 import { useSmartRefresh } from '@/hooks/useAutoRefresh';
 import MiroFishFearIndexCard from '@/components/mirofish/MiroFishFearIndexCard';
 
@@ -453,6 +454,8 @@ function MobileDashboardConsole({
     aiBriefing: AIBriefing | null;
     marketIndices: MarketIndexItem[];
 }) {
+    const { user: consoleUser } = useAuth();
+    const showAiBain = canAccessAiBain(consoleUser);
     const topSignal = todaySummary?.top_signal;
     const leadingTop = leadingData?.results?.[0];
     const topName = topSignal?.name ?? leadingTop?.name ?? '스캔 대기';
@@ -511,7 +514,9 @@ function MobileDashboardConsole({
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-                <MobileQuickLink to="/dashboard/ai-bain" icon="fa-robot" label="AI Brain" meta="GraphRAG 분석" tone="bg-cyan-400/15 text-cyan-300" />
+                {showAiBain && (
+                    <MobileQuickLink to="/dashboard/ai-bain" icon="fa-robot" label="AI Brain" meta="GraphRAG 분석" tone="bg-cyan-400/15 text-cyan-300" />
+                )}
                 <MobileQuickLink to="/dashboard/manual-stock-analysis" icon="fa-table-list" label="AI 분석 목록" meta="루프 스크래퍼" tone="bg-orange-400/15 text-orange-300" />
                 <MobileQuickLink to="/dashboard/kr/leading-stocks" icon="fa-bolt" label="주도주 LIVE" meta="실시간 후보" tone="bg-emerald-400/15 text-emerald-300" />
                 <MobileQuickLink to="/dashboard/kr/closing-bet" icon="fa-chart-simple" label="종가베팅" meta="S/A 후보" tone="bg-violet-400/15 text-violet-300" />
@@ -791,9 +796,11 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
 
             {/* ── Opportunity Score + Top Signal ── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2">
-                    <MiroFishFearIndexCard variant="compact" />
-                </div>
+                {canAccessAiBain(user) && (
+                    <div className="sm:col-span-2">
+                        <MiroFishFearIndexCard variant="compact" />
+                    </div>
+                )}
                 <OpportunityScoreCard
                     score={opportunityScore}
                     krScore={krScore}
@@ -1137,12 +1144,9 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 </Link>
             )}
 
-            {/* ── AI Brain 알파 스캐너 Section (Pro + AI Brain 구독자 진입점) ── */}
+            {/* ── AI Brain 알파 스캐너 Section (AI Brain 구독자/admin 전용 진입점 — 미구독자는 위 업그레이드 배너만) ── */}
             {(() => {
-                const tier = user?.tier ?? null;
-                const role = user?.role ?? 'user';
-                const isAdmin = role === 'admin';
-                const hasProAccess = isAdmin || tier === 'pro' || tier === 'premium';
+                if (!canAccessAiBain(user)) return null;
                 return (
                     <Link
                         to="/dashboard/ai-bain"
@@ -1166,15 +1170,9 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                {hasProAccess ? (
-                                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/10 text-cyan-300 tabular-nums">
-                                        이용 가능
-                                    </span>
-                                ) : (
-                                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                                        구독 필요
-                                    </span>
-                                )}
+                                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/10 text-cyan-300 tabular-nums">
+                                    이용 가능
+                                </span>
                                 <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-cyan-400 transition-colors" />
                             </div>
                         </div>
@@ -1198,12 +1196,10 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                         <div className="relative border-t border-white/[0.06] pt-2.5">
                             <div className="flex items-center justify-between gap-3">
                                 <p className="text-xs text-gray-300 leading-relaxed">
-                                    {hasProAccess
-                                        ? '실시간 알파 스캐너 결과와 MCP TOP 3 이벤트를 한 곳에서 확인.'
-                                        : 'Pro + AI Brain 구독으로 실시간 시그널 서비스를 받아보세요.'}
+                                    실시간 알파 스캐너 결과와 MCP TOP 3 이벤트를 한 곳에서 확인.
                                 </p>
-                                <span className={`shrink-0 text-[11px] font-bold ${hasProAccess ? 'text-cyan-300' : 'text-amber-300'}`}>
-                                    {hasProAccess ? '전체 보기 →' : '구독 신청 →'}
+                                <span className="shrink-0 text-[11px] font-bold text-cyan-300">
+                                    전체 보기 →
                                 </span>
                             </div>
                         </div>

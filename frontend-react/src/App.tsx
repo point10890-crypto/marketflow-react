@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { canAccessAiBain } from '@/lib/auth';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoginPage from '@/pages/auth/LoginPage';
@@ -113,6 +114,16 @@ function ProGuard({ children }: { children: React.ReactNode }) {
     return <Navigate to="/plan-select" replace />;
 }
 
+// AI Brain 섹션 가드 — 활성 AI Brain 애드온 구독자 또는 admin 만 통과 (canAccessAiBain).
+// ProGuard 안쪽에 중첩해 쓴다 (로그인/만료 판정은 ProGuard 가 먼저). 그 외 유저는
+// /dashboard/ai-bain 으로 보내 AiBainPage 의 신청/재구독 안내(UpgradePrompt)를 보게 한다.
+function AiBainGuard({ children }: { children: React.ReactNode }) {
+    const { user, loading } = useAuth();
+    if (loading) return <LoadingFallback />;
+    if (canAccessAiBain(user)) return <>{children}</>;
+    return <Navigate to="/dashboard/ai-bain" replace />;
+}
+
 function AdminGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     const location = useLocation();
@@ -199,7 +210,7 @@ export default function App() {
                         <Route path="us/vcp" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsVcpPage /></Suspense></ProGuard>} />
                         <Route path="us/etf" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsEtfPage /></Suspense></ProGuard>} />
                         <Route path="us/ai-chart" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsAIChartPage /></Suspense></ProGuard>} />
-                        <Route path="ai-bain/goodrich" element={<ProGuard><Suspense fallback={<LoadingFallback />}><GoodrichFundManagerPage /></Suspense></ProGuard>} />
+                        <Route path="ai-bain/goodrich" element={<ProGuard><AiBainGuard><Suspense fallback={<LoadingFallback />}><GoodrichFundManagerPage /></Suspense></AiBainGuard></ProGuard>} />
                         <Route path="ai-bain" element={<ProGuard><Suspense fallback={<LoadingFallback />}><AiBainPage /></Suspense></ProGuard>} />
                         <Route path="crypto" element={<ProGuard><Suspense fallback={<LoadingFallback />}><CryptoOverviewPage /></Suspense></ProGuard>} />
                         <Route path="crypto/signals" element={<ProGuard><Suspense fallback={<LoadingFallback />}><CryptoSignalsPage /></Suspense></ProGuard>} />

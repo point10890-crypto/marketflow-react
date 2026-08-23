@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { canAccessAiBain } from '@/lib/auth';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { InstallGuide } from './InstallPrompt';
 
@@ -13,6 +14,8 @@ interface NavItem {
     glow?: boolean;
     dividerBefore?: string;
     badge?: string;
+    // AI Brain 구독자(또는 admin)에게만 렌더 — canAccessAiBain()
+    aibainOnly?: boolean;
     children?: { name: string; href: string; color: string }[];
 }
 
@@ -35,6 +38,7 @@ const globalTools: NavItem[] = [
         color: 'text-cyan-400',
         bg: 'from-cyan-500/15 to-cyan-600/5',
         badge: 'NEW',
+        aibainOnly: true,
         children: [
             { name: '알파 스캐너', href: '/dashboard/ai-bain', color: 'bg-cyan-500' },
             { name: 'Goodrich TOP 3', href: '/dashboard/ai-bain/goodrich', color: 'bg-emerald-500' },
@@ -108,6 +112,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     const isLocked = false;
     const userRole = user?.role || 'user';
     const isLoggedIn = !!user;
+    const showAiBain = canAccessAiBain(user);
+    const visibleGlobalTools = globalTools.filter((item) => !item.aibainOnly || showAiBain);
 
     const handleSidebarInstall = async () => {
         const result = await install();
@@ -139,7 +145,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                     <span className="text-gray-500 ml-0.5">Flow</span>
                 </div>
                 <div className="space-y-1 mb-1">
-                    {globalTools.map((item) => {
+                    {visibleGlobalTools.map((item) => {
                         const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                         const isExpanded = isActive && item.children;
                         return (

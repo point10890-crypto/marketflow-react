@@ -1,10 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { canAccessAiBain } from '@/lib/auth';
 
 const primaryItems = [
     { name: 'Summary', href: '/dashboard', icon: 'fas fa-tachometer-alt' },
     { name: 'Briefing', href: '/dashboard/briefing', icon: 'fa-newspaper' },
-    { name: 'AI Brain', href: '/dashboard/ai-bain', icon: 'fa-robot' },
-    { name: 'Goodrich TOP 3', href: '/dashboard/ai-bain/goodrich', icon: 'fa-ranking-star' },
+    // AI Brain 항목은 구독자/admin 에게만 (canAccessAiBain)
+    { name: 'AI Brain', href: '/dashboard/ai-bain', icon: 'fa-robot', aibainOnly: true },
+    { name: 'Goodrich TOP 3', href: '/dashboard/ai-bain/goodrich', icon: 'fa-ranking-star', aibainOnly: true },
     { name: 'KR', href: '/dashboard/kr', icon: 'fa-chart-line' },
     { name: 'US', href: '/dashboard/us', icon: 'fa-globe-americas' },
     { name: 'Crypto', href: '/dashboard/crypto', icon: 'fab fa-bitcoin' },
@@ -51,6 +54,9 @@ function iconClass(icon: string) {
 export default function MobileDashboardRail() {
     const location = useLocation();
     const pathname = location.pathname ?? '';
+    const { user } = useAuth();
+    const showAiBain = canAccessAiBain(user);
+    const visibleItems = primaryItems.filter((item) => !('aibainOnly' in item && item.aibainOnly) || showAiBain);
     if (!pathname.startsWith('/dashboard')) return null;
 
     const current = pageTitles.find(([pattern]) => pattern.test(pathname));
@@ -67,15 +73,17 @@ export default function MobileDashboardRail() {
                         <span className="shrink-0 text-[10px] font-bold text-slate-500">{subtitle}</span>
                     </div>
                 </div>
-                <Link
-                    to="/dashboard/ai-bain"
-                    className="shrink-0 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-1.5 text-[10px] font-black text-cyan-200"
-                >
-                    AI Brain
-                </Link>
+                {showAiBain && (
+                    <Link
+                        to="/dashboard/ai-bain"
+                        className="shrink-0 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-1.5 text-[10px] font-black text-cyan-200"
+                    >
+                        AI Brain
+                    </Link>
+                )}
             </div>
             <nav className="mobile-dashboard-rail-scroll flex gap-1.5 overflow-x-auto pb-0.5">
-                {primaryItems.map((item) => {
+                {visibleItems.map((item) => {
                     const isActive = activeFor(pathname, item.href);
                     return (
                         <Link

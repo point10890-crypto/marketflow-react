@@ -1,9 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { canAccessAiBain } from '@/lib/auth';
 
 const tabs = [
     { name: 'Summary', href: '/dashboard', icon: 'fas fa-tachometer-alt', color: 'purple' },
-    { name: 'AI Brain', href: '/dashboard/ai-bain', icon: 'fa-robot', color: 'cyan' },
+    // AI Brain 탭은 구독자/admin 에게만 (canAccessAiBain)
+    { name: 'AI Brain', href: '/dashboard/ai-bain', icon: 'fa-robot', color: 'cyan', aibainOnly: true },
     { name: 'KR', href: '/dashboard/kr', icon: 'fa-chart-line', color: 'rose' },
     { name: 'US', href: '/dashboard/us', icon: 'fa-globe-americas', color: 'green' },
     { name: 'Crypto', href: '/dashboard/crypto', icon: 'fab fa-bitcoin', color: 'yellow' },
@@ -46,12 +48,14 @@ export default function BottomTabBar() {
     const pathname = location.pathname ?? '';
     const { user } = useAuth();
     const isLocked = !!user && user.tier !== 'pro' && user.tier !== 'premium' && user.role !== 'admin';
+    const showAiBain = canAccessAiBain(user);
+    const visibleTabs = tabs.filter((tab) => !('aibainOnly' in tab && tab.aibainOnly) || showAiBain);
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-safe-bottom">
             <div className="border-t border-white/5 bg-[#0a0a0a]/92 backdrop-blur-xl">
                 <div className="mobile-bottom-tabs flex items-center gap-1 overflow-x-auto px-2 py-1.5">
-                    {tabs.map((tab) => {
+                    {visibleTabs.map((tab) => {
                         const selected = isActive(pathname, tab.href);
                         return (
                             <Link

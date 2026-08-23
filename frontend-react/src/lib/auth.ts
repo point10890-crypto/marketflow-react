@@ -123,3 +123,13 @@ export function isAuthenticated(): boolean {
 export function isAdmin(): boolean {
     return getUser()?.role === 'admin';
 }
+
+/**
+ * AI Brain 섹션 노출 여부 — 관리자 또는 활성 AI Brain 애드온 구독자만 true.
+ * 내비/Summary 카드/라우트 가드가 전부 이 한 곳을 본다 (백엔드 admin_or_aibain_required 와 동일 기준).
+ * 만료·미구독 Pro 유저는 false → 섹션 자체가 보이지 않고, Summary 의 업그레이드 배너만 남는다.
+ */
+export function canAccessAiBain(user: { role?: string | null; is_aibain_active?: boolean | null } | null | undefined): boolean {
+    if (!user) return false;
+    return user.role === 'admin' || !!user.is_aibain_active;
+}
