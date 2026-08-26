@@ -129,8 +129,19 @@
 - **P3 마감 주도주 배포·검증 완료** (`6df05b7`): 재부팅으로 라우트 활성 → 무인증 401 정상, 로컬 토큰 실조회 = day 20260826 · 26종목 · 전이 88건 · close_brief delivered. FE는 CF Pages 배포(번들 suffix 6df05b7) — AiBain 대시보드에 카드 라이브.
 - **텔레그램 전 구간 검증**: 검출 2종목(047040·317400) 검증형 발송 delivered(message_id 20916) + Claw 마감 브리핑 delivered. 당일 Claw 실적: 583틱·88이벤트·55/55 발송.
 
+### P2 — 드리프트 통합으로 완료 (2026-08-27 `61b3bf2`)
+
+드리프트 검토 결과, 코덱스 세션이 **P2 본체(관측 원장)를 이미 구현**해 두었음이 확인되어(관측 하네스 스펙 v3.1 + `marketflow_claw/observation.py` 1,017줄 + 테스트 11종), 신규 구현 대신 **검토·병합·배포**로 완료:
+
+- **관측 원장**: 별도 SQLite(regime_contexts·signal_instances·state_events·signal_outcomes), record_tick fail-open, 성숙 horizon 멱등 갱신, `GET /api/kr/claw/{scorecards,quality}`. v3 스펙의 episode/RegimeContext/shadow 설계를 상회(시그널 인스턴스 단위·이중축 레짐·세로형 outcome).
+- **alpha_core**: GET 전용 관측·페이퍼 운영면 5 라우트 + no-execution boundary 테스트 — E-게이트 폐쇄를 코드로 고정.
+- **KIS 무결성 재작업**: 점수 조작 입력 차단, data_quality 게이트, 토큰/쿼터 filelock. 응답 additive.
+- **detection_lab**: 운영 게이트 정합(`live_phase_gate_blocked` — 남은 것 #1 해소) + 재현성 manifest(git rev·입력 SHA-256 — R0b 게이트).
+- **FE**: 모바일 스크롤/safe-area 개편 + AlphaCoreOpsCard·ClawObservationCard (CloseLeadersCard 와 공존). 검증: BE 전 배치 + FE 141/141 + 342 라우트 부팅.
+- **보류(스태시 유지)**: 워치독 6종·autostart vbs·브랜드 리네임 — 태스크 계약 변경이라 별도 검증 릴리스 필요.
+
 ### 남은 것
-1. lab V1 게이트를 운영 게이트와 정합(양국면 차단 파라미터화) — 소규모 후속
-2. `stash@{0}` 드리프트 작업본(23파일, +3,823줄) 검토 → 채택분 정식 커밋 (특히 국면별 PF, 확장 러너, regime 수정)
-3. miniPC 이더넷 고정 IP(55.x) 복원 — 현재 APIPA(169.254.144.42), 두 차례 재부팅에도 유지됐으나 보장 없음 (사용자 수행/승인 필요)
-4. 다음 구현: P2 관측 원장(episode·RegimeContext·무효화 shadow)
+1. 보류분(워치독·autostart·브랜드) 별도 릴리스 — miniPC 태스크 계약 검증 동반 (pidfile 계약·`--send` 강제·5001 관할 이전·PWA 재설치 프롬프트)
+2. miniPC 이더넷 고정 IP(55.x) 복원 — 현재 APIPA(169.254.144.42) (사용자 수행/승인 필요)
+3. 관측 원장 표본 축적 후 shadow invalidator 성적 평가 → R2/R3 정책 판정 재개
+4. 8/16 vs 8/24 vs 8/26 리포트 3자 대사 — 게이트 엣지 감쇠 원인 규명 (이제 manifest 로 재현 가능)
