@@ -93,7 +93,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
     return (
         <>
-            <header className="h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-white/10 md:border-white/5 bg-[#111113] md:bg-[#09090b]/80 backdrop-blur-md shrink-0 z-40">
+            <header className="mobile-safe-top-header h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-white/10 md:border-white/5 bg-[#111113] md:bg-[#09090b]/80 md:backdrop-blur-md shrink-0 z-40">
                 {/* Left: Hamburger (mobile) + Page Title */}
                 <div className="flex items-center gap-3">
                     <button

@@ -435,7 +435,7 @@ export default function Sidebar({ mobile = false, isOpen = false, onClose }: Sid
     // Mobile overlay sidebar
     return (
         <div
-            className={`fixed inset-0 z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            className={`fixed inset-0 z-[110] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         >
             {/* Backdrop */}
             <div
@@ -444,14 +444,14 @@ export default function Sidebar({ mobile = false, isOpen = false, onClose }: Sid
             />
             {/* Sidebar panel */}
             <aside
-                className={`absolute top-0 left-0 h-full w-80 apple-glass flex flex-col shadow-2xl shadow-black/50 transition-transform duration-300 ease-out ${
+                className={`mobile-safe-top-sidebar absolute top-0 left-0 h-full w-80 apple-glass flex flex-col shadow-2xl shadow-black/50 transition-transform duration-300 ease-out ${
                     isOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
             >
                 {/* Close button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-5 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors z-10"
+                    className="mobile-safe-top-sidebar-close absolute top-5 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors z-10"
                 >
                     <i className="fas fa-times text-sm"></i>
                 </button>

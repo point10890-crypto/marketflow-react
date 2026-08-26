@@ -1507,12 +1507,64 @@ def kr_screener_leading():
 
         market_open = is_market_open()
         live_ttl = get_live_file_ttl_seconds()
+        request_refresh_raw = os.getenv('KIS_SCREENER_REQUEST_REFRESH_ENABLED')
+        if request_refresh_raw is None:
+            # The production 5003 API is explicitly request-only. GET polling
+            # must never become a hidden KIS producer; the canonical 5001
+            # ScreenerWorker owns refreshes and this route serves its artifact.
+            request_refresh_raw = os.getenv('MARKETFLOW_BACKGROUND_WORKERS', 'true')
+        request_refresh_enabled = request_refresh_raw.strip().lower() not in {
+            '0', 'false', 'no', 'off'
+        }
 
         def _run_fresh_scan():
+            if not request_refresh_enabled:
+                return {
+                    "error": "screener_request_refresh_disabled",
+                    "results": [],
+                    "timestamp": datetime.now().isoformat(),
+                    "market_status": "open" if market_open else "closed",
+                    "data_quality": {
+                        "status": "unavailable",
+                        "critical_complete": False,
+                        "score_reliable": False,
+                        "safe_to_replace_latest": False,
+                        "missing_sources": ["canonical_screener_worker"],
+                    },
+                }
             try:
                 return run_screening(force=True)
             except TypeError:
                 return run_screening()
+
+        def _safe_scan(payload):
+            if (
+                not isinstance(payload, dict)
+                or payload.get("error")
+                or payload.get("poller_busy")
+            ):
+                return False
+            quality = payload.get("data_quality")
+            return not isinstance(quality, dict) or (
+                quality.get("critical_complete") is not False
+                and quality.get("safe_to_replace_latest") is not False
+                and quality.get("score_reliable") is not False
+            )
+
+        def _scan_failure_reason(payload, fallback):
+            if not isinstance(payload, dict):
+                return fallback
+            if payload.get("poller_busy"):
+                return "screener_poller_busy"
+            if payload.get("error"):
+                return payload["error"]
+            quality = payload.get("data_quality")
+            if isinstance(quality, dict) and not _safe_scan(payload):
+                reasons = quality.get("partial_failure_reasons")
+                if isinstance(reasons, list) and reasons:
+                    return reasons[0]
+                return "score_inputs_incomplete"
+            return fallback
 
         def _serve(payload, served_from, stale_reason=None, live_refresh=False):
             data = copy.deepcopy(payload) if isinstance(payload, dict) else payload
@@ -1522,6 +1574,7 @@ def kr_screener_leading():
                 is_stale = age is None or age > max_age_seconds
                 data["served_from"] = served_from
                 data["quote_mode"] = data.get("quote_mode") or get_quote_mode()
+                data["request_refresh_enabled"] = request_refresh_enabled
                 data["live_refresh_recommended"] = bool(live_refresh)
                 data["freshness"] = {
                     "age_seconds": round(age, 1) if age is not None else None,
@@ -1540,12 +1593,17 @@ def kr_screener_leading():
             cached_data = _result_cache["data"]
             cached_ts = _result_cache["ts"]
         if cached_data and (_time.time() - cached_ts) < 3:
-            if not market_open or is_live_result_fresh(cached_data, max_age_seconds=live_ttl):
+            if _safe_scan(cached_data) and (
+                not market_open
+                or is_live_result_fresh(cached_data, max_age_seconds=live_ttl)
+            ):
                 return _serve(cached_data, "memory_cache", live_refresh=market_open)
 
         # 2. 장 마감 시에도 stale 파일이면 KIS로 1회 재생성 시도
         if not market_open:
             latest = load_latest()
+            if latest and not _safe_scan(latest):
+                latest = None
             if latest:
                 latest["market_status"] = "closed"
                 age = result_age_seconds(latest)
@@ -1554,43 +1612,57 @@ def kr_screener_leading():
                     return _serve(latest, "latest_file", live_refresh=False)
 
                 result = _run_fresh_scan()
-                if result and result.get("results"):
+                if result and result.get("results") and _safe_scan(result):
                     result["market_status"] = "closed"
                     return _serve(result, "offhours_refresh", live_refresh=False)
 
                 return _serve(
                     latest,
                     "stale_file_fallback",
-                    stale_reason=(result or {}).get("error") or "offhours_refresh_failed",
+                    stale_reason=_scan_failure_reason(
+                        result, "offhours_refresh_failed"
+                    ),
                     live_refresh=False,
                 )
 
             result = _run_fresh_scan()
-            if result and result.get("results"):
+            if result and result.get("results") and _safe_scan(result):
                 result["market_status"] = "closed"
                 return _serve(result, "offhours_refresh", live_refresh=False)
-            return _serve(result, "offhours_refresh_error", live_refresh=False)
+            return _serve(
+                result,
+                "offhours_refresh_error",
+                stale_reason=_scan_failure_reason(result, "offhours_refresh_failed"),
+                live_refresh=False,
+            )
 
         # 3. 장중 — 파일 캐시 반환 + 백그라운드 스캔 트리거
         latest = load_latest()
+        if latest and not _safe_scan(latest):
+            latest = None
         if latest:
             if is_live_result_fresh(latest, max_age_seconds=live_ttl):
                 return _serve(latest, "fresh_file", live_refresh=True)
 
         # 4. 캐시 없음 — 라이브 실행 (첫 호출)
         result = _run_fresh_scan()
-        if result and result.get("results"):
+        if result and result.get("results") and _safe_scan(result):
             return _serve(result, "live_scan", live_refresh=True)
 
         if latest:
             return _serve(
                 latest,
                 "stale_file_fallback",
-                stale_reason=(result or {}).get("error") or "live_scan_failed",
+                stale_reason=_scan_failure_reason(result, "live_scan_failed"),
                 live_refresh=True,
             )
 
-        return _serve(result, "live_scan_error", live_refresh=True)
+        return _serve(
+            result,
+            "live_scan_error",
+            stale_reason=_scan_failure_reason(result, "live_scan_failed"),
+            live_refresh=True,
+        )
     except Exception as e:
         logger.warning(f"스크리너 에러: {e}")
         return jsonify({"error": str(e), "results": [], "timestamp": "", "market_status": "error",

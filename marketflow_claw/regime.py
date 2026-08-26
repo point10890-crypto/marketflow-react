@@ -26,7 +26,7 @@ def evaluate(snapshot: dict[str, Any], gate: dict[str, Any], *, market_open: boo
     if src_stale:
         reasons.append(f"leaders file stale {snapshot.get('file_age_s')}s")
 
-    rows = snapshot.get('rows') or []
+    rows = [r for r in (snapshot.get('rows') or []) if not r.get('detection_unknown')]
     leaders = [r for r in rows if r.get('grade') in ('S', 'A')]
     up = sum(1 for r in rows if (r.get('chg') or 0) > 0)
     breadth = round(100 * up / len(rows)) if rows else None

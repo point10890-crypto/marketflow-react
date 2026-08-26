@@ -1,4 +1,6 @@
 """Regime classifier tests — deterministic, lookahead-safe, no network."""
+import csv
+
 from app.services.mirofish.intelligence import regime
 
 
@@ -43,3 +45,50 @@ def test_empty_prices_safe():
     tl = regime.build_regime_timeline({}, write=False)
     assert tl['by_date'] == {}
     assert regime.classify_regime('2026-02-10', tl) == 'NEUTRAL'
+
+
+def test_csv_loader_keeps_latest_valid_duplicate_and_reports_quality(tmp_path):
+    path = tmp_path / 'prices.csv'
+    fieldnames = ['ticker', 'date', 'current_price', 'update_time']
+    with path.open('w', encoding='utf-8', newline='') as target:
+        writer = csv.DictWriter(target, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows([
+            {'ticker': 'AAA', 'date': '2026-02-01', 'current_price': '100',
+             'update_time': '2026-02-01 15:00:00'},
+            {'ticker': 'AAA', 'date': '2026-02-01', 'current_price': '101',
+             'update_time': '2026-02-01 15:10:00'},
+            # Latest source row is invalid, so it cannot replace the latest valid row.
+            {'ticker': 'AAA', 'date': '2026-02-01', 'current_price': '0',
+             'update_time': '2026-02-01 15:20:00'},
+            {'ticker': 'BBB', 'date': 'not-a-date', 'current_price': '50',
+             'update_time': '2026-02-01 15:00:00'},
+        ])
+
+    prices, quality = regime.load_universe_prices(path, return_quality=True)
+
+    assert prices == {'AAA': [{'date': '2026-02-01', 'current_price': 101.0}]}
+    assert quality['dedupe_policy'] == regime.PRICE_DEDUPE_POLICY
+    assert quality['duplicate_keys'] == 1
+    assert quality['duplicate_rows_removed'] == 1
+    assert quality['conflicting_duplicate_keys'] == 1
+    assert quality['invalid_price_rows'] == 1
+    assert quality['invalid_key_rows'] == 1
+    assert quality['max_data_date'] == '2026-02-01'
+
+
+def test_regime_builder_deduplicates_provided_ticker_dates():
+    rows = _series(100, [1] * 20)
+    rows += [
+        {'date': '2026-02-21', 'current_price': 50,
+         'update_time': '2026-02-21 15:00:00'},
+        {'date': '2026-02-21', 'current_price': 200,
+         'update_time': '2026-02-21 15:10:00'},
+    ]
+
+    timeline = regime.build_regime_timeline({'AAA': rows}, ma_window=20, write=False)
+
+    assert timeline['schema_version'] == 'mirofish.regime_timeline.v2'
+    assert timeline['by_date']['2026-02-21']['total'] == 1
+    assert timeline['by_date']['2026-02-21']['above'] == 1
+    assert timeline['data_quality']['duplicate_keys'] == 1

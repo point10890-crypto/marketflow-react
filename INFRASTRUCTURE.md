@@ -25,6 +25,7 @@ Last updated: 2026-08-21
 | 프로젝트 루트 | `C:\bitman_marketfloww` | `/c/bitman_marketfloww` |
 | Python venv | `C:\bitman_marketfloww\.venv\Scripts\python.exe` | `/c/bitman_marketfloww/.venv/Scripts/python.exe` |
 | 데이터 디렉토리 | `C:\bitman_marketfloww\data` | `/c/bitman_marketfloww/data` |
+| AlphaClaw 페이퍼 원장 | `C:\bitman_marketfloww\data\alphaclaw\paper.db` | `/c/bitman_marketfloww/data/alphaclaw/paper.db` |
 | 로그 디렉토리 | `C:\bitman_marketfloww\logs` | `/c/bitman_marketfloww/logs` |
 | 프론트엔드 | `C:\bitman_marketfloww\frontend-react` | `/c/bitman_marketfloww/frontend-react` |
 | ~~백엔드 (Spring)~~ | `C:\bitman_marketfloww\backend` (**DEAD CODE — 운영 배포 없음**) | 동일 |
@@ -73,6 +74,7 @@ Last updated: 2026-08-21
 | **5001** | Flask API (Local development only) | `flask_app.py` | `FLASK_PORT=5001` 또는 기본 로컬 실행 | 로컬만 |
 | **5173** | Vite dev (Local development only) | `frontend-react` | `npm run dev` | 로컬만 |
 | **N/A** | Scheduler 데몬 (Windows MiniPC production) | `scheduler.py --daemon` | Task `MarketFlow-Scheduler` | 없음 (백그라운드 잡) |
+| **N/A** | AlphaClaw v1.1 paper core | Flask 내부 GET projection + 별도 SQLite 원장 | 기존 Flask에서 읽기, 명시적 CLI로만 paper event 기록 | 없음 (실주문 경로 금지) |
 
 **금지/외부 점유 포트**:
 - `5002`: 구 cloudflared 잘못된 라우팅의 흔적, 사용 안 함
@@ -296,6 +298,16 @@ $env:FLASK_PORT='5001'
 - 현행 운영은 `C:\bitman_marketfloww` + Task Scheduler인 Windows이다.
   `/srv/marketflow`와 systemd는 future Linux target일 뿐이며, MarketFlow는
   Spring/`8080`을 절대 사용하지 않는다.
+
+### 7.1 AlphaClaw v1.1 안전 경계
+
+- 기본 모드는 `ALPHACLAW_MODE=shadow`이며 허용값은 `shadow|paper`뿐이다.
+- `data/alphaclaw/paper.db`는 기존 `data/claw/claw.db`와 분리된 내부 페이퍼
+  원장이다. 이 파일의 장애가 Claw 검출·Telegram 전달을 막아서는 안 된다.
+- Flask는 `/api/kr/alpha-core/*` GET projection만 제공한다. POST/PUT/PATCH/
+  DELETE, 브로커 주문 endpoint, 실계좌 자격증명 접근은 금지한다.
+- `paper` 모드도 내부 결정론 simulator만 허용한다. KIS 주문·정정·취소
+  API와 연결하는 변경은 별도 설계와 명시 승인 없이는 추가하지 않는다.
 
 ## 8. 변경 절차
 

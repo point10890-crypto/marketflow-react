@@ -73,6 +73,10 @@ def register_blueprints(app):
     from app.routes.kr_claw import kr_claw_bp
     app.register_blueprint(kr_claw_bp, url_prefix='/api/kr/claw')
 
+    # Alpha Core paper ledger — authenticated GET-only projections
+    from app.routes.kr_alpha_core import kr_alpha_core_bp
+    app.register_blueprint(kr_alpha_core_bp, url_prefix='/api/kr/alpha-core')
+
     # Manual Stock Analysis routes (legacy Excel workflow as a service)
     from app.routes.manual_stock_analysis import manual_stock_analysis_bp
     app.register_blueprint(manual_stock_analysis_bp, url_prefix='/api/manual-stock-analysis')

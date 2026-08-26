@@ -41,7 +41,7 @@ export default function ClawLeadersCard({ data }: Props) {
     };
 
     return (
-        <section className="claw-card-in relative rounded-3xl border border-white/[0.06] bg-[#13151f] p-5 lg:col-span-7">
+        <section className="claw-card-in relative rounded-2xl border border-white/[0.06] bg-[#13151f] p-4 sm:rounded-3xl sm:p-5 lg:col-span-7">
             <h2 className="mb-3 flex items-center gap-2 text-[15px] font-bold text-white">
                 <i className="fas fa-crown text-[13px] text-teal-400" />
                 주도주
@@ -60,7 +60,7 @@ export default function ClawLeadersCard({ data }: Props) {
                 {bs.length > 0 && (
                     <div className="mt-2 border-t border-white/[0.06] pt-2">
                         <button type="button" onClick={() => setShowB(v => !v)} aria-expanded={showB}
-                                className="rounded-lg px-2 py-1 text-[12px] font-bold text-gray-500 transition-colors hover:bg-white/[0.04] hover:text-gray-200">
+                                className="min-h-11 rounded-lg px-2 py-1 text-[12px] font-bold text-gray-500 transition-colors hover:bg-white/[0.04] hover:text-gray-200">
                             <i className={`fas fa-chevron-${showB ? 'up' : 'down'} mr-1.5 text-[10px]`} />B등급 {bs.length}종목 {showB ? '접기' : '보기'}
                         </button>
                         {showB && bs.map(r => <Row key={r.code} r={r} />)}

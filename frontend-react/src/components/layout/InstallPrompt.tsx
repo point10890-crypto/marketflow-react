@@ -2,20 +2,34 @@ import { useState, useEffect } from 'react';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
-export default function InstallPrompt() {
+interface InstallPromptProps {
+    onVisibilityChange?: (visible: boolean) => void;
+}
+
+export default function InstallPrompt({ onVisibilityChange }: InstallPromptProps) {
     const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
     const [showBanner, setShowBanner] = useState(false);
     const [showGuide, setShowGuide] = useState(false);
 
     useEffect(() => {
-        if (isInstalled) return;
+        if (isInstalled || !canInstall) {
+            setShowBanner(false);
+            setShowGuide(false);
+            return;
+        }
 
         const dismissed = safeGetItem('local', 'install-dismissed');
         if (dismissed && Date.now() - Number(dismissed) < 24 * 60 * 60 * 1000) return;
 
         const timer = setTimeout(() => setShowBanner(true), 3000);
         return () => clearTimeout(timer);
-    }, [isInstalled]);
+    }, [canInstall, isInstalled]);
+
+    const isVisible = showBanner && !isInstalled && canInstall;
+
+    useEffect(() => {
+        onVisibilityChange?.(isVisible);
+    }, [isVisible, onVisibilityChange]);
 
     const handleInstall = async () => {
         const result = await install();
@@ -32,13 +46,12 @@ export default function InstallPrompt() {
         safeSetItem('local', 'install-dismissed', String(Date.now()));
     };
 
-    if (!showBanner || isInstalled) return null;
-    if (!canInstall && !showBanner) return null;
+    if (!isVisible) return null;
 
     return (
         <>
             {/* Banner */}
-            <div className="fixed bottom-[5.5rem] md:bottom-6 left-3 right-3 z-[60]" style={{ animation: 'pwa-slide-up 0.3s ease-out' }}>
+            <div className="install-prompt-banner fixed left-3 right-3 z-[60] md:left-auto md:right-6 md:w-96" style={{ animation: 'pwa-slide-up 0.3s ease-out' }}>
                 <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-4 shadow-2xl shadow-black/50">
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2.5">
@@ -77,8 +90,8 @@ export default function InstallPrompt() {
 export function InstallGuide({ isIOS, onClose }: { isIOS: boolean; onClose: () => void }) {
     if (isIOS) {
         return (
-            <div className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-end justify-center" onClick={onClose}>
-                <div className="bg-[#1a1a2e] border-t border-white/10 rounded-t-3xl p-6 w-full max-w-md" style={{ animation: 'pwa-slide-up 0.3s ease-out' }} onClick={e => e.stopPropagation()}>
+            <div className="fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm flex items-end justify-center" onClick={onClose}>
+                <div className="install-guide-sheet bg-[#1a1a2e] border-t border-white/10 rounded-t-3xl p-6 w-full max-w-md" style={{ animation: 'pwa-slide-up 0.3s ease-out' }} onClick={e => e.stopPropagation()}>
                     <div className="w-10 h-1 bg-gray-600 rounded-full mx-auto mb-5" />
                     <h3 className="text-lg font-bold text-white mb-4 text-center">홈 화면에 추가하기</h3>
                     <div className="space-y-4">
@@ -102,7 +115,7 @@ export function InstallGuide({ isIOS, onClose }: { isIOS: boolean; onClose: () =
     }
 
     return (
-        <div className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center" onClick={onClose}>
+        <div className="fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm flex items-center justify-center" onClick={onClose}>
             <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
                 <h3 className="text-lg font-bold text-white mb-4 text-center">앱 설치 방법</h3>
                 <div className="space-y-4">

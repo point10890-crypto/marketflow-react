@@ -32,6 +32,15 @@ def test_kill_switch_blocks_send(monkeypatch, tmp_path):
     assert res['sent'] is False and 'CLAW_DELIVERY_ENABLED' in res['error']
 
 
+def test_master_kill_switch_blocks_send(monkeypatch, tmp_path):
+    _isolate(monkeypatch, tmp_path)
+    monkeypatch.setenv('CLAW_ENABLED', '0')
+    monkeypatch.setenv('CLAW_DELIVERY_ENABLED', '1')
+    monkeypatch.setattr(dl, '_send_direct', lambda text: (_ for _ in ()).throw(AssertionError('must not send')))
+    res = dl.deliver('close', '테스트', send=True)
+    assert res['sent'] is False and res['error'] == 'CLAW_ENABLED is disabled'
+
+
 def test_direct_dm_requires_ok_and_message_id(monkeypatch, tmp_path):
     _isolate(monkeypatch, tmp_path)
     monkeypatch.setenv('CLAW_DELIVERY_ENABLED', '1')
@@ -79,6 +88,79 @@ def test_dry_run_then_send_then_dedupe(monkeypatch, tmp_path):
     assert len(sent) == 1
     with mem.connect() as con:
         assert con.execute('SELECT COUNT(*), SUM(delivered) FROM briefs').fetchone() == (1, 1)
+
+
+def test_failed_digest_can_retry_same_message(monkeypatch, tmp_path):
+    _isolate(monkeypatch, tmp_path)
+    monkeypatch.setenv('CLAW_ENABLED', '1')
+    monkeypatch.setenv('CLAW_DELIVERY_ENABLED', '1')
+    monkeypatch.setenv('CLAW_TELEGRAM_CHAT_ID', '123')
+    monkeypatch.setenv('TELEGRAM_CHANNEL_BOT_TOKEN', 'tok')
+
+    class R:
+        def __init__(self, status, body):
+            self.status_code, self._body = status, body
+
+        def json(self):
+            return self._body
+
+    responses = iter([
+        R(503, {'ok': False, 'description': 'temporary'}),
+        R(200, {'ok': True, 'result': {'message_id': 9}}),
+    ])
+    import requests
+    monkeypatch.setattr(requests, 'post', lambda url, json, timeout: next(responses))
+
+    first = dl.deliver('event', '재시도 본문', send=True)
+    second = dl.deliver('event', '재시도 본문', send=True)
+
+    assert first['sent'] is False and first['error'].startswith('http_503')
+    assert second['sent'] is True and second['error'] is None
+    with mem.connect() as con:
+        assert con.execute('SELECT COUNT(*), SUM(delivered) FROM briefs').fetchone() == (1, 1)
+
+
+def test_logical_delivery_id_scopes_identical_text_and_stays_stable_for_retry(monkeypatch, tmp_path):
+    _isolate(monkeypatch, tmp_path)
+    monkeypatch.setenv('CLAW_ENABLED', '1')
+    monkeypatch.setenv('CLAW_DELIVERY_ENABLED', '1')
+    monkeypatch.setenv('CLAW_TELEGRAM_CHAT_ID', '123')
+    monkeypatch.setenv('TELEGRAM_CHANNEL_BOT_TOKEN', 'tok')
+    sent = []
+
+    class R:
+        status_code = 200
+
+        def json(self):
+            return {'ok': True, 'result': {'message_id': len(sent)}}
+
+    import requests
+    monkeypatch.setattr(
+        requests, 'post',
+        lambda url, json, timeout: sent.append(json['text']) or R(),
+    )
+
+    first = dl.deliver(
+        'halt', '동일 분에 보이는 같은 본문', send=True,
+        delivery_id='halt-episode:v1:2026-08-24T13:00:00',
+    )
+    next_episode = dl.deliver(
+        'halt', '동일 분에 보이는 같은 본문', send=True,
+        delivery_id='halt-episode:v1:2026-08-24T13:00:10',
+    )
+    next_day = dl.deliver(
+        'halt', '동일 분에 보이는 같은 본문', send=True,
+        delivery_id='halt-episode:v1:2026-08-25T13:00:00',
+    )
+    retry = dl.deliver(
+        'halt', '재렌더링된 본문이어도 같은 논리 발송', send=True,
+        delivery_id='halt-episode:v1:2026-08-24T13:00:00',
+    )
+
+    assert len({first['digest'], next_episode['digest'], next_day['digest']}) == 3
+    assert retry['digest'] == first['digest']
+    assert retry['already_delivered'] is True and retry['sent'] is False
+    assert len(sent) == 3
 
 
 def test_tests_do_not_touch_production_db(monkeypatch, tmp_path):

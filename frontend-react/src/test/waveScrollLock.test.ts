@@ -25,7 +25,7 @@ describe('wave page scroll-lock contract', () => {
 
   it('DashboardLayout outer scroll container is locked on wave page', () => {
     // The conditional must produce overflow-hidden when isWavePage is true.
-    expect(layoutSrc).toMatch(/isWavePage\s*\?\s*['"]overflow-hidden p-0['"]/);
+    expect(layoutSrc).toMatch(/isWavePage\s*\?\s*['"]dashboard-wave-scroll overflow-hidden p-0['"]/);
   });
 
   it('WaveOverviewPage is its own scroll container', () => {

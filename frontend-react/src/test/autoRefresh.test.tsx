@@ -4,7 +4,10 @@ import { useAutoRefresh, useSmartRefresh } from '@/hooks/useAutoRefresh';
 
 afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
+    localStorage.clear();
+    sessionStorage.clear();
 });
 
 describe('refresh polling', () => {
@@ -47,5 +50,37 @@ describe('refresh polling', () => {
         rerender({ generation: 2 });
         await Promise.resolve();
         expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not start pollers when the document mounts hidden', async () => {
+        vi.useFakeTimers();
+        vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+        const refresh = vi.fn();
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderHook(() => {
+            useAutoRefresh(refresh, 1000);
+            useSmartRefresh(refresh, ['vcp_kr_latest.json'], 1000);
+        });
+
+        await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
+        expect(refresh).not.toHaveBeenCalled();
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('keeps the public data-version poll a simple GET even when signed in', async () => {
+        sessionStorage.setItem('auth_token', 'user:9999999999:signature');
+        const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ versions: {} }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+        }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderHook(() => useSmartRefresh(vi.fn(), ['vcp_kr_latest.json'], 60000));
+
+        await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+        const init = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined;
+        expect(new Headers(init?.headers).has('Authorization')).toBe(false);
     });
 });

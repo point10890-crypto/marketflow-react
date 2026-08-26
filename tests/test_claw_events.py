@@ -37,6 +37,25 @@ def test_error_snapshot_emits_nothing():
     assert ev.diff(prev, cur) == []
 
 
+def test_error_previous_snapshot_is_not_a_transition_baseline():
+    prev = dict(_snap('t0', [_row('001', 'A사', 'B')]), error='stale_fallback')
+    cur = _snap('t1', [_row('001', 'A사', 'A')])
+    assert ev.diff(prev, cur) == []
+
+
+def test_late_session_can_suppress_new_without_hiding_other_transitions():
+    prev = _snap('2026-08-24T15:19:55', [_row('001', 'A사', 'B')])
+    cur = _snap('2026-08-24T15:20:00', [
+        _row('001', 'A사', 'A'),
+        _row('002', 'B사', 'S'),
+    ])
+
+    types = {(event['type'], event['code']) for event in ev.diff(prev, cur, include_new=False)}
+
+    assert ('LEADER_UPGRADE', '001') in types
+    assert ('LEADER_NEW', '002') not in types
+
+
 def test_volume_surge_and_new_high():
     prev = _snap('t0', [_row('001', 'A사', 'A', volx=120, price=900, high=1000)])
     cur = _snap('t1', [_row('001', 'A사', 'A', volx=350, price=1010, high=1000)])
@@ -88,3 +107,189 @@ def test_diff_can_exclude_drops():
     cur = _snap('t1', [])
     assert ev.diff(prev, cur, include_drops=False) == []
     assert [e['type'] for e in ev.diff(prev, cur)] == ['LEADER_DROP']
+
+
+def test_incomplete_scores_cannot_drive_grade_transitions():
+    complete_leader = _row('001', 'A사', 'A')
+    incomplete_leader = dict(complete_leader, score_complete=False, incomplete_reasons=['investor'])
+    complete_b = _row('001', 'A사', 'B')
+    incomplete_b = dict(complete_b, score_complete=False, incomplete_reasons=['sector'])
+
+    # An incomplete current score cannot create NEW/UP or confirm a DROP.
+    assert ev.diff(_snap('t0', [complete_b]), _snap('t1', [incomplete_leader])) == []
+    assert ev.diff(_snap('t0', [complete_leader]), _snap('t1', [incomplete_b])) == []
+    # An incomplete prior grade is not a reliable transition baseline either.
+    assert ev.diff(_snap('t0', [incomplete_b]), _snap('t1', [complete_leader])) == []
+    assert ev.diff(_snap('t0', [incomplete_leader]), _snap('t1', [])) == []
+
+
+def test_incomplete_row_breaks_confirmed_drop_window():
+    complete_leader = _row('001', 'A사', 'A')
+    incomplete_b = dict(_row('001', 'A사', 'B'), score_complete=False,
+                        incomplete_reasons=['price_detail_52w_high'])
+    window = [
+        _snap('t0', [complete_leader]),
+        _snap('t1', []),
+        _snap('t2', [incomplete_b]),
+        _snap('t3', []),
+    ]
+    assert ev.confirmed_drops(window, 3) == []
+
+
+def test_collector_preserves_quality_and_halts_critical_partial():
+    from marketflow_claw.collectors import normalize_snapshot
+
+    raw = {
+        'timestamp': '2026-08-24T10:00:00',
+        'market_status': 'open',
+        'data_quality': {
+            'status': 'partial', 'partial': True, 'critical_complete': False,
+            'score_reliable': False, 'missing_sources': ['fluctuation'],
+        },
+        'results': [{
+            'code': '001', 'name': 'A사', 'grade': 'A', 'score': {'total': 70},
+            'score_complete': False, 'incomplete_reasons': ['investor'],
+            'data_quality': {'status': 'partial', 'score_complete': False},
+        }],
+    }
+    snap = normalize_snapshot(raw, source='kis')
+
+    assert snap['error'] == 'kis_critical_sources_incomplete'
+    assert snap['data_quality']['missing_sources'] == ['fluctuation']
+    assert snap['rows'][0]['score_complete'] is False
+    assert snap['rows'][0]['incomplete_reasons'] == ['investor']
+    assert snap['rows'][0]['data_quality']['status'] == 'partial'
+
+
+def test_collector_uses_base_score_grade_not_async_enrichment_grade():
+    from marketflow_claw.collectors import normalize_snapshot
+
+    raw = {
+        'timestamp': '2026-08-24T10:00:00',
+        'market_status': 'open',
+        'data_quality': {'critical_complete': True, 'safe_to_replace_latest': True},
+        'results': [{
+            'code': '001', 'name': 'A사', 'grade': 'S',
+            'score': {'total': 72, 'total_enriched': 80},
+            'score_complete': True,
+        }],
+    }
+
+    snap = normalize_snapshot(raw, source='file')
+
+    assert snap['rows'][0]['grade'] == 'A'
+    assert snap['rows'][0]['score'] == 72
+    assert snap['by_grade'] == {'A': 1}
+
+
+def test_incomplete_input_recovery_does_not_create_volume_or_high_event():
+    prev = _row('001', '삼성E&A', 'B', volx=0, price=900, high=None)
+    prev.update({
+        'score_complete': False,
+        'incomplete_reasons': ['prdy_vol', 'price_detail_52w_high'],
+        'data_quality': {'inputs': {'prdy_vol': 'missing', 'price_detail': 'missing'}},
+    })
+    cur = _row('001', '삼성E&A', 'B', volx=350, price=1010, high=1000)
+    cur.update({
+        'score_complete': True,
+        'incomplete_reasons': [],
+        'data_quality': {'inputs': {'prdy_vol': 'available', 'price_detail': 'available'}},
+    })
+
+    assert ev.diff(_snap('t0', [prev]), _snap('t1', [cur])) == []
+    assert ev.diff(_snap('t0', []), _snap('t1', [cur])) == []
+    unknown_inputs = dict(prev, incomplete_reasons=[])
+    unknown_inputs.pop('data_quality')
+    assert ev.diff(_snap('t0', [unknown_inputs]), _snap('t1', [cur])) == []
+
+
+def test_reporter_escapes_dynamic_telegram_html():
+    from marketflow_claw import reporter
+
+    row = _row('001&002', '삼성E&A <우>', 'A', price=1000, high=1200)
+    event = dict(row, type='LEADER_NEW', ts='2026-08-24T10:00:00', grade_from='', grade_to='A')
+    snap = _snap('2026-08-24T10:00:00', [row])
+    snap['source'] = 'file&kis'
+    reg = {'regime': 'NEUTRAL&SAFE', 'halt': False, 'reasons': [], 'breadth_pct': 50}
+
+    messages = [
+        reporter.event_message([event], reg),
+        reporter.morning_message(snap, reg, []),
+        reporter.close_message(snap, reg, [event], {'snapshots': 1}),
+    ]
+    for message in messages:
+        assert '삼성E&amp;A &lt;우&gt;' in message
+        assert '001&amp;002' in message
+        assert 'NEUTRAL&amp;SAFE' in message
+        assert '삼성E&A <우>' not in message
+        assert '<b>' in message  # template markup remains active
+
+    assert '08-24 10:00' in messages[0]
+
+    halt = reporter.halt_message(
+        {'halt': True, 'reasons': ['token <expired> & unavailable'], 'regime': 'NEUTRAL'},
+        '2026-08-24T13:00:00',
+    )
+    assert 'token &lt;expired&gt; &amp; unavailable' in halt
+
+
+def test_uncertain_missing_codes_survive_memory_and_break_drop_confirmation(monkeypatch, tmp_path):
+    from marketflow_claw.collectors import normalize_snapshot
+    from marketflow_claw import memory as mem
+
+    raw = {
+        'timestamp': '2026-08-24T10:00:05',
+        'market_status': 'open',
+        'results': [],
+        'data_quality': {
+            'critical_complete': True,
+            'incomplete_score_codes': ['001'],
+            # 002 models a fluctuation-only candidate that failed before it
+            # could enter candidate_pool.
+            'detail': {'missing_codes': ['002']},
+            'investor': {'missing_codes': []},
+            'volume_baseline': {'missing_codes': []},
+        },
+        'candidate_pool': [{
+            'code': '001', 'name': 'A사', 'grade': 'C', 'eligible': False,
+            'score': {'total': 35}, 'score_complete': False,
+            'incomplete_reasons': ['prdy_vol'],
+            'data_quality': {
+                'score_complete': False,
+                'inputs': {'prdy_vol': 'missing', 'price_detail': 'available'},
+            },
+        }],
+    }
+    unknown = normalize_snapshot(raw, source='kis')
+    lead = _snap('2026-08-24T10:00:00', [
+        _row('001', 'A사', 'A'), _row('002', 'B사', 'A'),
+    ])
+    absent2 = _snap('2026-08-24T10:00:10', [])
+    absent3 = _snap('2026-08-24T10:00:15', [])
+
+    assert unknown['by_grade'] == {}
+    assert unknown['uncertain_codes'] == ['001', '002']
+    assert {row['code'] for row in unknown['rows']} == {'001', '002'}
+    assert all(row['detection_unknown'] for row in unknown['rows'])
+    assert ev.diff(lead, unknown) == []
+    from marketflow_claw import regime as rg
+    unknown_regime = rg.evaluate(
+        unknown, {'available': True, 'status': 'GREEN', 'age_hours': 1}, market_open=True,
+    )
+    assert unknown_regime['leader_count'] == 0 and unknown_regime['breadth_pct'] is None
+
+    monkeypatch.setattr(mem, 'DB_PATH', str(tmp_path / 'claw.db'))
+    with mem.connect() as con:
+        for snap in (lead, unknown, absent2, absent3):
+            mem.save_snapshot(con, snap)
+        restored = mem.last_n_snapshots(con, 4, day='20260824')
+    assert {row['code'] for row in restored[1]['rows']} == {'001', '002'}
+    assert all(row['detection_unknown'] for row in restored[1]['rows'])
+    assert ev.confirmed_drops(restored, 3) == []
+
+    # A genuinely complete disappearance still confirms after three ticks.
+    absent1 = _snap('2026-08-24T10:00:05', [])
+    confirmed = ev.confirmed_drops([lead, absent1, absent2, absent3], 3)
+    assert [(event['type'], event['code']) for event in confirmed] == [
+        ('LEADER_DROP', '001'), ('LEADER_DROP', '002'),
+    ]

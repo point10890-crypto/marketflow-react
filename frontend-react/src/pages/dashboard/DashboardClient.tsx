@@ -24,6 +24,71 @@ interface VCPSummary {
     topSignals: Array<{ name: string; market: string; score: number }>;
 }
 
+const OPERATIONS_GUIDE = [
+    {
+        label: '데이터',
+        description: '수집 시각과 신선도를 먼저 확인',
+        icon: 'fa-database',
+        tone: 'border-sky-400/20 bg-sky-400/10 text-sky-300',
+    },
+    {
+        label: '품질',
+        description: '근거와 교차 검증 상태를 점검',
+        icon: 'fa-shield-halved',
+        tone: 'border-cyan-400/20 bg-cyan-400/10 text-cyan-300',
+    },
+    {
+        label: '리스크',
+        description: '변동성과 노출 한도를 함께 확인',
+        icon: 'fa-triangle-exclamation',
+        tone: 'border-amber-400/20 bg-amber-400/10 text-amber-300',
+    },
+    {
+        label: '결과 추적',
+        description: '관찰 이후 성과와 오류를 기록',
+        icon: 'fa-clock-rotate-left',
+        tone: 'border-violet-400/20 bg-violet-400/10 text-violet-300',
+    },
+] as const;
+
+export function DashboardConceptPanel() {
+    return (
+        <section
+            aria-labelledby="dashboard-concept-title"
+            className="hidden md:block overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-r from-[#111722] via-[#11141c] to-[#17131d] px-5 py-4"
+        >
+            <div className="flex items-start justify-between gap-6">
+                <div className="max-w-xl">
+                    <p className="text-[9px] font-black uppercase tracking-[0.24em] text-cyan-300/80">Operations Dashboard</p>
+                    <h1 id="dashboard-concept-title" className="mt-1 text-lg font-black tracking-tight text-white">
+                        시장 판단을 기록하는 운영 대시보드
+                    </h1>
+                    <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                        시장 데이터를 관찰하고 근거 품질을 검증한 뒤 리스크와 사후 결과를 함께 추적합니다.
+                    </p>
+                </div>
+                <span className="shrink-0 rounded-full border border-white/[0.08] bg-black/20 px-3 py-1.5 font-mono text-[9px] font-bold tracking-[0.16em] text-slate-500">
+                    OBSERVE · VERIFY · TRACK
+                </span>
+            </div>
+
+            <dl className="mt-3 grid grid-cols-4 gap-2">
+                {OPERATIONS_GUIDE.map((item) => (
+                    <div key={item.label} className="flex min-w-0 items-center gap-2.5 rounded-xl border border-white/[0.06] bg-black/20 px-3 py-2.5">
+                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${item.tone}`} aria-hidden="true">
+                            <i className={`fas ${item.icon} text-xs`} />
+                        </span>
+                        <div className="min-w-0">
+                            <dt className="text-[11px] font-black text-white">{item.label}</dt>
+                            <dd className="mt-0.5 truncate text-[9px] font-medium text-slate-500">{item.description}</dd>
+                        </div>
+                    </div>
+                ))}
+            </dl>
+        </section>
+    );
+}
+
 const SUMMARY_WATCH_FILES = [
     'briefing/latest.json',
     'market_briefing.json',
@@ -191,11 +256,11 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
     score: number; krScore: number; usScore: number; cryptoScore: number;
 }) {
     const getLevel = (s: number) => {
-        if (s >= 80) return { label: '적극매수', color: '#10b981' };
-        if (s >= 60) return { label: '매수', color: '#22c55e' };
-        if (s >= 40) return { label: '관망', color: '#f59e0b' };
-        if (s >= 20) return { label: '매도', color: '#f97316' };
-        return { label: '적극매도', color: '#ef4444' };
+        if (s >= 80) return { label: '관찰 최우선', color: '#10b981' };
+        if (s >= 60) return { label: '관찰 강화', color: '#22c55e' };
+        if (s >= 40) return { label: '균형 관찰', color: '#f59e0b' };
+        if (s >= 20) return { label: '리스크 주의', color: '#f97316' };
+        return { label: '리스크 경계', color: '#ef4444' };
     };
     const current = getLevel(score);
     const color = current.color;
@@ -222,8 +287,8 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
                     <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full" style={{ background: `${color}20`, color }}>{current.label}</span>
                 </div>
                 <div className="flex flex-col gap-1 flex-1 min-w-0">
-                    <span className="text-sm font-bold text-white">Opportunity Score</span>
-                    <p className="text-[11px] text-gray-500">3개 시장 종합 진입 기회 지수</p>
+                    <span className="text-sm font-bold text-white">관찰 강도 지수</span>
+                    <p className="text-[11px] text-gray-500">3개 시장의 데이터·리스크를 합성한 관찰 우선순위</p>
                     <div className="flex items-center gap-3 mt-0.5">
                         {markets.map(([m, s]) => (
                             <span key={m} className="text-[11px] font-semibold" style={{ color: getLevel(s).color }}>
@@ -244,7 +309,7 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
                                 <div className="absolute top-0 h-full w-1 bg-white rounded-full shadow-[0_0_4px_rgba(255,255,255,0.9)]"
                                     style={{ left: `${Math.min(Math.max(s, 2), 98)}%`, transform: 'translateX(-50%)', transition: 'left 0.6s ease' }} />
                             </div>
-                            <span className="text-[10px] font-bold w-12" style={{ color: lv.color }}>{lv.label}</span>
+                            <span className="w-20 whitespace-nowrap text-right text-[10px] font-bold" style={{ color: lv.color }}>{lv.label}</span>
                         </div>
                     );
                 })}
@@ -305,7 +370,6 @@ function TopSignalCard({ summary, leadingData }: { summary: any; leadingData: an
                     <div className="border-t border-white/5" />
                     <Link to="/dashboard/kr/leading-stocks"
                         className="group flex flex-col gap-2 active:scale-[0.98] transition-transform"
-                        style={{ animation: 'breathe 3s ease-in-out infinite' }}
                     >
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -333,12 +397,6 @@ function TopSignalCard({ summary, leadingData }: { summary: any; leadingData: an
                                 </span>
                             </div>
                         </div>
-                        <style>{`
-                            @keyframes breathe {
-                                0%, 100% { transform: scale(1); }
-                                50% { transform: scale(1.03); }
-                            }
-                        `}</style>
                     </Link>
                 </>
             )}
@@ -478,7 +536,7 @@ function MobileDashboardConsole({
                         <p className="mt-1 line-clamp-2 text-xs font-semibold leading-relaxed text-slate-400">{briefingTitle}</p>
                     </div>
                     <div className="shrink-0 rounded-2xl border border-emerald-400/25 bg-emerald-400/10 px-3 py-2 text-right">
-                        <div className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-200/70">Score</div>
+                        <div className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-200/70">관찰 점수</div>
                         <div className="text-3xl font-black leading-none text-emerald-300">{score}</div>
                     </div>
                 </div>
@@ -491,7 +549,7 @@ function MobileDashboardConsole({
 
                 <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] font-bold">
                     <div className="rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2">
-                        <div className="text-slate-500">Top Signal</div>
+                        <div className="text-slate-500">관찰 후보</div>
                         <div className="mt-1 flex items-center gap-2 text-white">
                             <span className="rounded-md bg-cyan-400/15 px-1.5 py-0.5 text-[9px] text-cyan-200">{topGrade}</span>
                             <span className="truncate">{topName}</span>
@@ -653,6 +711,8 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 aiBriefing={aiBriefing}
                 marketIndices={marketIndices}
             />
+
+            <DashboardConceptPanel />
 
             {/* ── Header + Scrolling Market Ticker ── */}
             <div className="hidden md:flex items-center gap-2">
@@ -1034,23 +1094,23 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     <div className="relative flex items-center gap-3 mb-3">
                         <span className="flex items-center gap-1.5 text-[10px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                            <span className="text-gray-400">매수</span>
+                            <span className="text-gray-400">관찰 강화</span>
                             <span className="text-emerald-400 tabular-nums">{aiChart.summary.by_signal?.BUY ?? 0}</span>
                         </span>
                         <span className="flex items-center gap-1.5 text-[10px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-yellow-400" />
-                            <span className="text-gray-400">관망</span>
+                            <span className="text-gray-400">중립 관찰</span>
                             <span className="text-yellow-400 tabular-nums">{aiChart.summary.by_signal?.HOLD ?? 0}</span>
                         </span>
                         <span className="flex items-center gap-1.5 text-[10px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-red-400" />
-                            <span className="text-gray-400">매도</span>
+                            <span className="text-gray-400">리스크 주의</span>
                             <span className="text-red-400 tabular-nums">{aiChart.summary.by_signal?.SELL ?? 0}</span>
                         </span>
                         <span className="ml-auto text-[9px] text-gray-600">평균 신뢰도 {aiChart.summary.avg_confidence}%</span>
                     </div>
 
-                    {/* Top BUY signals */}
+                    {/* 관찰 강도가 높은 신호 */}
                     {(() => {
                         const buys = aiChart.signals
                             .filter(s => s.signal === 'BUY')
@@ -1062,7 +1122,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 {buys.map((s, i) => (
                                     <div key={i} className="flex items-center justify-between py-1.5">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">매수</span>
+                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">관찰 강화</span>
                                             <span className="text-xs font-semibold text-white truncate max-w-[120px]">{s.stock_name}</span>
                                             <span className="text-[9px] text-gray-600">{s.ma_status}</span>
                                         </div>
@@ -1104,17 +1164,17 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     <div className="relative flex items-center gap-3 mb-3">
                         <span className="flex items-center gap-1.5 text-[10px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                            <span className="text-gray-400">매수</span>
+                            <span className="text-gray-400">관찰 강화</span>
                             <span className="text-emerald-400 tabular-nums">{usAiChart.summary.by_signal?.BUY ?? 0}</span>
                         </span>
                         <span className="flex items-center gap-1.5 text-[10px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-yellow-400" />
-                            <span className="text-gray-400">관망</span>
+                            <span className="text-gray-400">중립 관찰</span>
                             <span className="text-yellow-400 tabular-nums">{usAiChart.summary.by_signal?.HOLD ?? 0}</span>
                         </span>
                         <span className="flex items-center gap-1.5 text-[10px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-red-400" />
-                            <span className="text-gray-400">매도</span>
+                            <span className="text-gray-400">리스크 주의</span>
                             <span className="text-red-400 tabular-nums">{usAiChart.summary.by_signal?.SELL ?? 0}</span>
                         </span>
                         <span className="ml-auto text-[9px] text-gray-600">평균 신뢰도 {usAiChart.summary.avg_confidence}%</span>
@@ -1131,7 +1191,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 {buys.map((s, i) => (
                                     <div key={i} className="flex items-center justify-between py-1.5">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">매수</span>
+                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">관찰 강화</span>
                                             <span className="text-xs font-semibold text-white truncate max-w-[120px]">{s.name}</span>
                                             <span className="text-[9px] text-gray-600">{s.ticker}</span>
                                         </div>
@@ -1254,7 +1314,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     status="AI Powered"
                     statusColor="text-purple-400"
                     metric={briefing?.smart_money?.top_picks?.picks?.[0]?.ticker ?? '—'}
-                    metricLabel="최고 추천"
+                    metricLabel="주요 관찰"
                 />
                 <CompactCard
                     to="/dashboard/stock-analyzer?panel=dart-deep#dart-deep"

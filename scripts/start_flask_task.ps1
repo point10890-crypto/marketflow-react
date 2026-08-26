@@ -4,6 +4,7 @@ $Root = "C:\bitman_marketfloww"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 $LogDir = Join-Path $Root "logs"
 $ControlLog = Join-Path $LogDir "flask_task.control.log"
+$PidFile = Join-Path $Root "data\flask_5003.pid"
 $RunStamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $OutLog = Join-Path $LogDir "flask_server.$RunStamp.out.log"
 $ErrLog = Join-Path $LogDir "flask_server.$RunStamp.err.log"
@@ -43,17 +44,28 @@ $env:MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART = "true"
 # down an otherwise healthy Flask process.
 $env:MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART_DELAY_SEC = "180"
 
-$existing = Get-CimInstance Win32_Process | Where-Object {
-    $_.CommandLine -like "*flask_app.py*"
+function Stop-TrackedFlaskTree([int]$TargetProcessId, [string]$Reason) {
+    if ($TargetProcessId -le 0) { return }
+    try {
+        $candidate = Get-CimInstance Win32_Process -Filter "ProcessId=$TargetProcessId" -ErrorAction SilentlyContinue
+        if (-not $candidate) { return }
+        # Never terminate the legacy 5001 producer merely because both entry
+        # points are named flask_app.py.  Only the PID recorded by this launcher
+        # or the process currently listening on the dedicated 5003 port reaches
+        # this helper.
+        & taskkill.exe /F /T /PID $TargetProcessId 2>&1 | Out-Null
+        Add-Content -Path $OutLog -Encoding UTF8 -Value "$(Get-Date -Format o) stopped $Reason pid=$TargetProcessId"
+    } catch {
+        Add-Content -Path $ErrLog -Encoding UTF8 -Value "$(Get-Date -Format o) failed to stop $Reason pid=${TargetProcessId}: $($_.Exception.Message)"
+    }
 }
 
-foreach ($proc in $existing) {
-    try {
-        Stop-Process -Id $proc.ProcessId -Force -ErrorAction Stop
-        Add-Content -Path $OutLog -Encoding UTF8 -Value "$(Get-Date -Format o) stopped stale flask_app.py pid=$($proc.ProcessId)"
-    } catch {
-        Add-Content -Path $ErrLog -Encoding UTF8 -Value "$(Get-Date -Format o) failed to stop pid=$($proc.ProcessId): $($_.Exception.Message)"
-    }
+$trackedProcessId = 0
+if (Test-Path -LiteralPath $PidFile) {
+    try { $trackedProcessId = [int](Get-Content -LiteralPath $PidFile -Raw).Trim() } catch {}
+}
+if ($trackedProcessId -gt 0) {
+    Stop-TrackedFlaskTree $trackedProcessId 'tracked flask 5003 tree'
 }
 
 Start-Sleep -Seconds 2
@@ -61,13 +73,12 @@ Start-Sleep -Seconds 2
 $portOwner = Get-NetTCPConnection -LocalPort 5003 -State Listen -ErrorAction SilentlyContinue |
     Select-Object -ExpandProperty OwningProcess -Unique
 foreach ($ownerPid in $portOwner) {
-    try {
-        Stop-Process -Id $ownerPid -Force -ErrorAction Stop
-        Add-Content -Path $OutLog -Encoding UTF8 -Value "$(Get-Date -Format o) stopped stale port 5003 pid=$ownerPid"
-    } catch {
-        Add-Content -Path $ErrLog -Encoding UTF8 -Value "$(Get-Date -Format o) failed to stop port pid=${ownerPid}: $($_.Exception.Message)"
+    if ($ownerPid -ne $trackedProcessId) {
+        Stop-TrackedFlaskTree $ownerPid 'port 5003 owner'
     }
 }
+
+Remove-Item -LiteralPath $PidFile -Force -ErrorAction SilentlyContinue
 
 Start-Sleep -Seconds 1
 
@@ -83,6 +94,7 @@ $flaskProcess = Start-Process `
     -PassThru
 
 Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) started flask_app.py pid=$($flaskProcess.Id)"
+Set-Content -LiteralPath $PidFile -Encoding ASCII -Value $flaskProcess.Id
 
 $healthy = $false
 for ($attempt = 1; $attempt -le 30; $attempt++) {
@@ -111,6 +123,11 @@ for ($attempt = 1; $attempt -le 30; $attempt++) {
 
 if ($healthy) {
     Wait-Process -Id $flaskProcess.Id
+    try {
+        if ((Get-Content -LiteralPath $PidFile -Raw -ErrorAction Stop).Trim() -eq [string]$flaskProcess.Id) {
+            Remove-Item -LiteralPath $PidFile -Force -ErrorAction SilentlyContinue
+        }
+    } catch {}
     Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) flask_app.py exited pid=$($flaskProcess.Id)"
     exit 0
 }

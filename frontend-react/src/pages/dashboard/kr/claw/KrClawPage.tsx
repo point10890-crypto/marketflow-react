@@ -9,42 +9,101 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI } from '@/lib/api';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
-import { CLAW_OVERVIEW_ENDPOINT, ClawOverview, LOOP_LABEL, REGIME_LABEL, eventChip, fmtAge, hhmm, isClawOverview } from '@/lib/claw';
+import {
+    CLAW_OVERVIEW_ENDPOINT,
+    CLAW_QUALITY_ENDPOINT,
+    CLAW_SCORECARDS_ENDPOINT,
+    ClawOverview,
+    ClawQuality,
+    ClawScorecards,
+    LOOP_LABEL,
+    REGIME_LABEL,
+    eventChip,
+    fmtAge,
+    hhmm,
+    isClawOverview,
+    isClawQuality,
+    isClawScorecards,
+} from '@/lib/claw';
 import { ClawHero } from '@/components/claw/ClawHero';
 import ClawLeadersCard from './ClawLeadersCard';
 import ClawEventsCard from './ClawEventsCard';
 import ClawBriefsCard from './ClawBriefsCard';
+import ClawObservationCard from './ClawObservationCard';
+
+const LOAD_TIMEOUT_MS = 12000;
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs = LOAD_TIMEOUT_MS): Promise<T> {
+    let timer = 0;
+    try {
+        return await Promise.race([
+            promise,
+            new Promise<T>((_, reject) => {
+                timer = window.setTimeout(() => reject(new Error('timeout')), timeoutMs);
+            }),
+        ]);
+    } finally {
+        if (timer) window.clearTimeout(timer);
+    }
+}
 
 export default function KrClawPage() {
     const { token } = useAuth();
     const [data, setData] = useState<ClawOverview | null>(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [scorecards, setScorecards] = useState<ClawScorecards | null>(null);
+    const [quality, setQuality] = useState<ClawQuality | null>(null);
+    const [observationLoading, setObservationLoading] = useState(true);
     const [tick, setTick] = useState(0); // "n초 전" 1초 갱신용
     const fetchedAt = useRef<number>(Date.now());
+    const inFlight = useRef(false);
 
     const load = useCallback(async () => {
+        if (inFlight.current) return;
+        inFlight.current = true;
+        setRefreshing(true);
         try {
-            const res = await fetchAuthAPI<unknown>(CLAW_OVERVIEW_ENDPOINT, token ?? undefined);
+            const res = await withTimeout(fetchAuthAPI<unknown>(CLAW_OVERVIEW_ENDPOINT, token ?? undefined));
             if (!isClawOverview(res)) throw new Error('bad shape');
             setData(res); setError(''); fetchedAt.current = Date.now();
         } catch {
-            setError('Claw 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
+            setError('Claw 응답이 지연되고 있습니다. 운영 API 상태를 확인한 뒤 다시 시도해 주세요.');
         } finally {
             setLoading(false);
+            setRefreshing(false);
+            inFlight.current = false;
         }
     }, [token]);
 
-    useEffect(() => { void load(); }, [load]);
+    const loadObservation = useCallback(async () => {
+        const [scorecardResult, qualityResult] = await Promise.allSettled([
+            withTimeout(fetchAuthAPI<unknown>(CLAW_SCORECARDS_ENDPOINT, token ?? undefined)),
+            withTimeout(fetchAuthAPI<unknown>(CLAW_QUALITY_ENDPOINT, token ?? undefined)),
+        ]);
+        if (scorecardResult.status === 'fulfilled' && isClawScorecards(scorecardResult.value)) setScorecards(scorecardResult.value);
+        if (qualityResult.status === 'fulfilled' && isClawQuality(qualityResult.value)) setQuality(qualityResult.value);
+        setObservationLoading(false);
+    }, [token]);
+
+    useEffect(() => { void load(); void loadObservation(); }, [load, loadObservation]);
     useAutoRefresh(load, data?.loop.market_open ? 5000 : 60000, true);
     useEffect(() => { const t = setInterval(() => setTick(v => v + 1), 1000); return () => clearInterval(t); }, []);
 
     return (
-        <div className="min-h-screen bg-[#09090b] p-4 text-white sm:p-6 lg:p-8">
+        <div className="min-h-full bg-[#09090b] px-0 py-1 text-white sm:p-2 lg:p-4">
             <div className="mx-auto max-w-[1200px] space-y-4">
                 <ClawHero data={data} heartbeatAge={heartbeatAge(data, tick, fetchedAt.current)} />
+                <div className="flex min-h-9 items-center justify-end gap-2 px-1" aria-live="polite">
+                    <span className="text-[11px] text-gray-500">{data ? `화면 갱신 ${fmtAge(Math.max(0, Math.round((Date.now() - fetchedAt.current) / 1000)))} 전` : '데이터 연결 확인 중'}</span>
+                    <button type="button" onClick={() => { void load(); void loadObservation(); }} disabled={refreshing}
+                        className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-[11px] font-bold text-gray-300 transition-colors hover:bg-white/[0.08] disabled:cursor-wait disabled:opacity-50">
+                        <i className={`fas fa-rotate-right ${refreshing ? 'animate-spin' : ''}`} />새로고침
+                    </button>
+                </div>
                 {loading && <Skeleton />}
-                {!loading && error && (
+                {!loading && error && !data && (
                     <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 text-center">
                         <p className="mb-4 text-sm text-red-300">{error}</p>
                         <button type="button" onClick={load} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-gray-300 hover:bg-white/10">
@@ -52,10 +111,17 @@ export default function KrClawPage() {
                         </button>
                     </div>
                 )}
-                {!loading && !error && data && (
+                {!loading && data && (
                     <>
+                        {error && (
+                            <div role="status" className="flex items-center gap-2 rounded-xl border border-amber-400/20 bg-amber-400/[0.05] px-3 py-2 text-[12px] text-amber-200">
+                                <i className="fas fa-triangle-exclamation text-[11px]" />
+                                최신 응답이 지연되어 마지막 정상 데이터를 표시합니다.
+                            </div>
+                        )}
                         <StatusStrip data={data} />
                         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+                            <ClawObservationCard scorecards={scorecards} quality={quality} loading={observationLoading} />
                             <ClawLeadersCard data={data} />
                             <ClawEventsCard data={data} />
                             <ClawBriefsCard data={data} />
@@ -81,12 +147,12 @@ function StatusStrip({ data }: { data: ClawOverview }) {
     const halted = L.state === 'halt';
     const counts = Object.entries(data.events.counts);
     const tile = (warn: 'none' | 'warn' | 'bad' = 'none') =>
-        `claw-card-in rounded-3xl border bg-[#13151f] px-4 py-3.5 min-h-[92px] flex flex-col gap-1.5 ${warn === 'bad' ? 'border-red-500/50' : warn === 'warn' || halted ? 'border-amber-400/45' : 'border-white/[0.06]'}`;
+        `claw-card-in rounded-2xl sm:rounded-3xl border bg-[#13151f] px-3 sm:px-4 py-3 min-h-[86px] sm:min-h-[92px] flex flex-col gap-1.5 ${warn === 'bad' ? 'border-red-500/50' : warn === 'warn' || halted ? 'border-amber-400/45' : 'border-white/[0.06]'}`;
     const k = 'text-[11px] font-semibold uppercase tracking-wider text-gray-500';
     const v = 'flex flex-wrap items-baseline gap-2 text-[22px] font-extrabold leading-none tracking-tight';
     const d = 'flex flex-wrap items-center gap-1.5 text-[12px] text-gray-400';
     return (
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
             <section className={tile(L.state === 'dead' ? 'bad' : halted ? 'warn' : 'none')}>
                 <div className={k}>루프 · 시장</div>
                 <div className={v}>
@@ -129,8 +195,8 @@ function SystemCard({ data }: { data: ClawOverview }) {
         ['킬스위치', Object.entries(s.kill_switches).map(([k, v]) => `${k.replace('CLAW_', '').replace('_ENABLED', '')} ${v ? 'on' : 'off'}`).join(' · ')],
     ];
     return (
-        <section className="claw-card-in rounded-3xl border border-white/[0.06] bg-[#13151f] p-5 lg:col-span-4">
-            <button type="button" onClick={() => setOpen(v => !v)} aria-expanded={open} className="flex w-full items-center justify-between text-[12px] font-bold text-gray-500 hover:text-gray-300">
+        <section className="claw-card-in rounded-2xl border border-white/[0.06] bg-[#13151f] p-4 sm:rounded-3xl sm:p-5 lg:col-span-4">
+            <button type="button" onClick={() => setOpen(v => !v)} aria-expanded={open} className="flex min-h-11 w-full items-center justify-between text-[12px] font-bold text-gray-500 hover:text-gray-300">
                 <span><i className="fas fa-microchip mr-2 text-[10px]" />시스템</span>
                 <i className={`fas fa-chevron-${open ? 'up' : 'down'} text-[10px]`} />
             </button>

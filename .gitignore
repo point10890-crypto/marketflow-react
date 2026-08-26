@@ -155,6 +155,8 @@ frontend/
 
 # MarketFlow Claw runtime (db/heartbeat/pid/lock/reports)
 data/claw/
+# AlphaClaw shadow/paper runtime (isolated ledger and receipts)
+data/alphaclaw/
 # .env backups written by scripts/apply_claw_env.ps1 (contain secrets)
 .env.bak*
 

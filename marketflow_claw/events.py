@@ -17,12 +17,39 @@ VOLUME_SURGE_PCT = 300.0   # kis_screener.volume_ratio 는 평균 대비 % (raw 
 VOLUME_RATIO_SANE_MAX = 100000.0
 
 
+def _score_complete(row: dict[str, Any] | None) -> bool:
+    """Legacy rows are trusted; an explicit incomplete marker is not."""
+    return bool(row) and not row.get('detection_unknown') and row.get('score_complete') is not False
+
+
+def _input_available(row: dict[str, Any] | None, input_name: str, reason: str) -> bool:
+    """Check one signal input without distrusting unrelated incomplete fields."""
+    if not row:
+        return False
+    if row.get('detection_unknown'):
+        return False
+    quality = row.get('data_quality')
+    inputs = quality.get('inputs') if isinstance(quality, dict) else None
+    if isinstance(inputs, dict) and input_name in inputs:
+        return inputs.get(input_name) == 'available'
+    reasons = row.get('incomplete_reasons')
+    if isinstance(reasons, (list, tuple, set)) and reason in reasons:
+        return False
+    if row.get('score_complete') is False:
+        # An older partial row without input-level metadata cannot prove this
+        # particular input was reliable.
+        return False
+    # Historical snapshots predate input-level quality metadata.
+    return True
+
+
 def _index(snap: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {r['code']: r for r in (snap or {}).get('rows', []) if r.get('code')}
 
 
 def _leaders(snap: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    return {c: r for c, r in _index(snap).items() if r.get('grade', '') in LEADER_GRADES}
+    return {c: r for c, r in _index(snap).items()
+            if _score_complete(r) and r.get('grade', '') in LEADER_GRADES}
 
 
 def _event(etype: str, row: dict[str, Any], ts: Any, **extra: Any) -> dict[str, Any]:
@@ -35,12 +62,14 @@ def _event(etype: str, row: dict[str, Any], ts: Any, **extra: Any) -> dict[str, 
 
 
 def diff(prev: dict[str, Any] | None, cur: dict[str, Any], *,
-         already: Iterable[tuple[str, str]] = (), include_drops: bool = True) -> list[dict[str, Any]]:
+         already: Iterable[tuple[str, str]] = (), include_drops: bool = True,
+         include_new: bool = True) -> list[dict[str, Any]]:
     """prev→cur 전이 이벤트 목록. prev 가 None 이면 baseline (이벤트 없음).
 
     include_drops=False 면 LEADER_DROP 은 내지 않는다(게이트웨이가 confirmed_drops 로 대체).
+    include_new=False 면 장 마감 직전 새 진입만 억제하고 UP/VOL/HIGH/DROP 은 유지한다.
     """
-    if prev is None or cur.get('error'):
+    if prev is None or prev.get('error') or cur.get('error'):
         return []
     seen = set(already)
     p, c = _index(prev), _index(cur)
@@ -57,25 +86,39 @@ def diff(prev: dict[str, Any] | None, cur: dict[str, Any], *,
         g_now = row.get('grade', '')
         before = p.get(code)
         g_prev = before.get('grade', '') if before else ''
-        if g_now in LEADER_GRADES and g_prev not in LEADER_GRADES:
+        grades_reliable = _score_complete(row) and (before is None or _score_complete(before))
+        if grades_reliable and g_now in LEADER_GRADES and g_prev not in LEADER_GRADES:
             if before is None:
-                emit('LEADER_NEW', row, grade_from='', grade_to=g_now)
+                if include_new:
+                    emit('LEADER_NEW', row, grade_from='', grade_to=g_now)
             else:
                 emit('LEADER_UPGRADE', row, grade_from=g_prev, grade_to=g_now)
-        elif g_now in LEADER_GRADES and GRADE_RANK[g_now] > GRADE_RANK[g_prev]:
+        elif grades_reliable and g_now in LEADER_GRADES and GRADE_RANK[g_now] > GRADE_RANK[g_prev]:
             emit('LEADER_UPGRADE', row, grade_from=g_prev, grade_to=g_now)
         vx, vp = (row.get('volx') or 0), ((before or {}).get('volx') or 0)
-        if VOLUME_SURGE_PCT <= vx < VOLUME_RATIO_SANE_MAX and vp < VOLUME_SURGE_PCT:
+        volume_inputs_ready = (
+            before is not None
+            and _input_available(before, 'prdy_vol', 'prdy_vol')
+            and _input_available(row, 'prdy_vol', 'prdy_vol')
+        )
+        if volume_inputs_ready and VOLUME_SURGE_PCT <= vx < VOLUME_RATIO_SANE_MAX and vp < VOLUME_SURGE_PCT:
             emit('VOLUME_SURGE', row)
         price, hi = row.get('price'), row.get('high_52w')
-        if price and hi and price >= hi and not (before and before.get('price') and before.get('high_52w') and before['price'] >= before['high_52w']):
+        high_inputs_ready = (
+            before is not None
+            and _input_available(before, 'price_detail', 'price_detail_52w_high')
+            and _input_available(row, 'price_detail', 'price_detail_52w_high')
+        )
+        if (high_inputs_ready and price and hi and price >= hi
+                and before.get('price') and before.get('high_52w')
+                and before['price'] < before['high_52w']):
             emit('NEW_HIGH_BREAK', row)
 
     if include_drops:
         for code, before in p.items():
-            if before.get('grade', '') in LEADER_GRADES:
+            if _score_complete(before) and before.get('grade', '') in LEADER_GRADES:
                 now = c.get(code)
-                if now is None or now.get('grade', '') not in LEADER_GRADES:
+                if now is None or (_score_complete(now) and now.get('grade', '') not in LEADER_GRADES):
                     emit('LEADER_DROP', now or before, grade_from=before.get('grade', ''),
                          grade_to=(now or {}).get('grade', ''))
     return out
@@ -101,7 +144,11 @@ def confirmed_drops(window: list[dict[str, Any]], n: int, *,
     seen = set(already)
     out: list[dict[str, Any]] = []
     for code, before in base.items():
-        if all(code not in _leaders(s) for s in recent):
+        def reliable_nonleader(snap: dict[str, Any]) -> bool:
+            row = _index(snap).get(code)
+            return row is None or (_score_complete(row) and row.get('grade', '') not in LEADER_GRADES)
+
+        if all(reliable_nonleader(s) for s in recent):
             key = ('LEADER_DROP', code)
             if key in seen:
                 continue

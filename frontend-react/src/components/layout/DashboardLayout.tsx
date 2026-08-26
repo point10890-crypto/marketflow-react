@@ -1,31 +1,19 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useLayoutEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import BottomTabBar from './BottomTabBar';
 import MobileSubNav from './MobileSubNav';
 import MobileDashboardRail from './MobileDashboardRail';
-import { PullToRefreshProvider, PullIndicator } from './PullToRefreshProvider';
+import { PullToRefreshProvider } from './PullToRefreshProvider';
 import InstallPrompt from './InstallPrompt';
 import NotificationToast from '@/components/ui/NotificationToast';
-import { usePullToRefresh } from '@/hooks/usePullToRefresh';
-import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 import { useSmartRefresh } from '@/hooks/useAutoRefresh';
 import { useNotification } from '@/contexts/NotificationContext';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import { ClawBrandBar } from '@/components/claw/ClawHero';
 import { useClawState } from '@/hooks/useClawState';
 import { useAuth } from '@/contexts/AuthContext';
-
-const SWIPE_TABS = [
-    { href: '/dashboard' },
-    { href: '/dashboard/vcp-enhanced' },
-    { href: '/dashboard/kr' },
-    { href: '/dashboard/us' },
-    { href: '/dashboard/crypto' },
-    { href: '/dashboard/stock-analyzer' },
-];
-
 
 const FILE_LABELS: Record<string, { title: string; message: string; link: string }> = {
     'jongga_v2_latest.json': { title: '종가베팅 업데이트', message: '새로운 종가베팅 시그널이 도착했습니다', link: '/dashboard/kr/closing-bet' },
@@ -40,6 +28,7 @@ const WATCH_FILES = Object.keys(FILE_LABELS);
 
 export default function DashboardLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [installPromptVisible, setInstallPromptVisible] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const refreshFnRef = useRef<(() => Promise<void>) | null>(null);
     const location = useLocation();
@@ -68,14 +57,21 @@ export default function DashboardLayout() {
         handleDataChanged
     );
 
-    const { pullDistance, isRefreshing } = usePullToRefresh(scrollRef, refreshFnRef.current);
     const isWavePage = location.pathname.startsWith('/dashboard/wave');
-    const isSwipeTabPage = SWIPE_TABS.some((tab) => pathname === tab.href);
-    useSwipeNavigation(scrollRef, SWIPE_TABS, isWavePage || !isSwipeTabPage);
+
+    // DashboardLayout stays mounted while child routes change. Reset the shared
+    // scroller before paint so a new page never inherits the previous page's
+    // vertical or horizontal position.
+    useLayoutEffect(() => {
+        const scroller = scrollRef.current;
+        if (!scroller) return;
+        scroller.scrollTop = 0;
+        scroller.scrollLeft = 0;
+    }, [pathname]);
 
     return (
         <PullToRefreshProvider onRefreshRef={refreshFnRef}>
-            <div className="claw-theme flex h-screen w-full bg-black overflow-hidden">
+            <div className={`claw-theme flex h-[100dvh] min-h-0 w-full bg-black overflow-hidden ${installPromptVisible ? 'dashboard-install-prompt-visible' : ''}`}>
                 {/* Desktop Sidebar */}
                 <div className="hidden md:flex">
                     <Sidebar />
@@ -89,7 +85,7 @@ export default function DashboardLayout() {
                 />
 
                 {/* Main Content */}
-                <main className="claw-shell-bg flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
+                <main className="claw-shell-bg flex-1 min-w-0 min-h-0 flex flex-col h-full overflow-hidden relative">
                     <Header
                         onMenuClick={() => setSidebarOpen(true)}
                     />
@@ -97,16 +93,10 @@ export default function DashboardLayout() {
                     <MobileSubNav />
                     <div
                         ref={scrollRef}
-                        className={`dashboard-shell-scroll flex-1 min-w-0 ${isWavePage ? 'overflow-hidden p-0' : 'overflow-x-hidden overflow-y-auto px-2.5 pt-2.5 pb-32 sm:p-3 md:p-6 md:pb-6'} scroll-smooth overscroll-contain relative`}
+                        className={`dashboard-shell-scroll flex-1 min-w-0 min-h-0 ${isWavePage ? 'dashboard-wave-scroll overflow-hidden p-0' : 'dashboard-standard-scroll overflow-x-hidden overflow-y-auto px-2.5 pt-2.5 pb-32 sm:p-3 md:p-6 md:pb-6'} relative`}
                     >
-                        <PullIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} />
-                        <div
-                            className={isWavePage ? 'h-full' : ''}
-                            style={pullDistance > 0
-                                ? { transform: `translateY(${pullDistance}px)`, transition: 'none' }
-                                : { transition: 'transform 0.3s ease' }}
-                        >
-                            {showBrandBar && <ClawBrandBar data={claw} />}
+                        <div className={isWavePage ? 'h-full min-h-0' : ''}>
+                            {showBrandBar && <ClawBrandBar key={pathname} data={claw} />}
                             <PageErrorBoundary resetKey={pathname}>
                                 <div key={pathname} className={`page-enter dashboard-mobile-page ${isWavePage ? 'h-full' : ''}`}>
                                     <Outlet />
@@ -118,7 +108,7 @@ export default function DashboardLayout() {
 
                 {/* Mobile Bottom Tab Bar */}
                 <BottomTabBar />
-                <InstallPrompt />
+                <InstallPrompt onVisibilityChange={setInstallPromptVisible} />
                 <NotificationToast />
             </div>
         </PullToRefreshProvider>

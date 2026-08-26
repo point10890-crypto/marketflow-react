@@ -127,7 +127,7 @@ export default function GoodrichFundManagerPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#09090b] p-4 text-white sm:p-6 lg:p-8">
+        <div className="min-h-full bg-[#09090b] p-4 text-white sm:p-6 lg:p-8">
             <div className="mx-auto max-w-6xl space-y-5">
                 <AiBrainServiceTabs active="goodrich" />
                 <nav className="grid grid-cols-2 gap-3" aria-label="Goodrich 분석 엔드포인트">

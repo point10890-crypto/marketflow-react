@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotification, type AppNotification } from '@/contexts/NotificationContext';
 
 const TOAST_DURATION = 5000;
-const MAX_VISIBLE = 4;
+const MAX_VISIBLE = 3;
 
 const typeStyles: Record<string, { bg: string; icon: string; border: string }> = {
     alert:   { bg: 'bg-amber-500/10', icon: 'fas fa-bolt text-amber-400', border: 'border-amber-500/30' },
@@ -12,32 +12,63 @@ const typeStyles: Record<string, { bg: string; icon: string; border: string }> =
 };
 
 export default function NotificationToast() {
-    const { notifications, dismiss } = useNotification();
+    const { notifications, dismiss, markRead } = useNotification();
     const navigate = useNavigate();
     const [visible, setVisible] = useState<string[]>([]);
+    const initializedRef = useRef(false);
+    const seenIdsRef = useRef(new Set<string>());
+    const timersRef = useRef(new Map<string, number>());
 
-    // 새 알림이 추가되면 표시 목록에 추가 (중복 ID 방어)
+    // 저장소에서 복원한 unread는 알림 센터에만 남기고, 이 탭에서 새로
+    // 도착한 알림만 toast로 표시한다. 새로고침 때 과거 toast가 재생되는
+    // 현상과 다음 알림 때 과거 unread가 다시 쌓이는 현상을 함께 막는다.
     useEffect(() => {
+        const currentIds = new Set(notifications.map(n => n.id));
+        for (const id of seenIdsRef.current) {
+            if (!currentIds.has(id)) seenIdsRef.current.delete(id);
+        }
+
+        if (!initializedRef.current) {
+            notifications.forEach(n => seenIdsRef.current.add(n.id));
+            initializedRef.current = true;
+            return;
+        }
+
         const unread = notifications.filter(n => !n.read).map(n => n.id);
-        const newIds = unread.filter(id => !visible.includes(id));
+        const newIds = unread.filter(id => !seenIdsRef.current.has(id));
+        notifications.forEach(n => seenIdsRef.current.add(n.id));
+
         if (newIds.length > 0) {
             setVisible(prev => {
                 const merged = [...newIds, ...prev];
-                // 중복 제거 — Set 으로 unique 보장
                 const unique = Array.from(new Set(merged));
                 return unique.slice(0, MAX_VISIBLE);
             });
+
+            for (const id of newIds) {
+                const timer = window.setTimeout(() => {
+                    setVisible(prev => prev.filter(visibleId => visibleId !== id));
+                    timersRef.current.delete(id);
+                }, TOAST_DURATION);
+                timersRef.current.set(id, timer);
+            }
         }
     }, [notifications]);
 
-    // 자동 사라짐
     useEffect(() => {
-        if (visible.length === 0) return;
-        const timer = setTimeout(() => {
-            setVisible(prev => prev.slice(0, -1)); // 가장 오래된 것 제거
-        }, TOAST_DURATION);
-        return () => clearTimeout(timer);
-    }, [visible]);
+        const timers = timersRef.current;
+        return () => {
+            timers.forEach(timer => window.clearTimeout(timer));
+            timers.clear();
+        };
+    }, []);
+
+    const hideToast = useCallback((id: string) => {
+        const timer = timersRef.current.get(id);
+        if (timer !== undefined) window.clearTimeout(timer);
+        timersRef.current.delete(id);
+        setVisible(prev => prev.filter(visibleId => visibleId !== id));
+    }, []);
 
     const visibleNotifs = visible
         .map(id => notifications.find(n => n.id === id))
@@ -46,7 +77,7 @@ export default function NotificationToast() {
     if (visibleNotifs.length === 0) return null;
 
     return (
-        <div className="fixed top-16 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+        <div className="notification-toast-stack fixed left-3 right-3 z-[100] flex flex-col gap-2 pointer-events-none sm:left-auto sm:right-4 sm:w-full sm:max-w-sm">
             {visibleNotifs.map((n, i) => {
                 const style = typeStyles[n.type] || typeStyles.info;
                 return (
@@ -57,7 +88,8 @@ export default function NotificationToast() {
                         style={{ animationDelay: `${i * 50}ms` }}
                         onClick={() => {
                             if (n.link) navigate(n.link);
-                            setVisible(prev => prev.filter(id => id !== n.id));
+                            markRead(n.id);
+                            hideToast(n.id);
                         }}
                     >
                         <div className="flex items-start gap-3">
@@ -69,7 +101,7 @@ export default function NotificationToast() {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setVisible(prev => prev.filter(id => id !== n.id));
+                                    hideToast(n.id);
                                     dismiss(n.id);
                                 }}
                                 className="text-gray-500 hover:text-white text-xs p-1"

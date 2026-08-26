@@ -46,6 +46,11 @@ Start-ScheduledTask -TaskName $TaskName
 Start-Sleep -Seconds 6
 
 $after = @(Get-ClawProcs)
-Write-Log ("after: " + (($after | ForEach-Object { $_.ProcessId }) -join ',' ))
+Write-Log ("after: " + (($after | ForEach-Object { "$($_.ProcessId):$($_.CommandLine)" }) -join ' | ' ))
 if ($after.Count -eq 0) { Write-Log "WARN: no marketflow_claw process after restart — check logs\claw.err"; exit 1 }
+if (-not ($after | Where-Object { $_.CommandLine -match '(?:^|\s)--send(?:\s|$)' })) {
+    Write-Log "ERROR: restarted Claw command line does not include --send"
+    exit 2
+}
+Write-Log "verified: restarted Claw command line includes --send"
 Write-Host "Verify: .venv\Scripts\python.exe -m marketflow_claw status   (delivery enabled=... must reflect .env)"

@@ -60,7 +60,7 @@ export default function AiBainPage() {
 
 function PageShell({ children }: { children: React.ReactNode }) {
     return (
-        <div className="min-h-screen bg-[#09090b] text-white p-4 sm:p-6 lg:p-8">
+        <div className="min-h-full bg-[#09090b] text-white p-4 sm:p-6 lg:p-8">
             <div className="max-w-6xl mx-auto space-y-6">
                 {/* 공통 헤더 (admin 모드일 때는 admin 페이지 자체 헤더가 표시되므로 여기는 사용 X) */}
                 <div className="rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-cyan-500/[0.06] via-[#13151f] to-[#1c1c1e] p-6 sm:p-8 relative overflow-hidden">

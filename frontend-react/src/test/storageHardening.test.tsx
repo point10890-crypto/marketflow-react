@@ -6,13 +6,15 @@ import { clearToken, getToken, getUser, saveUser, setToken } from '@/lib/auth';
 import { authHeaders } from '@/lib/api';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 
+const pwaInstallMock = vi.hoisted(() => ({
+    canInstall: true,
+    isInstalled: false,
+    isIOS: true,
+    install: vi.fn(),
+}));
+
 vi.mock('@/hooks/usePWAInstall', () => ({
-    usePWAInstall: () => ({
-        canInstall: true,
-        isInstalled: false,
-        isIOS: true,
-        install: vi.fn().mockResolvedValue('manual'),
-    }),
+    usePWAInstall: () => pwaInstallMock,
 }));
 
 const originalLocalStorage = Object.getOwnPropertyDescriptor(window, 'localStorage');
@@ -64,6 +66,10 @@ describe('Safari-safe browser storage', () => {
     beforeEach(() => {
         restoreStorageDescriptors();
         cleanKnownKeys();
+        pwaInstallMock.canInstall = true;
+        pwaInstallMock.isInstalled = false;
+        pwaInstallMock.isIOS = true;
+        pwaInstallMock.install.mockReset().mockResolvedValue('manual');
     });
 
     afterEach(() => {
@@ -141,6 +147,16 @@ describe('Safari-safe browser storage', () => {
         expect(screen.getByText('BitMan 앱 설치')).toBeInTheDocument();
 
         fireEvent.click(screen.getAllByRole('button')[0]);
+        expect(screen.queryByText('BitMan 앱 설치')).not.toBeInTheDocument();
+    });
+
+    it('does not advertise installation when the browser cannot install the PWA', () => {
+        vi.useFakeTimers();
+        pwaInstallMock.canInstall = false;
+
+        render(<InstallPrompt />);
+        act(() => vi.advanceTimersByTime(3000));
+
         expect(screen.queryByText('BitMan 앱 설치')).not.toBeInTheDocument();
     });
 });

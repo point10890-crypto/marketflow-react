@@ -89,6 +89,21 @@ def test_regime_gate_skips_downtrend_detection():
     assert result['metrics']['skipped_by_filter'] == 1
 
 
+def test_regime_gate_uses_live_blocked_set_and_skips_rebound_early():
+    detections = [{'date': '2026-06-02', 'symbol': 'AAA', 'name': 'A'}]
+    series = {'AAA': _bars(1, FLAT)}
+    rules = dl.RuleSet(regime_gate=True)
+
+    result = dl.replay(
+        detections, series, rules,
+        phase_by_date={'2026-06-02': 'rebound_early'},
+    )
+
+    assert dl.live_phase_gate_blocked() == frozenset({'downtrend', 'rebound_early'})
+    assert result['trades'] == []
+    assert result['metrics']['skipped_by_filter'] == 1
+
+
 def test_stage2_filter_requires_price_above_rising_ma():
     """검출일 종가가 150MA 아래(하락 추세 종목)면 진입하지 않는다."""
     # 200일 하락 시계열: 종가가 항상 150MA 아래
@@ -147,6 +162,43 @@ def test_metrics_include_phase_breakdown_and_mdd():
     assert 'by_phase' in m and 'leader_market' in m['by_phase']
     assert m['max_drawdown_pct'] <= 0
     assert 'by_exit_reason' in m
+    assert m['by_phase']['leader_market']['profit_factor'] == pytest.approx(0.0)
+    assert m['by_phase']['uptrend_broadening']['profit_factor'] is None
+
+
+def test_phase_coverage_rejects_missing_and_unknown_labels():
+    detections = [
+        {'date': '2026-06-01', 'symbol': 'AAA'},
+        {'date': '2026-06-02', 'symbol': 'BBB'},
+        {'date': '2026-06-03', 'symbol': 'CCC'},
+    ]
+    coverage = dl.phase_coverage(detections, {
+        '2026-06-01': 'leader_market',
+        '2026-06-02': 'invented_phase',
+    })
+
+    assert coverage['detections_total'] == 3
+    assert coverage['detections_with_known_phase'] == 1
+    assert coverage['coverage_ratio'] == pytest.approx(1 / 3, abs=1e-6)
+    assert coverage['unknown_label_count'] == 2
+    assert coverage['missing_detection_dates'] == 2
+
+
+def test_phase_coverage_uses_bounded_prior_trading_day_without_lookahead():
+    detections = [
+        {'date': '2026-06-08', 'symbol': 'MON'},
+        {'date': '2026-06-20', 'symbol': 'STALE'},
+    ]
+    coverage = dl.phase_coverage(detections, {
+        '2026-06-05': 'leader_market',  # Friday used for Monday only.
+        '2026-06-09': 'downtrend',      # Future data must not affect Monday.
+    })
+
+    assert coverage['detections_with_known_phase'] == 1
+    assert coverage['by_phase'] == {'leader_market': 1}
+    assert coverage['asof_fallback_count'] == 1
+    assert coverage['maximum_age_days'] == 3
+    assert coverage['stale_count'] == 1
 
 
 def test_collect_detections_dedupes_same_day(tmp_path, monkeypatch):

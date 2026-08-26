@@ -23,7 +23,9 @@ export default function ClawAsciiBackdrop({ live = false, tone = 'red', classNam
         if (!ctx) return;
         const [cr, cg, cb] = TONES[tone];
         const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        const mobile = typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches;
         let raf = 0, last = 0, phase = 0, W = 0, H = 0, dpr = 1;
+        let intersecting = true;
 
         const resize = () => {
             const parent = canvas.parentElement;
@@ -89,15 +91,27 @@ export default function ClawAsciiBackdrop({ live = false, tone = 'red', classNam
         };
         const onVis = () => {
             cancelAnimationFrame(raf);
-            if (live && !reduced && document.visibilityState === 'visible') raf = requestAnimationFrame(loop);
+            if (live && !mobile && !reduced && intersecting && document.visibilityState === 'visible') {
+                raf = requestAnimationFrame(loop);
+            }
         };
 
         const ro = new ResizeObserver(resize);
         ro.observe(canvas.parentElement as Element);
+        const io = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => {
+            intersecting = entry?.isIntersecting ?? true;
+            onVis();
+        }, { rootMargin: '64px' });
+        io?.observe(canvas);
         resize();
         onVis();
         document.addEventListener('visibilitychange', onVis);
-        return () => { cancelAnimationFrame(raf); ro.disconnect(); document.removeEventListener('visibilitychange', onVis); };
+        return () => {
+            cancelAnimationFrame(raf);
+            ro.disconnect();
+            io?.disconnect();
+            document.removeEventListener('visibilitychange', onVis);
+        };
     }, [live, tone]);
 
     return <canvas ref={ref} aria-hidden="true" className={`pointer-events-none absolute inset-0 ${className}`} />;

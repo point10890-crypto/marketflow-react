@@ -1,11 +1,11 @@
 {
-  "name": "BitMan MarketFlow AI",
-  "short_name": "BitMan",
-  "description": "AI-powered market analysis dashboard for KR, US & Crypto",
+  "name": "MarketFlow Claw",
+  "short_name": "MarketFlow",
+  "description": "데이터 품질과 위험을 먼저 확인하는 AI 시장 관찰 대시보드",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#d97706",
+  "background_color": "#09090b",
+  "theme_color": "#ff5a3c",
   "orientation": "any",
   "icons": [
     {

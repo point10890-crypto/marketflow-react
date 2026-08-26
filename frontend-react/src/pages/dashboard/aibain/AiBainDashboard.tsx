@@ -6,6 +6,7 @@ import PerformanceCard from './PerformanceCard';
 import PaperTradingCard, { PaperOverview } from './PaperTradingCard';
 import ClawLiveCard from './ClawLiveCard';
 import CloseLeadersCard from './CloseLeadersCard';
+import AlphaCoreOpsCard from './AlphaCoreOpsCard';
 
 interface AiBainOverview {
     generated_at: string;
@@ -81,7 +82,7 @@ export default function AiBainDashboard() {
     const learningPattern = overview?.learning?.top_positive?.[0]?.combo ?? null;
 
     return (
-        <div className="min-h-screen bg-[#09090b] text-white p-4 sm:p-6 lg:p-8">
+        <div className="min-h-full bg-[#09090b] text-white p-4 sm:p-6 lg:p-8">
             <div className="max-w-3xl mx-auto space-y-5">
                 <Header
                     hitRatePct={overview?.performance?.hit_rate_pct ?? null}
@@ -89,6 +90,9 @@ export default function AiBainDashboard() {
                     asOf={overview?.detections?.as_of ?? null}
                     live={!loading && !error}
                 />
+
+                {/* AlphaClaw v1.1 — GET 전용 관측·페이퍼 운영면. 주문/승인 액션은 의도적으로 없다. */}
+                <AlphaCoreOpsCard />
 
                 {loading && <LoadingState />}
 

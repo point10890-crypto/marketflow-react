@@ -56,14 +56,27 @@ def save_snapshot(con: sqlite3.Connection, snap: dict[str, Any]) -> int:
     return int(cur.lastrowid)
 
 
-def last_snapshot(con: sqlite3.Connection, *, before_id: int | None = None) -> dict[str, Any] | None:
+def last_snapshot(con: sqlite3.Connection, *, before_id: int | None = None,
+                  day: str | None = None) -> dict[str, Any] | None:
+    """Return the newest snapshot, optionally constrained to one trading day.
+
+    Event detection must never compare the first tick of a session with a
+    snapshot from the previous session, so callers can pass ``day`` to make
+    that boundary explicit.
+    """
     q = 'SELECT ts, source, market_status, by_grade, rows_json, error FROM snapshots'
-    args: tuple = ()
+    where: list[str] = []
+    args: list[Any] = []
     if before_id is not None:
-        q += ' WHERE id < ?'
-        args = (before_id,)
+        where.append('id < ?')
+        args.append(before_id)
+    if day is not None:
+        where.append('day = ?')
+        args.append(day)
+    if where:
+        q += ' WHERE ' + ' AND '.join(where)
     q += ' ORDER BY id DESC LIMIT 1'
-    row = con.execute(q, args).fetchone()
+    row = con.execute(q, tuple(args)).fetchone()
     if not row:
         return None
     return {'ts': row[0], 'source': row[1], 'market_status': row[2],
@@ -101,9 +114,40 @@ def save_events(con: sqlite3.Connection, events: list[dict[str, Any]]) -> int:
     return n
 
 
+def pending_events(con: sqlite3.Connection, day: str | None = None, *,
+                   include_prior: bool = False) -> list[dict[str, Any]]:
+    """Return unreported events in FIFO order.
+
+    ``events`` is also the per-day detection dedupe table.  Keeping pending
+    rows here (rather than re-detecting them) lets failed and dry-run delivery
+    attempts retry without producing duplicate event records.  ``include_prior``
+    drains backlog through ``day`` while excluding malformed future-dated rows.
+    """
+    q = ('SELECT ts, type, code, name, grade_from, grade_to, score, chg, payload '
+         'FROM events WHERE reported_at IS NULL')
+    args: tuple[Any, ...] = ()
+    if day is not None:
+        q += ' AND day<=?' if include_prior else ' AND day=?'
+        args = (day,)
+    q += ' ORDER BY day, ts, id'
+    rows = con.execute(q, args).fetchall()
+    out: list[dict[str, Any]] = []
+    keys = ('ts', 'type', 'code', 'name', 'grade_from', 'grade_to', 'score', 'chg')
+    for row in rows:
+        try:
+            payload = json.loads(row[8] or '{}')
+        except (TypeError, ValueError):
+            payload = {}
+        event = payload if isinstance(payload, dict) else {}
+        for key, value in zip(keys, row[:8]):
+            event.setdefault(key, value)
+        out.append(event)
+    return out
+
+
 def mark_reported(con: sqlite3.Connection, events: list[dict[str, Any]], when: str) -> None:
     for e in events:
-        con.execute('UPDATE events SET reported_at=? WHERE day=? AND type=? AND code=?',
+        con.execute('UPDATE events SET reported_at=? WHERE day=? AND type=? AND code=? AND reported_at IS NULL',
                     (when, _day(e['ts']), e['type'], e['code']))
 
 
@@ -119,6 +163,40 @@ def save_regime(con: sqlite3.Connection, ts: str, reg: dict[str, Any]) -> None:
     con.execute('INSERT INTO regimes(ts, regime, breadth, halt, reasons) VALUES (?,?,?,?,?)',
                 (ts, reg.get('regime'), reg.get('breadth_pct'), int(bool(reg.get('halt'))),
                  json.dumps(reg.get('reasons') or [], ensure_ascii=False)))
+
+
+def last_regime(con: sqlite3.Connection) -> dict[str, Any] | None:
+    row = con.execute(
+        'SELECT ts, regime, breadth, halt, reasons FROM regimes ORDER BY id DESC LIMIT 1'
+    ).fetchone()
+    if not row:
+        return None
+    try:
+        reasons = json.loads(row[4] or '[]')
+    except (TypeError, ValueError):
+        reasons = []
+    return {'ts': row[0], 'regime': row[1], 'breadth_pct': row[2],
+            'halt': bool(row[3]), 'reasons': reasons}
+
+
+def current_halt_episode(con: sqlite3.Connection, day: str) -> dict[str, Any] | None:
+    """Return the first row in today's current consecutive HALT episode."""
+    iso_day = f'{day[:4]}-{day[4:6]}-{day[6:]}'
+    row = con.execute(
+        'SELECT ts, regime, breadth, halt, reasons FROM regimes '
+        'WHERE substr(ts,1,10)=? AND halt=1 AND id > COALESCE(('
+        '  SELECT MAX(id) FROM regimes WHERE substr(ts,1,10)=? AND halt=0'
+        '), 0) ORDER BY id ASC LIMIT 1',
+        (iso_day, iso_day),
+    ).fetchone()
+    if not row:
+        return None
+    try:
+        reasons = json.loads(row[4] or '[]')
+    except (TypeError, ValueError):
+        reasons = []
+    return {'ts': row[0], 'regime': row[1], 'breadth_pct': row[2],
+            'halt': True, 'reasons': reasons}
 
 
 def save_brief(con: sqlite3.Connection, kind: str, digest: str, path: str, delivered: bool, error: str | None) -> bool:

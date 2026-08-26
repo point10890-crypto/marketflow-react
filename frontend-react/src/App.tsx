@@ -12,7 +12,19 @@ import PricingPage from '@/pages/static/PricingPage';
 import LandingPage from '@/pages/LandingPage';
 
 // Dashboard pages - lazy loaded
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useLayoutEffect } from 'react';
+
+function DocumentScrollReset() {
+    const { pathname } = useLocation();
+
+    useLayoutEffect(() => {
+        const scroller = document.scrollingElement ?? document.documentElement;
+        scroller.scrollTop = 0;
+        scroller.scrollLeft = 0;
+    }, [pathname]);
+
+    return null;
+}
 
 // 에러 경계는 DashboardLayout 안 <Outlet /> 주변(PageErrorBoundary)으로 이동.
 // 이렇게 두면 한 페이지가 터져도 사이드바·네비·다른 페이지 진입은 살아 있음.
@@ -144,7 +156,7 @@ function NotFoundPage() {
         ? '대시보드로 이동'
         : (target === '/login' ? '로그인' : '앱 소개 · 가입');
     return (
-        <div className="flex items-center justify-center min-h-screen bg-[#09090b] text-white">
+        <div className="flex min-h-[100dvh] items-center justify-center bg-[#09090b] text-white">
             <div className="text-center px-6">
                 <div className="text-6xl font-black text-amber-500 mb-4">404</div>
                 <h1 className="text-xl font-bold mb-2">페이지를 찾을 수 없습니다</h1>
@@ -171,6 +183,7 @@ function LoadingFallback() {
 export default function App() {
     return (
         <BrowserRouter>
+            <DocumentScrollReset />
             <AuthProvider>
             <NotificationProvider>
                 <Routes>

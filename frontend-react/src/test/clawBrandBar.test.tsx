@@ -65,6 +65,31 @@ describe('ClawBrandBar', () => {
     expect(compact.className).not.toContain('is-on');
   });
 
+  it('caches banner layout metrics instead of reading them on every scroll frame', () => {
+    const { scrollTo } = setup();
+    const banner = screen.getByTestId('claw-brand-banner');
+    let topReads = 0;
+    let heightReads = 0;
+    Object.defineProperty(banner, 'offsetTop', {
+      configurable: true,
+      get: () => { topReads += 1; return 10; },
+    });
+    Object.defineProperty(banner, 'offsetHeight', {
+      configurable: true,
+      get: () => { heightReads += 1; return 186; },
+    });
+
+    scrollTo(100); // first valid post-layout measurement
+    topReads = 0;
+    heightReads = 0;
+    scrollTo(120);
+    scrollTo(150);
+    scrollTo(195);
+
+    expect(topReads).toBe(0);
+    expect(heightReads).toBe(0);
+  });
+
   it('CSS: compact bar animates only transform/opacity and the banner has no blur or layout transitions', () => {
     const css = readFileSync(resolve(__dirname, '../index.css'), 'utf-8');
     const section = css.slice(css.indexOf('/* 5) 타이틀 배너'), css.indexOf('/* 6) 모바일 세로'));

@@ -16,11 +16,57 @@ from __future__ import annotations
 
 import json
 import os
+from bisect import bisect_right
 from dataclasses import dataclass, field
+from datetime import date as date_type
 from typing import Any
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 WORKFLOWS_ROOT = os.path.join(REPO_ROOT, 'data', 'admin_mirofish', 'workflows')
+DETECTION_LAB_METHOD_VERSION = 'mirofish.detection_lab.replay.v3.1'
+PHASE_MAX_AGE_DAYS = 7
+KNOWN_PHASES = frozenset({
+    'uptrend_broadening', 'leader_market', 'downtrend', 'rebound_early',
+})
+
+
+def live_phase_gate_blocked() -> frozenset[str]:
+    """Read the paper engine's gate set without duplicating policy constants.
+
+    The dependency is deliberately one-way and local: ``paper_positions`` does
+    not import the lab, so the validation harness follows LIVE semantics without
+    creating a circular import or changing the paper engine.
+    """
+    from app.services.mirofish.paper_positions import PHASE_GATE_BLOCKED
+    return frozenset(str(phase) for phase in PHASE_GATE_BLOCKED)
+
+
+def phase_as_of(detection_date: str, phase_by_date: dict[str, str] | None,
+                *, max_age_days: int = PHASE_MAX_AGE_DAYS) -> tuple[str, int | None]:
+    """Resolve the latest non-future phase and return ``(phase, age_days)``.
+
+    Weekend/holiday detections legitimately have no same-date EOD row.  A
+    bounded as-of join uses the latest prior trading date without lookahead;
+    inputs older than ``max_age_days`` fail as uncovered instead of silently
+    carrying a stale regime forward.
+    """
+    phase_by_date = phase_by_date or {}
+    try:
+        target = date_type.fromisoformat(str(detection_date or ''))
+    except ValueError:
+        return '', None
+    dates = sorted(str(item) for item in phase_by_date)
+    index = bisect_right(dates, target.isoformat()) - 1
+    if index < 0:
+        return '', None
+    selected_date = dates[index]
+    try:
+        age_days = (target - date_type.fromisoformat(selected_date)).days
+    except ValueError:
+        return '', None
+    if age_days < 0 or age_days > max_age_days:
+        return '', age_days
+    return str(phase_by_date.get(selected_date) or ''), age_days
 
 
 @dataclass
@@ -28,7 +74,7 @@ class RuleSet:
     """리플레이 규칙 변형. 기본값 = 라이브 엔진 현행."""
     name: str = 'baseline'
     # 진입 게이트
-    regime_gate: bool = False        # V1: 하락 국면 검출 스킵
+    regime_gate: bool = False        # V1: LIVE paper phase gate와 동일 국면 스킵
     stage2_filter: bool = False      # V2: 종가 > 150MA & 150MA 상승 중일 때만
     # 청산
     exit_mode: str = 'fixed'         # 'fixed' | 'atr'  (V3)
@@ -148,10 +194,10 @@ def replay(detections: list[dict[str, Any]],
             continue
         bars = price_series.get(symbol) or []
         upto = [b for b in bars if str(b['date']) <= det_date]
-        phase = phase_by_date.get(det_date, '')
+        phase, _phase_age_days = phase_as_of(det_date, phase_by_date)
 
         # ── 진입 게이트 ──
-        if rules.regime_gate and phase == 'downtrend':
+        if rules.regime_gate and phase in live_phase_gate_blocked():
             skipped_filter += 1
             continue
         if rules.stage2_filter and not _stage2_ok(upto):
@@ -238,14 +284,28 @@ def _metrics(trades: list[dict[str, Any]]) -> dict[str, Any]:
     for t in trades:
         by_reason[t['exit_reason']] = by_reason.get(t['exit_reason'], 0) + 1
         phase = t.get('phase') or 'unknown'
-        bucket = by_phase.setdefault(phase, {'trades': 0, 'sum_return': 0.0, 'wins': 0})
+        bucket = by_phase.setdefault(phase, {
+            'trades': 0,
+            'sum_return': 0.0,
+            'wins': 0,
+            'gross_profit_pct': 0.0,
+            'gross_loss_pct': 0.0,
+        })
         bucket['trades'] += 1
-        bucket['sum_return'] += float(t['return_pct'])
-        bucket['wins'] += 1 if float(t['return_pct']) > 0 else 0
+        trade_return = float(t['return_pct'])
+        bucket['sum_return'] += trade_return
+        bucket['wins'] += 1 if trade_return > 0 else 0
+        if trade_return > 0:
+            bucket['gross_profit_pct'] += trade_return
+        elif trade_return < 0:
+            bucket['gross_loss_pct'] += -trade_return
     for bucket in by_phase.values():
         bucket['expectancy_pct'] = round(bucket['sum_return'] / bucket['trades'], 2)
         bucket['win_rate_pct'] = round(bucket['wins'] / bucket['trades'] * 100, 1)
         bucket['net_expectancy_pct'] = round(bucket['expectancy_pct'] - cost, 2)
+        gross_profit = bucket.pop('gross_profit_pct')
+        gross_loss = bucket.pop('gross_loss_pct')
+        bucket['profit_factor'] = round(gross_profit / gross_loss, 2) if gross_loss else None
         del bucket['sum_return']
 
     # net(비용 후) 병기 — gross 를 대체하지 않는다
@@ -321,3 +381,48 @@ def phase_timeline() -> dict[str, str]:
         else:
             phases[date] = 'rebound_early' if rebounding else 'leader_market'
     return phases
+
+
+def phase_coverage(detections: list[dict[str, Any]],
+                   phase_by_date: dict[str, str] | None) -> dict[str, Any]:
+    """Return deterministic detection-level phase coverage metadata.
+
+    Unknown labels are not considered covered.  This keeps stale/corrupt phase
+    inputs from silently qualifying a validation report.
+    """
+    phase_by_date = phase_by_date or {}
+    total = len(detections or [])
+    assigned = 0
+    unknown_label = 0
+    asof_fallback_count = 0
+    stale_count = 0
+    maximum_age_days = 0
+    distribution: dict[str, int] = {}
+    missing_dates: set[str] = set()
+    for detection in (detections or []):
+        detection_date = str(detection.get('date') or '')
+        phase, age_days = phase_as_of(detection_date, phase_by_date)
+        if phase in KNOWN_PHASES:
+            assigned += 1
+            distribution[phase] = distribution.get(phase, 0) + 1
+            maximum_age_days = max(maximum_age_days, int(age_days or 0))
+            if age_days:
+                asof_fallback_count += 1
+        else:
+            if phase:
+                unknown_label += 1
+            if age_days is not None and age_days > PHASE_MAX_AGE_DAYS:
+                stale_count += 1
+            if detection_date:
+                missing_dates.add(detection_date)
+    return {
+        'detections_total': total,
+        'detections_with_known_phase': assigned,
+        'coverage_ratio': round(assigned / total, 6) if total else 0.0,
+        'unknown_label_count': unknown_label,
+        'asof_fallback_count': asof_fallback_count,
+        'stale_count': stale_count,
+        'maximum_age_days': maximum_age_days,
+        'missing_detection_dates': len(missing_dates),
+        'by_phase': dict(sorted(distribution.items())),
+    }

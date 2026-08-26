@@ -2,8 +2,7 @@
  * Claw LIVE — 타입·표시 규칙 공용 모듈.
  * 백엔드 계약: GET /api/kr/claw/overview (marketflow_claw/overview.py). 읽기전용.
  */
-import type { ReactNode } from 'react';
-import { createElement } from 'react';
+import { createElement, type ReactNode } from 'react';
 
 export type ClawLoopState = 'running' | 'idle' | 'halt' | 'dead';
 
@@ -121,10 +120,96 @@ export function fmtDay(day: string | null | undefined): string {
     return `${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6)}`;
 }
 
+export const CLAW_SCORECARDS_ENDPOINT = '/api/kr/claw/scorecards';
+export const CLAW_QUALITY_ENDPOINT = '/api/kr/claw/quality';
+
+export type ClawOutcomeStatus = 'pending' | 'complete' | 'missing' | 'not_comparable' | string;
+
+export interface ClawScorecards {
+    schema_version: string;
+    generated_at: string;
+    data_as_of: string | null;
+    window: { start: string | null; end: string | null };
+    coverage: {
+        instances: number;
+        eligible_n: number;
+        complete_n: number;
+        pending_n: number;
+        missing_n: number;
+        ratio: number | null;
+    };
+    horizons: Array<{
+        horizon_sessions: number;
+        eligible_n: number;
+        complete_n: number;
+        pending_n: number;
+        missing_n: number;
+        coverage: number | null;
+        avg_return_pct: number | null;
+        positive_rate_pct: number | null;
+        status: string;
+        insufficient_reason: string | null;
+    }>;
+    recent_instances: Array<{
+        id: number | string;
+        opened_at: string;
+        code: string;
+        name: string;
+        trigger_type: string;
+        grade: string | null;
+        score: number | null;
+        status: string;
+        structural_phase: string | null;
+        live_gate_status: string | null;
+        live_halt: boolean;
+        outcomes: Array<{
+            horizon_sessions: number;
+            status: ClawOutcomeStatus;
+            target_session_date: string | null;
+            return_pct: number | null;
+            error_code: string | null;
+        }>;
+    }>;
+    stale: boolean;
+    insufficient: boolean;
+    insufficient_reason: string | null;
+    errors: string[];
+}
+
+export interface ClawQuality {
+    schema_version: string;
+    generated_at: string;
+    status: 'ok' | 'degraded' | 'unavailable' | string;
+    database: { path_exists: boolean; bytes: number; foreign_keys: boolean; schema_version: number };
+    ledger: {
+        last_write_at: string | null;
+        last_error_at: string | null;
+        last_error: string | null;
+        consecutive_errors: number;
+        scans: number;
+        contexts: number;
+        instances: number;
+        state_events: number;
+    };
+    outcomes: { pending: number; complete: number; missing: number; data_as_of: string | null };
+    freshness: { last_scan_at: string | null; age_seconds: number | null; stale: boolean };
+    errors: string[];
+}
+
 /** 응답이 계약 형태인지 — 테스트 모킹이나 구버전 백엔드에서 엉뚱한 객체가 와도 카드가 죽지 않게 */
 export function isClawOverview(v: unknown): v is ClawOverview {
     const o = v as Partial<ClawOverview> | null;
     return !!o && typeof o === 'object' && !!o.loop && typeof o.loop.state === 'string' && !!o.leaders && Array.isArray(o.leaders.rows);
+}
+
+export function isClawScorecards(v: unknown): v is ClawScorecards {
+    const o = v as Partial<ClawScorecards> | null;
+    return !!o && typeof o === 'object' && !!o.coverage && Array.isArray(o.horizons) && Array.isArray(o.recent_instances);
+}
+
+export function isClawQuality(v: unknown): v is ClawQuality {
+    const o = v as Partial<ClawQuality> | null;
+    return !!o && typeof o === 'object' && typeof o.status === 'string' && !!o.database && !!o.ledger && !!o.outcomes;
 }
 
 /** 주도주LIVE 페이지의 GRADE_STYLE 과 동일한 색 (S rose · A amber · B blue) */

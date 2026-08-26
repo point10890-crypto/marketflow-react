@@ -23,8 +23,24 @@ def _enabled() -> bool:
     return os.environ.get('CLAW_DELIVERY_ENABLED', '0').strip().lower() in {'1', 'true', 'yes', 'on'}
 
 
+def _claw_enabled() -> bool:
+    return os.environ.get('CLAW_ENABLED', '1').strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
 def digest_of(text: str) -> str:
     return hashlib.sha256(text.encode('utf-8')).hexdigest()
+
+
+def delivery_digest(kind: str, text: str, *, delivery_id: str | None = None) -> str:
+    """Return the ledger key for one logical delivery.
+
+    Gateway retries pass a stable ``delivery_id`` so changing wall-clock text
+    cannot bypass dedupe, while distinct sessions/episodes never collide.  The
+    content-only fallback preserves the existing CLI briefing contract.
+    """
+    if delivery_id is None:
+        return digest_of(text)
+    return digest_of(f'logical-delivery:v1\0{kind}\0{delivery_id}')
 
 
 def route() -> dict[str, Any]:
@@ -88,14 +104,22 @@ def write_report(kind: str, text: str) -> str:
     return path
 
 
-def deliver(kind: str, text: str, *, send: bool = False) -> dict[str, Any]:
-    """리포트 파일은 항상 기록. 발송은 send && CLAW_DELIVERY_ENABLED 일 때만, digest 중복 차단."""
-    digest = digest_of(text)
+def deliver(kind: str, text: str, *, send: bool = False,
+            delivery_id: str | None = None) -> dict[str, Any]:
+    """Write a report and optionally send it once per logical delivery ID."""
+    digest = delivery_digest(kind, text, delivery_id=delivery_id)
     path = write_report(kind, text)
-    result = {'kind': kind, 'digest': digest, 'path': path, 'sent': False, 'mode': 'dry-run', 'error': None}
+    result = {'kind': kind, 'digest': digest, 'path': path, 'sent': False,
+              'delivery_id': delivery_id, 'already_delivered': False,
+              'mode': 'dry-run', 'error': None}
     if not send:
         with memory.connect() as con:
             memory.save_brief(con, kind, digest, path, False, None)
+        return result
+    if not _claw_enabled():
+        result['error'] = 'CLAW_ENABLED is disabled'
+        with memory.connect() as con:
+            memory.save_brief(con, kind, digest, path, False, result['error'])
         return result
     if not _enabled():
         result['error'] = 'CLAW_DELIVERY_ENABLED is not set'
@@ -105,6 +129,7 @@ def deliver(kind: str, text: str, *, send: bool = False) -> dict[str, Any]:
     with memory.connect() as con:
         if memory.brief_exists(con, digest):
             result['error'] = 'duplicate_digest'
+            result['already_delivered'] = True
             return result
 
     r = route()

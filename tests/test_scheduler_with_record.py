@@ -164,6 +164,29 @@ def test_leading_screener_refresh_treats_below_threshold_empty_as_handled(monkey
     assert result["_scheduler_skip_verify"] is True
 
 
+def test_leading_screener_refresh_rejects_unsaved_quality_result(monkeypatch):
+    payload = {
+        "results": [{"code": "000001"}],
+        "source_counts": {
+            "volume_by_amount": 30,
+            "fluctuation": 30,
+            "volume_by_surge": 30,
+        },
+        "market_status": "open",
+        "data_quality": {
+            "status": "partial",
+            "safe_to_replace_latest": False,
+            "resolved_candidate_coverage": 0.9333,
+            "unresolved_potential_codes": ["000002", "000003"],
+            "missing_sources": [],
+        },
+    }
+
+    monkeypatch.setattr("app.services.kis_screener.run_screening", lambda force=True: payload)
+
+    assert scheduler.run_leading_screener_refresh() is False
+
+
 def test_interval_monitor_uses_cooldown_not_daily_skip(monkeypatch):
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES", 5)
     calls = []

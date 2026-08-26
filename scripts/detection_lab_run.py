@@ -11,42 +11,55 @@
 """
 from __future__ import annotations
 
-import csv
+import hashlib
 import json
-import os
+import subprocess
 import sys
+from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
+# The harness contract permits exactly one filesystem mutation: its report.
+# Imported modules therefore must not create/update bytecode caches.
+sys.dont_write_bytecode = True
 
 from app.services.mirofish import detection_lab as dl  # noqa: E402
+from app.services.mirofish.intelligence import regime  # noqa: E402
+from app.utils.atomic_json import write_json_atomic  # noqa: E402
 
 DAILY_PRICES_CSV = BASE_DIR / 'data' / 'daily_prices.csv'
+REGIME_TIMELINE_JSON = Path(regime.REGIME_TIMELINE_PATH)
 OUT_DIR = BASE_DIR / 'data' / 'admin_mirofish' / 'detection_lab'
+REPORT_SCHEMA_VERSION = 'mirofish.detection_lab.report.v2'
+MIN_PHASE_COVERAGE = 0.95
+MIN_PRICE_COVERAGE = 0.95
 
 
-def load_series(symbols: set[str]) -> dict[str, list[dict]]:
+def load_series(symbols: set[str], *, path=DAILY_PRICES_CSV,
+                return_quality: bool = False):
+    """Load deduplicated OHLC series for the validation universe.
+
+    The source file is scanned once and rows are selected through the same
+    deterministic latest-valid policy used by the regime builder.
+    """
     series: dict[str, list[dict]] = {s: [] for s in symbols}
-    with open(DAILY_PRICES_CSV, 'r', encoding='utf-8-sig', newline='') as f:
-        for row in csv.DictReader(f):
-            ticker = (row.get('ticker') or '').strip()
-            if ticker not in series:
-                continue
-            try:
-                series[ticker].append({
-                    'date': (row.get('date') or '').strip(),
-                    'open': float(row.get('open') or 0),
-                    'high': float(row.get('high') or 0),
-                    'low': float(row.get('low') or 0),
-                    'close': float(row.get('current_price') or 0),
-                })
-            except (TypeError, ValueError):
-                continue
-    for rows in series.values():
-        rows.sort(key=lambda r: r['date'])
-    return series
+    rows, quality = regime.load_deduplicated_daily_rows(
+        path,
+        symbols=symbols,
+        required_price_fields=('open', 'high', 'low', 'current_price'),
+    )
+    for row in rows:
+        ticker = row['ticker']
+        series[ticker].append({
+            'date': row['date'],
+            'open': float(row['open']),
+            'high': float(row['high']),
+            'low': float(row['low']),
+            'close': float(row['current_price']),
+        })
+    return (series, quality) if return_quality else series
 
 
 RULESETS = [
@@ -59,6 +72,154 @@ RULESETS = [
 ]
 
 
+def _sha256_file(path: Path) -> dict:
+    result = {'path': _relative_path(path), 'exists': path.is_file(), 'sha256': None, 'bytes': None}
+    if not path.is_file():
+        return result
+    digest = hashlib.sha256()
+    with path.open('rb') as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b''):
+            digest.update(chunk)
+    result['sha256'] = digest.hexdigest()
+    result['bytes'] = path.stat().st_size
+    return result
+
+
+def _relative_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(BASE_DIR.resolve()).as_posix()
+    except ValueError:
+        return path.resolve().as_posix()
+
+
+def _canonical_hash(value) -> str:
+    payload = json.dumps(value, ensure_ascii=False, sort_keys=True,
+                         separators=(',', ':')).encode('utf-8')
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _git_metadata() -> dict:
+    metadata = {'revision': None, 'tracked_worktree_dirty': None}
+    try:
+        revision = subprocess.run(
+            ['git', 'rev-parse', 'HEAD'], cwd=BASE_DIR, capture_output=True,
+            text=True, check=True, timeout=10,
+        )
+        metadata['revision'] = revision.stdout.strip() or None
+        status = subprocess.run(
+            ['git', 'status', '--porcelain', '--untracked-files=no'], cwd=BASE_DIR,
+            capture_output=True, text=True, check=True, timeout=20,
+        )
+        metadata['tracked_worktree_dirty'] = bool(status.stdout.strip())
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return metadata
+
+
+def _regime_input_metadata(path: Path = REGIME_TIMELINE_JSON) -> dict:
+    metadata = _sha256_file(path)
+    metadata.update({'schema_version': None, 'method_version': None,
+                     'max_data_date': None, 'data_quality': None})
+    if not path.is_file():
+        return metadata
+    try:
+        timeline = json.loads(path.read_text(encoding='utf-8-sig'))
+    except (OSError, ValueError, UnicodeError):
+        metadata['read_error'] = 'invalid_json'
+        return metadata
+    by_date = timeline.get('by_date') if isinstance(timeline, dict) else {}
+    by_date = by_date if isinstance(by_date, dict) else {}
+    metadata.update({
+        'schema_version': timeline.get('schema_version'),
+        'method_version': timeline.get('method_version'),
+        'max_data_date': max(by_date) if by_date else None,
+        'data_quality': timeline.get('data_quality'),
+    })
+    return metadata
+
+
+def coverage_summary(detections: list[dict], symbols: set[str],
+                     series: dict[str, list[dict]], phases: dict[str, str]) -> dict:
+    symbol_total = len(symbols)
+    covered_symbols = sum(1 for symbol in symbols if series.get(symbol))
+    detection_total = len(detections)
+    entry_covered = 0
+    for detection in detections:
+        detection_date = str(detection.get('date') or '')
+        bars = series.get(str(detection.get('symbol') or '')) or []
+        if any(str(bar.get('date') or '') > detection_date for bar in bars):
+            entry_covered += 1
+    return {
+        'price_symbols': {
+            'total': symbol_total,
+            'covered': covered_symbols,
+            'coverage_ratio': round(covered_symbols / symbol_total, 6) if symbol_total else 0.0,
+        },
+        'price_detections_with_future_bar': {
+            'total': detection_total,
+            'covered': entry_covered,
+            'coverage_ratio': round(entry_covered / detection_total, 6) if detection_total else 0.0,
+        },
+        'phase': dl.phase_coverage(detections, phases),
+    }
+
+
+def validate_coverage(coverage: dict, *, min_phase=MIN_PHASE_COVERAGE,
+                      min_price=MIN_PRICE_COVERAGE) -> dict:
+    checks = {
+        'phase_coverage': {
+            'value': float((coverage.get('phase') or {}).get('coverage_ratio') or 0),
+            'minimum': float(min_phase),
+        },
+        'price_detection_coverage': {
+            'value': float((coverage.get('price_detections_with_future_bar') or {}).get('coverage_ratio') or 0),
+            'minimum': float(min_price),
+        },
+    }
+    failed = []
+    for name, check in checks.items():
+        check['passed'] = check['value'] >= check['minimum']
+        if not check['passed']:
+            failed.append(name)
+    return {
+        'status': 'passed' if not failed else 'failed',
+        'eligible_for_policy_decision': not failed,
+        'fail_closed': True,
+        'failed_checks': failed,
+        'checks': checks,
+    }
+
+
+def build_manifest(*, detections: list[dict], symbols: set[str],
+                   series: dict[str, list[dict]], phases: dict[str, str],
+                   price_quality: dict, rulesets=None,
+                   daily_prices_path: Path = DAILY_PRICES_CSV,
+                   regime_timeline_path: Path = REGIME_TIMELINE_JSON) -> dict:
+    coverage = coverage_summary(detections, symbols, series, phases)
+    validation = validate_coverage(coverage)
+    selected_rulesets = rulesets or RULESETS
+    return {
+        'method_version': dl.DETECTION_LAB_METHOD_VERSION,
+        'git': _git_metadata(),
+        'inputs': {
+            'daily_prices': _sha256_file(Path(daily_prices_path)),
+            'regime_timeline': _regime_input_metadata(Path(regime_timeline_path)),
+            'detections': {
+                'records': len(detections),
+                'sha256': _canonical_hash(detections),
+                'min_date': min((str(item.get('date') or '') for item in detections), default=None),
+                'max_date': max((str(item.get('date') or '') for item in detections), default=None),
+            },
+        },
+        'max_data_date': price_quality.get('max_data_date'),
+        'coverage': coverage,
+        'duplicate_stats': price_quality,
+        'rulesets': [asdict(rules) for rules in selected_rulesets],
+        'live_phase_gate_blocked': sorted(dl.live_phase_gate_blocked()),
+        'validation': validation,
+    }
+
+
 def main() -> int:
     detections = dl.collect_historical_detections()
     print(f'과거 검출: {len(detections)}건 '
@@ -68,7 +229,7 @@ def main() -> int:
 
     symbols = {d['symbol'] for d in detections}
     print(f'심볼 {len(symbols)}종 가격 로드 중...')
-    series = load_series(symbols)
+    series, price_quality = load_series(symbols, return_quality=True)
     covered = sum(1 for s in symbols if series.get(s))
     print(f'가격 커버리지: {covered}/{len(symbols)}')
 
@@ -96,7 +257,7 @@ def main() -> int:
               f"no_data={m['skipped_no_data']}")
         for phase, stats in sorted(m.get('by_phase', {}).items()):
             print(f"    [{phase}] n={stats['trades']} win={stats['win_rate_pct']}% "
-                  f"exp={stats['expectancy_pct']:+.2f}%")
+                  f"exp={stats['expectancy_pct']:+.2f}% PF={stats['profit_factor']}")
 
     # 요약 비교표 (gross | net)
     print('\n' + '=' * 96)
@@ -121,16 +282,36 @@ def main() -> int:
         print(f"  {t['detected_date']} {t['name']:<14} {t['return_pct']:+7.2f}% "
               f"{t['exit_reason']:<7} phase={t.get('phase')}")
 
+    manifest = build_manifest(
+        detections=detections,
+        symbols=symbols,
+        series=series,
+        phases=phases,
+        price_quality=price_quality,
+    )
+    validation = manifest['validation']
+    phase_coverage = manifest['coverage']['phase']['coverage_ratio']
+    price_coverage = manifest['coverage']['price_detections_with_future_bar']['coverage_ratio']
+    print(f'검증 커버리지: phase={phase_coverage:.1%} price={price_coverage:.1%}')
+    print(f"검증 판정: {validation['status']} (fail_closed=true)")
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
+    generated_at = datetime.now(timezone.utc)
+    ts = generated_at.strftime('%Y%m%d_%H%M%S_%f')
     out_path = OUT_DIR / f'report_{ts}.json'
-    with open(out_path, 'w', encoding='utf-8') as f:
-        json.dump({
-            'generated_at': datetime.now(timezone.utc).isoformat(),
-            'detections': len(detections),
-            'results': {name: out for name, out in results.items()},
-        }, f, ensure_ascii=False, indent=1)
+    write_json_atomic(out_path, {
+        'schema_version': REPORT_SCHEMA_VERSION,
+        'method_version': dl.DETECTION_LAB_METHOD_VERSION,
+        'generated_at': generated_at.isoformat(),
+        'detections': len(detections),
+        'manifest': manifest,
+        'validation': validation,
+        'results': {name: out for name, out in results.items()},
+    }, sort_keys=False)
     print(f'\n리포트 저장: {out_path}')
+    if not validation['eligible_for_policy_decision']:
+        print('커버리지 기준 미달: 결과를 정책 근거로 사용할 수 없습니다.')
+        return 2
     return 0
 
 

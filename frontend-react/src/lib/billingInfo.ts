@@ -44,10 +44,10 @@ export const PLAN_PAYMENT_META: Record<BillingPlan, PlanMeta> = {
         period: '30일 이용권',
         description: '월 갱신 · 30일 이용',
         features: [
-            '모든 기능 풀 접근',
+            '기본 대시보드 전체 접근',
             'KR / US / Crypto 시그널',
             'AI 챗봇 + 차트 분석',
-            '텔레그램 실시간 알림',
+            '텔레그램 관찰 이벤트 알림',
         ],
     },
     pro_aibain: {
@@ -63,8 +63,8 @@ export const PLAN_PAYMENT_META: Record<BillingPlan, PlanMeta> = {
         description: 'Pro 50,000원 + AI Brain 40,000원 (30일 갱신)',
         features: [
             'Pro 전체 기능 포함',
-            'AI Brain 알파 스캐너 시그널',
-            'MCP TOP 3 자동 알림',
+            'AI Brain 알파 스캐너 관찰 후보',
+            'MCP TOP 3 관찰 알림',
             '그래프RAG 분석 + 스캔 성과',
         ],
     },
@@ -97,8 +97,8 @@ export const PLAN_PAYMENT_META: Record<BillingPlan, PlanMeta> = {
         description: 'Ultra Pro 평생 + AI Brain 30일 갱신',
         features: [
             'Ultra Pro 평생 이용',
-            'AI Brain 알파 스캐너 시그널',
-            'MCP TOP 3 자동 알림',
+            'AI Brain 알파 스캐너 관찰 후보',
+            'MCP TOP 3 관찰 알림',
             'AI Brain 만료 시 자동 회귀',
         ],
     },

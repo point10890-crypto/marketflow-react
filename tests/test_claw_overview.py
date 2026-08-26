@@ -65,3 +65,21 @@ def test_overview_survives_missing_db_dir(monkeypatch, tmp_path):
     monkeypatch.setattr(mem, 'ensure_dirs', lambda: (_ for _ in ()).throw(OSError('ro')))
     o = ov.build_overview(now=now)
     assert 'db' in o['errors'] and o['leaders']['rows'] and o['events']['items'] == []
+
+
+def test_overview_hides_detection_unknown_guard_rows(monkeypatch, tmp_path):
+    now = _setup(monkeypatch, tmp_path)
+    visible = _row('001', '에이사', 'A')
+    guard = dict(_row('002', '', 'C'), score_complete=False, detection_unknown=True,
+                 incomplete_reasons=['price_detail_52w_high'])
+    monkeypatch.setattr(
+        col, 'fetch_leaders',
+        lambda mode='file': {
+            'ts': '2026-08-24T09:59:55', 'market_status': 'open', 'source': 'file',
+            'error': None, 'by_grade': {'A': 1}, 'rows': [visible, guard],
+        },
+    )
+
+    o = ov.build_overview(now=now)
+
+    assert [row['code'] for row in o['leaders']['rows']] == ['001']

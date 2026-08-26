@@ -193,6 +193,8 @@ def build_overview(*, now: datetime | None = None) -> dict[str, Any]:
     # ── leaders ───────────────────────────────────────────────────────────
     leaders = []
     for r in sorted(snap.get('rows') or [], key=lambda x: ({'S': 3, 'A': 2, 'B': 1}.get(x.get('grade'), 0), x.get('score', 0)), reverse=True):
+        if r.get('detection_unknown'):
+            continue
         fe = first_event.get(r['code'])
         since = fe['ts'] if fe and fe['type'] in ('LEADER_NEW', 'LEADER_UPGRADE') and r.get('grade') in LEADER_GRADES else None
         leaders.append({
@@ -220,4 +222,24 @@ def build_overview(*, now: datetime | None = None) -> dict[str, Any]:
         'kill_switches': {'CLAW_ENABLED': _env_flag('CLAW_ENABLED', '1'), 'CLAW_DELIVERY_ENABLED': delivery._enabled(),
                           'CLAW_LLM_ENABLED': _env_flag('CLAW_LLM_ENABLED', '0')},
     }
+    # Observation health is read-only and isolated from the operational
+    # overview. An old database without the additive ledger remains usable.
+    try:
+        from marketflow_claw.observation import build_quality
+
+        quality = build_quality(now=now)
+        out['observation'] = {
+            'status': quality.get('status'),
+            'schema_version': (quality.get('database') or {}).get('schema_version'),
+            'freshness': quality.get('freshness') or {},
+            'ledger': quality.get('ledger') or {},
+            'outcomes': quality.get('outcomes') or {},
+        }
+    except Exception as e:  # noqa: BLE001
+        errors['observation'] = f'{type(e).__name__}: {e}'
+        out['observation'] = {
+            'status': 'unavailable', 'schema_version': None,
+            'freshness': {'last_scan_at': None, 'age_seconds': None, 'stale': True},
+            'ledger': {}, 'outcomes': {},
+        }
     return out

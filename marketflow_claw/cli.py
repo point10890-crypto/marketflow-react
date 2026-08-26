@@ -72,7 +72,8 @@ def cmd_leaders(a) -> int:
     print(f"snapshot {snap.get('ts')} · {snap.get('market_status')} · source {snap.get('source')} · {snap.get('by_grade')}"
           + (f" · error={snap['error']}" if snap.get('error') else ''))
     print(f"{'#':>2} {'g':1} {'code':6} {'name':<12} {'score':>5} {'chg%':>7} {'trval억':>8}")
-    for i, r in enumerate(snap.get('rows') or [], 1):
+    visible_rows = [r for r in (snap.get('rows') or []) if not r.get('detection_unknown')]
+    for i, r in enumerate(visible_rows, 1):
         if i > a.top:
             break
         print(f"{i:>2} {r['grade']:1} {r['code']:6} {r['name']:<12} {r['score']:>5} {r['chg']:>+7.2f} {r['trval_eok']:>8,.0f}")

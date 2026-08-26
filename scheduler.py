@@ -454,6 +454,10 @@ class Config:
     MORNING_REPORT_TIME = os.environ.get('MORNING_REPORT_TIME', '09:00')   # 일별 상태 리포트
     MORNING_BRIEFING_TIME = os.environ.get('MORNING_BRIEFING_TIME', '09:05')  # AI 조간 브리핑
     CLOSING_BRIEFING_TIME = os.environ.get('CLOSING_BRIEFING_TIME', '16:05')  # AI 마감 브리핑
+    # Claw 관측 outcome은 16:30 Wave/agent와 17:30 buy screen 사이에
+    # 성숙한 거래세션만 멱등 갱신한다. 검출/발송에는 관여하지 않는다.
+    CLAW_OUTCOME_ENABLED = os.environ.get('CLAW_OUTCOME_ENABLED', 'true').lower() == 'true'
+    CLAW_OUTCOME_TIME = os.environ.get('CLAW_OUTCOME_TIME', '17:15')
     LOTTO_POST_TIME = os.environ.get('LOTTO_POST_TIME', '17:00')           # 금요일 AI 로또 분석
 
     # 타임아웃 (초)
@@ -981,6 +985,17 @@ def run_leading_screener_refresh():
         from app.services.kis_screener import run_screening
 
         result = run_screening(force=True)
+        quality = (result or {}).get('data_quality')
+        if isinstance(quality, dict) and quality.get('safe_to_replace_latest') is False:
+            logger.warning(
+                "leading_screener refresh rejected by quality gate: "
+                "status=%s coverage=%s unresolved=%s missing_sources=%s",
+                quality.get('status'),
+                quality.get('resolved_candidate_coverage'),
+                quality.get('unresolved_potential_codes'),
+                quality.get('missing_sources'),
+            )
+            return False
         count = len((result or {}).get('results') or [])
         if count <= 0:
             source_counts = (result or {}).get('source_counts') or {}
@@ -3320,6 +3335,26 @@ def _run_kis_token_warmup() -> bool:
         return False
 
 
+def _run_claw_outcome_update() -> bool:
+    """성숙한 Claw D1/D5 관측 결과만 채운다 (shadow-only)."""
+    try:
+        from marketflow_claw.observation import update_mature_outcomes
+
+        result = update_mature_outcomes()
+        if result.get('ok'):
+            logger.info(
+                "Claw outcome shadow update complete: completed=%s missing=%s pending=%s as_of=%s",
+                result.get('completed'), result.get('missing'), result.get('still_pending'),
+                result.get('data_as_of'),
+            )
+            return True
+        logger.error("Claw outcome shadow update failed: %s", result.get('error'))
+        return False
+    except Exception as e:
+        logger.error("Claw outcome shadow update error: %s: %s", type(e).__name__, e)
+        return False
+
+
 def _run_kiwoom_ai_theme() -> bool:
     """키움 AI전략 테마 랭커 — 장중 15분 주기. 장외엔 자동 skip.
 
@@ -4025,6 +4060,11 @@ class Scheduler:
             getattr(schedule.every(), day).at(Config.WAVE_SCAN_TIME).do(
                 self._with_record(_run_wave_scan, 'wave_scan',
                                   max_retries=1, retry_delay=600))
+            # 17:15 — Claw 관측 원장 D1/D5 성숙분 갱신 (발송/스캔 없음)
+            if Config.CLAW_OUTCOME_ENABLED:
+                getattr(schedule.every(), day).at(Config.CLAW_OUTCOME_TIME).do(
+                    self._with_record(_run_claw_outcome_update, 'claw_outcomes',
+                                      max_retries=1, retry_delay=300))
             # 17:30 — AI 매수 후보 선별 (BUY 목표 개수 충족까지) → 텔레그램
             getattr(schedule.every(), day).at(Config.BUY_SCREEN_TIME).do(
                 self._with_record(_run_buy_candidate_screen, 'buy_screen',
@@ -4100,6 +4140,8 @@ class Scheduler:
         logger.info(f"   📈 평일 {Config.KR_VCP_MORNING_TIME}  KR VCP 오전 Refresh (주말 후 stale 방지)")
         logger.info(f"   📈 평일 {Config.VCP_UPDATE_TIME}  전 시장 VCP 시그널 (KR+US+Crypto) → 텔레그램")
         logger.info(f"   🌊 평일 {Config.WAVE_SCAN_TIME}  Wave 패턴 스캔 (KR)")
+        if Config.CLAW_OUTCOME_ENABLED:
+            logger.info(f"   📐 평일 {Config.CLAW_OUTCOME_TIME}  Claw D1/D5 shadow outcome 갱신")
         logger.info(f"   🤖 평일 {Config.AI_CHART_TIME}  AI Chart Analysis KR (Gemini Vision)")
         logger.info(f"   🟢 평일 {Config.BUY_SCREEN_TIME}  AI 매수 후보 {Config.BUY_SCREEN_TARGET}종목 선별 → 텔레그램"
                     f"{' (채널 포함)' if Config.BUY_SCREEN_TO_CHANNEL else ' (개인봇)'}")

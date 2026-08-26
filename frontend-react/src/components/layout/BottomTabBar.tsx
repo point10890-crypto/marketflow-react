@@ -53,7 +53,7 @@ export default function BottomTabBar() {
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-safe-bottom">
-            <div className="border-t border-white/5 bg-[#0a0a0a]/92 backdrop-blur-xl">
+            <div className="border-t border-white/5 bg-[#0a0a0a]">
                 <div className="mobile-bottom-tabs flex items-center gap-1 overflow-x-auto px-2 py-1.5">
                     {visibleTabs.map((tab) => {
                         const selected = isActive(pathname, tab.href);

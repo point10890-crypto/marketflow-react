@@ -107,21 +107,37 @@ export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
         if (!banner || !scroller) return;
         let raf = 0;
         let current = false;
+        let bannerBottom = 0;
+        const measure = () => {
+            bannerBottom = banner.offsetTop + banner.offsetHeight;
+        };
         const onScroll = () => {
             cancelAnimationFrame(raf);
             raf = requestAnimationFrame(() => {
                 const y = scroller.scrollTop;
-                // 배너 하단이 뷰포트 위로 나가는 지점(offsetTop + 높이). 접힘/펼침 임계를 48px 벌려 진동 방지.
-                // 배너가 아직 레이아웃되지 않았으면(높이 0) 접지 않는다.
-                const h = banner.offsetHeight;
-                const bottom = banner.offsetTop + h;
-                const next = h > 0 && (current ? y > bottom - 56 : y > bottom - 8);
+                // Layout metrics are cached and refreshed only when the banner
+                // resizes. Reading offsetHeight/offsetTop on every scroll frame
+                // forces synchronous layout on long mobile pages.
+                if (bannerBottom <= 0) measure();
+                const next = bannerBottom > 0 && (current ? y > bannerBottom - 56 : y > bannerBottom - 8);
                 if (next !== current) { current = next; setCompact(next); }
             });
         };
+        const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => {
+            measure();
+            onScroll();
+        });
+        resizeObserver?.observe(banner);
+        window.addEventListener('resize', measure, { passive: true });
+        measure();
         onScroll();
         scroller.addEventListener('scroll', onScroll, { passive: true });
-        return () => { cancelAnimationFrame(raf); scroller.removeEventListener('scroll', onScroll); };
+        return () => {
+            cancelAnimationFrame(raf);
+            resizeObserver?.disconnect();
+            window.removeEventListener('resize', measure);
+            scroller.removeEventListener('scroll', onScroll);
+        };
     }, []);
 
     return (
@@ -135,9 +151,13 @@ export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
                     aria-label="Claw LIVE 열기"
                     data-testid="claw-brand-compact"
                 >
-                    <ClawMascot state={state} size={40} className="shrink-0 drop-shadow-[0_6px_16px_rgba(255,90,60,.35)]" />
-                    <div className="min-w-0 flex-1 truncate"><Headline size="sm" /></div>
-                    <LiveBadge state={state} />
+                    {compact && (
+                        <>
+                            <ClawMascot state={state} size={40} className="shrink-0 drop-shadow-[0_6px_16px_rgba(255,90,60,.35)]" />
+                            <div className="min-w-0 flex-1 truncate"><Headline size="sm" /></div>
+                            <LiveBadge state={state} />
+                        </>
+                    )}
                 </Link>
             </div>
 
@@ -149,18 +169,22 @@ export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
                 aria-label="Claw LIVE 열기"
                 data-testid="claw-brand-banner"
             >
-                <ClawAsciiBackdrop live={state === 'running'} tone={toneOf(state)} />
-                <div className="claw-brand-aura pointer-events-none absolute inset-0 bg-[radial-gradient(45%_90%_at_50%_40%,rgba(255,90,60,.26),rgba(255,90,60,0)_72%)]" />
                 <div className="claw-brand-inner relative flex flex-col items-center justify-center gap-3 px-4 text-center">
-                    <ClawMascot state={state} size={84} className="claw-brand-mascot shrink-0 drop-shadow-[0_10px_28px_rgba(255,90,60,.38)]" />
-                    <div className="claw-brand-text min-w-0">
-                        <div className="claw-brand-cap font-mono text-[10px] tracking-[0.26em] text-gray-400">관찰 전용 · 사용자 PC에서 실행 · 매매 없음</div>
-                        <div className="claw-brand-headline truncate"><Headline size="sm" /></div>
-                        <div className="claw-brand-mood mt-1 flex flex-wrap items-center justify-center gap-2">
-                            <LiveBadge state={state} />
-                            <span className="truncate text-[11px] text-gray-400">{data ? mood.line : '불러오는 중이에요…'}</span>
-                        </div>
-                    </div>
+                    {!compact && (
+                        <>
+                            <ClawAsciiBackdrop live={state === 'running'} tone={toneOf(state)} />
+                            <div className="claw-brand-aura pointer-events-none absolute inset-0 bg-[radial-gradient(45%_90%_at_50%_40%,rgba(255,90,60,.26),rgba(255,90,60,0)_72%)]" />
+                            <ClawMascot state={state} size={84} className="claw-brand-mascot relative shrink-0 drop-shadow-[0_10px_28px_rgba(255,90,60,.38)]" />
+                            <div className="claw-brand-text relative min-w-0">
+                                <div className="claw-brand-cap font-mono text-[10px] tracking-[0.26em] text-gray-400">관찰 전용 · 사용자 PC에서 실행 · 매매 없음</div>
+                                <div className="claw-brand-headline truncate"><Headline size="sm" /></div>
+                                <div className="claw-brand-mood mt-1 flex flex-wrap items-center justify-center gap-2">
+                                    <LiveBadge state={state} />
+                                    <span className="truncate text-[11px] text-gray-400">{data ? mood.line : '불러오는 중이에요…'}</span>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
             </Link>
         </>

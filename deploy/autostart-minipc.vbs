@@ -1,5 +1,6 @@
-' MarketFlow Mini PC Auto-Start
-' 로그인 시 Flask + Cloudflared + Scheduler 자동 시작
+' MarketFlow Mini PC user-session worker auto-start
+' 로그인 시 legacy Flask(5001)만 시작한다.
+' Cloudflared/Scheduler는 SYSTEM 예약 작업이 단독 관리한다.
 ' 설치: 이 파일의 바로가기를 시작프로그램 폴더에 배치
 ' C:\Users\dynas\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
 
@@ -63,34 +64,8 @@ Else
     If Not IsPortOpen(5001) Then Log "Flask: FAILED"
 End If
 
-' ── 2. Cloudflared Tunnel ──
-If IsProcessRunning("cloudflared") Then
-    Log "Cloudflared: already running"
-Else
-    Log "Cloudflared: starting..."
-    objShell.Run "cloudflared tunnel --config ""C:\Users\dynas\.cloudflared\config.yml"" run 678e9c60-9f8d-4f49-9fba-a49400ef4ca0", 0, False
-    WScript.Sleep 8000
-    If IsProcessRunning("cloudflared") Then
-        Log "Cloudflared: OK"
-    Else
-        Log "Cloudflared: FAILED"
-    End If
-End If
-
-' ── 3. Scheduler Daemon ──
-If IsProcessRunning("scheduler.py --daemon") Then
-    Log "Scheduler: already running"
-Else
-    Log "Scheduler: starting daemon..."
-    objShell.CurrentDirectory = PROJECT
-    objShell.Run """" & PYTHON & """ scheduler.py --daemon", 0, False
-    WScript.Sleep 8000
-    If IsProcessRunning("scheduler.py --daemon") Then
-        Log "Scheduler: OK"
-    Else
-        Log "Scheduler: FAILED"
-    End If
-End If
+' Cloudflared와 Scheduler는 MarketFlow SYSTEM 작업에서 관리한다.
+' 여기서 다시 시작하면 동일 데이터/포트를 공유하는 중복 런타임이 생길 수 있다.
 
 Log "========== MINI PC AUTO START END =========="
 logFile.Close

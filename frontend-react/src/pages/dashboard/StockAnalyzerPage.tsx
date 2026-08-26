@@ -787,7 +787,7 @@ function StockAnalyzerContent() {
 
             {/* Toast */}
             {toast && (
-                <div className={`fixed bottom-20 md:bottom-6 right-4 md:right-6 left-4 md:left-auto z-[100] px-5 py-3 rounded-xl text-sm font-medium text-white shadow-2xl transition-all text-center md:text-left ${
+                <div className={`stock-analyzer-toast fixed md:bottom-6 right-4 md:right-6 left-4 md:left-auto z-[100] px-5 py-3 rounded-xl text-sm font-medium text-white shadow-2xl transition-all text-center md:text-left ${
                     toast.isError ? 'bg-red-600' : 'bg-emerald-600'
                 }`}>
                     {toast.message}

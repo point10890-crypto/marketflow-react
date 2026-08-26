@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { API_BASE, authHeaders, fetchWithTimeout } from '@/lib/api';
+import { API_BASE, fetchWithTimeout } from '@/lib/api';
 
 /**
  * 자동 데이터 갱신 훅 (Page Visibility API 기반)
@@ -63,8 +63,10 @@ export function useAutoRefresh(
             }
         };
 
-        // 초기 polling 시작
-        startPolling();
+        // A tab can be restored or prerendered while already hidden, in which
+        // case no visibilitychange event is guaranteed after this effect mounts.
+        // Do not start a background poller until the document is visible.
+        if (document.visibilityState === 'visible') startPolling();
         document.addEventListener('visibilitychange', handleVisibility);
 
         return () => {
@@ -120,9 +122,10 @@ export function useSmartRefresh(
         try {
             // API_BASE가 있으면 Tunnel/Flask로, 없으면 로컬 proxy로
             const versionUrl = `${API_BASE}/api/data-version`;
-            const res = await fetchWithTimeout(versionUrl, {
-                headers: authHeaders(),
-            }, 5000);
+            // This endpoint is intentionally public and returns file mtimes only.
+            // An Authorization header turns this cross-origin GET into a CORS
+            // preflight pair, doubling the hottest dashboard polling traffic.
+            const res = await fetchWithTimeout(versionUrl, {}, 5000);
             if (!res.ok) {
                 // API 오프라인 시 _meta.json 폴백
                 const metaRes = await fetch('/data/_meta.json');
@@ -199,7 +202,7 @@ export function useSmartRefresh(
             }
         };
 
-        startPolling();
+        if (document.visibilityState === 'visible') startPolling();
         document.addEventListener('visibilitychange', handleVisibility);
 
         return () => {

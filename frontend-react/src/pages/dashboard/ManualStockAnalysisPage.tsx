@@ -1121,7 +1121,7 @@ export default function ManualStockAnalysisPage() {
 
                 {/* Mobile cards */}
                 <div className="block px-3 py-3 md:hidden">
-                    <div className="max-h-[calc(100vh-280px)] min-h-[420px] space-y-3 overflow-y-auto pr-1">
+                    <div className="space-y-3 md:max-h-[calc(100dvh-280px)] md:min-h-[420px] md:overflow-y-auto md:pr-1">
                         {visibleRecords.map((record) => (
                             <article
                                 key={`mobile-${record.rank}-${record.stock_name}-${record.ticker}`}

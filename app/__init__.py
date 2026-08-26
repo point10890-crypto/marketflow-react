@@ -697,10 +697,49 @@ def _start_precompute_worker(app):
     print("[OK] PreCompute worker started (5min interval)")
 
 
+def _screener_poll_interval_seconds():
+    """Return a quota-safe start-to-start interval for the canonical poller."""
+    raw = os.getenv('KIS_SCREENER_POLL_INTERVAL_SECONDS', '30')
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        value = 30.0
+    # A complete scan currently needs roughly 10-15 seconds and consumes more
+    # than 50 physical KIS requests.  A five-second loop therefore ran scans
+    # continuously and left no account-wide quota headroom for Scheduler/Claw.
+    return max(15.0, min(value, 300.0))
+
+
+def _screener_result_is_safe(result):
+    """Only an explicitly complete scan may feed alerts or reset backoff."""
+    if not isinstance(result, dict) or result.get('error') or result.get('poller_busy'):
+        return False
+    quality = result.get('data_quality')
+    return isinstance(quality, dict) and quality.get('safe_to_replace_latest') is True
+
+
+def _screener_stock_is_immediate_s(stock):
+    """Gate immediate alerts on the synchronous KIS score.
+
+    The display grade may include asynchronous AI/consecutive enrichment. On
+    worker restart that cache warms after the first scan, so using it here can
+    turn cache availability into a false S-grade market alert.
+    """
+    if not isinstance(stock, dict):
+        return False
+    score = stock.get('score')
+    if isinstance(score, dict) and score.get('total') is not None:
+        try:
+            return float(score.get('total')) >= 80
+        except (TypeError, ValueError):
+            return False
+    return stock.get('grade') == 'S'
+
+
 def _start_screener_worker(app):
     """장중(09:00~15:30) 주도주 스크리너 백그라운드 폴링.
 
-    - 장중: 5초 간격 스캔 → 캐시 항상 최신 유지
+    - 장중: 기본 30초 start-to-start (KIS 계정 호출량 여유 확보)
     - 장외: 60초 간격 장 시작 대기
     - S등급 발생 시 텔레그램 알림 (5분 쿨다운)
     - 에러 3회 연속 시 30초 휴식 후 재시도
@@ -710,6 +749,7 @@ def _start_screener_worker(app):
 
     def _screener_loop():
         _time.sleep(3)  # Flask 최소 대기
+        poll_interval = _screener_poll_interval_seconds()
         consecutive_errors = 0
         alert_cooldown = {}  # {code: timestamp}
         last_hourly_send = 0  # 1시간 간격 텔레그램 마지막 전송 시각
@@ -722,7 +762,10 @@ def _start_screener_worker(app):
             if latest:
                 with _result_lock:
                     _result_cache["data"] = latest
-                    _result_cache["ts"] = _time.time()
+                    # Keep this only as a poller-busy fallback. Treating an old
+                    # disk artifact as a freshly scanned in-memory result can
+                    # emit stale opening alerts and defer the first live scan.
+                    _result_cache["ts"] = 0
                 print(f"[Screener] File cache loaded ({len(latest.get('results', []))} results)")
         except Exception:
             pass
@@ -744,7 +787,26 @@ def _start_screener_worker(app):
                 now_dt = _dt.now()
                 past_cutoff = (now_dt.hour == 15 and now_dt.minute >= 30) or now_dt.hour > 15
 
+                scan_started = _time.monotonic()
                 result = run_screening()
+                if result.get('poller_busy'):
+                    # Another process owns the complete scan window. Do not
+                    # re-alert from its fallback; retry on the next loop.
+                    _time.sleep(min(5.0, poll_interval))
+                    continue
+                if not _screener_result_is_safe(result):
+                    consecutive_errors += 1
+                    quality = result.get('data_quality') if isinstance(result, dict) else {}
+                    print(
+                        "[Screener] Unsafe scan rejected "
+                        f"#{consecutive_errors}: error={result.get('error') if isinstance(result, dict) else 'invalid_result'} "
+                        f"missing={list((quality or {}).get('missing_sources') or [])}"
+                    )
+                    # Failed scans must not become a tight retry loop.  The
+                    # capped exponential delay also gives KIS quota windows and
+                    # transient connections time to recover.
+                    _time.sleep(min(120.0, poll_interval * (2 ** min(consecutive_errors - 1, 2))))
+                    continue
                 consecutive_errors = 0  # 성공 시 리셋
 
                 # Layer 2 보강 (15분 주기)
@@ -763,7 +825,7 @@ def _start_screener_worker(app):
 
                     # S등급 즉시 알림 (5분 쿨다운)
                     for stock in result['results']:
-                        if stock.get('grade') != 'S':
+                        if not _screener_stock_is_immediate_s(stock):
                             continue
                         code = stock.get('code', '')
                         if code in alert_cooldown and (now - alert_cooldown[code]) < 300:
@@ -784,7 +846,10 @@ def _start_screener_worker(app):
                         except Exception as e:
                             print(f"[Screener] Hourly summary error: {e}")
 
-                _time.sleep(5)  # 장중 5초 간격
+                # Keep a quota-safe start-to-start cadence. A complete KIS scan
+                # can take longer than the target; never compensate by bursting.
+                scan_elapsed = _time.monotonic() - scan_started
+                _time.sleep(max(1.0, poll_interval - scan_elapsed))
 
             except Exception as e:
                 consecutive_errors += 1
@@ -794,11 +859,14 @@ def _start_screener_worker(app):
                     _time.sleep(30)
                     consecutive_errors = 0
                 else:
-                    _time.sleep(5)
+                    _time.sleep(min(5.0, poll_interval))
 
     thread = threading.Thread(target=_screener_loop, daemon=True, name='ScreenerWorker')
     thread.start()
-    print("[OK] Screener worker started (5s polling during market hours)")
+    print(
+        "[OK] Screener worker started "
+        f"({int(_screener_poll_interval_seconds())}s polling during market hours)"
+    )
 
 
 def _start_alpha_scanner_monitor_worker(app):

@@ -14,9 +14,11 @@ $ErrorActionPreference = 'Continue'
 $Root = 'C:\bitman_marketfloww'
 $LogFile = Join-Path $Root 'logs\tunnel_watchdog.log'
 $StateFile = Join-Path $Root 'logs\tunnel_watchdog.state'
+$RestartRequestFile = Join-Path $Root 'data\tunnel_restart.request'
 $ExternalUrl = 'https://marketflow-api.bit-man.net/healthz'
 $LocalUrl = 'http://127.0.0.1:5003/healthz'
 $RestartCooldownMinutes = 30
+$MarketFlowUserConfig = 'C:\Users\dynas\.cloudflared\config.yml'
 
 function Write-Log([string]$msg) {
     $line = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + ' ' + $msg
@@ -36,6 +38,81 @@ function Test-Url([string]$url) {
     } catch {
         return $false
     }
+}
+
+function Get-CloudflaredService {
+    Get-CimInstance Win32_Service -Filter "Name='Cloudflared'" -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+}
+
+function Get-DuplicateMarketFlowConnectors([int]$ServicePid) {
+    Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object {
+            if ($_.Name -ne 'cloudflared.exe' -or $_.ProcessId -eq $ServicePid) {
+                return $false
+            }
+            $commandLine = [string]$_.CommandLine
+            if (-not $commandLine) {
+                # Never stop a connector that cannot be attributed to this tunnel.
+                return $false
+            }
+            return (
+                $commandLine -like "*$MarketFlowUserConfig*" -or
+                $commandLine -match '(?i)\brun\s+bitman-api(?:\s|$)'
+            )
+        }
+}
+
+function Restart-CanonicalTunnel {
+    $service = Get-Service -Name 'Cloudflared' -ErrorAction SilentlyContinue
+    if (-not $service) {
+        Write-Log 'canonical Cloudflared service is missing; refusing user-connector fallback'
+        return $false
+    }
+    try {
+        if ($service.Status -eq 'Running') {
+            Restart-Service -Name 'Cloudflared' -Force -ErrorAction Stop
+            Write-Log 'canonical Cloudflared service restarted'
+        } else {
+            Start-Service -Name 'Cloudflared' -ErrorAction Stop
+            Write-Log 'canonical Cloudflared service started'
+        }
+        return $true
+    } catch {
+        Write-Log "canonical service recovery failed: $_"
+        return $false
+    }
+}
+
+$forceRestart = Test-Path -LiteralPath $RestartRequestFile
+if ($forceRestart) {
+    Write-Log 'deployment tunnel restart requested'
+    # Consume first so a failed recovery cannot create a five-minute restart loop.
+    Remove-Item -LiteralPath $RestartRequestFile -Force -ErrorAction SilentlyContinue
+
+    $serviceInfo = Get-CloudflaredService
+    if (-not $serviceInfo) {
+        Write-Log 'canonical Cloudflared service is missing; request aborted'
+        exit 1
+    }
+
+    $servicePid = [int]$serviceInfo.ProcessId
+    $duplicates = @(Get-DuplicateMarketFlowConnectors -ServicePid $servicePid)
+    foreach ($process in $duplicates) {
+        try {
+            Stop-Process -Id ([int]$process.ProcessId) -Force -ErrorAction Stop
+            Write-Log "stopped duplicate MarketFlow tunnel connector pid=$($process.ProcessId)"
+        } catch {
+            Write-Log "failed to stop duplicate connector pid=$($process.ProcessId): $_"
+        }
+    }
+
+    if (-not (Restart-CanonicalTunnel)) { exit 1 }
+    Set-Content -Path $StateFile -Value (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') -Encoding UTF8
+    Start-Sleep -Seconds 20
+    $after = Test-Url $ExternalUrl
+    Write-Log "deployment restart external ok=$after duplicates_removed=$($duplicates.Count)"
+    if ($after) { exit 0 } else { exit 1 }
 }
 
 # 외부 검사: 2회 (일시 흔들림 오탐 방지)
@@ -70,25 +147,7 @@ if (Test-Path $StateFile) {
     } catch {}
 }
 
-Write-Log 'restarting Cloudflared service...'
-try {
-    Restart-Service -Name 'Cloudflared' -Force -ErrorAction Stop
-    Write-Log 'Cloudflared service restarted'
-} catch {
-    Write-Log "service restart failed: $_"
-}
-
-# 작업 기반 보조 커넥터(user config)가 죽어 있으면 재기동
-$userConnector = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
-    Where-Object { $_.Name -eq 'cloudflared.exe' -and $_.CommandLine -match '\.cloudflared' }
-if (-not $userConnector) {
-    try {
-        Start-ScheduledTask -TaskName 'MarketFlow-Cloudflared' -ErrorAction Stop
-        Write-Log 'MarketFlow-Cloudflared task relaunched'
-    } catch {
-        Write-Log "task relaunch failed: $_"
-    }
-}
+if (-not (Restart-CanonicalTunnel)) { exit 1 }
 
 Set-Content -Path $StateFile -Value (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') -Encoding UTF8
 

@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { BANK_ACCOUNT, PLAN_PAYMENT_META } from '@/lib/billingInfo';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { getUser } from '@/lib/auth';
 
-type LoginUser = {
+export type LoginUser = {
     role?: string;
     status?: string;
     tier?: string | null;
     is_pro_expired?: boolean;
 };
 
-function safeNextPath(value: string | null): string | null {
+export function safeNextPath(value: string | null): string | null {
     if (!value) return null;
     try {
         const decoded = decodeURIComponent(value);
@@ -23,22 +22,37 @@ function safeNextPath(value: string | null): string | null {
     }
 }
 
-function nextPathForUser(user: LoginUser, nextPath: string | null): string {
+function planSelectNext(nextPath: string | null): string | null {
+    return nextPath === '/plan-select' || nextPath?.startsWith('/plan-select?') ? nextPath : null;
+}
+
+function resubscribePath(nextPath: string | null): string {
+    const planned = planSelectNext(nextPath);
+    const query = new URLSearchParams(planned?.split('?')[1] || '');
+    query.delete('change');
+    query.set('resubscribe', '1');
+    query.set('from', 'expired');
+    return `/plan-select?${query.toString()}`;
+}
+
+export function nextPathForUser(user: LoginUser, nextPath: string | null): string {
+    const planned = planSelectNext(nextPath);
     if (user.role === 'admin') {
         return nextPath?.startsWith('/admin') ? nextPath : '/admin';
     }
     if (user.status === 'expired' || user.is_pro_expired) {
-        return '/plan-select?resubscribe=1&from=expired';
+        return resubscribePath(planned);
     }
     if (!user.tier) {
-        return '/plan-select';
+        return planned || '/plan-select';
     }
     if (user.status !== 'approved') {
         return '/pending-approval';
     }
     if (user.tier !== 'pro' && user.tier !== 'premium') {
-        return '/plan-select';
+        return planned || '/plan-select';
     }
+    if (planned && new URLSearchParams(planned.split('?')[1] || '').get('change') === '1') return planned;
     return nextPath?.startsWith('/dashboard') ? nextPath : '/dashboard';
 }
 
@@ -78,119 +92,73 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-black flex items-center justify-center p-4 py-8">
-            <div className="w-full max-w-md">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-white tracking-tighter mb-2">
-                        Market<span className="text-[#2997ff]">Flow</span>
+        <main className="min-h-screen min-h-[100dvh] bg-[#09090b] px-4 py-8 text-gray-300 sm:px-6">
+            <div className="mx-auto grid min-h-[calc(100dvh-4rem)] w-full max-w-5xl items-center gap-10 lg:grid-cols-[1fr_28rem]">
+                <section className="hidden lg:block">
+                    <Link to="/" className="inline-flex items-center gap-2 text-lg font-black tracking-tight text-white">
+                        Market<span className="-ml-2 text-[#ff6b4a]">Flow</span>
+                    </Link>
+                    <p className="mt-8 font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-[#ff8067]">Welcome back</p>
+                    <h1 className="mt-4 max-w-xl text-4xl font-black leading-[1.15] tracking-[-0.04em] text-white">
+                        감시는 계속되고,<br />판단의 근거는 남습니다.
                     </h1>
-                    <p className="text-gray-400 font-semibold">로그인 후 상태에 맞는 다음 단계로 이동합니다.</p>
-                    <p className="text-gray-600 text-xs mt-1">승인 대기, 구독 만료, 재구독 신청도 같은 계정으로 이어집니다.</p>
-                </div>
-
-                <form onSubmit={handleSubmit} className="p-8 rounded-2xl bg-[#1c1c1e] border border-white/10 space-y-5">
-                    {error && (
-                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-300 text-sm">{error}</div>
-                    )}
-                    <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-2">이메일</label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#2997ff] transition-colors"
-                            placeholder="you@example.com"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-2">비밀번호</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            minLength={6}
-                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#2997ff] transition-colors"
-                            placeholder="비밀번호"
-                        />
-                    </div>
-                    <label className="flex items-center gap-2 cursor-pointer select-none">
-                        <input
-                            type="checkbox"
-                            checked={remember}
-                            onChange={(e) => setRemember(e.target.checked)}
-                            className="w-4 h-4 rounded border-white/20 bg-white/5 text-[#2997ff] focus:ring-[#2997ff] focus:ring-offset-0 accent-[#2997ff]"
-                        />
-                        <span className="text-sm text-gray-400">로그인 유지</span>
-                    </label>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full py-3 rounded-xl bg-[#2997ff] hover:bg-[#2997ff]/90 text-white font-bold transition-all disabled:opacity-50"
-                    >
-                        {loading ? '로그인 중...' : '로그인'}
-                    </button>
-                    <p className="text-center text-sm text-gray-500">
-                        처음 오셨나요?{' '}
-                        <Link to="/signup" className="text-[#2997ff] hover:underline">가입하고 구독 시작</Link>
+                    <p className="mt-5 max-w-lg text-[15px] leading-7 text-gray-400">
+                        로그인하면 계정 상태에 따라 운영 대시보드, 승인 현황 또는 재구독 단계로 안전하게 이어집니다.
                     </p>
-                </form>
-
-                <div className="mt-4 p-4 rounded-2xl bg-[#13151f] border border-amber-500/20">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                            <i className="fas fa-university text-amber-400" />
-                        </div>
-                        <div>
-                            <h2 className="text-white font-bold text-sm">결제 계좌 정보</h2>
-                            <p className="text-gray-500 text-xs">가입, 구독 신청, 재구독 입금 확인용</p>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                        <InfoBox label="은행" value={BANK_ACCOUNT.bank} />
-                        <InfoBox label="예금주" value={BANK_ACCOUNT.holder} />
-                        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] col-span-2">
-                            <div className="flex items-center justify-between gap-3">
-                                <span className="text-[10px] text-gray-500 uppercase tracking-wider">계좌번호</span>
-                                <button
-                                    type="button"
-                                    onClick={() => navigator.clipboard?.writeText(BANK_ACCOUNT.account.replace(/-/g, ''))}
-                                    className="text-[10px] text-gray-400 hover:text-white transition-colors"
-                                >
-                                    <i className="fas fa-copy mr-1" />복사
-                                </button>
+                    <div className="mt-8 grid max-w-lg grid-cols-3 gap-3">
+                        {['원천 시각 확인', '품질 부족 시 HOLD', '실주문 기능 없음'].map((item) => (
+                            <div key={item} className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 text-xs font-semibold text-gray-400">
+                                <span className="mb-3 block h-1.5 w-1.5 rounded-full bg-[#ff6b4a]" />{item}
                             </div>
-                            <p className="text-white font-bold mt-1 font-mono text-lg tracking-wider">{BANK_ACCOUNT.account}</p>
-                        </div>
-                        <InfoBox label="Pro" value={PLAN_PAYMENT_META.pro.amount} sub={PLAN_PAYMENT_META.pro.period} valueClass="text-amber-400" />
-                        <InfoBox label="Pro + AI Brain" value={PLAN_PAYMENT_META.pro_aibain.amount} sub="Pro + AI Brain 30일" valueClass="text-cyan-300" />
-                        <InfoBox label="Ultra Pro" value={PLAN_PAYMENT_META.premium.amount} sub={PLAN_PAYMENT_META.premium.period} valueClass="text-purple-300" />
-                        <InfoBox label="Ultra + AI Brain" value={PLAN_PAYMENT_META.premium_aibain.amount} sub="평생 + AI Brain 30일" valueClass="text-fuchsia-300" />
+                        ))}
                     </div>
-                </div>
-                <KakaoSupportLink className="mt-3" />
-            </div>
-        </div>
-    );
-}
+                </section>
 
-function InfoBox({
-    label,
-    value,
-    sub,
-    valueClass = 'text-white',
-}: {
-    label: string;
-    value: string;
-    sub?: string;
-    valueClass?: string;
-}) {
-    return (
-        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-            <span className="text-[10px] text-gray-500 uppercase tracking-wider">{label}</span>
-            <p className={`${valueClass} font-bold mt-1 text-sm`}>{value}</p>
-            {sub && <p className="text-gray-500 text-[10px] mt-0.5">{sub}</p>}
-        </div>
+                <section className="w-full">
+                    <div className="mb-7 lg:hidden">
+                        <Link to="/" className="text-xl font-black tracking-tight text-white">
+                            Market<span className="text-[#ff6b4a]">Flow</span>
+                        </Link>
+                    </div>
+                    <div className="rounded-[1.75rem] border border-white/[0.08] bg-[#111216] p-6 shadow-2xl shadow-black/30 sm:p-8">
+                        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-[#ff8067]">Account access</p>
+                        <h2 className="mt-3 text-2xl font-black tracking-tight text-white">다시 시작하기</h2>
+                        <p className="mt-2 text-sm leading-6 text-gray-500">기존 계정으로 로그인하세요.</p>
+
+                        <form onSubmit={handleSubmit} className="mt-7 space-y-5">
+                            {error && (
+                                <div role="alert" className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>
+                            )}
+                            <div>
+                                <label htmlFor="login-email" className="mb-2 block text-xs font-semibold text-gray-400">이메일</label>
+                                <input id="login-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email"
+                                    className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white placeholder-gray-600 transition-colors focus:border-[#ff6b4a] focus:outline-none focus:ring-2 focus:ring-[#ff6b4a]/25"
+                                    placeholder="you@example.com" />
+                            </div>
+                            <div>
+                                <label htmlFor="login-password" className="mb-2 block text-xs font-semibold text-gray-400">비밀번호</label>
+                                <input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete="current-password"
+                                    className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white placeholder-gray-600 transition-colors focus:border-[#ff6b4a] focus:outline-none focus:ring-2 focus:ring-[#ff6b4a]/25"
+                                    placeholder="비밀번호" />
+                            </div>
+                            <label className="flex min-h-[44px] cursor-pointer select-none items-center gap-2">
+                                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)}
+                                    className="h-4 w-4 accent-[#ff6b4a] focus:ring-[#ff6b4a]" />
+                                <span className="text-sm text-gray-400">로그인 유지</span>
+                            </label>
+                            <button type="submit" disabled={loading}
+                                className="min-h-[48px] w-full rounded-xl bg-[#ff6b4a] px-5 font-black text-[#160805] transition-colors hover:bg-[#ff846b] disabled:cursor-not-allowed disabled:opacity-50">
+                                {loading ? '로그인 중...' : '로그인'}
+                            </button>
+                        </form>
+
+                        <div className="mt-6 border-t border-white/[0.06] pt-5 text-center text-sm text-gray-500">
+                            처음 오셨나요? <Link to="/signup" className="font-bold text-[#ff8067] hover:text-[#ff9b86]">계정 만들기</Link>
+                        </div>
+                    </div>
+                    <KakaoSupportLink className="mt-3" />
+                </section>
+            </div>
+        </main>
     );
 }

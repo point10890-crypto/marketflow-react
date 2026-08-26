@@ -140,7 +140,7 @@ export default function PendingApprovalPage() {
     }
 
     return (
-        <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="min-h-[100dvh] bg-black flex items-center justify-center p-4">
             <div className="w-full max-w-lg text-center">
                 <div className="mb-4 grid grid-cols-4 gap-2">
                     {FLOW_STEPS.map((step, index) => (

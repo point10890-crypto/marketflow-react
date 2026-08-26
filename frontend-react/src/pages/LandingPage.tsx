@@ -1,525 +1,475 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import ClawMascot from '@/components/claw/ClawMascot';
 import { InstallGuide } from '@/components/layout/InstallPrompt';
+import { PublicShell, getPublicAccountAction, type PublicAccountAction } from '@/components/public/PublicShell';
 import { useAuth } from '@/contexts/AuthContext';
-import { AdSlot, PublicFooter } from '@/components/public/PublicShell';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { PLAN_PAYMENT_META, type BillingPlan } from '@/lib/billingInfo';
 
-const features = [
-    { icon: 'fa-flag', title: 'KR Market', desc: '종가베팅, 주도주LIVE, VCP, AI Chart, Track Record', color: 'from-blue-500 to-indigo-600' },
-    { icon: 'fa-globe-americas', title: 'US Market', desc: 'S&P500 Overview, VCP Signals, ETF Flows, AI Chart', color: 'from-green-500 to-emerald-600' },
-    { icon: 'fa-bitcoin', title: 'Crypto', desc: '시가총액, 도미넌스, VCP Signals 실시간 분석', color: 'from-yellow-500 to-orange-600' },
-    { icon: 'fa-chart-bar', title: 'VCP Enhanced', desc: 'KR/US/Crypto 전 시장 Volume Contraction 스캐너', color: 'from-rose-500 to-pink-600' },
-    { icon: 'fa-wave-square', title: 'W Pattern AI', desc: 'M&W 차트 패턴 자동 감지 + 승률 추적', color: 'from-pink-500 to-fuchsia-600' },
-    { icon: 'fa-newspaper', title: 'AI Briefing', desc: 'Gemini 기반 조간/마감 AI 시장 브리핑', color: 'from-purple-500 to-violet-600' },
+const OBSERVATION_STEPS = [
+    {
+        step: '01',
+        icon: 'fa-satellite-dish',
+        title: '시장 관찰',
+        description: '시장별 일정과 원천 주기에 맞춰 가격·거래량·수급·분석 데이터를 수집합니다.',
+    },
+    {
+        step: '02',
+        icon: 'fa-shield-halved',
+        title: '품질 확인',
+        description: '기준 시각과 누락 입력을 먼저 검사하고, 신뢰할 수 없으면 새 판단을 보류합니다.',
+    },
+    {
+        step: '03',
+        icon: 'fa-wave-square',
+        title: '변화 검출',
+        description: '주도주 신규 진입·등급 변화·이탈처럼 이전 관찰과 달라진 부분을 구분합니다.',
+    },
+    {
+        step: '04',
+        icon: 'fa-receipt',
+        title: '근거와 함께 기록',
+        description: '종목·시각·상태·발송 결과를 남겨 같은 변화를 반복해서 알리지 않습니다.',
+    },
+    {
+        step: '05',
+        icon: 'fa-clock-rotate-left',
+        title: '사후 검증',
+        description: '발견 당시 알 수 있었던 정보와 이후 결과를 분리해 전략을 계속 점검합니다.',
+    },
 ];
 
-const minerviniStats = [
-    { value: '220%', label: '연평균 수익률', sub: '5년 연속 (1994–1999)' },
-    { value: '33,500%', label: '5년 누적 수익률', sub: '복리 기준' },
-    { value: '#1', label: 'US Investing Champion', sub: '1997년 우승' },
-    { value: '0.33%', label: '최대 손실 (월)', sub: '리스크 관리의 정수' },
+const TRUST_PRINCIPLES = [
+    {
+        icon: 'fa-eye',
+        title: '관찰 전용',
+        description: '브로커 주문·정정·취소를 실행하지 않습니다. 판단과 실행은 사용자에게 남습니다.',
+    },
+    {
+        icon: 'fa-hand',
+        title: '불확실하면 HOLD',
+        description: '데이터가 오래됐거나 필수 입력이 빠지면 긍정 신호보다 보류 상태를 우선합니다.',
+    },
+    {
+        icon: 'fa-fingerprint',
+        title: '원천과 시각 표시',
+        description: '데이터가 언제 관찰됐고 어떤 출처를 거쳤는지 확인할 수 있게 구성합니다.',
+    },
+    {
+        icon: 'fa-chart-column',
+        title: '결과까지 기록',
+        description: '과거 화면을 성과처럼 꾸미지 않고 비교 가능한 관찰만 사후 지표로 집계합니다.',
+    },
 ];
 
-const sepaElements = [
-    { num: '1', title: 'Trend', desc: '주도주는 반드시 상승 추세 — 30주 이평선 위, 200일선 우상향' },
-    { num: '2', title: 'Fundamentals', desc: 'EPS·매출 가속, 분기별 어닝 서프라이즈, 마진 개선' },
-    { num: '3', title: 'Catalyst', desc: '신제품·실적 발표·산업 변화 등 주가를 폭발시킬 트리거' },
-    { num: '4', title: 'Entry Point', desc: 'VCP 완성 후 거래량 동반 돌파 — 정확한 매수 타이밍' },
-    { num: '5', title: 'Exit', desc: '손절선 7~8% 엄수, 이익 실현은 추세 종료 신호 시' },
+const PRODUCT_AREAS = [
+    {
+        icon: 'fa-bolt',
+        eyebrow: 'KR INTRADAY',
+        title: 'Claw LIVE',
+        description: '국내 장중 주도주 흐름과 등급 변화를 관찰하고 시스템 상태·원천 시각·전달 기록을 함께 보여줍니다.',
+        accent: 'border-[#ff6b57]/25 bg-[#ff6b57]/[0.06] text-[#ff9b89]',
+    },
+    {
+        icon: 'fa-layer-group',
+        eyebrow: 'MARKET CONTEXT',
+        title: 'KR · US · Crypto',
+        description: '시장 개요, VCP, 차트 분석과 브리핑을 시장별 갱신 주기에 맞춰 한 화면에서 확인합니다.',
+        accent: 'border-amber-400/20 bg-amber-400/[0.06] text-amber-300',
+    },
+    {
+        icon: 'fa-file-shield',
+        eyebrow: 'EVIDENCE FIRST',
+        title: '근거와 위험 확인',
+        description: '등급만 보지 않고 데이터 품질, 기준 시각, 누락 정보와 무효화 조건을 함께 읽도록 돕습니다.',
+        accent: 'border-emerald-400/20 bg-emerald-400/[0.06] text-emerald-300',
+    },
+    {
+        icon: 'fa-brain',
+        eyebrow: 'OPTIONAL ADD-ON',
+        title: 'AI Brain',
+        description: '알파 스캐너, GraphRAG 분석, TOP 3와 스캔 성과 화면을 제공하는 별도 30일 갱신 애드온입니다.',
+        accent: 'border-cyan-400/20 bg-cyan-400/[0.06] text-cyan-300',
+    },
 ];
 
-const usageSteps = [
-    { step: '01', title: '회원가입 & Pro 구독', desc: '이메일로 가입 후 Pro 또는 Ultra Pro 플랜 결제', icon: 'fa-user-plus' },
-    { step: '02', title: 'Summary로 시장 점검', desc: 'KR·US·Crypto 시장 게이지로 RISK_ON/OFF 즉시 확인', icon: 'fa-gauge-high' },
-    { step: '03', title: 'VCP·종가베팅 시그널 확인', desc: 'AI가 점수 매긴 S/A등급 종목 + 진입가·손절가 자동 계산', icon: 'fa-chart-line' },
-    { step: '04', title: 'AI 챗봇으로 심층 분석', desc: '관심 종목을 챗봇에 입력하면 DART 공시·뉴스·차트 종합 분석', icon: 'fa-robot' },
+const FAQS = [
+    {
+        question: '자동으로 주식을 주문하나요?',
+        answer: '아니요. MarketFlow는 시장 관찰과 분석 정보를 제공하며 실제 계좌 주문을 실행하지 않습니다.',
+    },
+    {
+        question: '가입하면 바로 무료로 대시보드를 쓸 수 있나요?',
+        answer: '계정 생성은 무료입니다. 전체 대시보드 이용은 플랜을 선택하고 입금 확인과 관리자 승인이 끝난 뒤 시작됩니다.',
+    },
+    {
+        question: '모든 데이터가 같은 속도로 갱신되나요?',
+        answer: '아닙니다. 국내 장중 관찰, 미국 시장, 암호화폐, 일간 분석은 원천과 시장 일정에 따라 갱신 주기가 다릅니다. 화면의 기준 시각과 상태를 함께 확인해 주세요.',
+    },
+    {
+        question: 'AI Brain은 기본 Pro에 포함되나요?',
+        answer: 'AI Brain은 별도 30일 갱신 애드온입니다. Pro 또는 Ultra Pro 베이스 플랜에 추가할 수 있습니다.',
+    },
+    {
+        question: '표시된 등급이나 과거 결과가 수익을 보장하나요?',
+        answer: '아니요. 등급은 관찰 우선순위를 돕는 분석 결과이며 투자 권유가 아닙니다. 과거 결과도 미래 수익을 보장하지 않습니다.',
+    },
 ];
+
+const PRICING_PLANS: BillingPlan[] = ['pro', 'pro_aibain', 'premium', 'premium_aibain'];
+
+function AccountActionLink({ action, className = '' }: { action: PublicAccountAction; className?: string }) {
+    if (action.disabled) {
+        return (
+            <span
+                aria-disabled="true"
+                className={`inline-flex min-h-[48px] items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] px-6 text-sm font-black text-gray-500 ${className}`}
+            >
+                {action.label}
+            </span>
+        );
+    }
+    return (
+        <Link
+            to={action.to}
+            className={`inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[#ff6b57] px-6 text-sm font-black text-[#190704] transition-colors hover:bg-[#ff8a76] ${className}`}
+        >
+            {action.label}<i className="fas fa-arrow-right ml-2 text-[11px]" aria-hidden />
+        </Link>
+    );
+}
+
+function SectionHeading({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
+    return (
+        <div className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
+            <div className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-[#ff8a76]">// {eyebrow}</div>
+            <h2 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-4xl">{title}</h2>
+            <p className="mt-3 text-sm leading-relaxed text-gray-400 sm:text-base">{description}</p>
+        </div>
+    );
+}
+
+function ProductPreview() {
+    return (
+        <div className="relative mx-auto w-full max-w-[540px] rounded-3xl border border-[#ff6b57]/20 bg-[#0a0709] p-3 shadow-[0_28px_100px_rgba(255,90,60,0.12)] sm:p-5">
+            <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(65%_80%_at_50%_0%,rgba(255,90,60,.14),transparent_72%)]" aria-hidden />
+            <div className="relative rounded-2xl border border-white/[0.07] bg-[#101014]/95 p-4 sm:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] pb-3">
+                    <div className="flex items-center gap-2">
+                        <ClawMascot state="running" size={44} title="관찰 중인 Claw" />
+                        <div>
+                            <div className="text-sm font-black text-white">Claw 관찰 콘솔</div>
+                            <div className="font-mono text-[9px] text-gray-500">DEMONSTRATION</div>
+                        </div>
+                    </div>
+                    <span className="rounded-full border border-amber-400/25 bg-amber-400/10 px-2.5 py-1 text-[10px] font-bold text-amber-200">
+                        화면 예시 · 실제 종목 아님
+                    </span>
+                </div>
+
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                    {[
+                        ['관찰 상태', 'OBSERVE', 'text-emerald-300'],
+                        ['데이터 품질', 'CHECKED', 'text-cyan-300'],
+                        ['자동 주문', 'OFF', 'text-gray-300'],
+                    ].map(([label, value, tone]) => (
+                        <div key={label} className="rounded-xl border border-white/[0.06] bg-white/[0.025] p-3">
+                            <div className="text-[9px] text-gray-600">{label}</div>
+                            <div className={`mt-1 font-mono text-[10px] font-black sm:text-xs ${tone}`}>{value}</div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="mt-3 space-y-2">
+                    {[
+                        { time: '09:12', type: 'LEADER_UPGRADE', name: '관찰 후보 A', tone: 'text-[#ff9b89]' },
+                        { time: '09:18', type: 'DATA_HOLD', name: '필수 입력 확인 중', tone: 'text-amber-300' },
+                        { time: '09:26', type: 'OUTCOME_PENDING', name: '사후 관찰 예약', tone: 'text-cyan-300' },
+                    ].map((event) => (
+                        <div key={event.time} className="grid grid-cols-[42px_1fr] items-center gap-2 rounded-xl border border-white/[0.05] bg-black/20 p-3 sm:grid-cols-[48px_1fr_auto]">
+                            <span className="font-mono text-[10px] text-gray-600">{event.time}</span>
+                            <div className="min-w-0">
+                                <div className={`truncate font-mono text-[10px] font-bold ${event.tone}`}>{event.type}</div>
+                                <div className="mt-0.5 truncate text-[11px] text-gray-400">{event.name}</div>
+                            </div>
+                            <span className="hidden text-[10px] text-gray-600 sm:inline">근거 시각 기록됨</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export default function LandingPage() {
-    const navigate = useNavigate();
-    const { user } = useAuth();
-    const [animState, setAnimState] = useState<'idle' | 'ripple' | 'exit'>('idle');
-    const [mounted, setMounted] = useState(false);
+    const { user, loading } = useAuth();
+    const action = getPublicAccountAction(user, loading);
     const [showGuide, setShowGuide] = useState(false);
-    const { isInstalled, isIOS, install } = usePWAInstall();
-
-    // 로그인 + 승인된 Pro/Ultra Pro 유저는 랜딩 페이지 스킵 → 대시보드로
-    useEffect(() => {
-        if (user && user.status === 'approved' && (user.tier === 'pro' || user.tier === 'premium')) {
-            navigate('/dashboard', { replace: true });
-        }
-    }, [user, navigate]);
+    const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
 
     useEffect(() => {
-        const t = setTimeout(() => setMounted(true), 50);
-        return () => clearTimeout(t);
+        document.title = 'MarketFlow Claw — 근거 중심 AI 시장 관찰';
     }, []);
 
-    const handleInstallApp = async () => {
+    const handleInstall = async () => {
         const result = await install();
         if (result === 'manual') setShowGuide(true);
     };
 
-    const handleEnter = () => {
-        if (animState !== 'idle') return;
-        setAnimState('ripple');
-        setTimeout(() => setAnimState('exit'), 400);
-        // 미인증 방문자는 /signup 으로, 인증 유저는 /dashboard 로 분기.
-        // (가드가 다시 튕기는 순환 방지 + 비가입자 가입 유도)
-        const target = user ? '/dashboard' : '/signup';
-        setTimeout(() => navigate(target), 900);
-    };
+    const planActionTo = user?.role === 'admin'
+        ? '/admin'
+        : user?.status === 'approved' && (user.tier === 'pro' || user.tier === 'premium')
+        ? '/plan-select?change=1'
+        : action.to;
+    const planActionLabel = user?.status === 'approved' && (user.tier === 'pro' || user.tier === 'premium')
+        ? '플랜 변경 · AI Brain 추가'
+        : user
+        ? action.label
+        : '계정 만들고 플랜 선택';
 
     return (
-        <div className={`landing-root ${mounted ? 'landing-in' : ''} ${animState === 'exit' ? 'landing-exit' : ''}`}>
-            {/* Ambient grid */}
-            <div className="landing-grid" aria-hidden />
-            <div className="landing-orb landing-orb-1" aria-hidden />
-            <div className="landing-orb landing-orb-2" aria-hidden />
-
-            {/* Scrollable content */}
-            <div className="relative z-10 min-h-screen flex flex-col items-center">
-                {/* ============ HERO ============ */}
-                <div className="landing-content">
-                    <div className="landing-logo">
-                        <div className="landing-logo-icon"><span>B</span></div>
-                        <span className="landing-logo-text">BitMan</span>
-                    </div>
-
-                    <div className="landing-headline">
-                        <div className="inline-block px-3 py-1 mb-4 rounded-full border border-amber-500/30 bg-amber-500/10 text-[10px] sm:text-xs font-bold tracking-wider text-amber-400 uppercase">
-                            Mark Minervini Project
+        <PublicShell section="claw">
+            <section className="relative overflow-hidden border-b border-white/[0.05]">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_55%_at_15%_15%,rgba(255,90,60,.12),transparent_75%)]" aria-hidden />
+                <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1.02fr_.98fr] lg:py-24">
+                    <div className="max-w-2xl">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-[#ff6b57]/25 bg-[#ff6b57]/10 px-3 py-1.5 font-mono text-[10px] font-bold tracking-[0.15em] text-[#ff9b89]">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#ff6b57]" />
+                            MARKET OBSERVATION AGENT
                         </div>
-                        <h1>마크 미너비니<br /><span className="landing-headline-accent">전략 자동화</span></h1>
-                        <p className="landing-subtitle">VCP · SEPA · Trend Template<br />AI가 24시간 KR · US · Crypto를 스캔합니다</p>
+                        <h1 className="mt-5 break-keep text-[38px] font-black leading-[1.08] tracking-[-0.04em] text-white sm:text-6xl">
+                            시장을 계속 관찰하고,
+                            <span className="mt-1 block text-[#ff6b57]">의미 있는 변화만 검출합니다.</span>
+                        </h1>
+                        <p className="mt-5 max-w-xl text-[15px] leading-7 text-gray-400 sm:text-lg sm:leading-8">
+                            MarketFlow Claw는 국내 장중 흐름을 반복 관찰하고 데이터 품질이 충분할 때만 변화를 기록합니다.
+                            KR·US·Crypto 분석 도구와 함께 근거·위험·사후 결과를 한 대시보드에서 확인하세요.
+                        </p>
+
+                        <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <AccountActionLink action={action} className="w-full sm:w-auto" />
+                            <a
+                                href="#how-it-works"
+                                className="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl border border-white/10 bg-white/[0.035] px-6 text-sm font-bold text-gray-200 transition-colors hover:bg-white/[0.07] sm:w-auto"
+                            >
+                                작동 방식 보기<i className="fas fa-arrow-down ml-2 text-[11px]" aria-hidden />
+                            </a>
+                        </div>
+                        <p className="mt-3 text-[11px] leading-relaxed text-gray-600">{action.hint}</p>
+
+                        <ul className="mt-7 grid max-w-xl grid-cols-2 gap-2 text-[11px] text-gray-400 sm:grid-cols-4">
+                            {['관찰 전용', '불확실 시 HOLD', '중복 억제', '사후 기록'].map((item) => (
+                                <li key={item} className="flex items-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-2">
+                                    <i className="fas fa-check text-[9px] text-[#ff6b57]" aria-hidden />{item}
+                                </li>
+                            ))}
+                        </ul>
                     </div>
-
-                    <div className="landing-stats">
-                        {[
-                            { label: 'KR VCP', value: 'LIVE' },
-                            { label: 'US Market', value: 'LIVE' },
-                            { label: 'Crypto', value: 'LIVE' },
-                        ].map((s) => (
-                            <div key={s.label} className="landing-stat">
-                                <span className="landing-stat-dot" />
-                                <span className="landing-stat-label">{s.label}</span>
-                            </div>
-                        ))}
-                    </div>
-
-                    <button
-                        className={`landing-cta ${animState === 'ripple' ? 'landing-cta-ripple' : ''}`}
-                        onClick={handleEnter}
-                        aria-label={user ? '대시보드 열기' : '가입하고 시작'}
-                    >
-                        <span className="landing-cta-text">{user ? '대시보드 보기' : '가입하고 시작'}</span>
-                        <span className="landing-cta-arrow"><i className="fas fa-arrow-right" /></span>
-                        <span className="landing-cta-ripple-bg" />
-                    </button>
-
-                    <p className="landing-hint">마켓 서머리 · VCP · 종가베팅 · AI 챗봇</p>
+                    <ProductPreview />
                 </div>
+            </section>
 
-                {/* ============ 마크 미너비니 인물 탐구 ============ */}
-                <section className="w-full max-w-5xl px-6 pt-8 pb-16">
-                    <div className="text-center mb-10">
-                        <div className="text-[11px] tracking-[0.2em] text-amber-400/80 font-bold mb-3">WHO IS</div>
-                        <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-                            <span className="bg-gradient-to-r from-amber-300 via-amber-500 to-orange-500 bg-clip-text text-transparent">Mark Minervini</span>
-                        </h2>
-                        <p className="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-                            세계에서 가장 성공한 트레이더 중 한 명. 1997년 US Investing Championship 우승자.
-                            5년 연속 평균 220%의 경이적인 수익률로 33,500%의 누적 수익을 기록했습니다.
-                        </p>
+            <section id="how-it-works" className="scroll-mt-20 px-4 py-16 sm:px-6 sm:py-24">
+                <div className="mx-auto max-w-6xl">
+                    <SectionHeading
+                        eyebrow="HOW IT WORKS"
+                        title="점수보다 먼저, 관찰의 품질을 확인합니다"
+                        description="단순히 종목 목록을 만드는 것이 아니라 무엇을 봤고 무엇을 모르는지 남기는 흐름입니다."
+                    />
+                    <ol className="grid gap-3 md:grid-cols-5">
+                        {OBSERVATION_STEPS.map((item, index) => (
+                            <li key={item.step} className="relative rounded-2xl border border-white/[0.07] bg-[#111116] p-5">
+                                {index < OBSERVATION_STEPS.length - 1 && (
+                                    <i className="fas fa-chevron-right absolute -right-2.5 top-10 z-10 hidden text-[10px] text-[#ff6b57]/50 md:block" aria-hidden />
+                                )}
+                                <div className="flex items-center justify-between">
+                                    <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#ff6b57]/10 text-[#ff8a76]">
+                                        <i className={`fas ${item.icon} text-sm`} aria-hidden />
+                                    </span>
+                                    <span className="font-mono text-[10px] text-gray-700">{item.step}</span>
+                                </div>
+                                <h3 className="mt-4 text-sm font-black text-white">{item.title}</h3>
+                                <p className="mt-2 text-[12px] leading-6 text-gray-500">{item.description}</p>
+                            </li>
+                        ))}
+                    </ol>
+                </div>
+            </section>
+
+            <section className="border-y border-white/[0.05] bg-white/[0.015] px-4 py-16 sm:px-6 sm:py-20">
+                <div className="mx-auto max-w-6xl">
+                    <SectionHeading
+                        eyebrow="TRUST CONTRACT"
+                        title="더 많이 말하는 것보다 잘못 말하지 않는 것"
+                        description="MarketFlow가 사용자에게 약속하는 네 가지 운영 원칙입니다."
+                    />
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        {TRUST_PRINCIPLES.map((item) => (
+                            <article key={item.title} className="rounded-2xl border border-white/[0.07] bg-[#0d0d11] p-5">
+                                <span className="grid h-10 w-10 place-items-center rounded-xl border border-[#ff6b57]/20 bg-[#ff6b57]/10 text-[#ff8a76]">
+                                    <i className={`fas ${item.icon}`} aria-hidden />
+                                </span>
+                                <h3 className="mt-4 font-black text-white">{item.title}</h3>
+                                <p className="mt-2 text-[12px] leading-6 text-gray-500">{item.description}</p>
+                            </article>
+                        ))}
                     </div>
+                </div>
+            </section>
 
-                    {/* Mock "프로필 카드" — 사진 대신 이니셜 + 이모지로 시각 표현 */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                        <div className="md:col-span-1 relative overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-br from-[#1a1410] via-[#13151f] to-[#0f0f12] p-6 text-center">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-3xl rounded-full" />
-                            <div className="relative w-28 h-28 mx-auto mb-4 rounded-2xl overflow-hidden ring-2 ring-amber-500/40 shadow-2xl shadow-amber-500/20">
-                                <img
-                                    src="/landing/minervini.png"
-                                    alt="Mark Minervini"
-                                    className="w-full h-full object-cover"
-                                    loading="lazy"
-                                />
-                            </div>
-                            <div className="text-white font-bold text-base">Mark Minervini</div>
-                            <div className="text-amber-400/70 text-[11px] mt-1">US Investing Champion · 334% Annual Return</div>
-                            <div className="flex justify-center gap-1 mt-3">
-                                <span className="px-2 py-0.5 text-[9px] rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">SEPA</span>
-                                <span className="px-2 py-0.5 text-[9px] rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">VCP</span>
-                                <span className="px-2 py-0.5 text-[9px] rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Trend</span>
-                            </div>
-                        </div>
-                        <div className="md:col-span-2 grid grid-cols-2 gap-3">
-                            {minerviniStats.map((s) => (
-                                <div key={s.label} className="rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 sm:p-5">
-                                    <div className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-amber-300 to-orange-500 bg-clip-text text-transparent">{s.value}</div>
-                                    <div className="text-white text-xs sm:text-sm font-bold mt-1">{s.label}</div>
-                                    <div className="text-gray-500 text-[10px] sm:text-[11px] mt-1">{s.sub}</div>
+            <section id="product" className="scroll-mt-20 px-4 py-16 sm:px-6 sm:py-24">
+                <div className="mx-auto max-w-6xl">
+                    <SectionHeading
+                        eyebrow="PRODUCT"
+                        title="관찰에서 분석 확장까지"
+                        description="기본 대시보드와 선택형 AI Brain 애드온의 역할을 분리해 필요한 범위만 선택합니다."
+                    />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        {PRODUCT_AREAS.map((item) => (
+                            <article key={item.title} className={`rounded-2xl border p-5 sm:p-6 ${item.accent}`}>
+                                <div className="flex items-start gap-4">
+                                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-black/20">
+                                        <i className={`fas ${item.icon}`} aria-hidden />
+                                    </span>
+                                    <div>
+                                        <div className="font-mono text-[9px] font-bold tracking-[0.18em] opacity-70">{item.eyebrow}</div>
+                                        <h3 className="mt-1 text-lg font-black text-white">{item.title}</h3>
+                                        <p className="mt-2 text-[13px] leading-6 text-gray-400">{item.description}</p>
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <blockquote className="border-l-2 border-amber-500/50 pl-4 py-2 text-gray-400 text-sm sm:text-base italic max-w-3xl mx-auto">
-                        “리스크 관리는 모든 것의 시작이다. 큰 손실을 피해라 — 그러면 큰 수익은 자연스럽게 따라온다.”
-                        <div className="text-[10px] text-gray-600 not-italic mt-2">— Mark Minervini</div>
-                    </blockquote>
-                </section>
-
-                {/* ============ VCP 전략 ============ */}
-                <section className="w-full max-w-5xl px-6 pb-16">
-                    <div className="text-center mb-8">
-                        <div className="text-[11px] tracking-[0.2em] text-blue-400/80 font-bold mb-3">STRATEGY 01</div>
-                        <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">VCP — Volume Contraction Pattern</h2>
-                        <p className="text-gray-400 text-sm max-w-2xl mx-auto">
-                            거래량이 단계적으로 줄어들면서 가격 변동폭도 좁혀지는 패턴.
-                            매도 압력이 소진된 후 거래량 폭발과 함께 돌파하는 순간이 최적의 진입 시점입니다.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                        {/* CSS 차트 mockup */}
-                        <div className="rounded-2xl border border-white/[0.07] bg-[#0d0e14] p-5 relative overflow-hidden">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-white text-xs font-bold">VCP Pattern</span>
-                                    <span className="px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-400 font-bold">BREAKOUT</span>
-                                </div>
-                                <span className="text-emerald-400 text-xs font-bold">+12.4%</span>
-                            </div>
-                            <svg viewBox="0 0 300 120" className="w-full h-32">
-                                <defs>
-                                    <linearGradient id="vcpGrad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="rgba(16,185,129,0.4)" />
-                                        <stop offset="100%" stopColor="rgba(16,185,129,0)" />
-                                    </linearGradient>
-                                </defs>
-                                {/* 가격 라인 — 수축 → 돌파 */}
-                                <path
-                                    d="M 0,80 L 30,40 L 50,75 L 70,50 L 90,72 L 110,55 L 130,68 L 150,58 L 170,65 L 190,60 L 210,63 L 230,61 L 250,30 L 280,15 L 300,10"
-                                    stroke="rgb(16,185,129)"
-                                    strokeWidth="2"
-                                    fill="none"
-                                />
-                                <path
-                                    d="M 0,80 L 30,40 L 50,75 L 70,50 L 90,72 L 110,55 L 130,68 L 150,58 L 170,65 L 190,60 L 210,63 L 230,61 L 250,30 L 280,15 L 300,10 L 300,120 L 0,120 Z"
-                                    fill="url(#vcpGrad)"
-                                />
-                                {/* 수축 영역 표시 */}
-                                <line x1="240" y1="0" x2="240" y2="120" stroke="rgba(245,158,11,0.4)" strokeWidth="1" strokeDasharray="3,3" />
-                                <text x="245" y="15" fill="rgb(245,158,11)" fontSize="9" fontWeight="bold">BUY</text>
-                            </svg>
-                            <div className="grid grid-cols-3 gap-2 mt-3">
-                                <div className="text-center p-2 rounded bg-white/5">
-                                    <div className="text-[9px] text-gray-500">진입가</div>
-                                    <div className="text-xs font-bold text-white">$142.50</div>
-                                </div>
-                                <div className="text-center p-2 rounded bg-white/5">
-                                    <div className="text-[9px] text-gray-500">손절가</div>
-                                    <div className="text-xs font-bold text-red-400">$131.10</div>
-                                </div>
-                                <div className="text-center p-2 rounded bg-white/5">
-                                    <div className="text-[9px] text-gray-500">목표가</div>
-                                    <div className="text-xs font-bold text-emerald-400">$165.20</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-3">
-                            {[
-                                { num: '1', text: '주가가 큰 상승 후 횡보 또는 완만한 조정' },
-                                { num: '2', text: '거래량이 단계적으로 감소 (보통 3~5단계)' },
-                                { num: '3', text: '변동폭이 점점 좁아지는 압축 구간' },
-                                { num: '4', text: '거래량 폭발과 함께 박스 상단 돌파' },
-                                { num: '5', text: '신고가 갱신 — 진입 신호 발동' },
-                            ].map((item) => (
-                                <div key={item.num} className="flex items-start gap-3 p-3 rounded-xl bg-[#13151f] border border-white/[0.05]">
-                                    <div className="w-6 h-6 shrink-0 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white text-[11px] font-black">{item.num}</div>
-                                    <div className="text-gray-300 text-xs sm:text-sm leading-relaxed pt-0.5">{item.text}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-
-                {/* ============ SEPA 시스템 ============ */}
-                <section className="w-full max-w-5xl px-6 pb-16">
-                    <div className="text-center mb-10">
-                        <div className="text-[11px] tracking-[0.2em] text-purple-400/80 font-bold mb-3">STRATEGY 02</div>
-                        <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">SEPA — Specific Entry Point Analysis</h2>
-                        <p className="text-gray-400 text-sm max-w-2xl mx-auto">
-                            미너비니가 정립한 5단계 종목 선정·매매 시스템.
-                            BitMan은 이 5가지 요소를 모두 자동 점수화하여 S/A/B/C 등급으로 분류합니다.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                        {sepaElements.map((el) => (
-                            <div key={el.num} className="relative rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 hover:border-purple-500/30 transition-all">
-                                <div className="text-5xl font-black bg-gradient-to-br from-purple-500/30 to-purple-500/0 bg-clip-text text-transparent leading-none mb-2">{el.num}</div>
-                                <div className="text-white font-bold text-sm mb-1">{el.title}</div>
-                                <div className="text-gray-500 text-[11px] leading-relaxed">{el.desc}</div>
-                            </div>
+                            </article>
                         ))}
                     </div>
 
-                    <div className="mt-6 p-4 sm:p-5 rounded-2xl border border-purple-500/20 bg-gradient-to-r from-purple-500/5 via-transparent to-transparent">
-                        <div className="flex items-start gap-3">
-                            <i className="fas fa-lightbulb text-purple-400 mt-0.5" />
-                            <div>
-                                <div className="text-white text-sm font-bold mb-1">BitMan의 17점 자동 점수 시스템</div>
-                                <div className="text-gray-400 text-xs leading-relaxed">
-                                    뉴스·재료(3) + 거래대금(3) + 차트패턴(2) + 캔들(1) + 기간조정(1) + 수급(2) + 공시(2) + 애널리스트(3) = 17점.
-                                    9점 이상은 S등급, 7점 이상은 A등급으로 자동 분류되어 텔레그램으로 발송됩니다.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* ============ 앱 화면 미리보기 (CSS Mockups) ============ */}
-                <section className="w-full max-w-6xl px-6 pb-16">
-                    <div className="text-center mb-10">
-                        <div className="text-[11px] tracking-[0.2em] text-emerald-400/80 font-bold mb-3">INSIDE THE APP</div>
-                        <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">한눈에 보는 BitMan 대시보드</h2>
-                        <p className="text-gray-400 text-sm max-w-2xl mx-auto">AI가 미너비니 전략을 자동 적용한 결과를 실시간으로 확인하세요</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                        {/* Mock 1: Summary */}
-                        <div className="rounded-2xl border border-white/[0.07] bg-[#0d0e14] p-4 hover:border-amber-500/30 transition-all">
-                            <div className="flex items-center justify-between mb-3">
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Summary</span>
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-400">RISK_ON</span>
-                            </div>
-                            <div className="text-white text-sm font-bold mb-3">시장 게이지</div>
-                            <div className="space-y-2">
-                                {[
-                                    { label: 'KR Market', val: 78, color: 'bg-emerald-500' },
-                                    { label: 'US Market', val: 65, color: 'bg-blue-500' },
-                                    { label: 'Crypto', val: 52, color: 'bg-amber-500' },
-                                ].map((m) => (
-                                    <div key={m.label}>
-                                        <div className="flex justify-between text-[10px] mb-1">
-                                            <span className="text-gray-400">{m.label}</span>
-                                            <span className="text-white font-bold">{m.val}</span>
-                                        </div>
-                                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                            <div className={`h-full ${m.color}`} style={{ width: `${m.val}%` }} />
-                                        </div>
-                                    </div>
+                    <div className="mt-8 grid gap-4 lg:grid-cols-2">
+                        <div className="rounded-2xl border border-amber-400/20 bg-amber-400/[0.04] p-6">
+                            <div className="font-mono text-[10px] font-bold tracking-[0.18em] text-amber-300">PRO</div>
+                            <h3 className="mt-2 text-xl font-black text-white">시장 관찰과 분석의 기본</h3>
+                            <ul className="mt-4 space-y-2 text-[13px] text-gray-400">
+                                {['Claw LIVE와 국내 주도주 관찰', 'KR · US · Crypto 대시보드', 'VCP · 차트 분석 · 시장 브리핑'].map((item) => (
+                                    <li key={item} className="flex gap-2"><i className="fas fa-check mt-1 text-[10px] text-amber-300" aria-hidden />{item}</li>
                                 ))}
-                            </div>
+                            </ul>
                         </div>
-
-                        {/* Mock 2: 종가베팅 */}
-                        <div className="rounded-2xl border border-white/[0.07] bg-[#0d0e14] p-4 hover:border-amber-500/30 transition-all">
-                            <div className="flex items-center justify-between mb-3">
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">KR · 종가베팅 V2</span>
-                                <span className="text-[10px] text-amber-400">17점 만점</span>
-                            </div>
-                            <div className="space-y-2">
-                                {[
-                                    { grade: 'S', name: '삼성전자', score: 14, change: '+3.2%', color: 'bg-amber-500/20 text-amber-400' },
-                                    { grade: 'S', name: 'LG에너지솔루션', score: 12, change: '+2.8%', color: 'bg-amber-500/20 text-amber-400' },
-                                    { grade: 'A', name: '현대차', score: 9, change: '+1.9%', color: 'bg-blue-500/20 text-blue-400' },
-                                    { grade: 'A', name: 'NAVER', score: 8, change: '+1.5%', color: 'bg-blue-500/20 text-blue-400' },
-                                ].map((s) => (
-                                    <div key={s.name} className="flex items-center gap-2 p-2 rounded-lg bg-white/[0.02]">
-                                        <span className={`w-5 h-5 rounded text-[10px] font-black flex items-center justify-center ${s.color}`}>{s.grade}</span>
-                                        <span className="text-white text-xs font-medium flex-1 truncate">{s.name}</span>
-                                        <span className="text-[10px] text-gray-500">{s.score}/17</span>
-                                        <span className="text-[10px] text-emerald-400 font-bold">{s.change}</span>
-                                    </div>
+                        <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.04] p-6">
+                            <div className="font-mono text-[10px] font-bold tracking-[0.18em] text-cyan-300">AI BRAIN ADD-ON</div>
+                            <h3 className="mt-2 text-xl font-black text-white">근거 분석과 후보 검증 확장</h3>
+                            <ul className="mt-4 space-y-2 text-[13px] text-gray-400">
+                                {['AI Brain 알파 스캐너', 'GraphRAG 분석과 TOP 3', '스캔 성과·품질 확인 화면'].map((item) => (
+                                    <li key={item} className="flex gap-2"><i className="fas fa-check mt-1 text-[10px] text-cyan-300" aria-hidden />{item}</li>
                                 ))}
-                            </div>
+                            </ul>
+                            <p className="mt-4 text-[11px] text-gray-600">베이스 플랜과 별도로 30일마다 갱신합니다.</p>
                         </div>
+                    </div>
+                </div>
+            </section>
 
-                        {/* Mock 3: VCP Scanner */}
-                        <div className="rounded-2xl border border-white/[0.07] bg-[#0d0e14] p-4 hover:border-amber-500/30 transition-all">
-                            <div className="flex items-center justify-between mb-3">
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">US VCP Scanner</span>
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-400">12 LIVE</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                {[
-                                    { t: 'NVDA', s: 92 },
-                                    { t: 'AAPL', s: 88 },
-                                    { t: 'MSFT', s: 85 },
-                                    { t: 'AVGO', s: 81 },
-                                ].map((v) => (
-                                    <div key={v.t} className="p-2 rounded-lg bg-white/[0.02] border border-white/5">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <span className="text-white text-xs font-bold">{v.t}</span>
-                                            <span className="text-[9px] text-emerald-400 font-bold">{v.s}</span>
-                                        </div>
-                                        <svg viewBox="0 0 60 20" className="w-full h-4">
-                                            <polyline
-                                                points="0,15 10,12 20,14 30,10 40,12 50,5 60,2"
-                                                stroke="rgb(16,185,129)"
-                                                strokeWidth="1.5"
-                                                fill="none"
-                                            />
-                                        </svg>
+            <section className="border-y border-white/[0.05] bg-white/[0.015] px-4 py-16 sm:px-6 sm:py-24">
+                <div className="mx-auto max-w-6xl">
+                    <SectionHeading
+                        eyebrow="PRICING PREVIEW"
+                        title="한 번 더 확인할 수 있는 명확한 플랜"
+                        description="계정 생성 후 플랜을 선택하고 입금 정보와 기간을 다시 확인합니다. 승인은 입금 확인 후 진행됩니다."
+                    />
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        {PRICING_PLANS.map((plan) => {
+                            const meta = PLAN_PAYMENT_META[plan];
+                            return (
+                                <article key={plan} className={`rounded-2xl border p-5 ${meta.includesAibain ? 'border-cyan-400/20 bg-cyan-400/[0.035]' : 'border-white/[0.08] bg-[#101014]'}`}>
+                                    <div className={`font-mono text-[9px] font-bold tracking-[0.15em] ${meta.includesAibain ? 'text-cyan-300' : 'text-[#ff8a76]'}`}>
+                                        {meta.includesAibain ? 'WITH AI BRAIN' : 'BASE PLAN'}
                                     </div>
-                                ))}
-                            </div>
-                        </div>
+                                    <h3 className="mt-2 text-base font-black text-white">{meta.label}</h3>
+                                    <div className="mt-3 text-2xl font-black tracking-tight text-white">{meta.amount}</div>
+                                    <p className="mt-1 min-h-[36px] text-[11px] leading-5 text-gray-500">{meta.period}</p>
+                                    {meta.baseAmount && meta.aibainAmount && (
+                                        <p className="mt-3 border-t border-white/[0.06] pt-3 text-[10px] leading-5 text-gray-600">
+                                            {meta.baseAmount}<br />+ {meta.aibainAmount}
+                                        </p>
+                                    )}
+                                </article>
+                            );
+                        })}
                     </div>
-                </section>
-
-                {/* ============ Pro Plan Features ============ */}
-                <section className="w-full max-w-5xl px-6 pb-16">
-                    <div className="text-center mb-10">
-                        <div className="text-[11px] tracking-[0.2em] text-amber-400/80 font-bold mb-3">FEATURES</div>
-                        <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">
-                            <span className="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">Pro</span> 플랜 전체 기능
-                        </h2>
-                        <p className="text-gray-500 text-sm">AI 기반 실시간 분석 도구로 투자 의사결정을 지원합니다</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {features.map((f) => (
-                            <div key={f.title} className="group p-5 rounded-2xl border border-white/[0.07] bg-[#13151f] hover:border-white/[0.15] transition-all">
-                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center mb-3 shadow-lg`}>
-                                    <i className={`fas ${f.icon} text-white text-sm`} />
-                                </div>
-                                <h3 className="text-white font-bold text-sm mb-1">{f.title}</h3>
-                                <p className="text-gray-500 text-xs leading-relaxed">{f.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* ============ 사용법 4 STEP ============ */}
-                <section className="w-full max-w-5xl px-6 pb-16">
-                    <div className="text-center mb-10">
-                        <div className="text-[11px] tracking-[0.2em] text-cyan-400/80 font-bold mb-3">HOW TO USE</div>
-                        <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">4단계로 시작하는 미너비니 전략</h2>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {usageSteps.map((s) => (
-                            <div key={s.step} className="relative p-5 rounded-2xl border border-white/[0.07] bg-[#13151f]">
-                                <div className="absolute top-3 right-3 text-3xl font-black text-white/[0.05]">{s.step}</div>
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-3 shadow-lg">
-                                    <i className={`fas ${s.icon} text-white text-sm`} />
-                                </div>
-                                <h3 className="text-white font-bold text-sm mb-1">{s.title}</h3>
-                                <p className="text-gray-500 text-[11px] leading-relaxed">{s.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* ============ Pricing ============ */}
-                <section className="w-full max-w-5xl px-6 pb-16">
-                    <div className="text-center">
-                        <div className="text-[11px] tracking-[0.2em] text-amber-400/80 font-bold mb-3">PRICING</div>
-                        <h2 className="text-2xl sm:text-3xl font-black text-white mb-8">지금 시작하세요</h2>
-                        <div className="inline-flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-6 sm:p-8 rounded-2xl border border-amber-500/20 bg-[#13151f]">
-                            <div>
-                                <div className="text-amber-400 text-xs mb-1 font-bold">Pro <i className="fas fa-crown text-[10px]" /></div>
-                                <div className="text-2xl font-black text-white">50,000<span className="text-base text-gray-400">원/30일</span></div>
-                                <div className="text-gray-600 text-xs mt-1">전체 기능 이용</div>
-                            </div>
-                            <div className="hidden sm:block w-px h-16 bg-white/10" />
-                            <div className="sm:hidden w-24 h-px bg-white/10" />
-                            <div>
-                                <div className="text-cyan-400 text-xs mb-1 font-bold">Pro + AI Brain <i className="fas fa-robot text-[10px]" /></div>
-                                <div className="text-2xl font-black text-white">90,000<span className="text-base text-gray-400">원/30일</span></div>
-                                <div className="text-gray-600 text-xs mt-1">Pro + AI Brain 알파 스캐너</div>
-                            </div>
-                            <div className="hidden sm:block w-px h-16 bg-white/10" />
-                            <div className="sm:hidden w-24 h-px bg-white/10" />
-                            <div>
-                                <div className="text-purple-400 text-xs mb-1 font-bold">Ultra Pro <i className="fas fa-gem text-[10px]" /></div>
-                                <div className="text-2xl font-black text-white">1,200,000<span className="text-base text-gray-400">원</span></div>
-                                <div className="text-gray-600 text-xs mt-1">평생 무기한 이용</div>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center justify-center gap-4 mt-8">
+                    <div className="mt-7 flex flex-col items-center gap-3 text-center">
+                        {!action.disabled && (
                             <Link
-                                to="/signup"
-                                className="px-8 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-bold text-sm transition-all"
+                                to={planActionTo}
+                                className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[#ff6b57] px-7 text-sm font-black text-[#190704] transition-colors hover:bg-[#ff8a76]"
                             >
-                                가입하고 시작
+                                {planActionLabel}<i className="fas fa-arrow-right ml-2 text-[11px]" aria-hidden />
                             </Link>
-                            <Link
-                                to="/pricing"
-                                className="px-8 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-sm transition-all border border-white/10"
-                            >
-                                요금 상세
-                            </Link>
-                        </div>
-
-                        <p className="text-gray-400 text-base sm:text-lg mt-6">
-                            이미 계정이 있으신가요? <Link to="/login" className="text-amber-400 hover:text-amber-300 font-semibold">로그인</Link>
-                        </p>
-                    </div>
-                </section>
-
-                {/* ============ App Download ============ */}
-                {!isInstalled && (
-                    <section className="w-full max-w-5xl px-6 pb-16">
-                        <div className="p-6 rounded-2xl border border-blue-500/20 bg-[#13151f] text-center">
-                            <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center border border-blue-500/20">
-                                <i className="fas fa-mobile-screen-button text-blue-400 text-2xl" />
-                            </div>
-                            <h3 className="text-white font-bold text-lg mb-1">앱으로 더 빠르게</h3>
-                            <p className="text-gray-500 text-sm mb-4">홈 화면에 추가하고 네이티브 앱처럼 사용하세요</p>
-                            <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
-                                <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                                    <i className="fas fa-bolt text-amber-400 text-[10px]" /> 빠른 실행
-                                </span>
-                                <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                                    <i className="fas fa-bell text-amber-400 text-[10px]" /> 푸시 알림
-                                </span>
-                                <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                                    <i className="fas fa-expand text-amber-400 text-[10px]" /> 전체 화면
-                                </span>
-                            </div>
-                            <button
-                                onClick={handleInstallApp}
-                                className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-bold text-sm transition-all"
-                            >
-                                <i className="fas fa-download" />
-                                앱 다운로드
-                            </button>
-                        </div>
-                    </section>
-                )}
-
-                {/* ============ 커뮤니티 미리보기 유도 + 광고 ============ */}
-                <section className="w-full max-w-5xl px-6 pb-4">
-                    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 text-center sm:p-6">
-                        <div className="text-sm font-bold text-white">
-                            매일 갱신되는 AI 시장 분석, 가입 없이 먼저 읽어보세요
-                        </div>
-                        <Link to="/community"
-                              className="mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-500/10 px-5 text-[13px] font-black text-amber-300 transition-colors hover:bg-amber-500/20">
-                            <i className="far fa-newspaper" /> 공개 커뮤니티 보기
+                        )}
+                        <Link to="/pricing" className="text-[12px] font-bold text-gray-500 underline decoration-white/15 underline-offset-4 hover:text-white">
+                            기능·기간·결제 절차 자세히 보기
                         </Link>
                     </div>
-                    <AdSlot slot="7141592830" className="mt-6" />
-                </section>
-
-                {/* ============ Footer (공용 — 정책 링크 + 면책) ============ */}
-                <div className="w-full">
-                    <PublicFooter />
                 </div>
-            </div>
+            </section>
+
+            <section className="px-4 py-16 sm:px-6 sm:py-24">
+                <div className="mx-auto max-w-3xl">
+                    <SectionHeading
+                        eyebrow="FAQ"
+                        title="시작하기 전에 확인하세요"
+                        description="서비스 범위와 구독 흐름을 오해 없이 안내합니다."
+                    />
+                    <div className="space-y-2">
+                        {FAQS.map((item) => (
+                            <details key={item.question} className="group rounded-2xl border border-white/[0.07] bg-[#101014] p-4 open:border-[#ff6b57]/25 sm:p-5">
+                                <summary className="flex min-h-[32px] cursor-pointer list-none items-center justify-between gap-4 text-sm font-black text-white">
+                                    {item.question}
+                                    <i className="fas fa-plus shrink-0 text-[11px] text-gray-600 transition-transform group-open:rotate-45" aria-hidden />
+                                </summary>
+                                <p className="mt-3 border-t border-white/[0.05] pt-3 text-[13px] leading-6 text-gray-400">{item.answer}</p>
+                            </details>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {!isInstalled && canInstall && (
+                <section className="px-4 pb-8 sm:px-6">
+                    <div className="mx-auto flex max-w-3xl flex-col items-start justify-between gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5 sm:flex-row sm:items-center sm:p-6">
+                        <div>
+                            <div className="font-mono text-[9px] font-bold tracking-[0.16em] text-gray-600">OPTIONAL</div>
+                            <h2 className="mt-1 text-base font-black text-white">홈 화면에서 더 빠르게 열기</h2>
+                            <p className="mt-1 text-[12px] leading-5 text-gray-500">지원되는 브라우저에서 MarketFlow를 홈 화면 앱으로 추가할 수 있습니다.</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={handleInstall}
+                            className="inline-flex min-h-[44px] shrink-0 items-center rounded-xl border border-white/10 bg-white/[0.05] px-4 text-[12px] font-bold text-gray-200 hover:bg-white/[0.08]"
+                        >
+                            <i className="fas fa-download mr-2 text-[10px]" aria-hidden />앱으로 추가
+                        </button>
+                    </div>
+                </section>
+            )}
+
+            <section className="px-4 pb-8 pt-10 sm:px-6 sm:pt-16">
+                <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl border border-[#ff6b57]/20 bg-[#0a0709] p-7 text-center sm:p-12">
+                    <ClawMascot state="idle" size={72} className="mx-auto" title="기다리는 Claw" />
+                    <div className="mt-3 font-mono text-[10px] font-bold tracking-[0.2em] text-[#ff8a76]">START WITH CONTEXT</div>
+                    <h2 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-4xl">종목보다 먼저 시장과 근거를 확인하세요</h2>
+                    <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-gray-400">
+                        플랜과 결제 정보를 확인한 뒤 입금하고, 승인 완료 후 대시보드 이용 기간이 시작됩니다.
+                    </p>
+                    <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+                        <AccountActionLink action={action} className="w-full sm:w-auto" />
+                        <Link
+                            to="/community"
+                            className="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl border border-white/10 bg-white/[0.035] px-6 text-sm font-bold text-gray-200 hover:bg-white/[0.07] sm:w-auto"
+                        >
+                            공개 분석 먼저 보기
+                        </Link>
+                    </div>
+                </div>
+            </section>
 
             {showGuide && <InstallGuide isIOS={isIOS} onClose={() => setShowGuide(false)} />}
-
-            {/* Exit overlay */}
-            <div className={`landing-exit-overlay ${animState === 'exit' ? 'landing-exit-overlay-active' : ''}`} aria-hidden />
-        </div>
+        </PublicShell>
     );
 }

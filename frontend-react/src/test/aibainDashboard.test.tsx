@@ -84,6 +84,17 @@ const emptyOverview = {
   },
 };
 
+function mockDashboardResponses(overview: typeof fullOverview | typeof emptyOverview) {
+  mockApi.fetchAuthAPI.mockImplementation(async (path: string) => {
+    if (path === '/api/admin/mirofish/aibain/overview') return overview;
+    if (path === '/api/admin/mirofish/paper/overview') return null;
+    // Alpha Core is an independent, fail-closed read surface. Keep its calls
+    // explicit so they cannot consume the dashboard response by call order.
+    if (path.startsWith('/api/kr/alpha-core/')) return null;
+    throw new Error(`Unexpected endpoint in AiBainDashboard test: ${path}`);
+  });
+}
+
 describe('AiBainDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -91,11 +102,14 @@ describe('AiBainDashboard', () => {
 
   it('renders a slim dashboard: hit-rate, Top 3 detection with verdict badge, and learning one-liner', async () => {
     const user = userEvent.setup();
-    mockApi.fetchAuthAPI.mockResolvedValueOnce(fullOverview).mockResolvedValueOnce(null);
+    mockDashboardResponses(fullOverview);
 
     render(<AiBainDashboard />);
 
-    await waitFor(() => expect(mockApi.fetchAuthAPI).toHaveBeenCalled());
+    await waitFor(() => expect(mockApi.fetchAuthAPI).toHaveBeenCalledWith(
+      '/api/admin/mirofish/aibain/overview',
+      't',
+    ));
 
     // header trust chip + performance band both show hit rate
     expect((await screen.findAllByText(/46.2/)).length).toBeGreaterThan(0);
@@ -114,11 +128,14 @@ describe('AiBainDashboard', () => {
 
   it('renders empty-state messaging when sections have no data', async () => {
     const user = userEvent.setup();
-    mockApi.fetchAuthAPI.mockResolvedValueOnce(emptyOverview).mockResolvedValueOnce(null);
+    mockDashboardResponses(emptyOverview);
 
     render(<AiBainDashboard />);
 
-    await waitFor(() => expect(mockApi.fetchAuthAPI).toHaveBeenCalled());
+    await waitFor(() => expect(mockApi.fetchAuthAPI).toHaveBeenCalledWith(
+      '/api/admin/mirofish/aibain/overview',
+      't',
+    ));
 
     expect(await screen.findByText('오늘 신규 검출이 없습니다')).toBeTruthy();
     await user.click(screen.getByRole('button', { name: /상세 분석/ }));

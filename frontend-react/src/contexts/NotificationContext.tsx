@@ -16,6 +16,7 @@ interface NotificationContextType {
     unreadCount: number;
     notify: (n: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => void;
     dismiss: (id: string) => void;
+    markRead: (id: string) => void;
     markAllRead: () => void;
     clearAll: () => void;
     showBrowserNotification: (title: string, body: string, link?: string) => void;
@@ -134,6 +135,19 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         });
     }, []);
 
+    const markRead = useCallback((id: string) => {
+        setNotifications(prev => {
+            let changed = false;
+            const updated = prev.map(n => {
+                if (n.id !== id || n.read) return n;
+                changed = true;
+                return { ...n, read: true };
+            });
+            if (changed) saveToStorage(updated);
+            return changed ? updated : prev;
+        });
+    }, []);
+
     const markAllRead = useCallback(() => {
         setNotifications(prev => {
             const updated = prev.map(n => ({ ...n, read: true }));
@@ -150,7 +164,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     const unreadCount = notifications.filter(n => !n.read).length;
 
     return (
-        <NotificationContext.Provider value={{ notifications, unreadCount, notify, dismiss, markAllRead, clearAll, showBrowserNotification }}>
+        <NotificationContext.Provider value={{ notifications, unreadCount, notify, dismiss, markRead, markAllRead, clearAll, showBrowserNotification }}>
             {children}
         </NotificationContext.Provider>
     );
