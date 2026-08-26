@@ -19,3 +19,20 @@ def claw_overview():
     resp = jsonify(payload)
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return resp
+
+
+@kr_claw_bp.route('/close-leaders')
+@pro_required
+def claw_close_leaders():
+    """마감 기준 주도주 (마스터 플랜 P3). ?day=YYYYMMDD 로 특정 세션 조회."""
+    from flask import request
+
+    from marketflow_claw.overview import build_close_leaders
+
+    day = (request.args.get('day') or '').strip()
+    if day and (len(day) != 8 or not day.isdigit()):
+        return jsonify({'error': 'invalid_day'}), 400
+    payload = build_close_leaders(day or None)
+    resp = jsonify(payload)
+    resp.headers['Cache-Control'] = 'public, max-age=60'  # 마감 데이터 — 세션당 1회 확정
+    return resp

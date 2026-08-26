@@ -53,6 +53,62 @@ def _age_seconds(ts: str | None, now: datetime) -> float | None:
         return None
 
 
+def build_close_leaders(day: str | None = None) -> dict[str, Any]:
+    """마감 기준 주도주 — GET /api/kr/claw/close-leaders 의 본체 (마스터 플랜 P3).
+
+    마감 기준 = 대상 세션(day, 기본: DB 최신 세션)의 마지막 정상 스냅샷.
+    종목별 당일 이벤트 타임라인과 close 브리핑 발송 여부를 함께 반환한다.
+    읽기전용 · claw.db 만 접근 · 실패는 error 필드로 격리.
+    """
+    out: dict[str, Any] = {'day': day, 'snapshot_ts': None, 'market_status': None,
+                           'by_grade': {}, 'rows': [], 'events_count': 0,
+                           'close_brief': None, 'error': None}
+    try:
+        with memory.connect() as con:
+            if not day:
+                row = con.execute('SELECT day FROM snapshots ORDER BY id DESC LIMIT 1').fetchone()
+                if not row:
+                    out['error'] = 'no_snapshot'
+                    return out
+                day = row[0]
+            out['day'] = day
+            snap = con.execute(
+                'SELECT ts, market_status, by_grade, rows_json FROM snapshots '
+                "WHERE day=? AND (error IS NULL OR error='') ORDER BY id DESC LIMIT 1", (day,)).fetchone()
+            if not snap:
+                out['error'] = 'no_snapshot'
+                return out
+            events = memory.list_events(con, day)
+            session_date = f'{day[:4]}-{day[4:6]}-{day[6:]}'
+            brief = con.execute(
+                "SELECT ts, delivered FROM briefs WHERE kind='close' AND substr(ts,1,10)=? "
+                'ORDER BY id DESC LIMIT 1', (session_date,)).fetchone()
+    except Exception as e:  # noqa: BLE001
+        out['error'] = f'{type(e).__name__}: {e}'
+        return out
+
+    by_code: dict[str, list[dict[str, Any]]] = {}
+    for e in events:
+        by_code.setdefault(e['code'], []).append(
+            {'ts': e['ts'], 'type': e['type'], 'grade_from': e['grade_from'], 'grade_to': e['grade_to']})
+
+    rows = json.loads(snap[3] or '[]')
+    ordered = sorted(rows, key=lambda x: ({'S': 3, 'A': 2, 'B': 1}.get(x.get('grade'), 0),
+                                          x.get('score') or 0), reverse=True)
+    out.update({
+        'snapshot_ts': snap[0], 'market_status': snap[1],
+        'by_grade': json.loads(snap[2] or '{}'),
+        'events_count': len(events),
+        'close_brief': {'ts': brief[0], 'delivered': bool(brief[1])} if brief else None,
+        'rows': [{
+            'code': r.get('code'), 'name': r.get('name'), 'grade': r.get('grade'),
+            'score': r.get('score'), 'chg': r.get('chg'), 'trval_eok': r.get('trval_eok'),
+            'price': r.get('price'), 'events': by_code.get(r.get('code'), []),
+        } for r in ordered],
+    })
+    return out
+
+
 def build_overview(*, now: datetime | None = None) -> dict[str, Any]:
     now = now or datetime.now()
     day = now.strftime('%Y%m%d')

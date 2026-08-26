@@ -5,6 +5,7 @@ import DetectionsCard from './DetectionsCard';
 import PerformanceCard from './PerformanceCard';
 import PaperTradingCard, { PaperOverview } from './PaperTradingCard';
 import ClawLiveCard from './ClawLiveCard';
+import CloseLeadersCard from './CloseLeadersCard';
 
 interface AiBainOverview {
     generated_at: string;
@@ -100,6 +101,9 @@ export default function AiBainDashboard() {
 
                         {/* Claw LIVE — 장중 주도주 전이 감시 (자체 폴링, 기존 엔드포인트와 독립) */}
                         <ClawLiveCard />
+
+                        {/* 마감 주도주 — 마감 기준 세션 확정본 (마스터 플랜 P3) */}
+                        <CloseLeadersCard />
 
                         {/* 검출 Top3 */}
                         {overview && <DetectionsCard data={overview.detections} />}

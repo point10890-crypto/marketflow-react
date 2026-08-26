@@ -85,6 +85,41 @@ export interface ClawOverview {
 }
 
 export const CLAW_OVERVIEW_ENDPOINT = '/api/kr/claw/overview';
+export const CLAW_CLOSE_LEADERS_ENDPOINT = '/api/kr/claw/close-leaders';
+
+/** 마감 기준 주도주 — GET /api/kr/claw/close-leaders (마스터 플랜 P3) */
+export interface ClawCloseLeaderRow {
+    code: string;
+    name: string;
+    grade: 'S' | 'A' | 'B' | string;
+    score: number | null;
+    chg: number | null;
+    trval_eok: number | null;
+    price: number | null;
+    events: Array<{ ts: string; type: string; grade_from: string | null; grade_to: string | null }>;
+}
+
+export interface ClawCloseLeaders {
+    day: string | null;
+    snapshot_ts: string | null;
+    market_status: string | null;
+    by_grade: Record<string, number>;
+    rows: ClawCloseLeaderRow[];
+    events_count: number;
+    close_brief: { ts: string; delivered: boolean } | null;
+    error: string | null;
+}
+
+export function isClawCloseLeaders(v: unknown): v is ClawCloseLeaders {
+    const o = v as Partial<ClawCloseLeaders> | null;
+    return !!o && typeof o === 'object' && Array.isArray(o.rows) && 'snapshot_ts' in o;
+}
+
+/** '20260826' → '2026-08-26' */
+export function fmtDay(day: string | null | undefined): string {
+    if (!day || day.length !== 8) return '-';
+    return `${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6)}`;
+}
 
 /** 응답이 계약 형태인지 — 테스트 모킹이나 구버전 백엔드에서 엉뚱한 객체가 와도 카드가 죽지 않게 */
 export function isClawOverview(v: unknown): v is ClawOverview {
