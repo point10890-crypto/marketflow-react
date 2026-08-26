@@ -311,6 +311,22 @@ def read_top3_metrics():
         return None
 
 
+def _is_stale(generated_at: str) -> bool:
+    """아티팩트 신선도 — 재빌드 주기(기본 24h) 초과 또는 파싱 불가면 stale."""
+    try:
+        refresh_hours = float(os.environ.get('MIROFISH_TOP3_REFRESH_HOURS', '24'))
+    except (TypeError, ValueError):
+        refresh_hours = 24.0
+    try:
+        ts = datetime.fromisoformat(str(generated_at).replace('Z', '+00:00'))
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+    except (TypeError, ValueError):
+        return True
+    age_hours = (datetime.now(timezone.utc) - ts).total_seconds() / 3600.0
+    return age_hours > refresh_hours
+
+
 def top3_metrics_summary():
     """Compact, observation-friendly view. Builds+persists if file is missing."""
     data = read_top3_metrics()
@@ -321,7 +337,9 @@ def top3_metrics_summary():
             data = None
     if not isinstance(data, dict):
         return {'evaluated_runs': 0, 'qualified_runs': 0, 'total_evaluated_items': 0,
-                'insufficient': True, 'pooled': {}, 'macro': {}}
+                'insufficient': True, 'pooled': {}, 'macro': {},
+                'generated_at': None, 'stale': True}
+    generated_at = data.get('generated_at') or None
     return {
         'evaluated_runs': data.get('evaluated_runs', 0),
         'qualified_runs': data.get('qualified_runs', 0),
@@ -329,4 +347,6 @@ def top3_metrics_summary():
         'insufficient': data.get('insufficient', True),
         'pooled': data.get('pooled') or {},
         'macro': data.get('macro') or {},
+        'generated_at': generated_at,
+        'stale': _is_stale(generated_at) if generated_at else True,
     }

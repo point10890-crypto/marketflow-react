@@ -82,24 +82,33 @@ def main() -> int:
         m = out['metrics']
         results[rules.name] = out
         rows.append((rules.name, m))
+        net = m.get('net') or {}
         print(f"\n=== {rules.name} ===")
         print(f"  trades={m['trades']}  win={m['win_rate_pct']}%  "
               f"expectancy={m['expectancy_pct']:+.2f}%  median={m['median_pct']:+.2f}%")
         print(f"  PF={m['profit_factor']}  cumulative={m['cumulative_pct']:+.1f}%  "
               f"MDD={m['max_drawdown_pct']:.1f}%  hold={m['avg_holding_days']}d")
+        if net:
+            print(f"  [net -{net['round_trip_cost_pct']}%] win={net['win_rate_pct']}%  "
+                  f"expectancy={net['expectancy_pct']:+.2f}%  PF={net['profit_factor']}  "
+                  f"cumulative={net['cumulative_pct']:+.1f}%")
         print(f"  exits={m['by_exit_reason']}  skipped: filter={m['skipped_by_filter']} "
               f"no_data={m['skipped_no_data']}")
         for phase, stats in sorted(m.get('by_phase', {}).items()):
             print(f"    [{phase}] n={stats['trades']} win={stats['win_rate_pct']}% "
                   f"exp={stats['expectancy_pct']:+.2f}%")
 
-    # 요약 비교표
-    print('\n' + '=' * 76)
-    print(f"{'ruleset':<16}{'n':>5}{'win%':>7}{'exp%':>8}{'PF':>6}{'cum%':>9}{'MDD%':>8}")
+    # 요약 비교표 (gross | net)
+    print('\n' + '=' * 96)
+    print(f"{'ruleset':<16}{'n':>5}{'win%':>7}{'exp%':>8}{'PF':>6}{'cum%':>9}{'MDD%':>8}"
+          f"{'n.win%':>8}{'n.exp%':>8}{'n.PF':>7}")
     for name, m in rows:
         pf = m['profit_factor'] if m['profit_factor'] is not None else '-'
+        net = m.get('net') or {}
+        npf = net.get('profit_factor') if net.get('profit_factor') is not None else '-'
         print(f"{name:<16}{m['trades']:>5}{m['win_rate_pct']:>7.1f}{m['expectancy_pct']:>8.2f}"
-              f"{pf:>6}{m['cumulative_pct']:>9.1f}{m['max_drawdown_pct']:>8.1f}")
+              f"{pf:>6}{m['cumulative_pct']:>9.1f}{m['max_drawdown_pct']:>8.1f}"
+              f"{net.get('win_rate_pct', 0):>8.1f}{net.get('expectancy_pct', 0):>8.2f}{npf:>7}")
 
     # 육안 검증용 샘플 — baseline 최고/최악 10건
     base_trades = sorted(results['baseline']['trades'], key=lambda t: t['return_pct'])

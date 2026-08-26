@@ -111,6 +111,10 @@ def run_maintenance(observation: dict[str, Any], *, dry_run: bool) -> list[dict[
     outcome = observation.get('outcome') if isinstance(observation.get('outcome'), dict) else {}
     if _int(outcome.get('evaluated_count')) < MIN_EVALUATED_TARGET:
         decisions.append({'action': 'refresh_outcomes', 'reason': 'deterministic: low evaluated outcomes'})
+    top3 = observation.get('top3_metrics') if isinstance(observation.get('top3_metrics'), dict) else {}
+    if not top3 or top3.get('stale', True):
+        decisions.append({'action': 'refresh_intelligence',
+                          'reason': 'deterministic: top3 metrics artifact stale'})
     if not decisions:
         return []
     # Upkeep refreshes read-only/replay artifacts. It is allowed even when the

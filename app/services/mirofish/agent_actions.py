@@ -69,6 +69,7 @@ ALLOWED_ACTIONS = STORE_MUTATING_ACTIONS | {
     'refresh_backtest',
     'refresh_outcomes',
     'refresh_learning_feedback',
+    'refresh_intelligence',
     'test_hypothesis',
 }
 
@@ -453,6 +454,21 @@ def _do_refresh_outcomes(decision: dict[str, Any], _backtest: dict[str, Any]) ->
     )
 
 
+def _do_refresh_intelligence(decision: dict[str, Any], _backtest: dict[str, Any]) -> dict[str, Any]:
+    """정체된 관찰 아티팩트(top3_metrics/interaction_map) 재빌드 — 읽기전용 리플레이 산출물."""
+    from app.services.mirofish.intelligence import interactions as _interactions
+    from app.services.mirofish.intelligence import top3_metrics as _top3_metrics
+
+    t3 = _top3_metrics.build_top3_metrics(write=True)
+    imap = _interactions.build_interaction_map(write=True)
+    return _result(
+        decision,
+        'applied',
+        'intelligence refreshed: top3_runs={}, interaction_samples={}'.format(
+            (t3 or {}).get('evaluated_runs', 0), (imap or {}).get('evaluated_count', 0)),
+    )
+
+
 _HANDLERS = {
     'adjust_parameter': _do_adjust_parameter,
     'revert_parameter': _do_revert_parameter,
@@ -462,6 +478,7 @@ _HANDLERS = {
     'refresh_backtest': _do_refresh_backtest,
     'refresh_outcomes': _do_refresh_outcomes,
     'refresh_learning_feedback': _do_refresh_outcomes,
+    'refresh_intelligence': _do_refresh_intelligence,
 }
 
 

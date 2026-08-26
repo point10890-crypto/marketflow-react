@@ -207,11 +207,16 @@ def replay(detections: list[dict[str, Any]],
 
 
 def _metrics(trades: list[dict[str, Any]]) -> dict[str, Any]:
+    from app.services.mirofish import costs
+
+    cost = costs.round_trip_cost_pct()
     if not trades:
         return {'trades': 0, 'win_rate_pct': 0.0, 'expectancy_pct': 0.0,
                 'median_pct': 0.0, 'profit_factor': None, 'cumulative_pct': 0.0,
                 'max_drawdown_pct': 0.0, 'by_exit_reason': {}, 'by_phase': {},
-                'avg_holding_days': 0.0}
+                'avg_holding_days': 0.0,
+                'net': {'round_trip_cost_pct': round(cost, 4), 'expectancy_pct': 0.0,
+                        'win_rate_pct': 0.0, 'profit_factor': None, 'cumulative_pct': 0.0}}
     returns = [float(t['return_pct']) for t in trades]
     wins = [r for r in returns if r > 0]
     losses = [-r for r in returns if r < 0]
@@ -240,9 +245,26 @@ def _metrics(trades: list[dict[str, Any]]) -> dict[str, Any]:
     for bucket in by_phase.values():
         bucket['expectancy_pct'] = round(bucket['sum_return'] / bucket['trades'], 2)
         bucket['win_rate_pct'] = round(bucket['wins'] / bucket['trades'] * 100, 1)
+        bucket['net_expectancy_pct'] = round(bucket['expectancy_pct'] - cost, 2)
         del bucket['sum_return']
 
+    # net(비용 후) 병기 — gross 를 대체하지 않는다
+    net_returns = [r - cost for r in returns]
+    net_wins = [r for r in net_returns if r > 0]
+    net_losses = [-r for r in net_returns if r < 0]
+    net_equity = 1.0
+    for t in ordered:
+        net_equity *= (1 + (float(t['return_pct']) - cost) / 100.0)
+    net = {
+        'round_trip_cost_pct': round(cost, 4),
+        'expectancy_pct': round(sum(net_returns) / len(net_returns), 2),
+        'win_rate_pct': round(len(net_wins) / len(net_returns) * 100, 1),
+        'profit_factor': round(sum(net_wins) / sum(net_losses), 2) if net_losses else None,
+        'cumulative_pct': round((net_equity - 1) * 100, 2),
+    }
+
     return {
+        'net': net,
         'trades': len(trades),
         'win_rate_pct': round(len(wins) / len(trades) * 100, 1),
         'expectancy_pct': round(sum(returns) / len(returns), 2),

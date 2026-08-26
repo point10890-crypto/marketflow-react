@@ -314,12 +314,23 @@ def performance_summary(days: int = 30, today: str | None = None) -> dict[str, A
     for r in returns:
         cumulative *= (1 + r / 100.0)
 
+    from app.services.mirofish import costs
+
+    cost = costs.round_trip_cost_pct()
+    net_returns = [r - cost for r in returns]
+    net_cumulative = 1.0
+    for r in net_returns:
+        net_cumulative *= (1 + r / 100.0)
+
     return {
         'window_days': days,
         'trades': len(trades),
         'win_rate_pct': round(len(wins) / len(trades) * 100.0, 1) if trades else 0.0,
         'avg_return_pct': round(sum(returns) / len(returns), 2) if returns else 0.0,
         'cumulative_return_pct': round((cumulative - 1) * 100.0, 2),
+        'round_trip_cost_pct': round(cost, 4),
+        'net_avg_return_pct': round(sum(net_returns) / len(net_returns), 2) if net_returns else 0.0,
+        'net_cumulative_return_pct': round((net_cumulative - 1) * 100.0, 2),
         'recent': sorted(trades, key=lambda t: str(t.get('exit_date') or ''), reverse=True)[:10],
         'open_count': len(ledger['open']),
     }

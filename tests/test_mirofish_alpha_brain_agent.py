@@ -75,6 +75,12 @@ def test_maintenance_refreshes_stale_backtest_without_llm(agent_env, monkeypatch
         'generated_at': '2026-06-01T14:00:00+00:00',
         'enhanced': {'sample_count': 30},
     })
+    # 실 저장소 아티팩트 신선도에 의존하지 않도록 고정 (P1: stale → refresh_intelligence)
+    monkeypatch.setattr(agent, '_intelligence_summary', lambda **_kw: {
+        'interaction_map': {},
+        'regime_distribution': {},
+        'top3_metrics': {'stale': True},
+    })
     calls = []
     monkeypatch.setattr(
         agent.agent_actions,
@@ -88,7 +94,9 @@ def test_maintenance_refreshes_stale_backtest_without_llm(agent_env, monkeypatch
     obs = agent.build_agent_observation(now_iso='2026-06-12T08:00:00+00:00')
     results = agent.run_maintenance(obs, dry_run=False)
 
-    assert [call['action'] for call in calls] == ['refresh_backtest', 'refresh_outcomes']
+    # P1(2026-08-24): 정체된 top3/interaction 아티팩트도 유지보수 대상 — refresh_intelligence 추가
+    assert [call['action'] for call in calls] == [
+        'refresh_backtest', 'refresh_outcomes', 'refresh_intelligence']
     assert all(result['status'] == 'applied' for result in results)
 
 
