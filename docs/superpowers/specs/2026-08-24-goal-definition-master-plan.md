@@ -140,8 +140,17 @@
 - **FE**: 모바일 스크롤/safe-area 개편 + AlphaCoreOpsCard·ClawObservationCard (CloseLeadersCard 와 공존). 검증: BE 전 배치 + FE 141/141 + 342 라우트 부팅.
 - **보류(스태시 유지)**: 워치독 6종·autostart vbs·브랜드 리네임 — 태스크 계약 변경이라 별도 검증 릴리스 필요.
 
+### 잔여 4항목 완결 (2026-08-27 심야)
+
+**① 워치독·autostart·브랜드 — 릴리스·검증 완료.** (정정: "보류" 기록은 부정확 — 3-way apply 가 인덱스에 스테이징한 것을 `git checkout --`(인덱스 복원)로 되돌리지 못해 61b3bf2 에 이미 포함·배포됐음. 사후 전수 검증으로 릴리스 확정.) 실측: Claw pidfile=heartbeat.pid=7260 일치 + 태스크 커맨드 `--send` 반영 / Flask 는 "health-only restart contract" 로 부모·자식(리로더) 쌍 무해 확인, 부팅 후 4+사이클 재시작 0회 / **워치독이 레거시 5001 프로듀서 다운을 3-프로브로 감지해 자동 복구 성공**(23:55:46, 로그 증빙) / 기동 유예(startup grace) 동작 / 터널 SYSTEM 서비스 정상 / 브랜드 라이브(title "MarketFlow Claw", manifest #ff5a3c — PWA 재설치 프롬프트 발생 가능). 계약 테스트 3종(15케이스) green·커밋.
+
+**③ shadow 성적 평가 — 파이프라인 실가동 검증, 정책은 표본 게이트 미달로 보류 유지.** updater 멱등 실행(data_as_of 8/26) → H1 55건 완료·coverage 100%·avg +0.28%·양성 52.7%, H5 미성숙(정직한 insufficient). R0c 기준 대조: 완료 30건 ✓·coverage 95% ✓·**고유 세션 3/20 ✗**(8/24~26). 17:15 자동 갱신 잡(`CLAW_OUTCOME_ENABLED` 기본 true) 가동 — 약 3.5주 후 세션 게이트 도달.
+
+**④ 리포트 3자 대사 — 감쇠 원인 확정.** 공통 표본 366건 수익률 드리프트 0(데이터 무결). 8/17 리포트는 국면 None(게이트 무동작)이었고, 8/26 양국면 표본 분해: **8월 이전 기존 43건 = 승률 65.1%·+2.89%/건·PF 2.25 → 기록된 +2.60%/PF 2.06 재현 성공(historical claim verified)**; **8월 신규 32건 = 승률 28.1%·−2.61%·PF 0.46(8/7~13 손절 집중)**. 판정: 데이터·분류 문제가 아닌 **순수 out-of-sample 엣지 감쇠** — R3 보류가 옳았음이 수치 확정, 방어선은 ③ 의 shadow 무효화.
+
+**② 고정 IP 복원 — 본PC 측 사용자 1클릭 대기.** 본PC 관리자 승격이 자동화 정책상 차단되어 사용자 실행 필요: 관리자 PowerShell 에서 `New-NetIPAddress -InterfaceAlias '이더넷' -IPAddress 192.168.55.102 -PrefixLength 24`. **순서 강제: 본PC 먼저** (miniPC 에 55.103 을 먼저 넣으면 APIPA 제거로 SSH 경로 상실 위험). 본PC 완료 확인 후 miniPC 55.103 추가는 SSH 로 수행 가능.
+
 ### 남은 것
-1. 보류분(워치독·autostart·브랜드) 별도 릴리스 — miniPC 태스크 계약 검증 동반 (pidfile 계약·`--send` 강제·5001 관할 이전·PWA 재설치 프롬프트)
-2. miniPC 이더넷 고정 IP(55.x) 복원 — 현재 APIPA(169.254.144.42) (사용자 수행/승인 필요)
-3. 관측 원장 표본 축적 후 shadow invalidator 성적 평가 → R2/R3 정책 판정 재개
-4. 8/16 vs 8/24 vs 8/26 리포트 3자 대사 — 게이트 엣지 감쇠 원인 규명 (이제 manifest 로 재현 가능)
+1. ② 본PC 고정 IP(사용자 실행) → miniPC 55.103 추가·검증
+2. 관측 원장 세션 게이트(20세션) 도달 시 shadow invalidator 성적 재판정 → R3 재개
+3. 8월 구간 엣지 붕괴의 시장 특성 분석(양국면 내 급락 전환 감지 후보) — 가설 원장 등록 대상
