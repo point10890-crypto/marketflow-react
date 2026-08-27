@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { PublicShell } from '@/components/public/PublicShell';
+import { useSeo } from '@/lib/seo';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -83,6 +84,12 @@ function nextPath(plan: BillingPlan, signedIn: boolean): string {
 export default function PricingPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
+
+    useSeo({
+        title: '요금제 — Pro · Ultra Pro · AI Brain | MarketFlow',
+        description: 'MarketFlow 구독 요금제 안내 — Pro(30일), Ultra Pro(무기한), AI Brain 애드온의 기능과 가격, 계좌이체 결제·승인 절차를 확인하세요.',
+        path: '/pricing',
+    });
 
     return (
         <PublicShell section="plans">

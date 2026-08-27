@@ -8,6 +8,7 @@ import {
     planToQuery,
 } from '@/lib/billingInfo';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
+import { useSeo } from '@/lib/seo';
 
 const FLOW_STEPS = ['계정 생성', '플랜 선택', '입금 정보', '승인 대기'];
 
@@ -30,6 +31,7 @@ const CORE_PROMISES = [
 ];
 
 export default function SignupPage() {
+    useSeo({ title: '회원가입 | MarketFlow', noindex: true });
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { canAccessAiBain } from '@/lib/auth';
+import { useSeo } from '@/lib/seo';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoginPage from '@/pages/auth/LoginPage';
@@ -150,6 +151,7 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
 // 404 — 미인증 방문자는 랜딩/로그인으로, 인증 유저는 대시보드로 CTA 차별화.
 // 비가입자가 아무 URL 이나 쳐도 가입 플로우로 자연스럽게 흐르게 하기 위함.
 function NotFoundPage() {
+    useSeo({ title: '페이지를 찾을 수 없습니다 | MarketFlow', noindex: true });
     const { user } = useAuth();
     const target = user ? '/dashboard' : unauthRedirect();
     const label = user

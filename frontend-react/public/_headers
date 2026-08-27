@@ -5,6 +5,18 @@
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
+# 프리렌더된 공개 페이지 스냅샷 (scripts/prerender-seo.mjs) — 새 배포 즉시 반영
+/about
+  Cache-Control: public, max-age=0, must-revalidate
+/privacy
+  Cache-Control: public, max-age=0, must-revalidate
+/terms
+  Cache-Control: public, max-age=0, must-revalidate
+/pricing
+  Cache-Control: public, max-age=0, must-revalidate
+/community
+  Cache-Control: public, max-age=0, must-revalidate
+
 # SW 파일도 캐싱 금지
 /sw.js
   Cache-Control: public, max-age=0, must-revalidate

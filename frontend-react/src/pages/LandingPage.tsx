@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import ClawMascot from '@/components/claw/ClawMascot';
 import { InstallGuide } from '@/components/layout/InstallPrompt';
@@ -6,6 +6,7 @@ import { PublicShell, getPublicAccountAction, type PublicAccountAction } from '@
 import { useAuth } from '@/contexts/AuthContext';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { PLAN_PAYMENT_META, type BillingPlan } from '@/lib/billingInfo';
+import { useSeo, SITE_ORIGIN, DEFAULT_OG_IMAGE } from '@/lib/seo';
 
 const OBSERVATION_STEPS = [
     {
@@ -208,9 +209,32 @@ export default function LandingPage() {
     const [showGuide, setShowGuide] = useState(false);
     const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
 
-    useEffect(() => {
-        document.title = 'MarketFlow Claw — 근거 중심 AI 시장 관찰';
-    }, []);
+    useSeo({
+        title: 'MarketFlow Claw — 근거 중심 AI 시장 관찰 대시보드',
+        description:
+            'MarketFlow는 한국·미국·암호화폐 시장을 반복 관찰하고 데이터 품질을 확인한 뒤 의미 있는 변화만 기록하는 AI 시장 관찰 서비스입니다. 장중 주도주 관찰, VCP 분석, AI 브리핑을 한 대시보드에서 제공합니다.',
+        path: '/',
+        // WebSite 스키마는 index.html 의 정적 JSON-LD 가 이미 제공 — 여기선 나머지만.
+        jsonLd: [
+            {
+                '@context': 'https://schema.org',
+                '@type': 'Organization',
+                name: 'MarketFlow',
+                url: SITE_ORIGIN,
+                logo: DEFAULT_OG_IMAGE,
+                email: 'point10890@gmail.com',
+            },
+            {
+                '@context': 'https://schema.org',
+                '@type': 'FAQPage',
+                mainEntity: FAQS.map((f) => ({
+                    '@type': 'Question',
+                    name: f.question,
+                    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+                })),
+            },
+        ],
+    });
 
     const handleInstall = async () => {
         const result = await install();

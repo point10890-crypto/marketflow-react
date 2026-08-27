@@ -3,6 +3,7 @@ import DOMPurify from 'dompurify';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { publicCommunityAPI, PublicComment, PublicPostDetail } from '@/lib/api';
 import { AdSlot, PublicShell } from '@/components/public/PublicShell';
+import { applySeo, summarizeHtml, SITE_ORIGIN } from '@/lib/seo';
 import { accentFor, formatDate, JoinBanner } from './PublicCommunityPage';
 
 /** 공개 글 상세 (/community/post/:id) — 에디토리얼 본문 + 읽기전용 댓글. */
@@ -21,9 +22,29 @@ export default function PublicPostPage() {
                 setPost(r.post);
                 setComments(r.comments || []);
                 setState('ok');
-                document.title = `${r.post.title} | MarketFlow 커뮤니티`;
+                // 게시글 단위 SEO — 제목·요약·canonical·Article 구조화 데이터
+                applySeo({
+                    title: `${r.post.title} | MarketFlow 커뮤니티`,
+                    description: summarizeHtml(r.post.content),
+                    path: `/community/post/${id}`,
+                    ogType: 'article',
+                    jsonLd: {
+                        '@context': 'https://schema.org',
+                        '@type': 'Article',
+                        headline: r.post.title,
+                        datePublished: r.post.created_at,
+                        author: { '@type': 'Person', name: r.post.author_name },
+                        publisher: { '@type': 'Organization', name: 'MarketFlow', url: SITE_ORIGIN },
+                        mainEntityOfPage: `${SITE_ORIGIN}/community/post/${id}`,
+                        inLanguage: 'ko',
+                    },
+                });
             })
-            .catch(() => setState('missing'));
+            .catch(() => {
+                setState('missing');
+                // 삭제/비공개 글 — 검색엔진이 soft-404 로 색인하지 않게 noindex
+                applySeo({ title: '글을 찾을 수 없습니다 | MarketFlow', noindex: true });
+            });
     }, [postId]);
 
     if (state === 'loading') {

@@ -1,16 +1,17 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { PublicShell } from '@/components/public/PublicShell';
+import { useSeo } from '@/lib/seo';
 
 /**
  * 정책·정보 페이지 3종 (공개) — /privacy, /terms, /about.
  * AdSense 심사 필수 페이지. 광고는 싣지 않는다(정책 페이지 관례).
  */
 
-function PolicyLayout({ label, title, updated, children }: {
-    label: string; title: string; updated?: string; children: ReactNode;
+function PolicyLayout({ label, title, updated, path, description, children }: {
+    label: string; title: string; updated?: string; path: string; description: string; children: ReactNode;
 }) {
-    useEffect(() => { document.title = `${title} | MarketFlow`; }, [title]);
+    useSeo({ title: `${title} | MarketFlow`, description, path });
     return (
         <PublicShell section={label.toLowerCase()}>
             <div className="mx-auto max-w-[760px] px-4 pb-6 pt-8 sm:px-6 sm:pt-12">
@@ -31,7 +32,8 @@ function PolicyLayout({ label, title, updated, children }: {
 
 export function PrivacyPage() {
     return (
-        <PolicyLayout label="PRIVACY" title="개인정보처리방침" updated="2026-08-17">
+        <PolicyLayout label="PRIVACY" title="개인정보처리방침" updated="2026-08-17" path="/privacy"
+                      description="MarketFlow 개인정보처리방침 — 수집 항목, 이용 목적, 보유·파기 원칙, Google AdSense 광고 쿠키, 이용자의 권리와 문의처를 안내합니다.">
             <p>
                 MarketFlow(이하 "서비스")는 이용자의 개인정보를 소중히 여기며, 「개인정보 보호법」 등 관련 법령을
                 준수합니다. 본 방침은 서비스가 어떤 정보를 수집하고 어떻게 이용·보관·파기하는지를 설명합니다.
@@ -103,7 +105,8 @@ export function PrivacyPage() {
 
 export function TermsPage() {
     return (
-        <PolicyLayout label="TERMS" title="이용약관" updated="2026-08-17">
+        <PolicyLayout label="TERMS" title="이용약관" updated="2026-08-17" path="/terms"
+                      description="MarketFlow 이용약관 — 서비스 범위, 구독·결제·환불 규정, 투자 정보 면책, 이용자의 의무를 규정합니다.">
             <h2>1. 목적</h2>
             <p>
                 본 약관은 MarketFlow(이하 "서비스")가 제공하는 시장 분석 정보 서비스의 이용 조건과 이용자·서비스
@@ -160,7 +163,8 @@ export function TermsPage() {
 
 export function AboutPage() {
     return (
-        <PolicyLayout label="ABOUT" title="서비스 소개">
+        <PolicyLayout label="ABOUT" title="서비스 소개" path="/about"
+                      description="MarketFlow 는 시장 데이터를 반복 관찰하고 데이터 품질을 확인한 뒤 의미 있는 변화만 기록하는 AI 시장 관찰 서비스입니다. 핵심 에이전트 Claw 의 작동 방식과 운영 원칙을 소개합니다.">
             <p>
                 <strong>MarketFlow</strong> 는 시장 데이터를 반복 관찰하고, 원천 시각과 데이터 품질을 확인한 뒤
                 의미 있는 변화만 기록하는 시장 관찰 서비스입니다. 핵심 에이전트 <strong>Claw</strong> 와 함께

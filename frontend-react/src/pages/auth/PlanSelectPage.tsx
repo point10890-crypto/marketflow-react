@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
+import { useSeo } from '@/lib/seo';
 import {
     PLAN_PAYMENT_META,
     planFromQuery,
@@ -12,6 +13,7 @@ import {
 const FLOW_STEPS = ['계정 생성', '플랜 선택', '입금 정보', '승인 대기'];
 
 export default function PlanSelectPage() {
+    useSeo({ title: '플랜 선택 | MarketFlow', noindex: true });
     const { user, token, loading, logout } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
