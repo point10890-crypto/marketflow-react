@@ -113,6 +113,20 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
         },
     ].filter(item => item.count > 0);
 
+    // ── 1b. 구독 매출 추정 — 현재 활성 구독 기준 클라이언트 계산 (표시 전용) ──
+    // Pro 50,000원/30일 + AI Brain 40,000원/30일 반복, Ultra Pro 1,200,000원 1회.
+    // 결제 원장이 아닌 회원 수 기반 추정치이므로 라벨에 '추정'을 명시한다.
+    const proUsers = data?.pro_users || 0;
+    const premiumUsers = data?.premium_users || 0;
+    const aibainUsers = data?.aibain_active_users || 0;
+    const recurringMonthly = proUsers * 50_000 + aibainUsers * 40_000;
+    const lifetimeTotal = premiumUsers * 1_200_000;
+    const revenueStats = [
+        { label: '월 반복 매출 (추정)', value: `${recurringMonthly.toLocaleString()}원`, sub: `Pro ${proUsers} · AI Brain ${aibainUsers}`, color: 'text-emerald-300', icon: 'fa-arrows-rotate' },
+        { label: 'Ultra Pro 누적 (추정)', value: `${lifetimeTotal.toLocaleString()}원`, sub: `Ultra Pro ${premiumUsers}명 × 120만원`, color: 'text-purple-300', icon: 'fa-gem' },
+        { label: '갱신 위험 노출', value: `${((data?.churn?.expiring_d3 ?? 0) * 50_000 + (data?.aibain_expiring_soon ?? 0) * 40_000).toLocaleString()}원`, sub: `D-3 만료 임박 기준`, color: 'text-amber-300', icon: 'fa-triangle-exclamation' },
+    ];
+
     // ── 2. 회원 현황 스트립 ───────────────────────────────────────────
     const memberStats = [
         { label: '전체', value: data?.total_users || 0, color: 'text-white' },
@@ -174,6 +188,27 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
                         ))}
                     </div>
                 )}
+            </div>
+
+            {/* 1b. 구독 매출 추정 스트립 */}
+            <div className="apple-glass rounded-xl overflow-hidden">
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06]">
+                    <i className="fas fa-coins text-emerald-400 text-xs" />
+                    <span className="text-xs font-semibold text-white">구독 매출 현황</span>
+                    <span className="text-[9px] text-gray-600">활성 구독 수 기반 추정치</span>
+                </div>
+                <div className="grid grid-cols-3 divide-x divide-white/[0.06]">
+                    {revenueStats.map(s => (
+                        <div key={s.label} className="px-3 py-3 text-center">
+                            <div className={`text-sm sm:text-base font-bold tabular-nums ${s.color}`}>
+                                <i className={`fas ${s.icon} text-[10px] mr-1.5 opacity-70`} />
+                                {s.value}
+                            </div>
+                            <div className="text-[10px] text-gray-500 mt-0.5">{s.label}</div>
+                            <div className="text-[9px] text-gray-600 mt-0.5">{s.sub}</div>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             {/* 2. 회원 현황 스트립 */}

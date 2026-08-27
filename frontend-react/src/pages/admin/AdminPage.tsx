@@ -29,11 +29,28 @@ export default function AdminPage() {
     const [dashData, setDashData] = useState<AdminDashboard | null>(null);
     const [pendingCount, setPendingCount] = useState(0);
 
+    // 대시보드 카운트는 승인/입금이 실시간으로 들어오므로 60초 주기 + 탭 복귀 시 갱신.
+    // 백그라운드 탭에서는 폴링을 멈춰 불필요한 요청을 막는다.
     useEffect(() => {
-        adminAPI.getDashboard(apiToken).then(d => {
-            setDashData(d);
-            setPendingCount(d?.pending_subscriptions || 0);
-        }).catch(() => {});
+        let cancelled = false;
+        const load = () => {
+            adminAPI.getDashboard(apiToken).then(d => {
+                if (cancelled) return;
+                setDashData(d);
+                setPendingCount(d?.pending_subscriptions || 0);
+            }).catch(() => {});
+        };
+        load();
+        const timer = setInterval(() => {
+            if (document.visibilityState === 'visible') load();
+        }, 60_000);
+        const onVisible = () => { if (document.visibilityState === 'visible') load(); };
+        document.addEventListener('visibilitychange', onVisible);
+        return () => {
+            cancelled = true;
+            clearInterval(timer);
+            document.removeEventListener('visibilitychange', onVisible);
+        };
     }, [apiToken]);
 
     return (
