@@ -100,6 +100,10 @@ describe('public conversion funnel', () => {
             expect(screen.getByText(meta.amount)).toBeInTheDocument();
             expect(screen.getByText(meta.period)).toBeInTheDocument();
         }
+
+        // AI Brain 애드온 단독 요금(40,000원/30일) — 기존 구독자용 노출 필수
+        expect(screen.getByText('AI Brain 애드온')).toBeInTheDocument();
+        expect(screen.getByText('40,000원')).toBeInTheDocument();
     });
 
     it('labels the active-member pricing action as a plan change instead of a dashboard link', () => {

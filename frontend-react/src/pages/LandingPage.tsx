@@ -5,7 +5,7 @@ import { InstallGuide } from '@/components/layout/InstallPrompt';
 import { PublicShell, getPublicAccountAction, type PublicAccountAction } from '@/components/public/PublicShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
-import { PLAN_PAYMENT_META, planToQuery, type BillingPlan } from '@/lib/billingInfo';
+import { AIBAIN_ADDON_META, PLAN_PAYMENT_META, planToQuery, type BillingPlan } from '@/lib/billingInfo';
 import { useSeo, SITE_ORIGIN, DEFAULT_OG_IMAGE } from '@/lib/seo';
 
 /**
@@ -333,6 +333,13 @@ export default function LandingPage() {
         && user.status === 'approved'
         && (user.tier === 'pro' || user.tier === 'premium')
         && !user.is_pro_expired;
+    // AI Brain 애드온(40,000원/30일) 스트립 — 활성 회원은 자기 tier 에 맞는
+    // 애드온 사전선택으로, 비로그인은 로그인 후 같은 경로로 이어진다.
+    const addonPlanQuery = planToQuery(user?.tier === 'premium' ? 'premium_aibain' : 'pro_aibain');
+    const addonHref = isActiveMember
+        ? `/plan-select?change=1&${addonPlanQuery}`
+        : `/login?next=${encodeURIComponent(`/plan-select?change=1&${addonPlanQuery}`)}`;
+    const aibainAlreadyActive = !!user?.is_aibain_active;
 
     return (
         <PublicShell section="claw">
@@ -579,6 +586,37 @@ export default function LandingPage() {
                             );
                         })}
                     </div>
+                    {/* AI Brain 애드온 단독 요금 — 기존 구독자용 40,000원/30일 */}
+                    <div className="mt-4 flex flex-col gap-4 rounded-[26px] border border-cyan-400/20 bg-gradient-to-r from-cyan-400/[0.06] via-transparent to-transparent p-5 sm:flex-row sm:items-center sm:p-6">
+                        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-400/10 text-cyan-300">
+                            <i className="fas fa-puzzle-piece" aria-hidden />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                                <h3 className="text-[15px] font-black text-white">{AIBAIN_ADDON_META.label}</h3>
+                                <span className="text-lg font-black text-cyan-200">{AIBAIN_ADDON_META.amount}</span>
+                                <span className="text-[11px] font-bold text-gray-500">/ {AIBAIN_ADDON_META.period}</span>
+                            </div>
+                            <p className="mt-1 break-keep text-[12.5px] leading-6 text-gray-400">
+                                이미 Pro / Ultra Pro 를 이용 중이라면 베이스 플랜은 그대로 두고
+                                AI Brain 만 40,000원에 추가할 수 있어요. 만료되면 베이스 플랜으로 자동 회귀합니다.
+                            </p>
+                        </div>
+                        {aibainAlreadyActive ? (
+                            <span className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-full border border-cyan-400/25 bg-cyan-400/10 px-6 text-[12px] font-black text-cyan-200">
+                                <i className="fas fa-check mr-1.5 text-[10px]" aria-hidden />이용 중
+                            </span>
+                        ) : (
+                            <Link
+                                to={addonHref}
+                                className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-full bg-cyan-400/15 px-6 text-[12px] font-black text-cyan-100 transition-colors hover:bg-cyan-400/25"
+                            >
+                                {isActiveMember ? 'AI Brain 추가하기' : '로그인 후 추가하기'}
+                                <i className="fas fa-arrow-right ml-1.5 text-[10px]" aria-hidden />
+                            </Link>
+                        )}
+                    </div>
+
                     <div className="mt-8 flex flex-col items-center gap-3 text-center">
                         {isActiveMember && (
                             <Link

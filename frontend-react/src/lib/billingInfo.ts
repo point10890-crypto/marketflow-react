@@ -104,6 +104,25 @@ export const PLAN_PAYMENT_META: Record<BillingPlan, PlanMeta> = {
     },
 };
 
+/**
+ * AI Brain 애드온 단독 요금 — 활성 Pro/Ultra Pro 회원이 AI Brain 만 추가할 때.
+ * 신규 가입 플랜이 아니므로 PLAN_PAYMENT_META 4종과 별도로 노출용 메타만 둔다.
+ * (실제 금액 계산은 백엔드 aibain_addon/aibain_renewal 경로가 40,000원으로 고정)
+ */
+export const AIBAIN_ADDON_META = {
+    label: 'AI Brain 애드온',
+    amount: '40,000원',
+    amountNumber: 40_000,
+    period: '30일 갱신 · 베이스 플랜 유지',
+    description: '이미 Pro / Ultra Pro 를 이용 중이라면 AI Brain 만 추가할 수 있습니다.',
+    features: [
+        'AI Brain 알파 스캐너 관찰 후보',
+        'GraphRAG 분석 + TOP 3',
+        '스캔 성과·품질 확인 화면',
+        '만료 시 베이스 플랜으로 자동 회귀',
+    ],
+} as const;
+
 /** URL 쿼리 (plan + aibain) → BillingPlan */
 export function planFromQuery(
     rawPlan: string | null | undefined,
