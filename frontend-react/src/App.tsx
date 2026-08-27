@@ -66,6 +66,8 @@ const PurchaseAdminPage = lazy(() => import('@/pages/community/PurchaseAdminPage
 // 공개(비로그인) 영역 — AdSense 심사용 공개 콘텐츠 + 정책 페이지
 const PublicCommunityPage = lazy(() => import('@/pages/public/PublicCommunityPage'));
 const PublicPostPage = lazy(() => import('@/pages/public/PublicPostPage'));
+const GuideListPage = lazy(() => import('@/pages/public/GuidePages').then(m => ({ default: m.GuideListPage })));
+const GuideArticlePage = lazy(() => import('@/pages/public/GuidePages').then(m => ({ default: m.GuideArticlePage })));
 const PrivacyPage = lazy(() => import('@/pages/static/PolicyPages').then(m => ({ default: m.PrivacyPage })));
 const TermsPage = lazy(() => import('@/pages/static/PolicyPages').then(m => ({ default: m.TermsPage })));
 const AboutPage = lazy(() => import('@/pages/static/PolicyPages').then(m => ({ default: m.AboutPage })));
@@ -203,6 +205,8 @@ export default function App() {
                     <Route path="/community" element={<Suspense fallback={<LoadingFallback />}><PublicCommunityPage /></Suspense>} />
                     <Route path="/community/post/:postId" element={<Suspense fallback={<LoadingFallback />}><PublicPostPage /></Suspense>} />
                     <Route path="/community/:board" element={<Suspense fallback={<LoadingFallback />}><PublicCommunityPage /></Suspense>} />
+                    <Route path="/guide" element={<Suspense fallback={<LoadingFallback />}><GuideListPage /></Suspense>} />
+                    <Route path="/guide/:slug" element={<Suspense fallback={<LoadingFallback />}><GuideArticlePage /></Suspense>} />
                     <Route path="/privacy" element={<Suspense fallback={<LoadingFallback />}><PrivacyPage /></Suspense>} />
                     <Route path="/terms" element={<Suspense fallback={<LoadingFallback />}><TermsPage /></Suspense>} />
                     <Route path="/about" element={<Suspense fallback={<LoadingFallback />}><AboutPage /></Suspense>} />

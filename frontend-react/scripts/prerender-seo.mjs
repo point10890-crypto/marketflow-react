@@ -14,12 +14,13 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { GUIDES } from '../src/data/guides.mjs';
 
 const ORIGIN = 'https://bit-man.net';
 const DIST = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist');
 
 const NAV = `
-<nav><a href="/">홈</a> · <a href="/community">커뮤니티</a> · <a href="/pricing">요금제</a> · <a href="/about">서비스 소개</a> · <a href="/privacy">개인정보처리방침</a> · <a href="/terms">이용약관</a></nav>`;
+<nav><a href="/">홈</a> · <a href="/guide">인사이트 가이드</a> · <a href="/community">커뮤니티</a> · <a href="/pricing">요금제</a> · <a href="/about">서비스 소개</a> · <a href="/privacy">개인정보처리방침</a> · <a href="/terms">이용약관</a></nav>`;
 
 const FOOTER = `
 <footer><p>MarketFlow 는 관찰·분석 정보를 제공하며 자동 주문이나 투자 자문을 수행하지 않습니다.
@@ -228,6 +229,39 @@ Google 의 광고 쿠키 사용에 대한 자세한 내용은 <a href="https://p
 <p>이 페이지의 최신 글 목록은 JavaScript 실행 후 표시됩니다.</p>`,
     },
 ];
+
+// ── 인사이트 가이드 — src/data/guides.mjs 단일 소스에서 목록/본문 페이지 생성 ──
+const GUIDE_DISCLAIMER = `
+<p><em>이 글은 투자 교육을 위한 일반 정보이며 특정 종목의 매수·매도 권유나 투자 자문이 아닙니다.
+언급된 지표와 체크리스트는 분석 도구일 뿐 수익을 보장하지 않으며, 투자의 최종 판단과 책임은
+투자자 본인에게 있습니다.</em></p>`;
+
+ROUTES.push({
+    path: '/guide',
+    title: '인사이트 가이드 — 시장 분석 교육 콘텐츠 | MarketFlow',
+    description: 'VCP 패턴, 수급 분석, 시장 레짐, 종가베팅 체크리스트, 포지션 사이징, 공시 읽기, AI 신호 활용까지 — MarketFlow 팀이 쓴 시장 분석 교육 가이드 모음입니다.',
+    body: `
+<h1>인사이트 가이드</h1>
+<p>차트·수급·공시·리스크 관리까지, MarketFlow 팀이 서비스에 녹인 분석 원리를 누구나 읽을 수 있게
+정리했습니다. 모든 글은 교육 목적이며 투자 권유가 아닙니다.</p>
+<ul>
+${GUIDES.map((g) => `<li><a href="/guide/${g.slug}">${g.title}</a> — ${g.description}</li>`).join('\n')}
+</ul>`,
+});
+
+for (const g of GUIDES) {
+    ROUTES.push({
+        path: `/guide/${g.slug}`,
+        title: `${g.title} | MarketFlow 가이드`,
+        description: g.description,
+        body: `
+<p><a href="/guide">← 인사이트 가이드</a></p>
+<h1>${g.title}</h1>
+<p>MarketFlow 리서치 · ${g.date} · ${g.readMinutes}분 읽기 · ${g.category}</p>
+${g.html}
+${GUIDE_DISCLAIMER}`,
+    });
+}
 
 function esc(s) {
     return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

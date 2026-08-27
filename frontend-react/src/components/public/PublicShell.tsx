@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const NAV_LINKS = [
     { to: '/#automation', label: '자동화' },
     { to: '/#ai-brain', label: 'AI Brain' },
+    { to: '/guide', label: '가이드' },
     { to: '/pricing', label: '요금제' },
     { to: '/community', label: '커뮤니티' },
 ];
@@ -185,6 +186,7 @@ export function PublicFooter() {
                         <ul className="mt-3 space-y-2 text-[12px]">
                             <li><a className="text-gray-500 transition-colors hover:text-[#ff9b89]" href="/#automation">자동화 파이프라인</a></li>
                             <li><a className="text-gray-500 transition-colors hover:text-[#ff9b89]" href="/#ai-brain">AI Brain</a></li>
+                            <li><Link className="text-gray-500 transition-colors hover:text-[#ff9b89]" to="/guide">인사이트 가이드</Link></li>
                             <li><Link className="text-gray-500 transition-colors hover:text-[#ff9b89]" to="/pricing">요금제</Link></li>
                             <li><Link className="text-gray-500 transition-colors hover:text-[#ff9b89]" to="/community">커뮤니티</Link></li>
                         </ul>

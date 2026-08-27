@@ -9,6 +9,7 @@ Disallow:
 # 일반 크롤러 — 공개 페이지만 허용
 User-agent: *
 Allow: /$
+Allow: /guide
 Allow: /community
 Allow: /privacy
 Allow: /terms

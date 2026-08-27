@@ -6,6 +6,10 @@
   Cache-Control: public, max-age=0, must-revalidate
 
 # 프리렌더된 공개 페이지 스냅샷 (scripts/prerender-seo.mjs) — 새 배포 즉시 반영
+/guide
+  Cache-Control: public, max-age=0, must-revalidate
+/guide/*
+  Cache-Control: public, max-age=0, must-revalidate
 /about
   Cache-Control: public, max-age=0, must-revalidate
 /privacy
