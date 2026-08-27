@@ -5,6 +5,7 @@ import { BANK_ACCOUNT } from '@/lib/billingInfo';
 import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { getUser } from '@/lib/auth';
+import { useSeo } from '@/lib/seo';
 
 const FLOW_STEPS = ['계정 생성', '플랜 선택', '입금 정보', '승인 대기'];
 
@@ -18,6 +19,7 @@ const FLOW_STEPS = ['계정 생성', '플랜 선택', '입금 정보', '승인 �
  * - sub_req 가 approved 되거나 없어지면 대시보드로 자동 이동
  */
 export default function PendingApprovalPage() {
+    useSeo({ title: '승인 대기 | MarketFlow', noindex: true });
     const { user, token, logout, refreshUser } = useAuth();
     const navigate = useNavigate();
     const [checking, setChecking] = useState(false);

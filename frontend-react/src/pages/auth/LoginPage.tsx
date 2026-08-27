@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { getUser } from '@/lib/auth';
+import { useSeo } from '@/lib/seo';
 
 export type LoginUser = {
     role?: string;
@@ -57,6 +58,7 @@ export function nextPathForUser(user: LoginUser, nextPath: string | null): strin
 }
 
 export default function LoginPage() {
+    useSeo({ title: '로그인 | MarketFlow', noindex: true });
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [remember, setRemember] = useState(true);

@@ -12,6 +12,7 @@ import { useSmartRefresh } from '@/hooks/useAutoRefresh';
 import { useNotification } from '@/contexts/NotificationContext';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import { ClawBrandBar } from '@/components/claw/ClawHero';
+import RenewalBanner from './RenewalBanner';
 import { useClawState } from '@/hooks/useClawState';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -96,6 +97,7 @@ export default function DashboardLayout() {
                         className={`dashboard-shell-scroll flex-1 min-w-0 min-h-0 ${isWavePage ? 'dashboard-wave-scroll overflow-hidden p-0' : 'dashboard-standard-scroll overflow-x-hidden overflow-y-auto px-2.5 pt-2.5 pb-32 sm:p-3 md:p-6 md:pb-6'} relative`}
                     >
                         <div className={isWavePage ? 'h-full min-h-0' : ''}>
+                            {!isWavePage && <RenewalBanner />}
                             {showBrandBar && <ClawBrandBar key={pathname} data={claw} />}
                             <PageErrorBoundary resetKey={pathname}>
                                 <div key={pathname} className={`page-enter dashboard-mobile-page ${isWavePage ? 'h-full' : ''}`}>

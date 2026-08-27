@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { publicCommunityAPI, PublicBoard, PublicPostSummary } from '@/lib/api';
 import { AdSlot, PublicShell } from '@/components/public/PublicShell';
+import { useSeo } from '@/lib/seo';
 
 /**
  * 공개 커뮤니티 — 비로그인 열람 (/community, /community/:board).
@@ -42,9 +43,17 @@ export default function PublicCommunityPage() {
     const [loading, setLoading] = useState(true);
 
     const activeSlug = boardParam || boards[0]?.slug;
+    const activeBoard = boards.find(b => b.slug === activeSlug);
+
+    useSeo({
+        title: activeBoard && boardParam
+            ? `${activeBoard.name} | MarketFlow 커뮤니티`
+            : '커뮤니티 — AI 시장 분석과 이야기 | MarketFlow',
+        description: 'AI 가 매일 생성하는 한국·미국·암호화폐 시장 분석 글과 공지, 회원들의 투자 이야기를 모은 MarketFlow 공개 커뮤니티입니다.',
+        path: boardParam ? `/community/${boardParam}` : '/community',
+    });
 
     useEffect(() => {
-        document.title = '커뮤니티 | MarketFlow';
         publicCommunityAPI.getBoards()
             .then(r => setBoards(r.boards || []))
             .catch(() => setBoards([]));

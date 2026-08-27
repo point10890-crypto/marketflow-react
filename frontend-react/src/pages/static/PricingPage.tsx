@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { PublicShell } from '@/components/public/PublicShell';
+import { useSeo } from '@/lib/seo';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { useAuth } from '@/contexts/AuthContext';
 import {
+    AIBAIN_ADDON_META,
     PLAN_PAYMENT_META,
     planToQuery,
     type BillingPlan,
@@ -84,6 +86,12 @@ export default function PricingPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
 
+    useSeo({
+        title: '요금제 — Pro · Ultra Pro · AI Brain | MarketFlow',
+        description: 'MarketFlow 구독 요금제 안내 — Pro(30일), Ultra Pro(무기한), AI Brain 애드온의 기능과 가격, 계좌이체 결제·승인 절차를 확인하세요.',
+        path: '/pricing',
+    });
+
     return (
         <PublicShell section="plans">
             <section className="mx-auto w-full max-w-6xl px-4 pb-8 pt-14 sm:px-6 sm:pt-20">
@@ -120,6 +128,49 @@ export default function PricingPage() {
                             onSelect={() => navigate(nextPath(plan, !!user))}
                         />
                     ))}
+                </div>
+
+                {/* AI Brain 애드온 단독 요금 — 기존 Pro/Ultra Pro 구독자 전용 40,000원/30일 */}
+                <div className="mt-4 rounded-2xl border border-cyan-400/25 bg-gradient-to-r from-cyan-400/[0.07] via-transparent to-transparent p-5 sm:p-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-400/10 text-cyan-300">
+                            <i className="fas fa-puzzle-piece" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                                <h2 className="text-base font-black text-white">{AIBAIN_ADDON_META.label}</h2>
+                                <span className="text-xl font-black text-cyan-200">{AIBAIN_ADDON_META.amount}</span>
+                                <span className="text-[11px] font-bold text-gray-500">/ {AIBAIN_ADDON_META.period}</span>
+                            </div>
+                            <p className="mt-1 break-keep text-xs leading-6 text-gray-400">{AIBAIN_ADDON_META.description}</p>
+                            <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                                {AIBAIN_ADDON_META.features.map((feature) => (
+                                    <li key={feature} className="flex items-center gap-1.5 text-[11px] text-gray-400">
+                                        <i className="fas fa-check text-[9px] text-cyan-300" />{feature}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        {user?.is_aibain_active ? (
+                            <span className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-5 text-[12px] font-black text-cyan-200">
+                                <i className="fas fa-check mr-1.5 text-[10px]" />이용 중
+                            </span>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const addonQuery = planToQuery(user?.tier === 'premium' ? 'premium_aibain' : 'pro_aibain');
+                                    navigate(user
+                                        ? `/plan-select?change=1&${addonQuery}`
+                                        : `/login?next=${encodeURIComponent(`/plan-select?change=1&${addonQuery}`)}`);
+                                }}
+                                className="min-h-[44px] shrink-0 rounded-xl bg-cyan-400/15 px-5 text-[12px] font-black text-cyan-100 transition-colors hover:bg-cyan-400/25"
+                            >
+                                {user ? 'AI Brain 추가하기' : '구독 중이라면 로그인 후 추가'}
+                                <i className="fas fa-arrow-right ml-1.5 text-[10px]" />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="mt-8 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5 sm:p-6">

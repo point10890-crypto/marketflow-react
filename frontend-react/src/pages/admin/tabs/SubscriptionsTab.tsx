@@ -29,6 +29,16 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
 
     const showAction = (msg: string) => { setActionMsg(msg); setTimeout(() => setActionMsg(''), 3000); };
 
+    // 입금자명 복사 — 은행 앱 입금 내역과 대조할 때 쓰는 원클릭 액션
+    const copyDepositor = async (name: string) => {
+        try {
+            await navigator.clipboard.writeText(name);
+            showAction(`📋 입금자명 "${name}" 복사됨`);
+        } catch {
+            showAction('❌ 클립보드 복사 실패');
+        }
+    };
+
     const handleApprove = async (id: number) => {
         // 이미 처리 중이거나 pending 이 아닌 row 는 무시 (중복 클릭 차단)
         if (processing.has(id)) return;
@@ -205,9 +215,15 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                                         {isAibainOnly ? (isAibainRenewal ? 'AI Brain 재구독' : '+AI Brain') : req.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
                                                     </span>
                                                     {req.depositor_name && (
-                                                        <span className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => copyDepositor(req.depositor_name!)}
+                                                            title="입금자명 복사 (은행 앱 대조용)"
+                                                            className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors"
+                                                        >
                                                             <i className="fas fa-user text-[10px] mr-1" />{req.depositor_name}
-                                                        </span>
+                                                            <i className="fas fa-copy text-[9px] ml-1 opacity-60" />
+                                                        </button>
                                                     )}
                                                     {req.amount && (
                                                         <span className={`px-1.5 py-0.5 rounded font-bold ${isAibainOnly ? 'bg-cyan-500/15 text-cyan-300' : 'bg-green-500/10 text-green-400'}`}>

@@ -142,7 +142,9 @@ it('keeps global and card warnings scoped and does not present informational not
 
   render(<AlphaServiceDashboard />);
   const region = await screen.findByRole('region', { name: 'Alpha Service Clock' });
-  const globalAlert = within(region).getByRole('alert', { name: '전체 서비스 경고' });
+  // region 은 로딩 스켈레톤 단계에서도 존재하므로, 데이터 렌더 완료는 findBy 로 기다린다
+  // (느린 CI 러너에서 mockResolvedValue 해소 전에 getBy 가 실행되는 경합 방지).
+  const globalAlert = await within(region).findByRole('alert', { name: '전체 서비스 경고' });
   expect(globalAlert).toHaveTextContent('전체 소스 점검이 필요합니다.');
   expect(globalAlert).not.toHaveTextContent('포지션 데이터를 읽지 못했습니다.');
   expect(within(globalAlert).getAllByText(/전체 소스 점검이 필요합니다\./)).toHaveLength(1);

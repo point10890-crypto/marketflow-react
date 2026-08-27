@@ -74,7 +74,7 @@ describe('public conversion funnel', () => {
         expect(screen.getByRole('link', { name: '무료 계정 만들기' })).toHaveAttribute('href', '/signup');
     });
 
-    it('renders the Claw evidence-first story, plan source of truth, and disclosure', () => {
+    it('renders the agent-automation story, AI Brain flagship, plan source of truth, and disclosure', () => {
         mocks.auth.user = null;
         mocks.auth.loading = false;
         render(
@@ -83,9 +83,15 @@ describe('public conversion funnel', () => {
             </MemoryRouter>,
         );
 
-        expect(screen.getByRole('heading', { name: /시장을 계속 관찰하고/ })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /에이전트는 시장을 분석합니다/ })).toBeInTheDocument();
         expect(screen.getByText('화면 예시 · 실제 종목 아님')).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: /작동 방식 보기/ })).toHaveAttribute('href', '#how-it-works');
+        expect(screen.getByRole('link', { name: /AI Brain 알아보기/ })).toHaveAttribute('href', '#ai-brain');
+        // AI Brain 플래그십 섹션 — 자율 학습 사이클 + 퍼널 사전선택 CTA
+        expect(screen.getByRole('heading', { name: /스스로 배우는 분석 두뇌/ })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /AI Brain 포함 플랜으로 시작하기/ })).toHaveAttribute(
+            'href',
+            '/signup?plan=pro&aibain=1',
+        );
         expect(screen.getByText('불확실하면 HOLD')).toBeInTheDocument();
         expect(screen.getByText(/자동 주문이나 투자 자문을 수행하지 않습니다/)).toBeInTheDocument();
 
@@ -94,6 +100,10 @@ describe('public conversion funnel', () => {
             expect(screen.getByText(meta.amount)).toBeInTheDocument();
             expect(screen.getByText(meta.period)).toBeInTheDocument();
         }
+
+        // AI Brain 애드온 단독 요금(40,000원/30일) — 기존 구독자용 노출 필수
+        expect(screen.getByText('AI Brain 애드온')).toBeInTheDocument();
+        expect(screen.getByText('40,000원')).toBeInTheDocument();
     });
 
     it('labels the active-member pricing action as a plan change instead of a dashboard link', () => {

@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
 import { BANK_ACCOUNT, PLAN_PAYMENT_META, planFromQuery, type BillingPlan } from '@/lib/billingInfo';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
+import { useSeo } from '@/lib/seo';
 
 /**
  * 입금 안내 + 승인 신청 페이지.
@@ -18,6 +19,7 @@ import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
  *   5. 이미 같은 플랜 pending 요청 존재 시 바로 /pending-approval
  */
 export default function PaymentRequestPage() {
+    useSeo({ title: '결제 안내 | MarketFlow', noindex: true });
     const { user, token, loading } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
