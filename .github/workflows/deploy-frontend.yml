@@ -1,7 +1,8 @@
-name: Deploy Frontend to Cloudflare Workers
+name: Deploy Frontend to Cloudflare Pages
 
 on:
-  # 자동 배포 비활성화 — 로컬 wrangler deploy로 통일
+  # 자동 배포 비활성화 — 평시에는 로컬(miniPC) wrangler deploy로 통일.
+  # 필요 시 Actions 탭에서 수동 실행 (workflow_dispatch).
   # push:
   #   branches: [main]
   #   paths:
@@ -28,14 +29,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build (vite build + SEO prerender)
         run: npm run build
         # VITE_API_BASE_URL은 frontend-react/.env.production에서 관리
 
-      - name: Deploy to Cloudflare Workers (marketflow-dashboard)
+      # 로컬 `npm run deploy` 와 동일한 Cloudflare Pages 배포 명령.
+      # (구 Workers `deploy` 명령은 wrangler.toml 의 pages_build_output_dir 와
+      #  충돌해 실패하므로 pages deploy 로 교체 — 2026-08-27)
+      - name: Deploy to Cloudflare Pages (bitman-marketflow)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          command: deploy
+          command: pages deploy dist --project-name=bitman-marketflow --branch=main
           workingDirectory: frontend-react
