@@ -277,7 +277,9 @@ def _src_tradingagents(symbol: str) -> dict[str, Any] | None:
         'stance': stance,
         'as_of': best.get('verified_at'),
         'detail': {'verdict': verdict or None, 'confidence': best.get('confidence'),
-                   'strong_buy': best.get('strong_buy'), 'method': best.get('method')},
+                   'strong_buy': best.get('strong_buy'), 'method': best.get('method'),
+                   # L4 기계적 검증 결과 — build_decision_brief 가 신뢰 상한에 반영한다
+                   'number_verification': best.get('number_verification')},
     }
 
 

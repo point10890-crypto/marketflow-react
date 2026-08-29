@@ -154,3 +154,43 @@ def test_decision_brief_survives_missing_news_ledger(monkeypatch):
     assert out['news']['count'] == 0
     assert 'news' in out['errors']
     assert out['status'] in db.ALLOWED_STATUS
+
+
+# ─── 마지막 홉: 딥검증 레코드가 검증 결과를 실어 나르는가 ───
+# 종단 검증(2026-08-29)에서 decision_brief 의 verification 이 None 이었다.
+# analysts 는 검증을 첨부했으나 레코드·요약이 그것을 전달하지 않아 끊겨 있었다.
+
+def test_deepverify_record_carries_verification():
+    from app.services.mirofish import scanner_deepverify as sd
+
+    ta = {
+        'id': 'ta_x', 'method': 'llm',
+        'verdict': {'verdict': 'BUY', 'confidence': 70, 'strong_buy': False,
+                    'regime': None, 'regime_adjustment': {}},
+        'analyst_reports': [
+            {'method': 'llm', 'number_verification': {'verified': 2, 'unverified': 1, 'contradicted': 0}},
+            {'method': 'llm', 'number_verification': {'verified': 1, 'unverified': 0, 'contradicted': 1}},
+        ],
+    }
+    rec = sd._build_record({'candidate': {'symbol': '005930', 'display_name': '삼성전자'}},
+                           {'generated_at': '2026-08-29T00:00:00+09:00'}, None, ta)
+    assert rec['number_verification'] == {'verified': 3, 'unverified': 1, 'contradicted': 1}
+
+
+def test_deepverify_record_without_verification_is_none():
+    from app.services.mirofish import scanner_deepverify as sd
+
+    ta = {'id': 'ta_y', 'method': 'rule', 'verdict': {'verdict': 'HOLD'},
+          'analyst_reports': [{'method': 'rule'}]}
+    rec = sd._build_record({'candidate': {'symbol': '005930'}}, {}, None, ta)
+    assert rec['number_verification'] is None
+
+
+def test_feed_summary_passes_verification_through():
+    from app.services.mirofish import scanner_deepverify as sd
+
+    summary = sd._feed_summary({
+        'verdict': 'BUY', 'confidence': 70, 'strong_buy': False, 'method': 'llm',
+        'number_verification': {'verified': 3, 'unverified': 1, 'contradicted': 0},
+    })
+    assert summary['number_verification'] == {'verified': 3, 'unverified': 1, 'contradicted': 0}

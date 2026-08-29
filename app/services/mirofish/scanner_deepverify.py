@@ -68,6 +68,16 @@ def history(limit: int = 50) -> list[dict[str, Any]]:
     return ordered[: max(1, int(limit))]
 
 
+def _verification_of(ta: dict[str, Any]) -> dict[str, int] | None:
+    """딥검증 산출의 애널리스트 리포트에서 수치 검증 결과를 합산한다."""
+    try:
+        from app.services.mirofish import number_guard
+
+        return number_guard.aggregate_verification((ta or {}).get('analyst_reports'))
+    except Exception:  # noqa: BLE001 — 검증 집계 실패가 레코드 저장을 막지 않는다
+        return None
+
+
 def _feed_summary(rec: dict[str, Any]) -> dict[str, Any]:
     return {
         'verdict': rec.get('verdict'),
@@ -76,6 +86,7 @@ def _feed_summary(rec: dict[str, Any]) -> dict[str, Any]:
         'regime': rec.get('regime'),
         'regime_adjustment': rec.get('regime_adjustment'),
         'method': rec.get('method'),
+        'number_verification': rec.get('number_verification'),
         'ta_run_id': rec.get('ta_run_id'),
         'verified_at': rec.get('verified_at'),
     }
@@ -171,6 +182,8 @@ def _build_record(event: dict[str, Any], run: dict[str, Any],
         'alignment': adj.get('alignment'),
         'regime_adjustment': adj,
         'method': ta.get('method'),
+        # L4 — 애널리스트 리포트의 기계적 검증 결과를 판단 계층까지 전달한다.
+        'number_verification': _verification_of(ta),
         'ta_run_id': ta.get('id'),
         'brain_snapshot_at': (brain or {}).get('snapshot_at'),
         'alpha_score': candidate.get('alpha_score'),
