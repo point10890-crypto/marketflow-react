@@ -467,3 +467,28 @@ describe('DecisionBriefPage — 종목명·초성 검색', () => {
     await waitFor(() => expect(screen.getByRole('option', { name: /초성/ })).toBeInTheDocument());
   });
 });
+
+describe('DecisionBriefPage — 첫 조회 대기', () => {
+  beforeEach(() => { mockApi.fetchAuthAPI.mockReset(); });
+
+  it('첫 조회는 오래 걸릴 수 있으므로 넉넉한 타임아웃을 준다', async () => {
+    // 프로덕션 실측: 캐시 미적중 조회가 6~45초로 흔들린다(백그라운드 워커 경합).
+    // 30초 타임아웃이면 첫 조회가 그대로 실패한다.
+    mockApi.fetchAuthAPI.mockResolvedValue(brief);
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '005930');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+
+    const call = mockApi.fetchAuthAPI.mock.calls.find((c) => !String(c[0]).includes('/search'));
+    expect(Number(call?.[2])).toBeGreaterThanOrEqual(60000);
+  });
+
+  it('조회 중에는 첫 조회가 오래 걸릴 수 있음을 알린다', async () => {
+    mockApi.fetchAuthAPI.mockReturnValue(new Promise(() => { /* 계속 대기 */ }));
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '005930');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText(/처음 조회하는 종목은/)).toBeInTheDocument());
+  });
+});

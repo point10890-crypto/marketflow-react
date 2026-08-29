@@ -217,7 +217,9 @@ export default function DecisionBriefPage() {
         setError('');
         try {
             const path = `${ENDPOINT}/${encodeURIComponent(symbol)}${force ? '?force=1' : ''}`;
-            const res = await fetchAuthAPI<unknown>(path, token ?? undefined, 30000);
+            // 캐시 미적중 조회는 프로덕션 실측 6~45초로 흔들린다(백그라운드 워커 경합).
+            // 30초로는 첫 조회가 그대로 실패했다. 엣지 프록시 한계(100초) 아래로 잡는다.
+            const res = await fetchAuthAPI<unknown>(path, token ?? undefined, 90000);
             if (isDecisionBrief(res)) {
                 setBrief(res);
                 setDeep(null);
@@ -338,6 +340,14 @@ export default function DecisionBriefPage() {
                 {error && (
                     <div className="rounded-xl border border-amber-400/30 bg-amber-500/[0.07] px-4 py-3 text-sm text-amber-200">
                         {error}
+                    </div>
+                )}
+
+                {loading && (
+                    <div className="flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-[13px] text-gray-400">
+                        <i className="fas fa-circle-notch fa-spin text-[12px] text-teal-300" />
+                        근거 7종을 모으는 중입니다 — 처음 조회하는 종목은 1분 가까이 걸릴 수 있습니다.
+                        같은 날 다시 보면 즉시 뜹니다.
                     </div>
                 )}
 
