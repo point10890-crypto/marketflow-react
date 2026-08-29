@@ -1,4 +1,4 @@
-type AiBrainService = 'scanner' | 'goodrich';
+type AiBrainService = 'scanner' | 'goodrich' | 'decision';
 
 interface AiBrainServiceTabsProps {
     active: AiBrainService;
@@ -25,11 +25,21 @@ const services = [
         activeClass: 'border-emerald-300/60 bg-emerald-500/15 text-emerald-100 shadow-[0_0_30px_rgba(52,211,153,0.12)]',
         iconClass: 'bg-emerald-400/15 text-emerald-300',
     },
+    {
+        id: 'decision' as const,
+        href: '/dashboard/ai-bain/decision',
+        icon: 'fa-scale-balanced',
+        eyebrow: '근거 대조',
+        title: '종목 판단',
+        description: '독립 근거 7종 합의·이견 비교',
+        activeClass: 'border-teal-300/60 bg-teal-500/15 text-teal-100 shadow-[0_0_30px_rgba(45,212,191,0.12)]',
+        iconClass: 'bg-teal-400/15 text-teal-300',
+    },
 ];
 
 export default function AiBrainServiceTabs({ active }: AiBrainServiceTabsProps) {
     return (
-        <nav aria-label="AI Brain 서비스" className="grid w-full grid-cols-1 gap-2.5 sm:gap-3 md:max-w-3xl md:grid-cols-2">
+        <nav aria-label="AI Brain 서비스" className="grid w-full grid-cols-1 gap-2.5 sm:gap-3 md:max-w-5xl md:grid-cols-3">
             {services.map((service) => {
                 const selected = service.id === active;
                 return (

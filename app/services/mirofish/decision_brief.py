@@ -106,6 +106,7 @@ def compute_confidence_cap(
     phase: str | None,
     agreement: dict[str, Any],
     regime_conflict: bool = False,
+    verification: dict[str, Any] | None = None,
 ) -> tuple[float, list[str]]:
     """결정론적 신뢰 상한. LLM 은 이 값을 올릴 수 없다(내리는 것만 허용)."""
     cap = CAP_BASE
@@ -126,6 +127,15 @@ def compute_confidence_cap(
     if regime_conflict:
         cap -= CONFLICT_PENALTY
         reasons.append('regime sources conflict')
+
+    if verification:
+        from app.services.mirofish import number_guard
+        penalty = number_guard.cap_penalty(verification)
+        if penalty > 0:
+            cap -= penalty
+            reasons.append(
+                'unverified numbers: %s (기계적 검증 미통과 수치)'
+                % verification.get('unverified', 0))
 
     if phase in NEGATIVE_PHASES:
         cap = min(cap, NEGATIVE_PHASE_CEILING)

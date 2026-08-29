@@ -208,3 +208,29 @@ def test_missing_observation_ledger_is_gap_not_error(monkeypatch, tmp_path):
         pass  # 기본 스키마만 — 관측 테이블 없음
     monkeypatch.setattr(memory, 'DB_PATH', str(empty_db))
     assert db.SOURCE_READERS['observation']('005930') is None
+
+
+# ─── L4 연동: 기계적 검증이 신뢰 상한에 반영된다 ────────────
+
+def test_cap_deducts_for_unverified_numbers():
+    """LLM 서술의 미검증 수치는 신뢰 상한을 낮춘다 (number_guard 연동)."""
+    sigs = [_sig('claw', 'positive', 'A'), _sig('jongga', 'positive', 'A')]
+    base, _ = db.compute_confidence_cap(
+        sigs, data_gaps=[], phase='uptrend_broadening',
+        agreement=db.summarize_agreement(sigs))
+    lowered, reasons = db.compute_confidence_cap(
+        sigs, data_gaps=[], phase='uptrend_broadening',
+        agreement=db.summarize_agreement(sigs),
+        verification={'verified': 1, 'unverified': 3, 'contradicted': 0})
+    assert lowered < base
+    assert any('verif' in r or '검증' in r for r in reasons)
+
+
+def test_cap_unaffected_when_all_numbers_verified():
+    sigs = [_sig('claw', 'positive', 'A'), _sig('jongga', 'positive', 'A')]
+    cap, reasons = db.compute_confidence_cap(
+        sigs, data_gaps=[], phase='uptrend_broadening',
+        agreement=db.summarize_agreement(sigs),
+        verification={'verified': 5, 'unverified': 0, 'contradicted': 0})
+    assert cap == pytest.approx(0.75)
+    assert reasons == []
