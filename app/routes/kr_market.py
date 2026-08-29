@@ -1875,3 +1875,28 @@ def kr_decision_brief(symbol):
     resp = jsonify(payload)
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return resp
+
+
+@kr_bp.route('/decision/<symbol>/analyze', methods=['POST'])
+@pro_required
+def kr_decision_deep_analysis(symbol):
+    """온디맨드 심층 분석 — 4 애널리스트 → 불/베어 토론 → 리스크 판정.
+
+    검출 이력이 없는 종목도 근거를 만들기 위해 에이전트를 직접 실행한다.
+    LLM 을 호출하므로 GET 조회와 분리된 명시적 실행 경로(POST)다.
+    매매 실행 경로는 없으며 판정은 참고용이다.
+    """
+    from app.services.mirofish import decision_brief
+
+    try:
+        payload = decision_brief.run_deep_analysis_for(symbol)
+    except ValueError as exc:
+        return jsonify({'error': 'invalid_symbol', 'detail': str(exc)}), 400
+    except Exception as exc:  # noqa: BLE001
+        logger.exception('deep analysis failed: %s', symbol)
+        return jsonify({'error': 'deep_analysis_failed',
+                        'detail': f'{type(exc).__name__}: {exc}'}), 500
+
+    resp = jsonify(payload)
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return resp

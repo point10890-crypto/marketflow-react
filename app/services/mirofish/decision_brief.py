@@ -48,6 +48,7 @@ SOURCE_GRADE = {
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 JONGGA_PATH = os.path.join(REPO_ROOT, 'data', 'jongga_v2_latest.json')
+UNIVERSE_PATH = os.path.join(REPO_ROOT, 'data', 'korean_stocks_list.csv')
 MARKET_GATE_PATH = os.path.join(REPO_ROOT, 'data', 'market_gate_cache.json')
 
 
@@ -61,6 +62,58 @@ def normalize_symbol(raw: Any) -> str:
     if text.isdigit():
         return text.zfill(6)
     return text.upper()
+
+
+_universe_cache: dict[str, str] | None = None
+
+
+def load_universe() -> dict[str, str]:
+    """종목코드 → 종목명. 이름 검색을 위해 한 번만 읽어 캐시한다."""
+    global _universe_cache
+    if _universe_cache is not None:
+        return _universe_cache
+    import csv
+
+    table: dict[str, str] = {}
+    try:
+        with open(UNIVERSE_PATH, encoding='utf-8-sig', newline='') as fp:
+            for row in csv.DictReader(fp):
+                code = str(row.get('ticker') or '').strip()
+                name = str(row.get('name') or '').strip()
+                if code and name:
+                    table[code] = name
+    except OSError:
+        pass
+    _universe_cache = table
+    return table
+
+
+def resolve_symbol(raw: Any) -> tuple[str, str | None]:
+    """코드든 종목명이든 (코드, 이름)으로 해석한다.
+
+    사용자는 '005930' 이 아니라 '우리기술투자' 로 검색한다. 이름을 못 찾으면
+    입력을 그대로 코드로 두고 이름은 None — 조회 자체를 막지는 않는다.
+    """
+    text = str(raw or '').strip()
+    if not text:
+        raise ValueError('symbol is required')
+
+    universe = load_universe()
+    if text.isdigit():
+        code = text.zfill(6)
+        return code, universe.get(code)
+
+    compact = text.replace(' ', '').upper()
+    for code, name in universe.items():
+        if str(name).replace(' ', '').upper() == compact:
+            return code, name
+    # 부분 일치는 가장 짧은 이름을 택한다(가장 구체적인 매칭)
+    partial = [(c, n) for c, n in universe.items()
+               if compact and compact in str(n).replace(' ', '').upper()]
+    if partial:
+        code, name = min(partial, key=lambda kv: len(str(kv[1])))
+        return code, name
+    return normalize_symbol(text), None
 
 
 def summarize_agreement(signals: list[dict[str, Any]]) -> dict[str, Any]:
@@ -434,18 +487,106 @@ def _build_invalidators(by_source: dict[str, dict[str, Any]], phase: str | None)
     return out
 
 
+# ─── 온디맨드 심층 분석 (L2·L3 실행) ────────────────────────
+
+def run_deep_analysis_for(symbol: Any, *, rounds: int | None = None) -> dict[str, Any]:
+    """검출 이력이 없는 종목도 에이전트를 직접 돌려 판단 근거를 만든다.
+
+    4 애널리스트 → 불/베어 토론 → 트레이더/리스크 판정을 실행하고, 그 논거를
+    그대로 반환한다. LLM 을 호출하므로 GET 조회와 분리된 명시적 실행 경로다.
+    딥검증 verdict 는 참고 판정이며 매매 지시가 아니다 — status 어휘는 유지된다.
+    """
+    code, resolved_name = resolve_symbol(symbol)
+    target = resolved_name or code
+    stamp = datetime.now(timezone.utc).isoformat()
+    out: dict[str, Any] = {
+        'schema_version': 'mirofish.deep_analysis.v1',
+        'generated_at': stamp, 'symbol': code, 'name': resolved_name,
+        'status': 'neutral', 'analysts': [], 'debate': None, 'risk': None,
+        'verdict': None, 'verification': None, 'method': None,
+        'run_id': None, 'error': None, 'citations': [], 'retrieval': None,
+        'disclaimer': '정보 제공 목적이며 투자 권유가 아닙니다. 매매 실행 경로는 시스템에 존재하지 않습니다.',
+    }
+
+    # 변형 RAG — 종목 키 검색으로 근거를 모아 토론 프롬프트에 주입한다.
+    context_line = ''
+    try:
+        from app.services.mirofish import retrieval
+
+        retrieved = retrieval.retrieve_for_symbol(code, resolved_name)
+        out['citations'] = retrieved.get('citations') or []
+        out['retrieval'] = {'news_count': retrieved.get('news_count', 0),
+                            'graph_count': retrieved.get('graph_count', 0),
+                            'errors': retrieved.get('errors') or {}}
+        context_line = retrieval.format_context_line(retrieved)
+    except Exception as exc:  # noqa: BLE001 — 검색 실패가 분석을 막지 않는다
+        out['retrieval'] = {'error': f'{type(exc).__name__}: {exc}'}
+
+    try:
+        from app.services.mirofish.tradingagents import engine
+
+        run = engine.run_deep_analysis(target, symbol=code, rounds=rounds,
+                                       context_line=context_line) or {}
+    except Exception as exc:  # noqa: BLE001 — 실패해도 화면이 죽지 않게 사유를 돌려준다
+        out['error'] = f'{type(exc).__name__}: {exc}'
+        return out
+
+    reports = run.get('analyst_reports') or []
+    out['analysts'] = [{
+        'role': r.get('role'), 'title': r.get('title'), 'stance': r.get('stance'),
+        'score': r.get('score'), 'summary': r.get('summary'),
+        'evidence': (r.get('evidence') or [])[:6], 'method': r.get('method'),
+        'verification': r.get('number_verification'),
+    } for r in reports if isinstance(r, dict)]
+
+    debate = run.get('research_debate') or {}
+    out['debate'] = {
+        'rounds': [{
+            'round': d.get('round'),
+            'bull': ((d.get('bull') or {}).get('message') or ''),
+            'bear': ((d.get('bear') or {}).get('message') or ''),
+        } for d in (debate.get('rounds') or [])],
+        'manager': debate.get('manager') or {},
+        'method': debate.get('method'),
+    }
+
+    tr = run.get('trader_risk') or {}
+    out['risk'] = tr.get('risk') or tr.get('risk_team') or None
+    out['verdict'] = run.get('verdict') or None
+    out['method'] = run.get('method')
+    out['run_id'] = run.get('id')
+
+    try:
+        from app.services.mirofish import number_guard
+
+        out['verification'] = number_guard.aggregate_verification(reports)
+    except Exception:  # noqa: BLE001
+        out['verification'] = None
+
+    # 판정 어휘는 매매 지시가 될 수 없다 — 참고 스탠스만 상태로 환산한다.
+    stance = str(((debate.get('manager') or {}).get('stance')) or '').lower()
+    strong = [a for a in out['analysts'] if str(a.get('method')) == 'llm']
+    if len(strong) < MIN_STRONG_EVIDENCE:
+        out['status'] = 'avoid_data_gap'
+    elif stance == 'bull':
+        out['status'] = 'watch'
+    else:
+        out['status'] = 'neutral'
+    return out
+
+
 # ─── 집계 진입점 ────────────────────────────────────────────
 
 def build_decision_brief(symbol: Any, *, now: datetime | None = None) -> dict[str, Any]:
     """한 종목의 모든 독립 근거를 모아 합의·공백·신뢰 상한을 계산한다 (읽기전용)."""
-    code = normalize_symbol(symbol)
+    code, resolved_name = resolve_symbol(symbol)
     stamp = (now or datetime.now(timezone.utc)).isoformat()
 
     signals: list[dict[str, Any]] = []
     by_source: dict[str, dict[str, Any]] = {}
     data_gaps: list[str] = []
     errors: dict[str, str] = {}
-    name: str | None = None
+    name: str | None = resolved_name
 
     for source in SOURCE_READERS:
         reader = SOURCE_READERS[source]

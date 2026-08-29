@@ -72,6 +72,7 @@ def run_research_debate(
     rounds: int = 2,
     use_llm: bool = True,
     regime_line: str = '',
+    context_line: str = '',
 ) -> dict[str, Any]:
     """Run an N-round bull/bear debate and a manager verdict.
 
@@ -92,11 +93,13 @@ def run_research_debate(
     prev_bear = ''
     for round_num in range(1, rounds + 1):
         bull_msg, used_llm, bull_llm = _bull_message(target, reports, prev_bear, round_num, use_llm,
-                                                       regime_line=regime_line)
+                                                       regime_line=regime_line,
+                                                       context_line=context_line)
         llm_ok, llm_fail = _accumulate(used_llm, use_llm, llm_ok, llm_fail)
 
         bear_msg, used_llm_b, bear_llm = _bear_message(target, reports, bull_msg, round_num, use_llm,
-                                                         regime_line=regime_line)
+                                                         regime_line=regime_line,
+                                                         context_line=context_line)
         llm_ok, llm_fail = _accumulate(used_llm_b, use_llm, llm_ok, llm_fail)
 
         bull_output = {'message': bull_msg}
@@ -116,7 +119,7 @@ def run_research_debate(
     bear_case = debate_rounds[-1]['bear']['message'] if debate_rounds else ''
 
     manager, used_llm_m = _manager_verdict(target, reports, debate_rounds, use_llm,
-                                            regime_line=regime_line)
+                                            regime_line=regime_line, context_line=context_line)
     llm_ok, llm_fail = _accumulate(used_llm_m, use_llm, llm_ok, llm_fail)
 
     return {
@@ -200,11 +203,13 @@ def _cite(reports: list[dict[str, Any]]) -> list[str]:
 
 def _bull_message(target: str, reports: list[dict[str, Any]], prev_bear: str,
                   round_num: int, use_llm: bool,
-                  regime_line: str = '') -> tuple[str, bool, dict[str, Any] | None]:
+                  regime_line: str = '',
+                  context_line: str = '') -> tuple[str, bool, dict[str, Any] | None]:
     if use_llm:
         try:
             msg, llm_meta = _llm_side(_BULL_SYSTEM, _BULL_JSON, target, reports, prev_bear,
-                                      round_num, opponent_label='약세론', regime_line=regime_line)
+                                      round_num, opponent_label='약세론',
+                                      regime_line=regime_line, context_line=context_line)
             if msg:
                 return msg, True, llm_meta
         except Exception as exc:  # noqa: BLE001 — isolate per-piece failure
@@ -214,11 +219,13 @@ def _bull_message(target: str, reports: list[dict[str, Any]], prev_bear: str,
 
 def _bear_message(target: str, reports: list[dict[str, Any]], prev_bull: str,
                   round_num: int, use_llm: bool,
-                  regime_line: str = '') -> tuple[str, bool, dict[str, Any] | None]:
+                  regime_line: str = '',
+                  context_line: str = '') -> tuple[str, bool, dict[str, Any] | None]:
     if use_llm:
         try:
             msg, llm_meta = _llm_side(_BEAR_SYSTEM, _BEAR_JSON, target, reports, prev_bull,
-                                      round_num, opponent_label='강세론', regime_line=regime_line)
+                                      round_num, opponent_label='강세론',
+                                      regime_line=regime_line, context_line=context_line)
             if msg:
                 return msg, True, llm_meta
         except Exception as exc:  # noqa: BLE001
@@ -229,10 +236,12 @@ def _bear_message(target: str, reports: list[dict[str, Any]], prev_bull: str,
 def _manager_verdict(target: str, reports: list[dict[str, Any]],
                      debate_rounds: list[dict[str, Any]],
                      use_llm: bool,
-                     regime_line: str = '') -> tuple[dict[str, Any], bool]:
+                     regime_line: str = '',
+                     context_line: str = '') -> tuple[dict[str, Any], bool]:
     if use_llm:
         try:
-            verdict = _llm_manager(target, reports, debate_rounds, regime_line=regime_line)
+            verdict = _llm_manager(target, reports, debate_rounds,
+                                   regime_line=regime_line, context_line=context_line)
             if verdict:
                 return verdict, True
         except Exception as exc:  # noqa: BLE001
@@ -242,11 +251,15 @@ def _manager_verdict(target: str, reports: list[dict[str, Any]],
 
 def _llm_side(system: str, json_hint: str, target: str, reports: list[dict[str, Any]],
               opponent_prev: str, round_num: int, *, opponent_label: str,
-              regime_line: str = '') -> tuple[str | None, dict[str, Any]]:
+              regime_line: str = '',
+              context_line: str = '') -> tuple[str | None, dict[str, Any]]:
     regime_block = f'[시장 레짐]\n{regime_line}\n\n' if regime_line else ''
+    # 변형 RAG — 종목 키로 검색한 근거를 사실 자료로만 주입한다(지시문이 아니다)
+    context_block = f'[검색된 근거]\n{context_line}\n\n' if context_line else ''
     prompt = (
         f'분석 대상: {target}\n라운드: {round_num}\n\n'
         f'{regime_block}'
+        f'{context_block}'
         f'[애널리스트 리포트]\n{_reports_digest(reports)}\n\n'
         f'[{opponent_label}의 직전 주장]\n{opponent_prev or "(없음)"}\n\n{json_hint}'
     )
@@ -262,16 +275,18 @@ def _llm_side(system: str, json_hint: str, target: str, reports: list[dict[str, 
 
 def _llm_manager(target: str, reports: list[dict[str, Any]],
                  debate_rounds: list[dict[str, Any]],
-                 regime_line: str = '') -> dict[str, Any] | None:
+                 regime_line: str = '', context_line: str = '') -> dict[str, Any] | None:
     transcript = '\n'.join(
         f"R{r['round']} 강세: {r['bull']['message']}\nR{r['round']} 약세: {r['bear']['message']}"
         for r in debate_rounds
     )
     regime_block = f'[시장 레짐]\n{regime_line}\n\n' if regime_line else ''
+    context_block = f'[검색된 근거]\n{context_line}\n\n' if context_line else ''
     prompt = (
         f'분석 대상: {target}\n\n'
         f'[애널리스트 리포트]\n{_reports_digest(reports)}\n\n'
         f'{regime_block}'
+        f'{context_block}'
         f'[토론 기록]\n{transcript}\n\n{_MANAGER_JSON}'
     )
     raw, llm_meta = llm_client.generate_text_with_metadata(

@@ -4,9 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import DecisionBriefPage from '@/pages/dashboard/aibain/DecisionBriefPage';
 
-const mockApi = vi.hoisted(() => ({ fetchAuthAPI: vi.fn() }));
+const mockApi = vi.hoisted(() => ({ fetchAuthAPI: vi.fn(), postAuthAPI: vi.fn() }));
 
-vi.mock('@/lib/api', () => ({ fetchAuthAPI: mockApi.fetchAuthAPI }));
+vi.mock('@/lib/api', () => ({ fetchAuthAPI: mockApi.fetchAuthAPI, postAuthAPI: mockApi.postAuthAPI }));
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({ user: { id: 1, tier: 'pro', is_aibain_active: true }, token: 't' }),
 }));
@@ -139,5 +139,69 @@ describe('DecisionBriefPage — 6계층 표시', () => {
 
     await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
     expect(screen.queryByText('기계적 검증')).toBeNull();
+  });
+});
+
+
+describe('DecisionBriefPage — 온디맨드 심층 분석', () => {
+  beforeEach(() => { mockApi.fetchAuthAPI.mockReset(); mockApi.postAuthAPI.mockReset(); });
+
+  const deep = {
+    symbol: '041190', name: '우리기술투자', status: 'neutral',
+    analysts: [
+      { role: 'technical', title: '기술적', stance: 'bullish', score: 20,
+        summary: '거래량 증가', evidence: ['20일선 상회'], method: 'llm', verification: null },
+    ],
+    debate: {
+      rounds: [{ round: 1, bull: '수급이 붙었다', bear: '실적 근거가 약하다' }],
+      manager: { stance: 'neutral', thesis: '방향성 불충분', confidence: 55 },
+      method: 'llm',
+    },
+    risk: null, verdict: { verdict: 'HOLD', confidence: 55 },
+    verification: { verified: 3, unverified: 2, contradicted: 0 },
+    citations: [{ kind: 'news', text: '자사주 매입 공시', grade: 'B', source: 'yonhap', link: 'https://n/1' }],
+    retrieval: { news_count: 1, graph_count: 2 }, method: 'llm', error: null,
+  };
+
+  async function search() {
+    mockApi.fetchAuthAPI.mockResolvedValue(brief);
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '041190');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+  }
+
+  it('조회 후 심층 분석 버튼이 보이고, 누르기 전에는 실행되지 않는다', async () => {
+    await search();
+    expect(screen.getByRole('button', { name: /심층 분석 실행/ })).toBeInTheDocument();
+    expect(mockApi.postAuthAPI).not.toHaveBeenCalled();
+  });
+
+  it('토론 라운드와 애널리스트 근거를 보여준다', async () => {
+    await search();
+    mockApi.postAuthAPI.mockResolvedValue(deep);
+    await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
+
+    await waitFor(() => expect(screen.getByText('수급이 붙었다')).toBeInTheDocument());
+    expect(screen.getByText('실적 근거가 약하다')).toBeInTheDocument();
+    expect(screen.getByText('방향성 불충분')).toBeInTheDocument();
+    expect(screen.getByText('거래량 증가')).toBeInTheDocument();
+  });
+
+  it('투입된 검색 근거를 인용으로 보여준다 (변형 RAG)', async () => {
+    await search();
+    mockApi.postAuthAPI.mockResolvedValue(deep);
+    await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
+
+    await waitFor(() => expect(screen.getByText('자사주 매입 공시')).toBeInTheDocument());
+    expect(screen.getByText(/뉴스 1 · 그래프 2/)).toBeInTheDocument();
+  });
+
+  it('분석 실패는 안내로 표시하고 화면을 깨뜨리지 않는다', async () => {
+    await search();
+    mockApi.postAuthAPI.mockResolvedValue({ ...deep, error: 'LLM down', analysts: [], debate: null });
+    await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
+
+    await waitFor(() => expect(screen.getByText(/분석을 완료하지 못했습니다/)).toBeInTheDocument());
   });
 });

@@ -76,7 +76,8 @@ _run_seq = itertools.count()
 
 def run_deep_analysis(target: str, *, symbol: str | None = None,
                       rounds: int | None = None, use_llm: bool = True,
-                      brain: dict[str, Any] | None = None) -> dict[str, Any]:
+                      brain: dict[str, Any] | None = None,
+                      context_line: str = '') -> dict[str, Any]:
     """Run the full deep-verification pipeline for one target and persist it.
 
     Does NOT check the kill switch (the admin endpoint may run on demand); the
@@ -101,7 +102,7 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
         effective_rounds = max(_MIN_ROUNDS, min(effective_rounds, _MAX_ROUNDS))
         debate = research_debate.run_research_debate(
             target, reports, rounds=effective_rounds, use_llm=use_llm,
-            regime_line=rc['line'],
+            regime_line=rc['line'], context_line=context_line,
         )
         debate['_analyst_mean'] = _mean_scores(reports)
 

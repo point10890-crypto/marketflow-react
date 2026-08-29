@@ -8,10 +8,31 @@
  */
 import { FormEvent, useCallback, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchAuthAPI } from '@/lib/api';
+import { fetchAuthAPI, postAuthAPI } from '@/lib/api';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 
 const ENDPOINT = '/api/kr/decision';
+
+interface DeepAnalysis {
+    symbol: string;
+    name: string | null;
+    status: string;
+    analysts: {
+        role: string; title: string; stance: string; score: number | null;
+        summary: string; evidence: string[]; method: string;
+        verification: { verified: number; unverified: number; contradicted: number } | null;
+    }[];
+    debate: { rounds: { round: number; bull: string; bear: string }[];
+              manager: { stance?: string; thesis?: string; confidence?: number };
+              method: string | null } | null;
+    risk: Record<string, unknown> | null;
+    verdict: { verdict?: string; confidence?: number } | null;
+    verification: { verified: number; unverified: number; contradicted: number } | null;
+    citations: { kind: string; text: string; grade: string; source: string | null; link: string | null }[];
+    retrieval: { news_count?: number; graph_count?: number } | null;
+    method: string | null;
+    error: string | null;
+}
 
 type Stance = 'positive' | 'negative' | 'neutral' | 'absent' | string;
 
@@ -106,6 +127,8 @@ export default function DecisionBriefPage() {
     const [brief, setBrief] = useState<DecisionBrief | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [deep, setDeep] = useState<DeepAnalysis | null>(null);
+    const [deepLoading, setDeepLoading] = useState(false);
 
     const lookup = useCallback(async (raw: string) => {
         const symbol = raw.trim();
@@ -117,6 +140,7 @@ export default function DecisionBriefPage() {
                 token ?? undefined, 30000);
             if (isDecisionBrief(res)) {
                 setBrief(res);
+                setDeep(null);
             } else {
                 setBrief(null);
                 setError('판단 브리프 형식이 올바르지 않습니다.');
@@ -126,6 +150,20 @@ export default function DecisionBriefPage() {
             setError('조회에 실패했습니다. 종목 코드를 확인하고 다시 시도해 주세요.');
         } finally {
             setLoading(false);
+        }
+    }, [token]);
+
+    const runDeep = useCallback(async (symbol: string) => {
+        setDeepLoading(true);
+        try {
+            const res = await postAuthAPI<DeepAnalysis>(
+                `${ENDPOINT}/${encodeURIComponent(symbol)}/analyze`, {}, token ?? undefined, 180000);
+            setDeep(res);
+        } catch {
+            setDeep(null);
+            setError('심층 분석에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        } finally {
+            setDeepLoading(false);
         }
     }, [token]);
 
@@ -179,6 +217,29 @@ export default function DecisionBriefPage() {
                 )}
 
                 {brief && <BriefBody brief={brief} />}
+
+                {brief && (
+                    <div className="rounded-2xl border border-teal-400/20 bg-[#13151f] p-5">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="min-w-0">
+                                <h3 className="text-sm font-bold text-white">심층 분석</h3>
+                                <p className="mt-1 text-[12.5px] text-gray-500">
+                                    검출 이력이 없어도 4명의 애널리스트가 각자 분석하고 강세·약세가
+                                    토론한 뒤 리스크까지 판정합니다. 검색된 뉴스·그래프 근거가 함께 투입됩니다.
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => void runDeep(brief.symbol)}
+                                disabled={deepLoading}
+                                className="shrink-0 rounded-xl border border-teal-400/35 bg-teal-500/15 px-4 py-2.5 text-[13px] font-bold text-teal-200 transition hover:bg-teal-500/25 disabled:opacity-40"
+                            >
+                                {deepLoading ? '분석 중… (최대 2분)' : '심층 분석 실행'}
+                            </button>
+                        </div>
+                        {deep && <DeepBody deep={deep} />}
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -331,6 +392,122 @@ function BriefBody({ brief }: { brief: DecisionBrief }) {
         </div>
     );
 }
+
+function DeepBody({ deep }: { deep: DeepAnalysis }) {
+    if (deep.error) {
+        return (
+            <div className="mt-4 rounded-xl border border-amber-400/30 bg-amber-500/[0.07] px-4 py-3 text-sm text-amber-200">
+                분석을 완료하지 못했습니다: {deep.error}
+            </div>
+        );
+    }
+    const stanceCls: Record<string, string> = {
+        bullish: 'text-red-300', bearish: 'text-blue-300', neutral: 'text-gray-300',
+    };
+    return (
+        <div className="mt-5 space-y-4 border-t border-white/[0.06] pt-4">
+            {/* 애널리스트 4인 */}
+            {deep.analysts.length > 0 && (
+                <div>
+                    <h4 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-500">애널리스트 분석</h4>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                        {deep.analysts.map((a) => (
+                            <div key={a.role} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5">
+                                <div className="flex items-center justify-between gap-2">
+                                    <b className="text-[13px] font-bold text-white">{a.title || a.role}</b>
+                                    <span className={`text-[11.5px] font-bold ${stanceCls[a.stance] ?? 'text-gray-400'}`}>
+                                        {a.stance}{a.score != null && ` ${a.score > 0 ? '+' : ''}${a.score}`}
+                                    </span>
+                                </div>
+                                <p className="mt-1.5 text-[12.5px] leading-relaxed text-gray-300">{a.summary}</p>
+                                {a.evidence.length > 0 && (
+                                    <ul className="mt-1.5 space-y-0.5">
+                                        {a.evidence.slice(0, 3).map((e, i) => (
+                                            <li key={i} className="text-[11.5px] text-gray-500">· {e}</li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* 강세 vs 약세 토론 */}
+            {deep.debate && deep.debate.rounds.length > 0 && (
+                <div>
+                    <h4 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-500">강세 · 약세 토론</h4>
+                    <div className="space-y-2">
+                        {deep.debate.rounds.map((r) => (
+                            <div key={r.round} className="grid gap-2 sm:grid-cols-2">
+                                <div className="rounded-xl border border-red-400/20 bg-red-500/[0.05] p-3">
+                                    <div className="mb-1 text-[10.5px] font-bold text-red-300">R{r.round} 강세</div>
+                                    <p className="text-[12.5px] leading-relaxed text-gray-300">{r.bull}</p>
+                                </div>
+                                <div className="rounded-xl border border-blue-400/20 bg-blue-500/[0.05] p-3">
+                                    <div className="mb-1 text-[10.5px] font-bold text-blue-300">R{r.round} 약세</div>
+                                    <p className="text-[12.5px] leading-relaxed text-gray-300">{r.bear}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    {deep.debate.manager?.thesis && (
+                        <div className="mt-2 rounded-xl border border-white/[0.08] bg-white/[0.03] p-3.5">
+                            <div className="mb-1 flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-wider text-gray-500">
+                                <span>토론 종합</span>
+                                {deep.debate.manager.stance && (
+                                    <span className={stanceCls[deep.debate.manager.stance] ?? 'text-gray-300'}>
+                                        {deep.debate.manager.stance}
+                                    </span>
+                                )}
+                                {deep.debate.manager.confidence != null && (
+                                    <span className="text-gray-500">확신 {deep.debate.manager.confidence}</span>
+                                )}
+                            </div>
+                            <p className="text-[12.5px] leading-relaxed text-gray-200">{deep.debate.manager.thesis}</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {deep.verification && <VerificationBadge v={deep.verification} />}
+
+            {/* 검색된 근거 (변형 RAG) */}
+            {deep.citations.length > 0 && (
+                <div>
+                    <h4 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                        투입된 검색 근거
+                        <span className="ml-1 font-medium normal-case tracking-normal text-gray-600">
+                            — 뉴스 {deep.retrieval?.news_count ?? 0} · 그래프 {deep.retrieval?.graph_count ?? 0}
+                        </span>
+                    </h4>
+                    <ul className="space-y-1">
+                        {deep.citations.slice(0, 8).map((c, i) => (
+                            <li key={i} className="flex items-start gap-2 text-[12.5px]">
+                                <span className="mt-0.5 shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-gray-500">
+                                    {c.grade}
+                                </span>
+                                {c.link ? (
+                                    <a href={c.link} target="_blank" rel="noopener noreferrer"
+                                        className="text-gray-300 underline-offset-2 hover:text-teal-300 hover:underline">{c.text}</a>
+                                ) : (
+                                    <span className="text-gray-400">{c.text}</span>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            <p className="text-[11.5px] text-gray-600">
+                판정 {deep.verdict?.verdict ?? '-'}
+                {deep.verdict?.confidence != null && ` (확신 ${deep.verdict.confidence})`}
+                {deep.method && ` · ${deep.method}`} — 참고용이며 매매 지시가 아닙니다.
+            </p>
+        </div>
+    );
+}
+
 
 function VerificationBadge({ v }: { v: { verified: number; unverified: number; contradicted: number } }) {
     const total = v.verified + v.unverified + v.contradicted;
