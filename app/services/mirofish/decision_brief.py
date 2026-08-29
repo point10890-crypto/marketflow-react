@@ -187,8 +187,10 @@ def search_symbols(query: Any, *, limit: int = 8) -> dict[str, Any]:
         _add(text.zfill(6), None, 1.0, 'ticker_direct')
 
     for match in _graphrag_matches(text, limit=limit):
+        # 리졸버는 근거를 'match_reason' 에 담는다 — 'reason' 이 아니다.
+        reason = match.get('match_reason') or match.get('reason') or 'graphrag'
         _add(str(match.get('symbol')), match.get('name_ko'),
-             match.get('confidence') or 0.0, str(match.get('reason') or 'graphrag'))
+             match.get('confidence') or 0.0, str(reason))
 
     for code, name in _universe_matches(text, universe):
         _add(code, name, 0.5, 'universe_substring')

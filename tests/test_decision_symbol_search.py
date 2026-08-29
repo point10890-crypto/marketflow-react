@@ -148,3 +148,22 @@ def test_search_marks_a_bare_code_as_exact(universe, monkeypatch):
     out = db.search_symbols('005930')
     assert out['candidates'][0]['symbol'] == '005930'
     assert out['candidates'][0]['name'] == '삼성전자'
+
+
+# ─── 리졸버 계약: 매칭 근거 키 ──────────────────────────────
+# resolver._row_to_match 는 근거를 'match_reason' 에 담는다('reason' 아님).
+# 이 키를 잘못 읽으면 화면에 "초성"·"별칭" 대신 밋밋한 기본값이 뜬다.
+
+def test_reads_the_resolver_reason_key(universe, monkeypatch):
+    from app.services.mirofish.graphrag import resolver
+    monkeypatch.setattr(resolver, 'resolve', lambda q, hint_market=None, limit=5: {
+        'matches': [{'name_ko': '삼성전자', 'symbol': '005930',
+                     'confidence': 0.85, 'match_reason': 'chosung_exact'}]})
+    assert db.search_symbols('ㅅㅅㅈㅈ')['candidates'][0]['reason'] == 'chosung_exact'
+
+
+def test_resolver_contract_still_uses_match_reason():
+    """리졸버가 키 이름을 바꾸면 여기서 먼저 깨져야 한다."""
+    import inspect
+    from app.services.mirofish.graphrag import resolver
+    assert "'match_reason'" in inspect.getsource(resolver._row_to_match)
