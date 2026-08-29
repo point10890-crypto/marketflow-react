@@ -7,6 +7,7 @@ import PaperTradingCard, { PaperOverview } from './PaperTradingCard';
 import ClawLiveCard from './ClawLiveCard';
 import CloseLeadersCard from './CloseLeadersCard';
 import AlphaCoreOpsCard from './AlphaCoreOpsCard';
+import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 
 interface AiBainOverview {
     generated_at: string;
@@ -84,6 +85,9 @@ export default function AiBainDashboard() {
     return (
         <div className="min-h-full bg-[#09090b] text-white p-4 sm:p-6 lg:p-8">
             <div className="max-w-3xl mx-auto space-y-5">
+                {/* AI Brain 서비스 고정 네비게이션 — 3개 페이지 공통 */}
+                <AiBrainServiceTabs active="scanner" />
+
                 <Header
                     hitRatePct={overview?.performance?.hit_rate_pct ?? null}
                     windowDays={overview?.performance?.window_days ?? 30}
