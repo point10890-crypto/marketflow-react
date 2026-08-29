@@ -5,8 +5,9 @@ import re
 import uuid
 import threading
 import requests as http_requests
-from flask import Blueprint, request, jsonify, send_from_directory, current_app
+from flask import Blueprint, request, jsonify, send_from_directory, current_app, has_app_context
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from app.models import db
 from app.models.community import Board, Post, PostImage, Comment, PurchaseRequest
@@ -21,6 +22,10 @@ def _notify_admin_telegram(message: str):
     """
     import logging as _logging
     _logger = _logging.getLogger("marketflow.telegram")
+
+    if has_app_context() and current_app.config.get('TESTING'):
+        _logger.info("telegram[community] skipped: TESTING app")
+        return
 
     def _send():
         try:
@@ -505,7 +510,22 @@ def create_purchase(post_id):
 
     pr = PurchaseRequest(post_id=post.id, user_id=user.id, buyer_name=buyer_name)
     db.session.add(pr)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        existing = PurchaseRequest.query.filter(
+            PurchaseRequest.post_id == post.id,
+            PurchaseRequest.user_id == user.id,
+            PurchaseRequest.status.in_(('pending', 'approved')),
+        ).order_by(PurchaseRequest.created_at.desc()).first()
+        if existing:
+            return jsonify({
+                'error': 'Purchase request already exists',
+                'purchase_id': existing.id,
+                'status': existing.status,
+            }), 409
+        raise
 
     # 관리자 텔레그램 알림
     price = post.price or '가격 미정'

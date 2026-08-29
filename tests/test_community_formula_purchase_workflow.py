@@ -1,16 +1,36 @@
+import sqlite3
 from pathlib import Path
+
+import pytest
+from sqlalchemy.exc import IntegrityError
 
 from app import create_app
 from app.auth.decorators import generate_token
 from app.models import db
-from app.models.community import Board, Post
-from app.models.user import User
+from app.models.community import Board, Post, PurchaseRequest
+from app.models.user import AdminNotification, User
+
+
+class _TrapThread:
+    """Thread double that prevents any outbound Telegram worker from running."""
+
+    spawned = []
+
+    def __init__(self, target=None, daemon=None):
+        self.target = target
+        self.daemon = daemon
+        self.__class__.spawned.append(self)
+
+    def start(self):
+        return None
 
 
 def test_no_tier_purchase_request_admin_approval_and_download(tmp_path, monkeypatch):
     import app.routes.community as community_routes
 
     monkeypatch.setattr(community_routes, 'UPLOAD_DIR', str(tmp_path))
+    _TrapThread.spawned = []
+    monkeypatch.setattr(community_routes.threading, 'Thread', _TrapThread)
     app = create_app({
         'TESTING': True,
         'SECRET_KEY': 'formula-purchase-workflow-secret',
@@ -58,6 +78,7 @@ def test_no_tier_purchase_request_admin_approval_and_download(tmp_path, monkeypa
     assert created.status_code == 201
     purchase_id = created.get_json()['id']
     assert created.get_json()['status'] == 'pending'
+    assert _TrapThread.spawned == []
 
     duplicate = client.post(
         f'/api/community/posts/{post_id}/purchase',
@@ -136,3 +157,140 @@ def test_purchase_rejects_non_formula_posts():
         headers={'Authorization': f'Bearer {token}'},
     )
     assert response.status_code == 400
+
+
+def test_existing_sqlite_database_gains_pending_purchase_uniqueness(tmp_path):
+    db_path = tmp_path / 'legacy-users.db'
+    with sqlite3.connect(db_path) as conn:
+        conn.execute('''
+            CREATE TABLE purchase_requests (
+                id INTEGER PRIMARY KEY,
+                post_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                buyer_name VARCHAR(100) NOT NULL,
+                status VARCHAR(20) DEFAULT 'pending',
+                created_at DATETIME,
+                approved_at DATETIME
+            )
+        ''')
+
+    app = create_app({
+        'TESTING': True,
+        'SECRET_KEY': 'formula-purchase-legacy-index-secret',
+        'SQLALCHEMY_DATABASE_URI': f'sqlite:///{db_path.as_posix()}',
+        'SQLALCHEMY_ENGINE_OPTIONS': {},
+    })
+
+    with app.app_context():
+        member = User(
+            email='legacy-buyer@example.com', password_hash='unused',
+            name='Legacy Buyer', status='approved', tier=None, role='user',
+        )
+        admin = User(
+            email='legacy-admin@example.com', password_hash='unused',
+            name='Legacy Admin', status='approved', tier='premium', role='admin',
+        )
+        board = Board(
+            slug='formula-market', name='수식/조건검색식 마켓',
+            min_tier='none', write_tier='admin', is_active=True,
+        )
+        db.session.add_all([member, admin, board])
+        db.session.flush()
+        post = Post(
+            board_id=board.id, author_id=admin.id,
+            title='중복 방지 조건식', content='설명', price='10000',
+        )
+        db.session.add(post)
+        db.session.flush()
+        db.session.add(PurchaseRequest(
+            post_id=post.id, user_id=member.id, buyer_name='첫 요청', status='pending',
+        ))
+        db.session.commit()
+
+        db.session.add(PurchaseRequest(
+            post_id=post.id, user_id=member.id, buyer_name='동시 요청', status='pending',
+        ))
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+        assert PurchaseRequest.query.filter_by(
+            post_id=post.id, user_id=member.id, status='pending',
+        ).count() == 1
+
+
+def test_purchase_race_returns_existing_request_without_duplicate_alerts(tmp_path, monkeypatch):
+    import app.routes.community as community_routes
+
+    db_path = tmp_path / 'race-users.db'
+    app = create_app({
+        'TESTING': True,
+        'SECRET_KEY': 'formula-purchase-race-secret',
+        'SQLALCHEMY_DATABASE_URI': f'sqlite:///{db_path.as_posix()}',
+        'SQLALCHEMY_ENGINE_OPTIONS': {},
+    })
+
+    with app.app_context():
+        member = User(
+            email='race-buyer@example.com', password_hash='unused',
+            name='Race Buyer', status='approved', tier=None, role='user',
+        )
+        admin = User(
+            email='race-admin@example.com', password_hash='unused',
+            name='Race Admin', status='approved', tier='premium', role='admin',
+        )
+        board = Board(
+            slug='formula-market', name='수식/조건검색식 마켓',
+            min_tier='none', write_tier='admin', is_active=True,
+        )
+        db.session.add_all([member, admin, board])
+        db.session.flush()
+        post = Post(
+            board_id=board.id, author_id=admin.id,
+            title='경쟁 조건식', content='설명', price='20000',
+        )
+        db.session.add(post)
+        db.session.commit()
+        member_id = member.id
+        post_id = post.id
+        token = generate_token(member.id)
+        session_class = type(db.session())
+
+    original_add = session_class.add
+    competitor_inserted = False
+
+    def add_with_competing_purchase(session, instance, *args, **kwargs):
+        nonlocal competitor_inserted
+        if isinstance(instance, PurchaseRequest) and not competitor_inserted:
+            competitor_inserted = True
+            with db.engine.begin() as connection:
+                connection.execute(PurchaseRequest.__table__.insert().values(
+                    post_id=post_id,
+                    user_id=member_id,
+                    buyer_name='먼저 커밋된 요청',
+                    status='pending',
+                ))
+        return original_add(session, instance, *args, **kwargs)
+
+    monkeypatch.setattr(session_class, 'add', add_with_competing_purchase)
+    telegram_messages = []
+    monkeypatch.setattr(
+        community_routes,
+        '_notify_admin_telegram',
+        lambda message: telegram_messages.append(message),
+    )
+
+    response = app.test_client().post(
+        f'/api/community/posts/{post_id}/purchase',
+        json={'buyer_name': '뒤늦은 요청'},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == 409
+    assert response.get_json()['status'] == 'pending'
+    assert telegram_messages == []
+    with app.app_context():
+        assert PurchaseRequest.query.filter_by(
+            post_id=post_id, user_id=member_id, status='pending',
+        ).count() == 1
+        assert AdminNotification.query.filter_by(type='purchase_request').count() == 0

@@ -1,6 +1,8 @@
 """Community models — Board, Post, PostImage, Comment"""
 
 from datetime import datetime, timezone
+from sqlalchemy import text
+
 from app.models import db
 
 
@@ -158,6 +160,16 @@ class Comment(db.Model):
 
 class PurchaseRequest(db.Model):
     __tablename__ = 'purchase_requests'
+    __table_args__ = (
+        db.Index(
+            'uq_purchase_requests_pending_post_user',
+            'post_id',
+            'user_id',
+            unique=True,
+            sqlite_where=text("status = 'pending'"),
+            postgresql_where=text("status = 'pending'"),
+        ),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False, index=True)

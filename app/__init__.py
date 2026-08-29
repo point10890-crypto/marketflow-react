@@ -158,6 +158,36 @@ def create_app(config=None):
         except Exception:
             pass  # table may not exist yet (create_all handles it)
 
+        # Existing SQLite databases are not altered by db.create_all(), so the
+        # model's partial unique index must also be installed explicitly.  It
+        # protects the check-then-insert purchase route across processes while
+        # preserving rejected re-purchase and historical approved rows.
+        if db.engine.dialect.name == 'sqlite':
+            from sqlalchemy import text as sql_text
+
+            with db.engine.begin() as conn:
+                pending_duplicate_groups = conn.execute(sql_text('''
+                    SELECT COUNT(*)
+                    FROM (
+                        SELECT post_id, user_id
+                        FROM purchase_requests
+                        WHERE status = 'pending'
+                        GROUP BY post_id, user_id
+                        HAVING COUNT(*) > 1
+                    ) AS duplicate_groups
+                ''')).scalar_one()
+                if pending_duplicate_groups:
+                    raise RuntimeError(
+                        'Cannot install pending purchase uniqueness: '
+                        f'{pending_duplicate_groups} duplicate group(s) exist'
+                    )
+                conn.execute(sql_text('''
+                    CREATE UNIQUE INDEX IF NOT EXISTS
+                        uq_purchase_requests_pending_post_user
+                    ON purchase_requests(post_id, user_id)
+                    WHERE status = 'pending'
+                '''))
+
     # Blueprint 등록
     from app.routes import register_blueprints
     register_blueprints(app)
