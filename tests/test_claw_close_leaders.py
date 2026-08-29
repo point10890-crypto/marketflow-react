@@ -45,6 +45,9 @@ def _seed_two_days(con):
          'name': '자이에스앤디', 'grade_from': 'A', 'grade_to': 'S', 'score': 71, 'chg': 7.9},
     ])
     memory.save_brief(con, 'close', 'digest-close-1', '/tmp/x.md', True, None)
+    # save_brief 는 ts 에 현재 시각을 쓴다. 이 테스트는 "그 세션의 마감 브리핑을
+    # 찾는가"를 검증하므로 벽시계 날짜에 의존하지 않도록 세션 날짜로 고정한다.
+    con.execute("UPDATE briefs SET ts='2026-08-26T15:45:00' WHERE digest='digest-close-1'")
 
 
 def test_close_leaders_latest_session(claw_db):

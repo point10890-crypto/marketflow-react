@@ -1,0 +1,460 @@
+# -*- coding: utf-8 -*-
+"""종목 판단 브리프 — 한 종목의 독립 근거를 팬아웃 집계해 합의·이견을 드러낸다.
+
+설계 출처: stablyai/orca 의 "하나의 프롬프트를 여러 에이전트에 팬아웃 → 결과 비교 →
+승자 선택" 패턴. 다만 Orca 는 코딩 에이전트를 병렬 실행하는 개발 도구이므로 매매
+도메인 코드는 없다. 여기서는 그 **비교 구조만** 가져오고, 새 에이전트를 돌리는 대신
+시스템이 이미 보유한 읽기전용 근거(Claw·종가베팅·스캐너·CIO·TradingAgents·페이퍼·
+관측 원장)를 같은 종목 기준으로 모아 **어디서 일치하고 어디서 갈리는지**를 노출한다.
+
+불변조건
+    - 읽기전용. 스캔·발송·주문·원장 변경을 절대 트리거하지 않는다.
+    - 매수/매도 판정 어휘를 만들지 않는다 (`ALLOWED_STATUS` 3종 고정).
+    - 소스별 try/except 격리 — 한 소스가 죽어도 나머지 판단은 살아남는다.
+    - 근거 등급과 데이터 공백을 숨기지 않는다. 모르면 `data_gaps` 로 명시한다.
+"""
+from __future__ import annotations
+
+import json
+import os
+from datetime import datetime, timezone
+from typing import Any, Callable
+
+SCHEMA_VERSION = 'mirofish.decision_brief.v1'
+ALLOWED_STATUS = ('watch', 'neutral', 'avoid_data_gap')
+
+# Detection Lab 실측(검출 642건): 하락·반등초입 국면의 기대값은 음수였다.
+NEGATIVE_PHASES = frozenset({'downtrend', 'rebound_early'})
+POSITIVE_PHASES = frozenset({'uptrend_broadening', 'leader_market'})
+
+CAP_BASE = 0.75
+CAP_FLOOR = 0.10
+NEGATIVE_PHASE_CEILING = 0.40
+GAP_PENALTY = 0.10
+THIN_EVIDENCE_PENALTY = 0.15
+CONFLICT_PENALTY = 0.10
+MIN_STRONG_EVIDENCE = 2  # E1: 서로 다른 S/A 소스 2개 이상
+
+# 근거 등급 — S: 거래소·공시 원장 / A: 시세·수급·내부 실측 / B: LLM 해석
+SOURCE_GRADE = {
+    'claw': 'A',
+    'jongga': 'A',
+    'scanner': 'A',
+    'paper': 'A',
+    'observation': 'A',
+    'detection': 'B',
+    'tradingagents': 'B',
+}
+
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+JONGGA_PATH = os.path.join(REPO_ROOT, 'data', 'jongga_v2_latest.json')
+MARKET_GATE_PATH = os.path.join(REPO_ROOT, 'data', 'market_gate_cache.json')
+
+
+# ─── 순수 로직 ──────────────────────────────────────────────
+
+def normalize_symbol(raw: Any) -> str:
+    """KR 6자리 코드는 0-패딩, 그 외(해외 티커)는 대문자화."""
+    text = str(raw or '').strip()
+    if not text:
+        raise ValueError('symbol is required')
+    if text.isdigit():
+        return text.zfill(6)
+    return text.upper()
+
+
+def summarize_agreement(signals: list[dict[str, Any]]) -> dict[str, Any]:
+    """소스 간 방향 합의도. absent 는 의견이 아니라 공백으로 센다."""
+    counts = {'positive': 0, 'negative': 0, 'neutral': 0, 'absent': 0}
+    for sig in signals:
+        stance = str((sig or {}).get('stance') or 'absent')
+        counts[stance if stance in counts else 'absent'] += 1
+
+    active = counts['positive'] + counts['negative'] + counts['neutral']
+    if active == 0:
+        verdict, direction, ratio = 'insufficient', None, None
+    elif counts['positive'] and counts['negative']:
+        verdict, direction = 'conflicted', 'split'
+        ratio = round(max(counts['positive'], counts['negative']) / active, 3)
+    elif counts['positive']:
+        verdict, direction = 'aligned', 'positive'
+        ratio = round(counts['positive'] / active, 3)
+    elif counts['negative']:
+        verdict, direction = 'aligned', 'negative'
+        ratio = round(counts['negative'] / active, 3)
+    else:
+        verdict, direction = 'mixed', 'neutral'
+        ratio = round(counts['neutral'] / active, 3)
+
+    return {**counts, 'active': active, 'ratio': ratio,
+            'verdict': verdict, 'direction': direction}
+
+
+def strong_evidence_count(signals: list[dict[str, Any]]) -> int:
+    """의견을 낸(absent 아닌) S/A 등급 소스의 수 — 서로 다른 소스만 센다."""
+    return len({
+        str(s.get('source'))
+        for s in signals
+        if s and s.get('stance') != 'absent' and str(s.get('grade')) in {'S', 'A'}
+    })
+
+
+def compute_confidence_cap(
+    signals: list[dict[str, Any]],
+    *,
+    data_gaps: list[str],
+    phase: str | None,
+    agreement: dict[str, Any],
+    regime_conflict: bool = False,
+) -> tuple[float, list[str]]:
+    """결정론적 신뢰 상한. LLM 은 이 값을 올릴 수 없다(내리는 것만 허용)."""
+    cap = CAP_BASE
+    reasons: list[str] = []
+
+    if strong_evidence_count(signals) < MIN_STRONG_EVIDENCE:
+        cap -= THIN_EVIDENCE_PENALTY
+        reasons.append(f'strong evidence < {MIN_STRONG_EVIDENCE} (S/A 소스 부족)')
+
+    for gap in data_gaps:
+        cap -= GAP_PENALTY
+        reasons.append(f'data gap: {gap}')
+
+    if agreement.get('verdict') == 'conflicted':
+        cap -= CONFLICT_PENALTY
+        reasons.append('sources conflicted')
+
+    if regime_conflict:
+        cap -= CONFLICT_PENALTY
+        reasons.append('regime sources conflict')
+
+    if phase in NEGATIVE_PHASES:
+        cap = min(cap, NEGATIVE_PHASE_CEILING)
+        reasons.append(f'negative phase ceiling ({phase})')
+
+    return round(max(cap, CAP_FLOOR), 4), reasons
+
+
+def decide_status(signals: list[dict[str, Any]], agreement: dict[str, Any]) -> str:
+    """watch | neutral | avoid_data_gap — 매수/매도 어휘는 생성 불가."""
+    if strong_evidence_count(signals) < MIN_STRONG_EVIDENCE:
+        return 'avoid_data_gap'
+    if (agreement.get('verdict') == 'aligned'
+            and agreement.get('direction') == 'positive'
+            and agreement.get('positive', 0) >= MIN_STRONG_EVIDENCE):
+        return 'watch'
+    return 'neutral'
+
+
+# ─── 소스 리더 (각각 dict | None) ───────────────────────────
+
+def _src_claw(symbol: str) -> dict[str, Any] | None:
+    """장중/마감 주도주 스냅샷 + 당일 전이 이벤트."""
+    from marketflow_claw.overview import build_close_leaders
+
+    data = build_close_leaders() or {}
+    row = next((r for r in (data.get('rows') or []) if str(r.get('code')) == symbol), None)
+    if not row:
+        return None
+    events = row.get('events') or []
+    dropped = any(str(e.get('type')) == 'LEADER_DROP' for e in events)
+    grade = str(row.get('grade') or '')
+    if dropped:
+        stance = 'negative'
+    elif grade in {'S', 'A'}:
+        stance = 'positive'
+    else:
+        stance = 'neutral'
+    return {
+        'stance': stance,
+        'as_of': data.get('snapshot_ts'),
+        'name': row.get('name'),
+        'detail': {'grade': grade, 'score': row.get('score'), 'chg_pct': row.get('chg'),
+                   'trading_value_eok': row.get('trval_eok'), 'session': data.get('day'),
+                   'events': [{'type': e.get('type'), 'ts': e.get('ts')} for e in events[:5]]},
+    }
+
+
+def _src_jongga(symbol: str) -> dict[str, Any] | None:
+    """종가베팅 V2 최신 시그널 (17점 채점)."""
+    with open(JONGGA_PATH, encoding='utf-8') as fp:
+        data = json.load(fp)
+    sig = next((s for s in (data.get('signals') or [])
+                if str(s.get('stock_code')) == symbol), None)
+    if not sig:
+        return None
+    grade = str(sig.get('grade') or '')
+    stance = 'positive' if grade in {'S', 'A'} else 'neutral'
+    score = sig.get('score') or {}
+    return {
+        'stance': stance,
+        'as_of': data.get('updated_at') or data.get('date'),
+        'name': sig.get('stock_name'),
+        'detail': {'grade': grade,
+                   'score_total': score.get('total') if isinstance(score, dict) else score,
+                   'entry_price': sig.get('entry_price'), 'stop_price': sig.get('stop_price'),
+                   'target_price': sig.get('target_price'), 'chg_pct': sig.get('change_pct')},
+    }
+
+
+def _src_scanner(symbol: str) -> dict[str, Any] | None:
+    """알파 스캐너 최신 후보 (alpha/risk/RS)."""
+    from app.services.mirofish.alpha_scanner import read_latest_scanner_candidates
+
+    data = read_latest_scanner_candidates(limit=20) or {}
+    cand = next((c for c in (data.get('candidates') or [])
+                 if str(c.get('symbol')) == symbol), None)
+    if not cand:
+        return None
+    action = str(cand.get('action') or '').upper()
+    stance = 'positive' if 'BUY' in action else 'neutral'
+    return {
+        'stance': stance,
+        'as_of': data.get('generated_at'),
+        'name': cand.get('name') or cand.get('display_name'),
+        'detail': {'rank': cand.get('rank'), 'action': action or None,
+                   'alpha_score': cand.get('alpha_score'), 'risk_score': cand.get('risk_score')},
+    }
+
+
+def _src_detection(symbol: str) -> dict[str, Any] | None:
+    """워크플로우 TOP3 의 CIO 판정."""
+    import app.services.mirofish.workflow as wf
+
+    workflow = wf.read_latest_workflow()
+    if not isinstance(workflow, dict):
+        return None
+    payload = wf.build_share_payload(workflow, rank=None) or {}
+    item = next((i for i in (payload.get('top_items') or [])
+                 if isinstance(i, dict) and str(i.get('symbol')) == symbol), None)
+    if not item:
+        return None
+    action = str(item.get('action') or '').upper()
+    if 'BUY' in action:
+        stance = 'positive'
+    elif 'SELL' in action:
+        stance = 'negative'
+    else:
+        stance = 'neutral'
+    return {
+        'stance': stance,
+        'as_of': workflow.get('completed_at') or workflow.get('generated_at'),
+        'name': item.get('name'),
+        'detail': {'action': action or None, 'alpha_score': item.get('alpha_score'),
+                   'risk_score': item.get('risk_score'), 'rs_rating': item.get('rs_rating')},
+    }
+
+
+def _src_tradingagents(symbol: str) -> dict[str, Any] | None:
+    """딥검증(4애널리스트 → 불/베어 토론 → 리스크) 최신 판정."""
+    from app.services.mirofish import scanner_deepverify
+
+    best: dict[str, Any] | None = None
+    for key, rec in (scanner_deepverify.latest_by_event_key() or {}).items():
+        if not str(key).startswith(f'{symbol}:'):
+            continue
+        if best is None or str(rec.get('verified_at') or '') >= str(best.get('verified_at') or ''):
+            best = rec
+    if not best:
+        return None
+    verdict = str(best.get('verdict') or '').upper()
+    if 'BUY' in verdict:
+        stance = 'positive'
+    elif 'SELL' in verdict:
+        stance = 'negative'
+    else:
+        stance = 'neutral'
+    return {
+        'stance': stance,
+        'as_of': best.get('verified_at'),
+        'detail': {'verdict': verdict or None, 'confidence': best.get('confidence'),
+                   'strong_buy': best.get('strong_buy'), 'method': best.get('method')},
+    }
+
+
+def _src_paper(symbol: str) -> dict[str, Any] | None:
+    """가상 매매 원장 — 시스템이 지금 이 종목을 들고 있는지."""
+    from app.services.mirofish.paper_positions import load_ledger
+
+    ledger = load_ledger() or {}
+    for state in ('open', 'pending'):
+        pos = next((p for p in (ledger.get(state) or [])
+                    if str(p.get('symbol')) == symbol), None)
+        if pos:
+            return {
+                'stance': 'positive',
+                'as_of': pos.get('entry_date') or pos.get('detected_date'),
+                'name': pos.get('name'),
+                'detail': {'state': state, 'entry_price': pos.get('entry_price'),
+                           'stop_price': pos.get('stop_price'),
+                           'target_price': pos.get('target_price')},
+            }
+    closed = [p for p in (ledger.get('closed') or []) if str(p.get('symbol')) == symbol]
+    if not closed:
+        return None
+    last = sorted(closed, key=lambda p: str(p.get('exit_date') or ''))[-1]
+    ret = last.get('return_pct')
+    return {
+        'stance': 'neutral',
+        'as_of': last.get('exit_date'),
+        'name': last.get('name'),
+        'detail': {'state': 'closed', 'return_pct': ret, 'exit_reason': last.get('exit_reason')},
+    }
+
+
+OBSERVATION_QUERY = (
+    'SELECT i.opened_at, o.status, o.return_pct, o.horizon_sessions '
+    'FROM signal_instances i LEFT JOIN signal_outcomes o '
+    '  ON o.signal_instance_id = i.id '
+    'WHERE i.code = ? ORDER BY i.opened_at DESC LIMIT 40'
+)
+
+
+def _src_observation(symbol: str) -> dict[str, Any] | None:
+    """관측 원장 — 이 종목의 과거 검출 인스턴스와 실측 성과."""
+    import sqlite3
+
+    from marketflow_claw import observation
+
+    try:
+        with observation.connect(write=False) as con:
+            rows = con.execute(OBSERVATION_QUERY, (symbol,)).fetchall()
+    except sqlite3.OperationalError:
+        # 관측 원장이 아직 없는 호스트(개발기 등)는 오류가 아니라 데이터 공백이다.
+        return None
+    if not rows:
+        return None
+
+    completed = [r[2] for r in rows if r[1] == 'complete' and r[2] is not None]
+    pending = sum(1 for r in rows if r[1] == 'pending')
+    if completed:
+        avg = sum(completed) / len(completed)
+        stance = 'positive' if avg > 0 else ('negative' if avg < 0 else 'neutral')
+    else:
+        avg, stance = None, 'neutral'
+    return {
+        'stance': stance,
+        'as_of': rows[0][0],
+        'detail': {'instances': len({r[0] for r in rows}), 'complete': len(completed),
+                   'pending': pending,
+                   'avg_return_pct': round(avg, 2) if avg is not None else None},
+    }
+
+
+SOURCE_READERS: dict[str, Callable[[str], dict[str, Any] | None]] = {
+    'claw': _src_claw,
+    'jongga': _src_jongga,
+    'scanner': _src_scanner,
+    'detection': _src_detection,
+    'tradingagents': _src_tradingagents,
+    'paper': _src_paper,
+    'observation': _src_observation,
+}
+
+
+# ─── 레짐 / 무효화 ──────────────────────────────────────────
+
+def _read_regime() -> dict[str, Any]:
+    """구조 국면(breadth 기반)과 게이트(market_gate)를 함께 읽고 충돌을 표시한다.
+
+    둘은 서로 대체하지 않는 독립 축이다. 상충하면 라벨을 통일하지 않고
+    `conflict` 로 남겨 신뢰 상한을 낮춘다.
+    """
+    phase = gate_status = None
+    try:
+        from app.services.mirofish.paper_orchestrator import market_phase
+        phase = (market_phase() or {}).get('phase')
+    except Exception:  # noqa: BLE001 — 레짐 부재는 판단을 막지 않는다
+        phase = None
+    try:
+        with open(MARKET_GATE_PATH, encoding='utf-8') as fp:
+            gate_status = (json.load(fp) or {}).get('status')
+    except Exception:  # noqa: BLE001
+        gate_status = None
+
+    conflict = bool(
+        (gate_status == 'RED' and phase in POSITIVE_PHASES)
+        or (gate_status == 'GREEN' and phase in NEGATIVE_PHASES)
+    )
+    return {'phase': phase, 'gate_status': gate_status, 'conflict': conflict}
+
+
+def _build_invalidators(by_source: dict[str, dict[str, Any]], phase: str | None) -> list[dict[str, Any]]:
+    """무효화 조건 — 전부 shadow(관측 전용). 발송·청산을 트리거하지 않는다."""
+    out: list[dict[str, Any]] = []
+    paper = (by_source.get('paper') or {}).get('detail') or {}
+    if paper.get('state') in {'open', 'pending'}:
+        if paper.get('stop_price') is not None:
+            out.append({'type': 'STOP_LEVEL', 'cond': f"종가 {paper['stop_price']} 이탈",
+                        'mode': 'shadow'})
+        if paper.get('target_price') is not None:
+            out.append({'type': 'TARGET_LEVEL', 'cond': f"종가 {paper['target_price']} 도달",
+                        'mode': 'shadow'})
+    jongga = (by_source.get('jongga') or {}).get('detail') or {}
+    if jongga.get('stop_price') is not None and not out:
+        out.append({'type': 'STOP_LEVEL', 'cond': f"종가 {jongga['stop_price']} 이탈",
+                    'mode': 'shadow'})
+    if 'claw' in by_source:
+        out.append({'type': 'DROP_CONFIRMED', 'cond': 'S/A 이탈 3틱 연속 확정', 'mode': 'shadow'})
+    if phase:
+        out.append({'type': 'PHASE_FLIP', 'cond': '국면이 하락·반등초입으로 전환', 'mode': 'shadow'})
+    return out
+
+
+# ─── 집계 진입점 ────────────────────────────────────────────
+
+def build_decision_brief(symbol: Any, *, now: datetime | None = None) -> dict[str, Any]:
+    """한 종목의 모든 독립 근거를 모아 합의·공백·신뢰 상한을 계산한다 (읽기전용)."""
+    code = normalize_symbol(symbol)
+    stamp = (now or datetime.now(timezone.utc)).isoformat()
+
+    signals: list[dict[str, Any]] = []
+    by_source: dict[str, dict[str, Any]] = {}
+    data_gaps: list[str] = []
+    errors: dict[str, str] = {}
+    name: str | None = None
+
+    for source in SOURCE_READERS:
+        reader = SOURCE_READERS[source]
+        try:
+            result = reader(code)
+        except Exception as exc:  # noqa: BLE001 — 소스 장애가 판단 전체를 막지 않는다
+            errors[source] = f'{type(exc).__name__}: {exc}'
+            data_gaps.append(source)
+            continue
+        if not result:
+            data_gaps.append(source)
+            continue
+        signal = {
+            'source': source,
+            'stance': str(result.get('stance') or 'neutral'),
+            'grade': result.get('grade') or SOURCE_GRADE.get(source, 'C'),
+            'as_of': result.get('as_of'),
+            'detail': result.get('detail') or {},
+        }
+        signals.append(signal)
+        by_source[source] = signal
+        name = name or result.get('name')
+
+    regime = _read_regime()
+    agreement = summarize_agreement(signals)
+    cap, cap_reasons = compute_confidence_cap(
+        signals, data_gaps=data_gaps, phase=regime.get('phase'),
+        agreement=agreement, regime_conflict=bool(regime.get('conflict')))
+
+    return {
+        'schema_version': SCHEMA_VERSION,
+        'generated_at': stamp,
+        'symbol': code,
+        'name': name,
+        'status': decide_status(signals, agreement),
+        'signals': signals,
+        'agreement': agreement,
+        'strong_evidence': strong_evidence_count(signals),
+        'data_gaps': data_gaps,
+        'invalidators': _build_invalidators(by_source, regime.get('phase')),
+        'confidence_cap': cap,
+        'cap_reasons': cap_reasons,
+        'regime': regime,
+        'errors': errors,
+        'disclaimer': '정보 제공 목적이며 투자 권유가 아닙니다. 매매 실행 경로는 시스템에 존재하지 않습니다.',
+    }

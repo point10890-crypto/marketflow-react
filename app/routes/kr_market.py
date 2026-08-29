@@ -1848,3 +1848,30 @@ def get_ai_chart_image(stock_code: str):
             return send_from_directory(charts_dir, fname, mimetype='image/png')
 
     return jsonify({"error": f"차트 이미지 없음: {stock_code}"}), 404
+
+
+# ── 종목 판단 브리프 ────────────────────────────────────────
+from app.auth.decorators import pro_required  # noqa: E402
+
+
+@kr_bp.route('/decision/<symbol>', methods=['GET'])
+@pro_required
+def kr_decision_brief(symbol):
+    """한 종목의 독립 근거를 팬아웃 집계 — 합의·이견·데이터 공백·신뢰 상한.
+
+    읽기전용. 스캔·발송·주문을 트리거하지 않으며 매수/매도 판정을 만들지 않는다.
+    """
+    from app.services.mirofish import decision_brief
+
+    try:
+        payload = decision_brief.build_decision_brief(symbol)
+    except ValueError as exc:
+        return jsonify({'error': 'invalid_symbol', 'detail': str(exc)}), 400
+    except Exception as exc:  # noqa: BLE001
+        logger.exception('decision brief failed: %s', symbol)
+        return jsonify({'error': 'decision_brief_failed',
+                        'detail': f'{type(exc).__name__}: {exc}'}), 500
+
+    resp = jsonify(payload)
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return resp
