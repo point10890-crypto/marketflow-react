@@ -46,6 +46,45 @@ _UNIT_FIELDS = {
     'won': ('current_price', 'price', 'entry_price', 'stop_price', 'target_price', 'close'),
 }
 
+# 모순 판정을 좁히는 문맥 키워드. 단위가 같다는 이유만으로 모순 처리하면
+# ROE·부채비율·52주 낙폭처럼 의미가 다른 지표까지 환각으로 몰린다
+# (실데이터 육안 검증 2026-08-29). 문맥이 그 필드를 가리킬 때만 모순으로 본다.
+_FIELD_CONTEXT = {
+    'chg_pct': ('등락', '상승', '하락', '급등', '급락', '전일', '마감', '올라', '떨어'),
+    'change_pct': ('등락', '상승', '하락', '급등', '급락', '전일', '마감', '올라', '떨어'),
+    'return_pct': ('수익률', '기대값'),
+    'rs_rating': ('RS', '상대강도'),
+    'current_price': ('주가', '종가', '가격', '거래', '원에'),
+    'price': ('주가', '종가', '가격', '거래', '원에'),
+    'trading_value_eok': ('거래대금',),
+    'trval_eok': ('거래대금',),
+    'trading_value': ('거래대금',),
+}
+
+# 하락 서술은 음수를 뜻한다 — "3.38% 하락"과 번들의 -3.38 은 같은 사실이다.
+_NEGATIVE_WORDS = ('하락', '급락', '떨어', '내리', '하회', '감소', '마이너스')
+
+# 기준 프레임이 다른 서술은 일간 지표와 비교할 수 없다.
+# "52주 최고가 대비 31.4% 하락"은 당일 등락률(-3.38%)과 다른 사실이다.
+_SCOPE_QUALIFIERS = ('52주', '최고가 대비', '고점 대비', '저점 대비', '연초',
+                     '전년', '누적', '평균', '업종', '기간')
+
+
+def _context_points_to(field: str, context: str) -> bool:
+    keywords = _FIELD_CONTEXT.get(field.split('.')[-1])
+    if not keywords:
+        return False
+    if any(q in context for q in _SCOPE_QUALIFIERS):
+        return False  # 다른 기준 프레임의 수치 — 모순 판정 대상이 아니다
+    return any(k in context for k in keywords)
+
+
+def _signed_variants(value: float, context: str) -> list[float]:
+    """부호 표기 차이를 흡수한다(값은 양수인데 문맥이 하락인 경우)."""
+    if value > 0 and any(w in context for w in _NEGATIVE_WORDS):
+        return [value, -value]
+    return [value]
+
 
 def _unit_of(suffix: str | None) -> str:
     if not suffix:
@@ -151,18 +190,21 @@ def verify_claims(claims: list[dict[str, Any]], bundle: Any,
             continue
 
         candidates = _candidate_fields(src, str(claim.get('unit') or 'plain'))
-        value = float(claim.get('value'))
-        match = next((k for k, v in candidates if _close_enough(value, v)), None)
+        context = str(claim.get('context') or '')
+        variants = _signed_variants(float(claim.get('value')), context)
+        match = next((k for k, v in candidates
+                      if any(_close_enough(x, v) for x in variants)), None)
         if match is not None:
             item['matched_field'] = match
             item['status'] = 'verified'
             verified.append(item)
             continue
 
-        # 같은 단위 후보가 있는데 어느 것과도 맞지 않으면 모순으로 본다.
-        # 평탄화된 경로(technical.chg_pct)는 마지막 마디로 비교한다.
+        # 모순은 **문맥이 그 필드를 가리킬 때만** 인정한다. 단위만 같고 의미가 다른
+        # 지표(ROE·부채비율·52주 낙폭 등)는 대응 필드가 없는 것이므로 미검증이다.
         expected = _UNIT_FIELDS.get(str(claim.get('unit') or ''), ())
-        unit_fields = [(k, v) for k, v in candidates if k.split('.')[-1] in expected]
+        unit_fields = [(k, v) for k, v in candidates
+                       if k.split('.')[-1] in expected and _context_points_to(k, context)]
         if unit_fields:
             item['status'] = 'contradicted'
             item['reason'] = 'value_mismatch'

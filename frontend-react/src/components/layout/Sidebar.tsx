@@ -42,6 +42,7 @@ const globalTools: NavItem[] = [
         children: [
             { name: '알파 스캐너', href: '/dashboard/ai-bain', color: 'bg-cyan-500' },
             { name: 'Goodrich TOP 3', href: '/dashboard/ai-bain/goodrich', color: 'bg-emerald-500' },
+            { name: '종목 판단', href: '/dashboard/ai-bain/decision', color: 'bg-teal-500' },
         ],
     },
     { name: 'AI 주식분석', href: '/dashboard/manual-stock-analysis', icon: 'fa-table-list', color: 'text-orange-300', bg: 'from-orange-500/15 to-rose-600/5', badge: 'LIVE' },
