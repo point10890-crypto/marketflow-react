@@ -210,3 +210,108 @@ describe('DecisionBriefPage — 온디맨드 심층 분석', () => {
     await waitFor(() => expect(screen.getByText(/분석을 완료하지 못했습니다/)).toBeInTheDocument());
   });
 });
+
+describe('DecisionBriefPage — 판정 시인성', () => {
+  beforeEach(() => { mockApi.fetchAuthAPI.mockReset(); mockApi.postAuthAPI.mockReset(); });
+
+  const deepBase = {
+    symbol: '041190', name: '우리기술투자', status: 'neutral',
+    analysts: [], debate: null, risk: null,
+    verdict: { verdict: 'HOLD', confidence: 55 },
+    verification: null, citations: [], retrieval: null, method: 'llm', error: null,
+  };
+
+  async function searchThenDeep(verdict: Record<string, unknown>) {
+    mockApi.fetchAuthAPI.mockResolvedValue(brief);
+    mockApi.postAuthAPI.mockResolvedValue({ ...deepBase, verdict });
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '041190');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
+  }
+
+  it('HOLD 판정을 한글 라벨 "중립" 으로 보여준다', async () => {
+    await searchThenDeep({ verdict: 'HOLD', confidence: 55 });
+    await waitFor(() => expect(screen.getByTestId('deep-call')).toHaveTextContent('중립'));
+  });
+
+  it('STRONG_BUY 는 "적극매수" 로 표시한다', async () => {
+    await searchThenDeep({ verdict: 'STRONG_BUY', confidence: 82 });
+    await waitFor(() => expect(screen.getByTestId('deep-call')).toHaveTextContent('적극매수'));
+    expect(screen.getByTestId('deep-call')).toHaveTextContent('82');
+  });
+
+  it('STRONG_SELL 은 "적극매도" 로 표시한다', async () => {
+    await searchThenDeep({ verdict: 'STRONG_SELL', confidence: 71 });
+    await waitFor(() => expect(screen.getByTestId('deep-call')).toHaveTextContent('적극매도'));
+  });
+
+  it('판정 옆에 매매 지시가 아님을 명시한다', async () => {
+    await searchThenDeep({ verdict: 'BUY', confidence: 70 });
+    await waitFor(() => expect(screen.getByTestId('deep-call')).toHaveTextContent('매수'));
+    expect(screen.getByTestId('deep-call')).toHaveTextContent(/매매 지시가 아닙니다/);
+  });
+
+  it('알 수 없는 판정 값도 화면을 깨뜨리지 않는다', async () => {
+    await searchThenDeep({ verdict: 'WHO_KNOWS', confidence: null });
+    await waitFor(() => expect(screen.getByTestId('deep-call')).toBeInTheDocument());
+  });
+});
+
+describe('DecisionBriefPage — 근거 시인성', () => {
+  beforeEach(() => { mockApi.fetchAuthAPI.mockReset(); });
+
+  async function show(patch: Record<string, unknown> = {}) {
+    mockApi.fetchAuthAPI.mockResolvedValue({ ...brief, ...patch });
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '009150');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+  }
+
+  it('감산 사유를 원문 대신 한글 설명으로 바꿔 보여준다', async () => {
+    await show({ cap_reasons: ['data gap: claw', 'sources conflicted'] });
+    expect(screen.getByText(/주도주 전이 근거 없음/)).toBeInTheDocument();
+    // 충돌 힌트 문구와 겹치지 않도록 감산 사유 칩 문구를 정확히 지정한다
+    expect(screen.getByText('근거들이 서로 반대 방향')).toBeInTheDocument();
+    expect(screen.queryByText('· data gap: claw')).toBeNull();
+  });
+
+  it('강한 근거 부족·미검증 수치 사유도 한글로 설명한다', async () => {
+    await show({
+      cap_reasons: ['strong evidence < 2 (S/A 소스 부족)', 'unverified numbers: 3 (기계적 검증 미통과 수치)'],
+    });
+    expect(screen.getByText(/강한 근거\(S·A 등급\) 부족/)).toBeInTheDocument();
+    expect(screen.getByText(/수치 3건이 원천과 대조되지 않음/)).toBeInTheDocument();
+  });
+
+  it('모르는 사유도 알 수 없는 원문이면 그대로 보여준다', async () => {
+    await show({ cap_reasons: ['something new from backend'] });
+    expect(screen.getByText(/something new from backend/)).toBeInTheDocument();
+  });
+
+  it('충돌 종목은 결론 한 줄에서 방향이 갈린다고 말한다', async () => {
+    await show({});
+    expect(screen.getByTestId('conclusion')).toHaveTextContent(/갈립니다/);
+  });
+
+  it('근거가 모자라면 결론 한 줄에서 판단 불가를 말한다', async () => {
+    await show({ status: 'avoid_data_gap', strong_evidence: 0 });
+    expect(screen.getByTestId('conclusion')).toHaveTextContent(/모자랍니다/);
+  });
+
+  it('일치 종목은 결론 한 줄에서 관찰 대상임을 말한다', async () => {
+    await show({
+      status: 'watch', strong_evidence: 3,
+      agreement: { positive: 3, negative: 0, neutral: 0, absent: 0, active: 3, ratio: 1, verdict: 'aligned', direction: 'positive' },
+    });
+    expect(screen.getByTestId('conclusion')).toHaveTextContent(/관찰 대상/);
+  });
+
+  it('찬반 분포를 막대로 시각화한다', async () => {
+    await show({});
+    const bar = screen.getByTestId('stance-bar');
+    expect(bar).toHaveAttribute('aria-label', expect.stringContaining('긍정 1'));
+  });
+});

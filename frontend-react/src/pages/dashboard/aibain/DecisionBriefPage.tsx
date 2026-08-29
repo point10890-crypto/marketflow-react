@@ -112,6 +112,63 @@ const STATUS_STYLE: Record<string, { label: string; cls: string }> = {
     avoid_data_gap: { label: '근거 미달', cls: 'border-amber-400/35 bg-amber-500/10 text-amber-300' },
 };
 
+/**
+ * 심층 분석(TradingAgents)이 내는 참고 판정의 한글 라벨.
+ * 이것은 **에이전트들이 토론 끝에 낸 분석 결론**이지, 시스템의 매매 지시가 아니다.
+ * 브리프 자체의 status 어휘(watch|neutral|avoid_data_gap)는 그대로 유지된다.
+ * 색은 국내 관행을 따른다 — 매수 계열 적색, 매도 계열 청색.
+ */
+const CALL_STYLE: Record<string, { label: string; cls: string; bar: string }> = {
+    STRONG_BUY: { label: '적극매수', cls: 'border-red-400/45 bg-red-500/12 text-red-300', bar: 'bg-red-400' },
+    BUY: { label: '매수', cls: 'border-red-400/30 bg-red-500/[0.07] text-red-300/90', bar: 'bg-red-400/70' },
+    HOLD: { label: '중립', cls: 'border-gray-500/30 bg-white/[0.04] text-gray-300', bar: 'bg-gray-400' },
+    NEUTRAL: { label: '중립', cls: 'border-gray-500/30 bg-white/[0.04] text-gray-300', bar: 'bg-gray-400' },
+    SELL: { label: '매도', cls: 'border-blue-400/30 bg-blue-500/[0.07] text-blue-300/90', bar: 'bg-blue-400/70' },
+    STRONG_SELL: { label: '적극매도', cls: 'border-blue-400/45 bg-blue-500/12 text-blue-300', bar: 'bg-blue-400' },
+};
+
+const CALL_FALLBACK = { label: '판정 없음', cls: 'border-gray-600/30 bg-white/[0.03] text-gray-500', bar: 'bg-gray-600' };
+
+function callStyle(raw: string | null | undefined) {
+    return CALL_STYLE[String(raw ?? '').toUpperCase()] ?? CALL_FALLBACK;
+}
+
+/**
+ * 백엔드 감산 사유는 계약 문자열(영문)이다. 화면에서는 사람이 읽는 문장으로 바꾼다.
+ * 매핑되지 않는 새 사유는 원문 그대로 흘려보낸다 — 숨기지 않는다.
+ */
+function capReasonText(raw: string): string {
+    const gap = /^data gap:\s*(\S+)/.exec(raw);
+    if (gap) return `${SOURCE_LABEL[gap[1]]?.name ?? gap[1]} 근거 없음`;
+
+    if (raw.startsWith('strong evidence')) return '강한 근거(S·A 등급) 부족';
+    if (raw === 'sources conflicted') return '근거들이 서로 반대 방향';
+    if (raw === 'regime sources conflict') return '시장 국면 판정이 축마다 다름';
+
+    const num = /^unverified numbers:\s*(\d+)/.exec(raw);
+    if (num) return `AI 서술 수치 ${num[1]}건이 원천과 대조되지 않음`;
+
+    const phase = /^negative phase ceiling \((.+)\)$/.exec(raw);
+    if (phase) return `하락 국면(${phase[1]}) — 신뢰 상한 강제 제한`;
+
+    return raw;
+}
+
+/** 화면 맨 위에 한 줄로 두는 결론 — 무엇을 알고 무엇을 모르는지. */
+function conclusionLine(b: DecisionBrief): string {
+    const a = b.agreement;
+    if (b.status === 'avoid_data_gap') {
+        return `강한 근거가 ${b.strong_evidence}개뿐입니다 — 판단할 재료가 모자랍니다.`;
+    }
+    if (a.verdict === 'conflicted') {
+        return `근거 ${a.active}개가 긍정 ${a.positive} · 부정 ${a.negative}으로 갈립니다 — 결론을 미루는 편이 안전합니다.`;
+    }
+    if (b.status === 'watch') {
+        return `근거 ${a.positive}개가 같은 방향(긍정)을 가리킵니다 — 관찰 대상입니다.`;
+    }
+    return `뚜렷한 방향이 없습니다 — 근거 ${a.active}개 중 긍정 ${a.positive} · 부정 ${a.negative}.`;
+}
+
 function fmtTime(ts: string | null): string {
     if (!ts) return '-';
     return ts.slice(0, 16).replace('T', ' ');
@@ -272,13 +329,19 @@ function BriefBody({ brief }: { brief: DecisionBrief }) {
                         {verdict.label}
                     </span>
                 </div>
-                <p className="mt-2 text-[13px] text-gray-400">{verdict.hint}</p>
+                <p data-testid="conclusion" className="mt-2.5 text-[15px] font-semibold leading-relaxed text-gray-100">
+                    {conclusionLine(brief)}
+                </p>
+                <p className="mt-1 text-[12.5px] text-gray-500">{verdict.hint}</p>
+
+                <StanceBar a={brief.agreement} />
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                     <Metric label="근거를 낸 소스" value={`${brief.agreement.active}개`}
                         sub={`강한 근거 ${brief.strong_evidence}개`} />
                     <Metric label="신뢰 상한" value={`${capPct}%`}
-                        sub={brief.cap_reasons.length ? `${brief.cap_reasons.length}개 감산 사유` : '감산 없음'} />
+                        sub={brief.cap_reasons.length ? `${brief.cap_reasons.length}개 감산 사유` : '감산 없음'}
+                        bar={capPct} />
                     <Metric label="시장 국면" value={brief.regime.phase || '알 수 없음'}
                         sub={brief.regime.conflict ? '레짐 축 충돌' : `게이트 ${brief.regime.gate_status || '-'}`} />
                 </div>
@@ -286,11 +349,19 @@ function BriefBody({ brief }: { brief: DecisionBrief }) {
                 {brief.verification && <VerificationBadge v={brief.verification} />}
 
                 {brief.cap_reasons.length > 0 && (
-                    <ul className="mt-3 space-y-1 border-t border-white/[0.06] pt-3">
-                        {brief.cap_reasons.map((r, i) => (
-                            <li key={i} className="text-[12px] text-gray-500">· {r}</li>
-                        ))}
-                    </ul>
+                    <div className="mt-3 border-t border-white/[0.06] pt-3">
+                        <div className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                            신뢰를 깎은 이유
+                        </div>
+                        <ul className="flex flex-wrap gap-1.5">
+                            {brief.cap_reasons.map((r, i) => (
+                                <li key={i}
+                                    className="rounded-lg border border-amber-400/20 bg-amber-500/[0.06] px-2 py-1 text-[12px] text-amber-200/85">
+                                    {capReasonText(r)}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 )}
             </section>
 
@@ -410,8 +481,33 @@ function DeepBody({ deep }: { deep: DeepAnalysis }) {
     const stanceCls: Record<string, string> = {
         bullish: 'text-red-300', bearish: 'text-blue-300', neutral: 'text-gray-300',
     };
+    const call = callStyle(deep.verdict?.verdict);
+    const conf = deep.verdict?.confidence;
     return (
         <div className="mt-5 space-y-4 border-t border-white/[0.06] pt-4">
+            {/* 참고 판정 — 토론 결과의 결론. 매매 지시가 아님을 같은 블록에 명시한다. */}
+            <div data-testid="deep-call" className={`rounded-2xl border p-4 ${call.cls}`}>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <span className="text-[10.5px] font-bold uppercase tracking-wider opacity-70">
+                        에이전트 종합 판정
+                    </span>
+                    <span className="text-2xl font-black tracking-tight">{call.label}</span>
+                    {conf != null && (
+                        <span className="flex min-w-[140px] flex-1 items-center gap-2">
+                            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/25">
+                                <span className={`block h-full rounded-full ${call.bar}`}
+                                    style={{ width: `${Math.max(2, Math.min(100, conf))}%` }} />
+                            </span>
+                            <b className="font-mono text-[12px] tabular-nums">확신 {conf}</b>
+                        </span>
+                    )}
+                </div>
+                <p className="mt-2 text-[11.5px] opacity-70">
+                    4인 분석 → 강세·약세 토론 → 리스크 검토를 거친 참고 판정입니다.
+                    {deep.method && ` (${deep.method})`} 매매 지시가 아닙니다.
+                </p>
+            </div>
+
             {/* 애널리스트 4인 */}
             {deep.analysts.length > 0 && (
                 <div>
@@ -505,11 +601,6 @@ function DeepBody({ deep }: { deep: DeepAnalysis }) {
                 </div>
             )}
 
-            <p className="text-[11.5px] text-gray-600">
-                판정 {deep.verdict?.verdict ?? '-'}
-                {deep.verdict?.confidence != null && ` (확신 ${deep.verdict.confidence})`}
-                {deep.method && ` · ${deep.method}`} — 참고용이며 매매 지시가 아닙니다.
-            </p>
         </div>
     );
 }
@@ -538,12 +629,52 @@ function VerificationBadge({ v }: { v: { verified: number; unverified: number; c
 }
 
 
-function Metric({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Metric({ label, value, sub, bar }: {
+    label: string; value: string; sub?: string; bar?: number;
+}) {
     return (
         <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-3">
             <div className="text-[10.5px] font-bold uppercase tracking-wider text-gray-500">{label}</div>
             <div className="mt-1 text-lg font-bold text-white">{value}</div>
+            {bar != null && (
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                    <div className={`h-full rounded-full ${bar >= 50 ? 'bg-teal-400/70' : 'bg-amber-400/70'}`}
+                        style={{ width: `${Math.max(2, Math.min(100, bar))}%` }} />
+                </div>
+            )}
             {sub && <div className="mt-0.5 text-[11px] text-gray-500">{sub}</div>}
+        </div>
+    );
+}
+
+
+/** 찬반 분포를 한눈에 — 숫자 나열보다 폭이 빠르다. */
+function StanceBar({ a }: { a: Agreement }) {
+    const seg = [
+        { n: a.positive, cls: 'bg-red-400/80', label: '긍정' },
+        { n: a.negative, cls: 'bg-blue-400/80', label: '부정' },
+        { n: a.neutral, cls: 'bg-gray-400/60', label: '중립' },
+        { n: a.absent, cls: 'bg-white/[0.07]', label: '없음' },
+    ];
+    const total = seg.reduce((s, x) => s + (x.n || 0), 0);
+    if (total === 0) return null;
+    const aria = seg.filter((s) => s.n > 0).map((s) => `${s.label} ${s.n}`).join(', ');
+    return (
+        <div className="mt-3.5">
+            <div data-testid="stance-bar" role="img" aria-label={aria}
+                className="flex h-2.5 overflow-hidden rounded-full bg-white/[0.04]">
+                {seg.map((s) => s.n > 0 && (
+                    <span key={s.label} className={s.cls} style={{ width: `${(s.n / total) * 100}%` }} />
+                ))}
+            </div>
+            <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11.5px] text-gray-500">
+                {seg.filter((s) => s.n > 0).map((s) => (
+                    <span key={s.label} className="flex items-center gap-1.5">
+                        <span className={`h-2 w-2 rounded-full ${s.cls}`} />
+                        {s.label} <b className="font-mono text-gray-400">{s.n}</b>
+                    </span>
+                ))}
+            </div>
         </div>
     );
 }

@@ -277,3 +277,48 @@ def test_unambiguous_name_needs_no_financial_context():
 def test_ticker_match_bypasses_ambiguity_rule():
     """6자리 코드는 그 자체로 명시적 지목이다."""
     assert funnel.match_symbols('001680 관련 안내', AMBIG_UNIVERSE) == ['001680']
+
+
+# ─── 소스 레지스트리 ────────────────────────────────────────
+# 경제면 3개만으로는 종목 커버리지가 얇았다(실측 23종목).
+# 증시·기업면을 포함한 복수 매체로 넓히되, 등급 규칙과 킬스위치는 그대로다.
+
+def test_source_names_and_urls_are_unique():
+    from app.services.omni import news_sensor
+    names = [s['name'] for s in news_sensor.SOURCES]
+    urls = [s['url'] for s in news_sensor.SOURCES]
+    assert len(names) == len(set(names))
+    assert len(urls) == len(set(urls))
+
+
+def test_every_source_is_https_and_graded():
+    from app.services.omni import news_sensor
+    for src in news_sensor.SOURCES:
+        assert src['url'].startswith('https://'), src['name']
+        assert src['grade'] in {'S', 'A', 'B', 'C'}, src['name']
+
+
+def test_registry_spans_multiple_publishers_and_desks():
+    """단일 매체·단일 지면 편향을 막는다 — 4개 이상 매체, 8개 이상 피드."""
+    from app.services.omni import news_sensor
+    publishers = {s['name'].split('_')[0] for s in news_sensor.SOURCES}
+    assert len(news_sensor.SOURCES) >= 8
+    assert len(publishers) >= 4
+    desks = {s['name'].split('_', 1)[1] for s in news_sensor.SOURCES}
+    assert desks & {'stock', 'market', 'finance', 'company'}, '증시·기업면이 있어야 한다'
+
+
+def test_per_source_killswitch_disables_only_that_source(monkeypatch):
+    from app.services.omni import news_sensor
+    target = news_sensor.SOURCES[0]['name']
+    monkeypatch.setenv(f'OMNI_SOURCE_{target.upper()}_ENABLED', '0')
+    active = {s['name'] for s in news_sensor.active_sources()}
+    assert target not in active
+    assert len(active) == len(news_sensor.SOURCES) - 1
+
+
+def test_whitelist_limits_to_named_sources(monkeypatch):
+    from app.services.omni import news_sensor
+    picked = [s['name'] for s in news_sensor.SOURCES[:2]]
+    monkeypatch.setenv('OMNI_NEWS_SOURCES', ','.join(picked))
+    assert [s['name'] for s in news_sensor.active_sources()] == picked

@@ -31,13 +31,34 @@ FETCH_TIMEOUT = 10
 USER_AGENT = 'MarketFlowClaw/1.0 (+news sensor; contact via site)'
 
 # 공개 RSS 만. 등급은 근거 계층 규칙에 따름 — 언론 보도는 B.
+#
+# 경제면 3개만 돌던 시절 종목 커버리지가 23종목에 그쳤다. 종목 언급 밀도가 높은
+# 증시·기업면을 매체별로 추가한다. 아래 URL 은 전부 실측(2026-08-29)으로 응답과
+# 파싱 가능성을 확인한 것만 남겼다 — 404/연결 리셋 후보는 등록하지 않는다.
 SOURCES = [
+    # 연합뉴스
     {'name': 'yonhap_economy', 'grade': 'B',
      'url': 'https://www.yna.co.kr/rss/economy.xml'},
+    {'name': 'yonhap_market', 'grade': 'B',
+     'url': 'https://www.yna.co.kr/rss/market.xml'},
+    # 한국경제
     {'name': 'hankyung_economy', 'grade': 'B',
      'url': 'https://www.hankyung.com/feed/economy'},
+    {'name': 'hankyung_finance', 'grade': 'B',
+     'url': 'https://www.hankyung.com/feed/finance'},
+    # 매일경제
     {'name': 'mk_economy', 'grade': 'B',
      'url': 'https://www.mk.co.kr/rss/30100041/'},
+    {'name': 'mk_stock', 'grade': 'B',
+     'url': 'https://www.mk.co.kr/rss/50200011/'},
+    {'name': 'mk_company', 'grade': 'B',
+     'url': 'https://www.mk.co.kr/rss/50100032/'},
+    # 머니투데이
+    {'name': 'mt_stock', 'grade': 'B',
+     'url': 'https://rss.mt.co.kr/mt_news_stock.xml'},
+    # 아시아경제
+    {'name': 'asiae_stock', 'grade': 'B',
+     'url': 'https://www.asiae.co.kr/rss/stock.htm'},
 ]
 
 _universe_cache: dict[str, str] | None = None
