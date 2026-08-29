@@ -315,3 +315,77 @@ describe('DecisionBriefPage — 근거 시인성', () => {
     expect(bar).toHaveAttribute('aria-label', expect.stringContaining('긍정 1'));
   });
 });
+
+describe('DecisionBriefPage — 일간 캐시 표시', () => {
+  beforeEach(() => { mockApi.fetchAuthAPI.mockReset(); mockApi.postAuthAPI.mockReset(); });
+
+  async function show(patch: Record<string, unknown> = {}) {
+    mockApi.fetchAuthAPI.mockResolvedValue({ ...brief, ...patch });
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '009150');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+  }
+
+  it('캐시본을 보고 있으면 그 사실과 시각을 알린다', async () => {
+    await show({ cached: true, cached_at: '2026-08-29T05:00:00' });
+    expect(screen.getByTestId('cache-badge')).toHaveTextContent(/오늘 조회한 결과/);
+    expect(screen.getByTestId('cache-badge')).toHaveTextContent('05:00');
+  });
+
+  it('새로 계산한 결과에는 캐시 배지를 붙이지 않는다', async () => {
+    await show({});
+    expect(screen.queryByTestId('cache-badge')).toBeNull();
+  });
+
+  it('다시 조회 버튼은 force 로 캐시를 우회한다', async () => {
+    await show({ cached: true, cached_at: '2026-08-29T05:00:00' });
+    mockApi.fetchAuthAPI.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: /다시 조회/ }));
+    await waitFor(() => expect(mockApi.fetchAuthAPI).toHaveBeenCalled());
+    expect(String(mockApi.fetchAuthAPI.mock.calls[0][0])).toContain('force=1');
+  });
+
+  it('일반 조회는 force 를 붙이지 않는다', async () => {
+    await show({});
+    expect(String(mockApi.fetchAuthAPI.mock.calls[0][0])).not.toContain('force');
+  });
+
+  it('캐시된 심층 분석은 배지를 달고 재분석 버튼을 제공한다', async () => {
+    mockApi.fetchAuthAPI.mockResolvedValue(brief);
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '041190');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+
+    mockApi.postAuthAPI.mockResolvedValue({
+      symbol: '041190', name: null, status: 'neutral', analysts: [], debate: null,
+      risk: null, verdict: { verdict: 'HOLD', confidence: 55 }, verification: null,
+      citations: [], retrieval: null, method: 'llm', error: null,
+      cached: true, cached_at: '2026-08-29T05:10:00',
+    });
+    await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
+
+    await waitFor(() => expect(screen.getByTestId('deep-call')).toHaveTextContent(/오늘 분석한 결과/));
+    await userEvent.click(screen.getByRole('button', { name: /다시 분석/ }));
+    await waitFor(() => expect(mockApi.postAuthAPI).toHaveBeenCalledTimes(2));
+    expect(mockApi.postAuthAPI.mock.calls[1][1]).toEqual({ force: true });
+  });
+
+  it('첫 심층 분석 요청은 force 없이 보낸다', async () => {
+    mockApi.fetchAuthAPI.mockResolvedValue(brief);
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '041190');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+
+    mockApi.postAuthAPI.mockResolvedValue({
+      symbol: '041190', name: null, status: 'neutral', analysts: [], debate: null,
+      risk: null, verdict: {}, verification: null, citations: [], retrieval: null,
+      method: 'llm', error: null,
+    });
+    await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
+    await waitFor(() => expect(mockApi.postAuthAPI).toHaveBeenCalled());
+    expect(mockApi.postAuthAPI.mock.calls[0][1]).toEqual({});
+  });
+});

@@ -1871,6 +1871,28 @@ def kr_rag_status():
     return resp
 
 
+def _decision_cache_key(symbol):
+    """종목명·코드 어느 쪽으로 들어와도 한 칸을 쓰도록 코드로 정규화한다."""
+    from app.services.mirofish import decision_brief
+
+    try:
+        code, _name = decision_brief.resolve_symbol(symbol)
+        return code
+    except Exception:  # noqa: BLE001 — 해석 실패는 원문 키로 흘린다
+        return str(symbol or '').strip().upper()
+
+
+def _decision_force_requested():
+    """캐시를 우회하는 명시적 재계산 요청인가 (?force=1 또는 body {"force": true})."""
+    if str(request.args.get('force', '')).strip().lower() in {'1', 'true', 'yes'}:
+        return True
+    try:
+        body = request.get_json(silent=True) or {}
+    except Exception:  # noqa: BLE001
+        return False
+    return bool(isinstance(body, dict) and body.get('force'))
+
+
 @kr_bp.route('/decision/<symbol>', methods=['GET'])
 @pro_required
 def kr_decision_brief(symbol):
@@ -1878,7 +1900,15 @@ def kr_decision_brief(symbol):
 
     읽기전용. 스캔·발송·주문을 트리거하지 않으며 매수/매도 판정을 만들지 않는다.
     """
-    from app.services.mirofish import decision_brief
+    from app.services.mirofish import decision_brief, decision_cache
+
+    key = _decision_cache_key(symbol)
+    if not _decision_force_requested():
+        hit = decision_cache.cache_get('brief', key)
+        if hit is not None:
+            resp = jsonify(hit)
+            resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            return resp
 
     try:
         payload = decision_brief.build_decision_brief(symbol)
@@ -1889,6 +1919,7 @@ def kr_decision_brief(symbol):
         return jsonify({'error': 'decision_brief_failed',
                         'detail': f'{type(exc).__name__}: {exc}'}), 500
 
+    decision_cache.cache_put('brief', key, payload)
     resp = jsonify(payload)
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return resp
@@ -1903,7 +1934,15 @@ def kr_decision_deep_analysis(symbol):
     LLM 을 호출하므로 GET 조회와 분리된 명시적 실행 경로(POST)다.
     매매 실행 경로는 없으며 판정은 참고용이다.
     """
-    from app.services.mirofish import decision_brief
+    from app.services.mirofish import decision_brief, decision_cache
+
+    key = _decision_cache_key(symbol)
+    if not _decision_force_requested():
+        hit = decision_cache.cache_get('deep', key)
+        if hit is not None:
+            resp = jsonify(hit)
+            resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            return resp
 
     try:
         payload = decision_brief.run_deep_analysis_for(symbol)
@@ -1913,6 +1952,10 @@ def kr_decision_deep_analysis(symbol):
         logger.exception('deep analysis failed: %s', symbol)
         return jsonify({'error': 'deep_analysis_failed',
                         'detail': f'{type(exc).__name__}: {exc}'}), 500
+
+    # 실패한 분석을 하루 종일 물고 있으면 안 된다 — 성공한 결과만 저장한다.
+    if not (payload or {}).get('error'):
+        decision_cache.cache_put('deep', key, payload)
 
     resp = jsonify(payload)
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'

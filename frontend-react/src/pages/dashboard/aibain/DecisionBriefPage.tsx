@@ -33,6 +33,8 @@ interface DeepAnalysis {
     retrieval: { news_count?: number; graph_count?: number } | null;
     method: string | null;
     error: string | null;
+    cached?: boolean;
+    cached_at?: string;
 }
 
 type Stance = 'positive' | 'negative' | 'neutral' | 'absent' | string;
@@ -80,6 +82,8 @@ interface DecisionBrief {
     };
     errors: Record<string, string>;
     disclaimer?: string;
+    cached?: boolean;
+    cached_at?: string;
 }
 
 const SOURCE_LABEL: Record<string, { name: string; desc: string }> = {
@@ -188,14 +192,14 @@ export default function DecisionBriefPage() {
     const [deep, setDeep] = useState<DeepAnalysis | null>(null);
     const [deepLoading, setDeepLoading] = useState(false);
 
-    const lookup = useCallback(async (raw: string) => {
+    const lookup = useCallback(async (raw: string, force = false) => {
         const symbol = raw.trim();
         if (!symbol) return;
         setLoading(true);
         setError('');
         try {
-            const res = await fetchAuthAPI<unknown>(`${ENDPOINT}/${encodeURIComponent(symbol)}`,
-                token ?? undefined, 30000);
+            const path = `${ENDPOINT}/${encodeURIComponent(symbol)}${force ? '?force=1' : ''}`;
+            const res = await fetchAuthAPI<unknown>(path, token ?? undefined, 30000);
             if (isDecisionBrief(res)) {
                 setBrief(res);
                 setDeep(null);
@@ -211,11 +215,12 @@ export default function DecisionBriefPage() {
         }
     }, [token]);
 
-    const runDeep = useCallback(async (symbol: string) => {
+    const runDeep = useCallback(async (symbol: string, force = false) => {
         setDeepLoading(true);
         try {
             const res = await postAuthAPI<DeepAnalysis>(
-                `${ENDPOINT}/${encodeURIComponent(symbol)}/analyze`, {}, token ?? undefined, 180000);
+                `${ENDPOINT}/${encodeURIComponent(symbol)}/analyze`,
+                force ? { force: true } : {}, token ?? undefined, 180000);
             setDeep(res);
         } catch {
             setDeep(null);
@@ -279,7 +284,8 @@ export default function DecisionBriefPage() {
                 {/* 검색 전에도 검색 계층이 무엇을 알고 있는지 보여준다 */}
                 <RagStatusCard />
 
-                {brief && <BriefBody brief={brief} />}
+                {brief && <BriefBody brief={brief} onRefresh={() => void lookup(brief.symbol, true)}
+                    refreshing={loading} />}
 
                 {brief && (
                     <div className="rounded-2xl border border-teal-400/20 bg-[#13151f] p-5">
@@ -300,7 +306,9 @@ export default function DecisionBriefPage() {
                                 {deepLoading ? '분석 중… (최대 2분)' : '심층 분석 실행'}
                             </button>
                         </div>
-                        {deep && <DeepBody deep={deep} />}
+                        {deep && <DeepBody deep={deep}
+                            onRerun={() => void runDeep(brief.symbol, true)}
+                            rerunning={deepLoading} />}
                     </div>
                 )}
             </div>
@@ -308,7 +316,9 @@ export default function DecisionBriefPage() {
     );
 }
 
-function BriefBody({ brief }: { brief: DecisionBrief }) {
+function BriefBody({ brief, onRefresh, refreshing }: {
+    brief: DecisionBrief; onRefresh: () => void; refreshing: boolean;
+}) {
     const verdict = VERDICT_STYLE[brief.agreement.verdict] ?? VERDICT_STYLE.mixed;
     const status = STATUS_STYLE[brief.status] ?? STATUS_STYLE.neutral;
     const capPct = Math.round((brief.confidence_cap ?? 0) * 100);
@@ -329,6 +339,11 @@ function BriefBody({ brief }: { brief: DecisionBrief }) {
                         {verdict.label}
                     </span>
                 </div>
+                {brief.cached && (
+                    <CacheNote testId="cache-badge" at={brief.cached_at} label="오늘 조회한 결과"
+                        action="다시 조회" onAct={onRefresh} busy={refreshing} />
+                )}
+
                 <p data-testid="conclusion" className="mt-2.5 text-[15px] font-semibold leading-relaxed text-gray-100">
                     {conclusionLine(brief)}
                 </p>
@@ -470,7 +485,9 @@ function BriefBody({ brief }: { brief: DecisionBrief }) {
     );
 }
 
-function DeepBody({ deep }: { deep: DeepAnalysis }) {
+function DeepBody({ deep, onRerun, rerunning }: {
+    deep: DeepAnalysis; onRerun: () => void; rerunning: boolean;
+}) {
     if (deep.error) {
         return (
             <div className="mt-4 rounded-xl border border-amber-400/30 bg-amber-500/[0.07] px-4 py-3 text-sm text-amber-200">
@@ -506,6 +523,10 @@ function DeepBody({ deep }: { deep: DeepAnalysis }) {
                     4인 분석 → 강세·약세 토론 → 리스크 검토를 거친 참고 판정입니다.
                     {deep.method && ` (${deep.method})`} 매매 지시가 아닙니다.
                 </p>
+                {deep.cached && (
+                    <CacheNote at={deep.cached_at} label="오늘 분석한 결과"
+                        action="다시 분석" onAct={onRerun} busy={rerunning} />
+                )}
             </div>
 
             {/* 애널리스트 4인 */}
@@ -643,6 +664,29 @@ function Metric({ label, value, sub, bar }: {
                 </div>
             )}
             {sub && <div className="mt-0.5 text-[11px] text-gray-500">{sub}</div>}
+        </div>
+    );
+}
+
+
+/**
+ * 캐시본을 보고 있다는 사실을 숨기지 않는다 — 언제 계산된 것인지 밝히고
+ * 항상 다시 돌릴 길을 함께 준다.
+ */
+function CacheNote({ at, label, action, onAct, busy, testId }: {
+    at?: string; label: string; action: string;
+    onAct: () => void; busy: boolean; testId?: string;
+}) {
+    const time = at ? at.slice(11, 16) : '';
+    return (
+        <div data-testid={testId}
+            className="mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-[11.5px] text-gray-400">
+            <i className="fas fa-clock-rotate-left text-[10px] opacity-60" />
+            <span>{label}{time && ` · ${time}`}</span>
+            <button type="button" onClick={onAct} disabled={busy}
+                className="rounded-md border border-white/15 px-2 py-0.5 text-[11px] font-bold text-gray-300 transition hover:bg-white/[0.06] disabled:opacity-40">
+                {busy ? '실행 중' : action}
+            </button>
         </div>
     );
 }
