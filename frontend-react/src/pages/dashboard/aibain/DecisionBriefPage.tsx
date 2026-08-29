@@ -10,6 +10,7 @@ import { FormEvent, useCallback, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI, postAuthAPI } from '@/lib/api';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
+import RagStatusCard from './RagStatusCard';
 
 const ENDPOINT = '/api/kr/decision';
 
@@ -189,7 +190,7 @@ export default function DecisionBriefPage() {
                     <input
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        placeholder="종목 코드 (예: 005930)"
+                        placeholder="종목 코드 또는 종목명 (예: 005930, 삼성전자)"
                         inputMode="numeric"
                         aria-label="종목 코드"
                         className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 font-mono text-[15px] text-white placeholder:text-gray-600 focus:border-teal-400/50 focus:outline-none"
@@ -212,9 +213,14 @@ export default function DecisionBriefPage() {
                 {!brief && !error && !loading && (
                     <div className="rounded-2xl border border-white/[0.06] bg-[#13151f] p-8 text-center">
                         <i className="fas fa-scale-balanced mb-3 text-2xl text-gray-600" />
-                        <p className="text-sm text-gray-500">종목 코드를 입력하면 근거 대조 결과를 보여줍니다.</p>
+                        <p className="text-sm text-gray-500">
+                            종목 코드 또는 종목명을 입력하면 근거 대조 결과를 보여줍니다.
+                        </p>
                     </div>
                 )}
+
+                {/* 검색 전에도 검색 계층이 무엇을 알고 있는지 보여준다 */}
+                <RagStatusCard />
 
                 {brief && <BriefBody brief={brief} />}
 

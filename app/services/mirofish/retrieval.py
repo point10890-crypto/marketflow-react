@@ -141,3 +141,97 @@ def format_context_line(retrieved: dict[str, Any]) -> str:
 
     text = '\n'.join(lines)
     return text[:CONTEXT_MAX_CHARS]
+
+
+# ─── 지식베이스 현황 (읽기전용 집계) ────────────────────────
+
+RECENT_NEWS_SCAN = 200
+NEWS_STALE_HOURS = 24
+
+
+def _recent_news(limit: int) -> list[dict[str, Any]]:
+    from app.services.omni import ledger as omni_ledger
+
+    return omni_ledger.recent_events(limit=limit) or []
+
+
+def _news_stats() -> dict[str, Any]:
+    from app.services.omni import ledger as omni_ledger
+
+    return omni_ledger.stats() or {}
+
+
+def _is_stale(ts: Any) -> bool:
+    from datetime import datetime, timezone
+
+    if not ts:
+        return True
+    try:
+        parsed = datetime.fromisoformat(str(ts).replace('Z', '+00:00'))
+    except (TypeError, ValueError):
+        return True
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    age_h = (datetime.now(timezone.utc) - parsed).total_seconds() / 3600.0
+    return age_h > NEWS_STALE_HOURS
+
+
+def rag_status() -> dict[str, Any]:
+    """검색 계층이 지금 무엇을 알고 있는지 — 규모·커버리지·신선도.
+
+    커버리지(뉴스가 붙은 고유 종목 수)가 곧 이 RAG 의 실효 성능이다.
+    수집을 트리거하지 않는다.
+    """
+    from collections import Counter
+    from datetime import datetime, timezone
+
+    errors: dict[str, str] = {}
+    graph_block = {'entities': 0, 'relations': 0, 'entity_types': {},
+                   'top_relations': [], 'updated_at': None}
+    try:
+        graph = load_graph() or {}
+        entities = [e for e in (graph.get('entities') or []) if isinstance(e, dict)]
+        relations = [r for r in (graph.get('relations') or []) if isinstance(r, dict)]
+        rel_counter = Counter(str(r.get('relation_type') or '?') for r in relations)
+        graph_block = {
+            'entities': len(entities),
+            'relations': len(relations),
+            'entity_types': dict(Counter(str(e.get('type') or '?') for e in entities)),
+            'top_relations': [{'relation': k, 'count': v}
+                              for k, v in rel_counter.most_common(5)],
+            'updated_at': graph.get('updated_at'),
+        }
+    except Exception as exc:  # noqa: BLE001
+        errors['graph'] = f'{type(exc).__name__}: {exc}'
+
+    news_block = {'total': 0, 'last_24h': 0, 'last_collected_at': None,
+                  'by_grade': {}, 'by_source': {}, 'stale': True}
+    coverage = {'symbols': 0, 'top_symbols': []}
+    try:
+        stats = _news_stats()
+        rows = _recent_news(RECENT_NEWS_SCAN)
+        sym_counter: Counter[str] = Counter()
+        for row in rows:
+            for code in (row.get('symbols') or []):
+                sym_counter[str(code)] += 1
+        news_block = {
+            'total': int(stats.get('total') or 0),
+            'last_24h': int(stats.get('last_24h') or 0),
+            'last_collected_at': stats.get('last_collected_at'),
+            'by_grade': dict(Counter(str(r.get('grade') or '?') for r in rows)),
+            'by_source': dict(Counter(str(r.get('source') or '?') for r in rows)),
+            'stale': _is_stale(stats.get('last_collected_at')),
+        }
+        coverage = {
+            'symbols': len(sym_counter),
+            'top_symbols': [{'symbol': k, 'count': v} for k, v in sym_counter.most_common(6)],
+        }
+    except Exception as exc:  # noqa: BLE001
+        errors['news'] = f'{type(exc).__name__}: {exc}'
+
+    return {
+        'schema_version': 'mirofish.rag_status.v1',
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'graph': graph_block, 'news': news_block, 'coverage': coverage,
+        'errors': errors,
+    }

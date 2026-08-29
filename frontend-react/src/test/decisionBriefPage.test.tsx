@@ -13,6 +13,11 @@ vi.mock('@/contexts/AuthContext', () => ({
 vi.mock('@/components/aibain/AiBrainServiceTabs', () => ({
   default: () => <nav data-testid="tabs" />,
 }));
+// 지식베이스 카드는 자체 테스트가 있고 마운트 시 자기 현황을 조회한다.
+// 이 파일은 판단 조회 흐름만 검증하므로 분리한다.
+vi.mock('@/pages/dashboard/aibain/RagStatusCard', () => ({
+  default: () => <section data-testid="rag-status" />,
+}));
 
 const brief = {
   schema_version: 'mirofish.decision_brief.v1',
@@ -43,10 +48,10 @@ describe('DecisionBriefPage', () => {
     mockApi.fetchAuthAPI.mockReset();
   });
 
-  it('조회 전에는 안내만 보이고 API 를 호출하지 않는다', () => {
+  it('조회 전에는 안내만 보이고 판단 API 를 호출하지 않는다', () => {
     render(<DecisionBriefPage />);
     expect(mockApi.fetchAuthAPI).not.toHaveBeenCalled();
-    expect(screen.getByText(/종목 코드를 입력하면/)).toBeInTheDocument();
+    expect(screen.getByText(/종목 코드 또는 종목명을 입력하면/)).toBeInTheDocument();
   });
 
   it('이견이 갈리는 종목은 충돌로 표시하고 공백을 숨기지 않는다', async () => {

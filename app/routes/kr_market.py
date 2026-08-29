@@ -1854,6 +1854,23 @@ def get_ai_chart_image(stock_code: str):
 from app.auth.decorators import pro_required  # noqa: E402
 
 
+@kr_bp.route('/rag/status', methods=['GET'])
+@pro_required
+def kr_rag_status():
+    """검색 계층(변형 RAG)이 지금 무엇을 알고 있는지 — 규모·커버리지·신선도."""
+    from app.services.mirofish import retrieval
+
+    try:
+        payload = retrieval.rag_status()
+    except Exception as exc:  # noqa: BLE001
+        logger.exception('rag status failed')
+        return jsonify({'error': 'rag_status_failed',
+                        'detail': f'{type(exc).__name__}: {exc}'}), 500
+    resp = jsonify(payload)
+    resp.headers['Cache-Control'] = 'public, max-age=60'
+    return resp
+
+
 @kr_bp.route('/decision/<symbol>', methods=['GET'])
 @pro_required
 def kr_decision_brief(symbol):
