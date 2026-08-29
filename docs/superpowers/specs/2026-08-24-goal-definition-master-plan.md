@@ -152,6 +152,28 @@
 
 > **재확증 (2026-08-28 08:40 실측)**: 본PC `이더넷` = 192.168.55.102 `PrefixOrigin=Manual`, miniPC `이더넷 3` = 192.168.55.103 `Manual` — 양측 영구 설정. 본PC→miniPC TCP22 성공(`SourceAddress=192.168.55.102`)이며 이 경로로 모든 운영 SSH가 동작 중. miniPC→본PC ping/22 실패는 본PC에 sshd 미설치 + 방화벽 ICMP 차단에 따른 것으로 **설계상 정상**(운영에 필요한 방향은 본PC→miniPC 단방향). miniPC는 8/26 23:55 부팅 이후 36시간 연속 가동 중 55.103 유지 = 재부팅 생존 확인.
 
+### P3 추가 — 종목 판단 브리프 (2026-08-29 `f63872e`)
+
+외부 소스 `stablyai/orca` 조사 요청에서 파생. Orca 는 병렬 코딩 에이전트 오케스트레이션
+IDE 로 **매매·금융 도메인 코드가 없음**(금융 용어 히트는 전부 오탐: `trading`→wsl-paths,
+`ticker`→타이머 tick, `quote`→셸 인용부호). 이식 가치가 있는 것은 "한 질문을 팬아웃 →
+결과 비교 → 갈리는 지점 확인" 구조뿐이라 판단해 그것만 가져왔다.
+
+`GET /api/kr/decision/<symbol>` (`@pro_required`, GET 전용, no-store) — 새 에이전트를
+돌리지 않고 기존 읽기전용 근거 7종(claw·jongga·scanner·detection·tradingagents·
+paper·observation)을 한 종목 기준으로 대조해 **합의·이견·데이터 공백**을 노출한다.
+
+- 합의도: aligned | conflicted | mixed | insufficient (+방향·비율)
+- 신뢰 상한(결정론): S/A 근거 2개 미만 −0.15 · 공백당 −0.10 · 소스 충돌 −0.10 ·
+  레짐 축 충돌 −0.10 · **음(-)국면 상한 0.40**(Detection Lab 642건 근거) · 하한 0.10
+- 상태: `watch | neutral | avoid_data_gap` — 매수/매도 어휘 생성 불가(테스트 고정)
+- 무효화는 전부 shadow, 소스별 장애 격리, 관측 원장 부재는 오류가 아닌 공백 처리
+
+운영 실증(2026-08-29 재부팅 후): 009150 = claw negative 인데 tradingagents·observation
+positive → **conflicted, cap 0.25** 로 이견이 그대로 드러남. 001820 = 4개 소스 aligned
+negative, cap 0.45. 오류 0건. 이것이 이 엔드포인트의 목적 — 한 화면에서 근거가 갈리는
+지점을 보게 하는 것.
+
 ### 남은 것
 1. 관측 원장 세션 게이트(20세션) 도달 시 shadow invalidator 성적 재판정 → R3 재개
 3. 8월 구간 엣지 붕괴의 시장 특성 분석(양국면 내 급락 전환 감지 후보) — 가설 원장 등록 대상
