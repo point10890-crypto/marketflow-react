@@ -1893,6 +1893,34 @@ def _decision_force_requested():
     return bool(isinstance(body, dict) and body.get('force'))
 
 
+@kr_bp.route('/decision/search', methods=['GET'])
+@pro_required
+def kr_decision_search():
+    """종목 자동완성 — 코드·종목명·별칭·초성 전부로 후보를 찾는다.
+
+    해석은 기존 GraphRAG 엔티티 리졸버가 한다(초성 ㅅㅅㅈㅈ→삼성전자, 별칭 하닉→
+    SK하이닉스). 모바일에서 종목명을 정확히 치기 어려우므로 후보를 보여주고 고르게
+    한다. 읽기전용이며 실패해도 빈 후보로 돌려준다 — 검색이 화면을 막지 않는다.
+    """
+    from app.services.mirofish import decision_brief
+
+    query = (request.args.get('q') or '').strip()
+    try:
+        limit = int(request.args.get('limit') or 8)
+    except (TypeError, ValueError):
+        limit = 8
+
+    try:
+        payload = decision_brief.search_symbols(query, limit=limit)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning('decision search failed (%s): %s', query, exc)
+        payload = {'query': query, 'candidates': []}
+
+    resp = jsonify(payload)
+    resp.headers['Cache-Control'] = 'public, max-age=300'
+    return resp
+
+
 @kr_bp.route('/decision/<symbol>', methods=['GET'])
 @pro_required
 def kr_decision_brief(symbol):

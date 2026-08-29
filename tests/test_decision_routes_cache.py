@@ -134,3 +134,37 @@ def test_deep_exception_is_not_cached(client, monkeypatch):
                  method='POST', json={})
     assert resp[1] == 500
     assert dc.cache_get('deep', '005930') is None
+
+
+# ─── 종목 검색 (자동완성) ───────────────────────────────────
+
+def _search(app, path):
+    with app.test_request_context(path):
+        from app.routes import kr_market
+        return kr_market.kr_decision_search.__wrapped__()
+
+
+def test_search_route_returns_candidates(client, monkeypatch):
+    from app.services.mirofish import decision_brief
+    monkeypatch.setattr(decision_brief, 'search_symbols',
+                        lambda q, limit=8: {'query': q, 'candidates': [
+                            {'symbol': '005930', 'name': '삼성전자',
+                             'confidence': 0.85, 'reason': 'chosung_exact'}]})
+    out = _json(_search(client, '/api/kr/decision/search?q=%E3%85%85%E3%85%85%E3%85%88%E3%85%88'))
+    assert out['candidates'][0]['symbol'] == '005930'
+
+
+def test_search_route_without_query_is_empty_not_an_error(client, monkeypatch):
+    out = _json(_search(client, '/api/kr/decision/search'))
+    assert out['candidates'] == []
+
+
+def test_search_route_survives_a_resolver_failure(client, monkeypatch):
+    from app.services.mirofish import decision_brief
+
+    def boom(_q, limit=8):
+        raise RuntimeError('resolver down')
+
+    monkeypatch.setattr(decision_brief, 'search_symbols', boom)
+    resp = _search(client, '/api/kr/decision/search?q=삼성')
+    assert _json(resp)['candidates'] == []

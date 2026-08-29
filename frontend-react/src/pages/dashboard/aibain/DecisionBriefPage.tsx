@@ -6,7 +6,7 @@
  * 신뢰를 어디까지 둘 수 있는지를 보여주는 것이 이 화면의 전부다.
  * 매수/매도를 지시하지 않는다 — 상태는 watch | neutral | avoid_data_gap 뿐이다.
  */
-import { FormEvent, useCallback, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI, postAuthAPI } from '@/lib/api';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
@@ -173,6 +173,22 @@ function conclusionLine(b: DecisionBrief): string {
     return `뚜렷한 방향이 없습니다 — 근거 ${a.active}개 중 긍정 ${a.positive} · 부정 ${a.negative}.`;
 }
 
+interface Candidate {
+    symbol: string;
+    name: string | null;
+    confidence: number;
+    reason: string;
+}
+
+/** 왜 이 후보가 걸렸는지 — 사용자가 고르는 데 필요한 정보다. */
+const REASON_LABEL: Record<string, string> = {
+    ticker_direct: '종목코드', yahoo_ticker: '티커', corp_code_reverse: '고유번호',
+    exact_alias: '별칭', exact_name: '종목명',
+    chosung_exact: '초성', chosung_prefix: '초성 일부',
+    prefix_name: '이름 앞부분', fuzzy: '유사',
+    universe_substring: '이름 포함', graphrag: '지식그래프',
+};
+
 function fmtTime(ts: string | null): string {
     if (!ts) return '-';
     return ts.slice(0, 16).replace('T', ' ');
@@ -191,6 +207,8 @@ export default function DecisionBriefPage() {
     const [error, setError] = useState('');
     const [deep, setDeep] = useState<DeepAnalysis | null>(null);
     const [deepLoading, setDeepLoading] = useState(false);
+    const [suggestions, setSuggestions] = useState<Candidate[]>([]);
+    const suppress = useRef(false);   // 후보를 골라 넣은 직후엔 다시 조회하지 않는다
 
     const lookup = useCallback(async (raw: string, force = false) => {
         const symbol = raw.trim();
@@ -230,8 +248,37 @@ export default function DecisionBriefPage() {
         }
     }, [token]);
 
+    // 종목명·별칭·초성 후보 조회. 기존 GraphRAG 리졸버가 해석한다.
+    useEffect(() => {
+        const q = input.trim();
+        if (suppress.current) { suppress.current = false; return; }
+        if (q.length < 2) { setSuggestions([]); return; }
+
+        let alive = true;
+        const timer = setTimeout(() => {
+            void (async () => {
+                try {
+                    const res = await fetchAuthAPI<{ candidates?: Candidate[] }>(
+                        `${ENDPOINT}/search?q=${encodeURIComponent(q)}`, token ?? undefined, 8000);
+                    if (alive) setSuggestions(Array.isArray(res?.candidates) ? res.candidates : []);
+                } catch {
+                    if (alive) setSuggestions([]);   // 검색 실패가 직접 입력을 막지 않는다
+                }
+            })();
+        }, 180);
+        return () => { alive = false; clearTimeout(timer); };
+    }, [input, token]);
+
+    const pick = useCallback((c: Candidate) => {
+        suppress.current = true;
+        setInput(c.symbol);
+        setSuggestions([]);
+        void lookup(c.symbol);
+    }, [lookup]);
+
     const onSubmit = (e: FormEvent) => {
         e.preventDefault();
+        setSuggestions([]);
         void lookup(input);
     };
 
@@ -248,15 +295,37 @@ export default function DecisionBriefPage() {
                     </p>
                 </header>
 
-                <form onSubmit={onSubmit} className="flex gap-2">
-                    <input
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="종목 코드 또는 종목명 (예: 005930, 삼성전자)"
-                        inputMode="numeric"
-                        aria-label="종목 코드"
-                        className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 font-mono text-[15px] text-white placeholder:text-gray-600 focus:border-teal-400/50 focus:outline-none"
-                    />
+                <form onSubmit={onSubmit} className="relative flex gap-2">
+                    <div className="relative min-w-0 flex-1">
+                        <input
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="종목명 · 코드 · 초성 (예: 삼성전자, 005930, ㅅㅅㅈㅈ)"
+                            aria-label="종목 코드"
+                            aria-autocomplete="list"
+                            autoComplete="off"
+                            className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[15px] text-white placeholder:text-gray-600 focus:border-teal-400/50 focus:outline-none"
+                        />
+                        {suggestions.length > 0 && (
+                            <ul role="listbox" aria-label="종목 후보"
+                                className="absolute left-0 right-0 top-full z-20 mt-1.5 max-h-72 overflow-y-auto rounded-xl border border-white/10 bg-[#171a24] py-1 shadow-2xl">
+                                {suggestions.map((c) => (
+                                    <li key={c.symbol} role="option" aria-selected={false} tabIndex={0}
+                                        onClick={() => pick(c)}
+                                        onKeyDown={(e) => { if (e.key === 'Enter') pick(c); }}
+                                        className="flex cursor-pointer items-center gap-2.5 px-3.5 py-2.5 hover:bg-white/[0.06]">
+                                        <span className="min-w-0 flex-1 truncate text-[14px] font-semibold text-white">
+                                            {c.name || c.symbol}
+                                        </span>
+                                        <span className="shrink-0 font-mono text-[12px] text-gray-500">{c.symbol}</span>
+                                        <span className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10.5px] text-gray-400">
+                                            {REASON_LABEL[c.reason] ?? c.reason}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
                     <button
                         type="submit"
                         disabled={loading || !input.trim()}

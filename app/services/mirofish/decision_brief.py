@@ -16,9 +16,12 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 from datetime import datetime, timezone
 from typing import Any, Callable
+
+logger = logging.getLogger(__name__)
 
 SCHEMA_VERSION = 'mirofish.decision_brief.v1'
 ALLOWED_STATUS = ('watch', 'neutral', 'avoid_data_gap')
@@ -88,11 +91,55 @@ def load_universe() -> dict[str, str]:
     return table
 
 
-def resolve_symbol(raw: Any) -> tuple[str, str | None]:
-    """코드든 종목명이든 (코드, 이름)으로 해석한다.
+def _graphrag_matches(text: str, limit: int = 8) -> list[dict[str, Any]]:
+    """기존 GraphRAG 엔티티 리졸버에 물어본다.
 
-    사용자는 '005930' 이 아니라 '우리기술투자' 로 검색한다. 이름을 못 찾으면
-    입력을 그대로 코드로 두고 이름은 None — 조회 자체를 막지는 않는다.
+    거기에는 이미 초성(ㅅㅅㅈㅈ→삼성전자), 별칭(하닉→SK하이닉스), 접두·퍼지 매칭이
+    다 들어 있다. 새로 만들지 않고 그대로 쓴다. entities.db 가 없는 환경(개발 PC)
+    이나 조회 실패는 빈 목록으로 흘려 CSV 폴백에 맡긴다.
+    """
+    try:
+        from app.services.mirofish.graphrag import resolver
+
+        result = resolver.resolve(text, limit=limit) or {}
+    except Exception as exc:  # noqa: BLE001 — 리졸버 장애가 조회를 막지 않는다
+        logger.debug('[decision] graphrag resolve failed: %s', exc)
+        return []
+
+    out = []
+    for m in (result.get('matches') or []):
+        code = str((m or {}).get('symbol') or '').strip()
+        if code:
+            out.append(m)
+    return out
+
+
+def _universe_matches(text: str, universe: dict[str, str]) -> list[tuple[str, str]]:
+    """CSV 유니버스 부분 일치. 짧은 이름일수록 구체적인 매칭으로 본다."""
+    compact = text.replace(' ', '').upper()
+    if not compact:
+        return []
+    exact = [(c, n) for c, n in universe.items()
+             if str(n).replace(' ', '').upper() == compact]
+    partial = sorted(
+        [(c, n) for c, n in universe.items()
+         if compact in str(n).replace(' ', '').upper()],
+        key=lambda kv: len(str(kv[1])),
+    )
+    seen, out = set(), []
+    for code, name in exact + partial:
+        if code not in seen:
+            seen.add(code)
+            out.append((code, name))
+    return out
+
+
+def resolve_symbol(raw: Any) -> tuple[str, str | None]:
+    """코드든 종목명이든 별칭이든 초성이든 (코드, 이름)으로 해석한다.
+
+    사용자는 '005930' 이 아니라 '우리기술투자', '하닉', 'ㅅㅅㅈㅈ' 로 검색한다.
+    해석은 기존 GraphRAG 리졸버가 하고, 그게 없으면 CSV 유니버스로 폴백한다.
+    끝내 못 찾으면 입력을 그대로 코드로 두고 이름은 None — 조회를 막지는 않는다.
     """
     text = str(raw or '').strip()
     if not text:
@@ -103,17 +150,50 @@ def resolve_symbol(raw: Any) -> tuple[str, str | None]:
         code = text.zfill(6)
         return code, universe.get(code)
 
-    compact = text.replace(' ', '').upper()
-    for code, name in universe.items():
-        if str(name).replace(' ', '').upper() == compact:
-            return code, name
-    # 부분 일치는 가장 짧은 이름을 택한다(가장 구체적인 매칭)
-    partial = [(c, n) for c, n in universe.items()
-               if compact and compact in str(n).replace(' ', '').upper()]
-    if partial:
-        code, name = min(partial, key=lambda kv: len(str(kv[1])))
-        return code, name
+    for match in _graphrag_matches(text, limit=1):
+        code = str(match.get('symbol')).strip()
+        return code, match.get('name_ko') or universe.get(code)
+
+    hits = _universe_matches(text, universe)
+    if hits:
+        return hits[0]
     return normalize_symbol(text), None
+
+
+def search_symbols(query: Any, *, limit: int = 8) -> dict[str, Any]:
+    """자동완성용 후보 목록. 왜 걸렸는지(reason)까지 같이 준다.
+
+    모바일에서는 종목명을 정확히 치기 어렵다 — 후보를 보여주고 고르게 한다.
+    """
+    text = str(query or '').strip()
+    limit = max(1, min(int(limit or 8), 20))
+    if not text:
+        return {'query': text, 'candidates': []}
+
+    universe = load_universe()
+    candidates: list[dict[str, Any]] = []
+    seen: set[str] = set()
+
+    def _add(code: str, name: str | None, confidence: float, reason: str) -> None:
+        code = str(code or '').strip()
+        if not code or code in seen or len(candidates) >= limit:
+            return
+        seen.add(code)
+        candidates.append({'symbol': code, 'name': name or universe.get(code),
+                           'confidence': round(float(confidence or 0), 4),
+                           'reason': reason})
+
+    if text.isdigit():
+        _add(text.zfill(6), None, 1.0, 'ticker_direct')
+
+    for match in _graphrag_matches(text, limit=limit):
+        _add(str(match.get('symbol')), match.get('name_ko'),
+             match.get('confidence') or 0.0, str(match.get('reason') or 'graphrag'))
+
+    for code, name in _universe_matches(text, universe):
+        _add(code, name, 0.5, 'universe_substring')
+
+    return {'query': text, 'candidates': candidates[:limit]}
 
 
 def summarize_agreement(signals: list[dict[str, Any]]) -> dict[str, Any]:

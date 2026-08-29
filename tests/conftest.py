@@ -59,3 +59,17 @@ def clean_env(monkeypatch):
     ]
     for k in keys:
         monkeypatch.delenv(k, raising=False)
+
+
+@pytest.fixture(autouse=True)
+def _isolate_decision_cache(tmp_path_factory, monkeypatch):
+    """판단 캐시가 테스트 사이에 새지 않게 한다.
+
+    라우트에 일간 캐시가 붙은 뒤, 캐시를 모르는 테스트가 앞선 테스트의 결과를
+    적중시켜 계산 함수 호출을 건너뛰는 일이 생겼다(test_kr_decision_route).
+    테스트는 운영 캐시 파일(data/decision_cache.db)을 건드리면 안 된다.
+    """
+    from app.services.mirofish import decision_cache
+
+    path = tmp_path_factory.mktemp('decision_cache') / 'cache.db'
+    monkeypatch.setattr(decision_cache, 'DB_PATH', str(path))

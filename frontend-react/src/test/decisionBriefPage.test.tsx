@@ -389,3 +389,81 @@ describe('DecisionBriefPage — 일간 캐시 표시', () => {
     expect(mockApi.postAuthAPI.mock.calls[0][1]).toEqual({});
   });
 });
+
+describe('DecisionBriefPage — 종목명·초성 검색', () => {
+  beforeEach(() => { mockApi.fetchAuthAPI.mockReset(); mockApi.postAuthAPI.mockReset(); });
+
+  const suggest = (candidates: unknown[]) => ({ query: 'q', candidates });
+
+  it('모바일에서 한글을 칠 수 있도록 숫자 전용 키패드를 강제하지 않는다', () => {
+    render(<DecisionBriefPage />);
+    const input = screen.getByLabelText('종목 코드');
+    expect(input).not.toHaveAttribute('inputMode', 'numeric');
+  });
+
+  it('입력하면 후보를 조회해 보여준다', async () => {
+    mockApi.fetchAuthAPI.mockResolvedValue(suggest([
+      { symbol: '005930', name: '삼성전자', confidence: 0.85, reason: 'chosung_exact' },
+      { symbol: '263810', name: '상신전자', confidence: 0.85, reason: 'chosung_exact' },
+    ]));
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), 'ㅅㅅㅈㅈ');
+
+    await waitFor(() => expect(screen.getByRole('option', { name: /삼성전자/ })).toBeInTheDocument());
+    expect(screen.getByRole('option', { name: /상신전자/ })).toBeInTheDocument();
+    expect(String(mockApi.fetchAuthAPI.mock.calls[0][0])).toContain('/decision/search');
+  });
+
+  it('후보를 고르면 그 종목 코드로 판단을 조회한다', async () => {
+    mockApi.fetchAuthAPI.mockResolvedValueOnce(suggest([
+      { symbol: '000660', name: 'SK하이닉스', confidence: 0.95, reason: 'exact_alias' },
+    ]));
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '하닉');
+    await waitFor(() => expect(screen.getByRole('option', { name: /SK하이닉스/ })).toBeInTheDocument());
+
+    mockApi.fetchAuthAPI.mockResolvedValue(brief);
+    await userEvent.click(screen.getByRole('option', { name: /SK하이닉스/ }));
+
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+    const lookupCall = mockApi.fetchAuthAPI.mock.calls.find(
+      (c) => !String(c[0]).includes('/search'));
+    expect(String(lookupCall?.[0])).toContain('000660');
+  });
+
+  it('후보 검색이 실패해도 직접 입력한 값으로 조회할 수 있다', async () => {
+    // 호출 순서가 아니라 경로로 갈라야 디바운스 타이밍에 흔들리지 않는다
+    mockApi.fetchAuthAPI.mockImplementation((path: string) =>
+      String(path).includes('/search')
+        ? Promise.reject(new Error('search down'))
+        : Promise.resolve(brief));
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '005930');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+    expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
+  it('후보가 없으면 목록을 띄우지 않는다', async () => {
+    mockApi.fetchAuthAPI.mockResolvedValue(suggest([]));
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), 'zzz');
+    await waitFor(() => expect(mockApi.fetchAuthAPI).toHaveBeenCalled());
+    expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
+  it('한 글자로는 후보를 조회하지 않는다', async () => {
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), 'ㅅ');
+    expect(mockApi.fetchAuthAPI).not.toHaveBeenCalled();
+  });
+
+  it('후보 목록에 매칭 근거를 함께 보여준다', async () => {
+    mockApi.fetchAuthAPI.mockResolvedValue(suggest([
+      { symbol: '005930', name: '삼성전자', confidence: 0.85, reason: 'chosung_exact' },
+    ]));
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), 'ㅅㅅㅈㅈ');
+    await waitFor(() => expect(screen.getByRole('option', { name: /초성/ })).toBeInTheDocument());
+  });
+});
