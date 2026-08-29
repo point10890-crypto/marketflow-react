@@ -48,6 +48,14 @@ interface DecisionBrief {
     confidence_cap: number;
     cap_reasons: string[];
     regime: { phase: string | null; gate_status: string | null; conflict: boolean };
+    verification: { verified: number; unverified: number; contradicted: number } | null;
+    news: {
+        count: number;
+        items: {
+            title: string; link: string; source: string; grade: string;
+            score: number; published_ts: string | null; corroboration: number;
+        }[];
+    };
     errors: Record<string, string>;
     disclaimer?: string;
 }
@@ -208,6 +216,8 @@ function BriefBody({ brief }: { brief: DecisionBrief }) {
                         sub={brief.regime.conflict ? '레짐 축 충돌' : `게이트 ${brief.regime.gate_status || '-'}`} />
                 </div>
 
+                {brief.verification && <VerificationBadge v={brief.verification} />}
+
                 {brief.cap_reasons.length > 0 && (
                     <ul className="mt-3 space-y-1 border-t border-white/[0.06] pt-3">
                         {brief.cap_reasons.map((r, i) => (
@@ -261,6 +271,40 @@ function BriefBody({ brief }: { brief: DecisionBrief }) {
                 )}
             </section>
 
+            {/* 뉴스 맥락 — 방향 판정이 아니라 맥락 */}
+            {brief.news && brief.news.count > 0 && (
+                <section className="rounded-2xl border border-white/[0.07] bg-[#13151f] p-5">
+                    <h3 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                        뉴스 맥락 <span className="ml-1 font-medium normal-case tracking-normal text-gray-600">— 방향 판정 아님, 근거 보강용</span>
+                    </h3>
+                    <ul className="space-y-1.5">
+                        {brief.news.items.map((n, i) => (
+                            <li key={`${n.link}-${i}`} className="flex items-start gap-2.5 text-[13px]">
+                                <span className="mt-0.5 shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-gray-500">
+                                    {n.grade}
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                    {n.link ? (
+                                        <a href={n.link} target="_blank" rel="noopener noreferrer"
+                                            className="text-gray-200 underline-offset-2 hover:text-teal-300 hover:underline">
+                                            {n.title}
+                                        </a>
+                                    ) : (
+                                        <span className="text-gray-200">{n.title}</span>
+                                    )}
+                                    <span className="ml-2 text-[11px] text-gray-600">
+                                        {n.source}{n.corroboration > 1 && ` · ${n.corroboration}개 매체`}
+                                    </span>
+                                </span>
+                                <span className="shrink-0 font-mono text-[11px] tabular-nums text-gray-600">
+                                    {fmtTime(n.published_ts)}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
+
             {/* 무효화 조건 */}
             {brief.invalidators.length > 0 && (
                 <section className="rounded-2xl border border-white/[0.07] bg-[#13151f] p-5">
@@ -287,6 +331,29 @@ function BriefBody({ brief }: { brief: DecisionBrief }) {
         </div>
     );
 }
+
+function VerificationBadge({ v }: { v: { verified: number; unverified: number; contradicted: number } }) {
+    const total = v.verified + v.unverified + v.contradicted;
+    if (total === 0) return null;
+    const clean = v.contradicted === 0 && v.unverified === 0;
+    const cls = v.contradicted > 0
+        ? 'border-amber-400/35 bg-amber-500/[0.07] text-amber-200'
+        : clean
+            ? 'border-teal-400/30 bg-teal-500/[0.07] text-teal-200'
+            : 'border-white/[0.08] bg-white/[0.03] text-gray-300';
+    return (
+        <div className={`mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border px-3.5 py-2.5 text-[12px] ${cls}`}>
+            <span className="font-bold">기계적 검증</span>
+            <span>원천 대조 <b>{v.verified}</b></span>
+            <span>미검증 <b>{v.unverified}</b></span>
+            <span>불일치 <b>{v.contradicted}</b></span>
+            <span className="text-[11px] opacity-70">
+                {clean ? 'AI 서술의 수치가 모두 수집 데이터와 일치' : 'AI 서술 수치 중 원천과 맞지 않는 항목이 있어 신뢰 상한을 낮춤'}
+            </span>
+        </div>
+    );
+}
+
 
 function Metric({ label, value, sub }: { label: string; value: string; sub?: string }) {
     return (

@@ -361,6 +361,28 @@ SOURCE_READERS: dict[str, Callable[[str], dict[str, Any] | None]] = {
 }
 
 
+# ─── 뉴스 맥락 (L1 옴니소스 → L5) ──────────────────────────
+
+NEWS_LIMIT = 5
+
+
+def _read_news(symbol: str) -> dict[str, Any]:
+    """옴니소스 사건 원장에서 이 종목의 최근 뉴스를 붙인다.
+
+    뉴스는 **방향 판정이 아니라 맥락**이다. 언론 해석(B등급)만으로 후보를 확정할 수
+    없다는 근거 규칙에 따라 `signals`(합의 계산)에는 넣지 않고 별도로 반환한다.
+    """
+    from app.services.omni import ledger as omni_ledger
+
+    rows = omni_ledger.events_for_symbol(symbol, limit=NEWS_LIMIT) or []
+    items = [{
+        'title': r.get('title'), 'link': r.get('link'), 'source': r.get('source'),
+        'grade': r.get('grade'), 'score': r.get('score'),
+        'published_ts': r.get('published_ts'), 'corroboration': r.get('corroboration'),
+    } for r in rows]
+    return {'count': len(items), 'items': items}
+
+
 # ─── 레짐 / 무효화 ──────────────────────────────────────────
 
 def _read_regime() -> dict[str, Any]:
@@ -445,11 +467,27 @@ def build_decision_brief(symbol: Any, *, now: datetime | None = None) -> dict[st
         by_source[source] = signal
         name = name or result.get('name')
 
+    news = {'count': 0, 'items': []}
+    try:
+        news = _read_news(code)
+    except Exception as exc:  # noqa: BLE001 — 뉴스 원장 부재가 판단을 막지 않는다
+        errors['news'] = f'{type(exc).__name__}: {exc}'
+
     regime = _read_regime()
     agreement = summarize_agreement(signals)
+
+    # L4 — LLM 산출(딥검증)의 수치 검증 결과를 신뢰 상한에 반영한다.
+    verification = None
+    ta_detail = (by_source.get('tradingagents') or {}).get('detail') or {}
+    raw_verification = ta_detail.get('number_verification')
+    if isinstance(raw_verification, dict):
+        verification = {k: int(raw_verification.get(k) or 0)
+                        for k in ('verified', 'unverified', 'contradicted')}
+
     cap, cap_reasons = compute_confidence_cap(
         signals, data_gaps=data_gaps, phase=regime.get('phase'),
-        agreement=agreement, regime_conflict=bool(regime.get('conflict')))
+        agreement=agreement, regime_conflict=bool(regime.get('conflict')),
+        verification=verification)
 
     return {
         'schema_version': SCHEMA_VERSION,
@@ -464,6 +502,8 @@ def build_decision_brief(symbol: Any, *, now: datetime | None = None) -> dict[st
         'invalidators': _build_invalidators(by_source, regime.get('phase')),
         'confidence_cap': cap,
         'cap_reasons': cap_reasons,
+        'verification': verification,
+        'news': news,
         'regime': regime,
         'errors': errors,
         'disclaimer': '정보 제공 목적이며 투자 권유가 아닙니다. 매매 실행 경로는 시스템에 존재하지 않습니다.',

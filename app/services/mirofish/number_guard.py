@@ -160,8 +160,9 @@ def verify_claims(claims: list[dict[str, Any]], bundle: Any,
             continue
 
         # 같은 단위 후보가 있는데 어느 것과도 맞지 않으면 모순으로 본다.
-        unit_fields = [(k, v) for k, v in candidates
-                       if k in _UNIT_FIELDS.get(str(claim.get('unit') or ''), ())]
+        # 평탄화된 경로(technical.chg_pct)는 마지막 마디로 비교한다.
+        expected = _UNIT_FIELDS.get(str(claim.get('unit') or ''), ())
+        unit_fields = [(k, v) for k, v in candidates if k.split('.')[-1] in expected]
         if unit_fields:
             item['status'] = 'contradicted'
             item['reason'] = 'value_mismatch'
@@ -203,3 +204,43 @@ def cap_penalty(counts: dict[str, Any]) -> float:
         return 0.0
     penalty = (unverified + contradicted * 2) * UNVERIFIED_PENALTY_STEP
     return round(min(penalty, MAX_CAP_PENALTY), 4)
+
+
+def flatten_numeric(bundle: Any, *, prefix: str = '', depth: int = 0) -> dict[str, Any]:
+    """중첩 수집기 번들을 대조 가능한 평면 수치 사전으로 편다.
+
+    문자열·불리언·None 은 대조 대상이 아니므로 버린다. 단 `source_watermark` 만은
+    lookahead 검사에 필요하므로 원형으로 보존한다.
+    """
+    out: dict[str, Any] = {}
+    if depth > 4 or not isinstance(bundle, dict):
+        return out
+    for key, value in bundle.items():
+        path = f'{prefix}{key}'
+        if key == 'source_watermark' and value:
+            out['source_watermark'] = value
+            continue
+        if isinstance(value, bool) or value is None:
+            continue
+        if isinstance(value, (int, float)):
+            out[path] = float(value)
+        elif isinstance(value, dict):
+            out.update(flatten_numeric(value, prefix=f'{path}.', depth=depth + 1))
+    return out
+
+
+def aggregate_verification(reports: Any) -> dict[str, int] | None:
+    """리포트들의 검증 결과를 합산한다. 검증된 리포트가 하나도 없으면 None."""
+    total = {'verified': 0, 'unverified': 0, 'contradicted': 0}
+    found = False
+    for report in reports or []:
+        detail = (report or {}).get('number_verification') if isinstance(report, dict) else None
+        if not isinstance(detail, dict):
+            continue
+        found = True
+        for key in total:
+            try:
+                total[key] += int(detail.get(key) or 0)
+            except (TypeError, ValueError):
+                continue
+    return total if found else None

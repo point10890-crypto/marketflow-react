@@ -103,8 +103,31 @@ def run_analysts(bundle: dict[str, Any], *, use_llm: bool = True) -> list[dict[s
                 report = None
         if not report:
             report = _rule_report(role, bundle)
+        else:
+            _attach_number_verification(report, bundle)
         reports.append(report)
     return reports
+
+
+def _attach_number_verification(report: dict[str, Any], bundle: Any) -> None:
+    """L4 기계적 검증 — LLM 리포트의 수치를 수집기 번들과 대조해 결과를 첨부한다.
+
+    shadow 단계: 검증에 실패해도 리포트를 폐기하지 않는다. 관측을 먼저 쌓고,
+    정책 전환(폐기)은 표본이 모인 뒤 별도로 판단한다.
+    """
+    try:
+        from app.services.mirofish import number_guard
+
+        text = f"{report.get('summary') or ''} {' '.join(report.get('evidence') or [])}"
+        _, verdict = number_guard.guard_output(text, number_guard.flatten_numeric(bundle))
+        report['number_verification'] = {
+            'verified': verdict['verified'],
+            'unverified': verdict['unverified'],
+            'contradicted': verdict['contradicted'],
+            'policy': 'shadow',
+        }
+    except Exception as exc:  # noqa: BLE001 — 검증 실패가 분석을 막지 않는다
+        logger.warning('[analysts] number verification skipped: %s', exc)
 
 
 # ── Rule reports ────────────────────────────────────────────────────

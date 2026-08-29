@@ -93,3 +93,51 @@ describe('DecisionBriefPage', () => {
     await waitFor(() => expect(screen.getByText(/조회에 실패했습니다/)).toBeInTheDocument());
   });
 });
+
+describe('DecisionBriefPage — 6계층 표시', () => {
+  beforeEach(() => { mockApi.fetchAuthAPI.mockReset(); });
+
+  const withExtras = {
+    ...brief,
+    verification: { verified: 3, unverified: 2, contradicted: 1 },
+    news: {
+      count: 1,
+      items: [{
+        title: '삼성전기 자사주 매입 공시', link: 'https://n/1', source: 'yonhap',
+        grade: 'B', score: 3.0, published_ts: '2026-08-29T09:00:00+09:00',
+        corroboration: 2,
+      }],
+    },
+  };
+
+  it('L4 기계적 검증 결과를 배지로 보여준다', async () => {
+    mockApi.fetchAuthAPI.mockResolvedValue(withExtras);
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '009150');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+
+    await waitFor(() => expect(screen.getByText('기계적 검증')).toBeInTheDocument());
+    expect(screen.getByText(/원천과 맞지 않는 항목/)).toBeInTheDocument();
+  });
+
+  it('L1 뉴스 맥락을 방향 판정과 구분해 보여준다', async () => {
+    mockApi.fetchAuthAPI.mockResolvedValue(withExtras);
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '009150');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+
+    await waitFor(() => expect(screen.getByText('삼성전기 자사주 매입 공시')).toBeInTheDocument());
+    expect(screen.getByText(/방향 판정 아님/)).toBeInTheDocument();
+    expect(screen.getByText(/2개 매체/)).toBeInTheDocument();
+  });
+
+  it('검증·뉴스가 없어도 화면이 깨지지 않는다', async () => {
+    mockApi.fetchAuthAPI.mockResolvedValue({ ...brief, verification: null, news: { count: 0, items: [] } });
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '005930');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+    expect(screen.queryByText('기계적 검증')).toBeNull();
+  });
+});
