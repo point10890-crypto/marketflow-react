@@ -162,3 +162,6 @@ data/alphaclaw/
 
 # local handoff kit (bundles + memory copies) — never commit
 handoff_kit/
+
+# 옴니소스 사건 원장 (런타임 데이터)
+data/omni/

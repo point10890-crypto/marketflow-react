@@ -456,6 +456,8 @@ class Config:
     CLOSING_BRIEFING_TIME = os.environ.get('CLOSING_BRIEFING_TIME', '16:05')  # AI 마감 브리핑
     # Claw 관측 outcome은 16:30 Wave/agent와 17:30 buy screen 사이에
     # 성숙한 거래세션만 멱등 갱신한다. 검출/발송에는 관여하지 않는다.
+    OMNI_NEWS_ENABLED = os.environ.get('OMNI_NEWS_ENABLED', 'true').lower() == 'true'
+    OMNI_NEWS_INTERVAL_MINUTES = int(os.environ.get('OMNI_NEWS_INTERVAL_MINUTES', '15'))
     CLAW_OUTCOME_ENABLED = os.environ.get('CLAW_OUTCOME_ENABLED', 'true').lower() == 'true'
     CLAW_OUTCOME_TIME = os.environ.get('CLAW_OUTCOME_TIME', '17:15')
     LOTTO_POST_TIME = os.environ.get('LOTTO_POST_TIME', '17:00')           # 금요일 AI 로또 분석
@@ -3335,6 +3337,26 @@ def _run_kis_token_warmup() -> bool:
         return False
 
 
+def run_omni_news_sweep() -> bool:
+    """옴니소스 O1 — 공개 뉴스 RSS 수집 → 결정론 깔때기 → 사건 원장.
+
+    읽기전용 센서: 발송·주문·LLM 경로가 없다. 소스 장애는 격리된다.
+    """
+    try:
+        from app.services.omni.news_sensor import run_news_sweep
+
+        result = run_news_sweep()
+        if result.get('status') == 'disabled':
+            return True
+        logger.info("Omni news sweep: fetched=%s kept=%s saved=%s errors=%s",
+                    result.get('fetched'), result.get('kept'), result.get('saved'),
+                    list(result.get('errors') or {}))
+        return True
+    except Exception as e:
+        logger.error("Omni news sweep failed: %s", e)
+        return False
+
+
 def _run_claw_outcome_update() -> bool:
     """성숙한 Claw D1/D5 관측 결과만 채운다 (shadow-only)."""
     try:
@@ -4001,6 +4023,11 @@ class Scheduler:
                     schedule.every(interval).minutes.do(
                         self._with_record(run_mirofish_workflow_monitor, 'mirofish_workflow_monitor',
                                           max_retries=1, retry_delay=120))
+        if Config.OMNI_NEWS_ENABLED:
+            omni_interval = max(5, int(Config.OMNI_NEWS_INTERVAL_MINUTES))
+            schedule.every(omni_interval).minutes.do(
+                self._with_record(run_omni_news_sweep, 'omni_news_sweep',
+                                  max_retries=1, retry_delay=120))
         if Config.ALPHA_BACKTEST_ENABLED:
             schedule.every().day.at(Config.ALPHA_BACKTEST_TIME).do(
                 self._with_record(run_alpha_backtest_daily, 'alpha_backtest_daily',
