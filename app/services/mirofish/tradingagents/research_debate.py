@@ -275,7 +275,10 @@ def _llm_manager(target: str, reports: list[dict[str, Any]],
         f'[토론 기록]\n{transcript}\n\n{_MANAGER_JSON}'
     )
     raw, llm_meta = llm_client.generate_text_with_metadata(
-        prompt, system=_MANAGER_SYSTEM, temperature=0.3, max_tokens=1024, json_mode=True,
+        # 매니저 판정은 기계가 소비한다(decision_brief 근거·TA 가점·SELL 제외 임계 65).
+        # 실측 2026-08-29: temp=0.3 에서 confidence 가 ±5(표준편차 2.23) 흔들렸다.
+        # 결정론 생성으로 분산을 줄인다. 토론 메시지는 논거 다양성을 위해 확률적 유지.
+        prompt, system=_MANAGER_SYSTEM, temperature=0.0, max_tokens=1024, json_mode=True,
     )
     data = _parse_json_obj(raw)
     if not data:
