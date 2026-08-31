@@ -1956,23 +1956,30 @@ def kr_decision_brief(symbol):
 @kr_bp.route('/decision/<symbol>/analyze', methods=['POST'])
 @pro_required
 def kr_decision_deep_analysis(symbol):
-    """온디맨드 심층 분석 — 4 애널리스트 → 불/베어 토론 → 리스크 판정.
+    """온디맨드 심층 분석 시작 — job+poll.
 
-    검출 이력이 없는 종목도 근거를 만들기 위해 에이전트를 직접 실행한다.
-    LLM 을 호출하므로 GET 조회와 분리된 명시적 실행 경로(POST)다.
+    LLM 토론은 실측 59초+(부하 시 그 이상)라 동기 응답은 Cloudflare 엣지 ~100초
+    한계에 걸린다. 캐시 적중이면 즉시 결과(200), 아니면 잡을 시작하고 202 를
+    돌려준다. 결과는 GET /decision/<symbol>/analyze/status 로 폴링한다.
     매매 실행 경로는 없으며 판정은 참고용이다.
     """
-    from app.services.mirofish import decision_brief, decision_cache
+    from app.services.mirofish import decision_cache, decision_jobs
 
     key = _decision_cache_key(symbol)
-    if not _decision_force_requested():
+    force = _decision_force_requested()
+    if not force:
         hit = decision_cache.cache_get('deep', key)
         if hit is not None:
             resp = jsonify(hit)
             resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
             return resp
 
-    # 남용 차단 — 심층분석은 LLM 8~12콜이라 사용자별 일일 한도를 둔다(캐시 적중은 무료).
+    # 이미 도는 잡이 있으면 합류 — force 여도 같은 LLM 토론을 이중으로 돌리지 않는다.
+    running = decision_jobs.status(key)
+    if running.get('state') == 'running':
+        return jsonify({'state': 'running', 'job': running}), 202
+
+    # 남용 차단 — 잡을 실제로 시작할 때만 차감한다(캐시 적중·합류·busy 는 무료).
     user = getattr(request, 'current_user', None)
     if user is not None and not getattr(user, 'is_admin', False):
         allowed, remaining, limit = decision_cache.consume_deep_quota(user.id)
@@ -1980,19 +1987,26 @@ def kr_decision_deep_analysis(symbol):
             return jsonify({'error': 'quota_exceeded', 'limit': limit, 'remaining': 0,
                             'detail': f'심층 분석 일일 한도({limit}회)를 모두 사용했습니다. 내일 다시 이용해 주세요.'}), 429
 
-    try:
-        payload = decision_brief.run_deep_analysis_for(symbol)
-    except ValueError as exc:
-        return jsonify({'error': 'invalid_symbol', 'detail': str(exc)}), 400
-    except Exception as exc:  # noqa: BLE001
-        logger.exception('deep analysis failed: %s', symbol)
-        return jsonify({'error': 'deep_analysis_failed',
-                        'detail': f'{type(exc).__name__}: {exc}'}), 500
+    started = decision_jobs.start(key, key)
+    if started.get('status') == 'busy':
+        return jsonify({'error': 'busy', 'max_concurrent': started.get('max_concurrent'),
+                        'detail': '동시에 실행 중인 심층 분석이 많습니다. 잠시 후 다시 시도해 주세요.'}), 429
+    # 시작(started) 또는 경합상 합류(joined) — 둘 다 폴링으로 이어진다.
+    return jsonify({'state': 'running', 'job': started.get('job')}), 202
 
-    # 실패한 분석을 하루 종일 물고 있으면 안 된다 — 성공한 결과만 저장한다.
-    if not (payload or {}).get('error'):
-        decision_cache.cache_put('deep', key, payload)
 
-    resp = jsonify(payload)
+@kr_bp.route('/decision/<symbol>/analyze/status', methods=['GET'])
+@pro_required
+def kr_decision_deep_status(symbol):
+    """심층 분석 폴링 — running | done(payload) | error | none."""
+    from app.services.mirofish import decision_cache, decision_jobs
+
+    key = _decision_cache_key(symbol)
+    st = decision_jobs.status(key)
+    if st.get('state') == 'none':
+        hit = decision_cache.cache_get('deep', key)
+        if hit is not None:
+            st = {'state': 'done', 'key': key, 'payload': hit}
+    resp = jsonify(st)
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return resp

@@ -492,3 +492,47 @@ describe('DecisionBriefPage — 첫 조회 대기', () => {
     await waitFor(() => expect(screen.getByText(/처음 조회하는 종목은/)).toBeInTheDocument());
   });
 });
+
+
+describe('DecisionBriefPage - job+poll 심층 분석', () => {
+  beforeEach(() => { mockApi.fetchAuthAPI.mockReset(); mockApi.postAuthAPI.mockReset(); });
+
+  const deepDone = {
+    symbol: '041190', name: '우리기술투자', status: 'neutral',
+    analysts: [
+      { role: 'technical', title: '기술적', stance: 'bullish', score: 20,
+        summary: '거래량 증가', evidence: ['20일선 상회'], method: 'llm', verification: null },
+    ],
+    debate: { rounds: [{ round: 1, bull: '수급이 붙었다', bear: '실적 근거가 약하다' }],
+              manager: { stance: 'neutral', thesis: '방향성 불충분', confidence: 55 }, method: 'llm' },
+    risk: null, verdict: { verdict: 'HOLD', confidence: 55 }, verification: null,
+    citations: [], retrieval: null, method: 'llm', error: null,
+  };
+
+  async function searchFirst() {
+    mockApi.fetchAuthAPI.mockImplementation((path: string) => {
+      if (path.includes('/analyze/status')) return Promise.resolve({ state: 'done', payload: deepDone });
+      return Promise.resolve(brief);
+    });
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '041190');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+  }
+
+  it('202 잡 시작이면 상태를 폴링해 완료 결과를 렌더한다', async () => {
+    await searchFirst();
+    mockApi.postAuthAPI.mockResolvedValue({ state: 'running', job: { state: 'running' } });
+    await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
+    await waitFor(() => expect(screen.getByText('수급이 붙었다')).toBeInTheDocument());
+    expect(mockApi.fetchAuthAPI).toHaveBeenCalledWith(
+      expect.stringContaining('/analyze/status'), expect.anything(), expect.anything());
+  });
+
+  it('일일 한도 초과는 사람이 읽는 안내로 보여준다', async () => {
+    await searchFirst();
+    mockApi.postAuthAPI.mockRejectedValue(new Error('quota_exceeded'));
+    await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
+    await waitFor(() => expect(screen.getByText(/일일 한도/)).toBeInTheDocument());
+  });
+});

@@ -5,6 +5,7 @@ import DetectionsCard from './DetectionsCard';
 import PerformanceCard from './PerformanceCard';
 import PaperTradingCard, { PaperOverview } from './PaperTradingCard';
 import ClawLiveCard from './ClawLiveCard';
+import ServiceGuardCard from './ServiceGuardCard';
 import CloseLeadersCard from './CloseLeadersCard';
 import AlphaCoreOpsCard from './AlphaCoreOpsCard';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
@@ -128,7 +129,8 @@ export default function AiBainDashboard() {
                                     <i className={`fas fa-chevron-${showDetail ? 'up' : 'down'} text-[10px]`} />
                                 </button>
                                 {showDetail && (
-                                    <div className="mt-3">
+                                    <div className="mt-3 space-y-4">
+                                        <ServiceGuardCard />
                                         <PerformanceCard data={overview.performance} learningPattern={learningPattern} />
                                     </div>
                                 )}

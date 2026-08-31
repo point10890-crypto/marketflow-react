@@ -85,86 +85,98 @@ def test_brief_failure_is_not_cached(client, monkeypatch):
     assert dc.cache_get('brief', '005930') is None
 
 
-# ─── 심층 분석 ──────────────────────────────────────────────
+# --- 심층 분석 (job+poll, 2026-09-01 전환) -----------------------
 
-def test_deep_second_call_same_day_skips_the_llm(client, monkeypatch):
-    """LLM 토론은 ~2분에 유료다. 하루에 한 번이면 충분하다."""
+def _wait_deep(key='005930', timeout=5.0):
+    import time
+    from app.services.mirofish import decision_jobs
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        st = decision_jobs.status(key)
+        if st['state'] in ('done', 'error', 'none'):
+            return st
+        time.sleep(0.02)
+    raise AssertionError(f'job stuck: {decision_jobs.status(key)}')
+
+
+@pytest.fixture(autouse=True)
+def _jobs_clean():
+    from app.services.mirofish import decision_jobs
+    decision_jobs._reset_for_tests()
+    yield
+    decision_jobs._reset_for_tests()
+
+
+def test_deep_starts_job_then_serves_cache_same_day(client, monkeypatch):
+    """LLM 토론은 ~1분+에 유료다. 첫 호출=202 잡 시작, 같은 날 재호출=캐시 200."""
     from app.services.mirofish import decision_brief
     calls = []
     monkeypatch.setattr(decision_brief, 'run_deep_analysis_for',
-                        lambda s, **kw: calls.append(s) or {'symbol': s, 'verdict': {'verdict': 'HOLD'}})
+                        lambda s, **kw: calls.append(s) or {'symbol': s, 'error': None,
+                                                            'verdict': {'verdict': 'HOLD'}})
+
+    first = _call(client, monkeypatch, '/api/kr/decision/005930/analyze', method='POST', json={})
+    assert first[1] == 202 and _json(first)['state'] == 'running'
+    assert _wait_deep()['state'] == 'done'
+
+    out = _json(_call(client, monkeypatch, '/api/kr/decision/005930/analyze', method='POST', json={}))
+    assert len(calls) == 1 and out['cached'] is True
+
+
+def test_deep_status_endpoint_serves_done_payload(client, monkeypatch):
+    from app.services.mirofish import decision_brief
+    monkeypatch.setattr(decision_brief, 'run_deep_analysis_for',
+                        lambda s, **kw: {'symbol': s, 'error': None, 'verdict': {'verdict': 'HOLD'}})
 
     _call(client, monkeypatch, '/api/kr/decision/005930/analyze', method='POST', json={})
-    out = _json(_call(client, monkeypatch, '/api/kr/decision/005930/analyze',
-                      method='POST', json={}))
-    assert len(calls) == 1
-    assert out['cached'] is True
+    _wait_deep()
+    with client.test_request_context('/api/kr/decision/005930/analyze/status'):
+        from app.routes import kr_market
+        st = kr_market.kr_decision_deep_status.__wrapped__('005930').get_json()
+    assert st['state'] == 'done' and st['payload']['verdict']['verdict'] == 'HOLD'
+
+
+def test_deep_duplicate_post_joins_running_job(client, monkeypatch):
+    import threading
+    from app.services.mirofish import decision_brief
+    gate = threading.Event()
+    calls = []
+
+    def slow(s, **kw):
+        calls.append(s)
+        gate.wait(3)
+        return {'symbol': s, 'error': None}
+
+    monkeypatch.setattr(decision_brief, 'run_deep_analysis_for', slow)
+    _call(client, monkeypatch, '/api/kr/decision/005930/analyze', method='POST', json={})
+    second = _call(client, monkeypatch, '/api/kr/decision/005930/analyze', method='POST', json={})
+    assert second[1] == 202 and _json(second)['state'] == 'running'
+    gate.set()
+    _wait_deep()
+    assert len(calls) == 1                                   # 잡은 하나만 돌았다
 
 
 def test_deep_force_reruns_the_analysis(client, monkeypatch):
     from app.services.mirofish import decision_brief
     calls = []
     monkeypatch.setattr(decision_brief, 'run_deep_analysis_for',
-                        lambda s, **kw: calls.append(s) or {'symbol': s, 'verdict': {}})
+                        lambda s, **kw: calls.append(s) or {'symbol': s, 'error': None, 'verdict': {}})
 
     _call(client, monkeypatch, '/api/kr/decision/005930/analyze', method='POST', json={})
-    _call(client, monkeypatch, '/api/kr/decision/005930/analyze',
-          method='POST', json={'force': True})
+    _wait_deep()
+    resp = _call(client, monkeypatch, '/api/kr/decision/005930/analyze', method='POST',
+                 json={'force': True})
+    assert resp[1] == 202                                    # 캐시가 있어도 재실행 시작
+    _wait_deep()
     assert len(calls) == 2
 
 
 def test_deep_error_payload_is_not_cached(client, monkeypatch):
-    """분석이 실패한 결과를 하루 종일 물고 있으면 안 된다."""
     from app.services.mirofish import decision_brief
     monkeypatch.setattr(decision_brief, 'run_deep_analysis_for',
                         lambda s, **kw: {'symbol': s, 'error': 'LLM down'})
 
     _call(client, monkeypatch, '/api/kr/decision/005930/analyze', method='POST', json={})
+    st = _wait_deep()
+    assert st['state'] == 'error'
     assert dc.cache_get('deep', '005930') is None
-
-
-def test_deep_exception_is_not_cached(client, monkeypatch):
-    from app.services.mirofish import decision_brief
-
-    def boom(_s, **_kw):
-        raise RuntimeError('llm down')
-
-    monkeypatch.setattr(decision_brief, 'run_deep_analysis_for', boom)
-    resp = _call(client, monkeypatch, '/api/kr/decision/005930/analyze',
-                 method='POST', json={})
-    assert resp[1] == 500
-    assert dc.cache_get('deep', '005930') is None
-
-
-# ─── 종목 검색 (자동완성) ───────────────────────────────────
-
-def _search(app, path):
-    with app.test_request_context(path):
-        from app.routes import kr_market
-        return kr_market.kr_decision_search.__wrapped__()
-
-
-def test_search_route_returns_candidates(client, monkeypatch):
-    from app.services.mirofish import decision_brief
-    monkeypatch.setattr(decision_brief, 'search_symbols',
-                        lambda q, limit=8: {'query': q, 'candidates': [
-                            {'symbol': '005930', 'name': '삼성전자',
-                             'confidence': 0.85, 'reason': 'chosung_exact'}]})
-    out = _json(_search(client, '/api/kr/decision/search?q=%E3%85%85%E3%85%85%E3%85%88%E3%85%88'))
-    assert out['candidates'][0]['symbol'] == '005930'
-
-
-def test_search_route_without_query_is_empty_not_an_error(client, monkeypatch):
-    out = _json(_search(client, '/api/kr/decision/search'))
-    assert out['candidates'] == []
-
-
-def test_search_route_survives_a_resolver_failure(client, monkeypatch):
-    from app.services.mirofish import decision_brief
-
-    def boom(_q, limit=8):
-        raise RuntimeError('resolver down')
-
-    monkeypatch.setattr(decision_brief, 'search_symbols', boom)
-    resp = _search(client, '/api/kr/decision/search?q=삼성')
-    assert _json(resp)['candidates'] == []

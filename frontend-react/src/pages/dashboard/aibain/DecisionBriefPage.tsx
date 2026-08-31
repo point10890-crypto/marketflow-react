@@ -207,6 +207,7 @@ export default function DecisionBriefPage() {
     const [error, setError] = useState('');
     const [deep, setDeep] = useState<DeepAnalysis | null>(null);
     const [deepLoading, setDeepLoading] = useState(false);
+    const [deepPhase, setDeepPhase] = useState('');
     const [suggestions, setSuggestions] = useState<Candidate[]>([]);
     const suppress = useRef(false);   // 후보를 골라 넣은 직후엔 다시 조회하지 않는다
 
@@ -235,18 +236,52 @@ export default function DecisionBriefPage() {
         }
     }, [token]);
 
+    // 심층분석은 job+poll — 동기 대기는 Cloudflare 엣지 ~100초 한계에 걸린다.
+    // 구백엔드(동기 응답)와의 호환: 응답에 analysts 가 있으면 그대로 결과다.
     const runDeep = useCallback(async (symbol: string, force = false) => {
         setDeepLoading(true);
+        setDeepPhase('분석 요청 중…');
         try {
-            const res = await postAuthAPI<DeepAnalysis>(
+            const res = await postAuthAPI<DeepAnalysis & { state?: string }>(
                 `${ENDPOINT}/${encodeURIComponent(symbol)}/analyze`,
-                force ? { force: true } : {}, token ?? undefined, 180000);
-            setDeep(res);
-        } catch {
+                force ? { force: true } : {}, token ?? undefined, 30000);
+            if (res && Array.isArray((res as DeepAnalysis).analysts)) {
+                setDeep(res as DeepAnalysis);                       // 캐시 적중 또는 구백엔드
+                return;
+            }
+            if (!res || res.state !== 'running') {
+                setError('심층 분석 응답 형식이 올바르지 않습니다.');
+                return;
+            }
+            const startedAt = Date.now();
+            for (;;) {
+                const st = await fetchAuthAPI<{ state: string; payload?: DeepAnalysis; error?: string | null }>(
+                    `${ENDPOINT}/${encodeURIComponent(symbol)}/analyze/status`, token ?? undefined, 15000);
+                if (st.state === 'done' && st.payload) { setDeep(st.payload); return; }
+                if (st.state === 'error') {
+                    setError(`심층 분석에 실패했습니다: ${st.error ?? '알 수 없는 오류'}`);
+                    return;
+                }
+                if (st.state === 'none') {
+                    setError('분석이 중단되었습니다(서버 재시작). 다시 실행해 주세요.');
+                    return;
+                }
+                if (Date.now() - startedAt > 8 * 60 * 1000) {
+                    setError('심층 분석이 예상보다 오래 걸립니다. 잠시 후 다시 확인해 주세요.');
+                    return;
+                }
+                setDeepPhase(`AI 토론 진행 중… ${Math.round((Date.now() - startedAt) / 1000)}초`);
+                await new Promise(r => setTimeout(r, 3000));
+            }
+        } catch (e) {
             setDeep(null);
-            setError('심층 분석에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+            const msg = e instanceof Error ? e.message : '';
+            if (msg.includes('quota_exceeded')) setError('심층 분석 일일 한도를 모두 사용했습니다. 내일 다시 이용해 주세요.');
+            else if (msg.includes('busy')) setError('동시에 실행 중인 분석이 많습니다. 잠시 후 다시 시도해 주세요.');
+            else setError('심층 분석에 실패했습니다. 잠시 후 다시 시도해 주세요.');
         } finally {
             setDeepLoading(false);
+            setDeepPhase('');
         }
     }, [token]);
 
@@ -382,7 +417,7 @@ export default function DecisionBriefPage() {
                                 disabled={deepLoading}
                                 className="shrink-0 rounded-xl border border-teal-400/35 bg-teal-500/15 px-4 py-2.5 text-[13px] font-bold text-teal-200 transition hover:bg-teal-500/25 disabled:opacity-40"
                             >
-                                {deepLoading ? '분석 중… (최대 2분)' : '심층 분석 실행'}
+                                {deepLoading ? (deepPhase || '분석 중…') : '심층 분석 실행'}
                             </button>
                         </div>
                         {deep && <DeepBody deep={deep}
