@@ -87,6 +87,10 @@ interface DecisionBrief {
 }
 
 const SOURCE_LABEL: Record<string, { name: string; desc: string }> = {
+    price: { name: '가격·추세', desc: '이평 배열 · 20일 수익률' },
+    flow: { name: '실시간 수급', desc: 'KIS 시세 · 외인/기관 순매수' },
+    sector_rs: { name: '상대강도 RS', desc: '유니버스 백분위 (1~99)' },
+    risk: { name: '리스크 점검', desc: 'KIND 지정 · 신용잔고' },
     claw: { name: '주도주 전이', desc: '장중 등급·이탈 감시' },
     jongga: { name: '종가베팅 V2', desc: '17점 채점 시그널' },
     scanner: { name: '알파 스캐너', desc: '알파·리스크·RS' },

@@ -41,6 +41,10 @@ MIN_STRONG_EVIDENCE = 2  # E1: 서로 다른 S/A 소스 2개 이상
 
 # 근거 등급 — S: 거래소·공시 원장 / A: 시세·수급·내부 실측 / B: LLM 해석
 SOURCE_GRADE = {
+    'price': 'A',        # 거래소 시세 원장 파생 (일봉 추세)
+    'flow': 'A',         # KIS 실시간 시세·투자자 수급
+    'sector_rs': 'B',    # 유니버스 상대강도 파생
+    'risk': 'A',         # KIND 지정·신용잔고 점검
     'claw': 'A',
     'jongga': 'A',
     'scanner': 'A',
@@ -49,6 +53,12 @@ SOURCE_GRADE = {
     'detection': 'B',
     'tradingagents': 'B',
 }
+
+#: 검출 '이력'에서 나오는 소스 — 스캐너에 걸린 적 없는 종목이면 비는 게 정상이다.
+#: 이 계열의 공백은 개별 감산 대신 1회 합산 감산으로 다룬다(2026-09-01, SKT 사례).
+DETECTION_HISTORY_SOURCES = frozenset({
+    'claw', 'jongga', 'scanner', 'detection', 'tradingagents', 'paper', 'observation',
+})
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 JONGGA_PATH = os.path.join(REPO_ROOT, 'data', 'jongga_v2_latest.json')
@@ -252,9 +262,16 @@ def compute_confidence_cap(
         cap -= THIN_EVIDENCE_PENALTY
         reasons.append(f'strong evidence < {MIN_STRONG_EVIDENCE} (S/A 소스 부족)')
 
+    history_gaps = [g for g in data_gaps if g in DETECTION_HISTORY_SOURCES]
     for gap in data_gaps:
+        if gap in DETECTION_HISTORY_SOURCES:
+            continue
         cap -= GAP_PENALTY
         reasons.append(f'data gap: {gap}')
+    if history_gaps:
+        # 미검출 종목이면 검출계열 공백은 정상이다 — 개별 누적 대신 1회만 감산한다.
+        cap -= GAP_PENALTY
+        reasons.append(f"data gap: 검출 이력 {len(history_gaps)}종 (미검출 종목 정상)")
 
     if agreement.get('verdict') == 'conflicted':
         cap -= CONFLICT_PENALTY
@@ -488,7 +505,122 @@ def _src_observation(symbol: str) -> dict[str, Any] | None:
     }
 
 
+# ─── 보편 소스 (전 종목, 검출 이력과 무관) ───────────────────
+
+def _src_price_trend(symbol: str) -> dict[str, Any] | None:
+    """일봉 추세 — 로컬 시세 원장(전 유니버스)에서 이평·수익률·고점 이격 계산.
+
+    검출 이력이 없는 종목도 항상 평가 가능한 A급 근거다(거래소 시세 실측 파생).
+    """
+    from app.services.mirofish.alpha_scanner import _load_price_history_cached
+
+    rows = sorted(_load_price_history_cached().get(symbol) or [],
+                  key=lambda r: str(r.get('date') or ''))
+    closes = [float(r.get('current_price') or 0) for r in rows
+              if float(r.get('current_price') or 0) > 0]
+    if len(closes) < 21:
+        return None
+    close = closes[-1]
+    ma20 = sum(closes[-20:]) / 20
+    ma60 = sum(closes[-60:]) / 60 if len(closes) >= 60 else None
+    ret20 = (close / closes[-21] - 1) * 100
+    hi120 = max(closes[-120:])
+    from_high = (close / hi120 - 1) * 100 if hi120 > 0 else None
+
+    if close > ma20 and (ma60 is None or ma20 > ma60) and ret20 > 0:
+        stance = 'positive'
+    elif (close < ma20 and ret20 < 0) or ret20 < -15:
+        stance = 'negative'
+    else:
+        stance = 'neutral'
+    return {
+        'stance': stance,
+        'as_of': str(rows[-1].get('date') or ''),
+        'detail': {'close': round(close), 'ma20': round(ma20),
+                   'ma60': round(ma60) if ma60 is not None else None,
+                   'ret_20d_pct': round(ret20, 1),
+                   'from_120d_high_pct': round(from_high, 1) if from_high is not None else None,
+                   'bars': len(closes)},
+    }
+
+
+def _src_live_flow(symbol: str) -> dict[str, Any] | None:
+    """KIS 실시간 시세·투자자 수급 — 30초 TTL 캐시(live_data) 재사용."""
+    from app.services.mirofish import live_data
+
+    snap = live_data.load_kis_snapshot({'symbol': symbol})
+    if not snap.get('found'):
+        return None
+    quote = snap.get('quote') or {}
+    inv = snap.get('investor') or {}
+    chg = quote.get('change_pct')
+    f = inv.get('foreign_net_value')
+    i = inv.get('institution_net_value')
+
+    both_buy = (f or 0) > 0 and (i or 0) > 0
+    both_sell = (f or 0) < 0 and (i or 0) < 0
+    if both_buy or ((chg or 0) >= 3 and ((f or 0) > 0 or (i or 0) > 0)):
+        stance = 'positive'
+    elif both_sell and (chg or 0) < 0:
+        stance = 'negative'
+    else:
+        stance = 'neutral'
+    return {
+        'stance': stance,
+        'as_of': datetime.now(timezone.utc).isoformat(timespec='seconds'),
+        'detail': {'price': quote.get('price'), 'change_pct': chg,
+                   'foreign_net_value': f, 'institution_net_value': i,
+                   'per': quote.get('per'), 'pbr': quote.get('pbr')},
+    }
+
+
+def _src_sector_rs(symbol: str) -> dict[str, Any] | None:
+    """오닐 상대강도(1~99) — 스캐너가 만든 아티팩트를 읽기만 한다(요청 경로 재계산 금지)."""
+    from app.services.mirofish import sector_rs
+
+    ratings = sector_rs.get_rs_ratings(
+        data_root=os.path.join(REPO_ROOT, 'data'), allow_compute=False)
+    entry = (ratings.get('entries') or {}).get(symbol)
+    adj = sector_rs.score_rs_adjustment(entry)
+    rs = adj.get('rs_rating')
+    if rs is None:
+        return None
+    stance = 'positive' if rs >= 70 else ('negative' if rs <= 30 else 'neutral')
+    return {
+        'stance': stance,
+        'as_of': ratings.get('generated_at'),
+        'detail': {'rs_rating': rs, 'tag': adj.get('tag')},
+    }
+
+
+def _src_risk_flags(symbol: str) -> dict[str, Any] | None:
+    """공시·신용 리스크 점검 — KIND 지정 + 신용잔고. '깨끗함'도 정보다(중립)."""
+    from app.services.mirofish import blacklist as bl_service
+    from app.services.mirofish import credit_balance as cb_service
+
+    b = bl_service.is_blacklisted(symbol, allow_fetch=False)
+    credit = cb_service.get_credit_entry(symbol, allow_fetch=False)
+    has_data = bool(b.get('fetched_at')) or credit is not None
+    if not has_data and not b.get('listed'):
+        return None   # 점검 데이터 자체가 없는 호스트 — 공백으로 다룬다
+
+    flags: list[str] = []
+    if b.get('listed'):
+        flags.append('KIND ' + (','.join(b.get('categories') or []) or '지정'))
+    return {
+        'stance': 'negative' if flags else 'neutral',
+        'as_of': b.get('fetched_at'),
+        'detail': {'flags': flags, 'kind_risk_level': b.get('risk_level'),
+                   'credit_entry': bool(credit)},
+    }
+
+
 SOURCE_READERS: dict[str, Callable[[str], dict[str, Any] | None]] = {
+    # 보편 소스 — 전 종목에서 평가 가능 (2026-09-01 분석력 강화)
+    'price': _src_price_trend,
+    'flow': _src_live_flow,
+    'sector_rs': _src_sector_rs,
+    # 검출 이력 소스 — 스캐너/종가베팅에 걸렸던 종목만 값을 가진다
     'claw': _src_claw,
     'jongga': _src_jongga,
     'scanner': _src_scanner,
@@ -496,6 +628,8 @@ SOURCE_READERS: dict[str, Callable[[str], dict[str, Any] | None]] = {
     'tradingagents': _src_tradingagents,
     'paper': _src_paper,
     'observation': _src_observation,
+    # 리스크 점검 — 항상 마지막 줄에 표시
+    'risk': _src_risk_flags,
 }
 
 
