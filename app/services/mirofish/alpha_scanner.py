@@ -346,6 +346,7 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
     }
 
     write_json_atomic(_run_path(run_id), run, sort_keys=False)
+    _invalidate_run_paths_cache()   # 새 런이 관측/판단 경로에 즉시 보이도록
     write_json_atomic(_run_artifact_path(run_id, 'feature_vectors.json'), {
         'run_id': run_id,
         'generated_at': generated_at,
@@ -485,12 +486,26 @@ def _latest_scanner_run_path() -> str | None:
     return paths[0] if paths else None
 
 
-def _latest_scanner_run_paths() -> list[str]:
-    if not os.path.isdir(SCANNER_RUNS_ROOT):
+_RUN_PATHS_CACHE: dict[str, tuple[float, list[str]]] = {}
+
+
+def _run_paths_ttl_seconds() -> float:
+    try:
+        return float(os.environ.get('MIROFISH_RUN_PATHS_TTL_SECONDS', '') or 30)
+    except ValueError:
+        return 30.0
+
+
+def _invalidate_run_paths_cache() -> None:
+    _RUN_PATHS_CACHE.clear()
+
+
+def _scan_latest_run_paths(root: str) -> list[str]:
+    if not os.path.isdir(root):
         return []
     candidates: list[tuple[float, str, str]] = []
     try:
-        entries = list(os.scandir(SCANNER_RUNS_ROOT))
+        entries = list(os.scandir(root))
     except OSError:
         return []
     for entry in entries:
@@ -500,7 +515,7 @@ def _latest_scanner_run_paths() -> list[str]:
             safe_id = _safe_run_id(entry.name)
         except ValueError:
             continue
-        path = os.path.join(SCANNER_RUNS_ROOT, safe_id, 'run.json')
+        path = os.path.join(root, safe_id, 'run.json')
         if not os.path.isfile(path):
             continue
         try:
@@ -512,6 +527,25 @@ def _latest_scanner_run_paths() -> list[str]:
         return []
     candidates.sort(key=lambda item: (item[0], item[1]), reverse=True)
     return [item[2] for item in candidates]
+
+
+def _latest_scanner_run_paths() -> list[str]:
+    """정렬된 run.json 경로 목록 — 짧은 TTL 메모.
+
+    miniPC 실측(2026-08-31): scanner_runs 4,100개 디렉토리 전수 스캔이 요청마다
+    돌면서 콜드 파일캐시에서 첫 판단 조회가 75초까지 걸렸다. 새 런 저장 시
+    create_scanner_run 이 즉시 무효화하므로, TTL(기본 30초) 동안의 신선도 손실은
+    관측 경로에만 해당한다. TTL 0 이면 항상 재스캔(킬스위치).
+    """
+    root = SCANNER_RUNS_ROOT
+    ttl = _run_paths_ttl_seconds()
+    now = time_mod.time()
+    hit = _RUN_PATHS_CACHE.get(root)
+    if ttl > 0 and hit is not None and now - hit[0] < ttl:
+        return list(hit[1])
+    paths = _scan_latest_run_paths(root)
+    _RUN_PATHS_CACHE[root] = (now, paths)
+    return list(paths)
 
 
 def read_price_chart(symbol: str, limit: int = 120) -> dict[str, Any]:

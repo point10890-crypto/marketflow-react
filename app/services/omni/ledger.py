@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS news_events (
 );
 CREATE INDEX IF NOT EXISTS ix_news_collected ON news_events(collected_at DESC);
 CREATE INDEX IF NOT EXISTS ix_news_score ON news_events(score DESC);
+CREATE INDEX IF NOT EXISTS ix_news_published ON news_events(published_ts DESC, score DESC);
 """
 
 

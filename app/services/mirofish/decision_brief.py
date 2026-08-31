@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 from datetime import datetime, timezone
 from typing import Any, Callable
 
@@ -669,15 +670,21 @@ def build_decision_brief(symbol: Any, *, now: datetime | None = None) -> dict[st
     data_gaps: list[str] = []
     errors: dict[str, str] = {}
     name: str | None = resolved_name
+    # 프로덕션 병목 자가진단 — 어느 소스가 느린지 응답이 스스로 말한다 (2026-08-31 75초 장애).
+    timings_ms: dict[str, int] = {}
+    t_total = time.perf_counter()
 
     for source in SOURCE_READERS:
         reader = SOURCE_READERS[source]
+        t0 = time.perf_counter()
         try:
             result = reader(code)
         except Exception as exc:  # noqa: BLE001 — 소스 장애가 판단 전체를 막지 않는다
             errors[source] = f'{type(exc).__name__}: {exc}'
             data_gaps.append(source)
             continue
+        finally:
+            timings_ms[source] = int((time.perf_counter() - t0) * 1000)
         if not result:
             data_gaps.append(source)
             continue
@@ -693,12 +700,16 @@ def build_decision_brief(symbol: Any, *, now: datetime | None = None) -> dict[st
         name = name or result.get('name')
 
     news = {'count': 0, 'items': []}
+    t0 = time.perf_counter()
     try:
         news = _read_news(code)
     except Exception as exc:  # noqa: BLE001 — 뉴스 원장 부재가 판단을 막지 않는다
         errors['news'] = f'{type(exc).__name__}: {exc}'
+    timings_ms['news'] = int((time.perf_counter() - t0) * 1000)
 
+    t0 = time.perf_counter()
     regime = _read_regime()
+    timings_ms['regime'] = int((time.perf_counter() - t0) * 1000)
     agreement = summarize_agreement(signals)
 
     # L4 — LLM 산출(딥검증)의 수치 검증 결과를 신뢰 상한에 반영한다.
@@ -731,5 +742,6 @@ def build_decision_brief(symbol: Any, *, now: datetime | None = None) -> dict[st
         'news': news,
         'regime': regime,
         'errors': errors,
+        'timings_ms': dict(timings_ms, total=int((time.perf_counter() - t_total) * 1000)),
         'disclaimer': '정보 제공 목적이며 투자 권유가 아닙니다. 매매 실행 경로는 시스템에 존재하지 않습니다.',
     }
