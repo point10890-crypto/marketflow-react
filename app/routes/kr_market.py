@@ -1972,6 +1972,14 @@ def kr_decision_deep_analysis(symbol):
             resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
             return resp
 
+    # 남용 차단 — 심층분석은 LLM 8~12콜이라 사용자별 일일 한도를 둔다(캐시 적중은 무료).
+    user = getattr(request, 'current_user', None)
+    if user is not None and not getattr(user, 'is_admin', False):
+        allowed, remaining, limit = decision_cache.consume_deep_quota(user.id)
+        if not allowed:
+            return jsonify({'error': 'quota_exceeded', 'limit': limit, 'remaining': 0,
+                            'detail': f'심층 분석 일일 한도({limit}회)를 모두 사용했습니다. 내일 다시 이용해 주세요.'}), 429
+
     try:
         payload = decision_brief.run_deep_analysis_for(symbol)
     except ValueError as exc:

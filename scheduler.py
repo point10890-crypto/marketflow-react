@@ -423,6 +423,12 @@ class Config:
     ALPHA_SCANNER_MAX_EVENTS = int(os.environ.get('ALPHA_SCANNER_MAX_EVENTS', '8'))
     ALPHA_SCANNER_RETRY_SECONDS = int(os.environ.get('ALPHA_SCANNER_RETRY_SECONDS', '300'))
     ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES = int(os.environ.get('ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES', '5'))
+    # ── AI Brain 서비스 가드 (2026-09-01 서비스화) ──
+    AIBRAIN_GUARD_ENABLED = os.environ.get('AIBRAIN_GUARD_ENABLED', 'true').lower() == 'true'
+    AIBRAIN_GUARD_INTERVAL_MINUTES = int(os.environ.get('AIBRAIN_GUARD_INTERVAL_MINUTES', '10'))
+    AIBRAIN_PREWARM_TIMES = [
+        t.strip() for t in os.environ.get('AIBRAIN_PREWARM_TIMES', '08:25,15:05').split(',') if t.strip()
+    ]
     # The canonical alert is the default single report. Current-TopN is an
     # explicit operator opt-in follow-up and is never sent for no-new-event runs.
     ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED = os.environ.get('ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED', 'false').lower() == 'true'
@@ -978,6 +984,35 @@ def run_alpha_scanner_monitor() -> bool:
                 )
             except Exception:
                 pass
+        return False
+
+
+def run_aibrain_service_guard() -> bool:
+    """AI Brain 3대 서비스(스캐너·펀드매니저·판단) 지속성 가드 — 상태전이 시 개인봇 알림."""
+    try:
+        from app.services.mirofish import service_guard
+        result = service_guard.run_guard(send_fn=lambda msg: send_telegram(msg, channel=False))
+        if result.get('overall') != 'ok':
+            logger.warning("AI Brain service guard: overall=%s statuses=%s",
+                           result.get('overall'),
+                           {k: v.get('status') for k, v in (result.get('services') or {}).items()})
+        return True
+    except Exception as e:
+        logger.error(f"AI Brain service guard failed: {e}", exc_info=True)
+        return False
+
+
+def run_aibrain_prewarm() -> bool:
+    """판단 캐시 프리웜 — 구독자의 '첫 조회 수십 초'를 백그라운드에서 미리 치운다."""
+    try:
+        from app.services.mirofish import service_guard
+        result = service_guard.prewarm_decision_cache()
+        logger.info("AI Brain decision prewarm: warmed=%s skipped=%s errors=%s",
+                    len(result.get('warmed') or []), len(result.get('skipped') or []),
+                    len(result.get('errors') or {}))
+        return True
+    except Exception as e:
+        logger.error(f"AI Brain decision prewarm failed: {e}", exc_info=True)
         return False
 
 
@@ -4028,6 +4063,17 @@ class Scheduler:
             schedule.every(omni_interval).minutes.do(
                 self._with_record(run_omni_news_sweep, 'omni_news_sweep',
                                   max_retries=1, retry_delay=120))
+        if Config.AIBRAIN_GUARD_ENABLED:
+            guard_interval = max(0, int(Config.AIBRAIN_GUARD_INTERVAL_MINUTES))
+            if guard_interval:
+                schedule.every(guard_interval).minutes.do(
+                    self._with_record(run_aibrain_service_guard, 'aibrain_service_guard',
+                                      max_retries=0, retry_delay=120))
+            for day in weekdays:
+                for hm in Config.AIBRAIN_PREWARM_TIMES:
+                    getattr(schedule.every(), day).at(hm).do(
+                        self._with_record(run_aibrain_prewarm, f"aibrain_prewarm_{hm.replace(':', '')}",
+                                          max_retries=1, retry_delay=300))
         if Config.ALPHA_BACKTEST_ENABLED:
             schedule.every().day.at(Config.ALPHA_BACKTEST_TIME).do(
                 self._with_record(run_alpha_backtest_daily, 'alpha_backtest_daily',

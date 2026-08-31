@@ -165,3 +165,53 @@ def cache_clear(*, kind: str | None = None, symbol: Any = None) -> int:
     except Exception as exc:  # noqa: BLE001
         logger.debug('[decision_cache] clear failed: %s', exc)
         return 0
+
+
+# ─── 심층분석 일일 쿼터 (유료 서비스 남용 차단) ─────────────────
+#
+# 심층분석 1회 = LLM 8~12콜. 캐시 적중은 차감하지 않는다(재조회는 무료).
+# 쿼터 저장소 장애는 fail-open — 가용성이 우선이며, 사유는 로그로 남긴다.
+
+DEEP_QUOTA_ENV = 'DECISION_DEEP_DAILY_QUOTA'
+DEEP_QUOTA_DEFAULT = 20
+
+
+def deep_quota_limit() -> int:
+    try:
+        return int(os.environ.get(DEEP_QUOTA_ENV, '') or DEEP_QUOTA_DEFAULT)
+    except ValueError:
+        return DEEP_QUOTA_DEFAULT
+
+
+def consume_deep_quota(user_id: int) -> tuple[bool, int, int]:
+    """(허용 여부, 남은 횟수, 한도). 한도 0 이하 = 무제한."""
+    limit = deep_quota_limit()
+    if limit <= 0:
+        return True, -1, 0
+    day = _now_kst().strftime('%Y%m%d')
+    try:
+        con = _connect()
+        try:
+            con.execute("""
+                CREATE TABLE IF NOT EXISTS deep_quota (
+                    day     TEXT NOT NULL,
+                    user_id INTEGER NOT NULL,
+                    count   INTEGER NOT NULL DEFAULT 0,
+                    PRIMARY KEY (day, user_id)
+                )
+            """)
+            row = con.execute('SELECT count FROM deep_quota WHERE day=? AND user_id=?',
+                              (day, int(user_id))).fetchone()
+            used = int(row[0]) if row else 0
+            if used >= limit:
+                return False, 0, limit
+            con.execute('INSERT INTO deep_quota(day, user_id, count) VALUES (?,?,1) '
+                        'ON CONFLICT(day, user_id) DO UPDATE SET count = count + 1',
+                        (day, int(user_id)))
+            con.commit()
+            return True, limit - used - 1, limit
+        finally:
+            con.close()
+    except Exception as exc:  # noqa: BLE001 — 쿼터 인프라 장애가 기능 장애가 되면 안 된다
+        logger.warning('deep quota check failed (fail-open): %s', exc)
+        return True, -1, limit
