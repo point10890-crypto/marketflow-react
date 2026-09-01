@@ -133,3 +133,35 @@ export function canAccessAiBain(user: { role?: string | null; is_aibain_active?:
     if (!user) return false;
     return user.role === 'admin' || !!user.is_aibain_active;
 }
+
+/** subscriptionFunnelTarget 이 판정에 쓰는 최소 유저 형태 (AuthContext.AuthUser 부분집합). */
+export interface FunnelUser {
+    role?: string | null;
+    status?: string | null;
+    tier?: string | null;
+    is_pro_expired?: boolean | null;
+}
+
+/**
+ * 로그인한 회원이 "구독 퍼널의 어느 단계로 보내져야 하는가"의 단일 기준.
+ *
+ * 반환값:
+ *  - null                              : 리다이렉트 불필요 (비로그인 방문자 / 로딩 중 unknown / admin / 활성 구독자)
+ *  - '/plan-select?resubscribe=…'      : 만료 회원 → 재구독
+ *  - '/plan-select'                    : tier 미선택 (노티어) → 플랜 선택
+ *  - '/pending-approval'               : 플랜 신청 후 승인 대기
+ *
+ * ApprovedGuard/ProGuard(보호 라우트), FunnelGate(공개 라우트), 404 CTA 가 전부
+ * 이 한 함수를 본다 — 분기 기준이 갈라지면 "비구독 회원이 머무는 페이지"가 생긴다.
+ */
+export function subscriptionFunnelTarget(user: FunnelUser | null | undefined): string | null {
+    if (!user) return null;
+    // 'unknown' = 토큰만 있고 /api/auth/me 응답 전 합성 유저 — 판정 보류 (가드가 별도 처리)
+    if (user.status === 'unknown') return null;
+    if (user.role === 'admin') return null;
+    if (user.status === 'expired' || user.is_pro_expired) return '/plan-select?resubscribe=1&from=expired';
+    if (!user.tier) return '/plan-select';
+    if (user.status !== 'approved') return '/pending-approval';
+    if (user.tier !== 'pro' && user.tier !== 'premium') return '/pending-approval';
+    return null;
+}

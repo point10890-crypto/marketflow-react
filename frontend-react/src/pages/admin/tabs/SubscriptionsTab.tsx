@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { adminAPI, SubscriptionRequest, PendingSignup, ExpiredMember } from '@/lib/api';
 
 export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCountChange: (n: number) => void }) {
@@ -25,7 +25,24 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
         if (!silent) setLoading(false);
     }, [apiToken, onCountChange]);
 
-    useEffect(() => { loadRequests(); }, [loadRequests]);
+    // 승인/거절/부여 진행 중에는 자동 갱신을 미룬다 (optimistic UI 를 폴링이 덮어쓰는 것 방지)
+    const busyRef = useRef(false);
+    busyRef.current = processing.size > 0 || grantingUser.size > 0;
+
+    // AdminPage 상단 배지는 60초 폴링으로 갱신되는데 목록은 수동 새로고침뿐이면
+    // "배지 1 인데 목록은 비어 있는" 불일치가 생긴다 → 목록도 같은 주기로 조용히 갱신.
+    useEffect(() => {
+        loadRequests();
+        const refresh = () => {
+            if (document.visibilityState === 'visible' && !busyRef.current) loadRequests(true);
+        };
+        const timer = setInterval(refresh, 60_000);
+        document.addEventListener('visibilitychange', refresh);
+        return () => {
+            clearInterval(timer);
+            document.removeEventListener('visibilitychange', refresh);
+        };
+    }, [loadRequests]);
 
     const showAction = (msg: string) => { setActionMsg(msg); setTimeout(() => setActionMsg(''), 3000); };
 
@@ -388,7 +405,15 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                 {processed.map(req => (
                                     <tr key={req.id} className="border-b border-white/5">
                                         <td className="px-4 py-3 text-sm text-white">{req.user_name || `#${req.user_id}`}</td>
-                                        <td className="px-4 py-3 text-xs text-gray-400">{req.from_tier} &rarr; {req.to_tier}</td>
+                                        <td className="px-4 py-3 text-xs text-gray-400">
+                                            {req.request_type === 'aibain_addon' ? (
+                                                <span className="text-cyan-300"><i className="fas fa-robot text-[10px] mr-1" />+AI Brain</span>
+                                            ) : req.request_type === 'aibain_renewal' ? (
+                                                <span className="text-cyan-300"><i className="fas fa-robot text-[10px] mr-1" />AI Brain 재구독</span>
+                                            ) : (
+                                                <>{req.from_tier} &rarr; {req.to_tier}</>
+                                            )}
+                                        </td>
                                         <td className="px-4 py-3">
                                             <span className={`text-xs px-2 py-1 rounded ${req.status === 'approved' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>{req.status}</span>
                                         </td>

@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { canAccessAiBain } from '@/lib/auth';
+import { canAccessAiBain, subscriptionFunnelTarget } from '@/lib/auth';
 import { useSeo } from '@/lib/seo';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -99,35 +99,26 @@ function ApprovedGuard({ children }: { children: React.ReactNode }) {
     if (!user) return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
     if (user.status === 'unknown') return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
     if (user.role === 'admin') return <>{children}</>;
-    // Pro 만료 → 계정 정지 상태. 재구독 페이지로 안내.
-    if (user.status === 'expired' || user.is_pro_expired) {
-        return <Navigate to="/plan-select?resubscribe=1&from=expired" replace />;
-    }
-    // tier=null = 플랜 미선택 신규 가입자 → /plan-select 로 직진 (UX 개선)
-    // /pending-approval 은 sub_req 제출 후 단계라 amount 표시 불가능 → 사용자 혼란 방지
-    if (!user.tier) return <Navigate to="/plan-select" replace />;
-    if (user.status !== 'approved') return <Navigate to="/pending-approval" replace />;
-    if (user.tier !== 'pro' && user.tier !== 'premium') return <Navigate to="/pending-approval" replace />;
+    // 만료 → 재구독 / 노티어 → 플랜 선택 / 승인 대기 → pending-approval.
+    // 판정 기준은 subscriptionFunnelTarget 한 곳 (FunnelGate·404 CTA 와 공유).
+    const funnel = subscriptionFunnelTarget(user);
+    if (funnel) return <Navigate to={funnel} replace />;
     return <>{children}</>;
 }
 
-function ProGuard({ children }: { children: React.ReactNode }) {
+// ProGuard 는 ApprovedGuard 와 판정이 동일해졌다 (활성 Pro/Ultra Pro 또는 admin 만 통과).
+// 라우트 표기 호환을 위해 별칭으로 유지.
+const ProGuard = ApprovedGuard;
+
+// 공개 라우트용 게이트 — 랜딩/공개 커뮤니티/가이드/프라이싱에 로그인한 "비구독 회원"
+// (노티어·만료·승인대기)이 들어오면 구독 퍼널로 돌려보낸다. 비로그인 방문자와
+// 활성 구독자·admin 은 그대로 열람 (AdSense 크롤러는 비로그인이므로 영향 없음).
+function FunnelGate({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
-    const location = useLocation();
-    const next = `${location.pathname}${location.search || ''}`;
-    if (loading) return <LoadingFallback />;
-    if (!user) return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
-    if (user.status === 'unknown') return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
-    if (user.role === 'admin') return <>{children}</>;
-    // 만료 우선 — 계정 정지 상태로 간주 → 재구독
-    if (user.status === 'expired' || user.is_pro_expired) {
-        return <Navigate to="/plan-select?resubscribe=1&from=expired" replace />;
-    }
-    if (user.tier === 'pro' || user.tier === 'premium') {
-        return <>{children}</>;
-    }
-    // 미구독 pending 유저는 플랜 선택 페이지로
-    return <Navigate to="/plan-select" replace />;
+    // 공개 페이지는 로딩 중에도 콘텐츠를 먼저 보여준다 (비로그인 방문자 지연 금지).
+    const target = loading ? null : subscriptionFunnelTarget(user);
+    if (target) return <Navigate to={target} replace />;
+    return <>{children}</>;
 }
 
 // AI Brain 섹션 가드 — 활성 AI Brain 애드온 구독자 또는 admin 만 통과 (canAccessAiBain).
@@ -156,9 +147,11 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
 function NotFoundPage() {
     useSeo({ title: '페이지를 찾을 수 없습니다 | MarketFlow', noindex: true });
     const { user } = useAuth();
-    const target = user ? '/dashboard' : unauthRedirect();
+    // 비구독 회원은 404 에서도 구독 퍼널로 — "아무 페이지나 들어가도 구독 신청으로" 원칙
+    const funnel = user ? subscriptionFunnelTarget(user) : null;
+    const target = user ? (funnel ?? '/dashboard') : unauthRedirect();
     const label = user
-        ? '대시보드로 이동'
+        ? (funnel ? '구독 신청으로 이동' : '대시보드로 이동')
         : (target === '/login' ? '로그인' : '앱 소개 · 가입');
     return (
         <div className="flex min-h-[100dvh] items-center justify-center bg-[#09090b] text-white">
@@ -192,22 +185,24 @@ export default function App() {
             <AuthProvider>
             <NotificationProvider>
                 <Routes>
-                    {/* Public routes */}
-                    <Route path="/" element={<LandingPage />} />
+                    {/* Public routes — FunnelGate: 로그인한 비구독 회원(노티어·만료·승인대기)은
+                        공개 페이지에 머물지 않고 구독 퍼널로 리다이렉트 (비로그인·활성 구독자·admin 은 그대로) */}
+                    <Route path="/" element={<FunnelGate><LandingPage /></FunnelGate>} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     {/* 구독 신청 3단계 플로우 — 신규 가입 + 만료 재구독 공용 */}
                     <Route path="/plan-select" element={<PlanSelectPage />} />
                     <Route path="/payment-request" element={<PaymentRequestPage />} />
-                    <Route path="/pricing" element={<PricingPage />} />
+                    <Route path="/pricing" element={<FunnelGate><PricingPage /></FunnelGate>} />
                     <Route path="/pending-approval" element={<PendingApprovalPage />} />
 
-                    {/* 공개(비로그인) 영역 — 커뮤니티 열람 + 정책 페이지 */}
-                    <Route path="/community" element={<Suspense fallback={<LoadingFallback />}><PublicCommunityPage /></Suspense>} />
-                    <Route path="/community/post/:postId" element={<Suspense fallback={<LoadingFallback />}><PublicPostPage /></Suspense>} />
-                    <Route path="/community/:board" element={<Suspense fallback={<LoadingFallback />}><PublicCommunityPage /></Suspense>} />
-                    <Route path="/guide" element={<Suspense fallback={<LoadingFallback />}><GuideListPage /></Suspense>} />
-                    <Route path="/guide/:slug" element={<Suspense fallback={<LoadingFallback />}><GuideArticlePage /></Suspense>} />
+                    {/* 공개(비로그인) 영역 — 커뮤니티 열람 + 정책 페이지.
+                        정책 3종(privacy/terms/about)은 법적 고지라 FunnelGate 를 걸지 않는다. */}
+                    <Route path="/community" element={<FunnelGate><Suspense fallback={<LoadingFallback />}><PublicCommunityPage /></Suspense></FunnelGate>} />
+                    <Route path="/community/post/:postId" element={<FunnelGate><Suspense fallback={<LoadingFallback />}><PublicPostPage /></Suspense></FunnelGate>} />
+                    <Route path="/community/:board" element={<FunnelGate><Suspense fallback={<LoadingFallback />}><PublicCommunityPage /></Suspense></FunnelGate>} />
+                    <Route path="/guide" element={<FunnelGate><Suspense fallback={<LoadingFallback />}><GuideListPage /></Suspense></FunnelGate>} />
+                    <Route path="/guide/:slug" element={<FunnelGate><Suspense fallback={<LoadingFallback />}><GuideArticlePage /></Suspense></FunnelGate>} />
                     <Route path="/privacy" element={<Suspense fallback={<LoadingFallback />}><PrivacyPage /></Suspense>} />
                     <Route path="/terms" element={<Suspense fallback={<LoadingFallback />}><TermsPage /></Suspense>} />
                     <Route path="/about" element={<Suspense fallback={<LoadingFallback />}><AboutPage /></Suspense>} />
