@@ -1851,11 +1851,11 @@ def get_ai_chart_image(stock_code: str):
 
 
 # ── 종목 판단 브리프 ────────────────────────────────────────
-from app.auth.decorators import pro_required  # noqa: E402
+from app.auth.decorators import admin_or_aibain_required  # noqa: E402
 
 
 @kr_bp.route('/rag/status', methods=['GET'])
-@pro_required
+@admin_or_aibain_required
 def kr_rag_status():
     """검색 계층(변형 RAG)이 지금 무엇을 알고 있는지 — 규모·커버리지·신선도."""
     from app.services.mirofish import retrieval
@@ -1894,7 +1894,7 @@ def _decision_force_requested():
 
 
 @kr_bp.route('/decision/search', methods=['GET'])
-@pro_required
+@admin_or_aibain_required
 def kr_decision_search():
     """종목 자동완성 — 코드·종목명·별칭·초성 전부로 후보를 찾는다.
 
@@ -1922,7 +1922,7 @@ def kr_decision_search():
 
 
 @kr_bp.route('/decision/<symbol>', methods=['GET'])
-@pro_required
+@admin_or_aibain_required
 def kr_decision_brief(symbol):
     """한 종목의 독립 근거를 팬아웃 집계 — 합의·이견·데이터 공백·신뢰 상한.
 
@@ -1954,7 +1954,7 @@ def kr_decision_brief(symbol):
 
 
 @kr_bp.route('/decision/<symbol>/analyze', methods=['POST'])
-@pro_required
+@admin_or_aibain_required
 def kr_decision_deep_analysis(symbol):
     """온디맨드 심층 분석 시작 — job+poll.
 
@@ -1996,7 +1996,7 @@ def kr_decision_deep_analysis(symbol):
 
 
 @kr_bp.route('/decision/<symbol>/analyze/status', methods=['GET'])
-@pro_required
+@admin_or_aibain_required
 def kr_decision_deep_status(symbol):
     """심층 분석 폴링 — running | done(payload) | error | none."""
     from app.services.mirofish import decision_cache, decision_jobs
