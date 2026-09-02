@@ -13,7 +13,7 @@ from app.services.ai_routing.contracts import (
     TokenUsage,
 )
 from app.services.ai_routing.providers import AdapterResponse, ProviderCallError
-from app.services.ai_routing.router import AIRouter, estimate_reservation_input_tokens
+from app.services.ai_routing.router import AIRouter, estimate_reservation_input_tokens, reserve_openai_fallback
 from app.services.ai_routing.store import RoutingStore
 from app.services.ai_routing.telemetry import usage_summary
 from app.services.ai_routing import router as router_module
@@ -106,6 +106,48 @@ def test_both_decisive_providers_fail_returns_hold_review(tmp_path):
 
     assert result.text is None
     assert result.analysis_status is AnalysisStatus.HOLD_REVIEW
+
+
+def test_domain_schema_rejection_is_a_provider_failure_then_one_fallback(tmp_path):
+    deepseek = FakeAdapter(_response('{"verdict":"NOT_ALLOWED"}'))
+    openai = FakeAdapter(_response('{"verdict":"BUY"}'))
+    router, _store = _router(tmp_path, {"deepseek": deepseek, "openai": openai})
+    request = RoutingRequest(
+        operation=Operation.DECISIVE_TEXT, prompt='fixture', run_id='domain-run',
+        request_id='domain-request', json_mode=True,
+        domain_validator=lambda value: (
+            None if value.get('verdict') in {'BUY', 'HOLD', 'SELL'}
+            else ProviderErrorClass.INVALID_JSON
+        ),
+    )
+    result = router.route_text(request)
+    assert result.analysis_status is AnalysisStatus.SUCCESS_FALLBACK
+    assert deepseek.calls == 1 and openai.calls == 1
+    assert result.attempts[0].error_class is ProviderErrorClass.INVALID_JSON
+
+
+def test_router_claims_pre_reserved_permit_and_settles_without_second_debit(tmp_path):
+    store = RoutingStore(tmp_path / 'usage.sqlite3')
+    budget = BudgetManager(store)
+    request = RoutingRequest(
+        operation=Operation.DECISIVE_TEXT, prompt='fixture', run_id='permit-run',
+        request_id='permit-request', json_mode=True,
+    )
+    permit = reserve_openai_fallback(request, budget=budget)
+    assert permit.approved and permit.reservation_id
+    routed = RoutingRequest(**{**request.__dict__, 'reservation_id': permit.reservation_id})
+    router = AIRouter(
+        {'deepseek': FakeAdapter(ProviderCallError(ProviderErrorClass.AUTHENTICATION)),
+         'openai': FakeAdapter(_response('{"verdict":"BUY"}'))},
+        budget=budget, breaker=CircuitBreaker(store), store=store,
+    )
+    result = router.route_text(routed)
+    assert result.analysis_status is AnalysisStatus.SUCCESS_FALLBACK
+    with store.transaction() as connection:
+        rows = connection.execute(
+            "SELECT status, actual_calls FROM budget_reservations WHERE run_id='permit-run'"
+        ).fetchall()
+    assert [(row['status'], row['actual_calls']) for row in rows] == [('settled', 1)]
 
 
 def test_auth_failure_opens_breaker_and_next_request_skips_dead_provider(tmp_path):

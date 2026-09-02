@@ -281,6 +281,11 @@ def run_research() -> dict:
             # evidence for the agents, not pre-analysis rejection rules.
             and change_pct > 0
         ):
+            from app.services.kis_screener import resolve_symbol_market
+            market = str(row.get('market') or resolve_symbol_market(symbol) or '').strip()
+            if not market:
+                rejected.append({'symbol': symbol, 'reason': 'market_unresolved', 'trend': trend})
+                continue
             candidates.append({'symbol': symbol, 'name': name})
             candidate_rows.append({
                 'symbol': symbol,
@@ -290,6 +295,15 @@ def run_research() -> dict:
                 'volume': _safe_float(row.get('volume')),
                 'source': 'KIS',
                 'observed_at': screening.get('timestamp'),
+                'market': market,
+                'source_packets': [{
+                    'evidence_id': f'kis-screen-{symbol}', 'source': 'KIS',
+                    'source_type': 'market_screen', 'title': name,
+                    'fetched_at': screening.get('timestamp'), 'freshness': 'live',
+                    'confidence': 1.0,
+                    'content': {'price': _safe_float(row.get('price') or row.get('current_price')),
+                                'change_pct': change_pct, 'volume': _safe_float(row.get('volume'))},
+                }],
             })
         else:
             rejected.append({'symbol': symbol, 'trend': trend})

@@ -118,7 +118,7 @@ def test_llm_manager_zero_confidence_is_preserved(monkeypatch):
     assert result['manager']['confidence'] == 0.0
 
 
-def test_llm_manager_missing_confidence_defaults_to_50(monkeypatch):
+def test_llm_manager_missing_confidence_is_rejected(monkeypatch):
     fake = _fake_by_system({
         '리서치 매니저': '{"stance": "bull", "thesis": "확신값 누락"}',
         'Bull': '{"message": "강세 LLM 발언"}',
@@ -132,7 +132,8 @@ def test_llm_manager_missing_confidence_defaults_to_50(monkeypatch):
         }),
     )
     result = research_debate.run_research_debate('삼성전자', REPORTS, rounds=1, use_llm=True)
-    assert result['manager']['confidence'] == 50.0
+    assert result['manager']['confidence'] == 0.0
+    assert result['analysis_status'] == 'HOLD_REVIEW'
 
 
 def test_llm_partial_failure_method_mixed(monkeypatch):
@@ -180,3 +181,21 @@ def test_research_manager_failure_is_hold_review_not_rule_promotion(monkeypatch)
     assert out['analysis_status'] == 'HOLD_REVIEW'
     assert out['manager']['stance'] == 'hold_review'
     assert out['rule_candidate_verdict']['stance'] == 'bull'
+
+
+def test_research_manager_passes_complete_domain_validator(monkeypatch):
+    calls = []
+    def fake(prompt, **kwargs):
+        calls.append(kwargs)
+        if kwargs.get('operation') == 'decisive_text':
+            return ('{"symbol":"005930","name":"삼성전자","market":"KOSPI",'
+                    '"analyst_mean":10,"stance":"bull","thesis":"x","confidence":70}',
+                    {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'})
+        return '{"message":"근거"}', {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'}
+    monkeypatch.setattr(research_debate.llm_client, 'generate_text_with_metadata', fake)
+    research_debate.run_research_debate(
+        '삼성전자', REPORTS, rounds=1, run_id='wf', symbol='005930', market='KOSPI', name='삼성전자')
+    call = next(item for item in calls if item.get('operation') == 'decisive_text')
+    invalid = {'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+               'analyst_mean': 10, 'stance': 'bull', 'thesis': 'x'}
+    assert call['domain_validator'](invalid) is not None

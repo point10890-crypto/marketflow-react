@@ -55,6 +55,9 @@ from app.services.mirofish.tradingagents import learning
 from app.services.mirofish.tradingagents import run_cache
 from app.services.mirofish import evidence_packet as evidence_packet_mod
 from app.services.mirofish import llm_client
+from app.services.ai_routing.contracts import Operation, RoutingRequest
+from app.services.ai_routing.policy import policy_for
+from app.services.ai_routing.router import reserve_openai_fallback, release_openai_reservations
 from app.utils.atomic_json import write_json_atomic
 
 logger = logging.getLogger(__name__)
@@ -82,7 +85,10 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
                       context_line: str = '', profile: str = 'full',
                       evidence_packet: dict[str, Any] | None = None,
                       run_id: str | None = None, force: bool = False,
-                      routing_run_id: str | None = None) -> dict[str, Any]:
+                      routing_run_id: str | None = None,
+                      request_ids: dict[str, str] | None = None,
+                      reservation_ids: dict[str, str] | None = None,
+                      permits_preflighted: bool = False) -> dict[str, Any]:
     """Run an analysis, reusing only immutable validated compact artifacts."""
     profile = str(profile or 'full').strip().lower()
     started = datetime.now(timezone.utc)
@@ -92,16 +98,21 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
         context_line=context_line, profile=profile, evidence_packet=evidence_packet,
         run_id=artifact_run_id, force=force,
         routing_run_id=routing_run_id or artifact_run_id,
+        request_ids=request_ids, reservation_ids=reservation_ids,
+        permits_preflighted=permits_preflighted,
     )
-    if profile != 'compact' or not evidence_packet or evidence_packet.get('cache_eligible') is False or force:
-        return _execute_deep_analysis(target, **kwargs)
-    key = evidence_packet_mod.cache_key({**evidence_packet, 'profile': profile})
-    cache = run_cache.RunCache(os.path.join(RUNS_ROOT, 'run_cache.sqlite3'))
-    return run_cache.execute_cached(
-        cache, key, artifact_run_id,
-        lambda: _execute_deep_analysis(target, **kwargs),
-        lambda result: os.path.join(RUNS_ROOT, f"{result['id']}.json"),
-    )
+    try:
+        if profile != 'compact' or not evidence_packet or evidence_packet.get('cache_eligible') is False or force:
+            return _execute_deep_analysis(target, **kwargs)
+        key = evidence_packet_mod.cache_key({**evidence_packet, 'profile': profile})
+        cache = run_cache.RunCache(os.path.join(RUNS_ROOT, 'run_cache.sqlite3'))
+        return run_cache.execute_cached(
+            cache, key, artifact_run_id,
+            lambda: _execute_deep_analysis(target, **kwargs),
+            lambda result: os.path.join(RUNS_ROOT, f"{result['id']}.json"),
+        )
+    finally:
+        release_compact_permits(reservation_ids)
 
 
 def _execute_deep_analysis(target: str, *, symbol: str | None = None,
@@ -110,7 +121,10 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
                       context_line: str = '', profile: str = 'full',
                       evidence_packet: dict[str, Any] | None = None,
                       run_id: str | None = None, force: bool = False,
-                      routing_run_id: str | None = None) -> dict[str, Any]:
+                      routing_run_id: str | None = None,
+                      request_ids: dict[str, str] | None = None,
+                      reservation_ids: dict[str, str] | None = None,
+                      permits_preflighted: bool = False) -> dict[str, Any]:
     """Run the full deep-verification pipeline for one target and persist it.
 
     Does NOT check the kill switch (the admin endpoint may run on demand); the
@@ -126,36 +140,73 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
         raise ValueError('profile must be full or compact')
     stable_run_id = run_id or _make_run_id(target, started)
     routing_run_id = routing_run_id or stable_run_id
+    request_ids = request_ids or {}
+    reservation_ids = dict(reservation_ids or {})
 
-    bundle = data_hub.gather_bundle(target, brain=brain) or {}
-    if symbol and not bundle.get('symbol'):
-        bundle['symbol'] = symbol
+    if profile == 'compact':
+        packet = evidence_packet or {}
+        if not symbol or str(packet.get('symbol') or '') != str(symbol) or str(packet.get('name') or '') != str(target):
+            raise ValueError('compact EvidencePacket identity mismatch')
+        if not packet.get('market'):
+            raise ValueError('compact EvidencePacket identity missing market')
+        bundle = data_hub.bundle_from_evidence_packet(packet, brain=brain)
+    else:
+        bundle = data_hub.gather_bundle(target, brain=brain) or {}
+        if symbol and not bundle.get('symbol'):
+            bundle['symbol'] = symbol
 
     rc = regime_mod.regime_context(brain)
 
     with llm_client.collect_generation_metadata(routing_run_id) as llm_calls:
         reports = analysts.run_analysts(bundle, use_llm=use_llm if profile == 'full' else False)
         compact_digest = None
-        if profile == 'compact' and use_llm:
+        digest_llm_enabled = use_llm and (
+            not permits_preflighted or bool(reservation_ids.get('bulk_text'))
+        )
+        if profile == 'compact' and digest_llm_enabled:
             raw_digest, digest_meta = llm_client.generate_text_with_metadata(
                 _compact_digest_prompt(target, reports, evidence_packet or {}),
                 system='결정론적 점수와 EvidencePacket을 변경하지 말고 짧게 요약하세요.',
                 temperature=0.2, max_tokens=768, json_mode=True,
                 operation='bulk_text', run_id=routing_run_id,
-                request_id=f'{stable_run_id}:evidence-digest',
+                request_id=request_ids.get('bulk_text') or f'{stable_run_id}:evidence-digest',
+                reservation_id=reservation_ids.get('bulk_text'),
                 symbol=bundle.get('symbol') or symbol, market=bundle.get('market'),
                 caller_endpoint='mirofish.tradingagents.compact_digest',
             )
             compact_digest = _parse_json(raw_digest) or {'digest': '', 'evidence_ids': []}
             compact_digest['llm'] = digest_meta
+            allowed_evidence = set((evidence_packet or {}).get('evidence_ids') or [])
+            digest_ids = list(compact_digest.get('evidence_ids') or [])
+            digest_valid = bool(
+                str(compact_digest.get('digest') or '').strip()
+                and digest_ids
+                and set(digest_ids) <= allowed_evidence
+            )
+            compact_digest['analysis_status'] = (
+                str(digest_meta.get('analysis_status') or 'DEGRADED')
+                if digest_valid else 'DEGRADED'
+            )
+        elif profile == 'compact' and use_llm:
+            compact_digest = {
+                'digest': '', 'evidence_ids': [], 'analysis_status': 'DEGRADED',
+                'degraded_reason': 'preflight_permit_unavailable', 'llm': None,
+            }
 
         effective_rounds = int(rounds) if rounds is not None else _env_rounds()
         effective_rounds = max(_MIN_ROUNDS, min(effective_rounds, _MAX_ROUNDS))
         if profile == 'compact':
-            debate = research_debate.run_compact_debate(
-                target, reports, use_llm=use_llm, run_id=routing_run_id,
-                request_id=f'{stable_run_id}:compact-debate', evidence_packet=evidence_packet,
+            debate_llm_enabled = use_llm and (
+                not permits_preflighted or bool(reservation_ids.get('compact_debate'))
             )
+            debate = research_debate.run_compact_debate(
+                target, reports, use_llm=debate_llm_enabled, run_id=routing_run_id,
+                request_id=request_ids.get('compact_debate') or f'{stable_run_id}:compact-debate',
+                reservation_id=reservation_ids.get('compact_debate'), evidence_packet=evidence_packet,
+            )
+            if use_llm and not debate_llm_enabled:
+                debate['analysis_status'] = 'DEGRADED'
+                debate['degraded_reason'] = 'preflight_permit_unavailable'
         else:
             debate = research_debate.run_research_debate(
                 target, reports, rounds=effective_rounds, use_llm=use_llm,
@@ -165,17 +216,30 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
             )
         debate['_analyst_mean'] = _mean_scores(reports)
 
+        decisive_llm_enabled = use_llm and (
+            not permits_preflighted or bool(reservation_ids.get('decisive_text'))
+        )
         tr = trader_risk.run_trader_and_risk(
-            target, bundle, debate, use_llm=use_llm,
+            target, bundle, debate, use_llm=decisive_llm_enabled,
             regime_line=rc['line'], regime_adjustment=rc['adjustment'],
             profile=profile, run_id=routing_run_id,
             symbol=bundle.get('symbol') or symbol, market=bundle.get('market'),
             name=bundle.get('display_name') or target, evidence_packet=evidence_packet,
+            request_id=request_ids.get('decisive_text'),
+            reservation_id=reservation_ids.get('decisive_text'),
         )
+        if use_llm and not decisive_llm_enabled:
+            tr['analysis_status'] = 'HOLD_REVIEW'
+            (tr.get('pm_decision') or {})['analysis_status'] = 'HOLD_REVIEW'
 
     analysis_status = str(tr.get('analysis_status') or 'SUCCESS_PRIMARY')
-    if str(debate.get('analysis_status')) == 'HOLD_REVIEW':
+    if analysis_status == 'HOLD_REVIEW' or str(debate.get('analysis_status')) == 'HOLD_REVIEW':
         analysis_status = 'HOLD_REVIEW'
+    elif profile == 'compact' and use_llm and (
+        str((compact_digest or {}).get('analysis_status')) not in {'SUCCESS_PRIMARY', 'SUCCESS_FALLBACK'}
+        or str(debate.get('analysis_status')) not in {'SUCCESS_PRIMARY', 'SUCCESS_FALLBACK'}
+    ):
+        analysis_status = 'DEGRADED'
     verdict = _flat_verdict(debate, tr, rc, analysis_status=analysis_status)
     method = _aggregate_method(reports, debate, tr)
 
@@ -209,6 +273,75 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
 
     _persist(record)
     return record
+
+
+def routing_model_ids() -> dict[str, str]:
+    """All primary/fallback model IDs that participate in compact cache identity."""
+    out: dict[str, str] = {}
+    for operation in (Operation.BULK_TEXT, Operation.COMPACT_DEBATE, Operation.DECISIVE_TEXT):
+        for provider, model in policy_for(operation).models.items():
+            out[f'{operation.value}.{provider}'] = model
+    return out
+
+
+def compact_request_ids(run_id: str, packet: dict[str, Any]) -> dict[str, str]:
+    identity = f"{run_id}:{packet['symbol']}:{packet['fingerprint']}"
+    return {operation.value: f'{identity}:{operation.value}' for operation in (
+        Operation.BULK_TEXT, Operation.COMPACT_DEBATE, Operation.DECISIVE_TEXT,
+    )}
+
+
+def release_compact_permits(reservation_ids: dict[str, str] | None) -> None:
+    """Idempotently release every preflight hold not already settled/released."""
+    if reservation_ids:
+        release_openai_reservations(list(reservation_ids.values()))
+
+
+def reserve_compact_batch(
+    run_id: str, packets: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Reserve decisive permits first, then low-priority stages, before futures."""
+    prepared: list[dict[str, Any]] = []
+    records: list[dict[str, Any]] = []
+    for packet in packets:
+        ids = compact_request_ids(run_id, packet)
+        request = RoutingRequest(
+            operation=Operation.DECISIVE_TEXT,
+            prompt=json.dumps(packet, ensure_ascii=False, sort_keys=True, default=str),
+            run_id=run_id, request_id=ids['decisive_text'],
+            symbol=packet['symbol'], market=packet['market'], json_mode=True,
+            max_output_tokens=1200,
+        )
+        permit = reserve_openai_fallback(request)
+        record = {'symbol': packet['symbol'], 'request_ids': ids,
+                  'permits': {}, 'status': 'admitted' if permit.approved else 'deferred',
+                  'reason': permit.reason}
+        if permit.approved and permit.reservation_id:
+            record['permits']['decisive_text'] = permit.reservation_id
+            prepared.append({'packet': packet, 'request_ids': ids,
+                             'reservation_ids': record['permits']})
+        records.append(record)
+    by_symbol = {item['packet']['symbol']: item for item in prepared}
+    for operation, cap in ((Operation.BULK_TEXT, 768), (Operation.COMPACT_DEBATE, 768)):
+        for record in records:
+            item = by_symbol.get(record['symbol'])
+            if not item:
+                continue
+            request = RoutingRequest(
+                operation=operation,
+                prompt=json.dumps(item['packet'], ensure_ascii=False, sort_keys=True, default=str),
+                run_id=run_id, request_id=item['request_ids'][operation.value],
+                symbol=item['packet']['symbol'], market=item['packet']['market'],
+                json_mode=True, max_output_tokens=cap,
+            )
+            permit = reserve_openai_fallback(request)
+            if permit.approved and permit.reservation_id:
+                item['reservation_ids'][operation.value] = permit.reservation_id
+                record['permits'][operation.value] = permit.reservation_id
+            else:
+                record.setdefault('degraded_stages', []).append(
+                    {'operation': operation.value, 'reason': permit.reason})
+    return prepared, records
 
 
 def is_disabled() -> bool:

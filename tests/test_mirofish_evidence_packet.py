@@ -1,3 +1,5 @@
+import pytest
+
 from app.services.mirofish.evidence_packet import build_evidence_packet, cache_key
 
 
@@ -20,12 +22,15 @@ def test_packet_is_replay_stable_and_binds_provenance():
     second = build_evidence_packet(_candidate(), profile='compact')
     assert first == second
     assert first['as_of'] == '2026-07-17T06:30:00+00:00'
-    assert first['sources'][0] == {
+    assert {key: first['sources'][0][key] for key in (
+        'evidence_id', 'source', 'fetched_at', 'freshness', 'confidence', 'content_fingerprint'
+    )} == {
         'evidence_id': 'kis-1', 'source': 'KIS',
         'fetched_at': '2026-07-17T06:30:00+00:00',
         'freshness': 'fresh', 'confidence': 0.99,
         'content_fingerprint': first['sources'][0]['content_fingerprint'],
     }
+    assert first['sources'][0]['content']['text'] == 'quote 70000'
     changed = _candidate()
     changed['source_packets'][0]['text'] = 'quote 71000'
     assert build_evidence_packet(changed)['fingerprint'] != first['fingerprint']
@@ -41,3 +46,45 @@ def test_cache_key_changes_for_replay_contract_dimensions():
     ):
         changed = {**packet, field: value}
         assert cache_key(changed) != base
+
+
+def test_packet_rejects_missing_or_after_cutoff_provenance():
+    missing = _candidate()
+    missing.pop('source_packets')
+    with pytest.raises(ValueError, match='provenance'):
+        build_evidence_packet(missing)
+
+    missing_timestamp = _candidate()
+    missing_timestamp['source_packets'][0].pop('observed_at')
+    with pytest.raises(ValueError, match='provenance'):
+        build_evidence_packet(missing_timestamp)
+
+    future = _candidate()
+    future['source_packets'][0]['observed_at'] = '2026-07-17T06:31:00+00:00'
+    with pytest.raises(ValueError, match='after as_of'):
+        build_evidence_packet(future)
+
+
+def test_packet_reads_nested_scanner_price_and_binds_all_provider_models():
+    candidate = _candidate()
+    candidate['price'] = {
+        'date': '2026-07-17T06:30:00+00:00', 'current_price': 71000,
+        'change_rate': 3.25, 'volume': 987654,
+    }
+    packet = build_evidence_packet(candidate, models={
+        'bulk_text.deepseek': 'deepseek-fast', 'bulk_text.openai': 'gpt-fast',
+        'decisive_text.deepseek': 'deepseek-pro', 'decisive_text.openai': 'gpt-pro',
+    })
+    assert packet['numeric_inputs']['current_price'] == 71000
+    assert packet['numeric_inputs']['change_pct'] == 3.25
+    assert packet['numeric_inputs']['volume'] == 987654
+    assert packet['models']['decisive_text.openai'] == 'gpt-pro'
+
+
+def test_packet_preserves_authoritative_zero_numeric_values():
+    candidate = _candidate()
+    candidate['price'] = {'current_price': 0, 'change_rate': 0, 'volume': 0}
+    packet = build_evidence_packet(candidate)
+    assert packet['numeric_inputs']['current_price'] == 0
+    assert packet['numeric_inputs']['change_pct'] == 0
+    assert packet['numeric_inputs']['volume'] == 0

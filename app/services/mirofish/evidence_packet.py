@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from copy import deepcopy
+from datetime import datetime, timezone
 from typing import Any, Mapping
 
 SCHEMA_VERSION = "mirofish.evidence.v1"
@@ -19,11 +20,11 @@ def _sha(value: Any) -> str:
     return hashlib.sha256(_canonical(value).encode("utf-8")).hexdigest()
 
 
-def _source_record(raw: Mapping[str, Any], fallback_source: str, fallback_time: str) -> dict[str, Any]:
-    fetched_at = str(raw.get("fetched_at") or raw.get("observed_at") or fallback_time).strip()
-    source = str(raw.get("source") or raw.get("source_type") or fallback_source).strip()
+def _source_record(raw: Mapping[str, Any]) -> dict[str, Any]:
+    fetched_at = str(raw.get("fetched_at") or raw.get("observed_at") or "").strip()
+    source = str(raw.get("source") or raw.get("source_type") or "").strip()
     evidence_id = str(raw.get("evidence_id") or raw.get("id") or "").strip()
-    content = {
+    content = raw.get("content") if isinstance(raw.get("content"), Mapping) else {
         "source": source, "fetched_at": fetched_at,
         "freshness": raw.get("freshness"), "confidence": raw.get("confidence"),
         "text": raw.get("text"), "title": raw.get("title"), "metadata": raw.get("metadata"),
@@ -35,7 +36,22 @@ def _source_record(raw: Mapping[str, Any], fallback_source: str, fallback_time: 
         "freshness": raw.get("freshness") or "unknown",
         "confidence": raw.get("confidence"),
         "content_fingerprint": _sha(content),
+        "source_type": str(raw.get("source_type") or source),
+        "title": str(raw.get("title") or evidence_id or source),
+        "content": deepcopy(content),
     }
+
+
+def _first_present(*values: Any) -> Any:
+    return next((value for value in values if value is not None), None)
+
+
+def _timestamp(value: str) -> datetime:
+    clean = str(value or "").strip().replace("Z", "+00:00")
+    parsed = datetime.fromisoformat(clean)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 def build_evidence_packet(
@@ -58,25 +74,26 @@ def build_evidence_packet(
     raw_sources = candidate.get("source_packets") or candidate.get("sources") or []
     if not isinstance(raw_sources, list):
         raw_sources = []
-    fallback_source = str(candidate.get("source") or "").strip()
-    if not raw_sources and fallback_source:
-        freshness = candidate.get("source_freshness") or {}
-        raw_sources = [{
-            "source": fallback_source, "observed_at": as_of,
-            "freshness": freshness.get("status") if isinstance(freshness, Mapping) else "unknown",
-            "confidence": candidate.get("source_confidence"),
-            "text": {"price": candidate.get("current_price") or candidate.get("price"),
-                     "change_pct": candidate.get("change_rate") or candidate.get("change_pct"),
-                     "volume": candidate.get("volume")},
-        }]
-    sources = [_source_record(source, fallback_source, as_of) for source in raw_sources if isinstance(source, Mapping)]
+    if not raw_sources:
+        raise ValueError("evidence packet requires explicit provenance")
+    sources = [_source_record(source) for source in raw_sources if isinstance(source, Mapping)]
+    if not sources or any(not source["source"] or not source["fetched_at"] for source in sources):
+        raise ValueError("evidence packet requires complete provenance")
+    try:
+        cutoff = _timestamp(as_of)
+        if any(_timestamp(source["fetched_at"]) > cutoff for source in sources):
+            raise ValueError("source fetched_at is after as_of")
+    except ValueError as exc:
+        if "after as_of" in str(exc):
+            raise
+        raise ValueError("evidence packet provenance timestamp is invalid") from exc
     sources.sort(key=lambda item: (item["source"], item["evidence_id"]))
     numeric_inputs = {
-        "current_price": candidate.get("current_price") or price.get("current_price") or (
+        "current_price": _first_present(price.get("current_price"), price.get("price"), candidate.get("current_price"), (
             candidate.get("price") if not isinstance(candidate.get("price"), Mapping) else None
-        ),
-        "change_pct": candidate.get("change_rate") or candidate.get("change_pct"),
-        "volume": candidate.get("volume"), "alpha_score": candidate.get("alpha_score"),
+        )),
+        "change_pct": _first_present(price.get("change_rate"), price.get("change_pct"), candidate.get("change_rate"), candidate.get("change_pct")),
+        "volume": _first_present(price.get("volume"), candidate.get("volume")), "alpha_score": candidate.get("alpha_score"),
         "risk_score": candidate.get("risk_score"),
     }
     scores = dict(deterministic_scores or {}) or {

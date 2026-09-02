@@ -1,6 +1,6 @@
 import { fetchAuthAPI, postAuthAPI } from './api';
 
-export type MiroFishVerdict = 'BUY' | 'SELL' | 'HOLD' | 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+export type MiroFishVerdict = 'BUY' | 'SELL' | 'HOLD' | 'HOLD_REVIEW' | 'STRONG_BUY' | 'BULLISH' | 'BEARISH' | 'NEUTRAL';
 
 export interface MiroFishLayer {
     label: string;
@@ -137,6 +137,12 @@ export interface MiroFishRun {
     change_pct?: number;
     mode?: string;
     status?: string;
+    analysis_status?: string;
+    source_run_id?: string;
+    provider_usage?: Record<string, any>;
+    profile?: string;
+    evidence_fingerprint?: string | null;
+    rule_candidate_verdict?: Record<string, any> | null;
     layers?: MiroFishLayer[];
     logs?: MiroFishLog[];
     analysts?: MiroFishAnalyst[];
@@ -144,8 +150,18 @@ export interface MiroFishRun {
     prediction_nodes?: MiroFishNode[];
     verdict?: {
         label?: MiroFishVerdict | string;
+        action?: MiroFishVerdict | string;
+        analysis_status?: string;
+        rule_candidate_verdict?: Record<string, any> | null;
         target?: string;
+        symbol?: string | null;
+        market?: string | null;
+        reference_date?: string | null;
+        target_display?: string;
         confidence?: number;
+        confidence_pct?: number;
+        reasoning?: string;
+        opposing_scenario?: string | null;
         bullish?: number;
         bearish?: number;
         neutral?: number;
@@ -161,6 +177,8 @@ export interface MiroFishRun {
         graph_links?: number;
         similar_events?: number;
         agent_count?: number;
+        compact_role_count?: number;
+        compatibility_schema?: string;
         status?: string;
         graph_method?: string;
         debate_method?: string;
@@ -187,6 +205,7 @@ export interface MiroFishRun {
     artifacts?: Record<string, string>;
     data_context?: {
         source_files?: string[];
+        source_packets?: Array<Record<string, any>>;
         signals?: Record<string, any>;
         briefing_count?: number;
         dart_available?: boolean;
@@ -222,6 +241,8 @@ export interface MiroFishStatus {
         graph_links?: number;
         similar_events?: number;
         agent_count?: number;
+        compact_role_count?: number;
+        compatibility_schema?: string;
         status?: string;
     };
     updated_at?: string;
@@ -728,18 +749,30 @@ export interface MiroFishDeepSeekTelegramResponse {
 export interface MiroFishWorkflowAnalysisResult {
     candidate?: Partial<MiroFishAlphaCandidate>;
     status?: string;
+    analysis_status?: string;
+    source_run_id?: string;
+    provider_usage?: Record<string, any>;
+    profile?: string;
+    evidence_fingerprint?: string | null;
+    rule_candidate_verdict?: Record<string, any> | null;
     run_id?: string;
     target?: string;
     symbol?: string;
     market?: string;
     verdict?: {
         action?: string;
+        label?: string;
+        analysis_status?: string;
+        rule_candidate_verdict?: Record<string, any> | null;
         confidence_pct?: number;
+        confidence?: number;
         bullish?: number;
         neutral?: number;
         bearish?: number;
         target?: string;
         summary?: string;
+        reasoning?: string;
+        opposing_scenario?: string | null;
         // ── Phase C (P0 #4): 종목 식별 + 분석 기준일 ──
         symbol?: string;
         market?: string;
@@ -1487,6 +1520,8 @@ function normalizePipeline(rawValue: unknown, statusValue?: unknown): MiroFishSt
         graph_links: asNumber(raw.graph_links ?? raw.links, 0),
         similar_events: asNumber(raw.similar_events ?? raw.events, 0),
         agent_count: asNumber(raw.agent_count ?? raw.max_agent_count, 0),
+        compact_role_count: raw.compact_role_count === undefined ? undefined : asNumber(raw.compact_role_count, 0),
+        compatibility_schema: raw.compatibility_schema === undefined ? undefined : String(raw.compatibility_schema),
         status: String(raw.status ?? statusValue ?? 'ready'),
     };
 }
@@ -1556,8 +1591,20 @@ function normalizeVerdict(rawValue: unknown, analysts: MiroFishAnalyst[]): MiroF
 
     return {
         label,
+        action: raw.action === undefined ? label : String(raw.action).toUpperCase(),
+        analysis_status: raw.analysis_status === undefined ? undefined : String(raw.analysis_status),
+        rule_candidate_verdict: Object.keys(asObject(raw.rule_candidate_verdict)).length
+            ? asObject(raw.rule_candidate_verdict)
+            : undefined,
         target: raw.target === undefined ? undefined : String(raw.target),
+        symbol: raw.symbol === undefined ? undefined : String(raw.symbol),
+        market: raw.market === undefined ? undefined : String(raw.market),
+        reference_date: raw.reference_date === undefined ? undefined : String(raw.reference_date),
+        target_display: raw.target_display === undefined ? undefined : String(raw.target_display),
         confidence: asPercent(raw.confidence ?? raw.confidence_pct, 50),
+        confidence_pct: asNumber(raw.confidence_pct ?? raw.confidence, 50),
+        reasoning: raw.reasoning === undefined ? undefined : String(raw.reasoning),
+        opposing_scenario: raw.opposing_scenario === undefined ? undefined : String(raw.opposing_scenario),
         bullish: asNumber(bullish, 3),
         bearish: asNumber(bearish, 0),
         neutral: asNumber(neutral, 4),

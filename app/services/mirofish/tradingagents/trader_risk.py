@@ -36,6 +36,7 @@ import logging
 from typing import Any
 
 from app.services.mirofish import llm_client
+from app.services.ai_routing.contracts import ProviderErrorClass
 
 logger = logging.getLogger(__name__)
 
@@ -96,6 +97,7 @@ def run_trader_and_risk(
     market: str | None = None,
     name: str | None = None,
     evidence_packet: dict[str, Any] | None = None,
+    request_id: str | None = None, reservation_id: str | None = None,
 ) -> dict[str, Any]:
     """Run trader plan → 3-role risk debate → PM final decision.
 
@@ -138,6 +140,7 @@ def run_trader_and_risk(
         regime_line=regime_line, regime_adjustment=regime_adjustment,
         run_id=run_id, symbol=symbol, market=market, name=name or target,
         evidence_packet=evidence_packet,
+        request_id=request_id, reservation_id=reservation_id,
     )
     llm_ok, llm_fail = _accumulate(used, use_llm, llm_ok, llm_fail)
 
@@ -314,6 +317,7 @@ def _pm_decision(target: str, debate: dict[str, Any], trader_plan: dict[str, Any
                  run_id: str | None = None, symbol: str | None = None,
                  market: str | None = None, name: str | None = None,
                  evidence_packet: dict[str, Any] | None = None,
+                 request_id: str | None = None, reservation_id: str | None = None,
                  ) -> tuple[dict[str, Any], bool]:
     rule = _pm_decision_rule(debate, regime_adjustment)
     if use_llm:
@@ -322,6 +326,7 @@ def _pm_decision(target: str, debate: dict[str, Any], trader_plan: dict[str, Any
                 target, debate, trader_plan, risk_debate, rule, regime_line=regime_line,
                 run_id=run_id, symbol=symbol, market=market, name=name,
                 evidence_packet=evidence_packet,
+                request_id=request_id, reservation_id=reservation_id,
             )
             if llm:
                 return llm, True
@@ -366,6 +371,7 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
             symbol: str | None = None, market: str | None = None,
             name: str | None = None,
             evidence_packet: dict[str, Any] | None = None,
+            request_id: str | None = None, reservation_id: str | None = None,
             ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     votes = ', '.join(f'{r["role"]}={r["vote"]}' for r in risk_debate)
     regime_block = f'[시장 레짐]\n{regime_line}\n\n' if regime_line else ''
@@ -382,13 +388,15 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
     raw, llm_meta = llm_client.generate_text_with_metadata(
         prompt, system=_PM_SYSTEM, temperature=0.3, max_tokens=1200, json_mode=True,
         operation='decisive_text', run_id=run_id,
-        request_id=f'{run_id}:{symbol or target}:portfolio-manager' if run_id else None,
+        request_id=request_id or (f'{run_id}:{symbol or target}:portfolio-manager' if run_id else None),
+        reservation_id=reservation_id,
         symbol=symbol, market=market,
         expected_identity=(
             {'symbol': symbol, 'name': name or target, 'market': market}
             if symbol and market else None
         ),
         expected_numbers={'analyst_mean': _analyst_mean(debate)} if symbol and market else None,
+        domain_validator=_pm_domain_validator,
         caller_endpoint='mirofish.tradingagents.portfolio_manager',
     )
     data = _parse_json_obj(raw)
@@ -402,7 +410,7 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
         return None, llm_meta
     confidence = _safe_float(data.get('confidence'))
     if confidence is None:
-        confidence = rule['confidence']
+        return None, llm_meta
     if verdict == 'STRONG_BUY':
         confidence = max(_STRONG_BUY_CONF_FLOOR, confidence)
     confidence = round(_clamp(confidence, 0.0, 100.0), 2)
@@ -415,6 +423,19 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
         'analysis_status': str(llm_meta.get('analysis_status') or 'SUCCESS_PRIMARY'),
         'rule_candidate_verdict': rule,
     }, llm_meta
+
+
+def _pm_domain_validator(data: Any) -> ProviderErrorClass | None:
+    if not isinstance(data, dict):
+        return ProviderErrorClass.INVALID_JSON
+    if str(data.get('verdict') or '').strip().upper() not in ALLOWED_VERDICTS:
+        return ProviderErrorClass.INVALID_JSON
+    if not str(data.get('reasoning') or '').strip():
+        return ProviderErrorClass.INVALID_JSON
+    confidence = _safe_float(data.get('confidence'))
+    if confidence is None or not 0 <= confidence <= 100:
+        return ProviderErrorClass.NUMERIC_MISMATCH
+    return None
 
 
 # ── Shared helpers ──────────────────────────────────────────────────

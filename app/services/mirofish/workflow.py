@@ -25,8 +25,6 @@ import app.services.mirofish.dual_kalman as dual_kalman
 from app.services.mirofish.tradingagents import engine as ta_engine
 from app.services.mirofish.tradingagents import learning as ta_learning
 from app.services.mirofish.tradingagents import run_cache as ta_run_cache
-from app.services.ai_routing.policy import policy_for
-from app.services.ai_routing.contracts import Operation
 from app.utils.atomic_json import write_json_atomic
 
 
@@ -772,9 +770,14 @@ def _verdict_is_buy(run: dict[str, Any]) -> bool:
 
 
 def _analysis_is_complete(run: dict[str, Any]) -> bool:
+    operational_status = str((run or {}).get('status') or '').strip().lower()
     status = str((run or {}).get('analysis_status') or ((run or {}).get('verdict') or {}).get('analysis_status') or '').upper()
     action = str((((run or {}).get('verdict') or {}).get('action') or ((run or {}).get('verdict') or {}).get('verdict') or '')).upper()
-    return status not in {'HOLD_REVIEW', 'FAILED_TECHNICAL', 'IN_PROGRESS'} and action != 'HOLD_REVIEW'
+    return (
+        operational_status not in {'failed', 'running', 'cancelled'}
+        and status in {'SUCCESS_PRIMARY', 'SUCCESS_FALLBACK'}
+        and action != 'HOLD_REVIEW'
+    )
 
 
 def _require_buy(workflow: dict[str, Any] | None = None) -> bool:
@@ -1060,11 +1063,49 @@ def _complete_workflow(
     admitted_candidates, admission_summary = admission.admit(
         workflow_id, candidates, limit=admission_limit,
     )
+    create_parameters = inspect.signature(_create_analysis_run).parameters
+    compact_contract = 'evidence_packet' in create_parameters
+    work_items: list[dict[str, Any]] = [{'candidate': candidate} for candidate in admitted_candidates]
+    if compact_contract:
+        if ta_engine.is_disabled():
+            admission_summary['provider_permits'] = []
+            admission_summary['deferred'] += len(work_items)
+            admission_summary['admitted'] = 0
+            admission_summary['reason'] = 'tradingagents_disabled'
+            work_items = []
+        else:
+            valid_items: list[dict[str, Any]] = []
+            for item in work_items:
+                try:
+                    item['evidence_packet'] = _build_candidate_packet(item['candidate'])
+                    valid_items.append(item)
+                except ValueError as exc:
+                    admission_summary['records'].append({
+                        'symbol': item['candidate'].get('symbol'), 'status': 'rejected',
+                        'reason': f'evidence_invalid:{exc}',
+                    })
+                    admission_summary['rejected'] += 1
+            work_items = valid_items
+            if _mode(mode) not in {'rule', 'local', 'no-llm'}:
+                prepared, permit_records = ta_engine.reserve_compact_batch(
+                    workflow_id, [item['evidence_packet'] for item in work_items],
+                )
+                prepared_by_symbol = {item['packet']['symbol']: item for item in prepared}
+                permitted_items = []
+                for item in work_items:
+                    prepared_item = prepared_by_symbol.get(item['candidate'].get('symbol'))
+                    if prepared_item:
+                        item.update(prepared_item)
+                        permitted_items.append(item)
+                admission_summary['provider_permits'] = permit_records
+                admission_summary['deferred'] += len(work_items) - len(permitted_items)
+                admission_summary['admitted'] = len(permitted_items)
+                work_items = permitted_items
     workflow['budget_summary'] = admission_summary
     workflow['progress'] = {
         'phase': 'graphrag_batch',
         'completed': 0,
-        'total': len(admitted_candidates),
+        'total': len(work_items),
         'percent': 5,
     }
     _write_workflow(workflow)
@@ -1072,9 +1113,25 @@ def _complete_workflow(
     results: list[dict[str, Any]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_parallel) as executor:
         future_map = {
-            executor.submit(_invoke_analysis_run, candidate, agent_count, mode, workflow_id, bool(workflow.get('force'))): candidate
-            for candidate in admitted_candidates
+            executor.submit(
+                _invoke_analysis_run, item['candidate'], agent_count, mode, workflow_id,
+                bool(workflow.get('force')), evidence_packet=item.get('evidence_packet'),
+                request_ids=item.get('request_ids'), reservation_ids=item.get('reservation_ids'),
+                permits_preflighted=bool(item.get('reservation_ids')),
+            ): item['candidate']
+            for item in work_items
         }
+        permits_by_symbol = {
+            str(item['candidate'].get('symbol')): item.get('reservation_ids')
+            for item in work_items
+        }
+        for future, candidate in future_map.items():
+            reservation_ids = permits_by_symbol.get(str(candidate.get('symbol')))
+            if reservation_ids:
+                future.add_done_callback(
+                    lambda _future, permits=dict(reservation_ids):
+                    ta_engine.release_compact_permits(permits)
+                )
         for future in concurrent.futures.as_completed(future_map):
             candidate = future_map[future]
             try:
@@ -1092,8 +1149,8 @@ def _complete_workflow(
             workflow['progress'] = {
                 'phase': 'graphrag_batch',
                 'completed': len(results),
-                'total': len(admitted_candidates),
-                'percent': min(95, int((len(results) / max(1, len(admitted_candidates))) * 90) + 5),
+                'total': len(work_items),
+                'percent': min(95, int((len(results) / max(1, len(work_items))) * 90) + 5),
             }
             _write_workflow(workflow)
 
@@ -1185,7 +1242,7 @@ def _complete_workflow(
         'progress': {
             'phase': 'completed',
             'completed': len(results),
-            'total': len(admitted_candidates),
+            'total': len(work_items),
             'percent': 100,
         },
         'summary': summary,
@@ -1207,27 +1264,62 @@ def _complete_workflow(
 
 def _invoke_analysis_run(
     candidate: dict[str, Any], agent_count: int, mode: str,
-    workflow_id: str, force: bool,
+    workflow_id: str, force: bool, *, evidence_packet: dict[str, Any] | None = None,
+    request_ids: dict[str, str] | None = None,
+    reservation_ids: dict[str, str] | None = None,
+    permits_preflighted: bool = False,
 ) -> dict[str, Any]:
     parameters = inspect.signature(_create_analysis_run).parameters
     if 'workflow_id' in parameters:
-        return _create_analysis_run(
-            candidate, agent_count, mode, workflow_id=workflow_id, force=force,
+        optional = {
+            'workflow_id': workflow_id, 'force': force,
+            'evidence_packet': evidence_packet, 'request_ids': request_ids,
+            'reservation_ids': reservation_ids,
+            'permits_preflighted': permits_preflighted,
+        }
+        accepts_kwargs = any(
+            parameter.kind is inspect.Parameter.VAR_KEYWORD
+            for parameter in parameters.values()
         )
+        kwargs = {
+            name: value for name, value in optional.items()
+            if accepts_kwargs or name in parameters
+        }
+        return _create_analysis_run(candidate, agent_count, mode, **kwargs)
     return _create_analysis_run(candidate, agent_count, mode)
 
 
 def _create_analysis_run(
     candidate: dict[str, Any], agent_count: int, mode: str, *,
     workflow_id: str | None = None, force: bool = False,
+    evidence_packet: dict[str, Any] | None = None,
+    request_ids: dict[str, str] | None = None,
+    reservation_ids: dict[str, str] | None = None,
+    permits_preflighted: bool = False,
 ) -> dict[str, Any]:
     """Automatic-only compact seam; standalone ``store.create_run`` is unchanged."""
+    if ta_engine.is_disabled():
+        raise RuntimeError('TradingAgents automatic analysis is disabled')
     target = candidate.get('display_name') or candidate.get('name') or candidate.get('symbol')
-    fast = policy_for(Operation.BULK_TEXT)
-    decisive = policy_for(Operation.DECISIVE_TEXT)
-    packet = evidence_packet_mod.build_evidence_packet(
-        candidate, profile='compact',
-        models={'fast': fast.models.get('deepseek'), 'decisive': decisive.models.get('deepseek')},
+    packet = evidence_packet or _build_candidate_packet(candidate)
+    ta = ta_engine.run_deep_analysis(
+        str(target), symbol=candidate.get('symbol'), use_llm=_mode(mode) not in {'rule', 'local', 'no-llm'},
+        profile='compact', evidence_packet=packet, force=force,
+        routing_run_id=workflow_id, request_ids=request_ids,
+        reservation_ids=reservation_ids,
+        permits_preflighted=permits_preflighted,
+    )
+    return store.create_compact_run(candidate, ta, agent_count=agent_count)
+
+
+def _build_candidate_packet(candidate: dict[str, Any]) -> dict[str, Any]:
+    enriched = {
+        **candidate,
+        'as_of': candidate.get('as_of') or candidate.get('generated_at')
+                 or (candidate.get('replay_context') or {}).get('generated_at'),
+    }
+    return evidence_packet_mod.build_evidence_packet(
+        enriched, profile='compact', models=ta_engine.routing_model_ids(),
         deterministic_scores={
             'alpha': candidate.get('alpha_score'), 'risk': candidate.get('risk_score'),
             'relative_strength': _extract_rs_rating(candidate),
@@ -1235,12 +1327,6 @@ def _create_analysis_run(
         },
         risk_gates=((candidate.get('analysis_profile') or {}).get('profitability_scorecard') or {}),
     )
-    ta = ta_engine.run_deep_analysis(
-        str(target), symbol=candidate.get('symbol'), use_llm=_mode(mode) not in {'rule', 'local', 'no-llm'},
-        profile='compact', evidence_packet=packet, force=force,
-        routing_run_id=workflow_id,
-    )
-    return store.create_compact_run(candidate, ta)
 
 
 def _analysis_result(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str, Any]:
@@ -1851,6 +1937,31 @@ def _extract_rs_rating(candidate: dict[str, Any]) -> int | None:
 
 
 def _candidate_summary(candidate: dict[str, Any]) -> dict[str, Any]:
+    source_packets = list(candidate.get('source_packets') or [])
+    source = str(candidate.get('source') or '').strip()
+    fetched_at = str(
+        candidate.get('generated_at')
+        or (candidate.get('replay_context') or {}).get('generated_at')
+        or ''
+    ).strip()
+    if not source_packets and source and fetched_at:
+        evidence_hash = hashlib.sha256(
+            f"{source}:{candidate.get('symbol')}:{fetched_at}".encode('utf-8')
+        ).hexdigest()[:20]
+        source_packets = [{
+            'evidence_id': f'scanner-{evidence_hash}',
+            'source': source,
+            'fetched_at': fetched_at,
+            'freshness': (candidate.get('freshness') or {}).get('status'),
+            'content': {
+                'price': candidate.get('price') or {},
+                'action': candidate.get('action'),
+                'alpha_score': candidate.get('alpha_score'),
+                'risk_score': candidate.get('risk_score'),
+                'analysis_profile': candidate.get('analysis_profile') or {},
+                'entry_plan': candidate.get('entry_plan') or {},
+            },
+        }]
     return {
         'rank': candidate.get('rank'),
         'symbol': candidate.get('symbol'),
@@ -1868,6 +1979,10 @@ def _candidate_summary(candidate: dict[str, Any]) -> dict[str, Any]:
         'entry_plan': candidate.get('entry_plan') or {},
         'replay_context': candidate.get('replay_context') or {},
         'price': candidate.get('price') or {},
+        'generated_at': candidate.get('generated_at'),
+        'source': candidate.get('source'),
+        'freshness': candidate.get('freshness') or {},
+        'source_packets': source_packets,
     }
 
 

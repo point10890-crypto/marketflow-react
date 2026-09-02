@@ -130,6 +130,16 @@ def test_pm_requests_decisive_operation_cap_and_identity(monkeypatch):
     assert pm_call['max_tokens'] == 1200
     assert pm_call['run_id'] == 'wf_1'
     assert pm_call['symbol'] == '005930' and pm_call['market'] == 'KOSPI'
+    assert pm_call['domain_validator']({
+        'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+        'analyst_mean': 40, 'verdict': 'NOT_ALLOWED', 'confidence': 80,
+        'reasoning': 'x',
+    }) is not None
+    assert pm_call['domain_validator']({
+        'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+        'analyst_mean': 40, 'verdict': 'BUY', 'confidence': 80,
+        'reasoning': 'x',
+    }) is None
     assert out['analysis_status'] == 'SUCCESS_PRIMARY'
 
 

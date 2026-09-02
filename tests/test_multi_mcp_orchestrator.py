@@ -4,6 +4,7 @@ from app.services.mirofish import multi_mcp_orchestrator as orchestrator
 
 
 def _candidate(symbol='005380', name='현대차'):
+    observed_at = datetime.now(timezone.utc).isoformat()
     return {
         'symbol': symbol,
         'name': name,
@@ -12,7 +13,12 @@ def _candidate(symbol='005380', name='현대차'):
         'volume': 1000000,
         'source': 'KIS',
         'market': 'KOSPI',
-        'observed_at': datetime.now(timezone.utc).isoformat(),
+        'observed_at': observed_at,
+        'source_packets': [{
+            'evidence_id': f'kis-{symbol}', 'source': 'KIS',
+            'fetched_at': observed_at, 'freshness': 'live', 'confidence': 1.0,
+            'content': {'price': 100000, 'change_pct': 3.0, 'volume': 1000000},
+        }],
     }
 
 
@@ -133,6 +139,15 @@ def _stub_context(monkeypatch, tmp_path, *, trend=None, deep_run=None):
             'trend_score': 12,
             'drawdown_20d_pct': 4,
         },
+    )
+    monkeypatch.setattr(
+        orchestrator.tradingagents,
+        'reserve_compact_batch',
+        lambda run_id, packets: ([{
+            'packet': packet,
+            'request_ids': {op: f'{run_id}:{packet["symbol"]}:{op}' for op in ('bulk_text', 'compact_debate', 'decisive_text')},
+            'reservation_ids': {op: f'permit-{packet["symbol"]}-{op}' for op in ('bulk_text', 'compact_debate', 'decisive_text')},
+        } for packet in packets], []),
     )
     monkeypatch.setattr(
         orchestrator.tradingagents,
@@ -286,6 +301,7 @@ def test_preflight_limits_work_before_futures_to_five(monkeypatch, tmp_path):
     assert result['budget_summary']['deferred'] == 5
     assert all(call[1]['profile'] == 'compact' for call in calls)
     assert len({call[1]['routing_run_id'] for call in calls}) == 1
+    assert all(call[1]['reservation_ids']['decisive_text'] for call in calls)
 
 
 def test_hold_review_can_never_pass_critic():

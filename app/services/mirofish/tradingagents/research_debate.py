@@ -31,6 +31,7 @@ import logging
 from typing import Any
 
 from app.services.mirofish import llm_client
+from app.services.ai_routing.contracts import ProviderErrorClass
 
 logger = logging.getLogger(__name__)
 
@@ -148,6 +149,7 @@ def run_research_debate(
 def run_compact_debate(
     target: str, reports: list[dict[str, Any]], *, use_llm: bool = True,
     run_id: str | None = None, request_id: str | None = None,
+    reservation_id: str | None = None,
     evidence_packet: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """One logical bull/bear call; the research manager remains deterministic."""
@@ -155,6 +157,7 @@ def run_compact_debate(
     rule_bear = _bear_message_rule(reports, 1)
     packet = evidence_packet or {}
     llm_meta: dict[str, Any] | None = None
+    citations_valid = not use_llm
     bull_case, bear_case = rule_bull, rule_bear
     bull_ids = list(packet.get('evidence_ids') or [])
     bear_ids = list(packet.get('evidence_ids') or [])
@@ -167,6 +170,7 @@ def run_compact_debate(
             prompt, system='강세/약세 논거를 분리해 같은 EvidencePacket만 인용하세요.',
             temperature=0.2, max_tokens=768, json_mode=True,
             operation='compact_debate', run_id=run_id, request_id=request_id,
+            reservation_id=reservation_id,
             symbol=packet.get('symbol'), market=packet.get('market'),
             caller_endpoint='mirofish.tradingagents.compact_debate',
         )
@@ -175,17 +179,21 @@ def run_compact_debate(
         if data and str(data.get('bull_case') or '').strip() and str(data.get('bear_case') or '').strip():
             proposed_bull = list(data.get('bull_evidence_ids') or [])
             proposed_bear = list(data.get('bear_evidence_ids') or [])
-            if set(proposed_bull + proposed_bear) <= allowed:
+            if proposed_bull and proposed_bear and set(proposed_bull + proposed_bear) <= allowed:
                 bull_case = str(data['bull_case'])[:1500]
                 bear_case = str(data['bear_case'])[:1500]
                 bull_ids, bear_ids = proposed_bull, proposed_bear
+                citations_valid = True
     manager = _manager_rule(reports)
     return {
         'rounds': [{'round': 1, 'bull': {'message': bull_case}, 'bear': {'message': bear_case}}],
         'bull_case': bull_case, 'bear_case': bear_case,
         'bull_evidence_ids': bull_ids, 'bear_evidence_ids': bear_ids,
         'manager': manager, 'method': 'llm' if llm_meta and llm_meta.get('success') else 'rule',
-        'analysis_status': (llm_meta or {}).get('analysis_status', 'DEGRADED' if use_llm else 'SUCCESS_PRIMARY'),
+        'analysis_status': (
+            (llm_meta or {}).get('analysis_status', 'DEGRADED')
+            if citations_valid else ('DEGRADED' if use_llm else 'SUCCESS_PRIMARY')
+        ),
         'llm': llm_meta,
         'rule_candidate_verdict': manager,
     }
@@ -373,6 +381,7 @@ def _llm_manager(target: str, reports: list[dict[str, Any]],
             if symbol and market else None
         ),
         expected_numbers={'analyst_mean': analyst_mean(reports)} if symbol and market else None,
+        domain_validator=_manager_domain_validator,
         caller_endpoint='mirofish.tradingagents.research_manager',
     )
     data = _parse_json_obj(raw)
@@ -386,11 +395,26 @@ def _llm_manager(target: str, reports: list[dict[str, Any]],
         return None
     # `or 50.0` 은 정당한 confidence 0 을 50 으로 승격시킨다 — None 일 때만 기본값.
     conf_raw = _safe_float(data.get('confidence'))
-    confidence = _clamp(conf_raw if conf_raw is not None else 50.0, 0.0, 100.0)
+    if conf_raw is None:
+        return None
+    confidence = _clamp(conf_raw, 0.0, 100.0)
     return {
         'stance': stance, 'thesis': thesis[:1500], 'confidence': round(confidence, 2),
         'llm': llm_meta,
     }
+
+
+def _manager_domain_validator(data: Any) -> ProviderErrorClass | None:
+    if not isinstance(data, dict):
+        return ProviderErrorClass.INVALID_JSON
+    if str(data.get('stance') or '').strip().lower() not in {'bull', 'bear', 'neutral'}:
+        return ProviderErrorClass.INVALID_JSON
+    if not str(data.get('thesis') or '').strip():
+        return ProviderErrorClass.INVALID_JSON
+    confidence = _safe_float(data.get('confidence'))
+    if confidence is None or not 0 <= confidence <= 100:
+        return ProviderErrorClass.NUMERIC_MISMATCH
+    return None
 
 
 def _reports_digest(reports: list[dict[str, Any]]) -> str:

@@ -16,6 +16,8 @@ import os
 from datetime import datetime, timezone
 from typing import Any, Callable
 
+from app.services.ai_routing.contracts import ProviderErrorClass
+
 # ─── Public API ────────────────────────────────────────────
 
 MAX_LOOPS = int(os.getenv('MIROFISH_REACT_MAX_LOOPS', '5'))
@@ -362,6 +364,7 @@ def _run_with_llm(target: str, brain: dict, debate: dict,
             ),
             expected_numbers={'alignment_score': brain.get('alignment_score')}
             if symbol and market and brain.get('alignment_score') is not None else None,
+            domain_validator=_cio_domain_validator,
             caller_endpoint='mirofish.cio',
         )
         plan = json.loads(raw or '{}')
@@ -397,22 +400,6 @@ def _run_with_llm(target: str, brain: dict, debate: dict,
             if tool_name == 'final_answer':
                 final = obs
                 break
-
-        if final is None and trace:
-            # 마지막에 final_answer 강제 호출
-            consensus = debate.get('final_consensus', {}) or {}
-            final = tools['final_answer']({
-                'action': consensus.get('action', 'HOLD'),
-                'confidence': consensus.get('confidence', 0.5),
-                'allocation_pct': 10,
-                'reasoning': 'LLM trace did not include final_answer; synthesized from debate.',
-            })
-            trace.append({
-                'loop': len(trace) + 1,
-                'thought': 'Synthesizing final answer from debate consensus.',
-                'action': {'tool': 'final_answer', 'args': {}},
-                'observation': final,
-            })
 
         return trace, final, llm_meta
     except Exception:
@@ -456,3 +443,35 @@ JSON 출력:
 - 최소 3 step, 최대 5 step
 - 마지막 step 은 반드시 final_answer
 """
+
+
+def _cio_domain_validator(data: Any) -> ProviderErrorClass | None:
+    if not isinstance(data, dict):
+        return ProviderErrorClass.INVALID_JSON
+    steps = data.get('steps')
+    if not isinstance(steps, list) or len(steps) < MIN_LOOPS:
+        return ProviderErrorClass.INVALID_JSON
+    finals = []
+    for step in steps[:MAX_LOOPS]:
+        if not isinstance(step, dict):
+            return ProviderErrorClass.INVALID_JSON
+        action = step.get('action')
+        if not isinstance(action, dict) or not isinstance(action.get('args'), dict):
+            return ProviderErrorClass.INVALID_JSON
+        if action.get('tool') == 'final_answer':
+            finals.append(action['args'])
+    if len(finals) != 1:
+        return ProviderErrorClass.INVALID_JSON
+    final = finals[0]
+    if str(final.get('action') or '').upper() not in {'BUY', 'SELL', 'HOLD'}:
+        return ProviderErrorClass.INVALID_JSON
+    if not str(final.get('reasoning') or '').strip():
+        return ProviderErrorClass.INVALID_JSON
+    try:
+        confidence = float(final['confidence'])
+        allocation = float(final['allocation_pct'])
+    except (KeyError, TypeError, ValueError):
+        return ProviderErrorClass.NUMERIC_MISMATCH
+    if not 0 <= confidence <= 1 or not 0 <= allocation <= 100:
+        return ProviderErrorClass.NUMERIC_MISMATCH
+    return None

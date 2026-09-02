@@ -54,6 +54,16 @@ def validate_response(text: str | None, request: RoutingRequest) -> ValidationRe
                 parsed,
                 "failed",
             )
-        return ValidationResult(True, parsed=parsed, numeric_validation="passed")
+        numeric_validation = "passed"
+    else:
+        numeric_validation = "not_requested"
+    if request.domain_validator:
+        try:
+            domain_error = request.domain_validator(parsed)
+        except Exception:
+            domain_error = ProviderErrorClass.INVALID_JSON
+        if domain_error is not None:
+            return ValidationResult(False, ProviderErrorClass(domain_error), parsed, numeric_validation)
+    if request.expected_numbers:
+        return ValidationResult(True, parsed=parsed, numeric_validation=numeric_validation)
     return ValidationResult(True, parsed=parsed)
-

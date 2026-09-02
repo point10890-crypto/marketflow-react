@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 
 
 class Operation(str, Enum):
@@ -115,6 +115,8 @@ class RoutingRequest:
     temperature: float = 0.3
     images: tuple[Any, ...] = ()
     expected_numbers: Mapping[str, int | float | Decimal] | None = None
+    domain_validator: Callable[[Any], ProviderErrorClass | None] | None = None
+    reservation_id: str | None = None
 
 
 @dataclass(frozen=True)

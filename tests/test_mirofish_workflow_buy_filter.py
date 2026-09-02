@@ -3,11 +3,17 @@ from app.services.mirofish import workflow as wf
 
 
 def _run(action, score):
-    return {'verdict': {'action': action}, 'final_score': score, 'symbol': f'{action}{score}'}
+    return {
+        'status': 'completed', 'analysis_status': 'SUCCESS_PRIMARY',
+        'verdict': {'action': action}, 'final_score': score, 'symbol': f'{action}{score}',
+    }
 
 
 def _run_with_label(label, score):
-    return {'verdict': {'label': label}, 'final_score': score, 'symbol': f'{label}{score}'}
+    return {
+        'status': 'completed', 'analysis_status': 'SUCCESS_PRIMARY',
+        'verdict': {'label': label}, 'final_score': score, 'symbol': f'{label}{score}',
+    }
 
 
 def test_select_top3_buy_only():
@@ -29,14 +35,14 @@ def test_select_top3_require_buy_false_keeps_all():
 
 
 def test_verdict_is_buy_case_insensitive():
-    assert wf._verdict_is_buy({'verdict': {'action': 'buy'}}) is True
-    assert wf._verdict_is_buy({'verdict': {'action': ' BUY '}}) is True
-    assert wf._verdict_is_buy({'verdict': {'action': 'SELL'}}) is False
+    assert wf._verdict_is_buy(_run('buy', 1)) is True
+    assert wf._verdict_is_buy(_run(' BUY ', 1)) is True
+    assert wf._verdict_is_buy(_run('SELL', 1)) is False
     assert wf._verdict_is_buy({}) is False
 
 
 def test_verdict_is_buy_uses_cio_label_but_not_scanner_action():
-    assert wf._verdict_is_buy({'verdict': {'label': 'BUY'}}) is True
+    assert wf._verdict_is_buy(_run_with_label('BUY', 1)) is True
     assert wf._verdict_is_buy({'action': 'BUY_CANDIDATE', 'verdict': {}}) is False
 
 
@@ -87,3 +93,12 @@ def test_hold_review_is_never_selected_or_notified():
         'summary': {'quality': {'recommendation': 'send'}},
     })
     assert ok is False and reason == 'hold_review'
+
+
+def test_failed_or_unallowlisted_status_is_never_complete():
+    assert wf._analysis_is_complete({'status': 'failed', 'verdict': {'action': 'BUY'}}) is False
+    assert wf._analysis_is_complete({'analysis_status': 'DEGRADED', 'verdict': {'action': 'BUY'}}) is False
+    assert wf._analysis_is_complete({
+        'status': 'completed', 'analysis_status': 'SUCCESS_PRIMARY',
+        'verdict': {'action': 'HOLD'},
+    }) is True

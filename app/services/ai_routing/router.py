@@ -92,6 +92,43 @@ def estimate_reservation_input_tokens(request: RoutingRequest) -> int:
     return text_tokens + image_tokens
 
 
+def reserve_openai_fallback(
+    request: RoutingRequest, *, budget: BudgetManager | None = None,
+) -> BudgetReservation:
+    """Hold one provider fallback allowance before a worker is submitted."""
+    policy = policy_for(request.operation)
+    if "openai" not in policy.providers:
+        return BudgetReservation(True)
+    manager = budget or BudgetManager()
+    max_output_tokens = policy.max_output_tokens
+    if request.max_output_tokens is not None:
+        max_output_tokens = min(max_output_tokens, max(1, request.max_output_tokens))
+    input_tokens = estimate_reservation_input_tokens(request)
+    estimate = _safe_cost_estimate(
+        "openai", policy.models["openai"],
+        TokenUsage(input_tokens=input_tokens, cached_input_tokens=0,
+                   output_tokens=max_output_tokens),
+        datetime.now(timezone.utc).isoformat(),
+    )
+    return manager.reserve(
+        run_id=request.run_id or request.request_id or "",
+        request_id=request.request_id or "",
+        operation=request.operation, input_tokens=input_tokens,
+        output_tokens=max_output_tokens, estimated_cost_usd=estimate.cost,
+        cost_pricing_version=estimate.pricing_version,
+    )
+
+
+def release_openai_reservations(
+    reservation_ids: list[str] | tuple[str, ...] | set[str], *,
+    budget: BudgetManager | None = None,
+) -> None:
+    """Release any still-unused preflight holds; settled permits are unchanged."""
+    manager = budget or BudgetManager()
+    for reservation_id in dict.fromkeys(str(value) for value in reservation_ids if value):
+        manager.release(reservation_id)
+
+
 class AIRouter:
     def __init__(
         self,
@@ -216,25 +253,9 @@ class AIRouter:
             max_output_tokens = min(max_output_tokens, max(1, request.max_output_tokens))
         reservation = BudgetReservation(True, acquired_by_caller=True)
         if "openai" in policy.providers:
-            reserved_input_tokens = estimate_reservation_input_tokens(request)
-            reserved_cost = _safe_cost_estimate(
-                "openai",
-                policy.models["openai"],
-                TokenUsage(
-                    input_tokens=reserved_input_tokens,
-                    cached_input_tokens=0,
-                    output_tokens=max_output_tokens,
-                ),
-                datetime.now(timezone.utc).isoformat(),
-            )
-            reservation = self.budget.reserve(
-                run_id=run_id,
-                request_id=request_id,
-                operation=request.operation,
-                input_tokens=reserved_input_tokens,
-                output_tokens=max_output_tokens,
-                estimated_cost_usd=reserved_cost.cost,
-                cost_pricing_version=reserved_cost.pricing_version,
+            reservation = (
+                self.budget.claim(request.reservation_id, run_id=run_id, request_id=request_id)
+                if request.reservation_id else reserve_openai_fallback(request, budget=self.budget)
             )
             if not reservation.approved:
                 return self._failed_result(policy.operation, policy.providers[0], ())

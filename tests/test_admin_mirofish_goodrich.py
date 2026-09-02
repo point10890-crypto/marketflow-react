@@ -399,6 +399,7 @@ def test_goodrich_trend_gate_never_admits_a_multi_mcp_reject(monkeypatch):
 
     def assert_every_candidate_has_valid_analysis_input(candidates, **kwargs):
         forwarded['symbols'] = [row['symbol'] for row in candidates]
+        forwarded['rows'] = candidates
         for row in candidates:
             normalized = multi_mcp_orchestrator._normalize_candidate(row)
             assert normalized is not None, f"{row['symbol']} failed normalization"
@@ -422,6 +423,7 @@ def test_goodrich_trend_gate_never_admits_a_multi_mcp_reject(monkeypatch):
     goodrich_client.run_research()
 
     assert forwarded['symbols'] == ['413630', '068270', '207940', '002210']
+    assert all(row['market'] in {'KOSPI', 'KOSDAQ'} for row in forwarded.get('rows', []))
 
 
 @pytest.fixture

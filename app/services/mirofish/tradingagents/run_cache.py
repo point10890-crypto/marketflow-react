@@ -3,14 +3,15 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import os
 import sqlite3
 import time
+import threading
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Callable
-from uuid import uuid4
 
 
 @dataclass(frozen=True)
@@ -19,10 +20,19 @@ class CacheClaim:
     status: str
     source_run_id: str | None = None
     artifact_path: str | None = None
+    fence: int = 0
+
+
+class LeaseLostError(RuntimeError):
+    pass
+
+
+class CacheWaitTimeout(RuntimeError):
+    pass
 
 
 class RunCache:
-    def __init__(self, db_path: str, *, lease_seconds: float = 120.0, wait_seconds: float = 30.0) -> None:
+    def __init__(self, db_path: str, *, lease_seconds: float = 900.0, wait_seconds: float = 930.0) -> None:
         self.db_path = os.path.abspath(db_path)
         self.lease_seconds = max(1.0, float(lease_seconds))
         self.wait_seconds = max(0.1, float(wait_seconds))
@@ -42,9 +52,13 @@ class RunCache:
                 CREATE TABLE IF NOT EXISTS run_cache (
                     cache_key TEXT PRIMARY KEY, status TEXT NOT NULL,
                     owner_id TEXT NOT NULL, lease_until REAL NOT NULL,
-                    source_run_id TEXT, artifact_path TEXT, completed_at TEXT
+                    source_run_id TEXT, artifact_path TEXT, completed_at TEXT,
+                    fence INTEGER NOT NULL DEFAULT 1
                 )
             """)
+            columns = {row['name'] for row in connection.execute('PRAGMA table_info(run_cache)')}
+            if 'fence' not in columns:
+                connection.execute('ALTER TABLE run_cache ADD COLUMN fence INTEGER NOT NULL DEFAULT 1')
             connection.execute("""
                 CREATE TABLE IF NOT EXISTS candidate_admissions (
                     run_id TEXT NOT NULL, symbol TEXT NOT NULL, admission_id TEXT NOT NULL,
@@ -60,39 +74,55 @@ class RunCache:
             row = connection.execute("SELECT * FROM run_cache WHERE cache_key=?", (cache_key,)).fetchone()
             if row and row["status"] == "completed" and row["artifact_path"] and os.path.isfile(row["artifact_path"]):
                 connection.commit()
-                return CacheClaim(False, "completed", row["source_run_id"], row["artifact_path"])
+                return CacheClaim(False, "completed", row["source_run_id"], row["artifact_path"], int(row['fence']))
             if row is None:
                 connection.execute(
-                    "INSERT INTO run_cache(cache_key,status,owner_id,lease_until) VALUES(?, 'running', ?, ?)",
+                    "INSERT INTO run_cache(cache_key,status,owner_id,lease_until,fence) VALUES(?, 'running', ?, ?, 1)",
                     (cache_key, owner_id, now + self.lease_seconds),
                 )
                 connection.commit()
-                return CacheClaim(True, "running")
+                return CacheClaim(True, "running", fence=1)
             if float(row["lease_until"] or 0) <= now:
                 connection.execute(
-                    "UPDATE run_cache SET status='running',owner_id=?,lease_until=?,source_run_id=NULL,artifact_path=NULL WHERE cache_key=?",
+                    "UPDATE run_cache SET status='running',owner_id=?,lease_until=?,source_run_id=NULL,artifact_path=NULL,fence=fence+1 WHERE cache_key=?",
                     (owner_id, now + self.lease_seconds, cache_key),
                 )
                 connection.commit()
-                return CacheClaim(True, "recovered")
+                refreshed = connection.execute('SELECT fence FROM run_cache WHERE cache_key=?', (cache_key,)).fetchone()
+                return CacheClaim(True, "recovered", fence=int(refreshed['fence']))
             connection.commit()
             return CacheClaim(False, "running")
 
-    def publish(self, cache_key: str, owner_id: str, source_run_id: str, artifact_path: str) -> None:
+    def renew(self, cache_key: str, owner_id: str, fence: int) -> bool:
+        with self._connect() as connection:
+            updated = connection.execute(
+                "UPDATE run_cache SET lease_until=? WHERE cache_key=? AND owner_id=? "
+                "AND fence=? AND status='running'",
+                (time.time() + self.lease_seconds, cache_key, owner_id, fence),
+            ).rowcount
+        return updated == 1
+
+    def publish(self, cache_key: str, owner_id: str, fence: int,
+                source_run_id: str, artifact_path: str) -> None:
         if not os.path.isfile(artifact_path):
             raise FileNotFoundError(artifact_path)
         with self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
-            connection.execute(
+            updated = connection.execute(
                 "UPDATE run_cache SET status='completed',source_run_id=?,artifact_path=?,completed_at=?,lease_until=0 "
-                "WHERE cache_key=? AND owner_id=? AND status='running'",
-                (source_run_id, os.path.abspath(artifact_path), datetime.now(timezone.utc).isoformat(), cache_key, owner_id),
-            )
+                "WHERE cache_key=? AND owner_id=? AND fence=? AND status='running'",
+                (source_run_id, os.path.abspath(artifact_path), datetime.now(timezone.utc).isoformat(), cache_key, owner_id, fence),
+            ).rowcount
             connection.commit()
+        if updated != 1:
+            raise LeaseLostError(f'cache lease lost for {cache_key}')
 
-    def abandon(self, cache_key: str, owner_id: str) -> None:
+    def abandon(self, cache_key: str, owner_id: str, fence: int) -> None:
         with self._connect() as connection:
-            connection.execute("DELETE FROM run_cache WHERE cache_key=? AND owner_id=? AND status='running'", (cache_key, owner_id))
+            connection.execute(
+                "DELETE FROM run_cache WHERE cache_key=? AND owner_id=? AND fence=? AND status='running'",
+                (cache_key, owner_id, fence),
+            )
 
     @staticmethod
     def load(claim: CacheClaim) -> dict[str, Any] | None:
@@ -112,7 +142,7 @@ class RunCache:
             if claim.owner or claim.status == "completed":
                 return claim
             time.sleep(0.05)
-        return CacheClaim(False, "in_progress")
+        raise CacheWaitTimeout(f'cache result not ready for {cache_key}')
 
 
 def execute_cached(
@@ -128,18 +158,34 @@ def execute_cached(
             cached["cache_hit"] = True
             cached["source_run_id"] = claim.source_run_id
             return cached
-        return {"analysis_status": "IN_PROGRESS", "cache_hit": False, "source_run_id": claim.source_run_id}
+        raise CacheWaitTimeout(f'cached artifact unreadable for {cache_key}')
+    stop_heartbeat = threading.Event()
+    lease_lost = threading.Event()
+    def heartbeat() -> None:
+        interval = max(0.1, cache.lease_seconds / 3.0)
+        while not stop_heartbeat.wait(interval):
+            if not cache.renew(cache_key, owner_id, claim.fence):
+                lease_lost.set()
+                return
+    thread = threading.Thread(target=heartbeat, name='ta-cache-lease', daemon=True)
+    thread.start()
     try:
         result = producer()
+        if lease_lost.is_set():
+            raise LeaseLostError(f'cache lease lost for {cache_key}')
         status = str(result.get("analysis_status") or "")
         if status in {"SUCCESS_PRIMARY", "SUCCESS_FALLBACK"}:
-            cache.publish(cache_key, owner_id, str(result.get("id")), artifact_path(result))
+            cache.publish(cache_key, owner_id, claim.fence,
+                          str(result.get("id")), artifact_path(result))
         else:
-            cache.abandon(cache_key, owner_id)
+            cache.abandon(cache_key, owner_id, claim.fence)
         return result
     except Exception:
-        cache.abandon(cache_key, owner_id)
+        cache.abandon(cache_key, owner_id, claim.fence)
         raise
+    finally:
+        stop_heartbeat.set()
+        thread.join(timeout=1.0)
 
 
 class AdmissionManager:
@@ -168,9 +214,16 @@ class AdmissionManager:
                 if row is not None:
                     status, admission_id, reason = row["status"], row["admission_id"], row["reason"]
                 else:
-                    status = "admitted" if symbol and existing_count < limit else "deferred"
-                    reason = None if status == "admitted" else ("missing_symbol" if not symbol else "candidate_limit")
-                    admission_id = str(uuid4())
+                    if not symbol:
+                        status, reason = "rejected", "missing_symbol"
+                    elif existing_count < limit:
+                        status, reason = "admitted", None
+                    else:
+                        status, reason = "deferred", "candidate_limit"
+                    identity = hashlib.sha256(
+                        f"{run_id}:{symbol or '<missing>'}".encode("utf-8")
+                    ).hexdigest()[:24]
+                    admission_id = f"adm_{identity}"
                     connection.execute(
                         "INSERT INTO candidate_admissions VALUES(?,?,?,?,?,?)",
                         (run_id, symbol, admission_id, status, reason, datetime.now(timezone.utc).isoformat()),

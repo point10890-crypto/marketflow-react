@@ -184,3 +184,19 @@ def test_daily_settlement_releases_unused_reserved_cost(tmp_path, monkeypatch):
 
     assert first.approved is True
     assert second.approved is True
+
+
+def test_only_router_claim_can_convert_reserved_permit_to_spendable(tmp_path):
+    manager = _manager(tmp_path)
+    reserved = manager.reserve(
+        run_id='run-claim', request_id='request-claim',
+        operation=Operation.DECISIVE_TEXT, input_tokens=100, output_tokens=100,
+    )
+    claimed = manager.claim(
+        reserved.reservation_id, run_id='run-claim', request_id='request-claim',
+    )
+    duplicate = manager.claim(
+        reserved.reservation_id, run_id='run-claim', request_id='request-claim',
+    )
+    assert claimed.approved and claimed.acquired_by_caller
+    assert duplicate.approved is False and duplicate.reason == 'permit_already_claimed'

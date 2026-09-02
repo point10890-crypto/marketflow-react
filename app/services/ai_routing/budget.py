@@ -235,7 +235,7 @@ class BudgetManager:
                     actual_output_tokens = COALESCE(?, reserved_output_tokens),
                     actual_cost_usd = COALESCE(?, reserved_cost_usd),
                     status = 'settled', settled_at_utc = ?
-                WHERE reservation_id = ? AND status = 'reserved'
+                WHERE reservation_id = ? AND status IN ('reserved', 'claimed')
                 """,
                 (
                     calls,
@@ -253,9 +253,36 @@ class BudgetManager:
         with self.store.transaction(write=True) as connection:
             connection.execute(
                 "UPDATE budget_reservations SET status = 'released', settled_at_utc = ? "
-                "WHERE reservation_id = ? AND status = 'reserved'",
+                "WHERE reservation_id = ? AND status IN ('reserved', 'claimed')",
                 (_utc_now(), reservation_id),
             )
+
+    def claim(
+        self, reservation_id: str | None, *, run_id: str, request_id: str,
+    ) -> BudgetReservation:
+        """Atomically hand a preflight hold to the central router exactly once."""
+        if not reservation_id:
+            return BudgetReservation(False, reason="permit_missing")
+        with self.store.transaction(write=True) as connection:
+            row = connection.execute(
+                "SELECT status FROM budget_reservations "
+                "WHERE reservation_id=? AND run_id=? AND request_id=? AND pool=? AND provider=?",
+                (reservation_id, run_id, request_id, self.pool, self.provider),
+            ).fetchone()
+            if row is None:
+                return BudgetReservation(False, reason="permit_mismatch")
+            if row["status"] != "reserved":
+                return BudgetReservation(False, reservation_id=reservation_id,
+                                         reason="permit_already_claimed")
+            updated = connection.execute(
+                "UPDATE budget_reservations SET status='claimed' "
+                "WHERE reservation_id=? AND status='reserved'", (reservation_id,),
+            ).rowcount
+            if updated != 1:
+                return BudgetReservation(False, reservation_id=reservation_id,
+                                         reason="permit_already_claimed")
+        return BudgetReservation(True, reservation_id=reservation_id,
+                                 already_reserved=True, acquired_by_caller=True)
 
     def snapshot(self, run_id: str) -> BudgetSnapshot:
         with self.store.transaction() as connection:

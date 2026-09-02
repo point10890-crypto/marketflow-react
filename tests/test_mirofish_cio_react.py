@@ -167,3 +167,16 @@ def test_llm_exhaustion_keeps_rule_buy_diagnostic_only(monkeypatch, mock_brain, 
     assert out['final_answer']['action'] == 'HOLD_REVIEW'
     assert out['rule_candidate_verdict']['action'] == 'BUY'
     assert out['llm']['attempts'] == [{'provider': 'deepseek'}, {'provider': 'openai'}]
+
+
+def test_cio_requires_valid_final_answer_inside_router_attempt(monkeypatch, mock_brain, mock_debate):
+    captured = {}
+    def fake(*args, **kwargs):
+        captured.update(kwargs)
+        return None, {'success': False, 'analysis_status': 'HOLD_REVIEW'}
+    monkeypatch.setattr('app.services.mirofish.llm_client.generate_text_with_metadata', fake)
+    cr.run_cio('삼성전자', mock_brain, mock_debate, use_llm=True,
+               run_id='wf', symbol='005930', market='KOSPI')
+    invalid = {'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+               'alignment_score': mock_brain['alignment_score'], 'steps': []}
+    assert captured['domain_validator'](invalid) is not None

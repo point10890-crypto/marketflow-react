@@ -225,7 +225,9 @@ def attach_tradingagents(run_id: str, ta: dict[str, Any]) -> dict[str, Any] | No
     return summary
 
 
-def create_compact_run(candidate: dict[str, Any], ta: dict[str, Any]) -> dict[str, Any]:
+def create_compact_run(
+    candidate: dict[str, Any], ta: dict[str, Any], *, agent_count: int | None = None,
+) -> dict[str, Any]:
     """Persist one compact TA result in the legacy run/graph/report contract."""
     source_run_id = str(ta.get('id') or '')
     digest = hashlib.sha256(source_run_id.encode('utf-8')).hexdigest()[:10]
@@ -237,13 +239,21 @@ def create_compact_run(candidate: dict[str, Any], ta: dict[str, Any]) -> dict[st
     target = str(candidate.get('display_name') or candidate.get('name') or ta.get('target') or candidate.get('symbol'))
     action = str(tav.get('verdict') or 'HOLD_REVIEW').upper()
     status = str(ta.get('analysis_status') or tav.get('analysis_status') or 'HOLD_REVIEW')
+    raw_price = candidate.get('price')
+    price_snapshot = dict(raw_price) if isinstance(raw_price, dict) else {
+        'current_price': raw_price, 'price': raw_price,
+    }
+    current_price = price_snapshot.get('current_price', price_snapshot.get('price'))
+    price_snapshot.setdefault('current_price', current_price)
+    price_snapshot.setdefault('price', current_price)
+    compatibility_agent_count = max(1, int(agent_count or len(ta.get('analyst_reports') or []) or 1))
     verdict = {
         'action': action, 'label': action, 'confidence': confidence,
         'confidence_pct': int(round(confidence_pct)), 'bullish': 0, 'neutral': 0, 'bearish': 0,
         'target': target, 'summary': str(tav.get('reasoning') or ''),
         'reasoning': str(tav.get('reasoning') or ''), 'opposing_scenario': tav.get('bear_case'),
         'symbol': candidate.get('symbol'), 'market': candidate.get('market'),
-        'reference_date': (candidate.get('price') or {}).get('date') or (ta.get('evidence_packet') or {}).get('as_of'),
+        'reference_date': price_snapshot.get('date') or (ta.get('evidence_packet') or {}).get('as_of'),
         'target_display': f"{target} ({candidate.get('symbol')} {candidate.get('market')})",
         'analysis_status': status, 'rule_candidate_verdict': tav.get('rule_candidate_verdict'),
     }
@@ -260,14 +270,17 @@ def create_compact_run(candidate: dict[str, Any], ta: dict[str, Any]) -> dict[st
         'mode': 'compact', 'source': 'tradingagents_compact', 'status': 'completed',
         'analysis_status': status, 'created_at': created_at,
         'completed_at': ta.get('completed_at') or datetime.now(timezone.utc).isoformat(),
-        'deterministic': False, 'price': (candidate.get('price') or {}).get('current_price'),
-        'change_pct': (candidate.get('price') or {}).get('change_pct', 0),
-        'price_snapshot': candidate.get('price') or {}, 'brain_summary': {}, 'brain': {},
+        'deterministic': False, 'price': current_price,
+        'change_pct': price_snapshot.get('change_pct', price_snapshot.get('change_rate', 0)),
+        'price_snapshot': price_snapshot, 'brain_summary': {}, 'brain': {},
         'graph_extraction': {'entities': [], 'relations': [], 'method': 'compact_evidence_packet'},
         'graph_merge': {'total_relations': 0}, 'debate': ta.get('research_debate') or {},
         'cio': {'final_answer': verdict, 'analysis_status': status},
         'pipeline': {'status': 'completed', 'graph_links': 0, 'similar_events': 0,
-                     'agent_count': len(analysts), 'graph_method': 'compact_evidence_packet',
+                     'agent_count': compatibility_agent_count,
+                     'compact_role_count': len(analysts),
+                     'compatibility_schema': 'legacy-agent-count-v1',
+                     'graph_method': 'compact_evidence_packet',
                      'debate_method': (ta.get('research_debate') or {}).get('method'),
                      'cio_method': 'compact_portfolio_manager'},
         'pipeline_phases': [{**phase, 'status': 'completed', 'progress': 1.0} for phase in PIPELINE_PHASES],
@@ -275,8 +288,8 @@ def create_compact_run(candidate: dict[str, Any], ta: dict[str, Any]) -> dict[st
         'layers': [
             {'label': 'TARGET', 'count': 1, 'color': 'bg-red-500'},
             {'label': 'CAUSAL HISTORY', 'count': 0, 'color': 'bg-blue-500'},
-            {'label': 'AI ANALYSTS', 'count': len(analysts), 'color': 'bg-violet-500'},
-            {'label': 'PREDICTIONS', 'count': len(analysts), 'color': 'bg-orange-400'},
+            {'label': 'AI ANALYSTS', 'count': compatibility_agent_count, 'color': 'bg-violet-500'},
+            {'label': 'PREDICTIONS', 'count': compatibility_agent_count, 'color': 'bg-orange-400'},
             {'label': 'VERDICT', 'count': 1, 'color': 'bg-emerald-400'},
         ],
         'logs': [], 'analysts': analysts, 'graph_nodes': [], 'prediction_nodes': [],

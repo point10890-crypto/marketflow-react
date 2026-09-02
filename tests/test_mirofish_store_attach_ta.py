@@ -41,8 +41,17 @@ def test_create_compact_run_writes_legacy_compatible_artifacts(monkeypatch, tmp_
         'research_debate': {'method': 'llm'}, 'provider_usage': {'calls': 3},
         'verdict': {'verdict': 'BUY', 'confidence': 82, 'reasoning': '근거', 'bull_case': 'b', 'bear_case': 'r'},
     }
-    run = store.create_compact_run(candidate, ta)
+    ta['evidence_packet'] = {'sources': [{
+        'source': 'KIS', 'source_type': 'market_quote', 'title': '삼성전자',
+        'freshness': 'fresh', 'confidence': 1.0,
+    }]}
+    run = store.create_compact_run(candidate, ta, agent_count=10)
     assert store.read_run(run['id'])['source_run_id'] == ta['id']
     assert store.get_graph(run['id'])['run_id'] == run['id']
     assert store.get_report(run['id'])['markdown'].startswith('# MiroFish Live Report')
     assert run['provider_usage'] == {'calls': 3}
+    assert run['pipeline']['agent_count'] == 10
+    assert run['pipeline']['compact_role_count'] == 1
+    report = store.get_report(run['id'])['markdown']
+    assert 'Price: `70000` KRW' in report
+    assert 'market_quote/KIS: 삼성전자' in report

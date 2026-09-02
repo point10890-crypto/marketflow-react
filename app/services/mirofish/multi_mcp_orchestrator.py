@@ -19,8 +19,6 @@ from app.services.mirofish import mcp_resource_catalog
 from app.services.mirofish.alpha_scanner import get_price_trend_metrics
 from app.services.mirofish.tradingagents import engine as tradingagents
 from app.services.mirofish.tradingagents import run_cache as ta_run_cache
-from app.services.ai_routing.policy import policy_for
-from app.services.ai_routing.contracts import Operation
 from app.utils.atomic_json import write_json_atomic
 
 
@@ -118,10 +116,18 @@ def run_multi_mcp_analysis(
         include_deferred=False,
     )
 
-    evidence_packets = [_evidence_packet(row) for row in clean_candidates]
+    evidence_packets = [_evidence_packet(row, as_of=started.isoformat()) for row in clean_candidates]
     eligible = [packet for packet in evidence_packets if packet['profit_gate']['passed']]
     admission = ta_run_cache.AdmissionManager(os.path.join(RUNS_ROOT, 'candidate_admission.sqlite3'))
     admitted, budget_summary = admission.admit(run_id, eligible, limit=max(0, min(int(max_candidates), 5)))
+    prepared_by_symbol: dict[str, dict[str, Any]] = {}
+    if use_llm:
+        prepared, permit_records = tradingagents.reserve_compact_batch(run_id, admitted)
+        prepared_by_symbol = {item['packet']['symbol']: item for item in prepared}
+        admitted = [packet for packet in admitted if packet['symbol'] in prepared_by_symbol]
+        budget_summary['provider_permits'] = permit_records
+        budget_summary['deferred'] += budget_summary['admitted'] - len(admitted)
+        budget_summary['admitted'] = len(admitted)
     analyses: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=max(1, min(int(max_parallel), 5))) as pool:
         pending = {
@@ -132,9 +138,19 @@ def run_multi_mcp_analysis(
                 use_llm=use_llm,
                 profile='compact', evidence_packet=packet,
                 routing_run_id=run_id,
+                request_ids=(prepared_by_symbol.get(packet['symbol']) or {}).get('request_ids'),
+                reservation_ids=(prepared_by_symbol.get(packet['symbol']) or {}).get('reservation_ids'),
+                permits_preflighted=use_llm,
             ): packet
             for packet in admitted
         }
+        for future, packet in pending.items():
+            reservation_ids = (prepared_by_symbol.get(packet['symbol']) or {}).get('reservation_ids')
+            if reservation_ids:
+                future.add_done_callback(
+                    lambda _future, permits=dict(reservation_ids):
+                    tradingagents.release_compact_permits(permits)
+                )
         for future in as_completed(pending):
             packet = pending[future]
             try:
@@ -201,7 +217,17 @@ def run_live_market_scan(*, use_llm: bool = True, max_parallel: int = 3) -> dict
     if isinstance(candidates, list):
         observed_at = screening.get('timestamp')
         candidates = [
-            {**row, 'source': 'KIS', 'observed_at': row.get('observed_at') or observed_at}
+            {
+                **row, 'source': 'KIS', 'observed_at': row.get('observed_at') or observed_at,
+                'source_packets': row.get('source_packets') or [{
+                    'evidence_id': f"kis-screen-{row.get('code') or row.get('symbol')}",
+                    'source': 'KIS', 'source_type': 'market_screen',
+                    'title': row.get('name'), 'fetched_at': row.get('observed_at') or observed_at,
+                    'freshness': 'live', 'confidence': 1.0,
+                    'content': {'price': row.get('price'), 'change_pct': row.get('change_pct'),
+                                'volume': row.get('volume')},
+                }],
+            }
             for row in candidates
             if isinstance(row, dict)
         ]
@@ -245,7 +271,7 @@ def _normalize_candidate(row: Any) -> dict[str, Any] | None:
     }
 
 
-def _evidence_packet(candidate: dict[str, Any]) -> dict[str, Any]:
+def _evidence_packet(candidate: dict[str, Any], *, as_of: str | None = None) -> dict[str, Any]:
     trend = get_price_trend_metrics(
         candidate['symbol'],
         current_price=candidate['current_price'],
@@ -278,12 +304,10 @@ def _evidence_packet(candidate: dict[str, Any]) -> dict[str, Any]:
             'risk_flags': risk_flags,
         },
     }
-    fast = policy_for(Operation.BULK_TEXT)
-    decisive = policy_for(Operation.DECISIVE_TEXT)
     canonical = evidence_packet_mod.build_evidence_packet(
-        {**legacy, 'as_of': candidate.get('observed_at'), 'risk_flags': risk_flags},
+        {**legacy, 'as_of': as_of or candidate.get('observed_at'), 'risk_flags': risk_flags},
         profile='compact',
-        models={'fast': fast.models.get('deepseek'), 'decisive': decisive.models.get('deepseek')},
+        models=tradingagents.routing_model_ids(),
         deterministic_scores={
             'alpha': candidate.get('alpha_score'), 'risk': candidate.get('risk_score'),
             'trend': trend.get('trend_score'), 'relative_strength': candidate.get('rs_rating'),
