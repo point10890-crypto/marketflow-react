@@ -191,3 +191,71 @@ def test_scanner_ta_history_clamps_limit(monkeypatch, admin_client):
 
     assert resp.status_code == 200
     assert captured['limit'] == 200
+
+
+# ─── 쿼터/동시상한 — admin 접두 경로가 우회로가 되면 안 된다 (2026-09-02) ──
+
+def _subscriber():
+    from types import SimpleNamespace
+    return SimpleNamespace(id=77, status='approved', is_admin=False,
+                           is_aibain_active=True, is_approved=True,
+                           tier='pro', is_pro_expired=False,
+                           email='sub@test.local', role='user')
+
+
+def _subscriber_client(monkeypatch):
+    import app.auth.decorators as deco
+    monkeypatch.setattr(deco, '_get_current_user', lambda: _subscriber())
+    app = create_app({
+        'TESTING': True,
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
+        'SECRET_KEY': 'test-tradingagents-quota-secret',
+    })
+    return app.test_client()
+
+
+def test_subscriber_analyze_consumes_shared_deep_quota(monkeypatch):
+    """비관리자 구독자는 /api/kr/decision/*/analyze 와 같은 일일 쿼터를 소모한다."""
+    import app.routes.admin_mirofish_tradingagents as mod
+    from app.services.mirofish import decision_cache as dc
+
+    monkeypatch.setenv(dc.DEEP_QUOTA_ENV, '1')
+    monkeypatch.setattr(mod.engine, 'run_deep_analysis', lambda target, **kw: {'id': 'ta_q'})
+    client = _subscriber_client(monkeypatch)
+
+    first = client.post('/api/admin/mirofish/tradingagents/analyze', json={'symbol': '005930'})
+    assert first.status_code == 200
+    second = client.post('/api/admin/mirofish/tradingagents/analyze', json={'symbol': '005930'})
+    assert second.status_code == 429
+    assert second.get_json()['error'] == 'quota_exceeded'
+
+
+def test_subscriber_analyze_busy_when_deep_slots_full(monkeypatch):
+    """비관리자 동기 실행은 백그라운드 심층 잡과 동시 상한을 공유한다 — 초과는 429."""
+    import app.routes.admin_mirofish_tradingagents as mod
+    from app.services.mirofish import decision_cache as dc
+
+    monkeypatch.setenv(dc.DEEP_QUOTA_ENV, '5')
+    monkeypatch.setenv('DECISION_JOB_MAX_CONCURRENT', '1')
+    monkeypatch.setattr(mod.decision_jobs, 'running_count', lambda: 1)
+    monkeypatch.setattr(mod.engine, 'run_deep_analysis', lambda target, **kw: {'id': 'ta_q'})
+    client = _subscriber_client(monkeypatch)
+
+    resp = client.post('/api/admin/mirofish/tradingagents/analyze', json={'symbol': '005930'})
+    assert resp.status_code == 429
+    assert resp.get_json()['error'] == 'busy'
+    # busy 는 무료 — 쿼터가 차감되지 않았어야 한다.
+    assert dc.consume_deep_quota(77)[0] is True
+
+
+def test_admin_analyze_is_not_metered(admin_client, monkeypatch):
+    """관리자는 종전대로 무제한 — 운영 사용을 깨지 않는다."""
+    import app.routes.admin_mirofish_tradingagents as mod
+    from app.services.mirofish import decision_cache as dc
+
+    monkeypatch.setenv(dc.DEEP_QUOTA_ENV, '1')
+    monkeypatch.setattr(mod.engine, 'run_deep_analysis', lambda target, **kw: {'id': 'ta_x'})
+    for _ in range(3):
+        resp = admin_client.post('/api/admin/mirofish/tradingagents/analyze',
+                                 json={'symbol': '005930'})
+        assert resp.status_code == 200
