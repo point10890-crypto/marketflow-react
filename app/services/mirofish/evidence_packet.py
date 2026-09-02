@@ -79,6 +79,19 @@ def _timestamp(value: str) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
+def latest_source_cutoff(values: list[Any] | tuple[Any, ...]) -> str | None:
+    """Return the latest valid source instant normalized to UTC."""
+    parsed: list[datetime] = []
+    for value in values:
+        if not str(value or "").strip():
+            continue
+        try:
+            parsed.append(_timestamp(str(value)))
+        except (TypeError, ValueError):
+            continue
+    return max(parsed).isoformat() if parsed else None
+
+
 def build_evidence_packet(
     candidate: Mapping[str, Any], *, profile: str = "compact",
     models: Mapping[str, str] | None = None,

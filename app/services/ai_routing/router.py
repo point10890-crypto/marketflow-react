@@ -218,6 +218,7 @@ class AIRouter:
             )
         finalizer_token = _ACTIVE_BUDGET.set(None)
         budget_finalized = True
+        budget_failure_reason = "reservation_breached"
         try:
             try:
                 result = self._route_owned(request)
@@ -234,6 +235,7 @@ class AIRouter:
         finally:
             finalizer = _ACTIVE_BUDGET.get()
             if finalizer is not None:
+                budget_finalized = False
                 try:
                     budget_finalized = self._finish_budget(
                         finalizer.reservation,
@@ -242,17 +244,19 @@ class AIRouter:
                         finalizer.openai_cost_usd,
                     )
                 except Exception as exc:
+                    budget_failure_reason = "budget_finalization_failed"
                     logger.warning(
                         "[ai_routing] budget finalization failed: %s", type(exc).__name__
                     )
             _ACTIVE_BUDGET.reset(finalizer_token)
         if not budget_finalized:
             logger.error(
-                "[ai_routing] provider usage breached its preflight reservation"
+                "[ai_routing] provider result rejected after budget finalization: %s",
+                budget_failure_reason,
             )
             result = self._failed_result(
                 policy.operation, policy.providers[0], tuple(result.attempts),
-                "reservation_breached",
+                budget_failure_reason,
             )
         flight.result = result
         flight.completed.set()

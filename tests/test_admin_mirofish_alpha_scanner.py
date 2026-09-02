@@ -197,6 +197,34 @@ def test_alpha_scanner_creates_ranked_deterministic_run(tmp_path, monkeypatch):
     assert candidate_payload['candidates'][0]['symbol'] == '000001'
 
 
+def test_daily_bar_date_uses_korean_close_and_is_excluded_before_close():
+    payload = {
+        'price': {
+            'date': '2026-09-03', 'open': 100, 'high': 110, 'low': 95,
+            'current_price': 108, 'volume': 1_000,
+        },
+        'price_metrics': {'trend_5d_pct': 12.0},
+    }
+    before_close = '2026-09-03T05:00:00+00:00'  # 14:00 Asia/Seoul
+    after_close = '2026-09-03T07:00:00+00:00'   # 16:00 Asia/Seoul
+
+    packets, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[], artifacts={},
+        sources={'daily_prices.csv': payload},
+        required_sources=['daily_prices.csv'], cutoff_ceiling=before_close,
+    )
+    assert packets == [] and cutoff is None and missing == ['daily_prices.csv']
+
+    packets, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[], artifacts={},
+        sources={'daily_prices.csv': payload},
+        required_sources=['daily_prices.csv'], cutoff_ceiling=after_close,
+    )
+    assert missing == []
+    assert packets[0]['observed_at'] == '2026-09-03T06:30:00+00:00'
+    assert cutoff == '2026-09-03T06:30:00+00:00'
+
+
 def test_alpha_scanner_applies_deepseek_v4_bounded_rerank(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
     monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))

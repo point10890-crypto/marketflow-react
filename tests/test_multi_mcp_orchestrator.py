@@ -264,6 +264,18 @@ def test_evidence_packet_retains_stable_underlying_source_cutoff():
     assert first['fingerprint'] == second['fingerprint']
 
 
+def test_candidate_source_cutoff_uses_instant_not_timestamp_text_order():
+    raw = _candidate()
+    raw.pop('source_cutoff', None)
+    raw['source_packets'] = [
+        {**raw['source_packets'][0], 'fetched_at': '2026-09-03T10:00:00+09:00'},
+        {**raw['source_packets'][0], 'evidence_id': 'later',
+         'fetched_at': '2026-09-03T03:00:00+00:00'},
+    ]
+    candidate = orchestrator._normalize_candidate(raw)
+    assert candidate['source_cutoff'] == '2026-09-03T03:00:00+00:00'
+
+
 def test_live_market_scan_uses_kis_candidate_pool(monkeypatch):
     captured = {}
     monkeypatch.setattr(

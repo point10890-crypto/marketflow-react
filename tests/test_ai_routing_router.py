@@ -183,6 +183,61 @@ def test_router_fails_closed_when_provider_usage_exceeds_reservation(tmp_path):
     assert row['status'] == 'breached'
 
 
+def test_router_fails_closed_when_settlement_persistence_raises(tmp_path, monkeypatch):
+    store = RoutingStore(tmp_path / 'usage.sqlite3')
+    budget = BudgetManager(store)
+    request = RoutingRequest(
+        operation=Operation.DECISIVE_TEXT, prompt='fixture', run_id='settle-error-run',
+        request_id='settle-error-request',
+    )
+    permit = reserve_openai_fallback(request, budget=budget, owner_token='settle-owner')
+    routed = RoutingRequest(**{
+        **request.__dict__, 'reservation_id': permit.reservation_id,
+        'reservation_owner_token': permit.owner_token,
+    })
+    monkeypatch.setattr(budget, 'settle', lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError('disk')))
+    router = AIRouter(
+        {'deepseek': FakeAdapter(ProviderCallError(ProviderErrorClass.AUTHENTICATION)),
+         'openai': FakeAdapter(_response('fallback'))},
+        budget=budget, breaker=CircuitBreaker(store), store=store,
+    )
+
+    result = router.route_text(routed)
+
+    assert result.text is None
+    assert result.analysis_status is AnalysisStatus.HOLD_REVIEW
+    assert result.fallback_reason == 'budget_finalization_failed'
+
+
+def test_router_fails_closed_when_unused_permit_release_raises(tmp_path, monkeypatch):
+    store = RoutingStore(tmp_path / 'usage.sqlite3')
+    budget = BudgetManager(store)
+    request = RoutingRequest(
+        operation=Operation.DECISIVE_TEXT, prompt='fixture', run_id='release-error-run',
+        request_id='release-error-request',
+    )
+    permit = reserve_openai_fallback(request, budget=budget, owner_token='release-owner')
+    routed = RoutingRequest(**{
+        **request.__dict__, 'reservation_id': permit.reservation_id,
+        'reservation_owner_token': permit.owner_token,
+    })
+    monkeypatch.setattr(
+        budget, 'release_claimed',
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError('locked')),
+    )
+    router = AIRouter(
+        {'deepseek': FakeAdapter(_response('primary')),
+         'openai': FakeAdapter(_response('unused'))},
+        budget=budget, breaker=CircuitBreaker(store), store=store,
+    )
+
+    result = router.route_text(routed)
+
+    assert result.text is None
+    assert result.analysis_status is AnalysisStatus.HOLD_REVIEW
+    assert result.fallback_reason == 'budget_finalization_failed'
+
+
 def test_auth_failure_opens_breaker_and_next_request_skips_dead_provider(tmp_path):
     deepseek = FakeAdapter(
         ProviderCallError(ProviderErrorClass.AUTHENTICATION),

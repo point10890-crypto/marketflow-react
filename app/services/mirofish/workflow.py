@@ -1144,20 +1144,36 @@ def _complete_workflow(
         'total': len(work_items),
         'percent': 5,
     }
-    _write_workflow(workflow)
+    def release_pending_permits() -> None:
+        for pending in work_items:
+            permits = pending.get('reservation_ids')
+            owners = pending.get('reservation_owner_tokens')
+            if permits:
+                ta_engine.release_compact_permits(permits, owners)
+
+    try:
+        _write_workflow(workflow)
+        executor_context = concurrent.futures.ThreadPoolExecutor(max_workers=max_parallel)
+    except BaseException:
+        release_pending_permits()
+        raise
 
     results: list[dict[str, Any]] = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max_parallel) as executor:
-        future_map = {
-            executor.submit(
-                _invoke_analysis_run, item['candidate'], agent_count, mode, workflow_id,
-                bool(workflow.get('force')), evidence_packet=item.get('evidence_packet'),
-                request_ids=item.get('request_ids'), reservation_ids=item.get('reservation_ids'),
-                reservation_owner_tokens=item.get('reservation_owner_tokens'),
-                permits_preflighted=bool(item.get('reservation_ids')),
-            ): item['candidate']
-            for item in work_items
-        }
+    with executor_context as executor:
+        try:
+            future_map = {
+                executor.submit(
+                    _invoke_analysis_run, item['candidate'], agent_count, mode, workflow_id,
+                    bool(workflow.get('force')), evidence_packet=item.get('evidence_packet'),
+                    request_ids=item.get('request_ids'), reservation_ids=item.get('reservation_ids'),
+                    reservation_owner_tokens=item.get('reservation_owner_tokens'),
+                    permits_preflighted=bool(item.get('reservation_ids')),
+                ): item['candidate']
+                for item in work_items
+            }
+        except BaseException:
+            release_pending_permits()
+            raise
         permits_by_symbol = {
             str(item['candidate'].get('symbol')): (
                 item.get('reservation_ids'), item.get('reservation_owner_tokens'),
@@ -2006,8 +2022,11 @@ def _candidate_summary(candidate: dict[str, Any]) -> dict[str, Any]:
     source_packets = list(candidate.get('source_packets') or [])
     source_cutoff = candidate.get('source_cutoff') or (candidate.get('replay_context') or {}).get('source_cutoff')
     if not source_cutoff and source_packets:
-        observed = [str(row.get('fetched_at') or row.get('observed_at') or '') for row in source_packets]
-        source_cutoff = max((value for value in observed if value), default=None)
+        observed = tuple(
+            row.get('fetched_at') or row.get('observed_at')
+            for row in source_packets if isinstance(row, dict)
+        )
+        source_cutoff = evidence_packet_mod.latest_source_cutoff(observed)
     return {
         'rank': candidate.get('rank'),
         'symbol': candidate.get('symbol'),

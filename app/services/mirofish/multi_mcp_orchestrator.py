@@ -270,10 +270,10 @@ def _normalize_candidate(row: Any) -> dict[str, Any] | None:
         'observed_at': row.get('observed_at'),
         'market': market,
         'source_packets': row.get('source_packets') or [],
-        'source_cutoff': row.get('source_cutoff') or max((
+        'source_cutoff': row.get('source_cutoff') or evidence_packet_mod.latest_source_cutoff(tuple(
             str(packet.get('fetched_at') or packet.get('observed_at') or '')
             for packet in (row.get('source_packets') or []) if isinstance(packet, dict)
-        ), default=str(row.get('observed_at') or '')),
+        )) or evidence_packet_mod.latest_source_cutoff((row.get('observed_at'),)),
     }
 
 

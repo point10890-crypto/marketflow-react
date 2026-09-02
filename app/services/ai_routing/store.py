@@ -99,6 +99,7 @@ class RoutingStore:
                         actual_output_tokens INTEGER,
                         status TEXT NOT NULL,
                         owner_token TEXT,
+                        lease_expires_at_utc TEXT,
                         created_at_utc TEXT NOT NULL,
                         settled_at_utc TEXT,
                         UNIQUE (run_id, request_id, pool, provider)
@@ -146,6 +147,7 @@ class RoutingStore:
                     "actual_cost_usd": "TEXT",
                     "cost_pricing_version": "TEXT",
                     "owner_token": "TEXT",
+                    "lease_expires_at_utc": "TEXT",
                 }
                 for name, declaration in budget_migrations.items():
                     if name not in budget_columns:

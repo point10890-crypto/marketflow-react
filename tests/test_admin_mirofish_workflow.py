@@ -151,6 +151,20 @@ def test_scanner_candidate_with_partial_required_provenance_is_rejected():
         workflow._build_candidate_packet(candidate, use_llm=True)
 
 
+def test_candidate_summary_source_cutoff_uses_timezone_aware_maximum():
+    candidate = _candidate('005930', '삼성전자', 85, 20)
+    candidate.pop('source_cutoff')
+    candidate['source_packets'] = [
+        {**candidate['source_packets'][0], 'fetched_at': '2026-09-03T10:00:00+09:00'},
+        {**candidate['source_packets'][0], 'evidence_id': 'later',
+         'fetched_at': '2026-09-03T03:00:00+00:00'},
+    ]
+
+    summary = workflow._candidate_summary(candidate)
+
+    assert summary['source_cutoff'] == '2026-09-03T03:00:00+00:00'
+
+
 def test_candidate_admission_happens_before_executor_submission(tmp_path, monkeypatch):
     candidates = [_candidate(f'{index:06d}', f'종목{index}', 90 - index, 20, index) for index in range(10)]
     monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
@@ -194,6 +208,44 @@ def test_budget_permits_are_reserved_before_worker_submission(tmp_path, monkeypa
     workflow.start_workflow_from_scanner_events(
         {'max_events': 1, 'top_n': 1, 'require_buy': False}, async_mode=False)
     assert order == ['reserve', 'submit']
+
+
+def test_preflight_permits_are_released_when_executor_creation_fails(tmp_path, monkeypatch):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    candidate = _candidate('005930', '삼성전자', 90, 20)
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(
+        workflow.alpha_scanner, 'run_scanner_alert_check',
+        lambda *args, **kwargs: _scanner_result([candidate]),
+    )
+    monkeypatch.setattr(
+        workflow.ta_engine, 'reserve_compact_batch',
+        lambda run_id, packets: ([{
+            'packet': packets[0],
+            'request_ids': {'decisive_text': 'stable-request'},
+            'reservation_ids': {'decisive_text': 'permit-1'},
+            'reservation_owner_tokens': {'decisive_text': 'owner-1'},
+        }], [{'symbol': '005930', 'status': 'admitted'}]),
+    )
+    released = []
+    monkeypatch.setattr(
+        workflow.ta_engine, 'release_compact_permits',
+        lambda permits, owners: released.append((dict(permits), dict(owners))),
+    )
+    monkeypatch.setattr(
+        workflow.concurrent.futures, 'ThreadPoolExecutor',
+        lambda **kwargs: (_ for _ in ()).throw(OSError('executor unavailable')),
+    )
+
+    with pytest.raises(OSError, match='executor unavailable'):
+        workflow.start_workflow_from_scanner_events(
+            {'max_events': 1, 'top_n': 1, 'require_buy': False}, async_mode=False,
+        )
+
+    assert released == [(
+        {'decisive_text': 'permit-1'}, {'decisive_text': 'owner-1'},
+    )]
 
 
 def test_automatic_kill_switch_does_not_run_compact_or_legacy(monkeypatch):

@@ -1,5 +1,6 @@
 import pytest
 
+from app.services.mirofish import evidence_packet
 from app.services.mirofish.evidence_packet import build_evidence_packet, cache_key
 
 
@@ -34,6 +35,13 @@ def test_packet_is_replay_stable_and_binds_provenance():
     changed = _candidate()
     changed['source_packets'][0]['text'] = 'quote 71000'
     assert build_evidence_packet(changed)['fingerprint'] != first['fingerprint']
+
+
+def test_latest_source_cutoff_compares_timezone_aware_instants():
+    assert evidence_packet.latest_source_cutoff([
+        '2026-09-03T10:00:00+09:00',  # 01:00 UTC
+        '2026-09-03T03:00:00+00:00',  # later instant despite lexical order
+    ]) == '2026-09-03T03:00:00+00:00'
 
 
 def test_cache_key_changes_for_replay_contract_dimensions():

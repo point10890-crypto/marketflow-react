@@ -345,53 +345,60 @@ def reserve_compact_batch(
     """Reserve decisive permits first, then low-priority stages, before futures."""
     prepared: list[dict[str, Any]] = []
     records: list[dict[str, Any]] = []
-    for packet in packets:
-        ids = compact_request_ids(run_id, packet)
-        request = RoutingRequest(
-            operation=Operation.DECISIVE_TEXT,
-            prompt=evidence_packet_mod.compact_reservation_prompt('decisive_text'),
-            system=trader_risk.PM_SYSTEM,
-            run_id=run_id, request_id=ids['decisive_text'],
-            symbol=packet['symbol'], market=packet['market'], json_mode=True,
-            max_output_tokens=1200,
-        )
-        permit = reserve_openai_fallback(
-            request, owner_token=f'compact:{os.getpid()}:{uuid4()}',
-        )
-        record = {'symbol': packet['symbol'], 'request_ids': ids,
-                  'permits': {}, 'status': 'admitted' if permit.approved else 'deferred',
-                  'reason': permit.reason}
-        if permit.approved and permit.acquired_by_caller and permit.reservation_id and permit.owner_token:
-            record['permits']['decisive_text'] = permit.reservation_id
-            prepared.append({'packet': packet, 'request_ids': ids,
-                             'reservation_ids': record['permits'],
-                             'reservation_owner_tokens': {'decisive_text': permit.owner_token}})
-        records.append(record)
-    by_symbol = {item['packet']['symbol']: item for item in prepared}
-    for operation, cap in ((Operation.BULK_TEXT, 768), (Operation.COMPACT_DEBATE, 768)):
-        for record in records:
-            item = by_symbol.get(record['symbol'])
-            if not item:
-                continue
+    try:
+        for packet in packets:
+            ids = compact_request_ids(run_id, packet)
             request = RoutingRequest(
-                operation=operation,
-                prompt=evidence_packet_mod.compact_reservation_prompt(operation.value),
-                system=(DIGEST_SYSTEM if operation is Operation.BULK_TEXT
-                        else research_debate.COMPACT_DEBATE_SYSTEM),
-                run_id=run_id, request_id=item['request_ids'][operation.value],
-                symbol=item['packet']['symbol'], market=item['packet']['market'],
-                json_mode=True, max_output_tokens=cap,
+                operation=Operation.DECISIVE_TEXT,
+                prompt=evidence_packet_mod.compact_reservation_prompt('decisive_text'),
+                system=trader_risk.PM_SYSTEM,
+                run_id=run_id, request_id=ids['decisive_text'],
+                symbol=packet['symbol'], market=packet['market'], json_mode=True,
+                max_output_tokens=1200,
             )
             permit = reserve_openai_fallback(
                 request, owner_token=f'compact:{os.getpid()}:{uuid4()}',
             )
+            record = {'symbol': packet['symbol'], 'request_ids': ids,
+                      'permits': {}, 'status': 'admitted' if permit.approved else 'deferred',
+                      'reason': permit.reason}
             if permit.approved and permit.acquired_by_caller and permit.reservation_id and permit.owner_token:
-                item['reservation_ids'][operation.value] = permit.reservation_id
-                item['reservation_owner_tokens'][operation.value] = permit.owner_token
-                record['permits'][operation.value] = permit.reservation_id
-            else:
-                record.setdefault('degraded_stages', []).append(
-                    {'operation': operation.value, 'reason': permit.reason})
+                record['permits']['decisive_text'] = permit.reservation_id
+                prepared.append({'packet': packet, 'request_ids': ids,
+                                 'reservation_ids': record['permits'],
+                                 'reservation_owner_tokens': {'decisive_text': permit.owner_token}})
+            records.append(record)
+        by_symbol = {item['packet']['symbol']: item for item in prepared}
+        for operation, cap in ((Operation.BULK_TEXT, 768), (Operation.COMPACT_DEBATE, 768)):
+            for record in records:
+                item = by_symbol.get(record['symbol'])
+                if not item:
+                    continue
+                request = RoutingRequest(
+                    operation=operation,
+                    prompt=evidence_packet_mod.compact_reservation_prompt(operation.value),
+                    system=(DIGEST_SYSTEM if operation is Operation.BULK_TEXT
+                            else research_debate.COMPACT_DEBATE_SYSTEM),
+                    run_id=run_id, request_id=item['request_ids'][operation.value],
+                    symbol=item['packet']['symbol'], market=item['packet']['market'],
+                    json_mode=True, max_output_tokens=cap,
+                )
+                permit = reserve_openai_fallback(
+                    request, owner_token=f'compact:{os.getpid()}:{uuid4()}',
+                )
+                if permit.approved and permit.acquired_by_caller and permit.reservation_id and permit.owner_token:
+                    item['reservation_ids'][operation.value] = permit.reservation_id
+                    item['reservation_owner_tokens'][operation.value] = permit.owner_token
+                    record['permits'][operation.value] = permit.reservation_id
+                else:
+                    record.setdefault('degraded_stages', []).append(
+                        {'operation': operation.value, 'reason': permit.reason})
+    except BaseException:
+        for item in prepared:
+            release_compact_permits(
+                item.get('reservation_ids'), item.get('reservation_owner_tokens'),
+            )
+        raise
     return prepared, records
 
 

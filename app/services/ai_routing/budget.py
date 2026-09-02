@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from uuid import uuid4
 
@@ -40,12 +40,28 @@ class BudgetSnapshot:
     remaining_output_tokens: int
 
 
+def _utc_now_datetime() -> datetime:
+    return datetime.now(timezone.utc)
+
+
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return _utc_now_datetime().isoformat()
 
 
 def _utc_billing_day() -> str:
-    return datetime.now(timezone.utc).date().isoformat()
+    return _utc_now_datetime().date().isoformat()
+
+
+def _parse_utc(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 class BudgetManager:
@@ -65,6 +81,22 @@ class BudgetManager:
         self.limits = limits or BudgetLimits()
         self.pool = pool
         self.provider = provider
+
+    @staticmethod
+    def _lease_seconds() -> int:
+        try:
+            configured = int(os.getenv("AI_OPENAI_PERMIT_LEASE_SECONDS", "900"))
+        except (TypeError, ValueError):
+            configured = 900
+        return max(1, min(configured, 86_400))
+
+    def _lease_expiry(self) -> str:
+        return (_utc_now_datetime() + timedelta(seconds=self._lease_seconds())).isoformat()
+
+    @staticmethod
+    def _lease_expired(row) -> bool:
+        expires_at = _parse_utc(row["lease_expires_at_utc"])
+        return expires_at is not None and expires_at <= _utc_now_datetime()
 
     def _used(self, connection, run_id: str) -> tuple[int, int, int]:
         row = connection.execute(
@@ -143,7 +175,10 @@ class BudgetManager:
             released_reservation_id: str | None = None
             existing = connection.execute(
                 """
-                SELECT reservation_id, status, owner_token, operation FROM budget_reservations
+                SELECT reservation_id, status, owner_token, operation,
+                       lease_expires_at_utc, reserved_calls, reserved_input_tokens,
+                       reserved_output_tokens, reserved_cost_usd
+                FROM budget_reservations
                 WHERE run_id = ? AND request_id = ? AND pool = ? AND provider = ?
                 """,
                 (run_id, request_id, self.pool, self.provider),
@@ -151,22 +186,54 @@ class BudgetManager:
             if existing is not None:
                 if existing["status"] == "settled":
                     return BudgetReservation(False, existing["reservation_id"], "already_settled", True)
+                if existing["status"] == "claimed" and self._lease_expired(existing):
+                    connection.execute(
+                        """UPDATE budget_reservations
+                        SET actual_calls=reserved_calls,
+                            actual_input_tokens=reserved_input_tokens,
+                            actual_output_tokens=reserved_output_tokens,
+                            actual_cost_usd=reserved_cost_usd,
+                            status='breached', settled_at_utc=?, lease_expires_at_utc=NULL
+                        WHERE reservation_id=? AND status='claimed'""",
+                        (_utc_now(), existing["reservation_id"]),
+                    )
+                    return BudgetReservation(
+                        False, existing["reservation_id"],
+                        "expired_claim_reconciled", True,
+                    )
                 if existing["status"] in {"claimed", "breached"}:
                     return BudgetReservation(False, existing["reservation_id"], "permit_in_use", True)
                 if existing["status"] == "reserved":
-                    same_owner = bool(owner_token) and existing["owner_token"] == acquisition_token
-                    return BudgetReservation(
-                        same_owner, existing["reservation_id"],
-                        None if same_owner else "permit_in_use", True, same_owner,
-                        acquisition_token if same_owner else None,
-                    )
+                    if self._lease_expired(existing):
+                        if existing["operation"] != operation.value:
+                            return BudgetReservation(
+                                False, existing["reservation_id"], "permit_mismatch", True,
+                            )
+                        updated = connection.execute(
+                            "UPDATE budget_reservations SET status='released', "
+                            "settled_at_utc=?, lease_expires_at_utc=NULL "
+                            "WHERE reservation_id=? AND status='reserved'",
+                            (_utc_now(), existing["reservation_id"]),
+                        ).rowcount
+                        if updated != 1:
+                            return BudgetReservation(
+                                False, existing["reservation_id"], "permit_in_use", True,
+                            )
+                        released_reservation_id = existing["reservation_id"]
+                    else:
+                        same_owner = bool(owner_token) and existing["owner_token"] == acquisition_token
+                        return BudgetReservation(
+                            same_owner, existing["reservation_id"],
+                            None if same_owner else "permit_in_use", True, same_owner,
+                            acquisition_token if same_owner else None,
+                        )
                 if existing["status"] == "released":
                     if existing["operation"] != operation.value:
                         return BudgetReservation(
                             False, existing["reservation_id"], "permit_mismatch", True,
                         )
                     released_reservation_id = existing["reservation_id"]
-                else:
+                elif released_reservation_id is None:
                     return BudgetReservation(
                         False, existing["reservation_id"], "permit_unavailable", True,
                     )
@@ -210,11 +277,13 @@ class BudgetManager:
                     reserved_input_tokens=?, reserved_output_tokens=?, billing_day_utc=?,
                     reserved_cost_usd=?, cost_pricing_version=?, actual_calls=NULL,
                     actual_input_tokens=NULL, actual_output_tokens=NULL, actual_cost_usd=NULL,
-                    status='reserved', owner_token=?, created_at_utc=?, settled_at_utc=NULL
+                    status='reserved', owner_token=?, lease_expires_at_utc=?,
+                    created_at_utc=?, settled_at_utc=NULL
                     WHERE reservation_id=? AND status='released'""",
                     (calls, input_tokens, output_tokens, billing_day_utc,
                      str(estimated_cost_usd) if estimated_cost_usd is not None else None,
-                     cost_pricing_version, acquisition_token, _utc_now(), released_reservation_id),
+                     cost_pricing_version, acquisition_token, self._lease_expiry(),
+                     _utc_now(), released_reservation_id),
                 ).rowcount
                 if updated != 1:
                     return BudgetReservation(
@@ -232,8 +301,8 @@ class BudgetManager:
                     reservation_id, run_id, request_id, pool, provider, operation,
                     reserved_calls, reserved_input_tokens, reserved_output_tokens,
                     billing_day_utc, reserved_cost_usd, cost_pricing_version,
-                    status, owner_token, created_at_utc
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved', ?, ?)
+                    status, owner_token, lease_expires_at_utc, created_at_utc
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved', ?, ?, ?)
                 """,
                 (
                     reservation_id,
@@ -249,6 +318,7 @@ class BudgetManager:
                     str(estimated_cost_usd) if estimated_cost_usd is not None else None,
                     cost_pricing_version,
                     acquisition_token,
+                    self._lease_expiry(),
                     _utc_now(),
                 ),
             )
@@ -292,7 +362,7 @@ class BudgetManager:
                 SET actual_calls = ?, actual_input_tokens = COALESCE(?, reserved_input_tokens),
                     actual_output_tokens = COALESCE(?, reserved_output_tokens),
                     actual_cost_usd = COALESCE(?, reserved_cost_usd),
-                    status = ?, settled_at_utc = ?
+                    status = ?, settled_at_utc = ?, lease_expires_at_utc=NULL
                 WHERE reservation_id = ? AND status IN ('reserved', 'claimed')
                 """,
                 (
@@ -313,7 +383,8 @@ class BudgetManager:
             return False
         with self.store.transaction(write=True) as connection:
             updated = connection.execute(
-                "UPDATE budget_reservations SET status = 'released', settled_at_utc = ? "
+                "UPDATE budget_reservations SET status = 'released', settled_at_utc = ?, "
+                "lease_expires_at_utc=NULL "
                 "WHERE reservation_id = ? AND status = 'reserved' AND owner_token=?",
                 (_utc_now(), reservation_id, owner_token),
             ).rowcount
@@ -325,7 +396,8 @@ class BudgetManager:
             return False
         with self.store.transaction(write=True) as connection:
             updated = connection.execute(
-                "UPDATE budget_reservations SET status='released', settled_at_utc=? "
+                "UPDATE budget_reservations SET status='released', settled_at_utc=?, "
+                "lease_expires_at_utc=NULL "
                 "WHERE reservation_id=? AND status='claimed'",
                 (_utc_now(), reservation_id),
             ).rowcount
@@ -340,7 +412,8 @@ class BudgetManager:
             return BudgetReservation(False, reason="permit_missing")
         with self.store.transaction(write=True) as connection:
             row = connection.execute(
-                "SELECT status,owner_token,reserved_input_tokens,reserved_output_tokens FROM budget_reservations "
+                "SELECT status,owner_token,reserved_input_tokens,reserved_output_tokens,"
+                "lease_expires_at_utc FROM budget_reservations "
                 "WHERE reservation_id=? AND run_id=? AND request_id=? AND pool=? AND provider=?",
                 (reservation_id, run_id, request_id, self.pool, self.provider),
             ).fetchone()
@@ -351,6 +424,14 @@ class BudgetManager:
             if row["status"] != "reserved":
                 return BudgetReservation(False, reservation_id=reservation_id,
                                          reason="permit_already_claimed")
+            if self._lease_expired(row):
+                connection.execute(
+                    "UPDATE budget_reservations SET status='released', settled_at_utc=?, "
+                    "lease_expires_at_utc=NULL WHERE reservation_id=? AND status='reserved'",
+                    (_utc_now(), reservation_id),
+                )
+                return BudgetReservation(False, reservation_id=reservation_id,
+                                         reason="permit_expired")
             if input_tokens > row["reserved_input_tokens"] or output_tokens > row["reserved_output_tokens"]:
                 connection.execute(
                     "UPDATE budget_reservations SET status='breached',settled_at_utc=? "
@@ -360,8 +441,9 @@ class BudgetManager:
                 return BudgetReservation(False, reservation_id=reservation_id,
                                          reason="permit_bound_exceeded")
             updated = connection.execute(
-                "UPDATE budget_reservations SET status='claimed' "
-                "WHERE reservation_id=? AND status='reserved'", (reservation_id,),
+                "UPDATE budget_reservations SET status='claimed', lease_expires_at_utc=? "
+                "WHERE reservation_id=? AND status='reserved'",
+                (self._lease_expiry(), reservation_id),
             ).rowcount
             if updated != 1:
                 return BudgetReservation(False, reservation_id=reservation_id,

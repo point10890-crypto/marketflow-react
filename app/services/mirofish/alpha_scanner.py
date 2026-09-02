@@ -1926,6 +1926,7 @@ def _score_symbol(
             'news_theme_social_latest.json': news_theme_social,
         },
         required_sources=data_sources,
+        cutoff_ceiling=generated_at,
     )
     profitability_scorecard = _profitability_scorecard(
         alpha=alpha,
@@ -3341,7 +3342,7 @@ def _candidate_sources(
 
 def _authoritative_source_packets(
     *, symbol: str, evidence: list[dict[str, Any]], artifacts: dict[str, Any],
-    sources: dict[str, Any], required_sources: list[str],
+    sources: dict[str, Any], required_sources: list[str], cutoff_ceiling: Any = None,
 ) -> tuple[list[dict[str, Any]], str | None, list[str]]:
     """Project source-owned observations; never substitute scanner generation time."""
     file_observed = {
@@ -3357,12 +3358,17 @@ def _authoritative_source_packets(
     packets: list[dict[str, Any]] = []
     missing: list[str] = []
     observed_values: list[datetime] = []
+    ceiling = _parse_dt(cutoff_ceiling)
     for source in required_sources:
         payload = sources.get(source)
         if not payload:
             missing.append(source)
             continue
-        observed_at = _resource_observed_at(payload) if isinstance(payload, dict) else None
+        observed_at = (
+            _daily_bar_available_at(payload)
+            if source == 'daily_prices.csv' and isinstance(payload, dict)
+            else (_resource_observed_at(payload) if isinstance(payload, dict) else None)
+        )
         artifact_key = artifact_keys.get(source)
         artifact = artifacts.get(artifact_key) if artifact_key else None
         if not observed_at and isinstance(artifact, dict):
@@ -3370,7 +3376,7 @@ def _authoritative_source_packets(
         if not observed_at:
             observed_at = file_observed.get(source)
         parsed = _parse_dt(observed_at)
-        if parsed is None:
+        if parsed is None or (ceiling is not None and parsed > ceiling):
             missing.append(source)
             continue
         normalized_time = parsed.isoformat()
@@ -3395,6 +3401,28 @@ def _authoritative_source_packets(
     packets.sort(key=lambda row: (row['source'], row['evidence_id']))
     cutoff = max(observed_values).isoformat() if observed_values else None
     return packets, cutoff, sorted(set(missing))
+
+
+def _daily_bar_available_at(payload: dict[str, Any]) -> datetime | None:
+    """Resolve a daily bar's real availability; date-only bars exist at KRX close."""
+    price = payload.get('price') if isinstance(payload.get('price'), dict) else payload
+    for key in ('available_at', 'fetched_at', 'observed_at', 'updated_at', 'update_time'):
+        raw = price.get(key)
+        if not raw:
+            continue
+        text = str(raw).strip().replace('Z', '+00:00')
+        try:
+            parsed = datetime.fromisoformat(text)
+        except ValueError:
+            continue
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=KST)
+        return parsed.astimezone(timezone.utc)
+    raw_date = str(price.get('date') or '').strip()
+    if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', raw_date):
+        return None
+    session_date = datetime.fromisoformat(raw_date).date()
+    return datetime.combine(session_date, dt_time(15, 30), tzinfo=KST).astimezone(timezone.utc)
 
 
 def _source_packet_type(source: str) -> str:

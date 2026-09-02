@@ -632,3 +632,30 @@ def test_missing_preflight_decisive_permit_dominates_degraded_stages(monkeypatch
 
     assert result['analysis_status'] == 'HOLD_REVIEW'
     assert result['verdict']['verdict'] == 'HOLD_REVIEW'
+
+
+def test_partial_preflight_exception_releases_every_acquired_permit(monkeypatch):
+    packet = {
+        'symbol': '005930', 'market': 'KOSPI', 'fingerprint': 'f' * 64,
+    }
+    calls = 0
+    def reserve(_request, **kwargs):
+        nonlocal calls
+        calls += 1
+        if calls == 3:
+            raise OSError('budget store unavailable')
+        return BudgetReservation(
+            True, f'permit-{calls}', acquired_by_caller=True,
+            owner_token=kwargs['owner_token'],
+        )
+    released = []
+    monkeypatch.setattr(engine, 'reserve_openai_fallback', reserve)
+    monkeypatch.setattr(
+        engine, 'release_openai_reservations', lambda permits: released.extend(permits),
+    )
+
+    with pytest.raises(OSError, match='budget store unavailable'):
+        engine.reserve_compact_batch('workflow-crash', [packet])
+
+    assert {permit for permit, _owner in released} == {'permit-1', 'permit-2'}
+    assert all(owner for _permit, owner in released)

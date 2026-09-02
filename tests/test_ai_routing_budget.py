@@ -1,6 +1,9 @@
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
+import multiprocessing
 
+import app.services.ai_routing.budget as budget_module
 from app.services.ai_routing.budget import BudgetLimits, BudgetManager
 from app.services.ai_routing.contracts import Operation, TokenUsage
 from app.services.ai_routing.store import RoutingStore
@@ -8,6 +11,18 @@ from app.services.ai_routing.store import RoutingStore
 
 def _manager(tmp_path, limits=None):
     return BudgetManager(RoutingStore(tmp_path / "usage.sqlite3"), limits=limits)
+
+
+def _reserve_expired_permit_in_process(db_path, result_queue):
+    manager = BudgetManager(RoutingStore(db_path))
+    result = manager.reserve(
+        run_id='process-crash', request_id='stable-request',
+        operation=Operation.DECISIVE_TEXT, input_tokens=100, output_tokens=100,
+        owner_token='replacement-process',
+    )
+    result_queue.put((
+        result.approved, result.reservation_id, result.owner_token, result.reason,
+    ))
 
 
 def test_default_openai_automatic_run_caps(tmp_path):
@@ -266,6 +281,121 @@ def test_released_resume_rechecks_current_run_capacity(tmp_path):
 
     assert resumed.approved is False
     assert resumed.reason == 'hard_cap'
+
+
+def test_expired_unclaimed_permit_is_reacquired_by_new_owner(tmp_path, monkeypatch):
+    now = {'value': datetime(2026, 9, 3, tzinfo=timezone.utc)}
+    monkeypatch.setenv('AI_OPENAI_PERMIT_LEASE_SECONDS', '1')
+    monkeypatch.setattr(
+        budget_module, '_utc_now_datetime', lambda: now['value'], raising=False,
+    )
+    manager = _manager(tmp_path)
+    first = manager.reserve(
+        run_id='crash-run', request_id='stable-request', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='dead-owner',
+    )
+    now['value'] += timedelta(seconds=2)
+
+    recovered = manager.reserve(
+        run_id='crash-run', request_id='stable-request', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='replacement-owner',
+    )
+
+    assert recovered.approved and recovered.acquired_by_caller
+    assert recovered.reservation_id == first.reservation_id
+    assert recovered.owner_token == 'replacement-owner'
+    assert manager.release(first.reservation_id, owner_token='dead-owner') is False
+
+
+def test_expired_unclaimed_permit_is_recovered_after_process_crash(tmp_path):
+    manager = _manager(tmp_path)
+    first = manager.reserve(
+        run_id='process-crash', request_id='stable-request',
+        operation=Operation.DECISIVE_TEXT, input_tokens=100, output_tokens=100,
+        owner_token='dead-process',
+    )
+    with manager.store.transaction(write=True) as connection:
+        connection.execute(
+            "UPDATE budget_reservations SET lease_expires_at_utc=? "
+            "WHERE reservation_id=?",
+            ('2000-01-01T00:00:00+00:00', first.reservation_id),
+        )
+
+    context = multiprocessing.get_context('spawn')
+    result_queue = context.Queue()
+    process = context.Process(
+        target=_reserve_expired_permit_in_process,
+        args=(str(manager.store.db_path), result_queue),
+    )
+    process.start()
+    process.join(timeout=10)
+
+    assert process.exitcode == 0
+    approved, reservation_id, owner_token, reason = result_queue.get(timeout=2)
+    assert approved is True and reason is None
+    assert reservation_id == first.reservation_id
+    assert owner_token == 'replacement-process'
+
+
+def test_expired_claim_is_conservatively_reconciled_not_reclaimed(tmp_path, monkeypatch):
+    now = {'value': datetime(2026, 9, 3, tzinfo=timezone.utc)}
+    monkeypatch.setenv('AI_OPENAI_PERMIT_LEASE_SECONDS', '1')
+    monkeypatch.setattr(
+        budget_module, '_utc_now_datetime', lambda: now['value'], raising=False,
+    )
+    manager = _manager(tmp_path)
+    first = manager.reserve(
+        run_id='claimed-crash', request_id='stable-request', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='dead-owner',
+    )
+    assert manager.claim(
+        first.reservation_id, run_id='claimed-crash', request_id='stable-request',
+        owner_token='dead-owner', input_tokens=100, output_tokens=100,
+    ).approved
+    now['value'] += timedelta(seconds=2)
+
+    recovered = manager.reserve(
+        run_id='claimed-crash', request_id='stable-request', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='replacement-owner',
+    )
+
+    assert recovered.approved is False
+    assert recovered.reason == 'expired_claim_reconciled'
+    with manager.store.transaction() as connection:
+        row = connection.execute(
+            'SELECT status,actual_calls,actual_input_tokens,actual_output_tokens '
+            'FROM budget_reservations WHERE reservation_id=?', (first.reservation_id,),
+        ).fetchone()
+    assert tuple(row) == ('breached', 1, 100, 100)
+
+
+def test_successfully_settled_permit_is_never_reclaimed_after_lease(tmp_path, monkeypatch):
+    now = {'value': datetime(2026, 9, 3, tzinfo=timezone.utc)}
+    monkeypatch.setenv('AI_OPENAI_PERMIT_LEASE_SECONDS', '1')
+    monkeypatch.setattr(budget_module, '_utc_now_datetime', lambda: now['value'])
+    manager = _manager(tmp_path)
+    permit = manager.reserve(
+        run_id='settled-run', request_id='stable-request',
+        operation=Operation.DECISIVE_TEXT, input_tokens=100, output_tokens=100,
+        owner_token='settled-owner',
+    )
+    assert manager.claim(
+        permit.reservation_id, run_id='settled-run', request_id='stable-request',
+        owner_token='settled-owner', input_tokens=100, output_tokens=100,
+    ).approved
+    assert manager.settle(
+        permit.reservation_id, TokenUsage(input_tokens=50, output_tokens=50),
+    ) is True
+    now['value'] += timedelta(seconds=2)
+
+    replay = manager.reserve(
+        run_id='settled-run', request_id='stable-request',
+        operation=Operation.DECISIVE_TEXT, input_tokens=100, output_tokens=100,
+        owner_token='replacement-owner',
+    )
+
+    assert replay.approved is False
+    assert replay.reason == 'already_settled'
 
 
 def test_claim_and_settlement_fail_closed_above_reserved_bound(tmp_path):
