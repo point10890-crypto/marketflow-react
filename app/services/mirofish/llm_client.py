@@ -28,6 +28,8 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import Any, Callable, Iterator
 
+from app.services.mirofish.llm_pricing import estimate_cost_usd
+
 logger = logging.getLogger(__name__)
 
 DEEPSEEK_BASE_URL = os.getenv('DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
@@ -58,6 +60,37 @@ def _safe_failure(provider: str, reason: str, exc: Exception | None = None) -> N
     _provider_failure.set(failures)
 
 
+# Token usage per provider for the current call (no prompt/response text).
+_provider_usage: ContextVar[dict[str, dict[str, int]]] = ContextVar(
+    'mirofish_llm_provider_usage', default={}
+)
+
+
+def _record_usage(provider: str, prompt_tokens: Any, completion_tokens: Any) -> None:
+    from app.services.mirofish.llm_pricing import normalize_usage
+
+    usage = normalize_usage(prompt_tokens, completion_tokens)
+    if usage is None:
+        return
+    current = dict(_provider_usage.get())
+    current[provider] = usage
+    _provider_usage.set(current)
+
+
+def _usage_from_openai_like(resp: Any) -> tuple[Any, Any]:
+    usage = getattr(resp, 'usage', None)
+    if usage is None:
+        return None, None
+    return getattr(usage, 'prompt_tokens', None), getattr(usage, 'completion_tokens', None)
+
+
+def _usage_from_gemini(resp: Any) -> tuple[Any, Any]:
+    meta = getattr(resp, 'usage_metadata', None)
+    if meta is None:
+        return None, None
+    return getattr(meta, 'prompt_token_count', None), getattr(meta, 'candidates_token_count', None)
+
+
 def _model_for(provider: str, model_env: str | None) -> str:
     return {
         'deepseek': deepseek_model,
@@ -79,6 +112,11 @@ def get_last_generation_metadata() -> dict[str, Any] | None:
         **metadata,
         'attempts': [dict(attempt) for attempt in metadata.get('attempts', [])],
     }
+
+
+def _sum_cost(attempts: list[dict[str, Any]]) -> float | None:
+    costs = [a.get('est_cost_usd') for a in attempts if a.get('est_cost_usd') is not None]
+    return round(sum(costs), 6) if costs else None
 
 
 def _publish_metadata(metadata: dict[str, Any]) -> None:
@@ -249,6 +287,7 @@ def _generate_deepseek(prompt: str, *, system: str | None, model_env: str | None
         kwargs['response_format'] = {'type': 'json_object'}
     try:
         resp = client.chat.completions.create(**kwargs)
+        _record_usage('deepseek', *_usage_from_openai_like(resp))
         return (resp.choices[0].message.content or '').strip() or None
     except Exception as exc:
         logger.warning('[llm_client] DeepSeek call failed: %s', type(exc).__name__)
@@ -280,6 +319,7 @@ def _generate_openai(prompt: str, *, system: str | None, model_env: str | None,
         kwargs['response_format'] = {'type': 'json_object'}
     try:
         resp = client.chat.completions.create(**kwargs)
+        _record_usage('openai', *_usage_from_openai_like(resp))
         return (resp.choices[0].message.content or '').strip() or None
     except Exception as exc:
         logger.warning('[llm_client] OpenAI call failed: %s', type(exc).__name__)
@@ -316,6 +356,7 @@ def _generate_gemini(prompt: str, *, system: str | None, model_env: str | None,
             contents=prompt,
             config=gt.GenerateContentConfig(**config_kwargs),
         )
+        _record_usage('gemini', *_usage_from_gemini(resp))
         return (resp.text or '').strip() or None
     except Exception as exc:
         logger.warning('[llm_client] Gemini call failed: %s', type(exc).__name__)
@@ -351,6 +392,7 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
     started = time.perf_counter()
     attempts: list[dict[str, Any]] = []
     _provider_failure.set({})
+    _provider_usage.set({})
     if not order:
         logger.warning('[llm_client] every provider is disabled')
         metadata = {
@@ -382,13 +424,17 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
                 _safe_failure(provider, 'invalid_json')
                 failure_reason = 'invalid_json'
                 text = None
+        attempt_model = _model_for(provider, model_env)
+        attempt_usage = _provider_usage.get().get(provider)
         attempt = {
             'attempt': attempt_number,
             'provider': provider,
-            'model': _model_for(provider, model_env),
+            'model': attempt_model,
             'success': bool(text),
             'failure_reason': None if text else (failure_reason or 'empty_response'),
             'latency_ms': round((time.perf_counter() - attempt_started) * 1000, 2),
+            'usage': attempt_usage,
+            'est_cost_usd': estimate_cost_usd(attempt_model, attempt_usage),
         }
         attempts.append(attempt)
         if text:
@@ -399,6 +445,8 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
                 'json_mode': json_mode, 'fallback_used': bool(failed),
                 'failure_reason': None, 'attempts': attempts,
                 'latency_ms': round((time.perf_counter() - started) * 1000, 2),
+                'usage': attempt_usage,
+                'est_cost_usd': _sum_cost(attempts),
             }
             _publish_metadata(metadata)
             return text, metadata
@@ -407,6 +455,7 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
     logger.warning('[llm_client] all providers failed in order: %s', order)
     metadata = {
         'provider': 'none', 'model': None, 'success': False,
+        'usage': None, 'est_cost_usd': _sum_cost(attempts),
         'json_mode': json_mode, 'fallback_used': len(attempts) > 1,
         'failure_reason': 'all_providers_failed', 'attempts': attempts,
         'latency_ms': round((time.perf_counter() - started) * 1000, 2),

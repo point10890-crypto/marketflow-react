@@ -221,11 +221,38 @@ class BriefingGenerator:
 
     # ── Prompt builders ──
 
-    def _build_morning_prompt(self, data: dict) -> str:
+    # ── Prompt capability helpers ──
+
+    @staticmethod
+    def _search_instruction(search_capable: bool, what: str) -> str:
+        if search_capable:
+            return f"Google Search를 활용해 {what}를 반영하세요."
+        return (f"이 요청에는 웹 검색 도구가 없습니다. {what}는 아래 '제공 데이터'에 "
+                "포함된 것만 사용하고, 제공되지 않은 뉴스·수치·출처를 지어내지 마세요.")
+
+    @staticmethod
+    def _news_section_hint(search_capable: bool, what: str) -> str:
+        if search_capable:
+            return f"Google Search로 찾은 {what}"
+        return f"제공 데이터에서 확인되는 {what} (확인 불가 시 '제공 데이터 기준 특이 뉴스 없음'으로 명시)"
+
+    @staticmethod
+    def _fill_gap_rule(search_capable: bool) -> str:
+        if search_capable:
+            return "- 데이터에 없는 내용은 Google Search로 보완"
+        return "- 데이터에 없는 내용은 '데이터 없음'으로 표기 (추정·창작 금지, sources 에는 '자체 데이터' 만)"
+
+    def _build_morning_prompt(self, data: dict, *, search_capable: bool = False) -> str:
+        """조간 브리핑 프롬프트.
+
+        search_capable=False (DeepSeek/OpenAI 주 경로): 모델에 검색 도구가 없으므로
+        "Google Search 로 찾은 뉴스" 를 요구하지 않는다 — 요구하면 없는 뉴스를 지어낸다.
+        search_capable=True (Gemini grounding 백업 경로)에서만 검색 보강을 지시한다.
+        """
         lines = [
             "당신은 월가 경력 20년의 한국인 수석 전략가입니다.",
             "오늘 한국 투자자를 위한 **조간 브리핑**을 작성해주세요.",
-            "Google Search를 활용해 최신 뉴스와 이슈를 반영하세요.",
+            self._search_instruction(search_capable, "최신 뉴스와 이슈"),
             "",
             "## 제공 데이터",
         ]
@@ -304,7 +331,7 @@ class BriefingGenerator:
   "summary": "2-3문장으로 오늘 핵심 요약. 한국 투자자 관점.",
   "sections": [
     {"heading": "🇺🇸 미국 시장 마감", "content": "주요 지수 등락, 섹터별 동향, 특이사항"},
-    {"heading": "📰 핵심 이슈 & 뉴스", "content": "Google Search로 찾은 최신 글로벌 뉴스 3-5개"},
+    {"heading": "📰 핵심 이슈 & 뉴스", "content": """ + self._news_section_hint(search_capable, "최신 글로벌 뉴스 3-5개") + """},
     {"heading": "📊 매크로 환경", "content": "VIX, 금리, 환율, 원자재 분석"},
     {"heading": "💰 Smart Money 동향", "content": "기관 매매, Top Picks 변동"},
     {"heading": "🎯 오늘의 투자 전략", "content": "한국 시장 영향 + 구체적 전략 제안"},
@@ -318,15 +345,15 @@ class BriefingGenerator:
 ```
 - sections의 content는 마크다운 형식 (볼드, 리스트, 표 등 사용 가능)
 - 한국어로 작성
-- 데이터에 없는 내용은 Google Search로 보완
+""" + self._fill_gap_rule(search_capable) + """
 """)
         return '\n'.join(lines)
 
-    def _build_closing_prompt(self, data: dict) -> str:
+    def _build_closing_prompt(self, data: dict, *, search_capable: bool = False) -> str:
         lines = [
             "당신은 한국 증시 경력 20년의 수석 전략가입니다.",
             "오늘 장 마감 후 투자자를 위한 **마감 브리핑**을 작성해주세요.",
-            "Google Search를 활용해 최신 뉴스와 장중 이슈를 반영하세요.",
+            self._search_instruction(search_capable, "최신 뉴스와 장중 이슈"),
             "",
             "## 제공 데이터",
         ]
@@ -384,7 +411,7 @@ class BriefingGenerator:
   "sections": [
     {"heading": "🇰🇷 한국 시장 마감", "content": "KOSPI/KOSDAQ 등락, 섹터별 동향, 수급 특징"},
     {"heading": "🔥 종가베팅 시그널", "content": "오늘 S/A급 종목 분석, 핵심 테마"},
-    {"heading": "📰 장중 이슈 & 뉴스", "content": "Google Search로 찾은 한국 시장 뉴스"},
+    {"heading": "📰 장중 이슈 & 뉴스", "content": """ + self._news_section_hint(search_capable, "한국 시장 뉴스") + """},
     {"heading": "🌍 글로벌 컨텍스트", "content": "미국 선물, 환율, 크립토 동향"},
     {"heading": "🎯 내일 전략", "content": "오버나잇 리스크, 주시 종목, 전략 제안"},
     {"heading": "📊 수급 분석", "content": "외국인/기관 매매 동향, 프로그램 매매"}
@@ -397,7 +424,7 @@ class BriefingGenerator:
 ```
 - sections의 content는 마크다운 형식 사용 가능
 - 한국어로 작성
-- 데이터에 없는 내용은 Google Search로 보완
+""" + self._fill_gap_rule(search_capable) + """
 """)
         return '\n'.join(lines)
 
@@ -569,12 +596,12 @@ class BriefingGenerator:
             logger.error("조간 데이터 수집 실패")
             return None
 
-        prompt = self._build_morning_prompt(data)
         # 2026-09-02 순위 변경: DeepSeek → OpenAI 주력, Gemini(검색 보강)는 백업
-        result = await self._call_fallback_llm(prompt)
+        # 검색 도구가 없는 주 경로에는 검색을 요구하지 않는 프롬프트를 따로 만든다.
+        result = await self._call_fallback_llm(self._build_morning_prompt(data, search_capable=False))
 
         if not result:
-            result = await self._call_gemini(prompt)
+            result = await self._call_gemini(self._build_morning_prompt(data, search_capable=True))
 
         if not result:
             logger.warning("DeepSeek/OpenAI + Gemini 모두 실패, 템플릿 브리핑 생성")
@@ -596,12 +623,11 @@ class BriefingGenerator:
             logger.error("마감 데이터 수집 실패")
             return None
 
-        prompt = self._build_closing_prompt(data)
         # 2026-09-02 순위 변경: DeepSeek → OpenAI 주력, Gemini(검색 보강)는 백업
-        result = await self._call_fallback_llm(prompt)
+        result = await self._call_fallback_llm(self._build_closing_prompt(data, search_capable=False))
 
         if not result:
-            result = await self._call_gemini(prompt)
+            result = await self._call_gemini(self._build_closing_prompt(data, search_capable=True))
 
         if not result:
             logger.warning("DeepSeek/OpenAI + Gemini 모두 실패, 템플릿 브리핑 생성")

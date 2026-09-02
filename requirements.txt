@@ -3,6 +3,7 @@
 
 # Flask 서버
 flask>=3.0.0
+flask-compress>=1.15
 flask-cors>=4.0.0
 flask-sqlalchemy>=3.1.0
 bcrypt>=4.0.0

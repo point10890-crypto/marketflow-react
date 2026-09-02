@@ -23,6 +23,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
     const [selected, setSelected] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const searchAbortRef = useRef<AbortController | null>(null);
 
     useEffect(() => {
         if (open) {
@@ -42,18 +43,26 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
     }, [open, onClose]);
 
     const searchStocks = useCallback(async (q: string) => {
+        // 이전 요청을 취소한다 — 느린 응답이 나중에 도착해 최신 결과를 덮어쓰지 않도록.
+        searchAbortRef.current?.abort();
         if (!q.trim()) { setResults([]); return; }
+        const controller = new AbortController();
+        searchAbortRef.current = controller;
         try {
             const res = await fetch(
                 `${API_BASE}/api/stock-analyzer/search?q=${encodeURIComponent(q)}`,
-                { headers: authHeaders() }
+                { headers: authHeaders(), signal: controller.signal }
             );
             if (res.ok) {
                 const data = await res.json();
                 setResults(data);
                 setSelected(0);
             }
-        } catch { setResults([]); }
+        } catch (error) {
+            if (!(error instanceof DOMException && error.name === 'AbortError')) setResults([]);
+        } finally {
+            if (searchAbortRef.current === controller) searchAbortRef.current = null;
+        }
     }, []);
 
     const handleInput = (val: string) => {

@@ -8,6 +8,7 @@ import os
 import json
 import re
 import asyncio
+import time
 import logging
 import httpx
 from google import genai
@@ -22,30 +23,68 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # API 상태 추적 (Rate Limit 관리)
+#
+# 리뷰(2026-09-02): 이전에는 한 번 rate-limit 이 걸리면 프로세스가 살아있는 동안
+# 영구 비활성 → 장수 워커에서 429 한 번으로 모든 후속 분석이 키워드 폴백으로
+# 조용히 내려앉았다. 이제 `retry_at` 쿨다운(기본 15분, 연속 오류마다 2배, 최대 2시간)
+# 이 지나면 자동 재시도한다.
+_BREAKER_BASE_COOLDOWN_SEC = float(os.getenv('LLM_BREAKER_COOLDOWN_SECONDS', '900'))
+_BREAKER_MAX_COOLDOWN_SEC = float(os.getenv('LLM_BREAKER_MAX_COOLDOWN_SECONDS', '7200'))
+
+
+def _fresh_status() -> Dict:
+    return {'available': True, 'last_error': None, 'error_count': 0, 'retry_at': None}
+
+
 API_STATUS = {
-    'gemini_grounding': {'available': True, 'last_error': None, 'error_count': 0},
-    'gemini': {'available': True, 'last_error': None, 'error_count': 0},
-    'deepseek': {'available': True, 'last_error': None, 'error_count': 0},
-    'claude': {'available': True, 'last_error': None, 'error_count': 0},
-    'openai': {'available': True, 'last_error': None, 'error_count': 0},
-    'xai': {'available': True, 'last_error': None, 'error_count': 0}
+    'gemini_grounding': _fresh_status(),
+    'gemini': _fresh_status(),
+    'deepseek': _fresh_status(),
+    'claude': _fresh_status(),
+    'openai': _fresh_status(),
+    'xai': _fresh_status(),
 }
 
 # Lock to protect API_STATUS mutations from async coroutines
 _api_status_lock = asyncio.Lock()
 
+
+def _cooldown_seconds(error_count: int) -> float:
+    exponent = max(0, int(error_count) - 1)
+    return min(_BREAKER_BASE_COOLDOWN_SEC * (2 ** exponent), _BREAKER_MAX_COOLDOWN_SEC)
+
+
 async def _mark_unavailable(api_name: str, error_type: str = 'Rate Limit'):
-    """Mark an API as unavailable with lock protection"""
+    """Mark an API as unavailable (with a clock-based cooldown) under lock protection"""
     async with _api_status_lock:
-        API_STATUS[api_name]['available'] = False
-        API_STATUS[api_name]['last_error'] = error_type
-        API_STATUS[api_name]['error_count'] += 1
+        status = API_STATUS[api_name]
+        status['available'] = False
+        status['last_error'] = error_type
+        status['error_count'] += 1
+        status['retry_at'] = time.monotonic() + _cooldown_seconds(status['error_count'])
+
+
+def is_api_available(api_name: str) -> bool:
+    """쿨다운이 지난 provider 는 자동으로 다시 시도 대상에 올린다 (half-open)."""
+    status = API_STATUS.get(api_name)
+    if status is None:
+        return False
+    if status['available']:
+        return True
+    retry_at = status.get('retry_at')
+    if retry_at is not None and time.monotonic() >= retry_at:
+        status['available'] = True
+        status['retry_at'] = None
+        logger.info(f"LLM breaker half-open: retrying {api_name} after cooldown")
+        return True
+    return False
+
 
 def reset_api_status():
     """API 상태 초기화 (세션 시작 시 호출)"""
     global API_STATUS
     for key in API_STATUS:
-        API_STATUS[key] = {'available': True, 'last_error': None, 'error_count': 0}
+        API_STATUS[key] = _fresh_status()
 
 class GeminiGroundingClient:
     """Gemini + Google Search Grounding (REST API) — 실시간 검색+분석 통합"""
@@ -66,7 +105,7 @@ class GeminiGroundingClient:
         if not self.api_key:
             return {"score": 0, "reason": "No Gemini API Key", "themes": [], "source": "none"}
 
-        if not API_STATUS['gemini_grounding']['available']:
+        if not is_api_available('gemini_grounding'):
             return {"score": 0, "reason": f"Rate Limited: {API_STATUS['gemini_grounding']['last_error']}", "themes": [], "source": "none"}
 
         trad_text = ""
@@ -190,7 +229,7 @@ class OpenAIAnalyzer:
         if not self.client:
             return {"score": 0, "reason": "No OpenAI Client", "themes": []}
 
-        if not API_STATUS['openai']['available']:
+        if not is_api_available('openai'):
             return {"score": 0, "reason": f"Rate Limited: {API_STATUS['openai']['last_error']}", "themes": []}
 
         trad_text = ""
@@ -262,7 +301,7 @@ class GeminiAnalyzer:
         if not self.client:
             return {"score": 0, "reason": "No Gemini Model", "themes": []}
 
-        if not API_STATUS['gemini']['available']:
+        if not is_api_available('gemini'):
             return {"score": 0, "reason": f"Rate Limited: {API_STATUS['gemini']['last_error']}", "themes": []}
 
         trad_text = ""
@@ -345,7 +384,7 @@ class ClaudeAnalyzer:
         if not self.client:
             return {"score": 0, "reason": "No Claude Client", "themes": []}
 
-        if not API_STATUS['claude']['available']:
+        if not is_api_available('claude'):
             return {"score": 0, "reason": f"Rate Limited: {API_STATUS['claude']['last_error']}", "themes": []}
 
         trad_text = ""
@@ -426,7 +465,7 @@ class DeepSeekAnalyzer:
         if not self.client:
             return {"score": 0, "reason": "No DeepSeek Client", "themes": []}
 
-        if not API_STATUS['deepseek']['available']:
+        if not is_api_available('deepseek'):
             return {"score": 0, "reason": f"Rate Limited: {API_STATUS['deepseek']['last_error']}", "themes": []}
 
         trad_text = ""
@@ -499,7 +538,7 @@ class XAIAnalyzer:
         if not self.client:
             return {"score": 0, "reason": "No xAI Client", "themes": []}
 
-        if not API_STATUS['xai']['available']:
+        if not is_api_available('xai'):
             return {"score": 0, "reason": f"Rate Limited: {API_STATUS['xai']['last_error']}", "themes": []}
 
         trad_text = ""
@@ -578,12 +617,12 @@ class LLMAnalyzer:
     def get_api_status(self) -> Dict:
         """현재 API 상태 반환"""
         return {
-            'gemini_grounding': 'active' if API_STATUS['gemini_grounding']['available'] else 'rate_limited',
-            'gemini': 'active' if API_STATUS['gemini']['available'] else 'rate_limited',
-            'deepseek': 'active' if API_STATUS['deepseek']['available'] else 'rate_limited',
-            'claude': 'active' if API_STATUS['claude']['available'] else 'rate_limited',
-            'openai': 'active' if API_STATUS['openai']['available'] else 'rate_limited',
-            'xai': 'active' if API_STATUS['xai']['available'] else 'rate_limited',
+            'gemini_grounding': 'active' if is_api_available('gemini_grounding') else 'rate_limited',
+            'gemini': 'active' if is_api_available('gemini') else 'rate_limited',
+            'deepseek': 'active' if is_api_available('deepseek') else 'rate_limited',
+            'claude': 'active' if is_api_available('claude') else 'rate_limited',
+            'openai': 'active' if is_api_available('openai') else 'rate_limited',
+            'xai': 'active' if is_api_available('xai') else 'rate_limited',
             'errors': {k: v['error_count'] for k, v in API_STATUS.items()}
         }
 
@@ -632,7 +671,7 @@ class LLMAnalyzer:
         news_context = ""
 
         # 1. DeepSeek V4 (주력 — 2026-09-02 순위 변경, 수집된 뉴스+DART 만으로 분석)
-        if API_STATUS['deepseek']['available']:
+        if is_api_available('deepseek'):
             analysis = await self.deepseek.analyze_news(stock_name, news_context, news_items, dart_text)
             if self._is_usable_analysis(analysis):
                 analysis["source"] = "deepseek"
@@ -642,18 +681,18 @@ class LLMAnalyzer:
             print(f"[SKIP] DeepSeek Rate Limited - {stock_name}")
 
         # 2. OpenAI Fallback (보조)
-        if analysis is None and API_STATUS['openai']['available']:
+        if analysis is None and is_api_available('openai'):
             print(f"[FALLBACK] DeepSeek Failed for {stock_name}, trying OpenAI...")
             analysis = await self.openai.analyze_news(stock_name, news_context, news_items, dart_text)
             if self._is_usable_analysis(analysis):
                 analysis["source"] = "openai_fallback"
             else:
                 analysis = None
-        elif analysis is None and not API_STATUS['openai']['available']:
+        elif analysis is None and not is_api_available('openai'):
             print(f"[SKIP] OpenAI Rate Limited - {stock_name}")
 
         # 3. Gemini + Google Search Grounding (검색+분석 통합 — 크레딧 있을 때만)
-        if analysis is None and API_STATUS['gemini_grounding']['available']:
+        if analysis is None and is_api_available('gemini_grounding'):
             print(f"[FALLBACK] OpenAI Failed for {stock_name}, trying Gemini Grounding...")
             result = await self.grounding.search_and_analyze(stock_name, news_items, dart_text)
             if self._is_usable_analysis(result):
@@ -662,29 +701,29 @@ class LLMAnalyzer:
                 news_context = analysis.get("news_summary", "")
                 # Rate Limit 방지
                 await asyncio.sleep(0.5)
-        elif analysis is None and not API_STATUS['gemini_grounding']['available']:
+        elif analysis is None and not is_api_available('gemini_grounding'):
             print(f"[SKIP] Gemini Grounding Rate Limited - {stock_name}")
 
         # 4. Claude Fallback
-        if analysis is None and API_STATUS['claude']['available']:
+        if analysis is None and is_api_available('claude'):
             print(f"[FALLBACK] Gemini Grounding Failed for {stock_name}, trying Claude...")
             analysis = await self.claude.analyze_news(stock_name, news_context, news_items, dart_text)
             if self._is_usable_analysis(analysis):
                 analysis["source"] = "claude_fallback"
             else:
                 analysis = None
-        elif analysis is None and not API_STATUS['claude']['available']:
+        elif analysis is None and not is_api_available('claude'):
             print(f"[SKIP] Claude Rate Limited - {stock_name}")
 
         # 5. xAI Grok Fallback
-        if analysis is None and API_STATUS['xai']['available']:
+        if analysis is None and is_api_available('xai'):
             print(f"[FALLBACK] Claude Failed for {stock_name}, trying xAI Grok...")
             analysis = await self.xai.analyze_news(stock_name, news_context, news_items, dart_text)
             if self._is_usable_analysis(analysis):
                 analysis["source"] = "xai_fallback"
             else:
                 analysis = None
-        elif analysis is None and not API_STATUS['xai']['available']:
+        elif analysis is None and not is_api_available('xai'):
             print(f"[SKIP] xAI Rate Limited - {stock_name}")
 
         # 6. Final Fallback (Keyword) - 모든 LLM 실패 시
