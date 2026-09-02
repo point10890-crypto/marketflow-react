@@ -219,6 +219,48 @@ def test_existing_sqlite_database_gains_pending_purchase_uniqueness(tmp_path):
         ).count() == 1
 
 
+def test_legacy_duplicate_pending_purchases_do_not_block_boot(tmp_path, caplog):
+    """레거시 중복 pending 행이 있어도 부팅은 계속된다 — 인덱스 설치만 건너뛰고
+    데이터는 그대로 둔 채(삭제·수정 금지) 로그로 크게 알린다."""
+    db_path = tmp_path / 'legacy-duplicate-users.db'
+    with sqlite3.connect(db_path) as conn:
+        conn.execute('''
+            CREATE TABLE purchase_requests (
+                id INTEGER PRIMARY KEY,
+                post_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                buyer_name VARCHAR(100) NOT NULL,
+                status VARCHAR(20) DEFAULT 'pending',
+                created_at DATETIME,
+                approved_at DATETIME
+            )
+        ''')
+        conn.execute("INSERT INTO purchase_requests (post_id, user_id, buyer_name, status) "
+                     "VALUES (1, 1, '중복 요청 1', 'pending')")
+        conn.execute("INSERT INTO purchase_requests (post_id, user_id, buyer_name, status) "
+                     "VALUES (1, 1, '중복 요청 2', 'pending')")
+
+    app = create_app({                       # RuntimeError 없이 부팅되어야 한다
+        'TESTING': True,
+        'SECRET_KEY': 'formula-purchase-legacy-duplicate-secret',
+        'SQLALCHEMY_DATABASE_URI': f'sqlite:///{db_path.as_posix()}',
+        'SQLALCHEMY_ENGINE_OPTIONS': {},
+    })
+    assert app is not None
+    assert 'Pending purchase uniqueness index NOT installed' in caplog.text
+
+    with sqlite3.connect(db_path) as conn:
+        pending = conn.execute(
+            "SELECT COUNT(*) FROM purchase_requests WHERE status = 'pending'"
+        ).fetchone()[0]
+        assert pending == 2                  # 행은 건드리지 않는다
+        index = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'index' "
+            "AND name = 'uq_purchase_requests_pending_post_user'"
+        ).fetchone()
+        assert index is None                 # 중복이 남아있는 동안 인덱스는 설치하지 않는다
+
+
 def test_purchase_race_returns_existing_request_without_duplicate_alerts(tmp_path, monkeypatch):
     import app.routes.community as community_routes
 

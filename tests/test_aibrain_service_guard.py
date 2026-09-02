@@ -12,7 +12,9 @@ from app.services.mirofish import decision_cache as dc
 
 KST = timezone(timedelta(hours=9))
 MONDAY_1030 = datetime(2026, 8, 31, 10, 30, tzinfo=KST)   # 평일 장중
+MONDAY_1400 = datetime(2026, 8, 31, 14, 0, tzinfo=KST)    # 평일 장중 (세션 경과 5h)
 SUNDAY_2300 = datetime(2026, 8, 30, 23, 0, tzinfo=KST)    # 장외
+HOLIDAY_1030 = datetime(2026, 5, 1, 10, 30, tzinfo=KST)   # 근로자의 날(금) — KRX 휴장
 
 
 @pytest.fixture()
@@ -46,13 +48,40 @@ def test_scanner_fresh_in_session_is_ok(tmp_path, monkeypatch):
 
 
 def test_scanner_stale_in_session_warns_then_fails(tmp_path, monkeypatch):
-    alpha_scanner, root = _fake_run(tmp_path, age_hours=2.5, now=MONDAY_1030)
+    alpha_scanner, root = _fake_run(tmp_path, age_hours=2.5, now=MONDAY_1400)
     monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
     alpha_scanner._invalidate_run_paths_cache()
     monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {})
-    assert sg.check_scanner(MONDAY_1030)['status'] == 'warn'
+    assert sg.check_scanner(MONDAY_1400)['status'] == 'warn'
     # 같은 나이라도 장외(일요일) 기준으로는 ok
     assert sg.check_scanner(SUNDAY_2300)['status'] == 'ok'
+    # fail 임계(4h) 초과 — 장중 스캐너 침묵이 warn 에서 실제 fail 로 승격되는지
+    run_file = tmp_path / 'runs' / 'mfas_20260831093000_aaaaaaaaaaaa' / 'run.json'
+    ts = MONDAY_1400.timestamp() - 8 * 3600
+    os.utime(run_file, (ts, ts))
+    assert sg.check_scanner(MONDAY_1400)['status'] == 'fail'
+
+
+def test_scanner_overnight_age_at_open_is_ok(tmp_path, monkeypatch):
+    """개장 직후엔 전일(또는 금요일) 산출물이 최신인 게 정상 — false FAIL 금지."""
+    monday_0930 = MONDAY_1030.replace(hour=9, minute=30)
+    alpha_scanner, root = _fake_run(tmp_path, age_hours=65, now=monday_0930)  # 금요일 산출물
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
+    alpha_scanner._invalidate_run_paths_cache()
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {})
+    out = sg.check_scanner(monday_0930)
+    assert out['status'] == 'ok'
+    assert out['detail']['stale_h'] == 0.5  # 지연은 세션 시작(09:00) 기준으로 잰다
+
+
+def test_scanner_krx_holiday_uses_offhours_thresholds(tmp_path, monkeypatch):
+    """평일 KRX 휴장일(근로자의 날 등)은 주말과 동일하게 장외 임계를 쓴다."""
+    assert sg._market_session(HOLIDAY_1030) is False
+    alpha_scanner, root = _fake_run(tmp_path, age_hours=6, now=HOLIDAY_1030)
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
+    alpha_scanner._invalidate_run_paths_cache()
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {})
+    assert sg.check_scanner(HOLIDAY_1030)['status'] == 'ok'  # 장중이면 fail 이었을 나이
 
 
 def test_scanner_without_runs_fails(tmp_path, monkeypatch):
@@ -110,6 +139,48 @@ def test_run_guard_alerts_only_on_transition(guard_paths, monkeypatch):
     sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=60))
     assert len(sent) == 3                                    # 정상 지속은 침묵
     assert (guard_paths / 'latest.json').exists() and (guard_paths / 'history.jsonl').exists()
+
+
+def test_silent_run_does_not_consume_transition_alert(guard_paths, monkeypatch):
+    """send_fn=None 실행(관리자 조회 등)이 1회성 전이 알림을 소모하면 안 된다."""
+    monkeypatch.setattr(sg, 'CHECKERS', {
+        'scanner': lambda now: {'status': 'fail', 'detail': {'reason': 'x'}},
+    })
+    sg.run_guard(send_fn=None, now=MONDAY_1030)              # 무발송 실행이 전이를 먼저 관측
+    sent: list[str] = []
+    sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=10))
+    assert len(sent) == 1                                    # 쿨다운에 눌리지 않고 발송된다
+    sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=15))
+    assert len(sent) == 1                                    # 발송 후에는 쿨다운 정상 적용
+
+
+def test_silent_run_recovery_stays_silent_later(guard_paths, monkeypatch):
+    """알린 적 없는 장애가 무발송 실행 중 복구되면 이후 '복구' 알림도 내지 않는다."""
+    state = {'v': 'fail'}
+    monkeypatch.setattr(sg, 'CHECKERS', {
+        'scanner': lambda now: {'status': state['v'], 'detail': {'reason': 'x'}},
+    })
+    sg.run_guard(send_fn=None, now=MONDAY_1030)
+    state['v'] = 'ok'
+    sent: list[str] = []
+    sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=10))
+    assert sent == []                                        # 유령 복구 알림 없음
+
+
+def test_send_failure_does_not_mark_alerted(guard_paths, monkeypatch):
+    """발송 자체가 실패하면 alerted_at 을 남기지 않아 다음 실행이 재시도한다."""
+    monkeypatch.setattr(sg, 'CHECKERS', {
+        'scanner': lambda now: {'status': 'fail', 'detail': {'reason': 'x'}},
+    })
+
+    def boom(msg):
+        raise RuntimeError('telegram down')
+
+    with pytest.raises(RuntimeError):
+        sg.run_guard(send_fn=boom, now=MONDAY_1030)
+    sent: list[str] = []
+    sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=10))
+    assert len(sent) == 1                                    # 실패한 알림은 소모되지 않았다
 
 
 def test_checker_exception_becomes_service_fail(guard_paths, monkeypatch):
