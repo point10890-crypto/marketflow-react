@@ -10,6 +10,7 @@ export type LoginUser = {
     status?: string;
     tier?: string | null;
     is_pro_expired?: boolean;
+    requested_tier?: string | null;
 };
 
 export function safeNextPath(value: string | null): string | null {
@@ -45,7 +46,9 @@ export function nextPathForUser(user: LoginUser, nextPath: string | null): strin
         return resubscribePath(planned);
     }
     if (!user.tier) {
-        return planned || '/plan-select';
+        // 구독 신청(입금)까지 제출한 회원(requested_tier 기록됨)은 재입금 안내가 되는
+        // /plan-select 대신 승인 대기로 (subscriptionFunnelTarget 과 동일 기준).
+        return planned || (user.requested_tier ? '/pending-approval' : '/plan-select');
     }
     if (user.status !== 'approved') {
         return '/pending-approval';

@@ -30,8 +30,10 @@ export default function RenewalBanner() {
     const banner = useMemo(() => {
         if (!user || user.role === 'admin') return null;
 
-        // 1. Pro 베이스 만료 임박 (premium 은 무기한)
-        if (user.tier === 'pro' && !user.is_pro_expired) {
+        // 1. Pro 베이스 만료 임박 (premium 은 무기한).
+        //    AI Brain 활성 중에는 Pro 카운터가 일시정지(is_pro_paused)되고 pro_expires_at 은
+        //    동결값이라 실제 만료 임박이 아니다 → 가짜 경고 금지.
+        if (user.tier === 'pro' && !user.is_pro_expired && !user.is_pro_paused) {
             const d = daysLeft(user.pro_expires_at);
             if (d !== null && d >= 0 && d <= 7) {
                 return {
