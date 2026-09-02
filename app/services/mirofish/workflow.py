@@ -15,13 +15,18 @@ import os
 import re
 import threading
 import time
+import inspect
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from app.services.mirofish import alpha_scanner, outcome_tracker, store
+from app.services.mirofish import evidence_packet as evidence_packet_mod
 import app.services.mirofish.dual_kalman as dual_kalman
 from app.services.mirofish.tradingagents import engine as ta_engine
 from app.services.mirofish.tradingagents import learning as ta_learning
+from app.services.mirofish.tradingagents import run_cache as ta_run_cache
+from app.services.ai_routing.policy import policy_for
+from app.services.ai_routing.contracts import Operation
 from app.utils.atomic_json import write_json_atomic
 
 
@@ -763,7 +768,13 @@ def _verdict_is_buy(run: dict[str, Any]) -> bool:
     """True when the CIO verdict action for this analysis run is BUY."""
     verdict = (run or {}).get('verdict') or {}
     action = verdict.get('action') or verdict.get('label')
-    return str(action or '').strip().upper() == 'BUY'
+    return _analysis_is_complete(run) and str(action or '').strip().upper() == 'BUY'
+
+
+def _analysis_is_complete(run: dict[str, Any]) -> bool:
+    status = str((run or {}).get('analysis_status') or ((run or {}).get('verdict') or {}).get('analysis_status') or '').upper()
+    action = str((((run or {}).get('verdict') or {}).get('action') or ((run or {}).get('verdict') or {}).get('verdict') or '')).upper()
+    return status not in {'HOLD_REVIEW', 'FAILED_TECHNICAL', 'IN_PROGRESS'} and action != 'HOLD_REVIEW'
 
 
 def _require_buy(workflow: dict[str, Any] | None = None) -> bool:
@@ -833,7 +844,13 @@ def _apply_tradingagents_layer(
         verdict_weight = _ta_verdict_weight(verdict, learning)
         adjustment = 0.0
         hard_exclusion = False
-        if verdict == 'SELL':
+        if str(run.get('analysis_status') or v.get('analysis_status')) == 'HOLD_REVIEW' or verdict == 'HOLD_REVIEW':
+            hard_exclusion = True
+            item['ta_excluded'] = True
+            item['analysis_status'] = 'HOLD_REVIEW'
+            item['ta_exclusion_reason'] = 'TradingAgents decisive analysis requires review'
+            excluded.append(cand.get('symbol'))
+        elif verdict == 'SELL':
             if confidence >= sell_exclude_min_confidence:
                 hard_exclusion = True
                 item['ta_excluded'] = True
@@ -1016,9 +1033,9 @@ def _select_top3(ranked: list[dict[str, Any]], *, top_n: int, require_buy: bool)
     TradingAgents 딥 검증이 SELL 로 배제한 종목(`ta_excluded`)은 두 분기 모두에서 제외된다.
     """
     if require_buy:
-        eligible = [r for r in ranked if _verdict_is_buy(r) and not r.get('ta_excluded')]
+        eligible = [r for r in ranked if _analysis_is_complete(r) and _verdict_is_buy(r) and not r.get('ta_excluded')]
     else:
-        eligible = [r for r in ranked if not r.get('ta_excluded')]
+        eligible = [r for r in ranked if _analysis_is_complete(r) and not r.get('ta_excluded')]
     return eligible[:top_n]
 
 
@@ -1036,10 +1053,18 @@ def _complete_workflow(
         raise ValueError('workflow not found')
     workflow['status'] = 'running'
     workflow['started_at'] = workflow.get('started_at') or datetime.now(timezone.utc).isoformat()
+    admission = ta_run_cache.AdmissionManager(
+        os.path.join(WORKFLOW_STATE_ROOT, 'candidate_admission.sqlite3')
+    )
+    admission_limit = min(len(candidates), int(ta_engine.get_status()['config'].get('max_candidates') or 5))
+    admitted_candidates, admission_summary = admission.admit(
+        workflow_id, candidates, limit=admission_limit,
+    )
+    workflow['budget_summary'] = admission_summary
     workflow['progress'] = {
         'phase': 'graphrag_batch',
         'completed': 0,
-        'total': len(candidates),
+        'total': len(admitted_candidates),
         'percent': 5,
     }
     _write_workflow(workflow)
@@ -1047,8 +1072,8 @@ def _complete_workflow(
     results: list[dict[str, Any]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_parallel) as executor:
         future_map = {
-            executor.submit(_create_analysis_run, candidate, agent_count, mode): candidate
-            for candidate in candidates
+            executor.submit(_invoke_analysis_run, candidate, agent_count, mode, workflow_id, bool(workflow.get('force'))): candidate
+            for candidate in admitted_candidates
         }
         for future in concurrent.futures.as_completed(future_map):
             candidate = future_map[future]
@@ -1067,8 +1092,8 @@ def _complete_workflow(
             workflow['progress'] = {
                 'phase': 'graphrag_batch',
                 'completed': len(results),
-                'total': len(candidates),
-                'percent': min(95, int((len(results) / max(1, len(candidates))) * 90) + 5),
+                'total': len(admitted_candidates),
+                'percent': min(95, int((len(results) / max(1, len(admitted_candidates))) * 90) + 5),
             }
             _write_workflow(workflow)
 
@@ -1079,13 +1104,10 @@ def _complete_workflow(
         str((item.get('candidate') or {}).get('symbol')): rank
         for rank, item in enumerate(ranked, start=1)
     }
-    try:
-        ranked, ta_summary = _apply_tradingagents_layer(
-            ranked, top_n=top_n, require_buy=_require_buy(workflow),
-        )
-    except Exception as exc:
-        ta_summary = {'status': 'error', 'error': f'{type(exc).__name__}: {exc}'}
-    workflow['tradingagents_summary'] = ta_summary
+    workflow['tradingagents_summary'] = {
+        'status': 'compact_single_pass', 'analyzed': len(ranked),
+        'legacy_duplicate_removed': True,
+    }
     workflow['post_intervention_ranking'] = _ranking_snapshot(ranked, before=pre_ranks)
     top3 = _select_top3(ranked, top_n=top_n, require_buy=_require_buy(workflow))
     summary = _workflow_decision_summary(top3, ranked)
@@ -1163,7 +1185,7 @@ def _complete_workflow(
         'progress': {
             'phase': 'completed',
             'completed': len(results),
-            'total': len(candidates),
+            'total': len(admitted_candidates),
             'percent': 100,
         },
         'summary': summary,
@@ -1183,16 +1205,42 @@ def _complete_workflow(
     return workflow
 
 
-def _create_analysis_run(candidate: dict[str, Any], agent_count: int, mode: str) -> dict[str, Any]:
+def _invoke_analysis_run(
+    candidate: dict[str, Any], agent_count: int, mode: str,
+    workflow_id: str, force: bool,
+) -> dict[str, Any]:
+    parameters = inspect.signature(_create_analysis_run).parameters
+    if 'workflow_id' in parameters:
+        return _create_analysis_run(
+            candidate, agent_count, mode, workflow_id=workflow_id, force=force,
+        )
+    return _create_analysis_run(candidate, agent_count, mode)
+
+
+def _create_analysis_run(
+    candidate: dict[str, Any], agent_count: int, mode: str, *,
+    workflow_id: str | None = None, force: bool = False,
+) -> dict[str, Any]:
+    """Automatic-only compact seam; standalone ``store.create_run`` is unchanged."""
     target = candidate.get('display_name') or candidate.get('name') or candidate.get('symbol')
-    if candidate.get('symbol') and target != candidate.get('symbol'):
-        target = f"{target} {candidate.get('symbol')}"
-    return store.create_run({
-        'target': target,
-        'agent_count': agent_count,
-        'mode': mode,
-        'async': False,
-    })
+    fast = policy_for(Operation.BULK_TEXT)
+    decisive = policy_for(Operation.DECISIVE_TEXT)
+    packet = evidence_packet_mod.build_evidence_packet(
+        candidate, profile='compact',
+        models={'fast': fast.models.get('deepseek'), 'decisive': decisive.models.get('deepseek')},
+        deterministic_scores={
+            'alpha': candidate.get('alpha_score'), 'risk': candidate.get('risk_score'),
+            'relative_strength': _extract_rs_rating(candidate),
+            'profitability': ((candidate.get('analysis_profile') or {}).get('profitability_scorecard') or {}).get('goal_fit_score'),
+        },
+        risk_gates=((candidate.get('analysis_profile') or {}).get('profitability_scorecard') or {}),
+    )
+    ta = ta_engine.run_deep_analysis(
+        str(target), symbol=candidate.get('symbol'), use_llm=_mode(mode) not in {'rule', 'local', 'no-llm'},
+        profile='compact', evidence_packet=packet, force=force,
+        routing_run_id=workflow_id,
+    )
+    return store.create_compact_run(candidate, ta)
 
 
 def _analysis_result(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str, Any]:
@@ -1265,6 +1313,12 @@ def _analysis_result(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
         'score_breakdown': score_breakdown,
         'reason': _ranking_reason(candidate, run, final_score),
         'artifacts': run.get('artifacts') or {},
+        'source_run_id': run.get('source_run_id'),
+        'analysis_status': run.get('analysis_status') or verdict.get('analysis_status') or 'SUCCESS_PRIMARY',
+        'provider_usage': run.get('provider_usage') or {},
+        'profile': run.get('profile'),
+        'evidence_fingerprint': run.get('evidence_fingerprint'),
+        'tradingagents': run.get('tradingagents'),
     }
 
 
@@ -1448,6 +1502,8 @@ def should_send_workflow_top3(workflow: dict[str, Any], *, min_top_score: float 
     top3 = [item for item in (workflow.get('top3') or []) if isinstance(item, dict)]
     if not top3:
         return False, 'top3_empty'
+    if any(not _analysis_is_complete(item) for item in top3):
+        return False, 'hold_review'
     summary = workflow.get('summary') if isinstance(workflow.get('summary'), dict) else {}
     quality = summary.get('quality') if isinstance(summary.get('quality'), dict) else {}
     if quality.get('recommendation') == 'hold':
@@ -1846,6 +1902,7 @@ def _workflow_summary(workflow: dict[str, Any] | None) -> dict[str, Any] | None:
         'progress': workflow.get('progress') or {},
         'filters': workflow.get('filters') or {},
         'links': workflow.get('links') or {},
+        'budget_summary': workflow.get('budget_summary') or {},
         # ── Phase C: workflow summary 에도 GraphRAG/freshness 노출 ─────
         'graphrag': workflow.get('graphrag'),
         'source_freshness': workflow.get('source_freshness'),

@@ -5,7 +5,13 @@ LOCKED run schema, persistence + retrieval, path-traversal rejection in get_run,
 and the kill-switch status flag.
 """
 
+import json
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
+
 import app.services.mirofish.tradingagents.engine as engine
+from app.services.mirofish.tradingagents.run_cache import RunCache, execute_cached
 
 
 def _patch_sources(monkeypatch, tmp_path):
@@ -195,3 +201,137 @@ def test_run_deep_analysis_without_brain_is_neutral(monkeypatch, tmp_path):
     run = engine.run_deep_analysis('삼성전자', symbol='005930', use_llm=False)
     assert run['verdict']['regime'] == 'unknown'
     assert run['regime_context']['adjustment'] == 0.0
+
+
+def test_compact_profile_makes_exactly_three_calls_with_fixed_caps(monkeypatch, tmp_path):
+    _patch_sources(monkeypatch, tmp_path)
+    calls = []
+
+    def fake(prompt, **kwargs):
+        calls.append(kwargs)
+        operation = str(kwargs.get('operation'))
+        if operation.endswith('bulk_text'):
+            return '{"digest":"근거 요약","evidence_ids":["ev1"]}', {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'}
+        if operation.endswith('compact_debate'):
+            return ('{"bull_case":"강세","bear_case":"약세",'
+                    '"bull_evidence_ids":["ev1"],"bear_evidence_ids":["ev1"]}',
+                    {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'})
+        return ('{"symbol":"005930","name":"삼성전자","market":"KOSPI",'
+                '"analyst_mean":31.25,"verdict":"BUY","confidence":80,"reasoning":"결정"}',
+                {'success': True, 'analysis_status': 'SUCCESS_PRIMARY', 'provider': 'deepseek'})
+
+    monkeypatch.setattr(engine.llm_client, 'generate_text_with_metadata', fake)
+    packet = {
+        'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+        'as_of': '2026-07-17T06:30:00+00:00', 'fingerprint': 'f' * 64,
+        'evidence_ids': ['ev1'], 'schema_version': '1', 'prompt_version': '1',
+    }
+    run = engine.run_deep_analysis(
+        '삼성전자', symbol='005930', use_llm=True, profile='compact',
+        evidence_packet=packet, run_id='ta_20260717_063000_000000_abcdef',
+    )
+
+    assert len(calls) == 3
+    assert [call['max_tokens'] for call in calls] == [768, 768, 1200]
+    assert [str(call['operation']) for call in calls] == ['bulk_text', 'compact_debate', 'decisive_text']
+    assert len(run['analyst_reports']) == 4
+    assert all(report['method'] == 'rule' for report in run['analyst_reports'])
+    assert run['profile'] == 'compact' and run['id'] == 'ta_20260717_063000_000000_abcdef'
+
+
+def test_default_profile_remains_full(monkeypatch, tmp_path):
+    _patch_sources(monkeypatch, tmp_path)
+    run = engine.run_deep_analysis('삼성전자', use_llm=False)
+    assert run['profile'] == 'full'
+
+
+def test_compact_cache_reuses_completed_artifact_and_force_bypasses(monkeypatch, tmp_path):
+    _patch_sources(monkeypatch, tmp_path)
+    packet = {
+        'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+        'as_of': '2026-07-17T06:30:00+00:00', 'fingerprint': 'a' * 64,
+        'evidence_ids': [], 'schema_version': '1', 'prompt_version': '1',
+        'profile': 'compact', 'models': {'deepseek': 'pro'},
+    }
+    calls = []
+
+    def fake(prompt, **kwargs):
+        calls.append(kwargs['operation'])
+        if kwargs['operation'] == 'bulk_text':
+            return '{"digest":"d","evidence_ids":[]}', {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'}
+        if kwargs['operation'] == 'compact_debate':
+            return '{"bull_case":"b","bear_case":"r","bull_evidence_ids":[],"bear_evidence_ids":[]}', {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'}
+        return '{"symbol":"005930","name":"삼성전자","market":"KOSPI","analyst_mean":31.25,"verdict":"BUY","confidence":80,"reasoning":"ok"}', {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'}
+
+    monkeypatch.setattr(engine.llm_client, 'generate_text_with_metadata', fake)
+    first = engine.run_deep_analysis('삼성전자', profile='compact', evidence_packet=packet)
+    second = engine.run_deep_analysis('삼성전자', profile='compact', evidence_packet=packet)
+    third = engine.run_deep_analysis('삼성전자', profile='compact', evidence_packet=packet, force=True)
+    assert second['id'] == first['id'] and second['cache_hit'] is True
+    assert third['id'] != first['id']
+    assert len(calls) == 6
+
+
+def test_run_cache_concurrent_identical_requests_execute_once(tmp_path):
+    db_path = str(tmp_path / 'cache.sqlite3')
+    artifact = tmp_path / 'ta_shared.json'
+    started = threading.Event()
+    release = threading.Event()
+    counter_lock = threading.Lock()
+    producer_calls = 0
+
+    def producer():
+        nonlocal producer_calls
+        with counter_lock:
+            producer_calls += 1
+        started.set()
+        assert release.wait(timeout=2)
+        result = {'id': 'ta_shared', 'analysis_status': 'SUCCESS_PRIMARY'}
+        artifact.write_text(json.dumps(result), encoding='utf-8')
+        return result
+
+    def invoke(owner_id):
+        cache = RunCache(db_path, wait_seconds=2)
+        return execute_cached(cache, 'same-key', owner_id, producer, lambda _: str(artifact))
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        first = executor.submit(invoke, 'owner-a')
+        assert started.wait(timeout=2)
+        second = executor.submit(invoke, 'owner-b')
+        time.sleep(0.1)
+        release.set()
+        results = [first.result(timeout=3), second.result(timeout=3)]
+
+    assert producer_calls == 1
+    assert {result['id'] for result in results} == {'ta_shared'}
+    assert sum(bool(result.get('cache_hit')) for result in results) == 1
+
+
+def test_run_cache_recovers_expired_process_lease(tmp_path):
+    db_path = str(tmp_path / 'cache.sqlite3')
+    first = RunCache(db_path)
+    assert first.claim('same-key', 'dead-owner').owner is True
+    with first._connect() as connection:
+        connection.execute(
+            'UPDATE run_cache SET lease_until=0 WHERE cache_key=?', ('same-key',),
+        )
+
+    recovered = RunCache(db_path).claim('same-key', 'replacement-owner')
+    assert recovered.owner is True
+    assert recovered.status == 'recovered'
+
+
+def test_hold_review_result_is_never_cached(tmp_path):
+    cache = RunCache(str(tmp_path / 'cache.sqlite3'))
+    producer_calls = 0
+
+    def producer():
+        nonlocal producer_calls
+        producer_calls += 1
+        return {'id': f'ta_review_{producer_calls}', 'analysis_status': 'HOLD_REVIEW'}
+
+    first = execute_cached(cache, 'same-key', 'owner-a', producer, lambda _: str(tmp_path / 'missing.json'))
+    second = execute_cached(cache, 'same-key', 'owner-b', producer, lambda _: str(tmp_path / 'missing.json'))
+
+    assert first['id'] != second['id']
+    assert producer_calls == 2

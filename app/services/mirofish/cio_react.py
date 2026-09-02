@@ -28,6 +28,9 @@ def run_cio(
     debate_result: dict[str, Any],
     *,
     use_llm: bool = True,
+    run_id: str | None = None,
+    symbol: str | None = None,
+    market: str | None = None,
 ) -> dict[str, Any]:
     """ReACT CIO 루프 실행.
 
@@ -49,10 +52,14 @@ def run_cio(
     method = 'rule'
     trace: list[dict] = []
     final_answer: dict | None = None
+    llm_meta: dict[str, Any] | None = None
 
     if use_llm:
         try:
-            llm_trace, llm_final = _run_with_llm(target, brain_snapshot, debate_result, tools)
+            llm_trace, llm_final, llm_meta = _run_with_llm(
+                target, brain_snapshot, debate_result, tools,
+                run_id=run_id, symbol=symbol, market=market,
+            )
             if llm_final:
                 trace = llm_trace
                 final_answer = llm_final
@@ -60,9 +67,24 @@ def run_cio(
         except Exception:
             method = 'rule'
 
+    analysis_status = str((llm_meta or {}).get('analysis_status') or 'SUCCESS_PRIMARY')
+    rule_trace: list[dict] = []
+    rule_candidate: dict[str, Any] | None = None
     if final_answer is None:
-        trace, final_answer = _run_with_rules(target, brain_snapshot, debate_result, tools)
-        method = 'rule' if method != 'llm' else 'mixed'
+        rule_trace, rule_candidate = _run_with_rules(target, brain_snapshot, debate_result, tools)
+        if use_llm:
+            trace = rule_trace
+            final_answer = {
+                'action': 'HOLD_REVIEW', 'confidence': 0.0, 'allocation_pct': 0.0,
+                'reasoning': '결정 모델 검증이 완료되지 않아 사람의 검토가 필요합니다.',
+                'opposing_scenario': rule_candidate.get('opposing_scenario', ''),
+            }
+            analysis_status = 'HOLD_REVIEW'
+            method = 'mixed' if llm_meta and llm_meta.get('success') else 'rule'
+        else:
+            trace, final_answer = rule_trace, rule_candidate
+            analysis_status = 'SUCCESS_PRIMARY'
+            method = 'rule'
 
     return {
         'target': target,
@@ -71,6 +93,9 @@ def run_cio(
         'method': method,
         'loops_used': len(trace),
         'completed_at': datetime.now(timezone.utc).isoformat(),
+        'analysis_status': analysis_status,
+        'rule_candidate_verdict': rule_candidate,
+        'llm': llm_meta,
     }
 
 
@@ -312,25 +337,44 @@ def _pick_top_confidence_agent(debate: dict) -> str | None:
 # ─── LLM ReACT (function-calling style — simulated, DeepSeek V4 기본) ─
 
 def _run_with_llm(target: str, brain: dict, debate: dict,
-                  tools: dict[str, Callable]) -> tuple[list[dict], dict | None]:
+                  tools: dict[str, Callable], *, run_id: str | None = None,
+                  symbol: str | None = None, market: str | None = None,
+                  ) -> tuple[list[dict], dict | None, dict[str, Any]]:
     """LLM structured output — Thought/Action/Observation 시퀀스 생성.
 
     실제 function calling 대신 single-shot JSON 으로 trace 생성 후 tool 실행.
     """
     try:
-        from app.services.mirofish.llm_client import generate_text
-        prompt = _build_react_prompt(target, brain, debate)
-        raw = generate_text(
+        from app.services.mirofish.llm_client import generate_text_with_metadata
+        prompt = _build_react_prompt(target, brain, debate, symbol=symbol, market=market)
+        raw, llm_meta = generate_text_with_metadata(
             prompt,
             model_env='MIROFISH_REACT_MODEL',
-            temperature=0.4,
-            max_tokens=4000,
+            temperature=0.0,
+            max_tokens=1200,
             json_mode=True,
+            operation='decisive_text', run_id=run_id,
+            request_id=f'{run_id}:cio' if run_id else None,
+            symbol=symbol, market=market,
+            expected_identity=(
+                {'symbol': symbol, 'name': target, 'market': market}
+                if symbol and market else None
+            ),
+            expected_numbers={'alignment_score': brain.get('alignment_score')}
+            if symbol and market and brain.get('alignment_score') is not None else None,
+            caller_endpoint='mirofish.cio',
         )
         plan = json.loads(raw or '{}')
+        if symbol and market and (
+            str(plan.get('symbol') or '') != symbol
+            or str(plan.get('name') or '') != target
+            or str(plan.get('market') or '') != market
+            or float(plan.get('alignment_score')) != float(brain.get('alignment_score'))
+        ):
+            return [], None, llm_meta
         steps = plan.get('steps', [])
         if not isinstance(steps, list) or len(steps) < MIN_LOOPS:
-            return [], None
+            return [], None, llm_meta
 
         # 각 step 의 action 을 실제 tool 로 실행
         trace: list[dict] = []
@@ -370,12 +414,15 @@ def _run_with_llm(target: str, brain: dict, debate: dict,
                 'observation': final,
             })
 
-        return trace, final
+        return trace, final, llm_meta
     except Exception:
-        return [], None
+        return [], None, locals().get('llm_meta') or {'success': False, 'analysis_status': 'HOLD_REVIEW'}
 
 
-def _build_react_prompt(target: str, brain: dict, debate: dict) -> str:
+def _build_react_prompt(
+    target: str, brain: dict, debate: dict, *,
+    symbol: str | None = None, market: str | None = None,
+) -> str:
     consensus = debate.get('final_consensus', {}) or {}
     return f"""당신은 CIO (최고투자책임자) 역할. ReACT 루프로 {target} 에 대한 최종 투자 판단을 내리세요.
 
@@ -393,6 +440,8 @@ Debate consensus: {consensus}
 
 JSON 출력:
 {{
+  "symbol": "{symbol or ''}", "name": "{target}", "market": "{market or ''}",
+  "alignment_score": {brain.get('alignment_score', 0)},
   "steps": [
     {{"thought": "...", "action": {{"tool": "insight_forge", "args": {{}}}}}},
     {{"thought": "...", "action": {{"tool": "query_brain", "args": {{"dimension": "macro_regime"}}}}}},

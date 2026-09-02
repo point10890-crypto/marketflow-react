@@ -11,6 +11,7 @@ def _candidate(symbol='005380', name='현대차'):
         'change_pct': 3.0,
         'volume': 1000000,
         'source': 'KIS',
+        'market': 'KOSPI',
         'observed_at': datetime.now(timezone.utc).isoformat(),
     }
 
@@ -266,3 +267,31 @@ def test_live_market_scan_uses_kis_candidate_pool(monkeypatch):
     assert captured['result']['candidate_count'] == 1
     assert result['scanner']['market_status'] == 'open'
     assert result['scanner']['source_counts']['fluctuation'] == 30
+
+
+def test_preflight_limits_work_before_futures_to_five(monkeypatch, tmp_path):
+    _stub_context(monkeypatch, tmp_path)
+    calls = []
+
+    def fake(target, **kwargs):
+        calls.append((target, kwargs))
+        return {'id': target, 'analysis_status': 'SUCCESS_PRIMARY',
+                'verdict': {'verdict': 'HOLD', 'confidence': 50}}
+
+    monkeypatch.setattr(orchestrator.tradingagents, 'run_deep_analysis', fake)
+    candidates = [_candidate(f'{index:06d}', f'종목{index}') for index in range(10)]
+    result = orchestrator.run_multi_mcp_analysis(candidates, max_candidates=5)
+    assert len(calls) == 5
+    assert result['budget_summary']['admitted'] == 5
+    assert result['budget_summary']['deferred'] == 5
+    assert all(call[1]['profile'] == 'compact' for call in calls)
+    assert len({call[1]['routing_run_id'] for call in calls}) == 1
+
+
+def test_hold_review_can_never_pass_critic():
+    packet = {'symbol': '005930', 'name': '삼성전자', 'trend': {'trend_score': 15}}
+    reviewed = orchestrator._critic_review(packet, {
+        'id': 'ta_x', 'analysis_status': 'HOLD_REVIEW',
+        'verdict': {'verdict': 'BUY', 'confidence': 99},
+    })
+    assert reviewed['approved'] is False

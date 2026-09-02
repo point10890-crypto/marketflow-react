@@ -149,3 +149,21 @@ def test_consensus_buy_results_in_buy_action(mock_brain, mock_debate):
     """토론 BUY → CIO 도 BUY."""
     out = cr.run_cio('TEST', mock_brain, mock_debate, use_llm=False)
     assert out['final_answer']['action'] == 'BUY'
+
+
+def test_llm_exhaustion_keeps_rule_buy_diagnostic_only(monkeypatch, mock_brain, mock_debate):
+    monkeypatch.setattr(
+        'app.services.mirofish.llm_client.generate_text_with_metadata',
+        lambda *args, **kwargs: (None, {
+            'success': False, 'analysis_status': 'HOLD_REVIEW',
+            'attempts': [{'provider': 'deepseek'}, {'provider': 'openai'}],
+        }),
+    )
+    out = cr.run_cio(
+        '삼성전자', mock_brain, mock_debate, use_llm=True,
+        run_id='mf_1', symbol='005930', market='KOSPI',
+    )
+    assert out['analysis_status'] == 'HOLD_REVIEW'
+    assert out['final_answer']['action'] == 'HOLD_REVIEW'
+    assert out['rule_candidate_verdict']['action'] == 'BUY'
+    assert out['llm']['attempts'] == [{'provider': 'deepseek'}, {'provider': 'openai'}]

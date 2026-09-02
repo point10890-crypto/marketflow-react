@@ -225,6 +225,81 @@ def attach_tradingagents(run_id: str, ta: dict[str, Any]) -> dict[str, Any] | No
     return summary
 
 
+def create_compact_run(candidate: dict[str, Any], ta: dict[str, Any]) -> dict[str, Any]:
+    """Persist one compact TA result in the legacy run/graph/report contract."""
+    source_run_id = str(ta.get('id') or '')
+    digest = hashlib.sha256(source_run_id.encode('utf-8')).hexdigest()[:10]
+    run_id = f'mf_compact_{digest}'
+    created_at = str(ta.get('created_at') or datetime.now(timezone.utc).isoformat())
+    tav = ta.get('verdict') or {}
+    confidence_pct = max(0.0, min(100.0, float(tav.get('confidence') or 0.0)))
+    confidence = confidence_pct / 100.0
+    target = str(candidate.get('display_name') or candidate.get('name') or ta.get('target') or candidate.get('symbol'))
+    action = str(tav.get('verdict') or 'HOLD_REVIEW').upper()
+    status = str(ta.get('analysis_status') or tav.get('analysis_status') or 'HOLD_REVIEW')
+    verdict = {
+        'action': action, 'label': action, 'confidence': confidence,
+        'confidence_pct': int(round(confidence_pct)), 'bullish': 0, 'neutral': 0, 'bearish': 0,
+        'target': target, 'summary': str(tav.get('reasoning') or ''),
+        'reasoning': str(tav.get('reasoning') or ''), 'opposing_scenario': tav.get('bear_case'),
+        'symbol': candidate.get('symbol'), 'market': candidate.get('market'),
+        'reference_date': (candidate.get('price') or {}).get('date') or (ta.get('evidence_packet') or {}).get('as_of'),
+        'target_display': f"{target} ({candidate.get('symbol')} {candidate.get('market')})",
+        'analysis_status': status, 'rule_candidate_verdict': tav.get('rule_candidate_verdict'),
+    }
+    reports = ta.get('analyst_reports') or []
+    analysts = [{
+        'id': f"ta_{row.get('role')}", 'name': row.get('title') or row.get('role'),
+        'role': row.get('role'), 'stance': 'BUY' if row.get('stance') == 'bullish' else 'SELL' if row.get('stance') == 'bearish' else 'HOLD',
+        'confidence': min(1.0, abs(float(row.get('score') or 0)) / 100.0),
+        'message': row.get('summary'),
+    } for row in reports]
+    run = {
+        'id': run_id, 'target': target, 'display_name': target,
+        'symbol': candidate.get('symbol'), 'market': candidate.get('market'),
+        'mode': 'compact', 'source': 'tradingagents_compact', 'status': 'completed',
+        'analysis_status': status, 'created_at': created_at,
+        'completed_at': ta.get('completed_at') or datetime.now(timezone.utc).isoformat(),
+        'deterministic': False, 'price': (candidate.get('price') or {}).get('current_price'),
+        'change_pct': (candidate.get('price') or {}).get('change_pct', 0),
+        'price_snapshot': candidate.get('price') or {}, 'brain_summary': {}, 'brain': {},
+        'graph_extraction': {'entities': [], 'relations': [], 'method': 'compact_evidence_packet'},
+        'graph_merge': {'total_relations': 0}, 'debate': ta.get('research_debate') or {},
+        'cio': {'final_answer': verdict, 'analysis_status': status},
+        'pipeline': {'status': 'completed', 'graph_links': 0, 'similar_events': 0,
+                     'agent_count': len(analysts), 'graph_method': 'compact_evidence_packet',
+                     'debate_method': (ta.get('research_debate') or {}).get('method'),
+                     'cio_method': 'compact_portfolio_manager'},
+        'pipeline_phases': [{**phase, 'status': 'completed', 'progress': 1.0} for phase in PIPELINE_PHASES],
+        'progress': {'completed_phases': len(PIPELINE_PHASES), 'total_phases': len(PIPELINE_PHASES), 'percent': 100},
+        'layers': [
+            {'label': 'TARGET', 'count': 1, 'color': 'bg-red-500'},
+            {'label': 'CAUSAL HISTORY', 'count': 0, 'color': 'bg-blue-500'},
+            {'label': 'AI ANALYSTS', 'count': len(analysts), 'color': 'bg-violet-500'},
+            {'label': 'PREDICTIONS', 'count': len(analysts), 'color': 'bg-orange-400'},
+            {'label': 'VERDICT', 'count': 1, 'color': 'bg-emerald-400'},
+        ],
+        'logs': [], 'analysts': analysts, 'graph_nodes': [], 'prediction_nodes': [],
+        'verdict': verdict, 'data_context': {'source_packets': (ta.get('evidence_packet') or {}).get('sources') or []},
+        'source_run_id': source_run_id, 'provider_usage': ta.get('provider_usage') or {},
+        'profile': 'compact', 'evidence_fingerprint': ta.get('evidence_fingerprint'),
+        'tradingagents': {
+            'run_id': source_run_id, 'verdict': action, 'confidence': confidence_pct,
+            'strong_buy': action == 'STRONG_BUY', 'method': ta.get('method'),
+            'provider_usage': ta.get('provider_usage') or {},
+        },
+        'artifacts': _artifact_links(run_id),
+    }
+    graph = _build_graph(run)
+    report = _build_report(run, graph)
+    run_dir = _run_dir(run_id)
+    os.makedirs(run_dir, exist_ok=True)
+    write_json_atomic(os.path.join(run_dir, 'run.json'), run, sort_keys=False)
+    write_json_atomic(os.path.join(run_dir, 'graph.json'), graph, sort_keys=False)
+    _write_text_atomic(os.path.join(run_dir, 'report.md'), report)
+    return run
+
+
 def _create_running_run(run_id: str, target: str, agent_count: int, mode: str) -> dict[str, Any]:
     created_at = datetime.now(timezone.utc).isoformat()
     return {
@@ -447,7 +522,10 @@ def _build_run_progressive(run_id: str, target: str, agent_count: int, mode: str
         text='CIO 판정 합성 시작',
         payload={'method': 'llm' if use_llm else 'rule'},
     )
-    cio = cio_react.run_cio(final_target, brain, debate, use_llm=use_llm)
+    cio = cio_react.run_cio(
+        final_target, brain, debate, use_llm=use_llm, run_id=run_id,
+        symbol=resolved.get('symbol'), market=resolved.get('market'),
+    )
     # P0 #4: verdict 에 종목 식별 + 분석 기준일 명시 전달
     verdict_reference_date = (
         (price.get('date') if isinstance(price, dict) else None)
@@ -516,7 +594,10 @@ def _build_run(run_id: str, target: str, agent_count: int, mode: str) -> dict[st
     extracted = graphrag_extractor.extract_graph(context.get('corpus', ''), use_llm=use_llm)
     merge_stats = graphrag_extractor.merge_into_ekg(extracted)
     debate = agent_debate.run_debate(final_target, brain, rounds=2, use_llm=use_llm)
-    cio = cio_react.run_cio(final_target, brain, debate, use_llm=use_llm)
+    cio = cio_react.run_cio(
+        final_target, brain, debate, use_llm=use_llm, run_id=run_id,
+        symbol=resolved.get('symbol'), market=resolved.get('market'),
+    )
 
     analysts = _analysts_from_debate(debate, agent_count, brain)
     # P0 #4: verdict 에 종목 식별 + 분석 기준일 명시 전달
@@ -846,8 +927,11 @@ def _verdict_from_cio(
     누락 시 sentinel 값 + 경고 로깅 (KeyError 던지지 않음 — 하위 호환).
     """
     final = cio.get('final_answer') or {}
+    analysis_status = str(cio.get('analysis_status') or 'SUCCESS_PRIMARY')
     action = str(final.get('action') or debate.get('final_consensus', {}).get('action') or 'HOLD').upper()
-    if action not in {'BUY', 'SELL', 'HOLD'}:
+    if analysis_status == 'HOLD_REVIEW':
+        action = 'HOLD_REVIEW'
+    elif action not in {'BUY', 'SELL', 'HOLD'}:
         action = 'HOLD'
     confidence = _clamp_float(final.get('confidence', debate.get('final_consensus', {}).get('confidence', 0.5)))
     bullish = sum(1 for a in analysts if a.get('stance') == 'BUY')
@@ -906,6 +990,8 @@ def _verdict_from_cio(
         'market': market_clean or None,
         'reference_date': ref_date_clean or None,
         'target_display': target_display,
+        'analysis_status': analysis_status,
+        'rule_candidate_verdict': cio.get('rule_candidate_verdict'),
     }
 
 

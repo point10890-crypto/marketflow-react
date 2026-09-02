@@ -164,3 +164,19 @@ def test_run_research_debate_accepts_regime_line_rule_path():
                                               use_llm=False, regime_line='시장 레짐: 강세')
     assert out['manager']['stance'] in ('bull', 'bear', 'neutral')
     assert out['method'] == 'rule'
+
+
+def test_research_manager_failure_is_hold_review_not_rule_promotion(monkeypatch):
+    def fake(prompt, **kwargs):
+        if kwargs.get('operation') == 'decisive_text':
+            return None, {'success': False, 'analysis_status': 'HOLD_REVIEW', 'attempts': []}
+        return '{"message":"근거"}', {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'}
+
+    monkeypatch.setattr(research_debate.llm_client, 'generate_text_with_metadata', fake)
+    out = research_debate.run_research_debate(
+        '삼성전자', REPORTS, rounds=1, use_llm=True,
+        run_id='wf_1', symbol='005930', market='KOSPI', name='삼성전자',
+    )
+    assert out['analysis_status'] == 'HOLD_REVIEW'
+    assert out['manager']['stance'] == 'hold_review'
+    assert out['rule_candidate_verdict']['stance'] == 'bull'

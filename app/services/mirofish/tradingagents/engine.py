@@ -52,6 +52,8 @@ from app.services.mirofish.tradingagents import research_debate
 from app.services.mirofish.tradingagents import trader_risk
 from app.services.mirofish.tradingagents import regime as regime_mod
 from app.services.mirofish.tradingagents import learning
+from app.services.mirofish.tradingagents import run_cache
+from app.services.mirofish import evidence_packet as evidence_packet_mod
 from app.services.mirofish import llm_client
 from app.utils.atomic_json import write_json_atomic
 
@@ -77,7 +79,38 @@ _run_seq = itertools.count()
 def run_deep_analysis(target: str, *, symbol: str | None = None,
                       rounds: int | None = None, use_llm: bool = True,
                       brain: dict[str, Any] | None = None,
-                      context_line: str = '') -> dict[str, Any]:
+                      context_line: str = '', profile: str = 'full',
+                      evidence_packet: dict[str, Any] | None = None,
+                      run_id: str | None = None, force: bool = False,
+                      routing_run_id: str | None = None) -> dict[str, Any]:
+    """Run an analysis, reusing only immutable validated compact artifacts."""
+    profile = str(profile or 'full').strip().lower()
+    started = datetime.now(timezone.utc)
+    artifact_run_id = run_id or _make_run_id(target, started)
+    kwargs = dict(
+        symbol=symbol, rounds=rounds, use_llm=use_llm, brain=brain,
+        context_line=context_line, profile=profile, evidence_packet=evidence_packet,
+        run_id=artifact_run_id, force=force,
+        routing_run_id=routing_run_id or artifact_run_id,
+    )
+    if profile != 'compact' or not evidence_packet or evidence_packet.get('cache_eligible') is False or force:
+        return _execute_deep_analysis(target, **kwargs)
+    key = evidence_packet_mod.cache_key({**evidence_packet, 'profile': profile})
+    cache = run_cache.RunCache(os.path.join(RUNS_ROOT, 'run_cache.sqlite3'))
+    return run_cache.execute_cached(
+        cache, key, artifact_run_id,
+        lambda: _execute_deep_analysis(target, **kwargs),
+        lambda result: os.path.join(RUNS_ROOT, f"{result['id']}.json"),
+    )
+
+
+def _execute_deep_analysis(target: str, *, symbol: str | None = None,
+                      rounds: int | None = None, use_llm: bool = True,
+                      brain: dict[str, Any] | None = None,
+                      context_line: str = '', profile: str = 'full',
+                      evidence_packet: dict[str, Any] | None = None,
+                      run_id: str | None = None, force: bool = False,
+                      routing_run_id: str | None = None) -> dict[str, Any]:
     """Run the full deep-verification pipeline for one target and persist it.
 
     Does NOT check the kill switch (the admin endpoint may run on demand); the
@@ -88,6 +121,11 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
     prompts and surfaced on the flat verdict.
     """
     started = datetime.now(timezone.utc)
+    profile = str(profile or 'full').strip().lower()
+    if profile not in {'full', 'compact'}:
+        raise ValueError('profile must be full or compact')
+    stable_run_id = run_id or _make_run_id(target, started)
+    routing_run_id = routing_run_id or stable_run_id
 
     bundle = data_hub.gather_bundle(target, brain=brain) or {}
     if symbol and not bundle.get('symbol'):
@@ -95,29 +133,55 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
 
     rc = regime_mod.regime_context(brain)
 
-    with llm_client.collect_generation_metadata() as llm_calls:
-        reports = analysts.run_analysts(bundle, use_llm=use_llm)
+    with llm_client.collect_generation_metadata(routing_run_id) as llm_calls:
+        reports = analysts.run_analysts(bundle, use_llm=use_llm if profile == 'full' else False)
+        compact_digest = None
+        if profile == 'compact' and use_llm:
+            raw_digest, digest_meta = llm_client.generate_text_with_metadata(
+                _compact_digest_prompt(target, reports, evidence_packet or {}),
+                system='결정론적 점수와 EvidencePacket을 변경하지 말고 짧게 요약하세요.',
+                temperature=0.2, max_tokens=768, json_mode=True,
+                operation='bulk_text', run_id=routing_run_id,
+                request_id=f'{stable_run_id}:evidence-digest',
+                symbol=bundle.get('symbol') or symbol, market=bundle.get('market'),
+                caller_endpoint='mirofish.tradingagents.compact_digest',
+            )
+            compact_digest = _parse_json(raw_digest) or {'digest': '', 'evidence_ids': []}
+            compact_digest['llm'] = digest_meta
 
         effective_rounds = int(rounds) if rounds is not None else _env_rounds()
         effective_rounds = max(_MIN_ROUNDS, min(effective_rounds, _MAX_ROUNDS))
-        debate = research_debate.run_research_debate(
-            target, reports, rounds=effective_rounds, use_llm=use_llm,
-            regime_line=rc['line'], context_line=context_line,
-        )
+        if profile == 'compact':
+            debate = research_debate.run_compact_debate(
+                target, reports, use_llm=use_llm, run_id=routing_run_id,
+                request_id=f'{stable_run_id}:compact-debate', evidence_packet=evidence_packet,
+            )
+        else:
+            debate = research_debate.run_research_debate(
+                target, reports, rounds=effective_rounds, use_llm=use_llm,
+                regime_line=rc['line'], context_line=context_line,
+                run_id=routing_run_id, symbol=bundle.get('symbol') or symbol,
+                market=bundle.get('market'), name=bundle.get('display_name') or target,
+            )
         debate['_analyst_mean'] = _mean_scores(reports)
 
         tr = trader_risk.run_trader_and_risk(
             target, bundle, debate, use_llm=use_llm,
             regime_line=rc['line'], regime_adjustment=rc['adjustment'],
+            profile=profile, run_id=routing_run_id,
+            symbol=bundle.get('symbol') or symbol, market=bundle.get('market'),
+            name=bundle.get('display_name') or target, evidence_packet=evidence_packet,
         )
 
-    verdict = _flat_verdict(debate, tr, rc)
+    analysis_status = str(tr.get('analysis_status') or 'SUCCESS_PRIMARY')
+    if str(debate.get('analysis_status')) == 'HOLD_REVIEW':
+        analysis_status = 'HOLD_REVIEW'
+    verdict = _flat_verdict(debate, tr, rc, analysis_status=analysis_status)
     method = _aggregate_method(reports, debate, tr)
 
     completed = datetime.now(timezone.utc)
-    run_id = _make_run_id(target, started)
     record = {
-        'id': run_id,
+        'id': stable_run_id,
         'target': target,
         'symbol': bundle.get('symbol') or symbol,
         'market': bundle.get('market'),
@@ -132,6 +196,15 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
         'regime_context': rc,
         'method': method,
         'provider_usage': _provider_usage(llm_calls),
+        'analysis_status': analysis_status,
+        'profile': profile,
+        'evidence_fingerprint': (evidence_packet or {}).get('fingerprint'),
+        'evidence_packet': evidence_packet,
+        'compact_digest': compact_digest,
+        'force': bool(force),
+        'routing_run_id': routing_run_id,
+        'cache_hit': False,
+        'source_run_id': stable_run_id,
     }
 
     _persist(record)
@@ -206,11 +279,13 @@ def get_run(run_id: str) -> dict[str, Any] | None:
 # ── Assembly helpers ────────────────────────────────────────────────
 
 def _flat_verdict(debate: dict[str, Any], tr: dict[str, Any],
-                  rc: dict[str, Any] | None = None) -> dict[str, Any]:
+                  rc: dict[str, Any] | None = None, *,
+                  analysis_status: str | None = None) -> dict[str, Any]:
     pm = tr.get('pm_decision') or {}
     rc = rc or {'regime': 'unknown', 'direction': 'neutral', 'alignment': None, 'adjustment': 0.0}
+    incomplete = str(analysis_status or pm.get('analysis_status') or '') == 'HOLD_REVIEW'
     return {
-        'verdict': pm.get('verdict', 'HOLD'),
+        'verdict': 'HOLD_REVIEW' if incomplete else pm.get('verdict', 'HOLD'),
         'confidence': pm.get('confidence', 0.0),
         'strong_buy': bool(pm.get('strong_buy', False)),
         'reasoning': pm.get('reasoning', ''),
@@ -223,6 +298,8 @@ def _flat_verdict(debate: dict[str, Any], tr: dict[str, Any],
             'alignment': rc.get('alignment'),
             'applied': rc.get('adjustment', 0.0),
         },
+        'analysis_status': 'HOLD_REVIEW' if incomplete else str(analysis_status or 'SUCCESS_PRIMARY'),
+        'rule_candidate_verdict': tr.get('rule_candidate_verdict') or pm.get('rule_candidate_verdict'),
     }
 
 
@@ -386,3 +463,19 @@ def _safe_float(value: Any) -> float | None:
         return float(value)
     except (TypeError, ValueError):
         return None
+
+
+def _compact_digest_prompt(target: str, reports: list[dict[str, Any]], packet: dict[str, Any]) -> str:
+    return (
+        f'분석 대상: {target}\n결정론 리포트: {json.dumps(reports, ensure_ascii=False, default=str)}\n'
+        f'EvidencePacket: {json.dumps(packet, ensure_ascii=False, default=str)}\n'
+        'JSON: {"digest":"...","evidence_ids":["..."]}'
+    )
+
+
+def _parse_json(raw: Any) -> dict[str, Any] | None:
+    try:
+        parsed = json.loads(raw or '')
+    except (TypeError, ValueError):
+        return None
+    return parsed if isinstance(parsed, dict) else None

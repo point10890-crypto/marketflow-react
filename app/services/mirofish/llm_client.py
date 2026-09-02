@@ -17,6 +17,7 @@ from __future__ import annotations
 import logging
 import os
 import copy
+import json
 import time
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -420,7 +421,10 @@ def _error_class_for_legacy_failure(provider: str) -> ProviderErrorClass:
     }.get(prefix, ProviderErrorClass.UNKNOWN if prefix else ProviderErrorClass.EMPTY)
 
 
-def _routing_adapters(model_env: str | None) -> dict[str, CallableAdapter]:
+def _routing_adapters(
+    model_env: str | None,
+    expected_identity: dict[str, str] | None = None,
+) -> dict[str, CallableAdapter]:
     adapters: dict[str, CallableAdapter] = {}
     disabled = disabled_providers()
     for provider in SUPPORTED_PROVIDERS:
@@ -444,6 +448,16 @@ def _routing_adapters(model_env: str | None) -> dict[str, CallableAdapter]:
                     _error_class_for_legacy_failure(_provider),
                     usage=_provider_usage.get().get(_provider, TokenUsage.unknown()),
                 )
+            if expected_identity:
+                try:
+                    document = json.loads(text)
+                except (TypeError, ValueError) as exc:
+                    raise ProviderCallError(ProviderErrorClass.INVALID_JSON) from exc
+                if not isinstance(document, dict) or any(
+                    str(document.get(key) or '').strip() != str(value).strip()
+                    for key, value in expected_identity.items()
+                ):
+                    raise ProviderCallError(ProviderErrorClass.INVALID_JSON)
             return AdapterResponse(
                 text=text,
                 usage=_provider_usage.get().get(_provider, TokenUsage.unknown()),
@@ -487,6 +501,10 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
                                 run_id: str | None = None,
                                 request_id: str | None = None,
                                 caller_endpoint: str | None = None,
+                                symbol: str | None = None,
+                                market: str | None = None,
+                                expected_identity: dict[str, str] | None = None,
+                                expected_numbers: dict[str, int | float] | None = None,
                                 ) -> tuple[str | None, dict[str, Any]]:
     """Generate through the central router and publish legacy-safe diagnostics."""
     started = time.perf_counter()
@@ -494,7 +512,7 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
     _provider_usage.set({})
     _provider_error_class.set({})
     selected_operation = Operation(operation) if operation is not None else Operation.BULK_TEXT
-    adapters = _routing_adapters(model_env)
+    adapters = _routing_adapters(model_env, expected_identity)
     all_providers_disabled = not adapters
     router = AIRouter(adapters=adapters)
     effective_run_id = run_id or _generation_run_id.get()
@@ -504,10 +522,13 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
         system=system,
         run_id=effective_run_id,
         request_id=request_id,
+        symbol=symbol,
+        market=market,
         json_mode=json_mode,
         max_output_tokens=max_tokens,
         caller_endpoint=caller_endpoint or 'mirofish.llm_client',
         temperature=temperature,
+        expected_numbers=expected_numbers,
     )
     result = (
         router.route_vision(request)
@@ -587,12 +608,17 @@ def generate_text_with_provider(prompt: str, *, system: str | None = None,
                                 operation: Operation | str | None = None,
                                 run_id: str | None = None,
                                 request_id: str | None = None,
-                                caller_endpoint: str | None = None) -> tuple[str | None, str]:
+                                caller_endpoint: str | None = None,
+                                symbol: str | None = None, market: str | None = None,
+                                expected_identity: dict[str, str] | None = None,
+                                expected_numbers: dict[str, int | float] | None = None) -> tuple[str | None, str]:
     """Generate text and return the provider that succeeded (legacy API)."""
     text, metadata = generate_text_with_metadata(
         prompt, system=system, model_env=model_env, temperature=temperature,
         max_tokens=max_tokens, json_mode=json_mode, operation=operation,
         run_id=run_id, request_id=request_id, caller_endpoint=caller_endpoint,
+        symbol=symbol, market=market, expected_identity=expected_identity,
+        expected_numbers=expected_numbers,
     )
     return text, str(metadata['provider'])
 
@@ -601,7 +627,10 @@ def generate_text(prompt: str, *, system: str | None = None, model_env: str | No
                   temperature: float = 0.3, max_tokens: int = 4096,
                   json_mode: bool = False, operation: Operation | str | None = None,
                   run_id: str | None = None, request_id: str | None = None,
-                  caller_endpoint: str | None = None) -> str | None:
+                  caller_endpoint: str | None = None,
+                  symbol: str | None = None, market: str | None = None,
+                  expected_identity: dict[str, str] | None = None,
+                  expected_numbers: dict[str, int | float] | None = None) -> str | None:
     """Generate plain text or JSON text with automatic provider fallback."""
     text, _provider = generate_text_with_provider(
         prompt,
@@ -614,5 +643,9 @@ def generate_text(prompt: str, *, system: str | None = None, model_env: str | No
         run_id=run_id,
         request_id=request_id,
         caller_endpoint=caller_endpoint,
+        symbol=symbol,
+        market=market,
+        expected_identity=expected_identity,
+        expected_numbers=expected_numbers,
     )
     return text

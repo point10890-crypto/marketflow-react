@@ -25,3 +25,24 @@ def test_attach_tradingagents_missing_run_returns_none(monkeypatch, tmp_path):
     from app.services.mirofish import store
     monkeypatch.setattr(store, 'RUNS_ROOT', str(tmp_path))
     assert store.attach_tradingagents('mf_nope_000000', {'id': 'ta', 'verdict': {}}) is None
+
+
+def test_create_compact_run_writes_legacy_compatible_artifacts(monkeypatch, tmp_path):
+    from app.services.mirofish import store
+    monkeypatch.setattr(store, 'RUNS_ROOT', str(tmp_path))
+    candidate = {
+        'symbol': '005930', 'name': '삼성전자', 'display_name': '삼성전자', 'market': 'KOSPI',
+        'price': {'date': '2026-07-17', 'current_price': 70000, 'change_pct': 2.5},
+    }
+    ta = {
+        'id': 'ta_20260717_063000_000000_abcdef', 'analysis_status': 'SUCCESS_PRIMARY',
+        'profile': 'compact', 'evidence_fingerprint': 'a' * 64,
+        'analyst_reports': [{'role': 'technical', 'title': '기술', 'stance': 'bullish', 'score': 80, 'summary': '상승'}],
+        'research_debate': {'method': 'llm'}, 'provider_usage': {'calls': 3},
+        'verdict': {'verdict': 'BUY', 'confidence': 82, 'reasoning': '근거', 'bull_case': 'b', 'bear_case': 'r'},
+    }
+    run = store.create_compact_run(candidate, ta)
+    assert store.read_run(run['id'])['source_run_id'] == ta['id']
+    assert store.get_graph(run['id'])['run_id'] == run['id']
+    assert store.get_report(run['id'])['markdown'].startswith('# MiroFish Live Report')
+    assert run['provider_usage'] == {'calls': 3}

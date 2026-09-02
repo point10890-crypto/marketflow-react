@@ -72,3 +72,18 @@ def test_telegram_no_buy_message():
     }
     msg = wf.build_workflow_top3_telegram_message(workflow)
     assert '오늘 매수 판정 종목 없음' in msg
+
+
+def test_hold_review_is_never_selected_or_notified():
+    incomplete = {
+        'analysis_status': 'HOLD_REVIEW',
+        'verdict': {'action': 'HOLD_REVIEW'},
+        'final_score': 999,
+    }
+    ordinary_hold = _run('HOLD', 70)
+    assert wf._select_top3([incomplete, ordinary_hold], top_n=3, require_buy=False) == [ordinary_hold]
+    ok, reason = wf.should_send_workflow_top3({
+        'top3': [incomplete],
+        'summary': {'quality': {'recommendation': 'send'}},
+    })
+    assert ok is False and reason == 'hold_review'

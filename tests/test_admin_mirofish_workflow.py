@@ -100,6 +100,46 @@ def _analysis_run(candidate, action='BUY', confidence=75, graph_links=40, brain_
     }
 
 
+def test_automatic_analysis_seam_uses_compact_once_without_legacy_stack(monkeypatch):
+    candidate = _candidate('005930', '삼성전자', 85, 20)
+    monkeypatch.setattr(workflow.store, 'create_run', pytest.fail)
+    captured = []
+    monkeypatch.setattr(
+        workflow.ta_engine, 'run_deep_analysis',
+        lambda target, **kwargs: captured.append(kwargs) or {
+            'id': 'ta_compact', 'analysis_status': 'SUCCESS_PRIMARY',
+            'verdict': {'verdict': 'BUY', 'confidence': 80},
+        },
+    )
+    monkeypatch.setattr(
+        workflow.store, 'create_compact_run',
+        lambda candidate, ta: {'id': 'mf_compact', 'source_run_id': ta['id']},
+    )
+    out = workflow._create_analysis_run(candidate, 10, 'full', workflow_id='mcp_parent')
+    assert out['source_run_id'] == 'ta_compact'
+    assert len(captured) == 1
+    assert captured[0]['profile'] == 'compact'
+    assert captured[0]['routing_run_id'] == 'mcp_parent'
+
+
+def test_candidate_admission_happens_before_executor_submission(tmp_path, monkeypatch):
+    candidates = [_candidate(f'{index:06d}', f'종목{index}', 90 - index, 20, index) for index in range(10)]
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(workflow.alpha_scanner, 'run_scanner_alert_check', lambda *args, **kwargs: _scanner_result(candidates))
+    submitted = []
+    monkeypatch.setattr(
+        workflow, '_create_analysis_run',
+        lambda candidate, agent_count, mode: submitted.append(candidate['symbol']) or _analysis_run(candidate),
+    )
+    result = workflow.start_workflow_from_scanner_events(
+        {'max_events': 10, 'top_n': 3, 'require_buy': False}, async_mode=False,
+    )
+    assert len(submitted) == 5
+    assert result['budget_summary']['admitted'] == 5
+    assert result['budget_summary']['deferred'] == 5
+
+
 def test_workflow_runs_multi_target_graphrag_and_selects_top3(tmp_path, monkeypatch):
     candidates = [
         _candidate('000001', 'Alpha One', 80, 20, 1),

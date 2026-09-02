@@ -58,7 +58,8 @@ _BULL_JSON = '다음 JSON 형식으로만 응답하세요: {"message": "강세 �
 _BEAR_JSON = '다음 JSON 형식으로만 응답하세요: {"message": "약세 주장 (2~4문장, 점수 인용)"}'
 _MANAGER_JSON = (
     '다음 JSON 형식으로만 응답하세요: '
-    '{"stance": "bull|bear|neutral", "thesis": "최종 판단 근거 (2~4문장)", '
+    '{"symbol":"고정값","name":"고정값","market":"고정값","analyst_mean":고정숫자,'
+    '"stance": "bull|bear|neutral", "thesis": "최종 판단 근거 (2~4문장)", '
     '"confidence": 0~100 정수}'
 )
 
@@ -73,6 +74,10 @@ def run_research_debate(
     use_llm: bool = True,
     regime_line: str = '',
     context_line: str = '',
+    run_id: str | None = None,
+    symbol: str | None = None,
+    market: str | None = None,
+    name: str | None = None,
 ) -> dict[str, Any]:
     """Run an N-round bull/bear debate and a manager verdict.
 
@@ -119,15 +124,70 @@ def run_research_debate(
     bear_case = debate_rounds[-1]['bear']['message'] if debate_rounds else ''
 
     manager, used_llm_m = _manager_verdict(target, reports, debate_rounds, use_llm,
-                                            regime_line=regime_line, context_line=context_line)
+                                            regime_line=regime_line, context_line=context_line,
+                                            run_id=run_id, symbol=symbol, market=market,
+                                            name=name or target)
     llm_ok, llm_fail = _accumulate(used_llm_m, use_llm, llm_ok, llm_fail)
 
+    rule_candidate = _manager_rule(reports)
+    analysis_status = (
+        str((manager.get('llm') or {}).get('analysis_status') or 'SUCCESS_PRIMARY')
+        if used_llm_m else ('HOLD_REVIEW' if use_llm else 'SUCCESS_PRIMARY')
+    )
     return {
         'rounds': debate_rounds,
         'bull_case': bull_case,
         'bear_case': bear_case,
         'manager': manager,
         'method': _resolve_method(use_llm, llm_ok, llm_fail),
+        'analysis_status': analysis_status,
+        'rule_candidate_verdict': rule_candidate,
+    }
+
+
+def run_compact_debate(
+    target: str, reports: list[dict[str, Any]], *, use_llm: bool = True,
+    run_id: str | None = None, request_id: str | None = None,
+    evidence_packet: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """One logical bull/bear call; the research manager remains deterministic."""
+    rule_bull = _bull_message_rule(reports, 1)
+    rule_bear = _bear_message_rule(reports, 1)
+    packet = evidence_packet or {}
+    llm_meta: dict[str, Any] | None = None
+    bull_case, bear_case = rule_bull, rule_bear
+    bull_ids = list(packet.get('evidence_ids') or [])
+    bear_ids = list(packet.get('evidence_ids') or [])
+    if use_llm:
+        prompt = (
+            f"분석 대상: {target}\nEvidencePacket: {json.dumps(packet, ensure_ascii=False, default=str)}\n"
+            'JSON: {"bull_case":"...","bear_case":"...","bull_evidence_ids":[],"bear_evidence_ids":[]}'
+        )
+        raw, llm_meta = llm_client.generate_text_with_metadata(
+            prompt, system='강세/약세 논거를 분리해 같은 EvidencePacket만 인용하세요.',
+            temperature=0.2, max_tokens=768, json_mode=True,
+            operation='compact_debate', run_id=run_id, request_id=request_id,
+            symbol=packet.get('symbol'), market=packet.get('market'),
+            caller_endpoint='mirofish.tradingagents.compact_debate',
+        )
+        data = _parse_json_obj(raw)
+        allowed = set(packet.get('evidence_ids') or [])
+        if data and str(data.get('bull_case') or '').strip() and str(data.get('bear_case') or '').strip():
+            proposed_bull = list(data.get('bull_evidence_ids') or [])
+            proposed_bear = list(data.get('bear_evidence_ids') or [])
+            if set(proposed_bull + proposed_bear) <= allowed:
+                bull_case = str(data['bull_case'])[:1500]
+                bear_case = str(data['bear_case'])[:1500]
+                bull_ids, bear_ids = proposed_bull, proposed_bear
+    manager = _manager_rule(reports)
+    return {
+        'rounds': [{'round': 1, 'bull': {'message': bull_case}, 'bear': {'message': bear_case}}],
+        'bull_case': bull_case, 'bear_case': bear_case,
+        'bull_evidence_ids': bull_ids, 'bear_evidence_ids': bear_ids,
+        'manager': manager, 'method': 'llm' if llm_meta and llm_meta.get('success') else 'rule',
+        'analysis_status': (llm_meta or {}).get('analysis_status', 'DEGRADED' if use_llm else 'SUCCESS_PRIMARY'),
+        'llm': llm_meta,
+        'rule_candidate_verdict': manager,
     }
 
 
@@ -237,16 +297,23 @@ def _manager_verdict(target: str, reports: list[dict[str, Any]],
                      debate_rounds: list[dict[str, Any]],
                      use_llm: bool,
                      regime_line: str = '',
-                     context_line: str = '') -> tuple[dict[str, Any], bool]:
+                     context_line: str = '', run_id: str | None = None,
+                     symbol: str | None = None, market: str | None = None,
+                     name: str | None = None) -> tuple[dict[str, Any], bool]:
     if use_llm:
         try:
             verdict = _llm_manager(target, reports, debate_rounds,
-                                   regime_line=regime_line, context_line=context_line)
+                                   regime_line=regime_line, context_line=context_line,
+                                   run_id=run_id, symbol=symbol, market=market, name=name)
             if verdict:
                 return verdict, True
         except Exception as exc:  # noqa: BLE001
             logger.warning('[research_debate] manager LLM failed: %s', exc)
-    return _manager_rule(reports), False
+    rule = _manager_rule(reports)
+    return {
+        'stance': 'hold_review', 'thesis': '결정 모델 검증이 완료되지 않아 검토가 필요합니다.',
+        'confidence': 0.0, 'rule_candidate_verdict': rule,
+    } if use_llm else rule, False
 
 
 def _llm_side(system: str, json_hint: str, target: str, reports: list[dict[str, Any]],
@@ -275,7 +342,9 @@ def _llm_side(system: str, json_hint: str, target: str, reports: list[dict[str, 
 
 def _llm_manager(target: str, reports: list[dict[str, Any]],
                  debate_rounds: list[dict[str, Any]],
-                 regime_line: str = '', context_line: str = '') -> dict[str, Any] | None:
+                 regime_line: str = '', context_line: str = '',
+                 run_id: str | None = None, symbol: str | None = None,
+                 market: str | None = None, name: str | None = None) -> dict[str, Any] | None:
     transcript = '\n'.join(
         f"R{r['round']} 강세: {r['bull']['message']}\nR{r['round']} 약세: {r['bear']['message']}"
         for r in debate_rounds
@@ -287,13 +356,24 @@ def _llm_manager(target: str, reports: list[dict[str, Any]],
         f'[애널리스트 리포트]\n{_reports_digest(reports)}\n\n'
         f'{regime_block}'
         f'{context_block}'
-        f'[토론 기록]\n{transcript}\n\n{_MANAGER_JSON}'
+        f'[토론 기록]\n{transcript}\n\n'
+        f'고정 식별자: symbol={symbol or ""}, name={name or target}, market={market or ""}, '
+        f'analyst_mean={analyst_mean(reports)}\n{_MANAGER_JSON}'
     )
     raw, llm_meta = llm_client.generate_text_with_metadata(
         # 매니저 판정은 기계가 소비한다(decision_brief 근거·TA 가점·SELL 제외 임계 65).
         # 실측 2026-08-29: temp=0.3 에서 confidence 가 ±5(표준편차 2.23) 흔들렸다.
         # 결정론 생성으로 분산을 줄인다. 토론 메시지는 논거 다양성을 위해 확률적 유지.
-        prompt, system=_MANAGER_SYSTEM, temperature=0.0, max_tokens=1024, json_mode=True,
+        prompt, system=_MANAGER_SYSTEM, temperature=0.0, max_tokens=1200, json_mode=True,
+        operation='decisive_text', run_id=run_id,
+        request_id=f'{run_id}:{symbol or target}:research-manager' if run_id else None,
+        symbol=symbol, market=market,
+        expected_identity=(
+            {'symbol': symbol, 'name': name or target, 'market': market}
+            if symbol and market else None
+        ),
+        expected_numbers={'analyst_mean': analyst_mean(reports)} if symbol and market else None,
+        caller_endpoint='mirofish.tradingagents.research_manager',
     )
     data = _parse_json_obj(raw)
     if not data:
@@ -301,7 +381,9 @@ def _llm_manager(target: str, reports: list[dict[str, Any]],
     thesis = str(data.get('thesis') or '').strip()
     if not thesis:
         return None
-    stance = _normalize_stance(data.get('stance'), reports)
+    stance = str(data.get('stance') or '').strip().lower()
+    if stance not in ('bull', 'bear', 'neutral'):
+        return None
     # `or 50.0` 은 정당한 confidence 0 을 50 으로 승격시킨다 — None 일 때만 기본값.
     conf_raw = _safe_float(data.get('confidence'))
     confidence = _clamp(conf_raw if conf_raw is not None else 50.0, 0.0, 100.0)

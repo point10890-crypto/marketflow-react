@@ -14,9 +14,13 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from app.services.mirofish import crash_rebound_gate, fear_index
+from app.services.mirofish import evidence_packet as evidence_packet_mod
 from app.services.mirofish import mcp_resource_catalog
 from app.services.mirofish.alpha_scanner import get_price_trend_metrics
 from app.services.mirofish.tradingagents import engine as tradingagents
+from app.services.mirofish.tradingagents import run_cache as ta_run_cache
+from app.services.ai_routing.policy import policy_for
+from app.services.ai_routing.contracts import Operation
 from app.utils.atomic_json import write_json_atomic
 
 
@@ -94,8 +98,10 @@ def run_multi_mcp_analysis(
     use_llm: bool = True,
     max_parallel: int = 3,
     input_mode: str = 'verified_kis_pipeline',
+    max_candidates: int = 5,
 ) -> dict[str, Any]:
     started = datetime.now(timezone.utc)
+    run_id = f"multi_mcp_{started:%Y%m%d_%H%M%S_%f}"
     normalized = [_normalize_candidate(row) for row in candidates[:20]]
     clean_candidates = []
     seen_symbols: set[str] = set()
@@ -114,6 +120,8 @@ def run_multi_mcp_analysis(
 
     evidence_packets = [_evidence_packet(row) for row in clean_candidates]
     eligible = [packet for packet in evidence_packets if packet['profit_gate']['passed']]
+    admission = ta_run_cache.AdmissionManager(os.path.join(RUNS_ROOT, 'candidate_admission.sqlite3'))
+    admitted, budget_summary = admission.admit(run_id, eligible, limit=max(0, min(int(max_candidates), 5)))
     analyses: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=max(1, min(int(max_parallel), 5))) as pool:
         pending = {
@@ -122,8 +130,10 @@ def run_multi_mcp_analysis(
                 packet['name'],
                 symbol=packet['symbol'],
                 use_llm=use_llm,
+                profile='compact', evidence_packet=packet,
+                routing_run_id=run_id,
             ): packet
-            for packet in eligible
+            for packet in admitted
         }
         for future in as_completed(pending):
             packet = pending[future]
@@ -150,7 +160,6 @@ def run_multi_mcp_analysis(
         else 'cash_wait'
     )
     completed = datetime.now(timezone.utc)
-    run_id = f"multi_mcp_{started:%Y%m%d_%H%M%S_%f}"
     result = {
         'schema_version': 'mirofish.multi_mcp.run.v1',
         'id': run_id,
@@ -168,6 +177,7 @@ def run_multi_mcp_analysis(
         },
         'candidate_count': len(clean_candidates),
         'profit_gate_passed_count': len(eligible),
+        'budget_summary': budget_summary,
         'evidence_packets': evidence_packets,
         'agent_analyses': analyses,
         'selected': approved,
@@ -218,8 +228,9 @@ def _normalize_candidate(row: Any) -> dict[str, Any] | None:
     if len(symbol) != 6 or not symbol.isdigit() or not name:
         return None
     source = str(row.get('source') or '').strip().upper()
+    market = str(row.get('market') or '').strip()
     current_price = _float(row.get('current_price') or row.get('price'))
-    if source != 'KIS' or current_price <= 0:
+    if source != 'KIS' or current_price <= 0 or not market:
         return None
     return {
         'symbol': symbol,
@@ -229,6 +240,8 @@ def _normalize_candidate(row: Any) -> dict[str, Any] | None:
         'volume': _float(row.get('volume')),
         'source': source,
         'observed_at': row.get('observed_at'),
+        'market': market,
+        'source_packets': row.get('source_packets') or [],
     }
 
 
@@ -252,7 +265,7 @@ def _evidence_packet(candidate: dict[str, Any]) -> dict[str, Any]:
         **admission_checks,
         **trend_gate_checks(trend),
     }
-    return {
+    legacy = {
         **candidate,
         'trend': trend,
         'profit_gate': {
@@ -265,6 +278,18 @@ def _evidence_packet(candidate: dict[str, Any]) -> dict[str, Any]:
             'risk_flags': risk_flags,
         },
     }
+    fast = policy_for(Operation.BULK_TEXT)
+    decisive = policy_for(Operation.DECISIVE_TEXT)
+    canonical = evidence_packet_mod.build_evidence_packet(
+        {**legacy, 'as_of': candidate.get('observed_at'), 'risk_flags': risk_flags},
+        profile='compact',
+        models={'fast': fast.models.get('deepseek'), 'decisive': decisive.models.get('deepseek')},
+        deterministic_scores={
+            'alpha': candidate.get('alpha_score'), 'risk': candidate.get('risk_score'),
+            'trend': trend.get('trend_score'), 'relative_strength': candidate.get('rs_rating'),
+        }, risk_gates=checks,
+    )
+    return {**legacy, **canonical, 'profit_gate': legacy['profit_gate'], 'trend': trend}
 
 
 def _critic_review(packet: dict[str, Any], deep_run: dict[str, Any]) -> dict[str, Any]:
@@ -273,7 +298,10 @@ def _critic_review(packet: dict[str, Any], deep_run: dict[str, Any]) -> dict[str
     confidence = _float(verdict.get('confidence'))
     confidence_valid = 0 <= confidence <= 100
     approved = (
-        action in {'BUY', 'STRONG_BUY', 'BUY_CANDIDATE'}
+        str(deep_run.get('analysis_status') or verdict.get('analysis_status') or 'SUCCESS_PRIMARY')
+        in {'SUCCESS_PRIMARY', 'SUCCESS_FALLBACK'}
+        and action != 'HOLD_REVIEW'
+        and action in {'BUY', 'STRONG_BUY', 'BUY_CANDIDATE'}
         and confidence_valid
         and confidence >= 60
     )
@@ -296,6 +324,7 @@ def _critic_review(packet: dict[str, Any], deep_run: dict[str, Any]) -> dict[str
         'risk_review': deep_run.get('trader_risk') or {},
         'cio_reasoning': verdict.get('reasoning'),
         'deep_run_id': deep_run.get('id'),
+        'analysis_status': deep_run.get('analysis_status') or verdict.get('analysis_status'),
     }
 
 
