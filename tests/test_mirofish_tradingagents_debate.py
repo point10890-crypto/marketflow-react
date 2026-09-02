@@ -98,6 +98,43 @@ def test_llm_full_success_method_llm(monkeypatch):
     assert result['rounds'][0]['bull']['message'] == '강세 LLM 근거 발언'
 
 
+def test_llm_manager_zero_confidence_is_preserved(monkeypatch):
+    """REGRESSION: `or 50.0` 폴백이 정당한 confidence 0 을 50 으로 승격시키면
+    SELL 제외 임계(65)·deep-verify 가점이 무확신 판정을 중간 확신으로 오독한다."""
+    fake = _fake_by_system({
+        '리서치 매니저': '{"stance": "neutral", "thesis": "확신 없음", "confidence": 0}',
+        'Bull': '{"message": "강세 LLM 발언"}',
+        'Bear': '{"message": "약세 LLM 발언"}',
+    })
+    monkeypatch.setattr(
+        research_debate.llm_client, 'generate_text_with_metadata',
+        lambda *args, **kwargs: (fake(*args, **kwargs), {
+            'provider': 'deepseek', 'model': 'test', 'success': True,
+            'fallback_used': False, 'attempts': [], 'latency_ms': 1,
+        }),
+    )
+    result = research_debate.run_research_debate('삼성전자', REPORTS, rounds=1, use_llm=True)
+    assert result['method'] == 'llm'
+    assert result['manager']['confidence'] == 0.0
+
+
+def test_llm_manager_missing_confidence_defaults_to_50(monkeypatch):
+    fake = _fake_by_system({
+        '리서치 매니저': '{"stance": "bull", "thesis": "확신값 누락"}',
+        'Bull': '{"message": "강세 LLM 발언"}',
+        'Bear': '{"message": "약세 LLM 발언"}',
+    })
+    monkeypatch.setattr(
+        research_debate.llm_client, 'generate_text_with_metadata',
+        lambda *args, **kwargs: (fake(*args, **kwargs), {
+            'provider': 'deepseek', 'model': 'test', 'success': True,
+            'fallback_used': False, 'attempts': [], 'latency_ms': 1,
+        }),
+    )
+    result = research_debate.run_research_debate('삼성전자', REPORTS, rounds=1, use_llm=True)
+    assert result['manager']['confidence'] == 50.0
+
+
 def test_llm_partial_failure_method_mixed(monkeypatch):
     # Bear call returns None → that piece falls back to rule → method='mixed'.
     fake = _fake_by_system({

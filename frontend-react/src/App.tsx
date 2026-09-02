@@ -91,13 +91,15 @@ function unauthRedirect(): string {
     }
 }
 
-function ApprovedGuard({ children }: { children: React.ReactNode }) {
+export function ApprovedGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     const location = useLocation();
     const next = `${location.pathname}${location.search || ''}`;
     if (loading) return <LoadingFallback />;
     if (!user) return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
-    if (user.status === 'unknown') return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
+    // 'unknown' = 토큰만 있고 /api/auth/me 미응답 (오프라인/백엔드 다운 포함) — 위 설계 주석대로
+    // 리다이렉트하지 않고 로딩만 보여준다. 유효 토큰 유저를 /login 으로 튕기면 안 된다.
+    if (user.status === 'unknown') return <LoadingFallback />;
     if (user.role === 'admin') return <>{children}</>;
     // 만료 → 재구독 / 노티어 → 플랜 선택 / 승인 대기 → pending-approval.
     // 판정 기준은 subscriptionFunnelTarget 한 곳 (FunnelGate·404 CTA 와 공유).

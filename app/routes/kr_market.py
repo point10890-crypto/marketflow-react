@@ -1867,7 +1867,8 @@ def kr_rag_status():
         return jsonify({'error': 'rag_status_failed',
                         'detail': f'{type(exc).__name__}: {exc}'}), 500
     resp = jsonify(payload)
-    resp.headers['Cache-Control'] = 'public, max-age=60'
+    # 구독자 전용 응답 — 공유 캐시(프록시/CDN) 저장을 허용하는 public 은 금지.
+    resp.headers['Cache-Control'] = 'private, max-age=60'
     return resp
 
 
@@ -1917,7 +1918,8 @@ def kr_decision_search():
         payload = {'query': query, 'candidates': []}
 
     resp = jsonify(payload)
-    resp.headers['Cache-Control'] = 'public, max-age=300'
+    # 구독자 전용 응답 — 공유 캐시(프록시/CDN) 저장을 허용하는 public 은 금지.
+    resp.headers['Cache-Control'] = 'private, max-age=300'
     return resp
 
 
@@ -1947,7 +1949,10 @@ def kr_decision_brief(symbol):
         return jsonify({'error': 'decision_brief_failed',
                         'detail': f'{type(exc).__name__}: {exc}'}), 500
 
-    decision_cache.cache_put('brief', key, payload)
+    # 완전 열화 브리프(신호 0 + 소스 오류)는 일간 캐시에 넣지 않는다 — 일시 장애
+    # 결과를 하루 종일 서빙하면 안 된다(deep 경로가 실패를 캐시하지 않는 것과 같은 정책).
+    if payload.get('signals') or not payload.get('errors'):
+        decision_cache.cache_put('brief', key, payload)
     resp = jsonify(payload)
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return resp
@@ -1980,14 +1985,24 @@ def kr_decision_deep_analysis(symbol):
         return jsonify({'state': 'running', 'job': running}), 202
 
     # 남용 차단 — 잡을 실제로 시작할 때만 차감한다(캐시 적중·합류·busy 는 무료).
+    # 차감을 start() 앞에 두는 이유: 한도 초과 사용자의 잡이 먼저 떠버리면 되돌릴 수
+    # 없다. 대신 start() 가 'started' 가 아니면(busy·경합상 합류·기동 실패) 환불한다.
     user = getattr(request, 'current_user', None)
-    if user is not None and not getattr(user, 'is_admin', False):
+    charged = user is not None and not getattr(user, 'is_admin', False)
+    if charged:
         allowed, remaining, limit = decision_cache.consume_deep_quota(user.id)
         if not allowed:
             return jsonify({'error': 'quota_exceeded', 'limit': limit, 'remaining': 0,
                             'detail': f'심층 분석 일일 한도({limit}회)를 모두 사용했습니다. 내일 다시 이용해 주세요.'}), 429
 
-    started = decision_jobs.start(key, key)
+    try:
+        started = decision_jobs.start(key, key)
+    except Exception:
+        if charged:
+            decision_cache.refund_deep_quota(user.id)   # 시작 실패는 무료
+        raise
+    if charged and started.get('status') != 'started':
+        decision_cache.refund_deep_quota(user.id)       # busy·경합상 합류는 무료
     if started.get('status') == 'busy':
         return jsonify({'error': 'busy', 'max_concurrent': started.get('max_concurrent'),
                         'detail': '동시에 실행 중인 심층 분석이 많습니다. 잠시 후 다시 시도해 주세요.'}), 429

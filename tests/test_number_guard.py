@@ -31,6 +31,15 @@ def test_ignores_years_and_ordinals():
     assert claims == []
 
 
+def test_year_band_integer_with_unit_is_still_a_claim():
+    """단위(원/억/%)가 붙은 1900~2200 정수는 연도가 아니라 검증 대상 수치다."""
+    claims = ng.extract_claims('주가 2,050원, 매출 2,000억원, 무려 1,950% 급등')
+    values = {(c['value'], c['unit']) for c in claims}
+    assert (2050, 'won') in values
+    assert (2000, 'eok') in values
+    assert (1950, 'percent') in values
+
+
 def test_extraction_records_unit_and_context():
     claims = ng.extract_claims('상승률 +8.4% 기록')
     assert claims[0]['unit'] == 'percent'
@@ -174,4 +183,29 @@ def test_real_hallucination_is_still_caught():
 def test_52week_reference_is_unverified():
     """52주 최고가 대비 낙폭은 번들에 대응 필드가 없다 — 미검증."""
     _, v = ng.guard_output('52주 최고가 대비 31.4% 하락한 점이 부담', REAL_BUNDLE)
+    assert v['contradicted'] == 0
+
+
+# ─── 연도 오인·교차단위 우연일치가 검증을 무력화하던 결함 ───
+
+def test_year_band_price_hallucination_is_contradicted():
+    """'주가 2,050원' 환각이 연도로 오인돼 검증을 통과하면 안 된다."""
+    accepted, v = ng.guard_output('주가 2,050원에 거래되었다', {'current_price': 3100.0})
+    assert accepted is False
+    assert v['contradicted'] >= 1
+
+
+def test_cross_unit_coincidence_is_not_verified():
+    """단위가 다른 필드와의 우연 일치(PER 9.5 vs '9.5% 상승')는 검증이 아니다."""
+    bundle = {'price.change_pct': -3.38, 'fundamentals.trailingPE': 9.5}
+    _, v = ng.guard_output('9.5% 상승 마감했다', bundle)
+    assert v['verified'] == 0
+    assert v['contradicted'] >= 1      # 문맥('상승')이 등락률을 가리키므로 모순이다
+
+
+def test_same_unit_field_match_is_still_verified():
+    """같은 단위 필드와의 일치는 종전대로 검증으로 통과한다."""
+    bundle = {'price.change_pct': -3.38, 'fundamentals.trailingPE': 9.5}
+    _, v = ng.guard_output('3.38% 하락 마감', bundle)
+    assert v['verified'] >= 1
     assert v['contradicted'] == 0

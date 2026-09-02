@@ -14,6 +14,7 @@ from __future__ import annotations
 import csv
 import logging
 import os
+import re
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
@@ -116,12 +117,14 @@ def load_themes() -> dict[str, str]:
         return {}
 
 
-def _fetch(url: str, timeout: int = FETCH_TIMEOUT) -> str:
+def _fetch(url: str, timeout: int = FETCH_TIMEOUT) -> bytes:
     import requests
 
     resp = requests.get(url, timeout=timeout, headers={'User-Agent': USER_AGENT})
     resp.raise_for_status()
-    return resp.text
+    # resp.text 는 헤더 charset 이 없으면 ISO-8859-1 로 풀어 EUC-KR 피드를 조용히
+    # 모지바케로 만든다. bytes 를 반환해 XML 선언의 인코딩을 파서가 존중하게 한다.
+    return resp.content
 
 
 def _text(node: Any, tag: str) -> str:
@@ -138,12 +141,41 @@ def _normalize_ts(raw: str) -> str | None:
         return raw[:40] or None
 
 
-def parse_rss(xml_text: str, *, source: str, grade: str) -> list[dict[str, Any]]:
-    """RSS/Atom 최소 파싱. 깨진 피드는 예외 대신 빈 목록으로 흘린다."""
-    try:
-        root = ET.fromstring(str(xml_text or ''))
-    except ET.ParseError:
-        return []
+_XML_ENCODING_RE = re.compile(rb'<\?xml[^>]*encoding=["\']([A-Za-z0-9._\-]+)["\']', re.IGNORECASE)
+
+
+def _decode_xml_bytes(raw: bytes) -> str:
+    """XML 선언의 charset 으로 디코딩. expat 은 다중바이트 인코딩(EUC-KR 등)을
+    직접 못 읽으므로 파이썬 코덱으로 먼저 문자열화한다. 미지 코덱은 UTF-8 대체."""
+    match = _XML_ENCODING_RE.search(raw[:256])
+    if match:
+        try:
+            return raw.decode(match.group(1).decode('ascii'), errors='replace')
+        except LookupError:
+            pass
+    return raw.decode('utf-8', errors='replace')
+
+
+def parse_rss(xml_text: str | bytes, *, source: str, grade: str) -> list[dict[str, Any]]:
+    """RSS/Atom 최소 파싱. 깨진 피드는 예외 대신 빈 목록으로 흘린다.
+
+    bytes 입력이면 XML 선언의 인코딩을 존중한다 (레거시 EUC-KR 피드 보호).
+    """
+    if isinstance(xml_text, (bytes, bytearray)):
+        raw = bytes(xml_text)
+        try:
+            root = ET.fromstring(raw)
+        except (ET.ParseError, ValueError):
+            # expat 미지원 인코딩(EUC-KR 등 다중바이트) → 선언 charset 으로 직접 디코딩 후 재시도
+            try:
+                root = ET.fromstring(_decode_xml_bytes(raw))
+            except ET.ParseError:
+                return []
+    else:
+        try:
+            root = ET.fromstring(str(xml_text or ''))
+        except ET.ParseError:
+            return []
 
     items = root.findall('.//item')
     if not items:

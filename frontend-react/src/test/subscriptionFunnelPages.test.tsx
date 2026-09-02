@@ -6,6 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import PlanSelectPage from '@/pages/auth/PlanSelectPage';
 import SignupPage from '@/pages/auth/SignupPage';
+import PaymentRequestPage from '@/pages/auth/PaymentRequestPage';
+import PendingApprovalPage from '@/pages/auth/PendingApprovalPage';
 import { nextPathForUser, safeNextPath } from '@/pages/auth/LoginPage';
 import PricingPage from '@/pages/static/PricingPage';
 
@@ -16,8 +18,11 @@ const mocks = vi.hoisted(() => ({
         loading: false,
         setSession: vi.fn(),
         logout: vi.fn(),
+        refreshUser: vi.fn(async () => {}),
     },
     fetch: vi.fn(),
+    getStatus: vi.fn(async () => ({ requests: [] as any[] })),
+    requestUpgrade: vi.fn(async () => ({})),
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({
@@ -26,6 +31,10 @@ vi.mock('@/contexts/AuthContext', () => ({
 
 vi.mock('@/lib/api', () => ({
     API_BASE: 'https://api.test',
+    subscriptionAPI: {
+        getStatus: mocks.getStatus,
+        requestUpgrade: mocks.requestUpgrade,
+    },
 }));
 
 function LocationProbe() {
@@ -50,6 +59,8 @@ describe('subscription acquisition funnel', () => {
         mocks.auth.user = null;
         mocks.auth.token = null;
         mocks.auth.loading = false;
+        mocks.getStatus.mockResolvedValue({ requests: [] });
+        mocks.requestUpgrade.mockResolvedValue({});
         vi.stubGlobal('fetch', mocks.fetch);
     });
 
@@ -217,11 +228,122 @@ describe('subscription acquisition funnel', () => {
         expect(addon).toBeEnabled();
     });
 
+    it("hides the dead '처음으로' escape for funneled members but keeps it in change mode", () => {
+        // 노티어 회원: / 는 FunnelGate 가 곧장 /plan-select 로 되돌리므로 버튼 숨김 (로그아웃만 남음)
+        mocks.auth.user = {
+            id: 71, email: 'parked@example.test', name: '대기', role: 'user', status: 'pending', tier: null,
+        };
+        mocks.auth.token = 'parked-token';
+        const { unmount } = renderAt('/plan-select', <PlanSelectPage />, '/plan-select');
+        expect(screen.queryByRole('button', { name: /처음으로/ })).toBeNull();
+        expect(screen.getByRole('button', { name: /로그아웃/ })).toBeInTheDocument();
+        unmount();
+
+        // 활성 구독자(change=1): FunnelGate 통과 대상이므로 랜딩 이동 버튼 유지
+        mocks.auth.user = {
+            id: 72, email: 'active@example.test', name: '활성', role: 'user',
+            status: 'approved', tier: 'pro', is_pro_expired: false,
+        };
+        mocks.auth.token = 'active-token';
+        renderAt('/plan-select?change=1', <PlanSelectPage />, '/plan-select');
+        expect(screen.getByRole('button', { name: /처음으로/ })).toBeInTheDocument();
+    });
+
+    it('refreshes auth state on mount and window focus so an admin tier grant unparks the user', () => {
+        mocks.auth.user = {
+            id: 81, email: 'granted@example.test', name: '부여대상', role: 'user', status: 'pending', tier: null,
+        };
+        mocks.auth.token = 'granted-token';
+        const { unmount } = renderAt('/plan-select', <PlanSelectPage />, '/plan-select');
+        expect(mocks.auth.refreshUser).toHaveBeenCalledTimes(1);
+        fireEvent(window, new Event('focus'));
+        expect(mocks.auth.refreshUser).toHaveBeenCalledTimes(2);
+        unmount();
+
+        mocks.auth.refreshUser.mockClear();
+        renderAt('/payment-request?plan=pro', <PaymentRequestPage />, '/payment-request');
+        expect(mocks.auth.refreshUser).toHaveBeenCalledTimes(1);
+        fireEvent(window, new Event('focus'));
+        expect(mocks.auth.refreshUser).toHaveBeenCalledTimes(2);
+    });
+
+    it('lets an active Pro through the payment guard with renew=1 and submits an early renewal', async () => {
+        mocks.auth.user = {
+            id: 84, email: 'active@example.test', name: '활성회원', role: 'user',
+            status: 'approved', tier: 'pro', is_pro_expired: false,
+            pro_expires_at: new Date(Date.now() + 5 * 86_400_000).toISOString(),
+        };
+        mocks.auth.token = 'active-token';
+
+        renderAt('/payment-request?plan=pro&renew=1', <PaymentRequestPage />, '/payment-request');
+
+        // 가드에 튕기지 않고 갱신 라벨이 보인다
+        expect(screen.getAllByText(/Pro 갱신 \(만료 전\)/).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/승인 시 기존 만료일부터 \+30일/).length).toBeGreaterThan(0);
+        expect(screen.queryByTestId('location')).toBeNull();
+
+        fireEvent.click(screen.getByRole('button', { name: /승인 신청/ }));
+        expect(await screen.findByTestId('location')).toHaveTextContent('/pending-approval');
+        expect(mocks.requestUpgrade).toHaveBeenCalledWith('pro', 'active-token', '활성회원', false);
+    });
+
+    it('still bounces an active Pro from the payment page without renew=1', async () => {
+        mocks.auth.user = {
+            id: 85, email: 'active2@example.test', name: '활성회원2', role: 'user',
+            status: 'approved', tier: 'pro', is_pro_expired: false,
+        };
+        mocks.auth.token = 'active-token';
+
+        renderAt('/payment-request?plan=pro', <PaymentRequestPage />, '/payment-request');
+        expect(await screen.findByTestId('location')).toHaveTextContent('/dashboard');
+    });
+
+    it("maps the stale 'Already on ... tier' 400 to a refresh + dashboard instead of a dead-end error", async () => {
+        mocks.auth.user = {
+            id: 82, email: 'granted@example.test', name: '부여됨', role: 'user', status: 'pending', tier: null,
+        };
+        mocks.auth.token = 'granted-token';
+        mocks.requestUpgrade.mockRejectedValue(new Error('Already on pro tier'));
+
+        renderAt('/payment-request?plan=pro', <PaymentRequestPage />, '/payment-request');
+        fireEvent.click(screen.getByRole('button', { name: /승인 신청/ }));
+
+        expect(await screen.findByTestId('location')).toHaveTextContent('/dashboard');
+        expect(mocks.auth.refreshUser).toHaveBeenCalled();
+    });
+
+    it('treats an expired-Pro renewal wait as pending, not an active upgrade', async () => {
+        mocks.auth.user = {
+            id: 91, email: 'expired@example.test', name: '만료회원', role: 'user',
+            status: 'approved', tier: 'pro', is_pro_expired: true,
+        };
+        mocks.auth.token = 'expired-token';
+        mocks.getStatus.mockResolvedValue({
+            requests: [{
+                id: 1, status: 'pending', from_tier: 'pro', to_tier: 'pro',
+                request_type: 'renewal', amount: '110,000원', depositor_name: '만료회원',
+            }],
+        });
+
+        renderAt('/pending-approval', <PendingApprovalPage />, '/pending-approval');
+
+        expect(await screen.findByRole('heading', { name: '승인 대기 중' })).toBeInTheDocument();
+        expect(screen.queryByText('업그레이드 대기 중')).toBeNull();
+        // 만료 재구독자는 대시보드 버튼(ApprovedGuard 가 다시 plan-select 로 튕김) 대신 로그아웃 노출
+        expect(screen.queryByRole('button', { name: /대시보드로 돌아가기/ })).toBeNull();
+        expect(screen.getByRole('button', { name: '로그아웃' })).toBeInTheDocument();
+        expect(screen.getByText('110,000원')).toBeInTheDocument();
+    });
+
     it('restores a safely selected plan after login for no-tier, active, and expired members', () => {
         const planned = '/plan-select?change=1&plan=premium&aibain=1';
 
         expect(nextPathForUser({ status: 'pending', tier: null }, planned)).toBe(planned);
         expect(nextPathForUser({ status: 'approved', tier: 'pro' }, planned)).toBe(planned);
+        // 구독 신청 제출(requested_tier 기록) 회원은 재입금 안내 대신 승인 대기로
+        expect(nextPathForUser({ status: 'pending', tier: null, requested_tier: 'pro' }, null))
+            .toBe('/pending-approval');
+        expect(nextPathForUser({ status: 'pending', tier: null }, null)).toBe('/plan-select');
         expect(nextPathForUser({ status: 'expired', tier: 'pro', is_pro_expired: true }, planned)).toBe(
             '/plan-select?plan=premium&aibain=1&resubscribe=1&from=expired',
         );

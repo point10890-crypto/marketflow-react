@@ -142,6 +142,52 @@ def test_ledger_query_by_symbol(omni_db):
     assert len(hits) == 1 and hits[0]['title'] == 'A'
 
 
+def _ledger_event(**over):
+    base = {'content_hash': 'd' * 64, 'title': '삼성전자 신고가', 'summary': '요약',
+            'link': 'https://n/1', 'source': 'yonhap_market', 'sources': ['yonhap_market'],
+            'grade': 'B', 'published_ts': '2026-08-29T09:00:00+09:00',
+            'symbols': ['005930'], 'themes': [], 'score': 2.0, 'corroboration': 1}
+    base.update(over)
+    return base
+
+
+def test_ledger_merges_cross_sweep_corroboration(omni_db):
+    """스윕을 넘은 재관측은 버리지 않고 sources 합집합 + corroboration/score 병합."""
+    assert ledger.save_events([_ledger_event()]) == 1
+    later = _ledger_event(source='hankyung_finance', sources=['hankyung_finance'])
+    assert ledger.save_events([later]) == 0  # 신규 행은 아님 — 병합만
+    row = ledger.recent_events(limit=1)[0]
+    assert sorted(row['sources']) == ['hankyung_finance', 'yonhap_market']
+    assert row['corroboration'] == 2
+    assert row['score'] == pytest.approx(2.0 + funnel.CORROBORATION_WEIGHT)
+    # append-safe: 원문 필드는 다시 쓰지 않는다
+    assert row['title'] == '삼성전자 신고가'
+
+
+def test_ledger_same_source_resight_does_not_inflate(omni_db):
+    """같은 피드가 매 스윕 같은 기사를 재서빙해도 corroboration 은 소스 수 기준."""
+    assert ledger.save_events([_ledger_event()]) == 1
+    assert ledger.save_events([_ledger_event()]) == 0
+    row = ledger.recent_events(limit=1)[0]
+    assert row['sources'] == ['yonhap_market']
+    assert row['corroboration'] == 1
+    assert row['score'] == pytest.approx(2.0)
+
+
+def test_stats_last_24h_uses_exact_window(omni_db):
+    """ISO('T') 저장값 vs SQLite 공백 포맷 사전식 비교로 24~48h 로 넓어지던 창 고정."""
+    from datetime import datetime, timedelta, timezone
+    ledger.save_events([_ledger_event(content_hash='e' * 64, link='https://n/old')])
+    old_ts = (datetime.now(timezone.utc) - timedelta(days=1, minutes=5)).isoformat()
+    with ledger.connect() as con:
+        con.execute('UPDATE news_events SET collected_at = ? WHERE content_hash = ?',
+                    (old_ts, 'e' * 64))
+    ledger.save_events([_ledger_event(content_hash='f' * 64, link='https://n/new')])
+    result = ledger.stats()
+    assert result['total'] == 2
+    assert result['last_24h'] == 1  # 24시간 5분 지난 행은 제외
+
+
 def test_ledger_never_stores_raw_body(omni_db):
     import sqlite3
     ledger.save_events([{'content_hash': 'c' * 64, 'title': 'T', 'summary': 'S',
@@ -179,6 +225,46 @@ def test_parses_rss_items():
 def test_parse_rss_tolerates_malformed_xml():
     from app.services.omni import news_sensor
     assert news_sensor.parse_rss('<rss><broken', source='s', grade='B') == []
+    assert news_sensor.parse_rss(b'<rss><broken', source='s', grade='B') == []
+
+
+def test_parse_rss_accepts_utf8_bytes():
+    from app.services.omni import news_sensor
+    items = news_sensor.parse_rss(RSS_XML.encode('utf-8'), source='yonhap', grade='B')
+    assert len(items) == 2
+    assert items[0]['title'] == '삼성전자 신고가 경신'
+
+
+def test_parse_rss_honors_declared_legacy_charset():
+    """헤더 charset 없는 text/xml 을 requests 가 latin-1 로 풀면 EUC-KR 피드가
+    통째로 모지바케 폐기되던 버그 — bytes 로 파싱해 XML 선언 인코딩을 존중한다."""
+    from app.services.omni import news_sensor
+    xml = ('<?xml version="1.0" encoding="euc-kr"?>'
+           '<rss version="2.0"><channel>'
+           '<item><title>삼성전자 신고가 경신</title><link>https://n/1</link>'
+           '<description>반도체 업황 개선</description></item>'
+           '</channel></rss>').encode('euc-kr')
+    items = news_sensor.parse_rss(xml, source='mt_stock', grade='B')
+    assert len(items) == 1
+    assert items[0]['title'] == '삼성전자 신고가 경신'
+    assert items[0]['summary'] == '반도체 업황 개선'
+
+
+def test_fetch_returns_bytes_for_charset_fidelity(monkeypatch):
+    import requests
+    from app.services.omni import news_sensor
+
+    class FakeResp:
+        content = '<?xml version="1.0" encoding="euc-kr"?><r/>'.encode('euc-kr')
+        text = 'mojibake-should-not-be-used'
+
+        def raise_for_status(self):
+            return None
+
+    monkeypatch.setattr(requests, 'get', lambda *a, **k: FakeResp())
+    out = news_sensor._fetch('https://x/rss')
+    assert isinstance(out, bytes)
+    assert out == FakeResp.content
 
 
 def test_sweep_persists_only_matched_items(monkeypatch, omni_db):
@@ -193,6 +279,26 @@ def test_sweep_persists_only_matched_items(monkeypatch, omni_db):
     assert result['kept'] == 1        # 날씨 기사는 1단에서 폐기
     assert result['saved'] == 1
     rows = ledger.recent_events(limit=5)
+    assert rows[0]['symbols'] == ['005930']
+
+
+def test_sweep_collects_from_legacy_encoded_feed_bytes(monkeypatch, omni_db):
+    from app.services.omni import news_sensor
+    euc_kr = ('<?xml version="1.0" encoding="euc-kr"?>'
+              '<rss version="2.0"><channel>'
+              '<item><title>삼성전자 신고가 경신</title><link>https://n/1</link>'
+              '<description>반도체 업황 개선</description></item>'
+              '</channel></rss>').encode('euc-kr')
+    monkeypatch.setattr(news_sensor, 'load_universe', lambda: UNIVERSE)
+    monkeypatch.setattr(news_sensor, '_fetch', lambda url, timeout=10: euc_kr)
+    monkeypatch.setattr(news_sensor, 'active_sources',
+                        lambda: [{'name': 'mt_stock', 'url': 'https://x/rss', 'grade': 'B'}])
+
+    result = news_sensor.run_news_sweep()
+    assert result['fetched'] == 1
+    assert result['saved'] == 1
+    rows = ledger.recent_events(limit=1)
+    assert rows[0]['title'] == '삼성전자 신고가 경신'
     assert rows[0]['symbols'] == ['005930']
 
 

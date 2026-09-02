@@ -140,6 +140,7 @@ export interface FunnelUser {
     status?: string | null;
     tier?: string | null;
     is_pro_expired?: boolean | null;
+    requested_tier?: string | null;
 }
 
 /**
@@ -148,8 +149,9 @@ export interface FunnelUser {
  * 반환값:
  *  - null                              : 리다이렉트 불필요 (비로그인 방문자 / 로딩 중 unknown / admin / 활성 구독자)
  *  - '/plan-select?resubscribe=…'      : 만료 회원 → 재구독
- *  - '/plan-select'                    : tier 미선택 (노티어) → 플랜 선택
- *  - '/pending-approval'               : 플랜 신청 후 승인 대기
+ *  - '/plan-select'                    : tier 미선택 + 신청 미제출 → 플랜 선택
+ *  - '/pending-approval'               : 플랜 신청 제출 후 승인 대기 (tier 는 승인 시점에 설정,
+ *                                        제출 여부는 requested_tier 로 판별 — 재입금 안내 금지)
  *
  * ApprovedGuard/ProGuard(보호 라우트), FunnelGate(공개 라우트), 404 CTA 가 전부
  * 이 한 함수를 본다 — 분기 기준이 갈라지면 "비구독 회원이 머무는 페이지"가 생긴다.
@@ -160,6 +162,10 @@ export function subscriptionFunnelTarget(user: FunnelUser | null | undefined): s
     if (user.status === 'unknown') return null;
     if (user.role === 'admin') return null;
     if (user.status === 'expired' || user.is_pro_expired) return '/plan-select?resubscribe=1&from=expired';
+    // 백엔드는 구독 신청(입금) 제출 시 requested_tier 만 기록하고 tier 는 승인 시점에 설정한다.
+    // 이미 신청·입금한 회원을 /plan-select 로 보내면 "다시 입금하라"는 안내가 되므로
+    // 승인 대기 페이지로 보낸다 (PublicShell CTA 와 동일 기준).
+    if (!user.tier && user.requested_tier) return '/pending-approval';
     if (!user.tier) return '/plan-select';
     if (user.status !== 'approved') return '/pending-approval';
     if (user.tier !== 'pro' && user.tier !== 'premium') return '/pending-approval';

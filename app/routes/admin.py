@@ -1165,6 +1165,7 @@ def approve_subscription(req_id):
     request_type 별로 처리 분기:
       - 'aibain_addon': 베이스 tier 유지 + AI Brain 활성화 (+30일). 활성 회원이 AI Brain 만 추가.
       - 'aibain_renewal': 만료된 AI Brain 재활성화 (+30일). 베이스 tier 유지.
+      - 'early_renewal': 활성 Pro 의 만료 전 갱신 — 만료일 기준 +30일 연장 (남은 기간 보존).
       - 'upgrade' / 'downgrade': 기존 동작 — tier 변경 + 만료일 재설정 + status 승급.
 
     AI Brain 애드온은 베이스 구독을 건드리지 않으므로 pro_expires_at / pro_expiry_alert_stage 유지.
@@ -1232,7 +1233,24 @@ def approve_subscription(req_id):
                 'user': user.to_dict(),
             }), 200
 
-        if is_aibain_addon:
+        if sub_req.request_type == 'early_renewal':
+            # 만료 전 갱신 — 남은 기간을 잃지 않게 '만료일 기준' +30일.
+            # (now 리셋이면 D-7 에 갱신한 회원이 7일을 잃는다 — RenewalBanner 약속 위반)
+            base_dt = user.pro_expires_at
+            if base_dt is not None and base_dt.tzinfo is None:
+                base_dt = base_dt.replace(tzinfo=timezone.utc)
+            now_dt = datetime.now(timezone.utc)
+            anchor = base_dt if (base_dt is not None and base_dt > now_dt) else now_dt
+            user.tier = sub_req.to_tier
+            user.pro_expires_at = anchor + timedelta(days=30)
+            if user.status != 'approved':
+                user.status = 'approved'
+                user.approved_at = now_dt
+                user.approved_by = admin.id if admin else None
+            user.pro_expiry_alert_stage = None
+            audit_action = 'early_renew_subscription'
+            summary_text = f"만료 전 갱신 (+30d from expiry → {user.pro_expires_at.date().isoformat()})"
+        elif is_aibain_addon:
             # AI Brain 만 활성화 — 베이스 tier 그대로
             user.aibain_enabled = True
             _extend_aibain_expiry(user, 30)

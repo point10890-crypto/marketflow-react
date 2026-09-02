@@ -220,6 +220,146 @@ def test_interval_monitor_skips_inside_cooldown(monkeypatch):
     today.assert_not_called()
 
 
+def test_new_interval_jobs_use_cooldown_not_daily_skip(monkeypatch):
+    """REGRESSION: 10분 가드·15분 뉴스 스윕이 '오늘 이미 실행' 게이트에 걸려
+    하루 1회로 죽으면 안 된다 (kiwoom_ai_theme 에서 이미 고친 버그의 재발)."""
+    monkeypatch.setattr(scheduler.Config, "OMNI_NEWS_INTERVAL_MINUTES", 15)
+    monkeypatch.setattr(scheduler.Config, "AIBRAIN_GUARD_INTERVAL_MINUTES", 10)
+    for key in ("omni_news_sweep", "aibrain_service_guard"):
+        calls = []
+
+        def task():
+            calls.append("run")
+            return True
+
+        task.__name__ = f"interval_{key}"
+        with patch("scheduler._was_run_recently", return_value=False) as recent, \
+             patch("scheduler._was_run_today", return_value=True) as today:
+            wrapped = Scheduler._with_record(task, key, max_retries=0)
+            result = wrapped()
+
+        assert result is True, key
+        assert calls == ["run"], key
+        recent.assert_called_once()
+        today.assert_not_called()
+
+
+def test_new_interval_jobs_skip_inside_cooldown(monkeypatch):
+    monkeypatch.setattr(scheduler.Config, "OMNI_NEWS_INTERVAL_MINUTES", 15)
+    monkeypatch.setattr(scheduler.Config, "AIBRAIN_GUARD_INTERVAL_MINUTES", 10)
+    for key in ("omni_news_sweep", "aibrain_service_guard"):
+        task = _make_task(True, name=f"interval_{key}")
+        with patch("scheduler._was_run_recently", return_value=True) as recent, \
+             patch("scheduler._was_run_today") as today:
+            wrapped = Scheduler._with_record(task, key, max_retries=0)
+            result = wrapped()
+
+        assert result is None, key
+        recent.assert_called_once()
+        today.assert_not_called()
+
+
+def test_omni_news_sweep_reports_failure_when_all_sources_fail():
+    """전 소스 실패(프록시/DNS 장애)를 성공으로 기록하면 재시도·알림이 전부 막힌다."""
+    result = {
+        'status': 'ok', 'started_at': 'x',
+        'sources': ['a', 'b'], 'fetched': 0, 'kept': 0, 'saved': 0,
+        'errors': {'a': 'ConnectionError: x', 'b': 'ConnectionError: y'},
+    }
+    with patch("app.services.omni.news_sensor.run_news_sweep", return_value=result):
+        assert scheduler.run_omni_news_sweep() is False
+
+
+def test_omni_news_sweep_partial_source_failure_is_success():
+    result = {
+        'status': 'ok', 'started_at': 'x',
+        'sources': ['a', 'b'], 'fetched': 12, 'kept': 3, 'saved': 3,
+        'errors': {'a': 'ConnectionError: x'},
+    }
+    with patch("app.services.omni.news_sensor.run_news_sweep", return_value=result):
+        assert scheduler.run_omni_news_sweep() is True
+
+
+def test_omni_news_sweep_empty_but_healthy_run_is_success():
+    """소스가 다 살아있고 기사만 없는 새벽 스윕은 정상이다."""
+    result = {
+        'status': 'ok', 'started_at': 'x',
+        'sources': ['a', 'b'], 'fetched': 0, 'kept': 0, 'saved': 0, 'errors': {},
+    }
+    with patch("app.services.omni.news_sensor.run_news_sweep", return_value=result):
+        assert scheduler.run_omni_news_sweep() is True
+
+
+def test_setup_schedules_skips_invalid_prewarm_times(monkeypatch):
+    """잘못된 AIBRAIN_PREWARM_TIMES 항목 하나가 데몬 기동을 죽이면 안 된다
+    (ScheduleValueError → 워치독 5분 재기동 크래시 루프)."""
+    scheduler.schedule.clear()
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_ENABLED", False)
+    monkeypatch.setattr(scheduler.Config, "AIBRAIN_GUARD_ENABLED", True)
+    monkeypatch.setattr(scheduler.Config, "AIBRAIN_PREWARM_TIMES",
+                        ["8:25", "0825", "25:00", "08:61", "", "08:25"])
+    try:
+        scheduler.Scheduler().setup_schedules()  # must not raise
+        jobs = [j for j in scheduler.schedule.jobs
+                if "aibrain_prewarm" in j.job_func.__name__]
+        assert len(jobs) == 5  # 유효한 '08:25' 하나 × 평일 5일
+        assert all(str(j.at_time) == "08:25:00" for j in jobs)
+    finally:
+        scheduler.schedule.clear()
+
+
+def test_missed_catchup_includes_aibrain_prewarm(monkeypatch):
+    """고정시각 prewarm 슬롯도 catch-up invariant 에 포함되어야 한다."""
+    real_dt = scheduler.datetime
+
+    class FrozenDT(real_dt):
+        @classmethod
+        def now(cls, tz=None):
+            return real_dt(2026, 9, 2, 9, 0)  # 수요일 09:00 — 08:25 슬롯 마감 전
+
+    calls = []
+    monkeypatch.setattr(scheduler, "datetime", FrozenDT)
+    monkeypatch.setattr(scheduler.Config, "AIBRAIN_GUARD_ENABLED", True)
+    monkeypatch.setattr(scheduler.Config, "AIBRAIN_PREWARM_TIMES", ["08:25", "15:05"])
+    monkeypatch.setattr(scheduler, "run_aibrain_prewarm",
+                        lambda: calls.append("prewarm") or True)
+    monkeypatch.setattr(scheduler, "_kr_market_task_allowed", lambda *a, **k: False)
+    monkeypatch.setattr(scheduler, "_was_run_recently", lambda *a, **k: True)
+    monkeypatch.setattr(scheduler, "_was_run_today",
+                        lambda key: not key.startswith("aibrain_prewarm"))
+    monkeypatch.setattr(scheduler, "record_task_run", lambda key: None)
+
+    scheduler.check_and_run_missed_tasks()
+
+    # 08:25 슬롯만 복구 (마감 09:55 전), 15:05 슬롯은 아직 예정 전
+    assert calls == ["prewarm"]
+
+
+def test_missed_catchup_respects_prewarm_deadline(monkeypatch):
+    real_dt = scheduler.datetime
+
+    class FrozenDT(real_dt):
+        @classmethod
+        def now(cls, tz=None):
+            return real_dt(2026, 9, 2, 11, 0)  # 08:25+90분 마감(09:55) 지난 시각
+
+    calls = []
+    monkeypatch.setattr(scheduler, "datetime", FrozenDT)
+    monkeypatch.setattr(scheduler.Config, "AIBRAIN_GUARD_ENABLED", True)
+    monkeypatch.setattr(scheduler.Config, "AIBRAIN_PREWARM_TIMES", ["08:25"])
+    monkeypatch.setattr(scheduler, "run_aibrain_prewarm",
+                        lambda: calls.append("prewarm") or True)
+    monkeypatch.setattr(scheduler, "_kr_market_task_allowed", lambda *a, **k: False)
+    monkeypatch.setattr(scheduler, "_was_run_recently", lambda *a, **k: True)
+    monkeypatch.setattr(scheduler, "_was_run_today",
+                        lambda key: not key.startswith("aibrain_prewarm"))
+    monkeypatch.setattr(scheduler, "record_task_run", lambda key: None)
+
+    scheduler.check_and_run_missed_tasks()
+
+    assert calls == []  # 마감 지남 → 복구하지 않음
+
+
 def test_alpha_scanner_monitor_sends_telegram_for_new_events(monkeypatch):
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_TELEGRAM_ENABLED", True, raising=False)
     def fake_monitor(*args, send_fn=None, **kwargs):

@@ -4,11 +4,17 @@
 import { chromium } from 'playwright';
 import fs from 'fs';
 
-const NEWBIE  = { token: '234:1781423723:40f3276bb0346a800dc784a410dbc878', name: 'AuditNewbie', email: 'audit_newbie@example.com' };
-const PRO     = { token: '235:1781423723:7d75110205696675fe593d507da5a065', name: 'AuditPro',    email: 'audit_pro@example.com' };
-const ULTRA   = { token: '236:1781423724:2106fad2c047101e39a27c66d62c0178', name: 'AuditUltra',  email: 'audit_ultra@example.com' };
-const EXPIRED = { token: '237:1781423725:b5b8989108bb54ca5caab0839f326ecb', name: 'AuditExpired',email: 'audit_expired@example.com' };
-const ADMIN   = { token: '3:1781415971:ee1876e8b522be5d719e3b91c268028a',   name: 'Admin' };
+// 운영 토큰(특히 admin)을 리포에 커밋하면 안 된다 — 실행 시 환경변수로 주입할 것
+const _tok = (name) => {
+    const v = process.env[name];
+    if (!v) { console.error(`${name} env var required (auth_token)`); process.exit(1); }
+    return v;
+};
+const NEWBIE  = { token: _tok('MF_AUDIT_TOKEN_NEWBIE'),  name: 'AuditNewbie', email: 'audit_newbie@example.com' };
+const PRO     = { token: _tok('MF_AUDIT_TOKEN_PRO'),     name: 'AuditPro',    email: 'audit_pro@example.com' };
+const ULTRA   = { token: _tok('MF_AUDIT_TOKEN_ULTRA'),   name: 'AuditUltra',  email: 'audit_ultra@example.com' };
+const EXPIRED = { token: _tok('MF_AUDIT_TOKEN_EXPIRED'), name: 'AuditExpired',email: 'audit_expired@example.com' };
+const ADMIN   = { token: _tok('MF_AUDIT_TOKEN_ADMIN'),   name: 'Admin' };
 
 const OUT_DIR = 'C:/bitman_marketfloww/scripts/audit_screenshots';
 fs.mkdirSync(OUT_DIR, { recursive: true });

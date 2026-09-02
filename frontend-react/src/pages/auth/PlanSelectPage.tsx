@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { subscriptionFunnelTarget } from '@/lib/auth';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { useSeo } from '@/lib/seo';
 import {
@@ -14,7 +15,7 @@ const FLOW_STEPS = ['계정 생성', '플랜 선택', '입금 정보', '승인 �
 
 export default function PlanSelectPage() {
     useSeo({ title: '플랜 선택 | MarketFlow', noindex: true });
-    const { user, token, loading, logout } = useAuth();
+    const { user, token, loading, logout, refreshUser } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const isResubscribe = searchParams.get('resubscribe') === '1' || searchParams.get('from') === 'expired';
@@ -22,6 +23,16 @@ export default function PlanSelectPage() {
     const preferredPlan = planFromQuery(searchParams.get('plan'), searchParams.get('aibain'));
     const preferredQuery = preferredPlan ? planToQuery(preferredPlan) : '';
     const signupPath = preferredQuery ? `/signup?${preferredQuery}` : '/signup';
+
+    // 이 페이지에 머무는 동안 관리자가 tier 를 직접 부여하면 (CLAUDE.md §12-A) stale user 로
+    // 계속 플랜 선택에 갇힌다 → 마운트 + 창 포커스 시 /api/auth/me 재조회로 즉시 반영.
+    // (refreshUser 는 AuthContext 재렌더마다 새 참조라 deps 에 넣으면 무한 루프 — 마운트 1회 고정)
+    useEffect(() => {
+        refreshUser().catch(() => {});
+        const onFocus = () => { refreshUser().catch(() => {}); };
+        window.addEventListener('focus', onFocus);
+        return () => window.removeEventListener('focus', onFocus);
+    }, []);
 
     useEffect(() => {
         if (loading) return;
@@ -161,9 +172,13 @@ export default function PlanSelectPage() {
                 </div>
 
                 <div className="mt-6 flex items-center justify-center gap-4 text-xs">
-                    <button type="button" onClick={() => navigate('/')} className="text-gray-500 hover:text-white transition-colors">
-                        <i className="fas fa-arrow-left mr-1" />처음으로
-                    </button>
+                    {/* 퍼널 대상 회원(노티어·만료·승인대기)에게 / 는 FunnelGate 가 곧장 이 퍼널로
+                        되돌리므로 죽은 버튼 → 숨긴다. 활성 구독자(change=1)·비로그인만 노출. */}
+                    {(!user || !subscriptionFunnelTarget(user)) && (
+                        <button type="button" onClick={() => navigate('/')} className="text-gray-500 hover:text-white transition-colors">
+                            <i className="fas fa-arrow-left mr-1" />처음으로
+                        </button>
+                    )}
                     {user && (
                         <button
                             type="button"

@@ -30,8 +30,10 @@ export default function RenewalBanner() {
     const banner = useMemo(() => {
         if (!user || user.role === 'admin') return null;
 
-        // 1. Pro 베이스 만료 임박 (premium 은 무기한)
-        if (user.tier === 'pro' && !user.is_pro_expired) {
+        // 1. Pro 베이스 만료 임박 (premium 은 무기한).
+        //    AI Brain 활성 중에는 Pro 카운터가 일시정지(is_pro_paused)되고 pro_expires_at 은
+        //    동결값이라 실제 만료 임박이 아니다 → 가짜 경고 금지.
+        if (user.tier === 'pro' && !user.is_pro_expired && !user.is_pro_paused) {
             const d = daysLeft(user.pro_expires_at);
             if (d !== null && d >= 0 && d <= 7) {
                 return {
@@ -42,9 +44,11 @@ export default function RenewalBanner() {
                     message: d === 0
                         ? 'Pro 이용 기간이 오늘 만료됩니다.'
                         : `Pro 이용 기간이 ${d}일 뒤 만료됩니다.`,
-                    sub: '지금 갱신 신청하면 승인 즉시 30일이 이어집니다.',
+                    sub: '지금 갱신 신청하면 승인 시 만료일부터 30일이 이어집니다.',
                     cta: '갱신 신청',
-                    to: '/plan-select?change=1',
+                    // plan-select 의 '현재 이용 중' 카드는 비활성 — 갱신은 결제 페이지로 직행
+                    // (renew=1 이면 활성 Pro 도 가드를 통과, 백엔드 early_renewal 로 접수)
+                    to: '/payment-request?plan=pro&renew=1',
                 };
             }
         }

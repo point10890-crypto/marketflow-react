@@ -30,9 +30,18 @@ describe('subscriptionFunnelTarget', () => {
             .toBe('/plan-select?resubscribe=1&from=expired');
     });
 
-    it('노티어(tier=null) 회원은 어떤 status 든 플랜 선택으로', () => {
+    it('노티어(tier=null) + 신청 미제출 회원은 어떤 status 든 플랜 선택으로', () => {
         expect(subscriptionFunnelTarget({ ...base, status: 'pending', tier: null })).toBe('/plan-select');
         expect(subscriptionFunnelTarget({ ...base, status: 'approved', tier: null })).toBe('/plan-select');
+    });
+
+    it('구독 신청을 제출한 노티어 회원(requested_tier 기록)은 재입금 안내가 아닌 승인 대기로', () => {
+        // 백엔드는 sub_req 제출 시 requested_tier 만 기록, tier 는 승인 시점에 설정 —
+        // /plan-select 로 보내면 이미 입금한 회원에게 "다시 입금" 안내가 된다.
+        expect(subscriptionFunnelTarget({ ...base, status: 'pending', tier: null, requested_tier: 'pro' }))
+            .toBe('/pending-approval');
+        expect(subscriptionFunnelTarget({ ...base, status: 'pending', tier: null, requested_tier: 'premium' }))
+            .toBe('/pending-approval');
     });
 
     it('플랜 신청 후 승인 대기 회원은 pending-approval 로', () => {

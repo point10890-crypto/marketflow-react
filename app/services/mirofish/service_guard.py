@@ -46,9 +46,18 @@ def _now_kst(now: datetime | None = None) -> datetime:
     return now.astimezone(KST)
 
 
+def _is_krx_trading_day(now: datetime) -> bool:
+    """KRX 영업일 여부 — 공휴일·임시휴장(설·추석·근로자의날 등)은 주말과 동일 취급."""
+    try:
+        from app.services.kis_screener import _is_kr_trading_day
+        return bool(_is_kr_trading_day(now))
+    except Exception:  # noqa: BLE001 — 휴일 판정 실패는 평일로 간주(fail-open)
+        return True
+
+
 def _market_session(now: datetime) -> bool:
-    """평일 09:00~16:30 KST — 산출물이 갱신되고 있어야 하는 시간대."""
-    if now.weekday() >= 5:
+    """거래일 09:00~16:30 KST — 산출물이 갱신되고 있어야 하는 시간대. 휴장일은 장외."""
+    if now.weekday() >= 5 or not _is_krx_trading_day(now):
         return False
     minutes = now.hour * 60 + now.minute
     return 9 * 60 <= minutes <= 16 * 60 + 30
@@ -80,14 +89,20 @@ def check_scanner(now: datetime | None = None) -> dict[str, Any]:
     except OSError as exc:
         return {'status': 'fail', 'detail': {'reason': f'latest_run_unreadable: {exc}'}}
 
-    if _market_session(now):
+    in_session = _market_session(now)
+    if in_session:
         warn_h, fail_h = _env_float('AIBRAIN_SCANNER_WARN_H', 1.5), _env_float('AIBRAIN_SCANNER_FAIL_H', 4)
+        # 개장 직후엔 전일 세션 산출물이 최신인 게 정상 — 지연은 오늘 09:00 기준으로 잰다.
+        # (밤새 쌓인 나이로 매 아침 false FAIL/복구 알림 쌍이 나가는 것을 막는다)
+        session_open = now.replace(hour=9, minute=0, second=0, microsecond=0)
+        stale_h = min(age_h, max(0.0, (now - session_open).total_seconds() / 3600.0))
     else:
         warn_h, fail_h = _env_float('AIBRAIN_SCANNER_OFFHOURS_WARN_H', 72), _env_float('AIBRAIN_SCANNER_OFFHOURS_FAIL_H', 168)
-    status = 'fail' if age_h > fail_h else ('warn' if age_h > warn_h else 'ok')
+        stale_h = age_h
+    status = 'fail' if stale_h > fail_h else ('warn' if stale_h > warn_h else 'ok')
 
-    detail: dict[str, Any] = {'latest_run_age_h': round(age_h, 2), 'warn_h': warn_h, 'fail_h': fail_h,
-                              'market_session': _market_session(now)}
+    detail: dict[str, Any] = {'latest_run_age_h': round(age_h, 2), 'stale_h': round(stale_h, 2),
+                              'warn_h': warn_h, 'fail_h': fail_h, 'market_session': in_session}
     try:
         monitor = alpha_scanner.read_scanner_monitor_state()
         detail['monitor'] = {k: monitor.get(k) for k in ('last_status', 'blocked_reason', 'updated_at')
@@ -314,6 +329,7 @@ def _emit_transitions(services: dict[str, dict[str, Any]],
     changed = False
     lines_alert: list[str] = []
     lines_recover: list[str] = []
+    alerted_names: list[str] = []
 
     for name, result in services.items():
         status = result.get('status', 'fail')
@@ -324,26 +340,38 @@ def _emit_transitions(services: dict[str, dict[str, Any]],
         if status != 'ok' and (prev_status == 'ok' or now.timestamp() - alerted_at >= REALERT_COOLDOWN_S
                                or SEVERITY[status] > SEVERITY.get(prev_status, 0)):
             lines_alert.append(_alert_lines(name, result))
-            state[name] = {'status': status, 'alerted_at': now.timestamp()}
+            alerted_names.append(name)
+            # alerted_at 은 실제 발송 성공 후에만 찍는다 — 무발송(send_fn=None) 실행이나
+            # 발송 실패가 1회성 전이 알림을 소모해 진짜 알림을 억누르면 안 된다.
+            state[name] = {'status': status, 'alerted_at': alerted_at}
             changed = True
         elif status == 'ok' and prev_status != 'ok':
-            lines_recover.append(f"{SERVICE_LABEL.get(name, name)}: 복구 (OK)")
+            if alerted_at > 0:  # 알린 적 없는 장애의 복구는 침묵 (무발송 실행이 남긴 상태)
+                lines_recover.append(f"{SERVICE_LABEL.get(name, name)}: 복구 (OK)")
             state[name] = {'status': 'ok', 'alerted_at': 0}
             changed = True
         elif status != prev_status:
             state[name] = {'status': status, 'alerted_at': alerted_at}
             changed = True
 
-    if changed:
+    def _persist() -> None:
         try:
             os.makedirs(GUARD_ROOT, exist_ok=True)
             write_json_atomic(STATE_PATH, state)
         except OSError:
             pass
+
+    if changed:
+        _persist()
     if send_fn is None:
         return
     if lines_alert:
         send_fn('🛡 AI Brain 서비스 가드\n' + '\n'.join(lines_alert))
+        for name in alerted_names:
+            entry = dict(state.get(name) or {})
+            entry['alerted_at'] = now.timestamp()
+            state[name] = entry
+        _persist()
     if lines_recover:
         send_fn('🛡 AI Brain 서비스 가드\n' + '\n'.join(lines_recover))
 

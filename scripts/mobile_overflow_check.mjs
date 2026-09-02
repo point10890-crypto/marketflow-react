@@ -2,7 +2,12 @@
 import { chromium } from 'playwright';
 
 const URL = 'https://bit-man.net/dashboard/ai-bain';
-const TOKEN = '3:1781415971:ee1876e8b522be5d719e3b91c268028a';
+// 운영 토큰을 리포에 커밋하면 안 된다 — 실행 시 환경변수로 주입할 것
+const TOKEN = process.env.MF_AUDIT_TOKEN;
+if (!TOKEN) {
+    console.error('MF_AUDIT_TOKEN env var required (auth_token for the audit user)');
+    process.exit(1);
+}
 
 (async () => {
     const browser = await chromium.launch({ headless: true });

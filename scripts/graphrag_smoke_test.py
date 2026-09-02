@@ -27,8 +27,11 @@ def main() -> int:
 
     # Test client 로 admin 토큰 검증 우회 후 실제 응답 확인
     with app.test_client() as client:
+        _tok = os.environ.get('GRAPHRAG_ADMIN_TOKEN')
+        if not _tok:
+            raise SystemExit('GRAPHRAG_ADMIN_TOKEN env var required')
         resp = client.get('/api/admin/mirofish/graphrag/status', headers={
-            'Authorization': 'Bearer 3:1781219291:0e324300d1e528dd932d4c19ddec0792',
+            'Authorization': f'Bearer {_tok}',
         })
         print(f"[9] HTTP {resp.status_code}")
         data = resp.get_json()

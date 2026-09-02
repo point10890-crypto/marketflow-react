@@ -134,3 +134,20 @@ def test_deep_analysis_reports_failure_without_raising(monkeypatch):
     out = db.run_deep_analysis_for('041190')
     assert out['error']
     assert out['analysts'] == []
+
+
+# ─── 유니버스 캐시 — 실패를 고착하지 않는다 ─────────────────
+
+def test_load_universe_does_not_memoize_read_failure(monkeypatch, tmp_path):
+    """첫 읽기 실패(파일 부재·재작성 중 잠금)가 빈 테이블로 영구 캐시되면 이름 해석이
+    프로세스 재시작 전까지 죽는다 — 다음 호출은 다시 시도해야 한다."""
+    monkeypatch.setattr(db, '_universe_cache', None)
+    csv_path = tmp_path / 'korean_stocks_list.csv'
+    monkeypatch.setattr(db, 'UNIVERSE_PATH', str(csv_path))
+
+    assert db.load_universe() == {}
+    assert db._universe_cache is None                  # 실패는 캐시하지 않는다
+
+    csv_path.write_text('ticker,name\n005930,삼성전자\n', encoding='utf-8-sig')
+    assert db.load_universe() == {'005930': '삼성전자'}
+    assert db._universe_cache == {'005930': '삼성전자'}  # 성공은 캐시한다

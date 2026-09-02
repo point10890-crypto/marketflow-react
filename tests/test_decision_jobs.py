@@ -62,7 +62,8 @@ def test_concurrency_cap_returns_busy(monkeypatch):
     gate.set()
     _wait_done('A')
     assert jobs.start('B', 'B')['status'] == 'started'            # 슬롯이 비면 시작 가능
-    gate.set()
+    _wait_done('B')   # B 를 완주시킨다 — 스레드가 teardown(monkeypatch 원복)과 경합하면
+                      # 실제 LLM 러너·운영 캐시 DB 를 칠 수 있다
 
 
 def test_error_payload_is_not_cached(monkeypatch):
@@ -71,6 +72,27 @@ def test_error_payload_is_not_cached(monkeypatch):
     st = _wait_done('005930')
     assert st['state'] == 'error' and st['error'] == 'LLM down'
     assert dc.cache_get('deep', '005930') is None                 # 실패는 하루 종일 물고 있지 않는다
+
+
+def test_thread_start_failure_leaves_no_phantom_running_job(monkeypatch):
+    """Thread.start() 실패가 유령 'running' 잡으로 남아 종목·슬롯을 영구 점유하면 안 된다."""
+    _install_runner(monkeypatch, lambda sym: {'symbol': sym, 'error': None})
+    real_start = threading.Thread.start
+    calls = {'n': 0}
+
+    def flaky(self):
+        if calls['n'] == 0:
+            calls['n'] += 1
+            raise RuntimeError("can't start new thread")
+        return real_start(self)
+
+    monkeypatch.setattr(threading.Thread, 'start', flaky)
+    with pytest.raises(RuntimeError):
+        jobs.start('005930', '005930')
+    assert jobs.status('005930')['state'] == 'error'              # running 이 아니다
+    assert jobs.running_count() == 0                              # 동시 슬롯 미점유
+    assert jobs.start('005930', '005930')['status'] == 'started'  # 같은 종목 재시작 가능
+    _wait_done('005930')
 
 
 def test_runner_exception_becomes_error(monkeypatch):

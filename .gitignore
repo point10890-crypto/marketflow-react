@@ -130,10 +130,15 @@ charts_us/
 # Misc
 .claude/
 *.bak
+# 타임스탬프 접미사 백업(*.bak_20260408_164331 등)도 차단 — 순수 *.bak 만으로는 못 잡는다
+*.bak_*
+*.bak.*
 *.pid
 *.lock
 nul
 *.db
+# users.db 파생물 전부(-wal/-shm/백업 포함) — 실사용자 PII, 어떤 형태로도 커밋 금지
+data/users.db*
 
 # Trading skills reports (generated output)
 reports/
@@ -151,7 +156,8 @@ schtask_result.txt
 .dev.vars*
 !.dev.vars.example
 !.env.example
-frontend/
+# 루트의 죽은 Next.js 프로젝트만 — 비앵커 'frontend/' 는 crypto-analytics/frontend/ 까지 숨겼다
+/frontend/
 
 # MarketFlow Claw runtime (db/heartbeat/pid/lock/reports)
 data/claw/

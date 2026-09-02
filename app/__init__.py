@@ -177,16 +177,24 @@ def create_app(config=None):
                     ) AS duplicate_groups
                 ''')).scalar_one()
                 if pending_duplicate_groups:
-                    raise RuntimeError(
-                        'Cannot install pending purchase uniqueness: '
-                        f'{pending_duplicate_groups} duplicate group(s) exist'
+                    # 레거시 중복 pending 행은 데이터를 건드리지 않고(삭제·수정 금지)
+                    # 인덱스 설치만 건너뛴다 — 커뮤니티 인덱스 하나 때문에 전체 API
+                    # 부팅이 거부되면 안 된다. 운영자가 수동 정리 후 재기동하면 설치된다.
+                    logging.getLogger(__name__).error(
+                        'Pending purchase uniqueness index NOT installed: '
+                        '%s duplicate (post_id, user_id) pending group(s) exist in '
+                        'purchase_requests. Resolve them manually (keep one row per '
+                        'group), then restart to install '
+                        'uq_purchase_requests_pending_post_user.',
+                        pending_duplicate_groups,
                     )
-                conn.execute(sql_text('''
-                    CREATE UNIQUE INDEX IF NOT EXISTS
-                        uq_purchase_requests_pending_post_user
-                    ON purchase_requests(post_id, user_id)
-                    WHERE status = 'pending'
-                '''))
+                else:
+                    conn.execute(sql_text('''
+                        CREATE UNIQUE INDEX IF NOT EXISTS
+                            uq_purchase_requests_pending_post_user
+                        ON purchase_requests(post_id, user_id)
+                        WHERE status = 'pending'
+                    '''))
 
     # Blueprint 등록
     from app.routes import register_blueprints

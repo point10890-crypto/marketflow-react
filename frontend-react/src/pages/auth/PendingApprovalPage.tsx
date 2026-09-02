@@ -59,7 +59,11 @@ export default function PendingApprovalPage() {
             navigate('/admin', { replace: true });
             return;
         }
-        const isActive = user.status === 'approved' && (user.tier === 'pro' || user.tier === 'premium');
+        // 만료 Pro 재구독 신청자는 status='approved'/tier 유지 + is_pro_expired=true —
+        // 활성으로 오인하면 대시보드로 튕겨 ApprovedGuard 가 다시 plan-select 로 되돌린다.
+        const isActive = user.status === 'approved'
+            && (user.tier === 'pro' || user.tier === 'premium')
+            && !user.is_pro_expired;
         if (isActive && !pendingSubReq) {
             // 활성 회원인데 pending sub_req 가 없음 → 대시보드로
             navigate('/dashboard', { replace: true });
@@ -87,7 +91,9 @@ export default function PendingApprovalPage() {
             setTimeout(() => {
                 const parsed = getUser();
                 if (parsed) {
-                    const hasAccess = parsed.status === 'approved' && (parsed.tier === 'pro' || parsed.tier === 'premium');
+                    const hasAccess = parsed.status === 'approved'
+                        && (parsed.tier === 'pro' || parsed.tier === 'premium')
+                        && !parsed.is_pro_expired;
                     // 활성 + sub_req 없음 = 승인 완료
                     if ((hasAccess && !sr) || parsed.role === 'admin') {
                         setMessage('승인되었습니다! 대시보드로 이동합니다.');
@@ -120,8 +126,10 @@ export default function PendingApprovalPage() {
         ? { border: 'border-cyan-500/30', bg: 'bg-cyan-500/10', text: 'text-cyan-300', accentBg: 'bg-cyan-500/[0.06]', accentBorder: 'border-cyan-500/20' }
         : { border: 'border-amber-500/20', bg: 'bg-amber-500/10', text: 'text-amber-400', accentBg: 'bg-amber-500/[0.06]', accentBorder: 'border-amber-500/20' };
 
-    // 헤더 / 안내 문구 분기
-    const isUpgradeFromActive = user?.status === 'approved' && (user.tier === 'pro' || user.tier === 'premium');
+    // 헤더 / 안내 문구 분기 — 만료 Pro 재구독은 "활성 업그레이드"가 아니다 (is_pro_expired 체크)
+    const isUpgradeFromActive = user?.status === 'approved'
+        && (user.tier === 'pro' || user.tier === 'premium')
+        && !user.is_pro_expired;
     let headerTitle = '승인 대기 중';
     let headerSubtitle = '구독 신청이 접수되었습니다. 입금 확인 후 관리자가 서비스를 활성화합니다.';
     if (!pendingSubReq && !isUpgradeFromActive) {

@@ -203,6 +203,15 @@ function isDecisionBrief(v: unknown): v is DecisionBrief {
     return !!o && typeof o === 'object' && Array.isArray(o.signals) && !!o.agreement;
 }
 
+/**
+ * 외부 유래(RSS·검색) 링크는 http(s)일 때만 앵커로 렌더한다.
+ * javascript: 등 다른 스킴은 클릭 시 대시보드 오리진에서 실행되므로 본문으로 강등한다.
+ */
+function safeHref(link: string | null | undefined): string | null {
+    if (!link) return null;
+    return /^https?:\/\//i.test(link.trim()) ? link : null;
+}
+
 export default function DecisionBriefPage() {
     const { token } = useAuth();
     const [input, setInput] = useState('');
@@ -214,10 +223,17 @@ export default function DecisionBriefPage() {
     const [deepPhase, setDeepPhase] = useState('');
     const [suggestions, setSuggestions] = useState<Candidate[]>([]);
     const suppress = useRef(false);   // 후보를 골라 넣은 직후엔 다시 조회하지 않는다
+    const lookupSeq = useRef(0);      // 조회 시퀀스 — 늦게 도착한 응답이 최신 브리프를 덮지 않게 한다
+    const briefSymbol = useRef<string | null>(null);  // 지금 화면에 떠 있는 브리프의 종목
+    const deepRunId = useRef(0);      // 심층 분석 실행 시퀀스 — 새 실행·언마운트가 이전 폴링을 무효화한다
+
+    // 언마운트되면 진행 중인 조회 응답과 심층 분석 폴링을 모두 무효화한다.
+    useEffect(() => () => { lookupSeq.current += 1; deepRunId.current += 1; }, []);
 
     const lookup = useCallback(async (raw: string, force = false) => {
         const symbol = raw.trim();
         if (!symbol) return;
+        const seq = ++lookupSeq.current;   // 이보다 늦게 시작한 조회가 있으면 이 응답은 버린다
         setLoading(true);
         setError('');
         try {
@@ -225,30 +241,39 @@ export default function DecisionBriefPage() {
             // 캐시 미적중 조회는 프로덕션 실측 6~45초로 흔들린다(백그라운드 워커 경합).
             // 30초로는 첫 조회가 그대로 실패했다. 엣지 프록시 한계(100초) 아래로 잡는다.
             const res = await fetchAuthAPI<unknown>(path, token ?? undefined, 90000);
+            if (lookupSeq.current !== seq) return;   // 그 사이 다른 조회가 시작됐다 — 낡은 응답
             if (isDecisionBrief(res)) {
                 setBrief(res);
+                briefSymbol.current = res.symbol;
                 setDeep(null);
             } else {
-                setBrief(null);
+                // 보고 있던 브리프는 지우지 않는다 — 실패는 배너로만 알린다
                 setError('판단 브리프 형식이 올바르지 않습니다.');
             }
         } catch {
-            setBrief(null);
+            if (lookupSeq.current !== seq) return;
+            // 강제 새로고침이 실패해도 마지막 정상 브리프를 그대로 둔다
             setError('조회에 실패했습니다. 종목 코드를 확인하고 다시 시도해 주세요.');
         } finally {
-            setLoading(false);
+            if (lookupSeq.current === seq) setLoading(false);
         }
     }, [token]);
 
     // 심층분석은 job+poll — 동기 대기는 Cloudflare 엣지 ~100초 한계에 걸린다.
     // 구백엔드(동기 응답)와의 호환: 응답에 analysts 가 있으면 그대로 결과다.
     const runDeep = useCallback(async (symbol: string, force = false) => {
+        const runId = ++deepRunId.current;
+        // 이 실행의 결과는 (1) 더 새 실행·언마운트가 없고 (2) 시작한 종목의 브리프가
+        // 그대로 떠 있을 때만 반영한다 — A의 폴링 결과가 B의 브리프 밑에 붙지 않게.
+        const fresh = () => deepRunId.current === runId && briefSymbol.current === symbol;
         setDeepLoading(true);
         setDeepPhase('분석 요청 중…');
+        setError('');   // 이전 실패 배너가 새 결과 옆에 남지 않게 지운다
         try {
             const res = await postAuthAPI<DeepAnalysis & { state?: string }>(
                 `${ENDPOINT}/${encodeURIComponent(symbol)}/analyze`,
                 force ? { force: true } : {}, token ?? undefined, 30000);
+            if (!fresh()) return;
             if (res && Array.isArray((res as DeepAnalysis).analysts)) {
                 setDeep(res as DeepAnalysis);                       // 캐시 적중 또는 구백엔드
                 return;
@@ -261,6 +286,7 @@ export default function DecisionBriefPage() {
             for (;;) {
                 const st = await fetchAuthAPI<{ state: string; payload?: DeepAnalysis; error?: string | null }>(
                     `${ENDPOINT}/${encodeURIComponent(symbol)}/analyze/status`, token ?? undefined, 15000);
+                if (!fresh()) return;   // 언마운트·다른 종목 조회 — 폴링을 멈추고 결과를 버린다
                 if (st.state === 'done' && st.payload) { setDeep(st.payload); return; }
                 if (st.state === 'error') {
                     setError(`심층 분석에 실패했습니다: ${st.error ?? '알 수 없는 오류'}`);
@@ -276,16 +302,21 @@ export default function DecisionBriefPage() {
                 }
                 setDeepPhase(`AI 토론 진행 중… ${Math.round((Date.now() - startedAt) / 1000)}초`);
                 await new Promise(r => setTimeout(r, 3000));
+                if (!fresh()) return;
             }
         } catch (e) {
+            if (!fresh()) return;
             setDeep(null);
             const msg = e instanceof Error ? e.message : '';
             if (msg.includes('quota_exceeded')) setError('심층 분석 일일 한도를 모두 사용했습니다. 내일 다시 이용해 주세요.');
             else if (msg.includes('busy')) setError('동시에 실행 중인 분석이 많습니다. 잠시 후 다시 시도해 주세요.');
             else setError('심층 분석에 실패했습니다. 잠시 후 다시 시도해 주세요.');
         } finally {
-            setDeepLoading(false);
-            setDeepPhase('');
+            // 더 새 실행이 로딩 상태의 소유권을 가져갔으면 건드리지 않는다
+            if (deepRunId.current === runId) {
+                setDeepLoading(false);
+                setDeepPhase('');
+            }
         }
     }, [token]);
 
@@ -311,11 +342,13 @@ export default function DecisionBriefPage() {
     }, [input, token]);
 
     const pick = useCallback((c: Candidate) => {
-        suppress.current = true;
+        // 입력값이 이미 후보와 같으면 [input] 효과가 다시 돌지 않으므로 무장하지 않는다
+        // — 남은 플래그가 다음 진짜 키 입력의 후보 조회를 삼킨다.
+        suppress.current = c.symbol !== input;
         setInput(c.symbol);
         setSuggestions([]);
         void lookup(c.symbol);
-    }, [lookup]);
+    }, [lookup, input]);
 
     const onSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -549,14 +582,16 @@ function BriefBody({ brief, onRefresh, refreshing }: {
                         뉴스 맥락 <span className="ml-1 font-medium normal-case tracking-normal text-gray-600">— 방향 판정 아님, 근거 보강용</span>
                     </h3>
                     <ul className="space-y-1.5">
-                        {brief.news.items.map((n, i) => (
+                        {brief.news.items.map((n, i) => {
+                            const href = safeHref(n.link);
+                            return (
                             <li key={`${n.link}-${i}`} className="flex items-start gap-2.5 text-[13px]">
                                 <span className="mt-0.5 shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-gray-500">
                                     {n.grade}
                                 </span>
                                 <span className="min-w-0 flex-1">
-                                    {n.link ? (
-                                        <a href={n.link} target="_blank" rel="noopener noreferrer"
+                                    {href ? (
+                                        <a href={href} target="_blank" rel="noopener noreferrer"
                                             className="text-gray-200 underline-offset-2 hover:text-teal-300 hover:underline">
                                             {n.title}
                                         </a>
@@ -571,7 +606,8 @@ function BriefBody({ brief, onRefresh, refreshing }: {
                                     {fmtTime(n.published_ts)}
                                 </span>
                             </li>
-                        ))}
+                            );
+                        })}
                     </ul>
                 </section>
             )}
@@ -723,19 +759,22 @@ function DeepBody({ deep, onRerun, rerunning }: {
                         </span>
                     </h4>
                     <ul className="space-y-1">
-                        {deep.citations.slice(0, 8).map((c, i) => (
+                        {deep.citations.slice(0, 8).map((c, i) => {
+                            const href = safeHref(c.link);
+                            return (
                             <li key={i} className="flex items-start gap-2 text-[12.5px]">
                                 <span className="mt-0.5 shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-gray-500">
                                     {c.grade}
                                 </span>
-                                {c.link ? (
-                                    <a href={c.link} target="_blank" rel="noopener noreferrer"
+                                {href ? (
+                                    <a href={href} target="_blank" rel="noopener noreferrer"
                                         className="text-gray-300 underline-offset-2 hover:text-teal-300 hover:underline">{c.text}</a>
                                 ) : (
                                     <span className="text-gray-400">{c.text}</span>
                                 )}
                             </li>
-                        ))}
+                            );
+                        })}
                     </ul>
                 </div>
             )}

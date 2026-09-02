@@ -20,18 +20,30 @@ import { useSeo } from '@/lib/seo';
  */
 export default function PaymentRequestPage() {
     useSeo({ title: '결제 안내 | MarketFlow', noindex: true });
-    const { user, token, loading } = useAuth();
+    const { user, token, loading, refreshUser } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
     const rawPlan = searchParams.get('plan');
     const rawAibain = searchParams.get('aibain');
+    // renew=1: 활성 Pro 의 만료 전 갱신 (RenewalBanner 경로) — 백엔드 early_renewal 접수
+    const isRenewal = searchParams.get('renew') === '1';
     const plan: BillingPlan | null = planFromQuery(rawPlan, rawAibain);
     const selectedMeta = plan ? PLAN_PAYMENT_META[plan] : null;
 
     const [depositorName, setDepositorName] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+
+    // 이 페이지에 머무는 동안 관리자가 tier 를 직접 부여하면 (CLAUDE.md §12-A) stale user 로
+    // 400 루프에 빠진다 → 마운트 + 창 포커스 시 /api/auth/me 재조회, 아래 가드가 대시보드로 보낸다.
+    // (refreshUser 는 AuthContext 재렌더마다 새 참조라 deps 에 넣으면 무한 루프 — 마운트 1회 고정)
+    useEffect(() => {
+        refreshUser().catch(() => {});
+        const onFocus = () => { refreshUser().catch(() => {}); };
+        window.addEventListener('focus', onFocus);
+        return () => window.removeEventListener('focus', onFocus);
+    }, []);
 
     // 인증/플랜 가드 + 활성 유저 차단 — loading 끝난 뒤에만 판정 (초기화 찰나 보호)
     useEffect(() => {
@@ -56,11 +68,13 @@ export default function PaymentRequestPage() {
             const sameBaseTier = meta.tier === user.tier;
             const aiBrainAddonOnly = sameBaseTier && meta.includesAibain && !user.is_aibain_active;
             const tierUpgrade = user.tier === 'pro' && meta.tier === 'premium';
-            if (!aiBrainAddonOnly && !tierUpgrade) {
+            // 만료 전 갱신: 활성 Pro + 같은 tier + renew=1 (premium 은 무기한이라 해당 없음)
+            const earlyRenewal = isRenewal && sameBaseTier && meta.tier === 'pro' && !meta.includesAibain;
+            if (!aiBrainAddonOnly && !tierUpgrade && !earlyRenewal) {
                 navigate('/dashboard', { replace: true });
             }
         }
-    }, [user, token, plan, loading, navigate]);
+    }, [user, token, plan, loading, navigate, isRenewal]);
 
     // 입금자명 프리필 = 가입 이름
     useEffect(() => {
@@ -79,9 +93,17 @@ export default function PaymentRequestPage() {
         && meta.includesAibain
         && meta.tier === user.tier
         && !user.is_aibain_active;
-    const displayLabel = isAiBrainAddonOnly ? 'AI Brain 애드온' : meta.label;
+    const isEarlyRenewal = isRenewal
+        && user.status === 'approved'
+        && !user.is_pro_expired
+        && meta.tier === user.tier
+        && meta.tier === 'pro'
+        && !meta.includesAibain;
+    const displayLabel = isAiBrainAddonOnly ? 'AI Brain 애드온'
+        : isEarlyRenewal ? 'Pro 갱신 (만료 전)' : meta.label;
     const displayAmount = isAiBrainAddonOnly ? '40,000원' : meta.amount;
-    const displayPeriod = isAiBrainAddonOnly ? 'AI Brain 30일 갱신' : meta.period;
+    const displayPeriod = isAiBrainAddonOnly ? 'AI Brain 30일 갱신'
+        : isEarlyRenewal ? '승인 시 기존 만료일부터 +30일' : meta.period;
 
     const colorMap = {
         amber:    { ring: 'ring-amber-500/30',    bg: 'bg-amber-500/10',    text: 'text-amber-400',   btn: 'from-amber-500 to-orange-500',          btnText: 'text-black',  icon: 'fas fa-crown' },
@@ -105,6 +127,13 @@ export default function PaymentRequestPage() {
             // 이미 pending 요청이 있는 경우도 성공으로 간주 → 승인 대기 페이지로
             if (msg.toLowerCase().includes('pending')) {
                 navigate('/pending-approval', { replace: true });
+                return;
+            }
+            // "Already on pro tier" = 관리자가 이미 같은 tier 를 부여한 상태 (stale user) →
+            // 최신 유저로 갱신하고 대시보드로. 400 에러 루프에 가두지 않는다.
+            if (msg.toLowerCase().includes('already on')) {
+                refreshUser().catch(() => {});
+                navigate('/dashboard', { replace: true });
                 return;
             }
             setError('승인 신청 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.');

@@ -13,15 +13,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
-      - name: Install pytest + minimal engine deps
+          # 운영 최저 버전(3.11)과 맞춘다 — 3.12+ 전용 문법이 섞이는 사고를 CI 에서 잡는다
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest
-      - name: Run pytest (smoke baseline)
+          python -m pip install -r requirements.txt
+      - name: Run pytest (full suite)
         env:
           PYTHONIOENCODING: utf-8
-        run: python -m pytest tests/test_signal_contract.py -v
+        run: python -m pytest tests/ -q
 
   frontend:
     runs-on: ubuntu-latest
@@ -37,3 +39,5 @@ jobs:
           cache-dependency-path: frontend-react/package-lock.json
       - run: npm ci
       - run: npm test
+      # 타입 오류·프리렌더 실패가 배포 시점에야 드러나지 않게 빌드까지 검증
+      - run: npm run build

@@ -19,10 +19,11 @@ def _app():
     return app
 
 
-def _user(*, pro: bool):
+def _user(*, aibain: bool):
+    # a3810b4: 판단 브리프는 AI Brain 구독자 전용 (@admin_or_aibain_required)
     return SimpleNamespace(status='approved', is_admin=False, is_approved=True,
-                           is_pro_expired=not pro, is_aibain_active=False,
-                           tier='pro' if pro else 'free')
+                           is_pro_expired=False, is_aibain_active=aibain,
+                           tier='pro' if aibain else 'free')
 
 
 def test_route_is_registered_and_get_only():
@@ -40,7 +41,7 @@ def test_requires_authenticated_pro(monkeypatch):
 
 def test_returns_brief_without_triggering_scan(monkeypatch):
     app = _app()
-    monkeypatch.setattr(auth, '_get_current_user', lambda: _user(pro=True))
+    monkeypatch.setattr(auth, '_get_current_user', lambda: _user(aibain=True))
 
     from marketflow_claw import collectors
     monkeypatch.setattr(
@@ -68,7 +69,7 @@ def test_returns_brief_without_triggering_scan(monkeypatch):
 
 def test_rejects_malformed_symbol(monkeypatch):
     app = _app()
-    monkeypatch.setattr(auth, '_get_current_user', lambda: _user(pro=True))
+    monkeypatch.setattr(auth, '_get_current_user', lambda: _user(aibain=True))
 
     def boom(symbol, **_kw):
         raise ValueError('symbol is required')

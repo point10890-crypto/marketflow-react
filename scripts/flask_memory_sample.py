@@ -24,7 +24,10 @@ SAMPLE_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     'data', 'admin_mirofish', 'graphrag', 'audit', 'memory_samples.jsonl',
 )
-TOKEN = os.environ.get('GRAPHRAG_ADMIN_TOKEN', '3:1781219291:0e324300d1e528dd932d4c19ddec0792')
+# 운영 admin 토큰을 코드에 박지 않는다 — 실행 시 환경변수로 주입
+TOKEN = os.environ.get('GRAPHRAG_ADMIN_TOKEN')
+if not TOKEN:
+    raise SystemExit('GRAPHRAG_ADMIN_TOKEN env var required')
 URL = os.environ.get('GRAPHRAG_DEBUG_URL', 'http://localhost:5001/api/admin/mirofish/_debug/memory')
 
 

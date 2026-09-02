@@ -98,12 +98,14 @@ def _unit_of(suffix: str | None) -> str:
     return 'plain'
 
 
-def _is_non_claim(text: str, start: int, end: int, value: float) -> bool:
+def _is_non_claim(text: str, start: int, end: int, value: float,
+                  unit_suffix: str | None = None) -> bool:
     """연도·회차·순번 등 사실 주장이 아닌 수치를 걸러낸다."""
     tail = text[end:end + 3]
     if tail.startswith(_NON_CLAIM_SUFFIX):
         return True
-    if float(value).is_integer() and _YEAR_MIN <= value <= _YEAR_MAX:
+    # 단위(원/억/%/배 등)가 붙은 수치는 연도가 아니다 — "주가 2,050원"은 검증 대상이다.
+    if not unit_suffix and float(value).is_integer() and _YEAR_MIN <= value <= _YEAR_MAX:
         return True
     head = text[max(0, start - 2):start]
     if head.endswith('제'):  # 제1236회
@@ -121,7 +123,7 @@ def extract_claims(text: Any) -> list[dict[str, Any]]:
             value = float(raw_num)
         except ValueError:
             continue
-        if _is_non_claim(body, m.start(), m.end('num'), value):
+        if _is_non_claim(body, m.start(), m.end('num'), value, m.group('suffix')):
             continue
         sign = m.group('sign')
         if sign in ('-', '−'):
@@ -189,11 +191,22 @@ def verify_claims(claims: list[dict[str, Any]], bundle: Any,
             contradicted.append(item)
             continue
 
-        candidates = _candidate_fields(src, str(claim.get('unit') or 'plain'))
+        unit = str(claim.get('unit') or 'plain')
+        candidates = _candidate_fields(src, unit)
         context = str(claim.get('context') or '')
         variants = _signed_variants(float(claim.get('value')), context)
+        expected = _UNIT_FIELDS.get(unit, ())
+
+        def _verifiable(field: str) -> bool:
+            # 단위 있는 주장은 같은 단위의 필드(또는 문맥이 가리키는 필드)와의 일치만
+            # 검증으로 인정한다 — 무관한 필드와의 우연 일치(예: trailingPE 9.5 vs
+            # "9.5% 상승")가 '검증됨'이 되면 모순 탐지가 막힌다. 단위 없는 주장은 종전대로.
+            if not expected:
+                return True
+            return field.split('.')[-1] in expected or _context_points_to(field, context)
+
         match = next((k for k, v in candidates
-                      if any(_close_enough(x, v) for x in variants)), None)
+                      if _verifiable(k) and any(_close_enough(x, v) for x in variants)), None)
         if match is not None:
             item['matched_field'] = match
             item['status'] = 'verified'
@@ -202,7 +215,6 @@ def verify_claims(claims: list[dict[str, Any]], bundle: Any,
 
         # 모순은 **문맥이 그 필드를 가리킬 때만** 인정한다. 단위만 같고 의미가 다른
         # 지표(ROE·부채비율·52주 낙폭 등)는 대응 필드가 없는 것이므로 미검증이다.
-        expected = _UNIT_FIELDS.get(str(claim.get('unit') or ''), ())
         unit_fields = [(k, v) for k, v in candidates
                        if k.split('.')[-1] in expected and _context_points_to(k, context)]
         if unit_fields:
