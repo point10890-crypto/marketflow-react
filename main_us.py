@@ -265,8 +265,32 @@ def _call_gemini(client: genai.Client, ticker: str, name: str, image_path: str) 
         return None
 
 
+OPENAI_VISION_MODEL = os.getenv('US_CHART_OPENAI_MODEL') or os.getenv('OPENAI_MODEL') or 'gpt-5.5'
+
+
+def _openai_chat_with_token_limit(client, *, model: str, messages: list,
+                                  max_output_tokens: int, **kwargs):
+    """토큰 한도 파라미터명을 모델에 맞춰 협상하는 chat 호출 (main_kr.py 동일 패턴)."""
+    try:
+        return client.chat.completions.create(
+            model=model, messages=messages, max_tokens=max_output_tokens, **kwargs
+        )
+    except Exception as exc:
+        text = str(exc)
+        if 'max_completion_tokens' not in text:
+            raise
+        return client.chat.completions.create(
+            model=model, messages=messages,
+            max_completion_tokens=max_output_tokens, **kwargs
+        )
+
+
 def _call_openai_vision(ticker: str, name: str, image_path: str) -> dict | None:
-    """OpenAI Vision fallback for chart analysis"""
+    """OpenAI Vision fallback for chart analysis.
+
+    2026-09-02: gpt-4o-mini 하드코딩이 매 호출 404 (계정 보유 모델은 gpt-5.5 뿐) —
+    Gemini 크레딧 소진과 겹치자 US AI 차트가 8/24 부터 통째로 정지했던 원인.
+    """
     try:
         from openai import OpenAI
         client = OpenAI(api_key=OPENAI_API_KEY)
@@ -277,8 +301,9 @@ def _call_openai_vision(ticker: str, name: str, image_path: str) -> dict | None:
 
         prompt = ANALYSIS_PROMPT.format(name=name, ticker=ticker)
 
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        response = _openai_chat_with_token_limit(
+            client,
+            model=OPENAI_VISION_MODEL,
             messages=[
                 {"role": "system", "content": "You are a professional technical chart analyst. Respond only in valid JSON."},
                 {"role": "user", "content": [
@@ -286,8 +311,7 @@ def _call_openai_vision(ticker: str, name: str, image_path: str) -> dict | None:
                     {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64_image}", "detail": "high"}},
                 ]},
             ],
-            max_tokens=4096,
-            temperature=0.3,
+            max_output_tokens=4096,
         )
 
         text = response.choices[0].message.content.strip()

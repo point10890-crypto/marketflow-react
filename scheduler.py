@@ -3802,6 +3802,7 @@ def _run_ai_chart_analysis() -> bool:
     logger.info("=" * 60)
 
     try:
+        started_at = time.time()
         script = os.path.join(Config.BASE_DIR, 'main_kr.py')
         result = subprocess.run(
             [Config.PYTHON_PATH, script],
@@ -3812,6 +3813,11 @@ def _run_ai_chart_analysis() -> bool:
         if result.returncode == 0:
             # 결과 파일 확인
             csv_path = os.path.join(Config.BASE_DIR, 'gemini_chart_analysis_kr.csv')
+            # 낡은 CSV 를 성공으로 오인 금지 — 이번 실행에서 갱신된 파일만 인정.
+            # (2026-09-02: US 쪽에서 8/24 CSV 를 매일 '완료 98종목'으로 보고하던 거짓 성공 발견)
+            if os.path.exists(csv_path) and os.path.getmtime(csv_path) < started_at:
+                logger.error("❌ AI Chart CSV 미갱신 (stale, 전 회차 파일) — 분석 실패로 처리")
+                return False
             if os.path.exists(csv_path):
                 import pandas as pd
                 df = pd.read_csv(csv_path, encoding='utf-8-sig')
@@ -3848,6 +3854,7 @@ def _run_us_ai_chart_analysis() -> bool:
     logger.info("=" * 60)
 
     try:
+        started_at = time.time()
         script = os.path.join(Config.BASE_DIR, 'main_us.py')
         result = subprocess.run(
             [Config.PYTHON_PATH, script],
@@ -3857,6 +3864,10 @@ def _run_us_ai_chart_analysis() -> bool:
         )
         if result.returncode == 0:
             csv_path = os.path.join(Config.BASE_DIR, 'gemini_chart_analysis_us.csv')
+            # 낡은 CSV 를 성공으로 오인 금지 (8/24 정지를 매일 '완료'로 보고하던 버그)
+            if os.path.exists(csv_path) and os.path.getmtime(csv_path) < started_at:
+                logger.error("❌ US AI Chart CSV 미갱신 (stale, 전 회차 파일) — 분석 실패로 처리")
+                return False
             if os.path.exists(csv_path):
                 import pandas as pd
                 df = pd.read_csv(csv_path, encoding='utf-8-sig')
