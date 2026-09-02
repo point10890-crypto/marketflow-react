@@ -101,6 +101,7 @@ def run_trader_and_risk(
     evidence_packet: dict[str, Any] | None = None,
     request_id: str | None = None, reservation_id: str | None = None,
     reservation_owner_token: str | None = None,
+    permit_abort_event: Any = None,
 ) -> dict[str, Any]:
     """Run trader plan → 3-role risk debate → PM final decision.
 
@@ -141,10 +142,12 @@ def run_trader_and_risk(
     pm_decision, used = _pm_decision(
         target, debate, trader_plan, risk_debate, use_llm,
         regime_line=regime_line, regime_adjustment=regime_adjustment,
+        compact=compact,
         run_id=run_id, symbol=symbol, market=market, name=name or target,
         evidence_packet=evidence_packet,
         request_id=request_id, reservation_id=reservation_id,
         reservation_owner_token=reservation_owner_token,
+        permit_abort_event=permit_abort_event,
     )
     llm_ok, llm_fail = _accumulate(used, use_llm, llm_ok, llm_fail)
 
@@ -318,21 +321,25 @@ def _llm_risk(role: str, target: str, bundle: dict[str, Any], debate: dict[str, 
 def _pm_decision(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
                  risk_debate: list[dict[str, Any]], use_llm: bool, *,
                  regime_line: str = '', regime_adjustment: float = 0.0,
+                 compact: bool = False,
                  run_id: str | None = None, symbol: str | None = None,
                  market: str | None = None, name: str | None = None,
                  evidence_packet: dict[str, Any] | None = None,
                  request_id: str | None = None, reservation_id: str | None = None,
                  reservation_owner_token: str | None = None,
+                 permit_abort_event: Any = None,
                  ) -> tuple[dict[str, Any], bool]:
     rule = _pm_decision_rule(debate, regime_adjustment)
     if use_llm:
         try:
             llm, llm_meta = _llm_pm(
                 target, debate, trader_plan, risk_debate, rule, regime_line=regime_line,
+                compact=compact,
                 run_id=run_id, symbol=symbol, market=market, name=name,
                 evidence_packet=evidence_packet,
                 request_id=request_id, reservation_id=reservation_id,
                 reservation_owner_token=reservation_owner_token,
+                permit_abort_event=permit_abort_event,
             )
             if llm:
                 return llm, True
@@ -374,11 +381,13 @@ def _pm_decision_rule(debate: dict[str, Any], regime_adjustment: float = 0.0) ->
 def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
             risk_debate: list[dict[str, Any]], rule: dict[str, Any],
             regime_line: str = '', run_id: str | None = None,
+            compact: bool = False,
             symbol: str | None = None, market: str | None = None,
             name: str | None = None,
             evidence_packet: dict[str, Any] | None = None,
             request_id: str | None = None, reservation_id: str | None = None,
             reservation_owner_token: str | None = None,
+            permit_abort_event: Any = None,
             ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     votes = ', '.join(f'{r["role"]}={r["vote"]}' for r in risk_debate)
     regime_block = f'[시장 레짐]\n{regime_line}\n\n' if regime_line else ''
@@ -392,7 +401,7 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
         f'고정 식별자: symbol={symbol or ""}, name={name or target}, market={market or ""}\n'
         f'EvidencePacket: {json.dumps(evidence_packet or {}, ensure_ascii=False, default=str)}\n\n{_PM_JSON}'
     )
-    if evidence_packet is not None:
+    if compact:
         prompt = evidence_packet_mod.bound_compact_prompt(prompt, 'decisive_text')
     raw, llm_meta = llm_client.generate_text_with_metadata(
         prompt, system=_PM_SYSTEM, temperature=0.3, max_tokens=1200, json_mode=True,
@@ -408,6 +417,7 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
         expected_numbers={'analyst_mean': _analyst_mean(debate)} if symbol and market else None,
         domain_validator=_pm_domain_validator,
         caller_endpoint='mirofish.tradingagents.portfolio_manager',
+        permit_abort_event=permit_abort_event,
     )
     data = _parse_json_obj(raw)
     if not data:

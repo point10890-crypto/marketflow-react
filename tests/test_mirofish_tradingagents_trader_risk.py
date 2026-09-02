@@ -173,6 +173,37 @@ def test_full_profile_preserves_oversized_portfolio_manager_prompt(monkeypatch):
     assert '...[bounded]...' not in decisive_prompt
 
 
+def test_full_profile_with_evidence_packet_does_not_apply_compact_pm_cap(monkeypatch):
+    prompts = {}
+    marker = 'FULL_PACKET_PROFILE_MIDDLE_EVIDENCE'
+    debate = _debate(40)
+    debate['bull_case'] = ('상승 근거 ' * 900) + marker + (' 추가 근거' * 900)
+
+    def fake(prompt, **kwargs):
+        operation = kwargs.get('operation')
+        if operation:
+            prompts[operation] = prompt
+        system = kwargs.get('system') or ''
+        if '포트폴리오 매니저' in system:
+            return ('{"verdict":"BUY","confidence":80,"reasoning":"ok"}',
+                    {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'})
+        if '트레이더' in system:
+            return ('{"action_hint":"매수","entry_note":"분할","risk_note":"손절"}',
+                    {'success': True})
+        return ('{"message":"검토","vote":"approve"}', {'success': True})
+
+    monkeypatch.setattr(trader_risk.llm_client, 'generate_text_with_metadata', fake)
+    trader_risk.run_trader_and_risk(
+        '삼성전자', BUNDLE, debate, use_llm=True, profile='full',
+        evidence_packet={'symbol': '005930', 'evidence_ids': ['ev1']},
+    )
+
+    decisive_prompt = prompts['decisive_text']
+    assert len(decisive_prompt.encode('utf-8')) > 5_500
+    assert marker in decisive_prompt
+    assert '...[bounded]...' not in decisive_prompt
+
+
 def test_strong_buy_confidence_floor():
     # manager confidence below 75 → STRONG_BUY still floors at 75
     debate = _debate(40)

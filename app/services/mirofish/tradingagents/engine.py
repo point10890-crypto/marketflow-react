@@ -58,7 +58,12 @@ from app.services.mirofish import evidence_packet as evidence_packet_mod
 from app.services.mirofish import llm_client
 from app.services.ai_routing.contracts import Operation, ProviderErrorClass, RoutingRequest
 from app.services.ai_routing.policy import policy_for
-from app.services.ai_routing.router import reserve_openai_fallback, release_openai_reservations
+from app.services.ai_routing.router import (
+    openai_permit_heartbeat_seconds,
+    release_openai_reservations,
+    renew_openai_reservations,
+    reserve_openai_fallback,
+)
 from app.utils.atomic_json import write_json_atomic
 
 logger = logging.getLogger(__name__)
@@ -91,7 +96,8 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
                       request_ids: dict[str, str] | None = None,
                       reservation_ids: dict[str, str] | None = None,
                       reservation_owner_tokens: dict[str, str] | None = None,
-                      permits_preflighted: bool = False) -> dict[str, Any]:
+                      permits_preflighted: bool = False,
+                      permit_abort_event: Any = None) -> dict[str, Any]:
     """Run an analysis, reusing only immutable validated compact artifacts."""
     profile = str(profile or 'full').strip().lower()
     started = datetime.now(timezone.utc)
@@ -104,8 +110,10 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
         request_ids=request_ids, reservation_ids=reservation_ids,
         reservation_owner_tokens=reservation_owner_tokens,
         permits_preflighted=permits_preflighted,
+        permit_abort_event=permit_abort_event,
     )
     try:
+        _raise_if_permit_aborted(permit_abort_event)
         if profile != 'compact' or not evidence_packet or evidence_packet.get('cache_eligible') is False or force:
             return _execute_deep_analysis(target, **kwargs)
         key = evidence_packet_mod.cache_key({**evidence_packet, 'profile': profile})
@@ -129,7 +137,8 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
                       request_ids: dict[str, str] | None = None,
                       reservation_ids: dict[str, str] | None = None,
                       reservation_owner_tokens: dict[str, str] | None = None,
-                      permits_preflighted: bool = False) -> dict[str, Any]:
+                      permits_preflighted: bool = False,
+                      permit_abort_event: Any = None) -> dict[str, Any]:
     """Run the full deep-verification pipeline for one target and persist it.
 
     Does NOT check the kill switch (the admin endpoint may run on demand); the
@@ -172,6 +181,7 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
 
     rc = regime_mod.regime_context(brain)
 
+    _raise_if_permit_aborted(permit_abort_event)
     with llm_client.collect_generation_metadata(routing_run_id) as llm_calls:
         reports = analysts.run_analysts(bundle, use_llm=use_llm if profile == 'full' else False)
         compact_digest = None
@@ -179,6 +189,7 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
             not permits_preflighted or bool(reservation_ids.get('bulk_text'))
         )
         if profile == 'compact' and digest_llm_enabled:
+            _raise_if_permit_aborted(permit_abort_event)
             raw_digest, digest_meta = llm_client.generate_text_with_metadata(
                 evidence_packet_mod.bound_compact_prompt(
                     _compact_digest_prompt(target, reports, evidence_packet or {}), 'bulk_text',
@@ -194,7 +205,9 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
                 ),
                 symbol=bundle.get('symbol') or symbol, market=bundle.get('market'),
                 caller_endpoint='mirofish.tradingagents.compact_digest',
+                permit_abort_event=permit_abort_event,
             )
+            _raise_if_permit_aborted(permit_abort_event)
             compact_digest = _parse_json(raw_digest) or {'digest': '', 'evidence_ids': []}
             compact_digest['llm'] = digest_meta
             allowed_evidence = set((evidence_packet or {}).get('evidence_ids') or [])
@@ -220,12 +233,15 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
             debate_llm_enabled = use_llm and (
                 not permits_preflighted or bool(reservation_ids.get('compact_debate'))
             )
+            _raise_if_permit_aborted(permit_abort_event)
             debate = research_debate.run_compact_debate(
                 target, reports, use_llm=debate_llm_enabled, run_id=routing_run_id,
                 request_id=request_ids.get('compact_debate') or f'{stable_run_id}:compact-debate',
                 reservation_id=reservation_ids.get('compact_debate'), evidence_packet=evidence_packet,
                 reservation_owner_token=reservation_owner_tokens.get('compact_debate'),
+                permit_abort_event=permit_abort_event,
             )
+            _raise_if_permit_aborted(permit_abort_event)
             if use_llm and not debate_llm_enabled:
                 debate['analysis_status'] = 'DEGRADED'
                 debate['degraded_reason'] = 'preflight_permit_unavailable'
@@ -241,6 +257,7 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
         decisive_llm_enabled = use_llm and (
             not permits_preflighted or bool(reservation_ids.get('decisive_text'))
         )
+        _raise_if_permit_aborted(permit_abort_event)
         tr = trader_risk.run_trader_and_risk(
             target, bundle, debate, use_llm=decisive_llm_enabled,
             regime_line=rc['line'], regime_adjustment=rc['adjustment'],
@@ -250,7 +267,9 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
             request_id=request_ids.get('decisive_text'),
             reservation_id=reservation_ids.get('decisive_text'),
             reservation_owner_token=reservation_owner_tokens.get('decisive_text'),
+            permit_abort_event=permit_abort_event,
         )
+        _raise_if_permit_aborted(permit_abort_event)
         if use_llm and not decisive_llm_enabled:
             tr['analysis_status'] = 'HOLD_REVIEW'
             (tr.get('pm_decision') or {})['analysis_status'] = 'HOLD_REVIEW'
@@ -294,8 +313,14 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
         'source_run_id': stable_run_id,
     }
 
+    _raise_if_permit_aborted(permit_abort_event)
     _persist(record)
     return record
+
+
+def _raise_if_permit_aborted(permit_abort_event: Any) -> None:
+    if permit_abort_event is not None and permit_abort_event.is_set():
+        raise RuntimeError('permit_lease_renewal_failed')
 
 
 def routing_model_ids() -> dict[str, str]:
@@ -337,6 +362,25 @@ def release_compact_permits(
             (reservation_id, reservation_owner_tokens.get(operation, ''))
             for operation, reservation_id in reservation_ids.items()
         ])
+
+
+def renew_compact_permits(
+    reservation_ids: dict[str, str] | None,
+    reservation_owner_tokens: dict[str, str] | None = None,
+) -> bool:
+    """Renew one atomic set of owned compact permits, including claimed rows."""
+    if not reservation_ids:
+        return True
+    if not reservation_owner_tokens:
+        return False
+    return renew_openai_reservations([
+        (reservation_id, reservation_owner_tokens.get(operation, ''))
+        for operation, reservation_id in reservation_ids.items()
+    ])
+
+
+def compact_permit_heartbeat_seconds() -> float:
+    return openai_permit_heartbeat_seconds()
 
 
 def reserve_compact_batch(

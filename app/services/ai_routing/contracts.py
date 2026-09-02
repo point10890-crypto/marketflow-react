@@ -118,6 +118,7 @@ class RoutingRequest:
     domain_validator: Callable[[Any], ProviderErrorClass | None] | None = None
     reservation_id: str | None = None
     reservation_owner_token: str | None = None
+    permit_abort_event: Any | None = None
 
 
 @dataclass(frozen=True)

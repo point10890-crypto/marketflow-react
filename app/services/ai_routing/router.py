@@ -10,7 +10,7 @@ from contextvars import ContextVar
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from decimal import Decimal
-from threading import Event, Lock
+from threading import Event, Lock, Thread
 from uuid import uuid4
 
 from .breaker import CircuitBreaker
@@ -48,9 +48,87 @@ class _Flight:
     result: RoutingResult | None = None
 
 
+class _PermitHeartbeat:
+    """Keep one claimed permit alive while a provider call is in flight."""
+
+    def __init__(
+        self,
+        budget: BudgetManager,
+        reservation_id: str,
+        owner_token: str,
+        *,
+        interval_seconds: float,
+        abort_event: object | None = None,
+    ) -> None:
+        self.budget = budget
+        self.reservation_id = reservation_id
+        self.owner_token = owner_token
+        self.interval_seconds = max(0.001, float(interval_seconds))
+        self.abort_event = abort_event
+        self.failed = Event()
+        self._stop = Event()
+        self._thread: Thread | None = None
+
+    def start(self) -> bool:
+        try:
+            thread = Thread(
+                target=self._run,
+                name="ai-routing-permit-heartbeat",
+                daemon=True,
+            )
+            self._thread = thread
+            thread.start()
+        except Exception as exc:
+            self._thread = None
+            logger.warning(
+                "[ai_routing] permit heartbeat start failed: %s", type(exc).__name__
+            )
+            self._mark_failed()
+            return False
+        return True
+
+    def _run(self) -> None:
+        while not self._stop.wait(self.interval_seconds):
+            try:
+                renewed = self.budget.renew(
+                    self.reservation_id,
+                    owner_token=self.owner_token,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "[ai_routing] permit heartbeat failed: %s", type(exc).__name__
+                )
+                renewed = False
+            if not renewed:
+                self._mark_failed()
+                return
+
+    def stop(self) -> None:
+        self._stop.set()
+        thread = self._thread
+        if thread is None:
+            return
+        thread.join(timeout=max(0.1, min(5.0, self.interval_seconds * 2.0)))
+        if thread.is_alive():
+            self._mark_failed()
+
+    def _mark_failed(self) -> None:
+        self.failed.set()
+        if self.abort_event is None:
+            return
+        try:
+            self.abort_event.set()  # type: ignore[attr-defined]
+        except Exception as exc:
+            logger.warning(
+                "[ai_routing] permit heartbeat abort signal failed: %s",
+                type(exc).__name__,
+            )
+
+
 @dataclass
 class _BudgetFinalizer:
     reservation: BudgetReservation
+    heartbeat: _PermitHeartbeat | None = None
     openai_called: bool = False
     openai_usage: TokenUsage | None = None
     openai_cost_usd: Decimal | None = None
@@ -132,6 +210,20 @@ def release_openai_reservations(
         for reservation_id, owner_token in reservations if reservation_id and owner_token
     ):
         manager.release(reservation_id, owner_token=owner_token)
+
+
+def renew_openai_reservations(
+    reservations: list[tuple[str, str]], *,
+    budget: BudgetManager | None = None,
+) -> bool:
+    """Atomically keep owned queued/claimed fallback permits alive."""
+    manager = budget or BudgetManager()
+    return manager.renew_many(reservations, terminal_ok=True)
+
+
+def openai_permit_heartbeat_seconds() -> float:
+    """Poll often enough that a healthy coordinator refreshes before expiry."""
+    return max(0.05, min(30.0, BudgetManager._lease_seconds() / 3.0))
 
 
 class AIRouter:
@@ -219,6 +311,12 @@ class AIRouter:
         finalizer_token = _ACTIVE_BUDGET.set(None)
         budget_finalized = True
         budget_failure_reason = "reservation_breached"
+        permit_heartbeat_failed = False
+        fatal_error: BaseException | None = None
+        cleanup_error: BaseException | None = None
+        result = self._failed_result(
+            policy.operation, policy.providers[0], (), "routing_interrupted"
+        )
         try:
             try:
                 result = self._route_owned(request)
@@ -232,9 +330,26 @@ class AIRouter:
                     (),
                     ProviderErrorClass.UNKNOWN,
                 )
+        except BaseException as exc:
+            fatal_error = exc
         finally:
             finalizer = _ACTIVE_BUDGET.get()
             if finalizer is not None:
+                if finalizer.heartbeat is not None:
+                    try:
+                        finalizer.heartbeat.stop()
+                    except BaseException as exc:
+                        if not isinstance(exc, Exception):
+                            cleanup_error = exc
+                        permit_heartbeat_failed = True
+                        logger.warning(
+                            "[ai_routing] permit heartbeat cleanup failed: %s",
+                            type(exc).__name__,
+                        )
+                    permit_heartbeat_failed = (
+                        permit_heartbeat_failed
+                        or finalizer.heartbeat.failed.is_set()
+                    )
                 budget_finalized = False
                 try:
                     budget_finalized = self._finish_budget(
@@ -243,12 +358,31 @@ class AIRouter:
                         finalizer.openai_usage,
                         finalizer.openai_cost_usd,
                     )
-                except Exception as exc:
+                except BaseException as exc:
+                    if cleanup_error is None and not isinstance(exc, Exception):
+                        cleanup_error = exc
                     budget_failure_reason = "budget_finalization_failed"
                     logger.warning(
                         "[ai_routing] budget finalization failed: %s", type(exc).__name__
                     )
-            _ACTIVE_BUDGET.reset(finalizer_token)
+            try:
+                _ACTIVE_BUDGET.reset(finalizer_token)
+            except BaseException as exc:
+                if cleanup_error is None and not isinstance(exc, Exception):
+                    cleanup_error = exc
+                budget_finalized = False
+                budget_failure_reason = "budget_finalization_failed"
+                logger.warning(
+                    "[ai_routing] budget context cleanup failed: %s",
+                    type(exc).__name__,
+                )
+        if (
+            fatal_error is not None
+            or cleanup_error is not None
+            or not budget_finalized
+            or permit_heartbeat_failed
+        ):
+            self._signal_permit_abort(request)
         if not budget_finalized:
             logger.error(
                 "[ai_routing] provider result rejected after budget finalization: %s",
@@ -258,8 +392,20 @@ class AIRouter:
                 policy.operation, policy.providers[0], tuple(result.attempts),
                 budget_failure_reason,
             )
+        if permit_heartbeat_failed:
+            logger.error(
+                "[ai_routing] provider result rejected after permit heartbeat failure"
+            )
+            result = self._failed_result(
+                policy.operation, policy.providers[0], tuple(result.attempts),
+                "permit_renewal_failed",
+            )
         flight.result = result
         flight.completed.set()
+        if fatal_error is not None:
+            raise fatal_error
+        if cleanup_error is not None:
+            raise cleanup_error
         return result
 
     def _route_owned(self, request: RoutingRequest) -> RoutingResult:
@@ -269,27 +415,86 @@ class AIRouter:
         max_output_tokens = policy.max_output_tokens
         if request.max_output_tokens is not None:
             max_output_tokens = min(max_output_tokens, max(1, request.max_output_tokens))
+        if self._permit_abort_requested(request):
+            return self._failed_result(
+                policy.operation,
+                policy.providers[0],
+                (),
+                "permit_lease_renewal_failed",
+            )
         reservation = BudgetReservation(True, acquired_by_caller=True)
         if "openai" in policy.providers:
-            reservation = (
-                self.budget.claim(
+            if request.reservation_id:
+                reservation = self.budget.claim(
                     request.reservation_id, run_id=run_id, request_id=request_id,
                     owner_token=request.reservation_owner_token,
                     input_tokens=estimate_reservation_input_tokens(request),
                     output_tokens=max_output_tokens,
                 )
-                if request.reservation_id else reserve_openai_fallback(request, budget=self.budget)
-            )
+            else:
+                reservation = reserve_openai_fallback(request, budget=self.budget)
+                if reservation.approved and reservation.acquired_by_caller:
+                    _ACTIVE_BUDGET.set(_BudgetFinalizer(reservation))
+                    reservation = self.budget.claim(
+                        reservation.reservation_id,
+                        run_id=run_id,
+                        request_id=request_id,
+                        owner_token=reservation.owner_token,
+                        input_tokens=estimate_reservation_input_tokens(request),
+                        output_tokens=max_output_tokens,
+                    )
             if not reservation.approved:
-                return self._failed_result(policy.operation, policy.providers[0], ())
+                self._signal_permit_abort(request)
+                return self._failed_result(
+                    policy.operation,
+                    policy.providers[0],
+                    (),
+                    reservation.reason,
+                )
             if not reservation.acquired_by_caller:
+                self._signal_permit_abort(request)
                 return self._failed_result(
                     policy.operation,
                     policy.providers[0],
                     (),
                     "duplicate_request",
                 )
-            _ACTIVE_BUDGET.set(_BudgetFinalizer(reservation))
+            finalizer = _BudgetFinalizer(reservation)
+            _ACTIVE_BUDGET.set(finalizer)
+            try:
+                permit_alive = self.budget.renew(
+                    reservation.reservation_id,
+                    owner_token=reservation.owner_token,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "[ai_routing] permit renewal failed: %s", type(exc).__name__
+                )
+                permit_alive = False
+            if not permit_alive:
+                self._signal_permit_abort(request)
+                return self._failed_result(
+                    policy.operation,
+                    policy.providers[0],
+                    (),
+                    "permit_renewal_failed",
+                )
+            heartbeat = _PermitHeartbeat(
+                self.budget,
+                str(reservation.reservation_id),
+                str(reservation.owner_token),
+                interval_seconds=openai_permit_heartbeat_seconds(),
+                abort_event=request.permit_abort_event,
+            )
+            finalizer.heartbeat = heartbeat
+            if not heartbeat.start():
+                self._signal_permit_abort(request)
+                return self._failed_result(
+                    policy.operation,
+                    policy.providers[0],
+                    (),
+                    "permit_renewal_failed",
+                )
 
         attempts: list[ProviderAttempt] = []
         primary_failure_reason: ProviderErrorClass | str | None = None
@@ -305,6 +510,27 @@ class AIRouter:
                 continue
             provider_tries = 0
             while provider_tries < 2:
+                if self._permit_abort_requested(request):
+                    return self._failed_result(
+                        policy.operation,
+                        policy.providers[0],
+                        tuple(attempts),
+                        "permit_lease_renewal_failed",
+                        retry_reason=primary_retry_reason,
+                    )
+                active_budget = _ACTIVE_BUDGET.get()
+                if (
+                    active_budget is not None
+                    and active_budget.heartbeat is not None
+                    and active_budget.heartbeat.failed.is_set()
+                ):
+                    return self._failed_result(
+                        policy.operation,
+                        policy.providers[0],
+                        tuple(attempts),
+                        "permit_renewal_failed",
+                        retry_reason=primary_retry_reason,
+                    )
                 breaker_persistence_failed = False
                 try:
                     allowed = self.breaker.allow(provider, policy.modality, model_tier)
@@ -335,12 +561,81 @@ class AIRouter:
                             "[ai_routing] telemetry write failed: %s", type(exc).__name__
                         )
                     break
+                if self._permit_abort_requested(request):
+                    return self._failed_result(
+                        policy.operation,
+                        policy.providers[0],
+                        tuple(attempts),
+                        "permit_lease_renewal_failed",
+                        retry_reason=primary_retry_reason,
+                    )
+                if (
+                    active_budget is not None
+                    and active_budget.heartbeat is not None
+                    and active_budget.heartbeat.failed.is_set()
+                ):
+                    return self._failed_result(
+                        policy.operation,
+                        policy.providers[0],
+                        tuple(attempts),
+                        "permit_renewal_failed",
+                        retry_reason=primary_retry_reason,
+                    )
                 provider_tries += 1
                 attempt_number += 1
                 event_ts = datetime.now(timezone.utc).isoformat()
                 started = time.perf_counter()
                 response: AdapterResponse
                 error_class: ProviderErrorClass | None = None
+                if provider == "openai":
+                    finalizer = _ACTIVE_BUDGET.get()
+                    if finalizer is not None:
+                        try:
+                            permit_alive = self.budget.renew(
+                                finalizer.reservation.reservation_id,
+                                owner_token=finalizer.reservation.owner_token,
+                            )
+                        except Exception as exc:
+                            logger.warning(
+                                "[ai_routing] pre-dispatch permit validation failed: %s",
+                                type(exc).__name__,
+                            )
+                            permit_alive = False
+                        if not permit_alive:
+                            self._signal_permit_abort(request)
+                            return self._failed_result(
+                                policy.operation,
+                                policy.providers[0],
+                                tuple(attempts),
+                                "permit_renewal_failed",
+                                retry_reason=primary_retry_reason,
+                            )
+                        if self._permit_abort_requested(request):
+                            return self._failed_result(
+                                policy.operation,
+                                policy.providers[0],
+                                tuple(attempts),
+                                "permit_lease_renewal_failed",
+                                retry_reason=primary_retry_reason,
+                            )
+                        if (
+                            finalizer.heartbeat is not None
+                            and finalizer.heartbeat.failed.is_set()
+                        ):
+                            self._signal_permit_abort(request)
+                            return self._failed_result(
+                                policy.operation,
+                                policy.providers[0],
+                                tuple(attempts),
+                                "permit_renewal_failed",
+                                retry_reason=primary_retry_reason,
+                            )
+                        # Dispatch can raise BaseException after the provider has
+                        # accepted work. Account conservatively before crossing
+                        # that boundary; a normal response replaces unknown usage.
+                        finalizer.openai_called = True
+                        finalizer.openai_usage = TokenUsage.unknown()
+                        finalizer.openai_cost_usd = None
                 try:
                     response = adapter.generate(
                         request,
@@ -469,6 +764,31 @@ class AIRouter:
             ),
             retry_reason=primary_retry_reason,
         )
+
+    @staticmethod
+    def _permit_abort_requested(request: RoutingRequest) -> bool:
+        event = request.permit_abort_event
+        if event is None:
+            return False
+        try:
+            return bool(event.is_set())
+        except Exception as exc:
+            logger.warning(
+                "[ai_routing] permit abort fence failed: %s", type(exc).__name__
+            )
+            return True
+
+    @staticmethod
+    def _signal_permit_abort(request: RoutingRequest) -> None:
+        event = request.permit_abort_event
+        if event is None:
+            return
+        try:
+            event.set()
+        except Exception as exc:
+            logger.warning(
+                "[ai_routing] permit abort signal failed: %s", type(exc).__name__
+            )
 
     def _finish_budget(
         self,

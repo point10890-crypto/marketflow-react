@@ -1,3 +1,4 @@
+import copy
 import json
 import threading
 import time
@@ -223,6 +224,653 @@ def test_daily_bar_date_uses_korean_close_and_is_excluded_before_close():
     assert missing == []
     assert packets[0]['observed_at'] == '2026-09-03T06:30:00+00:00'
     assert cutoff == '2026-09-03T06:30:00+00:00'
+
+
+@pytest.mark.parametrize('date_only_update', ['2026-09-03', '20260903'])
+def test_daily_bar_date_only_update_field_does_not_bypass_session_close(date_only_update):
+    payload = {
+        'date': '2026-09-03',
+        'updated_at': date_only_update,
+        'current_price': 70000,
+    }
+
+    packets, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[], artifacts={},
+        sources={'daily_prices.csv': payload},
+        required_sources=['daily_prices.csv'],
+        cutoff_ceiling='2026-09-03T05:00:00+00:00',
+    )
+
+    assert packets == [] and cutoff is None
+    assert missing == ['daily_prices.csv']
+
+
+def test_institutional_date_only_flow_is_available_at_korean_close():
+    payload = {
+        'scrape_date': '2026-09-03',
+        'foreign_net_buy_5d': '1000',
+        'institutional_net_buy_20d': '2000',
+    }
+
+    before, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[], artifacts={},
+        sources={'all_institutional_trend_data.csv': payload},
+        required_sources=['all_institutional_trend_data.csv'],
+        cutoff_ceiling='2026-09-03T05:00:00+00:00',
+    )
+    assert before == [] and cutoff is None
+    assert missing == ['all_institutional_trend_data.csv']
+
+    after, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[], artifacts={},
+        sources={'all_institutional_trend_data.csv': payload},
+        required_sources=['all_institutional_trend_data.csv'],
+        cutoff_ceiling='2026-09-03T07:00:00+00:00',
+    )
+    assert missing == []
+    assert after[0]['observed_at'] == '2026-09-03T06:30:00+00:00'
+    assert after[0]['content']['foreign_net_buy_5d'] == '1000'
+    assert cutoff == '2026-09-03T06:30:00+00:00'
+
+
+def test_institutional_date_only_flow_uses_later_precise_file_availability(monkeypatch):
+    payload = {
+        'scrape_date': '2026-09-03',
+        'foreign_net_buy_5d': '1000',
+        'institutional_net_buy_20d': '2000',
+    }
+    monkeypatch.setattr(
+        alpha_scanner, '_source_files',
+        lambda _artifacts: [{
+            'file': 'data/all_institutional_trend_data.csv',
+            'modified_at': '2026-09-03T07:20:00+00:00',
+        }],
+    )
+
+    before, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[], artifacts={},
+        sources={'all_institutional_trend_data.csv': payload},
+        required_sources=['all_institutional_trend_data.csv'],
+        cutoff_ceiling='2026-09-03T07:00:00+00:00',
+    )
+    assert before == [] and cutoff is None
+    assert missing == ['all_institutional_trend_data.csv']
+
+    after, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[], artifacts={},
+        sources={'all_institutional_trend_data.csv': payload},
+        required_sources=['all_institutional_trend_data.csv'],
+        cutoff_ceiling='2026-09-03T07:30:00+00:00',
+    )
+    assert missing == []
+    assert after[0]['observed_at'] == '2026-09-03T07:20:00+00:00'
+    assert cutoff == '2026-09-03T07:20:00+00:00'
+
+
+def test_date_only_closing_artifact_uses_precise_file_availability():
+    source = 'jongga_v2_latest.json'
+    payload = {'stock_code': '005930', 'score': 88, 'date': '2026-09-03'}
+    artifacts = {
+        'jongga': {
+            'generated_at': '2026-09-03',
+            'mtime': '2026-09-03T07:15:00+00:00',
+        },
+    }
+
+    before, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[], artifacts=artifacts,
+        sources={source: payload}, required_sources=[source],
+        cutoff_ceiling='2026-09-03T07:00:00+00:00',
+    )
+    assert before == [] and cutoff is None and missing == [source]
+
+    after, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[], artifacts=artifacts,
+        sources={source: payload}, required_sources=[source],
+        cutoff_ceiling='2026-09-03T07:30:00+00:00',
+    )
+    assert missing == []
+    assert after[0]['observed_at'] == '2026-09-03T07:15:00+00:00'
+    assert cutoff == '2026-09-03T07:15:00+00:00'
+
+
+def test_jongga_top_level_updated_at_beats_date_label_and_later_file_mtime(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    path = tmp_path / 'jongga_v2_latest.json'
+    _write_json(path, {
+        'date': '2026-04-14',
+        'updated_at': '2026-04-14T15:25:00+09:00',
+        'signals': [{'stock_code': '005930', 'score': 88, 'date': '2026-04-14'}],
+    })
+    later_mtime = datetime(2026, 4, 25, 4, 50, tzinfo=timezone.utc).timestamp()
+    monkeypatch.setattr(alpha_scanner.os.path, 'getmtime', lambda _path: later_mtime)
+
+    artifact = alpha_scanner._load_json_artifact(path.name)
+    payload = alpha_scanner._index_jongga(artifact['data'])['005930']
+    packets, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[], artifacts={'jongga': artifact},
+        sources={path.name: payload}, required_sources=[path.name],
+        cutoff_ceiling='2026-04-14T06:30:00+00:00',
+    )
+
+    assert artifact['generated_at'] == '2026-04-14T15:25:00+09:00'
+    assert missing == []
+    assert packets[0]['observed_at'] == '2026-04-14T06:25:00+00:00'
+    assert cutoff == '2026-04-14T06:25:00+00:00'
+
+
+def test_indexed_event_inherits_precise_top_level_generated_at_over_item_date(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    path = tmp_path / 'dart_event_latest.json'
+    _write_json(path, {
+        'generated_at': '2026-09-03T07:15:00+00:00',
+        'entries': [{'symbol': '005930', 'date': '20260903', 'event': 'disclosure'}],
+    })
+    later_mtime = datetime(2026, 9, 4, 1, 0, tzinfo=timezone.utc).timestamp()
+    monkeypatch.setattr(alpha_scanner.os.path, 'getmtime', lambda _path: later_mtime)
+
+    indexed = alpha_scanner._load_indexed_resource_artifact(path.name)
+
+    assert indexed['005930']['generated_at'] == '2026-09-03T07:15:00+00:00'
+    assert alpha_scanner._source_available_at(
+        path.name, indexed['005930'], file_observed_at='2026-09-04T01:00:00+00:00',
+    ).isoformat() == '2026-09-03T07:15:00+00:00'
+
+
+def test_indexed_event_availability_is_later_of_entry_and_artifact_envelope(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    path = tmp_path / 'dart_event_latest.json'
+    _write_json(path, {
+        'generated_at': '2026-09-03T07:15:00+00:00',
+        'entries': [{
+            'symbol': '005930',
+            'observed_at': '2026-09-03T06:00:00+00:00',
+            'event': 'disclosure',
+        }],
+    })
+    later_mtime = datetime(2026, 9, 4, 1, 0, tzinfo=timezone.utc).timestamp()
+    monkeypatch.setattr(alpha_scanner.os.path, 'getmtime', lambda _path: later_mtime)
+    payload = alpha_scanner._load_indexed_resource_artifact(path.name)['005930']
+
+    before, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[], artifacts={},
+        sources={path.name: payload}, required_sources=[path.name],
+        cutoff_ceiling='2026-09-03T06:30:00+00:00',
+    )
+    assert before == [] and cutoff is None and missing == [path.name]
+
+    after, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[], artifacts={},
+        sources={path.name: payload}, required_sources=[path.name],
+        cutoff_ceiling='2026-09-03T07:30:00+00:00',
+    )
+    assert missing == []
+    assert after[0]['observed_at'] == '2026-09-03T07:15:00+00:00'
+    assert cutoff == '2026-09-03T07:15:00+00:00'
+
+
+def test_authoritative_packet_freshness_uses_historical_cutoff_not_wall_clock():
+    source = 'dart_event_latest.json'
+    packets, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[], artifacts={},
+        sources={source: {
+            'symbol': '005930',
+            'observed_at': '2020-01-01T06:00:00+00:00',
+            'event': 'historical disclosure',
+        }},
+        required_sources=[source],
+        cutoff_ceiling='2020-01-02T06:00:00+00:00',
+    )
+
+    assert missing == []
+    assert cutoff == '2020-01-01T06:00:00+00:00'
+    assert packets[0]['freshness'] == 'fresh'
+
+
+def test_tradingview_wrapper_uses_nested_signal_fetch_instant():
+    available = alpha_scanner._source_available_at(
+        'tradingview_mcp',
+        {
+            'signal': {'symbol': '005930', 'fetched_at': '2026-09-03T15:10:00+09:00'},
+            'adjustment': {'applied': True},
+        },
+    )
+
+    assert available is not None
+    assert available.isoformat() == '2026-09-03T06:10:00+00:00'
+
+
+@pytest.mark.parametrize(
+    ('source', 'artifact_key', 'payload'),
+    [
+        ('kind_blacklist_latest.json', 'kind_blacklist', {
+            'symbol': '005930', 'risk_level': 'hard_block',
+        }),
+        ('credit_balance_latest.json', 'credit_balance', {
+            'symbol': '005930', 'credit_ratio_pct': 4.2, 'date': '20260903',
+        }),
+    ],
+)
+def test_entry_only_cache_sources_keep_envelope_fetch_availability(
+    source, artifact_key, payload,
+):
+    packets, cutoff, missing = alpha_scanner._authoritative_source_packets(
+        symbol='005930', evidence=[],
+        artifacts={artifact_key: {
+            'fetched_at': '2026-09-03T16:00:00+09:00',
+            'entries': {'005930': payload},
+        }},
+        sources={source: payload}, required_sources=[source],
+        cutoff_ceiling='2026-09-03T07:30:00+00:00',
+    )
+
+    assert missing == []
+    assert packets[0]['observed_at'] == '2026-09-03T07:00:00+00:00'
+    assert cutoff == '2026-09-03T07:00:00+00:00'
+
+
+def _availability_gate_artifacts(*, envelope_time: str) -> dict:
+    symbol = '005930'
+    baseline = '2026-09-02T07:00:00+00:00'
+    price = {
+        'symbol': symbol, 'date': '2026-09-02', 'name': 'Samsung',
+        'current_price': 100.0, 'change_rate': 3.0,
+        'open': 99.0, 'high': 102.0, 'low': 98.0,
+        'volume': 100_000_000, 'trading_value': 10_000_000_000.0,
+    }
+    return {
+        'ticker_map': {symbol: {
+            'symbol': symbol, 'market': 'KOSPI', 'display_name': 'Samsung',
+        }},
+        'daily_prices': {symbol: price},
+        'price_history': {symbol: [price]},
+        'screener': {
+            'filename': 'screener_leading_latest.json', 'exists': True,
+            'generated_at': baseline, 'mtime': baseline,
+            'data': {'results': [{
+                'code': symbol, 'name': 'Samsung',
+                'score': {'total_enriched': 80},
+            }]},
+        },
+        'vcp': {
+            'filename': 'vcp_kr_latest.json', 'exists': True,
+            'generated_at': baseline, 'mtime': baseline,
+            'data': {'signals': [{
+                'symbol': symbol, 'name': 'Samsung',
+                'composite': {'composite_score': 85, 'entry_ready': True},
+            }]},
+        },
+        'jongga': {
+            'filename': 'jongga_v2_latest.json', 'exists': True,
+            'generated_at': envelope_time, 'mtime': envelope_time,
+            'data': {'signals': [{
+                'stock_code': symbol, 'stock_name': 'Samsung',
+                'score': {'total': 15},
+            }]},
+        },
+        'tradingview': {'signals_by_symbol': {}},
+        'institutional_trend': {symbol: {
+            'scrape_date': '2026-09-03',
+            'foreign_net_buy_5d': 1000,
+            'institutional_net_buy_5d': 1000,
+        }},
+        'kind_blacklist': {
+            'fetched_at': envelope_time,
+            'entries': {symbol: {
+                'symbol': symbol, 'risk_level': 'hard_block',
+                'categories': ['trading_halt'],
+            }},
+        },
+        'credit_balance': {
+            'fetched_at': envelope_time,
+            'entries': {symbol: {
+                'symbol': symbol, 'date': '20260903', 'credit_ratio_pct': 8.0,
+            }},
+        },
+        'rs_ratings': {'entries': {}},
+        'kis_live': {symbol: {
+            'fetched_at': envelope_time,
+            'quote': {'current_price': 120.0, 'change_pct': 20.0},
+        }},
+        'dart_events': {symbol: {
+            'generated_at': envelope_time, 'risk_level': 'high',
+            'flags': ['trading_halt'],
+        }},
+        'news_theme_social': {symbol: {
+            'generated_at': envelope_time, 'sentiment_score': 1.0,
+            'theme_strength': 1.0,
+        }},
+        'candidate_symbols': {symbol},
+    }
+
+
+def test_sources_after_scanner_cutoff_are_excluded_before_scoring_and_gates(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setenv('ENABLE_ALPHA_PHASE_1_GATES', 'true')
+    future = '2026-09-03T07:00:00+00:00'
+    cutoff = '2026-09-03T05:00:00+00:00'
+
+    candidate = alpha_scanner._build_candidate_pool(
+        _availability_gate_artifacts(envelope_time=future),
+        generated_at=cutoff, requested_symbols=set(), performance_advisory={},
+    )[0]
+
+    excluded = set(candidate['source_availability_excluded'])
+    assert {
+        'all_institutional_trend_data.csv', 'jongga_v2_latest.json',
+        'kind_blacklist_latest.json', 'credit_balance_latest.json',
+        'KIS API: live price/investor flow', 'dart_event_latest.json',
+        'news_theme_social_latest.json',
+    } <= excluded
+    assert excluded.isdisjoint(candidate['replay_context']['data_sources'])
+    assert candidate['analysis_profile']['capital_flow_confirmation']['status'] == 'missing'
+    assert candidate['analysis_profile']['false_signal_gates']['hard_blockers'] == []
+
+
+def test_future_only_artifact_does_not_improve_candidate_freshness_or_ranking(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    cutoff = '2026-09-03T05:00:00+00:00'
+    future = '2026-09-04T07:00:00+00:00'
+    with_future = _availability_gate_artifacts(envelope_time=future)
+    without_future = copy.deepcopy(with_future)
+    without_future['jongga'] = {
+        'filename': 'jongga_v2_latest.json', 'exists': False,
+        'generated_at': None, 'mtime': None, 'data': None,
+    }
+
+    absent_candidate = alpha_scanner._build_candidate_pool(
+        without_future, generated_at=cutoff,
+        requested_symbols=set(), performance_advisory={},
+    )[0]
+    future_candidate = alpha_scanner._build_candidate_pool(
+        with_future, generated_at=cutoff,
+        requested_symbols=set(), performance_advisory={},
+    )[0]
+
+    for field in ('alpha_score', 'risk_score', 'ranking_score', 'action', 'freshness'):
+        assert future_candidate[field] == absent_candidate[field]
+
+
+def test_future_physical_source_is_missing_at_cutoff_for_freshness(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    cutoff = '2026-09-03T05:00:00+00:00'
+    future = '2026-09-04T07:00:00+00:00'
+    artifacts = {
+        'screener': {
+            'filename': 'screener_leading_latest.json',
+            'exists': True, 'generated_at': future, 'mtime': future,
+        },
+    }
+    missing = alpha_scanner._aggregate_freshness(
+        alpha_scanner._source_files(artifacts, cutoff_ceiling=cutoff),
+    )
+    _write_json(tmp_path / 'screener_leading_latest.json', {
+        'generated_at': future, 'results': [],
+    })
+
+    future_files = alpha_scanner._source_files(
+        artifacts, cutoff_ceiling=cutoff,
+    )
+    future_status = alpha_scanner._aggregate_freshness(future_files)
+    screener = next(
+        item for item in future_files
+        if item['file'].endswith('screener_leading_latest.json')
+    )
+
+    assert screener['exists'] is True
+    assert screener['available'] is False
+    assert future_status == missing
+    assert future_status['status'] == 'missing'
+
+
+def test_fresh_artifact_without_symbol_is_not_a_staleness_penalty(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    cutoff = '2026-09-03T05:00:00+00:00'
+    artifacts = _availability_gate_artifacts(
+        envelope_time='2026-09-02T07:00:00+00:00',
+    )
+    artifacts['screener']['data'] = {'results': []}
+    artifacts['vcp']['data'] = {'signals': []}
+    artifacts['jongga']['data'] = {'signals': []}
+
+    candidate = alpha_scanner._build_candidate_pool(
+        artifacts, generated_at=cutoff,
+        requested_symbols={'005930'}, performance_advisory={},
+    )[0]
+
+    assert candidate['analysis_profile']['base_source_count'] == 1
+    assert candidate['analysis_profile']['freshness_penalty'] == 0.0
+
+
+def test_future_rs_rating_artifact_is_excluded_before_scoring(tmp_path, monkeypatch):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    cutoff = '2026-09-03T05:00:00+00:00'
+    artifacts = _availability_gate_artifacts(
+        envelope_time='2026-09-02T07:00:00+00:00',
+    )
+    without_rs = copy.deepcopy(artifacts)
+    without_rs['rs_ratings'] = {
+        'generated_at': '2026-09-04T07:00:00+00:00', 'entries': {},
+    }
+    artifacts['rs_ratings'] = {
+        'generated_at': '2026-09-04T07:00:00+00:00',
+        'entries': {'005930': {'rs_rating': 99, 'weighted_return': 1.5}},
+    }
+
+    baseline = alpha_scanner._build_candidate_pool(
+        without_rs, generated_at=cutoff,
+        requested_symbols=set(), performance_advisory={},
+    )[0]
+    candidate = alpha_scanner._build_candidate_pool(
+        artifacts, generated_at=cutoff,
+        requested_symbols=set(), performance_advisory={},
+    )[0]
+
+    assert candidate['alpha_score'] == baseline['alpha_score']
+    assert candidate['ranking_score'] == baseline['ranking_score']
+    assert 'alpha_rs_ratings.json' in candidate['source_availability_excluded']
+    assert 'rs_market_leader' not in candidate['strategy_tags']
+
+
+def test_future_only_artifact_symbol_does_not_enter_candidate_universe(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    cutoff = '2026-09-03T05:00:00+00:00'
+    future = '2026-09-04T07:00:00+00:00'
+    artifacts = _availability_gate_artifacts(envelope_time=future)
+    future_symbol = '999999'
+    artifacts['jongga']['data']['signals'] = [{
+        'stock_code': future_symbol, 'stock_name': 'Future Only',
+        'score': {'total': 15},
+    }]
+    future_price = {
+        'symbol': future_symbol, 'date': '2026-09-02', 'name': 'Future Only',
+        'current_price': 100.0, 'change_rate': 2.0,
+        'open': 99.0, 'high': 102.0, 'low': 98.0,
+        'volume': 100_000_000, 'trading_value': 10_000_000_000.0,
+    }
+    artifacts['daily_prices'][future_symbol] = future_price
+    artifacts['price_history'][future_symbol] = [future_price]
+    artifacts['ticker_map'][future_symbol] = {
+        'symbol': future_symbol, 'market': 'KOSPI', 'display_name': 'Future Only',
+    }
+    artifacts['candidate_symbols'].add(future_symbol)
+
+    candidates = alpha_scanner._build_candidate_pool(
+        artifacts, generated_at=cutoff,
+        requested_symbols=set(), performance_advisory={},
+    )
+
+    assert {candidate['symbol'] for candidate in candidates} == {'005930'}
+
+
+def test_current_scan_accepts_sources_collected_after_start_before_generated_at(
+    tmp_path, monkeypatch,
+):
+    started = datetime(2026, 9, 3, 5, 0, 0, tzinfo=timezone.utc)
+    collected = '2026-09-03T05:00:00.500000+00:00'
+    completed = datetime(2026, 9, 3, 5, 0, 1, tzinfo=timezone.utc)
+
+    class SequencedDateTime(datetime):
+        calls = 0
+
+        @classmethod
+        def now(cls, tz=None):
+            cls.calls += 1
+            value = started if cls.calls == 1 else completed
+            return value.astimezone(tz) if tz is not None else value.replace(tzinfo=None)
+
+    monkeypatch.setattr(alpha_scanner, 'datetime', SequencedDateTime)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monkeypatch.setattr(
+        alpha_scanner, '_load_artifacts',
+        lambda: _availability_gate_artifacts(envelope_time=collected),
+    )
+    monkeypatch.setattr(alpha_scanner, '_performance_advisory', lambda: {})
+    monkeypatch.setattr(alpha_scanner, 'write_json_atomic', lambda *args, **kwargs: None)
+    monkeypatch.setenv('MIROFISH_DEEPSEEK_RERANK_ENABLED', '0')
+    monkeypatch.setenv('ENABLE_ALPHA_PHASE_1_GATES', 'true')
+
+    run = alpha_scanner.create_scanner_run({'limit': 1})
+    candidate = run['candidates'][0]
+
+    assert run['created_at'] == started.isoformat()
+    assert run['generated_at'] == completed.isoformat()
+    assert 'kind_blacklist_latest.json' not in candidate['source_availability_excluded']
+    assert 'kind_blacklist_latest.json' in candidate['replay_context']['data_sources']
+    assert 'kind_blacklist' in (
+        candidate['analysis_profile']['false_signal_gates']['hard_blockers']
+    )
+
+
+def test_requested_live_kis_is_collected_before_generated_at_cutoff(
+    tmp_path, monkeypatch,
+):
+    instants = [
+        datetime(2026, 9, 3, 5, 0, 0, tzinfo=timezone.utc),
+        datetime(2026, 9, 3, 5, 0, 1, tzinfo=timezone.utc),
+        datetime(2026, 9, 3, 5, 0, 2, tzinfo=timezone.utc),
+    ]
+
+    class SequencedDateTime(datetime):
+        calls = 0
+
+        @classmethod
+        def now(cls, tz=None):
+            index = min(cls.calls, len(instants) - 1)
+            cls.calls += 1
+            value = instants[index]
+            return value.astimezone(tz) if tz is not None else value.replace(tzinfo=None)
+
+    artifacts = _availability_gate_artifacts(
+        envelope_time='2026-09-02T07:00:00+00:00',
+    )
+    artifacts['kis_live'] = {}
+    monkeypatch.setattr(alpha_scanner, 'datetime', SequencedDateTime)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monkeypatch.setattr(alpha_scanner, '_load_artifacts', lambda: artifacts)
+    monkeypatch.setattr(alpha_scanner, '_performance_advisory', lambda: {})
+    monkeypatch.setattr(alpha_scanner, 'write_json_atomic', lambda *args, **kwargs: None)
+    monkeypatch.setenv('MIROFISH_ALPHA_SCANNER_LIVE_KIS', '1')
+    monkeypatch.setenv('MIROFISH_DEEPSEEK_RERANK_ENABLED', '0')
+
+    def fetch_live(_symbol, _mapped):
+        return {
+            'symbol': '005930',
+            'fetched_at': alpha_scanner.datetime.now(timezone.utc).isoformat(),
+            'quote': {'current_price': 120.0, 'change_pct': 5.0},
+        }
+
+    monkeypatch.setattr(alpha_scanner, '_fetch_kis_live_snapshot_for_symbol', fetch_live)
+
+    run = alpha_scanner.create_scanner_run({'symbols': ['005930'], 'limit': 1})
+    candidate = run['candidates'][0]
+
+    assert run['generated_at'] == instants[-1].isoformat()
+    assert 'KIS API: live price/investor flow' not in candidate['source_availability_excluded']
+    assert 'KIS API: live price/investor flow' in candidate['replay_context']['data_sources']
+    assert candidate['analysis_profile']['kis_live_overlay']['applied'] is True
+
+
+def test_resource_weight_does_not_treat_date_only_as_precise_midnight():
+    weight = alpha_scanner._resource_weight({
+        'date': '29991231', 'confidence': 1.0,
+    })
+
+    assert weight['freshness'] == 'unknown'
+    assert weight['observed_at'] is None
+    assert weight['score_weight'] == 0.45
+
+
+def test_resource_weight_uses_scanner_cutoff_instead_of_wall_clock():
+    item = {'fetched_at': '2026-09-01T06:00:00+00:00', 'confidence': 1.0}
+
+    replay = alpha_scanner._resource_weight(
+        item, max_age_days=7, as_of='2026-09-03T06:00:00+00:00',
+    )
+    later_replay = alpha_scanner._resource_weight(
+        item, max_age_days=7, as_of='2026-10-03T06:00:00+00:00',
+    )
+
+    assert replay['age_days'] == 2.0
+    assert replay['freshness'] == 'fresh'
+    assert replay['score_weight'] == 1.0
+    assert later_replay['age_days'] == 32.0
+    assert later_replay['freshness'] == 'stale'
+    assert later_replay['score_weight'] == 0.2
+
+
+def test_future_performance_advisory_does_not_change_historical_ranking(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    cutoff = '2026-09-03T05:00:00+00:00'
+    artifacts = _availability_gate_artifacts(
+        envelope_time='2026-09-02T07:00:00+00:00',
+    )
+    future_advisory = {
+        'available': True,
+        'applied_to_scoring': True,
+        'source': 'workflow_outcomes',
+        'lookahead_safe': True,
+        'asof': '2026-09-04T05:00:00+00:00',
+        'evaluated_count': 20,
+        'hit_rate_recent': 0.72,
+        'recommendations': {
+            'baseline_hit_rate': 0.50,
+            'tag_score_adjust': {'leading_screener': 2.0},
+        },
+    }
+
+    baseline = alpha_scanner._build_candidate_pool(
+        copy.deepcopy(artifacts), generated_at=cutoff,
+        requested_symbols={'005930'}, performance_advisory={},
+    )[0]
+    replay = alpha_scanner._build_candidate_pool(
+        copy.deepcopy(artifacts), generated_at=cutoff,
+        requested_symbols={'005930'}, performance_advisory=future_advisory,
+    )[0]
+
+    assert replay['ranking_score'] == baseline['ranking_score']
+    assert replay['alpha_score'] == baseline['alpha_score']
+    assert replay['analysis_profile']['performance_memory']['applied'] is False
 
 
 def test_alpha_scanner_applies_deepseek_v4_bounded_rerank(tmp_path, monkeypatch):
@@ -470,6 +1118,7 @@ def test_alpha_scanner_applies_replay_safe_outcome_memory(tmp_path, monkeypatch)
         'applied_to_scoring': True,
         'source': 'workflow_outcomes',
         'lookahead_safe': True,
+        'asof': _fresh_artifact_timestamp(),
         'evaluated_count': 20,
         'hit_rate_recent': 0.72,
         'recommendations': {
@@ -515,6 +1164,7 @@ def test_alpha_scanner_applies_maturing_learning_caps_to_outcome_memory(tmp_path
         'applied_to_scoring': True,
         'source': 'workflow_outcomes',
         'lookahead_safe': True,
+        'asof': _fresh_artifact_timestamp(),
         'evaluated_count': 20,
         'hit_rate_recent': 0.72,
         'recommendations': {
@@ -541,6 +1191,7 @@ def test_alpha_scanner_blocks_outcome_memory_when_learning_policy_observes_only(
         'applied_to_scoring': False,
         'source': 'workflow_outcomes',
         'lookahead_safe': True,
+        'asof': _fresh_artifact_timestamp(),
         'evaluated_count': 20,
         'hit_rate_recent': 0.72,
         'recommendations': {

@@ -534,6 +534,57 @@ def test_compact_evidence_calls_forward_citation_validators(monkeypatch, tmp_pat
     }) is not None
 
 
+def test_compact_abort_after_active_stage_skips_remaining_llm_stages(monkeypatch, tmp_path):
+    monkeypatch.setattr(engine, 'RUNS_ROOT', str(tmp_path))
+    packet = {
+        'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+        'as_of': '2026-07-17T06:30:00+00:00', 'fingerprint': 'a' * 64,
+        'evidence_ids': ['ev1'],
+        'sources': [{'evidence_id': 'ev1', 'content': {'text': '근거'}}],
+        'numeric_inputs': {'current_price': 70000}, 'deterministic_scores': {},
+        'risk_gates': {}, 'schema_version': '1', 'prompt_version': '1',
+        'profile': 'compact', 'models': engine.routing_model_ids(),
+        'execution_inputs': {'use_llm': True, 'brain': None},
+    }
+    abort = threading.Event()
+    calls = []
+
+    def fake(_prompt, **kwargs):
+        calls.append(kwargs['operation'])
+        if kwargs['operation'] != 'bulk_text':
+            pytest.fail('abort fence must block every later provider stage')
+        assert kwargs['permit_abort_event'] is abort
+        abort.set()
+        return (
+            '{"digest":"d","evidence_ids":["ev1"]}',
+            {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'},
+        )
+
+    monkeypatch.setattr(engine.llm_client, 'generate_text_with_metadata', fake)
+    monkeypatch.setattr(engine, 'release_compact_permits', lambda *_args: None)
+
+    with pytest.raises(RuntimeError, match='permit_lease_renewal_failed'):
+        engine.run_deep_analysis(
+            '삼성전자', symbol='005930', profile='compact', evidence_packet=packet,
+            force=True, routing_run_id='wf-abort', permits_preflighted=True,
+            request_ids={
+                'bulk_text': 'req-bulk', 'compact_debate': 'req-debate',
+                'decisive_text': 'req-decisive',
+            },
+            reservation_ids={
+                'bulk_text': 'permit-bulk', 'compact_debate': 'permit-debate',
+                'decisive_text': 'permit-decisive',
+            },
+            reservation_owner_tokens={
+                'bulk_text': 'owner-bulk', 'compact_debate': 'owner-debate',
+                'decisive_text': 'owner-decisive',
+            },
+            permit_abort_event=abort,
+        )
+
+    assert calls == ['bulk_text']
+
+
 def test_preflight_denied_low_priority_stages_are_not_re_reserved(monkeypatch, tmp_path):
     monkeypatch.setattr(engine, 'RUNS_ROOT', str(tmp_path))
     packet = {

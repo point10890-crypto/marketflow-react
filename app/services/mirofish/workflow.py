@@ -1144,12 +1144,20 @@ def _complete_workflow(
         'total': len(work_items),
         'percent': 5,
     }
+    def release_item_permits(pending: dict[str, Any]) -> bool:
+        permits = pending.get('reservation_ids')
+        owners = pending.get('reservation_owner_tokens')
+        if not permits:
+            return True
+        try:
+            ta_engine.release_compact_permits(permits, owners)
+        except Exception:
+            return False
+        return True
+
     def release_pending_permits() -> None:
         for pending in work_items:
-            permits = pending.get('reservation_ids')
-            owners = pending.get('reservation_owner_tokens')
-            if permits:
-                ta_engine.release_compact_permits(permits, owners)
+            release_item_permits(pending)
 
     try:
         _write_workflow(workflow)
@@ -1159,59 +1167,142 @@ def _complete_workflow(
         raise
 
     results: list[dict[str, Any]] = []
+    permit_renewal_failed = False
+    permit_abort_event = threading.Event()
+    future_map: dict[concurrent.futures.Future, dict[str, Any]] = {}
     with executor_context as executor:
         try:
-            future_map = {
-                executor.submit(
+            for item in work_items:
+                future = executor.submit(
                     _invoke_analysis_run, item['candidate'], agent_count, mode, workflow_id,
                     bool(workflow.get('force')), evidence_packet=item.get('evidence_packet'),
                     request_ids=item.get('request_ids'), reservation_ids=item.get('reservation_ids'),
                     reservation_owner_tokens=item.get('reservation_owner_tokens'),
                     permits_preflighted=bool(item.get('reservation_ids')),
-                ): item['candidate']
-                for item in work_items
-            }
+                    permit_abort_event=permit_abort_event,
+                )
+                future_map[future] = item
+            pending = set(future_map)
+            lease_failures: set[concurrent.futures.Future] = set()
+            heartbeat_seconds = ta_engine.compact_permit_heartbeat_seconds()
+            while pending:
+                renewable = pending - lease_failures
+                done, not_done = concurrent.futures.wait(
+                    pending,
+                    timeout=heartbeat_seconds if renewable else None,
+                    return_when=concurrent.futures.FIRST_COMPLETED,
+                )
+                if permit_abort_event.is_set():
+                    permit_renewal_failed = True
+                    lease_failures.update(pending)
+                    for future in not_done:
+                        future.cancel()
+                        pending_item = future_map[future]
+                        release_item_permits(pending_item)
+                still_renewable = not_done & renewable
+                if still_renewable and not permit_abort_event.is_set():
+                    permits: dict[str, str] = {}
+                    owners: dict[str, str] = {}
+                    for future in still_renewable:
+                        pending_item = future_map[future]
+                        for operation, reservation_id in dict(
+                            pending_item.get('reservation_ids') or {}
+                        ).items():
+                            key = f'{id(future)}:{operation}'
+                            permits[key] = reservation_id
+                            owners[key] = str(
+                                (pending_item.get('reservation_owner_tokens') or {}).get(operation) or ''
+                            )
+                    try:
+                        renewed = ta_engine.renew_compact_permits(permits, owners)
+                    except Exception:
+                        renewed = False
+                    if not renewed:
+                        permit_renewal_failed = True
+                        permit_abort_event.set()
+                        lease_failures.update(still_renewable)
+                        for future in still_renewable:
+                            future.cancel()
+                            pending_item = future_map[future]
+                            release_item_permits(pending_item)
+                if not done:
+                    continue
+                pending = not_done
+                for future in done:
+                    pending_item = future_map[future]
+                    candidate = pending_item['candidate']
+                    try:
+                        if future in lease_failures or permit_abort_event.is_set():
+                            permit_renewal_failed = True
+                            lease_failures.add(future)
+                            raise RuntimeError('permit_lease_renewal_failed')
+                        run = future.result()
+                        if permit_abort_event.is_set():
+                            permit_renewal_failed = True
+                            lease_failures.add(future)
+                            raise RuntimeError('permit_lease_renewal_failed')
+                        item = _analysis_result(candidate, run)
+                    except Exception as exc:
+                        if (
+                            permit_abort_event.is_set()
+                            or str(exc) == 'permit_lease_renewal_failed'
+                        ):
+                            permit_renewal_failed = True
+                            lease_failures.add(future)
+                        item = {
+                            'candidate': _candidate_summary(candidate),
+                            'status': 'failed',
+                            'error': (
+                                'PermitLeaseError: permit_lease_renewal_failed'
+                                if future in lease_failures
+                                else f'{type(exc).__name__}: {exc}'
+                            ),
+                            'final_score': -999.0,
+                        }
+                    release_item_permits(pending_item)
+                    results.append(item)
+                    workflow['analysis_runs'] = sorted(
+                        results, key=lambda result: result.get('final_score', -999), reverse=True,
+                    )
+                    workflow['progress'] = {
+                        'phase': 'graphrag_batch',
+                        'completed': len(results),
+                        'total': len(work_items),
+                        'percent': min(95, int((len(results) / max(1, len(work_items))) * 90) + 5),
+                    }
+                    _write_workflow(workflow)
         except BaseException:
+            permit_abort_event.set()
+            for future in future_map:
+                future.cancel()
             release_pending_permits()
             raise
-        permits_by_symbol = {
-            str(item['candidate'].get('symbol')): (
-                item.get('reservation_ids'), item.get('reservation_owner_tokens'),
-            )
-            for item in work_items
-        }
-        for future, candidate in future_map.items():
-            reservation_ids, owner_tokens = permits_by_symbol.get(
-                str(candidate.get('symbol')), (None, None),
-            )
-            if reservation_ids:
-                future.add_done_callback(
-                    lambda _future, permits=dict(reservation_ids), owners=dict(owner_tokens or {}):
-                    ta_engine.release_compact_permits(permits, owners)
-                )
-        for future in concurrent.futures.as_completed(future_map):
-            candidate = future_map[future]
-            try:
-                run = future.result()
-                item = _analysis_result(candidate, run)
-            except Exception as exc:
-                item = {
-                    'candidate': _candidate_summary(candidate),
-                    'status': 'failed',
-                    'error': f'{type(exc).__name__}: {exc}',
-                    'final_score': -999.0,
-                }
-            results.append(item)
-            workflow['analysis_runs'] = sorted(results, key=lambda item: item.get('final_score', -999), reverse=True)
-            workflow['progress'] = {
-                'phase': 'graphrag_batch',
-                'completed': len(results),
-                'total': len(work_items),
-                'percent': min(95, int((len(results) / max(1, len(work_items))) * 90) + 5),
-            }
-            _write_workflow(workflow)
 
     ranked = sorted(results, key=lambda item: item.get('final_score', -999), reverse=True)
+    if permit_renewal_failed:
+        workflow.update({
+            'status': 'failed',
+            'analysis_status': 'FAILED_TECHNICAL',
+            'failure_reason': 'permit_lease_renewal_failed',
+            'completed_at': datetime.now(timezone.utc).isoformat(),
+            'elapsed_ms': int((time.perf_counter() - started) * 1000),
+            'analysis_runs': ranked,
+            'top3': [],
+            'tradingagents_summary': {
+                'status': 'failed', 'analyzed': 0,
+                'legacy_duplicate_removed': True,
+            },
+            'progress': {
+                'phase': 'failed', 'completed': len(results),
+                'total': len(work_items), 'percent': 100,
+            },
+            'summary': {
+                'status': 'failed', 'reason': 'permit_lease_renewal_failed',
+                'analyzed_count': 0, 'selected_count': 0,
+            },
+        })
+        _write_workflow(workflow)
+        return workflow
     pre_intervention_items = copy.deepcopy(ranked)
     workflow['pre_intervention_ranking'] = _ranking_snapshot(ranked)
     pre_ranks = {
@@ -1326,7 +1417,10 @@ def _invoke_analysis_run(
     reservation_ids: dict[str, str] | None = None,
     reservation_owner_tokens: dict[str, str] | None = None,
     permits_preflighted: bool = False,
+    permit_abort_event: threading.Event | None = None,
 ) -> dict[str, Any]:
+    if permit_abort_event is not None and permit_abort_event.is_set():
+        raise RuntimeError('permit_lease_renewal_failed')
     parameters = inspect.signature(_create_analysis_run).parameters
     if 'workflow_id' in parameters:
         optional = {
@@ -1335,6 +1429,7 @@ def _invoke_analysis_run(
             'reservation_ids': reservation_ids,
             'reservation_owner_tokens': reservation_owner_tokens,
             'permits_preflighted': permits_preflighted,
+            'permit_abort_event': permit_abort_event,
         }
         accepts_kwargs = any(
             parameter.kind is inspect.Parameter.VAR_KEYWORD
@@ -1356,6 +1451,7 @@ def _create_analysis_run(
     reservation_ids: dict[str, str] | None = None,
     reservation_owner_tokens: dict[str, str] | None = None,
     permits_preflighted: bool = False,
+    permit_abort_event: threading.Event | None = None,
 ) -> dict[str, Any]:
     """Automatic-only compact seam; standalone ``store.create_run`` is unchanged."""
     if ta_engine.is_disabled():
@@ -1370,6 +1466,7 @@ def _create_analysis_run(
         reservation_ids=reservation_ids,
         reservation_owner_tokens=reservation_owner_tokens,
         permits_preflighted=permits_preflighted,
+        permit_abort_event=permit_abort_event,
     )
     return store.create_compact_run(candidate, ta, agent_count=agent_count)
 

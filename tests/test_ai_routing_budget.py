@@ -3,6 +3,8 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 import multiprocessing
 
+import pytest
+
 import app.services.ai_routing.budget as budget_module
 from app.services.ai_routing.budget import BudgetLimits, BudgetManager
 from app.services.ai_routing.contracts import Operation, TokenUsage
@@ -396,6 +398,332 @@ def test_successfully_settled_permit_is_never_reclaimed_after_lease(tmp_path, mo
 
     assert replay.approved is False
     assert replay.reason == 'already_settled'
+
+
+def test_owned_reserved_and_claimed_permits_renew_without_reviving_dead_owner(
+    tmp_path, monkeypatch,
+):
+    now = {'value': datetime(2026, 9, 3, tzinfo=timezone.utc)}
+    monkeypatch.setenv('AI_OPENAI_PERMIT_LEASE_SECONDS', '10')
+    monkeypatch.setattr(budget_module, '_utc_now_datetime', lambda: now['value'])
+    manager = _manager(tmp_path)
+    reserved = manager.reserve(
+        run_id='renew-run', request_id='queued', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='queued-owner',
+    )
+    claimed = manager.reserve(
+        run_id='renew-run', request_id='active', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='active-owner',
+    )
+    assert manager.claim(
+        claimed.reservation_id, run_id='renew-run', request_id='active',
+        owner_token='active-owner', input_tokens=100, output_tokens=100,
+    ).approved
+
+    now['value'] += timedelta(seconds=8)
+    assert manager.renew_many([
+        (reserved.reservation_id, 'queued-owner'),
+        (claimed.reservation_id, 'active-owner'),
+    ]) is True
+    now['value'] += timedelta(seconds=4)
+
+    assert manager.claim(
+        reserved.reservation_id, run_id='renew-run', request_id='queued',
+        owner_token='queued-owner', input_tokens=100, output_tokens=100,
+    ).approved
+    peer = manager.reserve(
+        run_id='renew-run', request_id='active', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='peer-owner',
+    )
+    assert peer.approved is False and peer.reason == 'permit_in_use'
+    assert manager.renew_many([(claimed.reservation_id, 'dead-owner')]) is False
+
+
+def test_renew_many_is_atomic_and_terminal_settlement_is_not_double_counted(
+    tmp_path, monkeypatch,
+):
+    now = {'value': datetime(2026, 9, 3, tzinfo=timezone.utc)}
+    monkeypatch.setenv('AI_OPENAI_PERMIT_LEASE_SECONDS', '10')
+    monkeypatch.setattr(budget_module, '_utc_now_datetime', lambda: now['value'])
+    manager = _manager(tmp_path)
+    first = manager.reserve(
+        run_id='renew-atomic', request_id='first', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='first-owner',
+    )
+    second = manager.reserve(
+        run_id='renew-atomic', request_id='second', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='second-owner',
+    )
+    with manager.store.transaction() as connection:
+        original_expiry = connection.execute(
+            'SELECT lease_expires_at_utc FROM budget_reservations WHERE reservation_id=?',
+            (first.reservation_id,),
+        ).fetchone()['lease_expires_at_utc']
+
+    now['value'] += timedelta(seconds=5)
+    assert manager.renew_many([
+        (first.reservation_id, 'first-owner'),
+        (second.reservation_id, 'wrong-owner'),
+    ]) is False
+    with manager.store.transaction() as connection:
+        unchanged_expiry = connection.execute(
+            'SELECT lease_expires_at_utc FROM budget_reservations WHERE reservation_id=?',
+            (first.reservation_id,),
+        ).fetchone()['lease_expires_at_utc']
+    assert unchanged_expiry == original_expiry
+
+    assert manager.claim(
+        first.reservation_id, run_id='renew-atomic', request_id='first',
+        owner_token='first-owner', input_tokens=100, output_tokens=100,
+    ).approved
+    assert manager.settle(
+        first.reservation_id, TokenUsage(input_tokens=40, output_tokens=20),
+    ) is True
+    assert manager.renew_many([
+        (first.reservation_id, 'first-owner'),
+    ], terminal_ok=True) is True
+    snapshot = manager.snapshot('renew-atomic')
+    assert snapshot.used_calls == 2
+    assert snapshot.used_input_tokens == 140
+    assert snapshot.used_output_tokens == 120
+
+
+def test_renew_does_not_resurrect_expired_active_permit(tmp_path, monkeypatch):
+    now = {'value': datetime(2026, 9, 3, tzinfo=timezone.utc)}
+    monkeypatch.setenv('AI_OPENAI_PERMIT_LEASE_SECONDS', '1')
+    monkeypatch.setattr(budget_module, '_utc_now_datetime', lambda: now['value'])
+    manager = _manager(tmp_path)
+    permit = manager.reserve(
+        run_id='renew-expired', request_id='queued', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='dead-owner',
+    )
+    now['value'] += timedelta(seconds=2)
+
+    assert manager.renew(permit.reservation_id, owner_token='dead-owner') is False
+    recovered = manager.reserve(
+        run_id='renew-expired', request_id='queued', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='new-owner',
+    )
+    assert recovered.approved is True
+    assert recovered.owner_token == 'new-owner'
+
+
+def test_renew_rejects_missing_owner_and_wrong_budget_pool(tmp_path):
+    manager = _manager(tmp_path)
+    permit = manager.reserve(
+        run_id='renew-fence', request_id='queued', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='right-owner',
+    )
+    wrong_pool = BudgetManager(manager.store, pool='interactive')
+
+    assert manager.renew_many([(permit.reservation_id, '')]) is False
+    assert wrong_pool.renew(permit.reservation_id, owner_token='right-owner') is False
+
+
+def test_renew_rejects_breached_permit_without_double_accounting(tmp_path):
+    manager = _manager(tmp_path)
+    permit = manager.reserve(
+        run_id='renew-breached', request_id='active', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='active-owner',
+    )
+    assert manager.claim(
+        permit.reservation_id, run_id='renew-breached', request_id='active',
+        owner_token='active-owner', input_tokens=100, output_tokens=100,
+    ).approved
+    assert manager.settle(
+        permit.reservation_id, TokenUsage(input_tokens=101, output_tokens=100),
+    ) is False
+    before = manager.snapshot('renew-breached')
+
+    assert manager.renew_many([
+        (permit.reservation_id, 'active-owner'),
+    ], terminal_ok=True) is False
+    assert manager.snapshot('renew-breached') == before
+
+
+def test_renew_and_claim_reject_permits_after_utc_billing_day_rollover(
+    tmp_path, monkeypatch,
+):
+    now = {'value': datetime(2026, 9, 3, 23, 59, 50, tzinfo=timezone.utc)}
+    monkeypatch.setenv('AI_OPENAI_PERMIT_LEASE_SECONDS', '60')
+    monkeypatch.setattr(budget_module, '_utc_now_datetime', lambda: now['value'])
+    manager = _manager(tmp_path)
+    queued = manager.reserve(
+        run_id='day-rollover', request_id='queued',
+        operation=Operation.DECISIVE_TEXT, input_tokens=100, output_tokens=100,
+        owner_token='queued-owner',
+    )
+    active = manager.reserve(
+        run_id='day-rollover', request_id='active',
+        operation=Operation.DECISIVE_TEXT, input_tokens=100, output_tokens=100,
+        owner_token='active-owner',
+    )
+    assert manager.claim(
+        active.reservation_id, run_id='day-rollover', request_id='active',
+        owner_token='active-owner', input_tokens=100, output_tokens=100,
+    ).approved
+    now['value'] = datetime(2026, 9, 4, 0, 0, 5, tzinfo=timezone.utc)
+
+    assert manager.renew_many([
+        (queued.reservation_id, 'queued-owner'),
+        (active.reservation_id, 'active-owner'),
+    ], terminal_ok=True) is False
+    claim = manager.claim(
+        queued.reservation_id, run_id='day-rollover', request_id='queued',
+        owner_token='queued-owner', input_tokens=100, output_tokens=100,
+    )
+
+    assert claim.approved is False
+    assert claim.reason == 'permit_billing_day_expired'
+    with manager.store.transaction() as connection:
+        status = connection.execute(
+            'SELECT status FROM budget_reservations WHERE reservation_id=?',
+            (queued.reservation_id,),
+        ).fetchone()['status']
+    assert status == 'released'
+
+
+@pytest.mark.parametrize('invalid_expiry', [None, 'not-a-timestamp'])
+def test_renew_does_not_revive_active_permit_with_invalid_lease(
+    tmp_path, invalid_expiry,
+):
+    manager = _manager(tmp_path)
+    permit = manager.reserve(
+        run_id='renew-invalid-lease', request_id='queued',
+        operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='owner',
+    )
+    with manager.store.transaction(write=True) as connection:
+        connection.execute(
+            'UPDATE budget_reservations SET lease_expires_at_utc=? WHERE reservation_id=?',
+            (invalid_expiry, permit.reservation_id),
+        )
+
+    assert manager.renew(permit.reservation_id, owner_token='owner') is False
+
+
+@pytest.mark.parametrize('invalid_expiry', [None, 'not-a-timestamp'])
+def test_claim_rejects_reserved_permit_with_invalid_lease(
+    tmp_path, invalid_expiry,
+):
+    manager = _manager(tmp_path)
+    permit = manager.reserve(
+        run_id='claim-invalid-lease', request_id='queued',
+        operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='owner',
+    )
+    with manager.store.transaction(write=True) as connection:
+        connection.execute(
+            'UPDATE budget_reservations SET lease_expires_at_utc=? WHERE reservation_id=?',
+            (invalid_expiry, permit.reservation_id),
+        )
+
+    claim = manager.claim(
+        permit.reservation_id,
+        run_id='claim-invalid-lease',
+        request_id='queued',
+        owner_token='owner',
+        input_tokens=100,
+        output_tokens=100,
+    )
+
+    assert claim.approved is False
+    assert claim.reason == 'permit_lease_invalid'
+    with manager.store.transaction() as connection:
+        row = connection.execute(
+            'SELECT status FROM budget_reservations WHERE reservation_id=?',
+            (permit.reservation_id,),
+        ).fetchone()
+    assert row['status'] == 'released'
+
+
+def test_aggregate_token_breach_blocks_peer_permit_renewal_and_claim(tmp_path):
+    manager = _manager(tmp_path, BudgetLimits(
+        max_calls=2,
+        max_input_tokens=200,
+        max_output_tokens=200,
+        low_priority_cutoff=1.0,
+    ))
+    first = manager.reserve(
+        run_id='aggregate-token-breach', request_id='first',
+        operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='first-owner',
+    )
+    peer = manager.reserve(
+        run_id='aggregate-token-breach', request_id='peer',
+        operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='peer-owner',
+    )
+    assert manager.claim(
+        first.reservation_id,
+        run_id='aggregate-token-breach', request_id='first',
+        owner_token='first-owner', input_tokens=100, output_tokens=100,
+    ).approved
+    assert manager.settle(
+        first.reservation_id,
+        TokenUsage(input_tokens=101, output_tokens=100),
+    ) is False
+
+    assert manager.renew(peer.reservation_id, owner_token='peer-owner') is False
+    claim = manager.claim(
+        peer.reservation_id,
+        run_id='aggregate-token-breach', request_id='peer',
+        owner_token='peer-owner', input_tokens=100, output_tokens=100,
+    )
+
+    assert claim.approved is False
+    assert claim.reason == 'hard_cap'
+    with manager.store.transaction() as connection:
+        row = connection.execute(
+            'SELECT status FROM budget_reservations WHERE reservation_id=?',
+            (peer.reservation_id,),
+        ).fetchone()
+    assert row['status'] == 'released'
+
+
+def test_aggregate_daily_cost_breach_blocks_peer_permit_renewal_and_claim(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.setenv('AI_OPENAI_DAILY_BUDGET_USD', '1.00')
+    manager = _manager(tmp_path)
+    first = manager.reserve(
+        run_id='aggregate-cost-breach', request_id='first',
+        operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100,
+        estimated_cost_usd=Decimal('0.40'), owner_token='first-owner',
+    )
+    peer = manager.reserve(
+        run_id='aggregate-cost-breach', request_id='peer',
+        operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100,
+        estimated_cost_usd=Decimal('0.60'), owner_token='peer-owner',
+    )
+    assert manager.claim(
+        first.reservation_id,
+        run_id='aggregate-cost-breach', request_id='first',
+        owner_token='first-owner', input_tokens=100, output_tokens=100,
+    ).approved
+    assert manager.settle(
+        first.reservation_id,
+        TokenUsage(input_tokens=100, output_tokens=100),
+        actual_cost_usd=Decimal('0.50'),
+    ) is False
+
+    assert manager.renew(peer.reservation_id, owner_token='peer-owner') is False
+    claim = manager.claim(
+        peer.reservation_id,
+        run_id='aggregate-cost-breach', request_id='peer',
+        owner_token='peer-owner', input_tokens=100, output_tokens=100,
+    )
+
+    assert claim.approved is False
+    assert claim.reason == 'daily_hard_cap'
+    with manager.store.transaction() as connection:
+        row = connection.execute(
+            'SELECT status FROM budget_reservations WHERE reservation_id=?',
+            (peer.reservation_id,),
+        ).fetchone()
+    assert row['status'] == 'released'
 
 
 def test_claim_and_settlement_fail_closed_above_reserved_bound(tmp_path):

@@ -154,6 +154,7 @@ def run_compact_debate(
     reservation_id: str | None = None,
     reservation_owner_token: str | None = None,
     evidence_packet: dict[str, Any] | None = None,
+    permit_abort_event: Any = None,
 ) -> dict[str, Any]:
     """One logical bull/bear call; the research manager remains deterministic."""
     rule_bull = _bull_message_rule(reports, 1)
@@ -179,6 +180,7 @@ def run_compact_debate(
             domain_validator=_compact_debate_domain_validator(allowed),
             symbol=packet.get('symbol'), market=packet.get('market'),
             caller_endpoint='mirofish.tradingagents.compact_debate',
+            permit_abort_event=permit_abort_event,
         )
         data = _parse_json_obj(raw)
         if data and str(data.get('bull_case') or '').strip() and str(data.get('bear_case') or '').strip():

@@ -121,6 +121,14 @@ SOURCE_FILE_POLICIES = {
         'max_age_days': 2,
     },
 }
+_SOURCE_ARTIFACT_KEYS = {
+    'screener_leading_latest.json': 'screener',
+    'vcp_kr_latest.json': 'vcp',
+    'jongga_v2_latest.json': 'jongga',
+    'kind_blacklist_latest.json': 'kind_blacklist',
+    'credit_balance_latest.json': 'credit_balance',
+    'alpha_rs_ratings.json': 'rs_ratings',
+}
 
 
 _ALERT_DELIVERY_GUARDS_LOCK = threading.Lock()
@@ -285,11 +293,17 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
     payload = payload or {}
     limit = _clean_limit(payload.get('limit'), default=DEFAULT_LIMIT)
     requested_symbols = _clean_symbols(payload.get('symbols'))
-    generated_at = datetime.now(timezone.utc).isoformat()
-    run_id = _run_id(generated_at, requested_symbols, limit)
+    started_at = datetime.now(timezone.utc).isoformat()
+    run_id = _run_id(started_at, requested_symbols, limit)
 
     artifacts = _load_artifacts()
+    _collect_requested_kis_live(artifacts, requested_symbols)
     performance_advisory = _performance_advisory()
+    generated_at = datetime.now(timezone.utc).isoformat()
+    performance_advisory = _performance_advisory_at_cutoff(
+        performance_advisory,
+        generated_at,
+    )
     candidate_pool = _build_candidate_pool(
         artifacts,
         generated_at=generated_at,
@@ -308,7 +322,7 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
     rejected_candidates = _rejected_candidates(candidate_pool, selected_count=len(candidates), limit=limit)
     feature_vectors = _feature_vectors(candidates)
     evidence_ledger = _evidence_ledger(candidates, rejected_candidates)
-    source_files = _source_files(artifacts)
+    source_files = _source_files(artifacts, cutoff_ceiling=generated_at)
     goal_harness = _profitability_run_summary(candidates, rejected_candidates)
     run = {
         'id': run_id,
@@ -316,7 +330,7 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         'mode': 'deterministic_file_artifacts',
         'source': 'local_marketflow_artifacts',
         'generated_at': generated_at,
-        'created_at': generated_at,
+        'created_at': started_at,
         'limit': limit,
         'requested_symbols': sorted(requested_symbols),
         'universe_size': len(artifacts['candidate_symbols']),
@@ -1321,6 +1335,27 @@ def _load_artifacts() -> dict[str, Any]:
     }
 
 
+def _collect_requested_kis_live(
+    artifacts: dict[str, Any], requested_symbols: set[str],
+) -> None:
+    """Complete optional requested-symbol collection before the scoring cutoff."""
+    if (
+        not _scanner_kis_live_enabled()
+        or not requested_symbols
+        or len(requested_symbols) > 10
+    ):
+        return
+    maps = artifacts.get('ticker_map') or {}
+    snapshots = dict(artifacts.get('kis_live') or {})
+    for symbol in sorted(requested_symbols):
+        if snapshots.get(symbol):
+            continue
+        snapshot = _fetch_kis_live_snapshot_for_symbol(symbol, maps.get(symbol) or {})
+        if snapshot:
+            snapshots[symbol] = snapshot
+    artifacts['kis_live'] = snapshots
+
+
 def _load_source_artifacts() -> dict[str, Any]:
     return {
         'screener': _load_json_artifact('screener_leading_latest.json'),
@@ -1361,6 +1396,10 @@ def _build_candidate_pool(
     requested_symbols: set[str],
     performance_advisory: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
+    performance_advisory = _performance_advisory_at_cutoff(
+        performance_advisory or {},
+        generated_at,
+    )
     maps = artifacts['ticker_map']
     prices = artifacts['daily_prices']
     screener_by_symbol = _index_screener(artifacts['screener'].get('data'))
@@ -1374,19 +1413,40 @@ def _build_candidate_pool(
     kis_live_by_symbol = artifacts.get('kis_live') or {}
     dart_events_by_symbol = artifacts.get('dart_events') or {}
     news_theme_social_by_symbol = artifacts.get('news_theme_social') or {}
-    allow_live_kis = _scanner_kis_live_enabled() and bool(requested_symbols) and len(requested_symbols) <= 10
-
-    symbols = set(artifacts['candidate_symbols'])
+    source_seed_indexes = (
+        ('screener_leading_latest.json', screener_by_symbol),
+        ('vcp_kr_latest.json', vcp_by_symbol),
+        ('jongga_v2_latest.json', jongga_by_symbol),
+    )
+    raw_source_symbols = {
+        symbol
+        for _source, indexed in source_seed_indexes
+        for symbol in indexed
+    }
+    eligible_source_symbols = {
+        symbol
+        for source, indexed in source_seed_indexes
+        for symbol, payload in indexed.items()
+        if _normalize_scoring_source(
+            source,
+            payload,
+            artifacts=artifacts,
+            cutoff_ceiling=generated_at,
+        )[0] is not None
+    }
     if requested_symbols:
-        symbols = {symbol for symbol in symbols if symbol in requested_symbols}
-        symbols.update(requested_symbols)
+        # An explicit request is an independent, stable universe definition.
+        symbols = set(requested_symbols)
+    elif raw_source_symbols:
+        # Never let an unavailable future screener artifact seed the universe.
+        symbols = eligible_source_symbols
+    else:
+        symbols = set(prices)
 
     rows = []
     for symbol in sorted(symbols):
         mapped = maps.get(symbol) or {}
         kis_live = kis_live_by_symbol.get(symbol)
-        if not kis_live and allow_live_kis and symbol in requested_symbols:
-            kis_live = _fetch_kis_live_snapshot_for_symbol(symbol, mapped)
         candidate = _score_symbol(
             symbol,
             mapped,
@@ -1404,7 +1464,7 @@ def _build_candidate_pool(
             news_theme_social_by_symbol.get(symbol),
             artifacts,
             generated_at,
-            performance_advisory or {},
+            performance_advisory,
             rs_rating=rs_by_symbol.get(symbol),
         )
         rows.append(candidate)
@@ -1718,8 +1778,52 @@ def _score_symbol(
     *,
     rs_rating: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    source_file_observed = {
+        os.path.basename(str(item.get('file') or '')): item.get('modified_at')
+        for item in _source_files(artifacts)
+        if isinstance(item, dict)
+    }
+    source_exclusions: dict[str, dict[str, Any]] = {}
+
+    def gate_source(source: str, payload: dict[str, Any] | None) -> dict[str, Any] | None:
+        normalized, exclusion = _normalize_scoring_source(
+            source,
+            payload,
+            artifacts=artifacts,
+            cutoff_ceiling=generated_at,
+            file_observed_at=source_file_observed.get(source),
+        )
+        if exclusion is not None:
+            source_exclusions[source] = exclusion
+        return normalized
+
+    eligible_price_history = []
+    for historical_price in price_history:
+        normalized, _exclusion = _normalize_scoring_source(
+            'daily_prices.csv', historical_price,
+            artifacts=artifacts, cutoff_ceiling=generated_at,
+        )
+        if normalized is not None:
+            eligible_price_history.append(normalized)
+    price_history = eligible_price_history
+    price = gate_source('daily_prices.csv', price)
+    if price is None and price_history:
+        price = price_history[-1]
+    price = price or {}
+    screener = gate_source('screener_leading_latest.json', screener)
+    vcp = gate_source('vcp_kr_latest.json', vcp)
+    jongga = gate_source('jongga_v2_latest.json', jongga)
+    tradingview = gate_source('tradingview_mcp', tradingview)
+    institutional = gate_source('all_institutional_trend_data.csv', institutional)
+    kind_blacklist = gate_source('kind_blacklist_latest.json', kind_blacklist)
+    credit_balance = gate_source('credit_balance_latest.json', credit_balance)
+    kis_live = gate_source('KIS API: live price/investor flow', kis_live)
+    dart_event = gate_source('dart_event_latest.json', dart_event)
+    news_theme_social = gate_source('news_theme_social_latest.json', news_theme_social)
+    rs_rating = gate_source('alpha_rs_ratings.json', rs_rating)
+
     evidence = []
-    kis_overlay = _kis_live_overlay(price, kis_live)
+    kis_overlay = _kis_live_overlay(price, kis_live, as_of=generated_at)
     if kis_overlay.get('applied'):
         price = kis_overlay['price']
     change_rate = _float(price.get('change_rate'))
@@ -1824,7 +1928,7 @@ def _score_symbol(
             rs_adjustment.get('alpha_delta'),
             rs_adjustment.get('rs_rating'),
         ))
-    source_freshness = _symbol_freshness(artifacts)
+    source_freshness = _symbol_freshness(artifacts, cutoff_ceiling=generated_at)
     mcp_adjustment = _mcp_quality_adjustment(
         price=price,
         kis_live=kis_live,
@@ -1835,6 +1939,7 @@ def _score_symbol(
         news_theme_social=news_theme_social,
         freshness=source_freshness,
         performance_advisory=performance_advisory,
+        as_of=generated_at,
     )
     alpha += _float(mcp_adjustment.get('alpha_delta'))
     risk += _float(mcp_adjustment.get('risk_delta'))
@@ -1906,6 +2011,7 @@ def _score_symbol(
         kis_live,
         dart_event,
         news_theme_social,
+        rs_rating,
     )
     source_packets, source_cutoff, provenance_missing = _authoritative_source_packets(
         symbol=symbol,
@@ -1924,6 +2030,7 @@ def _score_symbol(
             'KIS API: live price/investor flow': kis_live,
             'dart_event_latest.json': dart_event,
             'news_theme_social_latest.json': news_theme_social,
+            'alpha_rs_ratings.json': rs_rating,
         },
         required_sources=data_sources,
         cutoff_ceiling=generated_at,
@@ -2013,6 +2120,10 @@ def _score_symbol(
         'generated_at': generated_at,
         'source_cutoff': source_cutoff,
         'source_packets': source_packets,
+        'source_availability_excluded': sorted(source_exclusions),
+        'source_availability_exclusion_details': [
+            source_exclusions[source] for source in sorted(source_exclusions)
+        ],
         'provenance_missing': provenance_missing,
         'source': 'local_marketflow_artifacts',
         'freshness': source_freshness,
@@ -2155,7 +2266,9 @@ def _load_indexed_resource_artifact(filename: str) -> dict[str, dict[str, Any]]:
         enriched = dict(item)
         enriched.setdefault('symbol', symbol)
         enriched.setdefault('source_file', filename)
-        if artifact.get('generated_at') and not _resource_observed_at(enriched):
+        if artifact.get('generated_at'):
+            enriched['source_artifact_available_at'] = artifact.get('generated_at')
+        if artifact.get('generated_at') and _precise_resource_observed_at(enriched) is None:
             enriched['generated_at'] = artifact.get('generated_at')
         indexed[symbol] = enriched
     return indexed
@@ -2306,13 +2419,23 @@ def _load_json_artifact(filename: str) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError, ValueError):
         return artifact
     artifact['data'] = data
-    artifact['generated_at'] = (
-        data.get('timestamp')
-        or data.get('date')
-        or _nested_get(data, ['metadata', 'generated_at'])
-        or artifact['mtime']
-    )
+    artifact['generated_at'] = _artifact_observed_value(data) or artifact['mtime']
     return artifact
+
+
+def _artifact_observed_value(data: Any) -> Any:
+    """Return the first precise producer timestamp, never a date-only label."""
+    if not isinstance(data, dict):
+        return None
+    for key in (
+        'available_at', 'fetched_at', 'observed_at', 'updated_at',
+        'generated_at', 'timestamp', 'date',
+    ):
+        value = data.get(key)
+        if _parse_precise_source_instant(value) is not None:
+            return value
+    metadata = data.get('metadata')
+    return _artifact_observed_value(metadata) if isinstance(metadata, dict) else None
 
 
 def _symbols_from_screener(data: Any) -> set[str]:
@@ -2455,8 +2578,11 @@ def _stddev(values: list[float]) -> float:
     return variance ** 0.5
 
 
-def _source_files(artifacts: dict[str, Any]) -> list[dict[str, Any]]:
+def _source_files(
+    artifacts: dict[str, Any], *, cutoff_ceiling: Any = None,
+) -> list[dict[str, Any]]:
     files = []
+    cutoff = _parse_dt(cutoff_ceiling)
     for filename in WATCHED_SOURCE_FILES:
         path = os.path.join(DATA_ROOT, filename)
         exists = os.path.isfile(path)
@@ -2469,14 +2595,32 @@ def _source_files(artifacts: dict[str, Any]) -> list[dict[str, Any]]:
                 generated_at = artifact.get('generated_at')
         max_age_days = _freshness_max_age_days(filename)
         freshness_value = generated_at or mtime
+        available_at = _parse_precise_source_instant(freshness_value)
+        available = bool(
+            exists
+            and (
+                cutoff is None
+                or (available_at is not None and available_at <= cutoff)
+            )
+        )
         policy = SOURCE_FILE_POLICIES.get(filename, {})
         files.append({
             'file': f'data/{filename}',
             'exists': exists,
+            'available': available,
+            'available_at': available_at.isoformat() if available_at is not None else None,
+            'cutoff': cutoff.isoformat() if cutoff is not None else None,
             'generated_at': generated_at,
             'modified_at': mtime,
-            'freshness': _freshness_label(freshness_value, max_age_days=max_age_days),
-            'age_days': _age_days(freshness_value),
+            'freshness': (
+                _freshness_label(
+                    freshness_value,
+                    cutoff_ceiling,
+                    max_age_days=max_age_days,
+                )
+                if available else 'unavailable'
+            ),
+            'age_days': _age_days(freshness_value, cutoff_ceiling) if available else None,
             'max_age_days': max_age_days,
             'role': policy.get('role'),
             'required': bool(policy.get('required', True)),
@@ -2486,13 +2630,16 @@ def _source_files(artifacts: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _aggregate_freshness(source_files: list[dict[str, Any]]) -> dict[str, Any]:
-    existing = [item for item in source_files if item.get('exists')]
+    def is_available(item: dict[str, Any]) -> bool:
+        return bool(item.get('available', item.get('exists')))
+
+    existing = [item for item in source_files if is_available(item)]
     stale_count = sum(1 for item in existing if item.get('freshness') == 'stale')
     unknown_count = sum(1 for item in existing if item.get('freshness') == 'unknown')
     required_files = [item for item in source_files if item.get('required')]
-    missing_required_count = sum(1 for item in required_files if not item.get('exists'))
+    missing_required_count = sum(1 for item in required_files if not is_available(item))
     missing_count = len(source_files) - len(existing)
-    if not required_files or not any(item.get('exists') for item in required_files):
+    if not required_files or not any(is_available(item) for item in required_files):
         status = 'missing'
     elif stale_count:
         status = 'stale'
@@ -2516,7 +2663,10 @@ def _alert_block_reason(run: dict[str, Any]) -> str | None:
     source_files = [item for item in (run.get('source_files') or []) if isinstance(item, dict)]
     alert_required = [item for item in source_files if item.get('alert_required')]
     if alert_required:
-        existing_required = [item for item in alert_required if item.get('exists')]
+        existing_required = [
+            item for item in alert_required
+            if item.get('available', item.get('exists'))
+        ]
         if not existing_required:
             return 'source_freshness:missing'
         if any(str(item.get('freshness') or '').lower() == 'stale' for item in existing_required):
@@ -2542,21 +2692,38 @@ def _source_warning(run: dict[str, Any], blocked_reason: str | None) -> str | No
     return None
 
 
-def _symbol_freshness(artifacts: dict[str, Any]) -> dict[str, Any]:
-    source_files = _source_files(artifacts)
+def _symbol_freshness(
+    artifacts: dict[str, Any], *, cutoff_ceiling: Any = None,
+) -> dict[str, Any]:
+    source_files = _source_files(artifacts, cutoff_ceiling=cutoff_ceiling)
     return _aggregate_freshness(source_files)
 
 
-def _staleness_penalty(artifacts: dict[str, Any], generated_at: str) -> float:
+def _staleness_penalty(
+    artifacts: dict[str, Any], generated_at: str,
+) -> float:
     penalty = 0.0
-    for key in ['screener', 'vcp', 'jongga']:
-        artifact = artifacts.get(key) or {}
-        if not artifact.get('exists'):
+    cutoff = _parse_dt(generated_at)
+    for source, artifact_key in (
+        ('screener_leading_latest.json', 'screener'),
+        ('vcp_kr_latest.json', 'vcp'),
+        ('jongga_v2_latest.json', 'jongga'),
+    ):
+        artifact = artifacts.get(artifact_key) or {}
+        observed = (
+            _precise_resource_observed_at(artifact)
+            or _parse_precise_source_instant(artifact.get('mtime'))
+        )
+        if (
+            not artifact.get('exists')
+            or observed is None
+            or (cutoff is not None and observed > cutoff)
+        ):
             penalty += 2.5
         elif _freshness_label(
-            artifact.get('generated_at'),
+            observed.isoformat(),
             generated_at,
-            max_age_days=_freshness_max_age_days(artifact.get('filename')),
+            max_age_days=_freshness_max_age_days(source),
         ) == 'stale':
             penalty += 4.0
     return penalty
@@ -2646,7 +2813,9 @@ def _institutional_flow_confirmation(institutional: dict[str, Any] | None) -> di
     }
 
 
-def _kis_live_overlay(price: dict[str, Any], kis_live: dict[str, Any] | None) -> dict[str, Any]:
+def _kis_live_overlay(
+    price: dict[str, Any], kis_live: dict[str, Any] | None, *, as_of: Any = None,
+) -> dict[str, Any]:
     if not isinstance(kis_live, dict) or not kis_live:
         return {'applied': False, 'available': False}
     quote = kis_live.get('quote') if isinstance(kis_live.get('quote'), dict) else kis_live
@@ -2687,7 +2856,9 @@ def _kis_live_overlay(price: dict[str, Any], kis_live: dict[str, Any] | None) ->
         'fetched_at': merged.get('kis_fetched_at'),
         'price': merged,
         'quote': quote,
-        'weight': _resource_weight(kis_live, default_confidence=0.94, max_age_days=1),
+        'weight': _resource_weight(
+            kis_live, default_confidence=0.94, max_age_days=1, as_of=as_of,
+        ),
     }
 
 
@@ -2702,6 +2873,7 @@ def _mcp_quality_adjustment(
     news_theme_social: dict[str, Any] | None,
     freshness: dict[str, Any],
     performance_advisory: dict[str, Any],
+    as_of: Any = None,
 ) -> dict[str, Any]:
     alpha_delta = 0.0
     risk_delta = 0.0
@@ -2711,7 +2883,12 @@ def _mcp_quality_adjustment(
     evidence: list[dict[str, Any]] = []
     resource_weights: dict[str, Any] = {}
 
-    kis_weight = _resource_weight(kis_live, default_confidence=0.94, max_age_days=1) if kis_live else _resource_weight(None)
+    kis_weight = (
+        _resource_weight(
+            kis_live, default_confidence=0.94, max_age_days=1, as_of=as_of,
+        )
+        if kis_live else _resource_weight(None, as_of=as_of)
+    )
     if kis_live and kis_overlay.get('applied'):
         quote = kis_overlay.get('quote') or {}
         investor = kis_live.get('investor') if isinstance(kis_live.get('investor'), dict) else {}
@@ -2749,12 +2926,19 @@ def _mcp_quality_adjustment(
     resource_weights['kis_live'] = kis_weight
 
     if flow_confirmation.get('passed') and institutional:
-        flow_weight = _resource_weight(institutional, default_confidence=0.82, max_age_days=30)
+        flow_weight = _resource_weight(
+            institutional, default_confidence=0.82, max_age_days=30, as_of=as_of,
+        )
         alpha_delta += 1.5 * flow_weight['score_weight']
         evidence.append(_evidence('all_institutional_trend_data.csv', 'flow_quality_weight', 1.5, flow_weight['freshness']))
         resource_weights['capital_flow'] = flow_weight
 
-    dart_weight = _resource_weight(dart_event, default_confidence=0.86, max_age_days=7) if dart_event else _resource_weight(None)
+    dart_weight = (
+        _resource_weight(
+            dart_event, default_confidence=0.86, max_age_days=7, as_of=as_of,
+        )
+        if dart_event else _resource_weight(None, as_of=as_of)
+    )
     if dart_event:
         dart_result = _dart_event_risk_adjustment(dart_event, dart_weight)
         alpha_delta += dart_result['alpha_delta']
@@ -2764,7 +2948,13 @@ def _mcp_quality_adjustment(
         evidence.extend(dart_result['evidence'])
     resource_weights['dart_event'] = dart_weight
 
-    nts_weight = _resource_weight(news_theme_social, default_confidence=0.58, max_age_days=2) if news_theme_social else _resource_weight(None)
+    nts_weight = (
+        _resource_weight(
+            news_theme_social, default_confidence=0.58,
+            max_age_days=2, as_of=as_of,
+        )
+        if news_theme_social else _resource_weight(None, as_of=as_of)
+    )
     if news_theme_social:
         support = _news_theme_social_adjustment(news_theme_social, nts_weight, has_core_confirmation=bool(kis_live or institutional or flow_confirmation.get('passed')))
         alpha_delta += support['alpha_delta']
@@ -3313,6 +3503,7 @@ def _candidate_sources(
     kis_live: dict[str, Any] | None = None,
     dart_event: dict[str, Any] | None = None,
     news_theme_social: dict[str, Any] | None = None,
+    rs_rating: dict[str, Any] | None = None,
 ) -> list[str]:
     sources = []
     if _float(price.get('current_price')) > 0:
@@ -3337,6 +3528,8 @@ def _candidate_sources(
         sources.append('dart_event_latest.json')
     if news_theme_social:
         sources.append('news_theme_social_latest.json')
+    if rs_rating:
+        sources.append('alpha_rs_ratings.json')
     return sources
 
 
@@ -3346,14 +3539,9 @@ def _authoritative_source_packets(
 ) -> tuple[list[dict[str, Any]], str | None, list[str]]:
     """Project source-owned observations; never substitute scanner generation time."""
     file_observed = {
-        os.path.basename(str(item.get('file') or '')): item.get('generated_at') or item.get('modified_at')
+        os.path.basename(str(item.get('file') or '')): item.get('modified_at')
         for item in _source_files(artifacts)
         if isinstance(item, dict)
-    }
-    artifact_keys = {
-        'screener_leading_latest.json': 'screener',
-        'vcp_kr_latest.json': 'vcp',
-        'jongga_v2_latest.json': 'jongga',
     }
     packets: list[dict[str, Any]] = []
     missing: list[str] = []
@@ -3364,18 +3552,12 @@ def _authoritative_source_packets(
         if not payload:
             missing.append(source)
             continue
-        observed_at = (
-            _daily_bar_available_at(payload)
-            if source == 'daily_prices.csv' and isinstance(payload, dict)
-            else (_resource_observed_at(payload) if isinstance(payload, dict) else None)
-        )
-        artifact_key = artifact_keys.get(source)
+        artifact_key = _SOURCE_ARTIFACT_KEYS.get(source)
         artifact = artifacts.get(artifact_key) if artifact_key else None
-        if not observed_at and isinstance(artifact, dict):
-            observed_at = artifact.get('generated_at') or artifact.get('mtime')
-        if not observed_at:
-            observed_at = file_observed.get(source)
-        parsed = _parse_dt(observed_at)
+        parsed = _source_available_at(
+            source, payload, artifact=artifact,
+            file_observed_at=file_observed.get(source),
+        )
         if parsed is None or (ceiling is not None and parsed > ceiling):
             missing.append(source)
             continue
@@ -3394,7 +3576,11 @@ def _authoritative_source_packets(
             'source': source,
             'title': f'{symbol} {source}',
             'observed_at': normalized_time,
-            'freshness': _freshness_label(normalized_time, max_age_days=7),
+            'freshness': _freshness_label(
+                normalized_time,
+                cutoff_ceiling,
+                max_age_days=7,
+            ),
             'confidence': max([_float(row.get('confidence')) for row in source_evidence] or [0.7]),
             'content': content,
         })
@@ -3407,22 +3593,145 @@ def _daily_bar_available_at(payload: dict[str, Any]) -> datetime | None:
     """Resolve a daily bar's real availability; date-only bars exist at KRX close."""
     price = payload.get('price') if isinstance(payload.get('price'), dict) else payload
     for key in ('available_at', 'fetched_at', 'observed_at', 'updated_at', 'update_time'):
-        raw = price.get(key)
-        if not raw:
-            continue
-        text = str(raw).strip().replace('Z', '+00:00')
-        try:
-            parsed = datetime.fromisoformat(text)
-        except ValueError:
-            continue
-        if parsed.tzinfo is None:
-            parsed = parsed.replace(tzinfo=KST)
-        return parsed.astimezone(timezone.utc)
+        parsed = _parse_precise_source_instant(price.get(key))
+        if parsed is not None:
+            return parsed
     raw_date = str(price.get('date') or '').strip()
     if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', raw_date):
         return None
     session_date = datetime.fromisoformat(raw_date).date()
     return datetime.combine(session_date, dt_time(15, 30), tzinfo=KST).astimezone(timezone.utc)
+
+
+def _source_available_at(
+    source: str,
+    payload: Any,
+    *,
+    artifact: Any = None,
+    file_observed_at: Any = None,
+) -> datetime | None:
+    """Resolve source-semantic availability without treating dates as instants."""
+    if not isinstance(payload, dict):
+        return None
+    if source == 'daily_prices.csv':
+        return _daily_bar_available_at(payload)
+    if source == 'all_institutional_trend_data.csv':
+        observation = _precise_resource_observed_at(payload)
+        if observation is None:
+            scrape_date = str(payload.get('scrape_date') or '').strip()
+            if re.fullmatch(r'\d{4}-\d{2}-\d{2}', scrape_date):
+                session_date = datetime.fromisoformat(scrape_date).date()
+                observation = datetime.combine(
+                    session_date, dt_time(15, 30), tzinfo=KST,
+                ).astimezone(timezone.utc)
+        envelope = _source_envelope_available_at(
+            payload,
+            artifact=artifact,
+            file_observed_at=file_observed_at,
+        )
+        available = [value for value in (observation, envelope) if value is not None]
+        return max(available) if available else None
+
+    observation = _precise_resource_observed_at(payload)
+    envelope = _source_envelope_available_at(
+        payload,
+        artifact=artifact,
+        file_observed_at=file_observed_at,
+    )
+    available = [value for value in (observation, envelope) if value is not None]
+    return max(available) if available else None
+
+
+def _source_envelope_available_at(
+    payload: dict[str, Any], *, artifact: Any, file_observed_at: Any,
+) -> datetime | None:
+    """Prefer immutable producer/envelope time; use copy mtime only as fallback."""
+    embedded = _parse_precise_source_instant(
+        payload.get('source_artifact_available_at')
+    )
+    artifact_observed = (
+        _precise_resource_observed_at(artifact)
+        if isinstance(artifact, dict)
+        else None
+    )
+    producer_values = [
+        value for value in (embedded, artifact_observed) if value is not None
+    ]
+    if producer_values:
+        return max(producer_values)
+    if isinstance(artifact, dict):
+        artifact_mtime = _parse_precise_source_instant(artifact.get('mtime'))
+        if artifact_mtime is not None:
+            return artifact_mtime
+    return _parse_precise_source_instant(file_observed_at)
+
+
+def _normalize_scoring_source(
+    source: str,
+    payload: dict[str, Any] | None,
+    *,
+    artifacts: dict[str, Any],
+    cutoff_ceiling: Any,
+    file_observed_at: Any = None,
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    """Normalize a source-owned instant and reject data unavailable at scoring time."""
+    if not isinstance(payload, dict) or not payload:
+        return payload, None
+    artifact_key = _SOURCE_ARTIFACT_KEYS.get(source)
+    artifact = artifacts.get(artifact_key) if artifact_key else None
+    available_at = _source_available_at(
+        source,
+        payload,
+        artifact=artifact,
+        file_observed_at=file_observed_at,
+    )
+    cutoff = _parse_dt(cutoff_ceiling)
+    if available_at is None:
+        return None, {
+            'source': source,
+            'reason': 'availability_unknown',
+            'available_at': None,
+        }
+    if cutoff is not None and available_at > cutoff:
+        return None, {
+            'source': source,
+            'reason': 'available_after_scanner_cutoff',
+            'available_at': available_at.isoformat(),
+            'cutoff': cutoff.isoformat(),
+        }
+    normalized = dict(payload)
+    normalized['available_at'] = available_at.isoformat()
+    return normalized, None
+
+
+def _precise_resource_observed_at(item: dict[str, Any]) -> datetime | None:
+    for key in (
+        'available_at', 'fetched_at', 'observed_at', 'updated_at',
+        'generated_at', 'timestamp', 'update_time', 'date', 'scrape_date',
+    ):
+        precise = _parse_precise_source_instant(item.get(key))
+        if precise is not None:
+            return precise
+    for key in ('price', 'quote', 'investor', 'metadata', 'signal'):
+        nested = item.get(key)
+        if isinstance(nested, dict):
+            precise = _precise_resource_observed_at(nested)
+            if precise is not None:
+                return precise
+    return None
+
+
+def _parse_precise_source_instant(value: Any) -> datetime | None:
+    text = str(value or '').strip()
+    if not text or re.fullmatch(r'\d{4}-?\d{2}-?\d{2}', text):
+        return None
+    try:
+        parsed = datetime.fromisoformat(text.replace('Z', '+00:00'))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=KST)
+    return parsed.astimezone(timezone.utc)
 
 
 def _source_packet_type(source: str) -> str:
@@ -3792,11 +4101,51 @@ def _performance_advisory() -> dict[str, Any]:
     }
 
 
+def _performance_advisory_at_cutoff(
+    advisory: dict[str, Any] | None,
+    cutoff_ceiling: Any,
+) -> dict[str, Any]:
+    """Fence outcome memory to the scanner snapshot used for replay/ranking."""
+    if not isinstance(advisory, dict):
+        return {}
+    normalized = dict(advisory)
+    if not normalized.get('available'):
+        return normalized
+    observed = next((
+        parsed
+        for key in (
+            'available_at', 'asof', 'as_of', 'fetched_at',
+            'observed_at', 'updated_at', 'generated_at',
+        )
+        if (parsed := _parse_precise_source_instant(normalized.get(key))) is not None
+    ), None)
+    cutoff = _parse_dt(cutoff_ceiling)
+    reason = None
+    if not normalized.get('lookahead_safe'):
+        reason = 'lookahead_safety_not_confirmed'
+    elif observed is None:
+        reason = 'availability_unknown'
+    elif cutoff is not None and observed > cutoff:
+        reason = 'available_after_scanner_cutoff'
+    if reason is not None:
+        normalized.update({
+            'available': False,
+            'applied_to_scoring': False,
+            'availability_excluded_reason': reason,
+            'available_at': observed.isoformat() if observed is not None else None,
+            'scanner_cutoff': cutoff.isoformat() if cutoff is not None else None,
+        })
+        return normalized
+    normalized['available_at'] = observed.isoformat()
+    return normalized
+
+
 def _resource_weight(
     item: dict[str, Any] | None,
     *,
     default_confidence: float = 0.60,
     max_age_days: int = 7,
+    as_of: Any = None,
 ) -> dict[str, Any]:
     if not isinstance(item, dict) or not item:
         return {
@@ -3806,8 +4155,9 @@ def _resource_weight(
             'score_weight': 0.0,
             'risk_weight': 1.0,
         }
-    observed_at = _resource_observed_at(item)
-    age = _age_days(observed_at)
+    observed = _precise_resource_observed_at(item)
+    observed_at = observed.isoformat() if observed is not None else None
+    age = _age_days(observed_at, as_of)
     if age is None:
         freshness = 'unknown'
         freshness_weight = 0.45
@@ -3836,22 +4186,6 @@ def _resource_weight(
         'score_weight': round(score_weight, 3),
         'risk_weight': round(risk_weight, 3),
     }
-
-
-def _resource_observed_at(item: dict[str, Any]) -> Any:
-    for key in ('fetched_at', 'updated_at', 'generated_at', 'timestamp', 'date', 'scrape_date', 'observed_at'):
-        value = item.get(key)
-        if value:
-            return value
-    for key in ('price', 'quote', 'investor', 'metadata'):
-        nested = item.get(key)
-        if isinstance(nested, dict):
-            value = _resource_observed_at(nested)
-            if value:
-                return value
-    return None
-
-
 def _first_number(item: dict[str, Any], keys: tuple[str, ...]) -> float:
     if not isinstance(item, dict):
         return 0.0

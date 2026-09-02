@@ -150,6 +150,31 @@ class BudgetManager:
                 total += Decimal(str(raw))
         return total
 
+    def _active_limit_failure(
+        self, connection, *, run_id: str, billing_day_utc: str,
+    ) -> str | None:
+        """Fail closed when a settled overage has invalidated active holds."""
+        daily_limit, daily_error = (
+            self._daily_limit()
+            if self.provider.lower() == "openai"
+            else (None, None)
+        )
+        if daily_error is not None:
+            return daily_error
+        if (
+            daily_limit is not None
+            and self._used_daily_cost(connection, billing_day_utc) > daily_limit
+        ):
+            return "daily_hard_cap"
+        used_calls, used_input, used_output = self._used(connection, run_id)
+        if (
+            used_calls > self.limits.max_calls
+            or used_input > self.limits.max_input_tokens
+            or used_output > self.limits.max_output_tokens
+        ):
+            return "hard_cap"
+        return None
+
     def reserve(
         self,
         *,
@@ -391,7 +416,7 @@ class BudgetManager:
         return updated == 1
 
     def release_claimed(self, reservation_id: str | None) -> bool:
-        """Central-router-only release after it has claimed a permit."""
+        """Central-router-only release after claim; terminal rows are already safe."""
         if not reservation_id:
             return False
         with self.store.transaction(write=True) as connection:
@@ -401,7 +426,91 @@ class BudgetManager:
                 "WHERE reservation_id=? AND status='claimed'",
                 (_utc_now(), reservation_id),
             ).rowcount
-        return updated == 1
+            if updated == 1:
+                return True
+            row = connection.execute(
+                "SELECT status FROM budget_reservations WHERE reservation_id=? "
+                "AND pool=? AND provider=?",
+                (reservation_id, self.pool, self.provider),
+            ).fetchone()
+        return row is not None and row["status"] in {"released", "settled", "breached"}
+
+    def renew(
+        self, reservation_id: str | None, *, owner_token: str | None = None,
+    ) -> bool:
+        """Extend one owned active permit without reviving an expired lease."""
+        if not reservation_id or not owner_token:
+            return False
+        return self.renew_many([(reservation_id, owner_token)], terminal_ok=False)
+
+    def renew_many(
+        self, reservations: list[tuple[str, str]], *, terminal_ok: bool = False,
+    ) -> bool:
+        """Atomically extend owned active permits, optionally ignoring terminal rows."""
+        requested = list(reservations)
+        if any(not reservation_id or not owner_token for reservation_id, owner_token in requested):
+            return False
+        owned = list(dict.fromkeys(
+            (str(reservation_id), str(owner_token))
+            for reservation_id, owner_token in requested
+        ))
+        if not owned:
+            return True
+        with self.store.transaction(write=True) as connection:
+            active: list[tuple[str, str, str, str]] = []
+            billing_day_utc = _utc_billing_day()
+            for reservation_id, owner_token in owned:
+                row = connection.execute(
+                    "SELECT status,owner_token,lease_expires_at_utc,billing_day_utc,run_id "
+                    "FROM budget_reservations WHERE reservation_id=? AND pool=? AND provider=?",
+                    (reservation_id, self.pool, self.provider),
+                ).fetchone()
+                if row is None or row["owner_token"] != owner_token:
+                    return False
+                if row["status"] == "breached":
+                    return False
+                if row["status"] in {"settled", "released"}:
+                    if terminal_ok:
+                        continue
+                    return False
+                if row["billing_day_utc"] != billing_day_utc:
+                    return False
+                expires_at = _parse_utc(row["lease_expires_at_utc"])
+                if (
+                    row["status"] not in {"reserved", "claimed"}
+                    or expires_at is None
+                    or expires_at <= _utc_now_datetime()
+                ):
+                    return False
+                active.append((
+                    reservation_id,
+                    owner_token,
+                    str(row["run_id"]),
+                    str(row["billing_day_utc"]),
+                ))
+
+            for run_id, active_billing_day in {
+                (run_id, active_billing_day)
+                for _, _, run_id, active_billing_day in active
+            }:
+                if self._active_limit_failure(
+                    connection,
+                    run_id=run_id,
+                    billing_day_utc=active_billing_day,
+                ) is not None:
+                    return False
+
+            expiry = self._lease_expiry()
+            for reservation_id, owner_token, _, _ in active:
+                updated = connection.execute(
+                    "UPDATE budget_reservations SET lease_expires_at_utc=? "
+                    "WHERE reservation_id=? AND owner_token=? "
+                    "AND status IN ('reserved','claimed')",
+                    (expiry, reservation_id, owner_token),
+                ).rowcount
+                if updated != 1:
+                    raise RuntimeError("permit renewal lost ownership")
+        return True
 
     def claim(
         self, reservation_id: str | None, *, run_id: str, request_id: str,
@@ -413,7 +522,7 @@ class BudgetManager:
         with self.store.transaction(write=True) as connection:
             row = connection.execute(
                 "SELECT status,owner_token,reserved_input_tokens,reserved_output_tokens,"
-                "lease_expires_at_utc FROM budget_reservations "
+                "lease_expires_at_utc,billing_day_utc FROM budget_reservations "
                 "WHERE reservation_id=? AND run_id=? AND request_id=? AND pool=? AND provider=?",
                 (reservation_id, run_id, request_id, self.pool, self.provider),
             ).fetchone()
@@ -424,7 +533,28 @@ class BudgetManager:
             if row["status"] != "reserved":
                 return BudgetReservation(False, reservation_id=reservation_id,
                                          reason="permit_already_claimed")
-            if self._lease_expired(row):
+            if row["billing_day_utc"] != _utc_billing_day():
+                connection.execute(
+                    "UPDATE budget_reservations SET status='released', settled_at_utc=?, "
+                    "lease_expires_at_utc=NULL WHERE reservation_id=? AND status='reserved'",
+                    (_utc_now(), reservation_id),
+                )
+                return BudgetReservation(
+                    False, reservation_id=reservation_id,
+                    reason="permit_billing_day_expired",
+                )
+            expires_at = _parse_utc(row["lease_expires_at_utc"])
+            if expires_at is None:
+                connection.execute(
+                    "UPDATE budget_reservations SET status='released', settled_at_utc=?, "
+                    "lease_expires_at_utc=NULL WHERE reservation_id=? AND status='reserved'",
+                    (_utc_now(), reservation_id),
+                )
+                return BudgetReservation(
+                    False, reservation_id=reservation_id,
+                    reason="permit_lease_invalid",
+                )
+            if expires_at <= _utc_now_datetime():
                 connection.execute(
                     "UPDATE budget_reservations SET status='released', settled_at_utc=?, "
                     "lease_expires_at_utc=NULL WHERE reservation_id=? AND status='reserved'",
@@ -432,6 +562,22 @@ class BudgetManager:
                 )
                 return BudgetReservation(False, reservation_id=reservation_id,
                                          reason="permit_expired")
+            limit_failure = self._active_limit_failure(
+                connection,
+                run_id=run_id,
+                billing_day_utc=str(row["billing_day_utc"]),
+            )
+            if limit_failure is not None:
+                connection.execute(
+                    "UPDATE budget_reservations SET status='released', settled_at_utc=?, "
+                    "lease_expires_at_utc=NULL WHERE reservation_id=? AND status='reserved'",
+                    (_utc_now(), reservation_id),
+                )
+                return BudgetReservation(
+                    False,
+                    reservation_id=reservation_id,
+                    reason=limit_failure,
+                )
             if input_tokens > row["reserved_input_tokens"] or output_tokens > row["reserved_output_tokens"]:
                 connection.execute(
                     "UPDATE budget_reservations SET status='breached',settled_at_utc=? "
