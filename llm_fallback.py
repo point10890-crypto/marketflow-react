@@ -26,7 +26,7 @@ logger = logging.getLogger('llm_fallback')
 
 DEEPSEEK_BASE_URL = os.getenv('DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
 DEEPSEEK_MODEL = os.getenv('DEEPSEEK_MODEL', 'deepseek-v4-flash')
-OPENAI_FALLBACK_MODEL = os.getenv('OPENAI_FALLBACK_MODEL', 'gpt-4o-mini')
+OPENAI_FALLBACK_MODEL = os.getenv('OPENAI_FALLBACK_MODEL', 'gpt-5.5')  # 계정 보유 모델 (gpt-4o 계열 없음)
 
 
 def _parse_json(text: str) -> dict | None:
@@ -96,12 +96,13 @@ def _call_openai(prompt: str, *, system: str | None, max_tokens: int,
         if json_mode and 'json' not in prompt.lower():
             prompt = prompt + '\n\nRespond only in valid JSON.'
         messages.append({'role': 'user', 'content': prompt})
-        kwargs: dict[str, Any] = {
-            'model': OPENAI_FALLBACK_MODEL,
-            'messages': messages,
-            'temperature': temperature,
-            'max_tokens': max_tokens,
-        }
+        kwargs: dict[str, Any] = {'model': OPENAI_FALLBACK_MODEL, 'messages': messages}
+        # gpt-5/o 계열은 max_tokens·temperature 를 거부한다 (mirofish llm_client 와 동일 분기)
+        if OPENAI_FALLBACK_MODEL.startswith(('gpt-5', 'o1', 'o3', 'o4')):
+            kwargs['max_completion_tokens'] = max_tokens
+        else:
+            kwargs['temperature'] = temperature
+            kwargs['max_tokens'] = max_tokens
         if json_mode:
             kwargs['response_format'] = {'type': 'json_object'}
         resp = client.chat.completions.create(**kwargs)

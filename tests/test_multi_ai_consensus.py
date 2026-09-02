@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:
 
 from engine.llm_analyzer import (  # noqa: E402
     MultiAIConsensusScreener,
+    MODEL_DEEPSEEK,
     MODEL_GEMINI,
     MODEL_OPENAI,
     MODEL_GROK,
@@ -212,8 +213,10 @@ def test_grok_empty_degrades_to_2way():
 def test_grok_disabled_via_env():
     s = _build_screener_2way()
     assert MODEL_GROK not in s.screeners
-    assert MODEL_GEMINI in s.screeners
+    # 2026-09-02: 기본 투표자 Gemini → DeepSeek 교체 (Gemini 는 MULTI_AI_INCLUDE_GEMINI=1 옵트인)
+    assert MODEL_DEEPSEEK in s.screeners
     assert MODEL_OPENAI in s.screeners
+    assert MODEL_GEMINI not in s.screeners
 
 
 # ───────────────────────────────────────────────────────────────────

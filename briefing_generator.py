@@ -479,10 +479,10 @@ class BriefingGenerator:
             return None
 
     async def _call_fallback_llm(self, prompt: str) -> dict | None:
-        """Gemini 소진/실패 시 DeepSeek V4 → OpenAI 폴백 (2026-06-10 크레딧 소진 대응).
+        """주 LLM 경로: DeepSeek V4 → OpenAI (2026-09-02 부터 Gemini 보다 우선).
 
         Google Search tool 없이 프롬프트에 포함된 수집 데이터만으로 생성 —
-        검색 보강은 빠지지만 템플릿 폴백보다 훨씬 풍부한 브리핑 유지.
+        검색 보강은 Gemini 백업 경로에서만 제공된다.
         """
         try:
             from llm_fallback import generate_json_fallback
@@ -570,13 +570,14 @@ class BriefingGenerator:
             return None
 
         prompt = self._build_morning_prompt(data)
-        result = await self._call_gemini(prompt)
+        # 2026-09-02 순위 변경: DeepSeek → OpenAI 주력, Gemini(검색 보강)는 백업
+        result = await self._call_fallback_llm(prompt)
 
         if not result:
-            result = await self._call_fallback_llm(prompt)
+            result = await self._call_gemini(prompt)
 
         if not result:
-            logger.warning("Gemini + 폴백 LLM 모두 실패, 템플릿 브리핑 생성")
+            logger.warning("DeepSeek/OpenAI + Gemini 모두 실패, 템플릿 브리핑 생성")
             result = self._fallback_morning(data)
 
         now = datetime.now()
@@ -596,13 +597,14 @@ class BriefingGenerator:
             return None
 
         prompt = self._build_closing_prompt(data)
-        result = await self._call_gemini(prompt)
+        # 2026-09-02 순위 변경: DeepSeek → OpenAI 주력, Gemini(검색 보강)는 백업
+        result = await self._call_fallback_llm(prompt)
 
         if not result:
-            result = await self._call_fallback_llm(prompt)
+            result = await self._call_gemini(prompt)
 
         if not result:
-            logger.warning("Gemini + 폴백 LLM 모두 실패, 템플릿 브리핑 생성")
+            logger.warning("DeepSeek/OpenAI + Gemini 모두 실패, 템플릿 브리핑 생성")
             result = self._fallback_closing(data)
 
         now = datetime.now()

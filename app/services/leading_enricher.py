@@ -98,6 +98,28 @@ def _analyze_news_gemini(stock_name, stock_code, change_pct):
     return {"ai_score": 0, "ai_reason": "", "themes": []}
 
 
+def _analyze_news_llm(stock_name, stock_code, change_pct):
+    """주도주 뉴스분석 — DeepSeek → OpenAI 우선, Gemini REST 는 백업 (2026-09-02 순위 변경)."""
+    prompt = (
+        f"한국 주식 '{stock_name}'({stock_code})이 오늘 {change_pct:+.1f}% 변동.\n"
+        f"상승/하락 이유를 분석하세요.\n\n"
+        f'JSON만 응답: {{"ai_score":0-3,"ai_reason":"이유20자이내","themes":["테마"]}}\n'
+        f"점수: 3=확실한호재 2=긍정적 1=불분명 0=근거없음"
+    )
+    try:
+        from llm_fallback import generate_json_fallback
+        data, provider = generate_json_fallback(prompt, max_tokens=150, temperature=0.3)
+        if isinstance(data, dict) and data:
+            return {
+                "ai_score": min(3, max(0, int(data.get("ai_score", 0) or 0))),
+                "ai_reason": str(data.get("ai_reason", ""))[:30],
+                "themes": [str(t)[:10] for t in data.get("themes", [])][:3],
+            }
+    except Exception as e:
+        logger.warning(f"DeepSeek/OpenAI 주도주 분석 실패 {stock_name}: {e}")
+    return _analyze_news_gemini(stock_name, stock_code, change_pct)
+
+
 # ─── 2. 연속 주도주 추적 ───
 
 def _count_consecutive_days(stock_code):
@@ -177,10 +199,10 @@ def enrich_stocks(results, price_details=None):
         name = r.get("name", "")
         change_pct = r.get("change_pct", 0)
 
-        # 1) Gemini 뉴스분석 (A등급 이상만 — 비용 최적화)
+        # 1) LLM 뉴스분석 (A등급 이상만 — 비용 최적화, DeepSeek 우선)
         if grade in ("S", "A"):
-            ai = _analyze_news_gemini(name, code, change_pct)
-            time.sleep(1.5)  # Rate limit: Gemini free tier 15 RPM
+            ai = _analyze_news_llm(name, code, change_pct)
+            time.sleep(1.5)  # Rate limit 완충 (구 Gemini free tier 기준 유지)
         else:
             ai = {"ai_score": 0, "ai_reason": "", "themes": []}
 

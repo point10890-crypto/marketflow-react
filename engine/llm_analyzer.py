@@ -181,7 +181,8 @@ class OpenAIAnalyzer:
         if self.api_key:
             from openai import AsyncOpenAI
             self.client = AsyncOpenAI(api_key=self.api_key)
-            self.model = os.getenv("OPENAI_MODEL", "gpt-4o-mini") # 가성비 모델 기본값
+            # 2026-09-02: 계정에 gpt-4o 계열이 없다 (보유 모델 gpt-5.5 뿐) — 구 기본값은 매 호출 404
+            self.model = os.getenv("OPENAI_MODEL", "gpt-5.5")
         else:
             self.client = None
             
@@ -555,13 +556,13 @@ JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."]}}"""
 
 
 class LLMAnalyzer:
-    """통합 뉴스 분석 오케스트레이터 (Gemini Grounding -> DeepSeek -> Claude -> OpenAI -> xAI -> Fallback)
+    """통합 뉴스 분석 오케스트레이터 (DeepSeek -> OpenAI -> Gemini Grounding -> Claude -> xAI -> Fallback)
 
-    6중 API 폴백 시스템:
-    1. Gemini + Google Search Grounding (검색+분석 통합) - Rate Limit/크레딧 소진 시 스킵
-    2. DeepSeek V4 (분석, 최저가 폴백) - 실패 시 Claude 로 폴백
-    3. Claude (분석) - Rate Limit 시 OpenAI로 폴백
-    4. OpenAI (분석) - Rate Limit 시 xAI로 폴백
+    6중 API 폴백 시스템 (2026-09-02 순위 변경 — Gemini 크레딧 소진 재발로 DeepSeek 주력):
+    1. DeepSeek V4 (주력, 최저가) - 실패 시 OpenAI 로 폴백
+    2. OpenAI (보조) - 실패 시 Gemini Grounding 으로 폴백
+    3. Gemini + Google Search Grounding (검색+분석 통합) - 크레딧 있을 때만 성공
+    4. Claude (분석) - Rate Limit 시 xAI로 폴백
     5. xAI Grok (분석) - Rate Limit 시 키워드 분석으로 폴백
     6. Keyword (최종 폴백)
     """
@@ -628,46 +629,21 @@ class LLMAnalyzer:
         """뉴스 감성 분석 통합 프로세스 (5중 폴백 시스템) + DART 공시 정보"""
         analysis = None
         citations = []
+        news_context = ""
 
-        # 1. Gemini + Google Search Grounding (검색+분석 통합)
-        if API_STATUS['gemini_grounding']['available']:
-            result = await self.grounding.search_and_analyze(stock_name, news_items, dart_text)
-            if self._is_usable_analysis(result):
-                citations = result.pop("citations", [])
-                analysis = result
-                # Rate Limit 방지
-                await asyncio.sleep(0.5)
-        else:
-            print(f"[SKIP] Gemini Grounding Rate Limited - {stock_name}")
-
-        # 분석 대상 데이터가 없고 Grounding도 실패하면 빠른 종료 체크
-        news_context = analysis.get("news_summary", "") if analysis else ""
-
-        # 2. DeepSeek V4 Fallback (Grounding 실패 시 — 최저가 폴백 우선)
-        if analysis is None and API_STATUS['deepseek']['available']:
-            print(f"[FALLBACK] Gemini Grounding Failed for {stock_name}, trying DeepSeek...")
+        # 1. DeepSeek V4 (주력 — 2026-09-02 순위 변경, 수집된 뉴스+DART 만으로 분석)
+        if API_STATUS['deepseek']['available']:
             analysis = await self.deepseek.analyze_news(stock_name, news_context, news_items, dart_text)
             if self._is_usable_analysis(analysis):
-                analysis["source"] = "deepseek_fallback"
+                analysis["source"] = "deepseek"
             else:
                 analysis = None
-        elif analysis is None and not API_STATUS['deepseek']['available']:
+        else:
             print(f"[SKIP] DeepSeek Rate Limited - {stock_name}")
 
-        # 3. Claude Fallback
-        if analysis is None and API_STATUS['claude']['available']:
-            print(f"[FALLBACK] DeepSeek Failed for {stock_name}, trying Claude...")
-            analysis = await self.claude.analyze_news(stock_name, news_context, news_items, dart_text)
-            if self._is_usable_analysis(analysis):
-                analysis["source"] = "claude_fallback"
-            else:
-                analysis = None
-        elif analysis is None and not API_STATUS['claude']['available']:
-            print(f"[SKIP] Claude Rate Limited - {stock_name}")
-
-        # 4. OpenAI Fallback
+        # 2. OpenAI Fallback (보조)
         if analysis is None and API_STATUS['openai']['available']:
-            print(f"[FALLBACK] Claude Failed for {stock_name}, trying OpenAI...")
+            print(f"[FALLBACK] DeepSeek Failed for {stock_name}, trying OpenAI...")
             analysis = await self.openai.analyze_news(stock_name, news_context, news_items, dart_text)
             if self._is_usable_analysis(analysis):
                 analysis["source"] = "openai_fallback"
@@ -676,9 +652,33 @@ class LLMAnalyzer:
         elif analysis is None and not API_STATUS['openai']['available']:
             print(f"[SKIP] OpenAI Rate Limited - {stock_name}")
 
+        # 3. Gemini + Google Search Grounding (검색+분석 통합 — 크레딧 있을 때만)
+        if analysis is None and API_STATUS['gemini_grounding']['available']:
+            print(f"[FALLBACK] OpenAI Failed for {stock_name}, trying Gemini Grounding...")
+            result = await self.grounding.search_and_analyze(stock_name, news_items, dart_text)
+            if self._is_usable_analysis(result):
+                citations = result.pop("citations", [])
+                analysis = result
+                news_context = analysis.get("news_summary", "")
+                # Rate Limit 방지
+                await asyncio.sleep(0.5)
+        elif analysis is None and not API_STATUS['gemini_grounding']['available']:
+            print(f"[SKIP] Gemini Grounding Rate Limited - {stock_name}")
+
+        # 4. Claude Fallback
+        if analysis is None and API_STATUS['claude']['available']:
+            print(f"[FALLBACK] Gemini Grounding Failed for {stock_name}, trying Claude...")
+            analysis = await self.claude.analyze_news(stock_name, news_context, news_items, dart_text)
+            if self._is_usable_analysis(analysis):
+                analysis["source"] = "claude_fallback"
+            else:
+                analysis = None
+        elif analysis is None and not API_STATUS['claude']['available']:
+            print(f"[SKIP] Claude Rate Limited - {stock_name}")
+
         # 5. xAI Grok Fallback
         if analysis is None and API_STATUS['xai']['available']:
-            print(f"[FALLBACK] OpenAI Failed for {stock_name}, trying xAI Grok...")
+            print(f"[FALLBACK] Claude Failed for {stock_name}, trying xAI Grok...")
             analysis = await self.xai.analyze_news(stock_name, news_context, news_items, dart_text)
             if self._is_usable_analysis(analysis):
                 analysis["source"] = "xai_fallback"
@@ -999,7 +999,7 @@ class OpenAIScreener(BaseScreener):
 
     def __init__(self, api_key: str = None):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        self.model_name = os.getenv("OPENAI_SCREENER_MODEL", "gpt-4o")
+        self.model_name = os.getenv("OPENAI_SCREENER_MODEL", "gpt-5.5")  # 계정 보유 모델 (gpt-4o 없음)
         self.client = None
         if self.api_key:
             from openai import AsyncOpenAI
@@ -1032,6 +1032,60 @@ class OpenAIScreener(BaseScreener):
             return result
         except Exception as e:
             print(f"[ERROR] OpenAI Screener Failed: {e}")
+            return {"picks": [], "error": str(e), "generated_at": datetime.now().isoformat(), "model": self.model_name}
+
+
+class DeepSeekScreener(BaseScreener):
+    """DeepSeek V4 기반 독립적 종목 선별기 (OpenAI 호환 API)
+
+    2026-09-02: Gemini 크레딧 소진 재발로 Multi-AI Consensus 의 기본 투표자를
+    Gemini → DeepSeek 으로 교체. 최저가 모델이면서 OpenAI/Grok 과 다른 학습
+    계열이라 독립 투표자 요건을 유지한다.
+    """
+
+    def __init__(self, api_key: str = None):
+        self.api_key = api_key or os.getenv("DEEPSEEK_API_KEY")
+        self.model_name = (
+            os.getenv("DEEPSEEK_SCREENER_MODEL")
+            or os.getenv("DEEPSEEK_MODEL", "deepseek-v4-flash")
+        )
+        self.client = None
+        if self.api_key:
+            from openai import AsyncOpenAI
+            self.client = AsyncOpenAI(
+                api_key=self.api_key,
+                base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+            )
+
+    async def screen_candidates(self, signals_data: List[Dict]) -> Dict:
+        if not self.client:
+            return {"picks": [], "error": "No DeepSeek Client", "generated_at": datetime.now().isoformat()}
+        if not signals_data:
+            return {"picks": [], "error": "No signals", "generated_at": datetime.now().isoformat()}
+
+        candidates_text = self._build_candidates_summary(signals_data)
+        prompt = self._build_screening_prompt(candidates_text, len(signals_data))
+
+        try:
+            response = await self._chat_with_token_limit(
+                self.client,
+                model=self.model_name,
+                max_output_tokens=4096,
+                messages=[
+                    {"role": "system", "content": "You are a professional Korean stock market portfolio manager. Respond only in valid JSON. Analyze all candidates comprehensively."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_object"},
+                # 구조화 추출은 thinking 없이가 빠르고 안정적 (mirofish llm_client 와 동일 정책)
+                extra_body={"thinking": {"type": "disabled"}},
+            )
+            content = response.choices[0].message.content.strip()
+            result = self._parse_json_response(content)
+            result["generated_at"] = datetime.now().isoformat()
+            result["model"] = self.model_name
+            return result
+        except Exception as e:
+            print(f"[ERROR] DeepSeek Screener Failed: {e}")
             return {"picks": [], "error": str(e), "generated_at": datetime.now().isoformat(), "model": self.model_name}
 
 
@@ -1092,16 +1146,19 @@ class GrokScreener(BaseScreener):
 MODEL_GEMINI = "gemini"
 MODEL_OPENAI = "openai"
 MODEL_GROK = "grok"
+MODEL_DEEPSEEK = "deepseek"
 
 _MODEL_DISPLAY = {
+    MODEL_DEEPSEEK: "DeepSeek",
     MODEL_GEMINI: "Gemini",
-    MODEL_OPENAI: "GPT-4o",
+    MODEL_OPENAI: "GPT-5.5",
     MODEL_GROK: "Grok",
 }
 
 _MODEL_DEFAULT = {
+    MODEL_DEEPSEEK: "deepseek-v4-pro",
     MODEL_GEMINI: "gemini-2.5-flash",
-    MODEL_OPENAI: "gpt-4o",
+    MODEL_OPENAI: "gpt-5.5",
     MODEL_GROK: "grok-4",
 }
 
@@ -1122,12 +1179,16 @@ class MultiAIConsensusScreener:
     DEFAULT_TIMEOUT = 60
 
     def __init__(self):
+        # 2026-09-02: Gemini 크레딧 소진 재발 — 기본 투표자를 DeepSeek+OpenAI(+Grok)로 교체.
+        # Gemini 는 MULTI_AI_INCLUDE_GEMINI=1 로 4번째 투표자로 복귀 가능.
         self.screeners: Dict[str, "BaseScreener"] = {
-            MODEL_GEMINI: GeminiScreener(),
+            MODEL_DEEPSEEK: DeepSeekScreener(),
             MODEL_OPENAI: OpenAIScreener(),
         }
         if os.getenv("MULTI_AI_INCLUDE_GROK", "1") == "1":
             self.screeners[MODEL_GROK] = GrokScreener()
+        if os.getenv("MULTI_AI_INCLUDE_GEMINI", "0") == "1":
+            self.screeners[MODEL_GEMINI] = GeminiScreener()
         # Devil's Advocate (consensus_strong post-review)
         self.devil_advocate: Optional["ClaudeDevilAdvocate"] = None
         if os.getenv("DEVIL_ADVOCATE_ENABLED", "1") == "1":

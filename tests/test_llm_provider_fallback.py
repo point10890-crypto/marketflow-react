@@ -217,6 +217,11 @@ class ShouldNotCall:
         raise AssertionError('provider should not be called')
 
 
+class ShouldNotCallGrounding:
+    async def search_and_analyze(self, *_args, **_kwargs):
+        raise AssertionError('grounding should not be called')
+
+
 def _bare_analyzer():
     reset_api_status()
     analyzer = LLMAnalyzer.__new__(LLMAnalyzer)
@@ -224,26 +229,39 @@ def _bare_analyzer():
     return analyzer
 
 
-def test_jongga_news_analysis_routes_gemini_rate_limit_to_deepseek():
+def test_jongga_news_analysis_deepseek_is_primary():
+    """2026-09-02 순위 변경 — DeepSeek 이 1순위, 성공 시 다른 provider 는 호출 자체가 없다."""
     analyzer = _bare_analyzer()
-    analyzer.grounding = FakeGrounding({
-        'score': 0,
-        'reason': 'Rate Limited: 429 RESOURCE_EXHAUSTED',
-        'themes': [],
-        'source': 'none',
-    })
+    analyzer.grounding = ShouldNotCallGrounding()
     analyzer.deepseek = FakeProvider({'score': 2, 'reason': 'DART 수주와 거래대금 증가', 'themes': ['수주']})
     analyzer.claude = ShouldNotCall()
     analyzer.openai = ShouldNotCall()
 
     result = asyncio.run(analyzer.analyze_news_sentiment('테스트종목', [{'title': '수주', 'summary': '계약'}]))
 
-    assert result['source'] == 'deepseek_fallback'
+    assert result['source'] == 'deepseek'
     assert result['score'] == 2
     assert result['themes'] == ['수주']
 
 
-def test_jongga_news_analysis_does_not_stop_on_missing_clients_before_openai():
+def test_jongga_news_analysis_falls_deepseek_then_openai():
+    """DeepSeek 실패 → OpenAI(보조)가 2순위로 응답. Grounding/Claude 는 그 뒤라 미호출."""
+    analyzer = _bare_analyzer()
+    analyzer.grounding = ShouldNotCallGrounding()
+    analyzer.deepseek = FakeProvider({'score': 0, 'reason': 'No DeepSeek Client', 'themes': []})
+    analyzer.claude = ShouldNotCall()
+    analyzer.openai = FakeProvider({'score': 0, 'reason': '확인된 호재가 제한적입니다.', 'themes': []})
+
+    result = asyncio.run(analyzer.analyze_news_sentiment('테스트종목', [{'title': '중립', 'summary': '중립'}]))
+
+    assert result['source'] == 'openai_fallback'
+    assert result['score'] == 0
+    assert analyzer.deepseek.calls == 1
+    assert analyzer.openai.calls == 1
+
+
+def test_jongga_news_analysis_reaches_claude_after_grounding():
+    """DeepSeek·OpenAI·Grounding 모두 실패해도 체인이 Claude 까지 이어진다."""
     analyzer = _bare_analyzer()
     analyzer.grounding = FakeGrounding({
         'score': 0,
@@ -252,13 +270,12 @@ def test_jongga_news_analysis_does_not_stop_on_missing_clients_before_openai():
         'source': 'none',
     })
     analyzer.deepseek = FakeProvider({'score': 0, 'reason': 'No DeepSeek Client', 'themes': []})
-    analyzer.claude = FakeProvider({'score': 0, 'reason': 'No Claude Client', 'themes': []})
-    analyzer.openai = FakeProvider({'score': 0, 'reason': '확인된 호재가 제한적입니다.', 'themes': []})
+    analyzer.openai = FakeProvider({'score': 0, 'reason': 'No OpenAI Client', 'themes': []})
+    analyzer.claude = FakeProvider({'score': 1, 'reason': '중립적 재료', 'themes': []})
 
     result = asyncio.run(analyzer.analyze_news_sentiment('테스트종목', [{'title': '중립', 'summary': '중립'}]))
 
-    assert result['source'] == 'openai_fallback'
-    assert result['score'] == 0
+    assert result['source'] == 'claude_fallback'
     assert analyzer.deepseek.calls == 1
-    assert analyzer.claude.calls == 1
     assert analyzer.openai.calls == 1
+    assert analyzer.claude.calls == 1
