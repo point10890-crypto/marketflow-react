@@ -302,7 +302,9 @@ def _llm_manager(target: str, reports: list[dict[str, Any]],
     if not thesis:
         return None
     stance = _normalize_stance(data.get('stance'), reports)
-    confidence = _clamp(_safe_float(data.get('confidence')) or 50.0, 0.0, 100.0)
+    # `or 50.0` 은 정당한 confidence 0 을 50 으로 승격시킨다 — None 일 때만 기본값.
+    conf_raw = _safe_float(data.get('confidence'))
+    confidence = _clamp(conf_raw if conf_raw is not None else 50.0, 0.0, 100.0)
     return {
         'stance': stance, 'thesis': thesis[:1500], 'confidence': round(confidence, 2),
         'llm': llm_meta,

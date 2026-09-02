@@ -55,6 +55,7 @@ import argparse
 import atexit
 from datetime import datetime
 import hashlib
+import re
 from pathlib import Path
 from typing import Optional
 import json
@@ -1014,6 +1015,23 @@ def run_aibrain_prewarm() -> bool:
     except Exception as e:
         logger.error(f"AI Brain decision prewarm failed: {e}", exc_info=True)
         return False
+
+
+def _valid_hhmm_times(raw_times, env_label: str) -> list:
+    """env 시각 목록에서 'HH:MM' 형식만 통과시킨다 (잘못된 항목은 스킵 + 로그).
+
+    검증 없이 `schedule.every().day.at(hm)` 에 넘기면 '8:25' 같은 항목 하나가
+    setup_schedules() 에서 ScheduleValueError 로 데몬 전체를 죽이고,
+    워치독이 5분마다 재기동하는 영구 크래시 루프가 된다.
+    """
+    valid = []
+    for hm in raw_times or []:
+        hm = str(hm).strip()
+        if re.fullmatch(r'(?:[01]\d|2[0-3]):[0-5]\d', hm):
+            valid.append(hm)
+        else:
+            logger.error(f"⚠️ {env_label}: 잘못된 시각 형식 무시 — '{hm}' (HH:MM 형식 필요, 예: 08:25)")
+    return valid
 
 
 def run_leading_screener_refresh():
@@ -3277,6 +3295,16 @@ def check_and_run_missed_tasks():
             (10 * 60,      'history',          collect_historical_institutional, '히스토리 수집',  23 * 60, {5}),
         ]
 
+        # ── AI Brain 판단 캐시 프리웜 (고정시각 슬롯도 invariant 대로 catch-up 포함) ──
+        # 마감은 슬롯 +90분: 그 이후엔 가드 웜업·온디맨드 캐시가 대체하므로 복구 가치가 낮다.
+        if Config.AIBRAIN_GUARD_ENABLED:
+            for hm in _valid_hhmm_times(Config.AIBRAIN_PREWARM_TIMES, 'AIBRAIN_PREWARM_TIMES'):
+                hh, mm = hm.split(':')
+                slot_min = int(hh) * 60 + int(mm)
+                weekday_tasks.append(
+                    (slot_min, f"aibrain_prewarm_{hm.replace(':', '')}", run_aibrain_prewarm,
+                     f'AI Brain 판단 프리웜 {hm}', min(slot_min + 90, 23 * 60 + 59), None))
+
         # ── 매일 실행 작업 (Crypto - 주말 포함) ──
         # Crypto는 4시간 간격이라 가장 최근 놓친 것만 복구
         crypto_times_min = [0, 4*60, 8*60, 12*60, 16*60, 20*60]
@@ -3386,6 +3414,13 @@ def run_omni_news_sweep() -> bool:
         logger.info("Omni news sweep: fetched=%s kept=%s saved=%s errors=%s",
                     result.get('fetched'), result.get('kept'), result.get('saved'),
                     list(result.get('errors') or {}))
+        # 전 소스 실패 = 수집 자체가 죽은 것 (프록시/DNS 장애 등).
+        # 성공으로 기록하면 _with_record 의 재시도·운영 알림이 전부 막히므로 실패로 보고한다.
+        sources = result.get('sources') or []
+        errors = result.get('errors') or {}
+        if sources and not result.get('fetched') and set(errors) >= set(sources):
+            logger.error("Omni news sweep: all %d sources failed — reporting failure", len(sources))
+            return False
         return True
     except Exception as e:
         logger.error("Omni news sweep failed: %s", e)
@@ -3894,10 +3929,14 @@ class Scheduler:
             # 중복 실행 방지 (catch-up 복구와의 충돌, 워치독 재시작 후 이중 실행 방지)
             # - crypto: 4시간 주기 → 3시간 쿨다운
             # - kiwoom_ai_theme: 장중 15분 주기 → 10분 쿨다운 (하루 1회 제한 해제)
+            # - interval_cooldowns: 분 주기 interval job 은 주기의 0.8배 쿨다운
+            #   (하루 1회 게이트에 걸리면 10~15분 주기가 하루 1회로 죽는다 — kiwoom_ai_theme 버그 재발 방지)
             # - 그 외: 하루 1회 제한
             interval_cooldowns = {
                 'alpha_scanner_monitor': max(1 / 60, Config.ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES / 60 * 0.8),
                 'mirofish_workflow_monitor': max(1 / 60, Config.ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES / 60 * 0.8),
+                'omni_news_sweep': max(1 / 60, max(5, Config.OMNI_NEWS_INTERVAL_MINUTES) / 60 * 0.8),
+                'aibrain_service_guard': max(1 / 60, Config.AIBRAIN_GUARD_INTERVAL_MINUTES / 60 * 0.8),
             }
 
             if task_key == 'crypto':
@@ -4069,8 +4108,9 @@ class Scheduler:
                 schedule.every(guard_interval).minutes.do(
                     self._with_record(run_aibrain_service_guard, 'aibrain_service_guard',
                                       max_retries=0, retry_delay=120))
+            prewarm_times = _valid_hhmm_times(Config.AIBRAIN_PREWARM_TIMES, 'AIBRAIN_PREWARM_TIMES')
             for day in weekdays:
-                for hm in Config.AIBRAIN_PREWARM_TIMES:
+                for hm in prewarm_times:
                     getattr(schedule.every(), day).at(hm).do(
                         self._with_record(run_aibrain_prewarm, f"aibrain_prewarm_{hm.replace(':', '')}",
                                           max_retries=1, retry_delay=300))

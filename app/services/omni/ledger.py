@@ -10,8 +10,10 @@ import json
 import os
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Iterator
+
+from app.services.omni.funnel import CORROBORATION_WEIGHT
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 DB_PATH = os.path.join(REPO_ROOT, 'data', 'omni', 'omni.db')
@@ -76,7 +78,14 @@ def _row_to_event(row: sqlite3.Row) -> dict[str, Any]:
 
 
 def save_events(events: list[dict[str, Any]]) -> int:
-    """신규 사건 수를 반환한다. 같은 content_hash 는 다시 넣지 않는다."""
+    """신규 사건 수를 반환한다. 같은 content_hash 는 다시 넣지 않는다.
+
+    다만 스윕을 넘어 같은 사건이 다른 매체에서 재관측되면 그냥 버리지 않고
+    sources 를 합집합으로 병합하고 corroboration/score 를 올린다 (append-safe:
+    기존 행의 제목·요약·수집시각 등은 절대 다시 쓰지 않는다). corroboration 은
+    매 스윕마다 같은 피드가 같은 기사를 재서빙하므로 증분이 아니라
+    '서로 다른 소스 수' 기준으로만 올린다.
+    """
     if not events:
         return 0
     now = datetime.now(timezone.utc).isoformat()
@@ -85,12 +94,13 @@ def save_events(events: list[dict[str, Any]]) -> int:
         for event in events:
             if not isinstance(event, dict) or not event.get('content_hash'):
                 continue
+            digest = str(event['content_hash'])
             cur = con.execute(
                 'INSERT OR IGNORE INTO news_events'
                 '(content_hash, title, summary, link, source, sources, grade,'
                 ' published_ts, symbols, themes, score, corroboration, collected_at)'
                 ' VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
-                (str(event['content_hash']), str(event.get('title') or ''),
+                (digest, str(event.get('title') or ''),
                  str(event.get('summary') or ''), str(event.get('link') or ''),
                  str(event.get('source') or ''),
                  json.dumps(event.get('sources') or [], ensure_ascii=False),
@@ -99,8 +109,47 @@ def save_events(events: list[dict[str, Any]]) -> int:
                  json.dumps(event.get('themes') or [], ensure_ascii=False),
                  float(event.get('score') or 0.0),
                  int(event.get('corroboration') or 1), now))
-            inserted += cur.rowcount
+            if cur.rowcount:
+                inserted += cur.rowcount
+            else:
+                _merge_duplicate(con, digest, event)
     return inserted
+
+
+def _merge_duplicate(con: sqlite3.Connection, digest: str, event: dict[str, Any]) -> None:
+    """중복 사건(스윕 간 재관측)의 교차검증 정보만 기존 행에 병합한다."""
+    row = con.execute(
+        'SELECT sources, corroboration, score FROM news_events WHERE content_hash = ?',
+        (digest,)).fetchone()
+    if row is None:
+        return
+    try:
+        existing = json.loads(row['sources'] or '[]')
+    except (TypeError, ValueError):
+        existing = []
+    if not isinstance(existing, list):
+        existing = []
+    incoming = list(event.get('sources') or [])
+    if not incoming and event.get('source'):
+        incoming = [str(event['source'])]
+    merged = [str(s) for s in existing if s]
+    for src in incoming:
+        src = str(src)
+        if src and src not in merged:
+            merged.append(src)
+    old_corr = max(1, int(row['corroboration'] or 1))
+    new_corr = max(old_corr, len(merged) or 1)
+    if merged == existing and new_corr == old_corr:
+        return
+    old_score = float(row['score'] or 0.0)
+    new_score = old_score
+    if new_corr > old_corr and old_score > 0:
+        # importance_score 의 corroboration 항과 동일한 증분 (funnel 과 일관 유지)
+        new_score = round(old_score + (new_corr - old_corr) * CORROBORATION_WEIGHT, 3)
+    con.execute(
+        'UPDATE news_events SET sources = ?, corroboration = ?, score = ? '
+        'WHERE content_hash = ?',
+        (json.dumps(merged, ensure_ascii=False), new_corr, new_score, digest))
 
 
 def recent_events(limit: int = 20) -> list[dict[str, Any]]:
@@ -126,10 +175,13 @@ def events_for_symbol(symbol: str, limit: int = 10) -> list[dict[str, Any]]:
 
 
 def stats() -> dict[str, Any]:
+    # collected_at 은 ISO('T' 구분자) 저장인데 SQLite datetime() 은 공백 구분자를
+    # 내놓아 사전식 비교가 24~48시간 창으로 넓어진다 → 파이썬에서 동일 포맷 경계 생성.
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
     with connect() as con:
         total = con.execute('SELECT COUNT(*) FROM news_events').fetchone()[0]
         last = con.execute('SELECT MAX(collected_at) FROM news_events').fetchone()[0]
         top = con.execute(
-            'SELECT COUNT(*) FROM news_events '
-            "WHERE collected_at >= datetime('now', '-1 day')").fetchone()[0]
+            'SELECT COUNT(*) FROM news_events WHERE collected_at >= ?',
+            (cutoff,)).fetchone()[0]
     return {'total': total, 'last_collected_at': last, 'last_24h': top}
