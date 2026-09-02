@@ -157,6 +157,30 @@ def test_invalid_json_falls_back_without_global_breaker(tmp_path):
     assert result.attempts[0].error_class is ProviderErrorClass.INVALID_JSON
 
 
+def test_half_open_invalid_json_is_rejected_then_fallback_proceeds(tmp_path):
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    clock = type("Clock", (), {"value": 1_000.0, "__call__": lambda self: self.value})()
+    breaker = CircuitBreaker(store, cooldown_seconds=10, clock=clock)
+    breaker.record_failure(
+        "deepseek", "text", "decisive", ProviderErrorClass.AUTHENTICATION
+    )
+    clock.value += 11
+    deepseek = FakeAdapter(_response("not-json"))
+    openai = FakeAdapter(_response('{"ok":true}'))
+    router = AIRouter(
+        {"deepseek": deepseek, "openai": openai},
+        budget=BudgetManager(store),
+        breaker=breaker,
+        store=store,
+    )
+
+    result = router.route_text(_request(json_mode=True))
+
+    assert result.actual_provider == "openai"
+    assert result.attempts[0].error_class is ProviderErrorClass.INVALID_JSON
+    assert breaker.state("deepseek", "text", "decisive") == "closed"
+
+
 def test_usage_is_recorded_for_every_billable_attempt(tmp_path):
     deepseek = FakeAdapter(_response(""))
     openai = FakeAdapter(_response("ok", input_tokens=30, output_tokens=5))

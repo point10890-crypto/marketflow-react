@@ -1,4 +1,5 @@
 import asyncio
+import openai
 
 from app.services.ai_routing import store as routing_store
 from app.services.mirofish import llm_client
@@ -88,6 +89,23 @@ def test_mirofish_llm_client_can_disable_exhausted_gemini(monkeypatch):
     assert text == 'deepseek-result'
     assert provider == 'deepseek'
     assert calls == ['deepseek']
+
+
+def test_legacy_openai_compatible_factories_disable_sdk_internal_retries(monkeypatch):
+    constructor_kwargs = []
+
+    class ConstructorOnlyClient:
+        def __init__(self, **kwargs):
+            constructor_kwargs.append(kwargs)
+
+    monkeypatch.setenv('OPENAI_API_KEY', 'test-only')
+    monkeypatch.setenv('DEEPSEEK_API_KEY', 'test-only')
+    monkeypatch.setattr(openai, 'OpenAI', ConstructorOnlyClient)
+
+    llm_client.get_openai_client()
+    llm_client.get_deepseek_client()
+
+    assert [kwargs['max_retries'] for kwargs in constructor_kwargs] == [0, 0]
 
 
 def test_mirofish_llm_client_all_disabled_does_not_rebuild_default_adapters(monkeypatch):

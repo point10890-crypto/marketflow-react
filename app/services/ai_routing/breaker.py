@@ -141,6 +141,9 @@ class CircuitBreaker:
     ) -> None:
         error_class = ProviderErrorClass(error_class)
         if error_class in _NON_BREAKING:
+            # The transport completed successfully. Local validation still rejects
+            # the response in the router, but it must not leave a probe occupied.
+            self.record_success(provider, modality, model_tier)
             return
         now = self.clock()
         key = self._key(provider, modality, model_tier)

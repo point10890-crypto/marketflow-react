@@ -47,13 +47,30 @@ def test_transient_failures_open_only_at_threshold(tmp_path):
     assert breaker.state("deepseek", "text", "fast") == "open"
 
 
-def test_validation_failures_do_not_open_breaker(tmp_path):
+@pytest.mark.parametrize(
+    "error_class",
+    (
+        ProviderErrorClass.INVALID_JSON,
+        ProviderErrorClass.NUMERIC_MISMATCH,
+        ProviderErrorClass.EMPTY,
+        ProviderErrorClass.REFUSAL,
+    ),
+)
+def test_non_breaking_validation_failure_completes_half_open_probe(
+    tmp_path, error_class
+):
     breaker, _clock = _breaker(tmp_path, threshold=1)
+    breaker.record_failure(
+        "deepseek", "text", "fast", ProviderErrorClass.AUTHENTICATION
+    )
+    _clock.value += 61
+    assert breaker.allow("deepseek", "text", "fast") is True
+    assert breaker.state("deepseek", "text", "fast") == "half_open"
 
-    breaker.record_failure("deepseek", "text", "fast", ProviderErrorClass.INVALID_JSON)
-    breaker.record_failure("deepseek", "text", "fast", ProviderErrorClass.NUMERIC_MISMATCH)
+    breaker.record_failure("deepseek", "text", "fast", error_class)
 
     assert breaker.state("deepseek", "text", "fast") == "closed"
+    assert breaker.allow("deepseek", "text", "fast") is True
 
 
 def test_text_and_vision_state_are_independent(tmp_path):

@@ -240,7 +240,11 @@ def build_default_adapters() -> dict[str, ProviderAdapter]:
         if not key:
             return None
         from openai import OpenAI
-        return OpenAI(api_key=key, timeout=OPENAI_COMPATIBLE_REQUEST_TIMEOUT_SECONDS)
+        return OpenAI(
+            api_key=key,
+            timeout=OPENAI_COMPATIBLE_REQUEST_TIMEOUT_SECONDS,
+            max_retries=0,
+        )
 
     def deepseek_client():
         key = os.getenv("DEEPSEEK_API_KEY")
@@ -251,6 +255,7 @@ def build_default_adapters() -> dict[str, ProviderAdapter]:
             api_key=key,
             base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
             timeout=OPENAI_COMPATIBLE_REQUEST_TIMEOUT_SECONDS,
+            max_retries=0,
         )
 
     def gemini_client():

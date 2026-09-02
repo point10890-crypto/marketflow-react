@@ -229,7 +229,12 @@ def get_deepseek_client():
     except ImportError:
         logger.warning('[llm_client] openai package is not installed')
         return None
-    return OpenAI(api_key=api_key, base_url=DEEPSEEK_BASE_URL, timeout=90)
+    return OpenAI(
+        api_key=api_key,
+        base_url=DEEPSEEK_BASE_URL,
+        timeout=90,
+        max_retries=0,
+    )
 
 
 def get_openai_client():
@@ -241,7 +246,7 @@ def get_openai_client():
     except ImportError:
         logger.warning('[llm_client] openai package is not installed')
         return None
-    return OpenAI(api_key=api_key, timeout=90)
+    return OpenAI(api_key=api_key, timeout=90, max_retries=0)
 
 
 def _json_prompt(prompt: str, suffix: str) -> str:
