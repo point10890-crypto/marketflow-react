@@ -69,7 +69,12 @@ def _isolate_decision_cache(tmp_path_factory, monkeypatch):
     적중시켜 계산 함수 호출을 건너뛰는 일이 생겼다(test_kr_decision_route).
     테스트는 운영 캐시 파일(data/decision_cache.db)을 건드리면 안 된다.
     """
-    from app.services.mirofish import decision_cache
+    try:
+        from app.services.mirofish import decision_cache
+    except ImportError:
+        # Flask 등 앱 의존성이 없는 최소 환경(CI 스모크)에서는 격리할 캐시도 없다.
+        # autouse 픽스처가 전체 수집을 죽이면 안 된다.
+        return
 
     path = tmp_path_factory.mktemp('decision_cache') / 'cache.db'
     monkeypatch.setattr(decision_cache, 'DB_PATH', str(path))

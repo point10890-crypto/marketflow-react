@@ -23,7 +23,7 @@
 | SSH 접근 | `ssh dynas@192.168.55.103` (LAN) |
 | .venv | `C:\bitman_marketfloww\.venv\Scripts\python.exe` (miniPC) |
 | 본PC venv | 손상 — `Unable to create process`. 로컬 검증 불가. miniPC 에서만 |
-| Admin token | `3:1781219291:0e324300d1e528dd932d4c19ddec0792` (user point10890@gmail.com, role=admin, status=approved, tier=pro) |
+| Admin token | `(redacted — rotate: committed tokens are compromised)` (user point10890@gmail.com, role=admin, status=approved, tier=pro) |
 | CF Pages 배포 | `cd frontend-react && npx wrangler pages deploy dist --project-name=bitman-marketflow --branch=main --commit-dirty=true` |
 
 ---

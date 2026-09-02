@@ -41,5 +41,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=bitman-marketflow --branch=main
+          # main 에서 실행하면 프로덕션, 다른 브랜치에서 수동 실행하면 프리뷰 배포.
+          # (--branch=main 하드코딩은 어떤 브랜치의 수동 실행도 프로덕션에 올렸다)
+          command: pages deploy dist --project-name=bitman-marketflow --branch=${{ github.ref_name }}
           workingDirectory: frontend-react
