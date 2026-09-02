@@ -451,10 +451,19 @@ def request_subscription():
         and not user.is_pro_expired
     )
 
-    # 같은 tier 요청은 AI Brain 애드온 또는 만료 재구독일 때만 허용.
-    # 만료 Pro 회원은 tier 값이 여전히 'pro' 이므로 이 예외가 없으면
-    # "Already on pro tier" 로 재구독 신청이 막힌다.
-    if to_tier == user.tier and not includes_aibain and not is_expired_resubscribe:
+    # 같은 tier 요청 허용 조건:
+    #  - AI Brain 애드온 / 만료 재구독 (기존)
+    #  - 활성 Pro 의 만료 전 갱신(early_renewal) — RenewalBanner(D-7) 가 안내하는 경로.
+    #    premium 은 무기한이라 갱신 개념이 없다.
+    is_early_renewal = bool(
+        to_tier == user.tier
+        and not includes_aibain
+        and has_active_base
+        and to_tier == 'pro'
+        and user.pro_expires_at is not None
+    )
+    if to_tier == user.tier and not includes_aibain and not is_expired_resubscribe \
+            and not is_early_renewal:
         return jsonify({'error': f'Already on {to_tier} tier'}), 400
 
     # AI Brain 단독 추가/재구독은 활성 베이스 구독이 있어야 한다. 만료된 Pro가
@@ -489,6 +498,10 @@ def request_subscription():
         req_type = 'aibain_renewal'
     elif is_aibain_only:
         req_type = 'aibain_addon'
+    elif is_early_renewal:
+        # 만료 전 갱신 — 승인 시 만료일 기준 +30일 연장 ('renewal' 과 구분:
+        # 'renewal' 은 활성 동일 tier 승인 시 중복으로 무시되기 때문)
+        req_type = 'early_renewal'
     elif is_expired_resubscribe:
         req_type = 'renewal'
     elif user.tier is None or (user.tier == 'pro' and to_tier == 'premium'):
@@ -523,6 +536,8 @@ def request_subscription():
         admin_note = '만료 회원 재구독 신청 + AI Brain 알파 스캐너 포함 요청 (+40,000원/30일)'
     elif is_expired_resubscribe:
         admin_note = '만료 회원 재구독 신청'
+    elif is_early_renewal:
+        admin_note = '만료 전 갱신 신청 — 승인 시 기존 만료일 기준 +30일 연장'
     elif includes_aibain:
         admin_note = 'AI Brain 알파 스캐너 포함 요청 (+40,000원/30일)'
     else:

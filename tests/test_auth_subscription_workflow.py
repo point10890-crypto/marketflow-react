@@ -188,6 +188,66 @@ def test_expired_pro_user_can_request_same_tier_renewal_and_approval_reactivates
         assert expires > datetime.now(timezone.utc)
 
 
+def test_active_pro_can_request_early_renewal_and_approval_extends_from_expiry():
+    """RenewalBanner(D-7) 경로 — 활성 Pro 의 만료 전 갱신.
+
+    승인은 now 리셋이 아니라 '기존 만료일 기준 +30일' 이어야 남은 기간을 잃지 않는다.
+    """
+    app = _app()
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+
+    with app.app_context():
+        admin = _user('admin@example.com', '관리자', 'Admin1234!', status='approved', tier='premium', role='admin')
+        member = _user(
+            'active@example.com',
+            '활성회원',
+            'Pass1234!',
+            status='approved',
+            tier='pro',
+            pro_expires_at=expires_at,
+        )
+        db.session.add_all([admin, member])
+        db.session.commit()
+        admin_token = generate_token(admin.id)
+
+    client = app.test_client()
+    login = client.post('/api/auth/login', json={
+        'email': 'active@example.com',
+        'password': 'Pass1234!',
+    })
+    assert login.status_code == 200
+    token = login.get_json()['token']
+
+    renewal = client.post(
+        '/api/auth/subscription/request',
+        json={'to_tier': 'pro', 'depositor_name': '활성회원'},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert renewal.status_code == 201
+    req = renewal.get_json()['request']
+    assert req['request_type'] == 'early_renewal'
+    assert req['amount'] == '50,000원'
+
+    approved = client.put(
+        f"/api/admin/subscriptions/{req['id']}/approve",
+        headers={'Authorization': f'Bearer {admin_token}'},
+    )
+    assert approved.status_code == 200
+    body = approved.get_json()
+    assert not body.get('duplicate_ignored'), '활성 갱신이 중복으로 무시되면 안 된다'
+
+    with app.app_context():
+        member = User.query.filter_by(email='active@example.com').first()
+        assert member.status == 'approved'
+        assert member.tier == 'pro'
+        expires = member.pro_expires_at
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        # 만료일(D-7) 기준 +30일 — now+30(≈D+30)이면 실패해야 한다
+        expected = expires_at + timedelta(days=30)
+        assert abs((expires - expected).total_seconds()) < 120
+
+
 def test_subscription_approval_is_idempotent_and_sends_admin_notice_once(monkeypatch):
     app = _app()
     expired_at = datetime.now(timezone.utc) - timedelta(days=1)
