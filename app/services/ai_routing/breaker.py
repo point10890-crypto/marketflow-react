@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
+from math import isfinite
 
 from .contracts import ProviderErrorClass
+from .providers import MAX_PROVIDER_REQUEST_TIMEOUT_SECONDS
 from .store import RoutingStore, default_store
 
 
@@ -30,22 +32,56 @@ _NON_BREAKING = {
 
 
 class CircuitBreaker:
+    DEFAULT_PROVIDER_DEADLINE_SECONDS = MAX_PROVIDER_REQUEST_TIMEOUT_SECONDS
+    DEFAULT_PROBE_MARGIN_SECONDS = 30.0
+    DEFAULT_PROBE_LEASE_SECONDS = (
+        DEFAULT_PROVIDER_DEADLINE_SECONDS + DEFAULT_PROBE_MARGIN_SECONDS
+    )
+
     def __init__(
         self,
         store: RoutingStore | None = None,
         *,
         failure_threshold: int = 3,
         cooldown_seconds: float = 60.0,
-        probe_lease_seconds: float = 120.0,
+        probe_lease_seconds: float = DEFAULT_PROBE_LEASE_SECONDS,
+        max_provider_deadline_seconds: float = DEFAULT_PROVIDER_DEADLINE_SECONDS,
+        probe_margin_seconds: float = DEFAULT_PROBE_MARGIN_SECONDS,
+        failure_window_seconds: float = 300.0,
         clock: Callable[[], float] = time.time,
     ) -> None:
-        if failure_threshold <= 0 or cooldown_seconds < 0:
+        numeric_config = (
+            float(cooldown_seconds),
+            float(probe_lease_seconds),
+            float(max_provider_deadline_seconds),
+            float(probe_margin_seconds),
+            float(failure_window_seconds),
+        )
+        if (
+            failure_threshold <= 0
+            or cooldown_seconds < 0
+            or max_provider_deadline_seconds <= 0
+            or probe_margin_seconds < 0
+            or failure_window_seconds <= 0
+            or not all(isfinite(value) for value in numeric_config)
+        ):
             raise ValueError("invalid circuit breaker configuration")
+        if probe_lease_seconds < max_provider_deadline_seconds + probe_margin_seconds:
+            raise ValueError("probe lease must cover provider deadline plus margin")
         self.store = store or default_store()
         self.failure_threshold = failure_threshold
         self.cooldown_seconds = cooldown_seconds
         self.probe_lease_seconds = probe_lease_seconds
+        self.probe_margin_seconds = probe_margin_seconds
+        self.failure_window_seconds = failure_window_seconds
         self.clock = clock
+
+    def validate_adapter_deadlines(self, deadlines: list[float]) -> None:
+        normalized = [float(deadline) for deadline in deadlines]
+        if any(deadline <= 0 or not isfinite(deadline) for deadline in normalized):
+            raise ValueError("provider deadlines must be positive and finite")
+        if normalized and self.probe_lease_seconds < max(normalized) + self.probe_margin_seconds:
+            raise ValueError("probe lease must cover provider deadline plus margin")
 
     @staticmethod
     def _key(provider: str, modality: str, model_tier: str) -> tuple[str, str, str]:
@@ -110,11 +146,17 @@ class CircuitBreaker:
         key = self._key(provider, modality, model_tier)
         with self.store.transaction(write=True) as connection:
             row = connection.execute(
-                "SELECT state, failure_count FROM circuit_breakers "
+                "SELECT state, failure_count, updated_at FROM circuit_breakers "
                 "WHERE provider = ? AND modality = ? AND model_tier = ?",
                 key,
             ).fetchone()
             previous_count = int(row["failure_count"]) if row is not None else 0
+            if (
+                row is not None
+                and error_class in _TRANSIENT
+                and now - float(row["updated_at"]) >= self.failure_window_seconds
+            ):
+                previous_count = 0
             previous_state = str(row["state"]) if row is not None else "closed"
             count = previous_count + 1 if error_class in _TRANSIENT else previous_count
             should_open = (

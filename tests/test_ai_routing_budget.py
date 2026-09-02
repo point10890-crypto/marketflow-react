@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from decimal import Decimal
 
 from app.services.ai_routing.budget import BudgetLimits, BudgetManager
 from app.services.ai_routing.contracts import Operation, TokenUsage
@@ -114,3 +115,72 @@ def test_settlement_releases_unused_reserved_tokens(tmp_path):
     assert snapshot.remaining_input_tokens == 750
     assert snapshot.remaining_output_tokens == 900
 
+
+def test_daily_cost_cap_is_atomic_across_run_ids(tmp_path, monkeypatch):
+    monkeypatch.setenv("AI_OPENAI_DAILY_BUDGET_USD", "0.05")
+    manager = _manager(tmp_path)
+
+    def reserve(index):
+        return manager.reserve(
+            run_id=f"run-{index}",
+            request_id=f"request-{index}",
+            operation=Operation.DECISIVE_TEXT,
+            input_tokens=100,
+            output_tokens=100,
+            estimated_cost_usd=Decimal("0.03"),
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        reservations = list(executor.map(reserve, (1, 2)))
+
+    assert sum(item.approved for item in reservations) == 1
+    assert {item.reason for item in reservations if not item.approved} == {"daily_hard_cap"}
+
+
+def test_daily_cost_cap_fails_closed_when_reservation_price_is_unknown(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setenv("AI_OPENAI_DAILY_BUDGET_USD", "1.00")
+    manager = _manager(tmp_path)
+
+    reservation = manager.reserve(
+        run_id="run-unknown",
+        request_id="request-unknown",
+        operation=Operation.DECISIVE_TEXT,
+        input_tokens=100,
+        output_tokens=100,
+        estimated_cost_usd=None,
+    )
+
+    assert reservation.approved is False
+    assert reservation.reason == "daily_cost_unknown"
+
+
+def test_daily_settlement_releases_unused_reserved_cost(tmp_path, monkeypatch):
+    monkeypatch.setenv("AI_OPENAI_DAILY_BUDGET_USD", "0.05")
+    manager = _manager(tmp_path)
+    first = manager.reserve(
+        run_id="run-one",
+        request_id="request-one",
+        operation=Operation.DECISIVE_TEXT,
+        input_tokens=100,
+        output_tokens=100,
+        estimated_cost_usd=Decimal("0.04"),
+    )
+    manager.settle(
+        first.reservation_id,
+        TokenUsage(input_tokens=10, output_tokens=10),
+        actual_cost_usd=Decimal("0.01"),
+    )
+
+    second = manager.reserve(
+        run_id="run-two",
+        request_id="request-two",
+        operation=Operation.DECISIVE_TEXT,
+        input_tokens=100,
+        output_tokens=100,
+        estimated_cost_usd=Decimal("0.04"),
+    )
+
+    assert first.approved is True
+    assert second.approved is True

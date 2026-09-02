@@ -9,6 +9,14 @@ from typing import Any, Callable, Mapping, Protocol
 from .contracts import ProviderErrorClass, RoutingRequest, TokenUsage
 
 
+OPENAI_COMPATIBLE_REQUEST_TIMEOUT_SECONDS = 90
+GEMINI_REQUEST_TIMEOUT_SECONDS = 90
+MAX_PROVIDER_REQUEST_TIMEOUT_SECONDS = max(
+    OPENAI_COMPATIBLE_REQUEST_TIMEOUT_SECONDS,
+    GEMINI_REQUEST_TIMEOUT_SECONDS,
+)
+
+
 @dataclass(frozen=True)
 class AdapterResponse:
     text: str | None
@@ -32,6 +40,7 @@ class ProviderCallError(RuntimeError):
 
 class ProviderAdapter(Protocol):
     endpoint: str
+    request_timeout_seconds: float
 
     def generate(
         self,
@@ -106,9 +115,16 @@ def classify_exception(exc: Exception) -> ProviderErrorClass:
 class CallableAdapter:
     """Adapter for compatibility wrappers and deterministic tests."""
 
-    def __init__(self, call: Callable[..., Any], *, endpoint: str) -> None:
+    def __init__(
+        self,
+        call: Callable[..., Any],
+        *,
+        endpoint: str,
+        request_timeout_seconds: float = MAX_PROVIDER_REQUEST_TIMEOUT_SECONDS,
+    ) -> None:
         self.call = call
         self.endpoint = endpoint
+        self.request_timeout_seconds = request_timeout_seconds
 
     def generate(self, request: RoutingRequest, *, model: str, max_output_tokens: int) -> AdapterResponse:
         try:
@@ -131,10 +147,12 @@ class OpenAICompatibleAdapter:
         *,
         provider: str,
         extra_body: Mapping[str, Any] | None = None,
+        request_timeout_seconds: float = OPENAI_COMPATIBLE_REQUEST_TIMEOUT_SECONDS,
     ) -> None:
         self.client_factory = client_factory
         self.provider = provider
         self.extra_body = dict(extra_body or {})
+        self.request_timeout_seconds = request_timeout_seconds
 
     def generate(self, request: RoutingRequest, *, model: str, max_output_tokens: int) -> AdapterResponse:
         client = self.client_factory()
@@ -175,9 +193,16 @@ class OpenAICompatibleAdapter:
 class GeminiAdapter:
     endpoint = "models.generate_content"
 
-    def __init__(self, client_factory: Callable[[], Any], config_factory: Callable[..., Any]) -> None:
+    def __init__(
+        self,
+        client_factory: Callable[[], Any],
+        config_factory: Callable[..., Any],
+        *,
+        request_timeout_seconds: float = GEMINI_REQUEST_TIMEOUT_SECONDS,
+    ) -> None:
         self.client_factory = client_factory
         self.config_factory = config_factory
+        self.request_timeout_seconds = request_timeout_seconds
 
     def generate(self, request: RoutingRequest, *, model: str, max_output_tokens: int) -> AdapterResponse:
         client = self.client_factory()
@@ -215,7 +240,7 @@ def build_default_adapters() -> dict[str, ProviderAdapter]:
         if not key:
             return None
         from openai import OpenAI
-        return OpenAI(api_key=key, timeout=90)
+        return OpenAI(api_key=key, timeout=OPENAI_COMPATIBLE_REQUEST_TIMEOUT_SECONDS)
 
     def deepseek_client():
         key = os.getenv("DEEPSEEK_API_KEY")
@@ -225,7 +250,7 @@ def build_default_adapters() -> dict[str, ProviderAdapter]:
         return OpenAI(
             api_key=key,
             base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
-            timeout=90,
+            timeout=OPENAI_COMPATIBLE_REQUEST_TIMEOUT_SECONDS,
         )
 
     def gemini_client():
@@ -233,7 +258,13 @@ def build_default_adapters() -> dict[str, ProviderAdapter]:
         if not key:
             return None
         from google import genai
-        return genai.Client(api_key=key)
+        from google.genai import types
+        return genai.Client(
+            api_key=key,
+            http_options=types.HttpOptions(
+                timeout=int(GEMINI_REQUEST_TIMEOUT_SECONDS * 1_000)
+            ),
+        )
 
     def gemini_config(**kwargs):
         from google.genai import types

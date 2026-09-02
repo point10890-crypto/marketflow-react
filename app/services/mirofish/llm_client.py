@@ -27,6 +27,7 @@ from app.services.ai_routing.contracts import Operation, ProviderErrorClass, Rou
 from app.services.ai_routing.providers import (
     AdapterResponse,
     CallableAdapter,
+    GEMINI_REQUEST_TIMEOUT_SECONDS,
     ProviderCallError,
     classify_exception,
     normalize_gemini_usage,
@@ -359,7 +360,12 @@ def _generate_gemini(prompt: str, *, system: str | None, model_env: str | None,
     if json_mode:
         config_kwargs['response_mime_type'] = 'application/json'
     try:
-        client = genai.Client(api_key=api_key)
+        client = genai.Client(
+            api_key=api_key,
+            http_options=gt.HttpOptions(
+                timeout=int(GEMINI_REQUEST_TIMEOUT_SECONDS * 1_000)
+            ),
+        )
         resp = client.models.generate_content(
             model=model_override or gemini_model(model_env),
             contents=prompt,
@@ -531,6 +537,16 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
         'success': result.text is not None,
         'json_mode': json_mode,
         'fallback_used': result.fallback_used,
+        'fallback_reason': (
+            _legacy_failure_reason(result.fallback_reason, 'failed')
+            if result.fallback_reason is not None
+            else None
+        ),
+        'retry_reason': (
+            _legacy_failure_reason(result.retry_reason, 'failed')
+            if result.retry_reason is not None
+            else None
+        ),
         'failure_reason': (
             None
             if result.text is not None

@@ -9,6 +9,7 @@ from collections import OrderedDict
 from contextvars import ContextVar
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
+from decimal import Decimal
 from threading import Event, Lock
 from uuid import uuid4
 
@@ -52,6 +53,7 @@ class _BudgetFinalizer:
     reservation: BudgetReservation
     openai_called: bool = False
     openai_usage: TokenUsage | None = None
+    openai_cost_usd: Decimal | None = None
 
 
 _FLIGHTS: OrderedDict[tuple[str, str, str], _Flight] = OrderedDict()
@@ -69,7 +71,8 @@ def _safe_cost_estimate(
 ) -> CostEstimate:
     try:
         return estimate_cost_details(provider, model, usage, event_ts_utc=event_ts)
-    except ValueError:
+    except Exception as exc:
+        logger.warning("[ai_routing] pricing failed: %s", type(exc).__name__)
         return CostEstimate(None, "pricing_error")
 
 
@@ -106,6 +109,19 @@ class AIRouter:
         self.adapters = build_default_adapters() if adapters is None else adapters
         self.budget = budget or BudgetManager(self.store)
         self.breaker = breaker or CircuitBreaker(self.store)
+        adapter_deadlines = [
+            float(adapter.request_timeout_seconds)
+            for adapter in self.adapters.values()
+            if getattr(adapter, "request_timeout_seconds", None) is not None
+        ]
+        validate_deadlines = getattr(self.breaker, "validate_adapter_deadlines", None)
+        if callable(validate_deadlines):
+            validate_deadlines(adapter_deadlines)
+        elif adapter_deadlines:
+            lease = getattr(self.breaker, "probe_lease_seconds", None)
+            margin = float(getattr(self.breaker, "probe_margin_seconds", 0.0))
+            if lease is not None and float(lease) < max(adapter_deadlines) + margin:
+                raise ValueError("probe lease must cover provider deadline plus margin")
         self.retry_sleeper = retry_sleeper
         self.retry_delay = retry_delay
         self.max_retry_delay = max(0.0, max_retry_delay)
@@ -153,11 +169,10 @@ class AIRouter:
             flight.completed.wait(self.single_flight_wait_seconds)
             if flight.result is not None:
                 return flight.result
-            return self._failed_result(
-                policy.operation,
-                policy.providers[0],
-                (),
-                "duplicate_request_in_flight",
+            return RoutingResult(
+                text=None,
+                analysis_status=AnalysisStatus.IN_PROGRESS,
+                primary_provider=policy.providers[0],
             )
         finalizer_token = _ACTIVE_BUDGET.set(None)
         try:
@@ -181,6 +196,7 @@ class AIRouter:
                         finalizer.reservation,
                         finalizer.openai_called,
                         finalizer.openai_usage,
+                        finalizer.openai_cost_usd,
                     )
                 except Exception as exc:
                     logger.warning(
@@ -200,12 +216,25 @@ class AIRouter:
             max_output_tokens = min(max_output_tokens, max(1, request.max_output_tokens))
         reservation = BudgetReservation(True, acquired_by_caller=True)
         if "openai" in policy.providers:
+            reserved_input_tokens = estimate_reservation_input_tokens(request)
+            reserved_cost = _safe_cost_estimate(
+                "openai",
+                policy.models["openai"],
+                TokenUsage(
+                    input_tokens=reserved_input_tokens,
+                    cached_input_tokens=0,
+                    output_tokens=max_output_tokens,
+                ),
+                datetime.now(timezone.utc).isoformat(),
+            )
             reservation = self.budget.reserve(
                 run_id=run_id,
                 request_id=request_id,
                 operation=request.operation,
-                input_tokens=estimate_reservation_input_tokens(request),
+                input_tokens=reserved_input_tokens,
                 output_tokens=max_output_tokens,
+                estimated_cost_usd=reserved_cost.cost,
+                cost_pricing_version=reserved_cost.pricing_version,
             )
             if not reservation.approved:
                 return self._failed_result(policy.operation, policy.providers[0], ())
@@ -219,22 +248,32 @@ class AIRouter:
             _ACTIVE_BUDGET.set(_BudgetFinalizer(reservation))
 
         attempts: list[ProviderAttempt] = []
-        fallback_reason: ProviderErrorClass | str | None = None
+        primary_failure_reason: ProviderErrorClass | str | None = None
+        primary_retry_reason: ProviderErrorClass | str | None = None
         attempt_number = 0
         for provider_index, provider in enumerate(policy.providers):
             model = policy.models[provider]
             model_tier = "decisive" if policy.operation is Operation.DECISIVE_TEXT else "fast"
             adapter = self.adapters.get(provider)
             if adapter is None:
-                if fallback_reason is None:
-                    fallback_reason = ProviderErrorClass.CLIENT_UNAVAILABLE
+                if provider_index == 0 and primary_failure_reason is None:
+                    primary_failure_reason = ProviderErrorClass.CLIENT_UNAVAILABLE
                 continue
             provider_tries = 0
             while provider_tries < 2:
-                if not self.breaker.allow(provider, policy.modality, model_tier):
+                breaker_persistence_failed = False
+                try:
+                    allowed = self.breaker.allow(provider, policy.modality, model_tier)
+                except Exception as exc:
+                    logger.warning(
+                        "[ai_routing] breaker read failed: %s", type(exc).__name__
+                    )
+                    allowed = True
+                    breaker_persistence_failed = True
+                if not allowed:
                     attempt_number += 1
-                    if provider_index == 0 and fallback_reason is None:
-                        fallback_reason = ProviderErrorClass.BREAKER_OPEN
+                    if provider_index == 0:
+                        primary_failure_reason = ProviderErrorClass.BREAKER_OPEN
                     skipped = self._skipped_attempt(
                         request,
                         provider,
@@ -280,19 +319,42 @@ class AIRouter:
 
                 latency_ms = round((time.perf_counter() - started) * 1000, 3)
                 usage = response.usage
+                successful = error_class is None
+                estimate = _safe_cost_estimate(provider, model, usage, event_ts)
                 if provider == "openai":
                     finalizer = _ACTIVE_BUDGET.get()
                     if finalizer is not None:
                         finalizer.openai_called = True
                         finalizer.openai_usage = usage
-                successful = error_class is None
-                if successful:
-                    self.breaker.record_success(provider, policy.modality, model_tier)
+                        finalizer.openai_cost_usd = estimate.cost
+                try:
+                    if successful:
+                        self.breaker.record_success(provider, policy.modality, model_tier)
+                    else:
+                        self.breaker.record_failure(
+                            provider, policy.modality, model_tier, error_class
+                        )
+                except Exception as exc:
+                    logger.warning(
+                        "[ai_routing] breaker write failed: %s", type(exc).__name__
+                    )
+                    breaker_persistence_failed = True
+                if not successful and provider_index == 0:
+                    primary_failure_reason = error_class
+                    if error_class in _TRANSIENT and provider_tries < 2:
+                        primary_retry_reason = error_class
+                if breaker_persistence_failed:
+                    breaker_state = "persistence_error"
                 else:
-                    self.breaker.record_failure(provider, policy.modality, model_tier, error_class)
-                    if fallback_reason is None:
-                        fallback_reason = error_class
-                estimate = _safe_cost_estimate(provider, model, usage, event_ts)
+                    try:
+                        breaker_state = self.breaker.state(
+                            provider, policy.modality, model_tier
+                        )
+                    except Exception as exc:
+                        logger.warning(
+                            "[ai_routing] breaker state failed: %s", type(exc).__name__
+                        )
+                        breaker_state = "persistence_error"
                 attempt = ProviderAttempt(
                     event_ts_utc=event_ts,
                     request_id=request_id,
@@ -311,7 +373,7 @@ class AIRouter:
                     pricing_version=estimate.pricing_version,
                     error_class=error_class,
                     fallback_from=policy.providers[0] if provider_index > 0 else None,
-                    breaker_state=self.breaker.state(provider, policy.modality, model_tier),
+                    breaker_state=breaker_state,
                     symbol=request.symbol,
                     market=request.market,
                     caller_endpoint=request.caller_endpoint,
@@ -333,7 +395,10 @@ class AIRouter:
                         actual_provider=provider,
                         model=model,
                         fallback_used=provider_index > 0,
-                        fallback_reason=fallback_reason,
+                        fallback_reason=(
+                            primary_failure_reason if provider_index > 0 else None
+                        ),
+                        retry_reason=primary_retry_reason,
                         evidence_validated=True,
                         numeric_validation=validation.numeric_validation,
                         usage=usage,
@@ -353,7 +418,12 @@ class AIRouter:
             policy.operation,
             policy.providers[0],
             tuple(attempts),
-            fallback_reason,
+            (
+                primary_failure_reason
+                if any(attempt.fallback_from is not None for attempt in attempts)
+                else None
+            ),
+            retry_reason=primary_retry_reason,
         )
 
     def _finish_budget(
@@ -361,9 +431,14 @@ class AIRouter:
         reservation: BudgetReservation,
         openai_called: bool,
         openai_usage: TokenUsage | None,
+        openai_cost_usd: Decimal | None,
     ) -> None:
         if openai_called:
-            self.budget.settle(reservation.reservation_id, openai_usage or TokenUsage.unknown())
+            self.budget.settle(
+                reservation.reservation_id,
+                openai_usage or TokenUsage.unknown(),
+                actual_cost_usd=openai_cost_usd,
+            )
         else:
             self.budget.release(reservation.reservation_id)
 
@@ -401,6 +476,7 @@ class AIRouter:
         primary_provider: str,
         attempts: tuple[ProviderAttempt, ...],
         fallback_reason: ProviderErrorClass | str | None = None,
+        retry_reason: ProviderErrorClass | str | None = None,
     ) -> RoutingResult:
         if operation is Operation.DECISIVE_TEXT:
             status = AnalysisStatus.HOLD_REVIEW
@@ -414,6 +490,7 @@ class AIRouter:
             primary_provider=primary_provider,
             fallback_used=any(attempt.fallback_from is not None for attempt in attempts),
             fallback_reason=fallback_reason,
+            retry_reason=retry_reason,
             attempts=attempts,
         )
 

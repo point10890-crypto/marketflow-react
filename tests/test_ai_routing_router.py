@@ -1,6 +1,7 @@
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
+from threading import Event
 
 from app.services.ai_routing.breaker import CircuitBreaker
 from app.services.ai_routing.budget import BudgetManager
@@ -275,6 +276,24 @@ def test_429_retry_uses_bounded_injected_delay(tmp_path):
 
     assert result.text == "retried"
     assert delays == [2.0]
+    assert result.fallback_used is False
+    assert result.fallback_reason is None
+    assert result.retry_reason is ProviderErrorClass.RATE_LIMIT
+
+
+def test_primary_retry_reason_is_separate_from_true_fallback_reason(tmp_path):
+    deepseek = FakeAdapter(
+        ProviderCallError(ProviderErrorClass.RATE_LIMIT),
+        ProviderCallError(ProviderErrorClass.AUTHENTICATION),
+    )
+    openai = FakeAdapter(_response("fallback"))
+    router, _store = _router(tmp_path, {"deepseek": deepseek, "openai": openai})
+
+    result = router.route_text(_request())
+
+    assert result.actual_provider == "openai"
+    assert result.retry_reason is ProviderErrorClass.RATE_LIMIT
+    assert result.fallback_reason is ProviderErrorClass.AUTHENTICATION
 
 
 def test_retry_rechecks_breaker_after_first_transient_failure(tmp_path):
@@ -363,3 +382,89 @@ def test_single_flight_registry_stays_bounded_behind_hung_oldest(tmp_path, monke
     with router_module._FLIGHTS_LOCK:
         assert len(router_module._FLIGHTS) <= 3
     assert hung.completed.is_set() is False
+
+
+def test_duplicate_wait_timeout_returns_explicit_in_progress_status(tmp_path):
+    entered = Event()
+    release = Event()
+
+    class BlockingAdapter:
+        endpoint = "fake.generate"
+
+        def generate(self, request, *, model, max_output_tokens):
+            entered.set()
+            release.wait(5)
+            return _response("owner-result")
+
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    router = AIRouter(
+        {"deepseek": BlockingAdapter(), "openai": FakeAdapter(_response("unused"))},
+        budget=BudgetManager(store),
+        breaker=CircuitBreaker(store),
+        store=store,
+        single_flight_wait_seconds=0,
+    )
+    request = _request(request_id="in-progress-request")
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        owner = executor.submit(router.route_text, request)
+        assert entered.wait(2)
+        duplicate = router.route_text(request)
+        release.set()
+        owner_result = owner.result(timeout=5)
+
+    assert duplicate.analysis_status is AnalysisStatus.IN_PROGRESS
+    assert duplicate.fallback_reason is None
+    assert owner_result.text == "owner-result"
+
+
+class BrokenPersistenceBreaker:
+    probe_lease_seconds = 120
+    probe_margin_seconds = 30
+
+    def allow(self, provider, modality, model_tier):
+        return True
+
+    def record_success(self, provider, modality, model_tier):
+        raise OSError("breaker unavailable")
+
+    def record_failure(self, provider, modality, model_tier, error_class):
+        raise OSError("breaker unavailable")
+
+    def state(self, provider, modality, model_tier):
+        raise OSError("breaker unavailable")
+
+
+def test_breaker_persistence_failure_does_not_discard_valid_response(tmp_path):
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    router = AIRouter(
+        {"deepseek": FakeAdapter(_response("valid"))},
+        budget=BudgetManager(store),
+        breaker=BrokenPersistenceBreaker(),
+        store=store,
+    )
+
+    result = router.route_text(_request(Operation.BULK_TEXT))
+
+    assert result.text == "valid"
+    assert len(result.attempts) == 1
+    assert result.attempts[0].breaker_state == "persistence_error"
+    assert usage_summary(1, 20, store=store)["totals"]["live_attempts"] == 1
+
+
+def test_breaker_persistence_failure_does_not_hide_billable_failure(tmp_path):
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    deepseek = FakeAdapter(ProviderCallError(ProviderErrorClass.AUTHENTICATION))
+    openai = FakeAdapter(_response("fallback", input_tokens=20, output_tokens=5))
+    router = AIRouter(
+        {"deepseek": deepseek, "openai": openai},
+        budget=BudgetManager(store),
+        breaker=BrokenPersistenceBreaker(),
+        store=store,
+    )
+
+    result = router.route_text(_request())
+
+    assert result.text == "fallback"
+    assert len(result.attempts) == 2
+    assert all(attempt.breaker_state == "persistence_error" for attempt in result.attempts)
+    assert usage_summary(1, 20, store=store)["totals"]["live_attempts"] == 2

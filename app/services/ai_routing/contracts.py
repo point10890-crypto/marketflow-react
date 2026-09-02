@@ -24,6 +24,7 @@ class AnalysisStatus(str, Enum):
     DEGRADED = "DEGRADED"
     HOLD_REVIEW = "HOLD_REVIEW"
     FAILED_TECHNICAL = "FAILED_TECHNICAL"
+    IN_PROGRESS = "IN_PROGRESS"
 
 
 class ProviderErrorClass(str, Enum):
@@ -151,6 +152,7 @@ class RoutingResult:
     model: str | None = None
     fallback_used: bool = False
     fallback_reason: ProviderErrorClass | str | None = None
+    retry_reason: ProviderErrorClass | str | None = None
     evidence_validated: bool = False
     numeric_validation: str = "not_requested"
     usage: TokenUsage = field(default_factory=TokenUsage.unknown)

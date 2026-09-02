@@ -1,3 +1,5 @@
+import pytest
+
 from app.services.ai_routing.breaker import CircuitBreaker
 from app.services.ai_routing.contracts import ProviderErrorClass
 from app.services.ai_routing.store import RoutingStore
@@ -82,6 +84,8 @@ def test_stale_half_open_probe_lease_can_be_reclaimed_once(tmp_path):
         RoutingStore(tmp_path / "usage.sqlite3"),
         cooldown_seconds=10,
         probe_lease_seconds=5,
+        max_provider_deadline_seconds=1,
+        probe_margin_seconds=1,
         clock=clock,
     )
     breaker.record_failure("deepseek", "text", "fast", ProviderErrorClass.AUTHENTICATION)
@@ -107,3 +111,32 @@ def test_default_probe_lease_exceeds_ninety_second_provider_deadline(tmp_path):
     assert breaker.allow("deepseek", "text", "fast") is False
     clock.value += 30
     assert breaker.allow("deepseek", "text", "fast") is True
+
+
+def test_probe_lease_must_cover_every_adapter_deadline_plus_margin(tmp_path):
+    with pytest.raises(ValueError, match="probe lease"):
+        CircuitBreaker(
+            RoutingStore(tmp_path / "usage.sqlite3"),
+            probe_lease_seconds=119,
+            max_provider_deadline_seconds=90,
+            probe_margin_seconds=30,
+        )
+
+
+def test_transient_failure_count_resets_outside_failure_window(tmp_path):
+    clock = Clock()
+    breaker = CircuitBreaker(
+        RoutingStore(tmp_path / "usage.sqlite3"),
+        failure_threshold=2,
+        failure_window_seconds=10,
+        clock=clock,
+    )
+
+    breaker.record_failure("deepseek", "text", "fast", ProviderErrorClass.TIMEOUT)
+    clock.value += 11
+    breaker.record_failure("deepseek", "text", "fast", ProviderErrorClass.CONNECTION)
+    assert breaker.state("deepseek", "text", "fast") == "closed"
+
+    clock.value += 9
+    breaker.record_failure("deepseek", "text", "fast", ProviderErrorClass.SERVER_ERROR)
+    assert breaker.state("deepseek", "text", "fast") == "open"

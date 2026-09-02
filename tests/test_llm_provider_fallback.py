@@ -352,6 +352,8 @@ def test_retry_then_empty_200_keeps_usage_and_clears_stale_error(tmp_path, monke
     assert metadata['attempts'][1]['failure_reason'] == 'empty_response'
     assert metadata['attempts'][1]['usage']['input_tokens'] == 80
     assert metadata['attempts'][1]['estimated_cost_usd'] is not None
+    assert metadata['retry_reason'] == 'rate_limit'
+    assert metadata['fallback_reason'] == 'empty_response'
 
 
 def test_explicit_decisive_operation_uses_central_policy_and_cap(monkeypatch):

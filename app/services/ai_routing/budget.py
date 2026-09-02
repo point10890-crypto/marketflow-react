@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from decimal import Decimal, InvalidOperation
 from uuid import uuid4
 
 from .contracts import Operation, TokenUsage
@@ -39,6 +41,10 @@ class BudgetSnapshot:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _utc_billing_day() -> str:
+    return datetime.now(timezone.utc).date().isoformat()
 
 
 class BudgetManager:
@@ -78,6 +84,39 @@ class BudgetManager:
         ).fetchone()
         return int(row[0]), int(row[1]), int(row[2])
 
+    @staticmethod
+    def _daily_limit() -> tuple[Decimal | None, str | None]:
+        raw = os.getenv("AI_OPENAI_DAILY_BUDGET_USD")
+        if raw is None or not raw.strip():
+            return None, None
+        try:
+            value = Decimal(raw.strip())
+        except InvalidOperation:
+            return None, "daily_budget_invalid"
+        if not value.is_finite() or value <= 0:
+            return None, "daily_budget_invalid"
+        return value, None
+
+    def _used_daily_cost(self, connection, billing_day_utc: str) -> Decimal:
+        rows = connection.execute(
+            """
+            SELECT reserved_cost_usd, actual_cost_usd, status
+            FROM budget_reservations
+            WHERE provider = ? AND billing_day_utc = ? AND status != 'released'
+            """,
+            (self.provider, billing_day_utc),
+        ).fetchall()
+        total = Decimal("0")
+        for row in rows:
+            raw = (
+                row["actual_cost_usd"]
+                if row["status"] == "settled" and row["actual_cost_usd"] is not None
+                else row["reserved_cost_usd"]
+            )
+            if raw is not None:
+                total += Decimal(str(raw))
+        return total
+
     def reserve(
         self,
         *,
@@ -87,10 +126,16 @@ class BudgetManager:
         input_tokens: int,
         output_tokens: int,
         calls: int = 1,
+        estimated_cost_usd: Decimal | None = None,
+        cost_pricing_version: str | None = None,
     ) -> BudgetReservation:
         if min(input_tokens, output_tokens, calls) < 0 or calls == 0:
             raise ValueError("reservation amounts must be non-negative and calls positive")
         operation = Operation(operation)
+        if estimated_cost_usd is not None:
+            estimated_cost_usd = Decimal(estimated_cost_usd)
+            if not estimated_cost_usd.is_finite() or estimated_cost_usd < 0:
+                raise ValueError("estimated cost must be a non-negative finite decimal")
         with self.store.transaction(write=True) as connection:
             existing = connection.execute(
                 """
@@ -106,6 +151,24 @@ class BudgetManager:
                     already_reserved=True,
                     acquired_by_caller=False,
                 )
+
+            daily_limit, daily_error = (
+                self._daily_limit()
+                if self.provider.lower() == "openai"
+                else (None, None)
+            )
+            if daily_error is not None:
+                return BudgetReservation(False, reason=daily_error)
+            billing_day_utc = _utc_billing_day()
+            if daily_limit is not None:
+                if estimated_cost_usd is None:
+                    return BudgetReservation(False, reason="daily_cost_unknown")
+                if (
+                    self._used_daily_cost(connection, billing_day_utc)
+                    + estimated_cost_usd
+                    > daily_limit
+                ):
+                    return BudgetReservation(False, reason="daily_hard_cap")
 
             used_calls, used_input, used_output = self._used(connection, run_id)
             ratios = (
@@ -128,8 +191,9 @@ class BudgetManager:
                 INSERT INTO budget_reservations (
                     reservation_id, run_id, request_id, pool, provider, operation,
                     reserved_calls, reserved_input_tokens, reserved_output_tokens,
+                    billing_day_utc, reserved_cost_usd, cost_pricing_version,
                     status, created_at_utc
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved', ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved', ?)
                 """,
                 (
                     reservation_id,
@@ -141,24 +205,46 @@ class BudgetManager:
                     calls,
                     input_tokens,
                     output_tokens,
+                    billing_day_utc,
+                    str(estimated_cost_usd) if estimated_cost_usd is not None else None,
+                    cost_pricing_version,
                     _utc_now(),
                 ),
             )
             return BudgetReservation(True, reservation_id=reservation_id, acquired_by_caller=True)
 
-    def settle(self, reservation_id: str | None, usage: TokenUsage, *, calls: int = 1) -> None:
+    def settle(
+        self,
+        reservation_id: str | None,
+        usage: TokenUsage,
+        *,
+        calls: int = 1,
+        actual_cost_usd: Decimal | None = None,
+    ) -> None:
         if not reservation_id:
             return
         with self.store.transaction(write=True) as connection:
+            if actual_cost_usd is not None:
+                actual_cost_usd = Decimal(actual_cost_usd)
+                if not actual_cost_usd.is_finite() or actual_cost_usd < 0:
+                    raise ValueError("actual cost must be a non-negative finite decimal")
             connection.execute(
                 """
                 UPDATE budget_reservations
                 SET actual_calls = ?, actual_input_tokens = COALESCE(?, reserved_input_tokens),
                     actual_output_tokens = COALESCE(?, reserved_output_tokens),
+                    actual_cost_usd = COALESCE(?, reserved_cost_usd),
                     status = 'settled', settled_at_utc = ?
                 WHERE reservation_id = ? AND status = 'reserved'
                 """,
-                (calls, usage.input_tokens, usage.output_tokens, _utc_now(), reservation_id),
+                (
+                    calls,
+                    usage.input_tokens,
+                    usage.output_tokens,
+                    str(actual_cost_usd) if actual_cost_usd is not None else None,
+                    _utc_now(),
+                    reservation_id,
+                ),
             )
 
     def release(self, reservation_id: str | None) -> None:

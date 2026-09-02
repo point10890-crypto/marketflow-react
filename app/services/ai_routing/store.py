@@ -90,6 +90,10 @@ class RoutingStore:
                         reserved_calls INTEGER NOT NULL,
                         reserved_input_tokens INTEGER NOT NULL,
                         reserved_output_tokens INTEGER NOT NULL,
+                        billing_day_utc TEXT,
+                        reserved_cost_usd TEXT,
+                        actual_cost_usd TEXT,
+                        cost_pricing_version TEXT,
                         actual_calls INTEGER,
                         actual_input_tokens INTEGER,
                         actual_output_tokens INTEGER,
@@ -129,6 +133,27 @@ class RoutingStore:
                         connection.execute(
                             f"ALTER TABLE provider_attempts ADD COLUMN {name} {declaration}"
                         )
+                budget_columns = {
+                    row["name"]
+                    for row in connection.execute(
+                        "PRAGMA table_info(budget_reservations)"
+                    ).fetchall()
+                }
+                budget_migrations = {
+                    "billing_day_utc": "TEXT",
+                    "reserved_cost_usd": "TEXT",
+                    "actual_cost_usd": "TEXT",
+                    "cost_pricing_version": "TEXT",
+                }
+                for name, declaration in budget_migrations.items():
+                    if name not in budget_columns:
+                        connection.execute(
+                            f"ALTER TABLE budget_reservations ADD COLUMN {name} {declaration}"
+                        )
+                connection.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_budget_reservations_daily "
+                    "ON budget_reservations(provider, billing_day_utc, status)"
+                )
                 self._initialized = True
             finally:
                 connection.close()
