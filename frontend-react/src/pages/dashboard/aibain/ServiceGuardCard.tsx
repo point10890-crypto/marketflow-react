@@ -47,7 +47,9 @@ export default function ServiceGuardCard() {
             const res = await fetchAuthAPI<unknown>('/api/admin/mirofish/service-guard', token ?? undefined, 30000);
             if (isGuardPayload(res)) setData(res);
         } catch {
-            setData(null);   // 권한 없음/미배포 백엔드 — 카드를 그리지 않는다
+            // 권한 없음/미배포 백엔드 — 첫 프로브가 실패하면 data 가 null 그대로라
+            // 카드를 그리지 않는다. 이미 표시 중이던 상태는 일시적 새로고침 실패
+            // (타임아웃·재시작 중 5xx)로 지우지 않는다 — 마지막 정상 데이터를 유지한다.
         }
     }, [token]);
 

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -534,5 +534,233 @@ describe('DecisionBriefPage - job+poll 심층 분석', () => {
     mockApi.postAuthAPI.mockRejectedValue(new Error('quota_exceeded'));
     await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
     await waitFor(() => expect(screen.getByText(/일일 한도/)).toBeInTheDocument());
+  });
+});
+
+describe('DecisionBriefPage — 경합·수명주기 가드', () => {
+  beforeEach(() => { mockApi.fetchAuthAPI.mockReset(); mockApi.postAuthAPI.mockReset(); });
+
+  const deepDone = {
+    symbol: '009150', name: '삼성전기', status: 'neutral',
+    analysts: [],
+    debate: { rounds: [{ round: 1, bull: '수급이 붙었다', bear: '실적 근거가 약하다' }],
+              manager: { stance: 'neutral', thesis: '방향성 불충분', confidence: 55 }, method: 'llm' },
+    risk: null, verdict: { verdict: 'HOLD', confidence: 55 }, verification: null,
+    citations: [], retrieval: null, method: 'llm', error: null,
+  };
+
+  it('폴링 중 다른 종목을 조회하면 늦게 도착한 심층 결과를 버린다', async () => {
+    const briefB = { ...brief, symbol: '005930', name: '삼성전자' };
+    let resolveStatus: (v: unknown) => void = () => {};
+    let statusCalls = 0;
+    mockApi.fetchAuthAPI.mockImplementation((path: string) => {
+      const p = String(path);
+      if (p.includes('/analyze/status')) { statusCalls += 1; return new Promise((r) => { resolveStatus = r; }); }
+      if (p.includes('/search')) return Promise.resolve({ candidates: [] });
+      if (p.includes('005930')) return Promise.resolve(briefB);
+      return Promise.resolve(brief);
+    });
+    mockApi.postAuthAPI.mockResolvedValue({ state: 'running' });
+
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '009150');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
+    await waitFor(() => expect(statusCalls).toBe(1));
+
+    // A(009150)의 폴링이 걸려 있는 동안 B(005930)를 조회한다
+    await userEvent.clear(screen.getByLabelText('종목 코드'));
+    await userEvent.type(screen.getByLabelText('종목 코드'), '005930');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전자')).toBeInTheDocument());
+
+    // 이제 A 의 폴링이 done 으로 늦게 도착한다 — B 브리프 밑에 렌더되면 안 된다
+    await act(async () => {
+      resolveStatus({ state: 'done', payload: deepDone });
+      await new Promise((r) => { setTimeout(r, 0); });
+    });
+    expect(screen.queryByText('수급이 붙었다')).toBeNull();
+    // 낡은 실행이 로딩 상태를 물고 있지 않다 — 버튼이 다시 눌린다
+    await waitFor(() => expect(screen.getByRole('button', { name: /심층 분석 실행/ })).toBeEnabled());
+  });
+
+  it('언마운트되면 심층 분석 폴링을 중단한다', async () => {
+    let resolveStatus: (v: unknown) => void = () => {};
+    let statusCalls = 0;
+    mockApi.fetchAuthAPI.mockImplementation((path: string) => {
+      const p = String(path);
+      if (p.includes('/analyze/status')) { statusCalls += 1; return new Promise((r) => { resolveStatus = r; }); }
+      if (p.includes('/search')) return Promise.resolve({ candidates: [] });
+      return Promise.resolve(brief);
+    });
+    mockApi.postAuthAPI.mockResolvedValue({ state: 'running' });
+
+    const { unmount } = render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '009150');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
+    await waitFor(() => expect(statusCalls).toBe(1));
+
+    unmount();
+    // 걸려 있던 폴링 응답이 언마운트 뒤에 도착한다 — 루프가 다음 3초 슬립을
+    // 걸지 않고 즉시 끝나야 한다(끝나지 않으면 status 요청이 계속 나간다).
+    const stSpy = vi.spyOn(globalThis, 'setTimeout');
+    await act(async () => {
+      resolveStatus({ state: 'running' });
+      await new Promise((r) => { setTimeout(r, 0); });   // 0ms 플러시 — 3000ms 필터에 안 걸린다
+    });
+    expect(stSpy.mock.calls.filter((c) => c[1] === 3000)).toHaveLength(0);
+    expect(statusCalls).toBe(1);
+    stSpy.mockRestore();
+  });
+
+  it('먼저 보낸 조회가 늦게 도착해도 나중에 고른 브리프를 덮지 않는다', async () => {
+    let resolveA: (v: unknown) => void = () => {};
+    const briefB = { ...brief, symbol: '005930', name: '삼성전자' };
+    mockApi.fetchAuthAPI.mockImplementation((path: string) => {
+      const p = String(path);
+      if (p.includes('/search')) {
+        return Promise.resolve({ candidates: [
+          { symbol: '005930', name: '삼성전자', confidence: 0.9, reason: 'exact_name' }] });
+      }
+      if (p.includes('111111')) return new Promise((r) => { resolveA = r; });
+      return Promise.resolve(briefB);
+    });
+
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '111111');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회|조회 중/ }));
+
+    // 첫 조회(111111)가 매달려 있는 동안 후보 B 를 고른다 — B 가 먼저 렌더된다
+    await waitFor(() => expect(screen.getByRole('option', { name: /삼성전자/ })).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('option', { name: /삼성전자/ }));
+    await waitFor(() => expect(screen.getByText('삼성전자')).toBeInTheDocument());
+
+    // 이제 낡은 111111 응답이 도착한다 — 화면의 B 를 대체하면 안 된다
+    await act(async () => {
+      resolveA(brief);
+      await new Promise((r) => { setTimeout(r, 0); });
+    });
+    expect(screen.queryByText('삼성전기')).toBeNull();
+    expect(screen.getByText('삼성전자')).toBeInTheDocument();
+    expect(screen.queryByText(/조회에 실패했습니다/)).toBeNull();
+  });
+
+  it('강제 새로고침이 실패해도 보고 있던 브리프를 지우지 않는다', async () => {
+    mockApi.fetchAuthAPI.mockImplementation((path: string) => {
+      const p = String(path);
+      if (p.includes('/search')) return Promise.resolve({ candidates: [] });
+      if (p.includes('force=1')) return Promise.reject(new Error('backend busy'));
+      return Promise.resolve({ ...brief, cached: true, cached_at: '2026-08-29T05:00:00' });
+    });
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '009150');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: /다시 조회/ }));
+    await waitFor(() => expect(screen.getByText(/조회에 실패했습니다/)).toBeInTheDocument());
+    // 실패는 배너로 알리되 마지막 정상 브리프는 그대로 남는다
+    expect(screen.getByText('삼성전기')).toBeInTheDocument();
+  });
+
+  it('심층 분석 재시도는 이전 실패 배너를 지운다', async () => {
+    mockApi.fetchAuthAPI.mockImplementation((path: string) =>
+      String(path).includes('/search')
+        ? Promise.resolve({ candidates: [] })
+        : Promise.resolve(brief));
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '009150');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+
+    mockApi.postAuthAPI.mockRejectedValueOnce(new Error('boom'));
+    await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
+    await waitFor(() => expect(screen.getByText(/심층 분석에 실패했습니다/)).toBeInTheDocument());
+
+    mockApi.postAuthAPI.mockResolvedValueOnce(deepDone);
+    await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
+    await waitFor(() => expect(screen.getByTestId('deep-call')).toBeInTheDocument());
+    expect(screen.queryByText(/심층 분석에 실패했습니다/)).toBeNull();
+  });
+
+  it('입력과 같은 후보를 골라도 다음 키 입력의 후보 조회를 삼키지 않는다', async () => {
+    mockApi.fetchAuthAPI.mockImplementation((path: string) => {
+      const p = String(path);
+      if (p.includes('/search')) {
+        return Promise.resolve({ candidates: [
+          { symbol: '005930', name: '삼성전자', confidence: 0.99, reason: 'ticker_direct' }] });
+      }
+      return Promise.resolve(brief);
+    });
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '005930');
+    await waitFor(() => expect(screen.getByRole('option', { name: /삼성전자/ })).toBeInTheDocument());
+    // 입력값과 완전히 같은 종목코드 후보(ticker_direct)를 고른다
+    await userEvent.click(screen.getByRole('option', { name: /삼성전자/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+
+    const searchCalls = () =>
+      mockApi.fetchAuthAPI.mock.calls.filter((c) => String(c[0]).includes('/search')).length;
+    const before = searchCalls();
+    await userEvent.type(screen.getByLabelText('종목 코드'), '0');   // 진짜 새 키 입력
+    await waitFor(() => expect(searchCalls()).toBe(before + 1));
+  });
+});
+
+describe('DecisionBriefPage — 링크 스킴 가드', () => {
+  beforeEach(() => { mockApi.fetchAuthAPI.mockReset(); mockApi.postAuthAPI.mockReset(); });
+
+  it('javascript: 스킴 뉴스 링크는 앵커로 렌더하지 않는다', async () => {
+    mockApi.fetchAuthAPI.mockResolvedValue({
+      ...brief,
+      news: {
+        count: 2,
+        items: [
+          { title: '악성 헤드라인', link: 'javascript:alert(document.cookie)', source: 'x',
+            grade: 'B', score: 1, published_ts: null, corroboration: 1 },
+          { title: '정상 헤드라인', link: 'https://news.example.com/1', source: 'y',
+            grade: 'B', score: 1, published_ts: null, corroboration: 1 },
+        ],
+      },
+    });
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '009150');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('악성 헤드라인')).toBeInTheDocument());
+
+    expect(screen.getByText('악성 헤드라인').closest('a')).toBeNull();   // 본문으로 강등
+    expect(screen.getByText('정상 헤드라인').closest('a'))
+      .toHaveAttribute('href', 'https://news.example.com/1');
+  });
+
+  it('javascript: 스킴 인용 링크도 본문으로 강등한다', async () => {
+    mockApi.fetchAuthAPI.mockImplementation((path: string) =>
+      String(path).includes('/search')
+        ? Promise.resolve({ candidates: [] })
+        : Promise.resolve(brief));
+    mockApi.postAuthAPI.mockResolvedValue({
+      symbol: '009150', name: '삼성전기', status: 'neutral',
+      analysts: [], debate: null, risk: null,
+      verdict: { verdict: 'HOLD', confidence: 55 }, verification: null,
+      citations: [
+        { kind: 'news', text: '수상한 인용', grade: 'B', source: null, link: 'javascript:void(0)' },
+        { kind: 'news', text: '정상 인용', grade: 'B', source: null, link: 'http://n.example.com/2' },
+      ],
+      retrieval: { news_count: 2, graph_count: 0 }, method: 'llm', error: null,
+    });
+    render(<DecisionBriefPage />);
+    await userEvent.type(screen.getByLabelText('종목 코드'), '009150');
+    await userEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    await waitFor(() => expect(screen.getByText('삼성전기')).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ }));
+    await waitFor(() => expect(screen.getByText('수상한 인용')).toBeInTheDocument());
+
+    expect(screen.getByText('수상한 인용').closest('a')).toBeNull();
+    expect(screen.getByText('정상 인용').closest('a'))
+      .toHaveAttribute('href', 'http://n.example.com/2');
   });
 });
