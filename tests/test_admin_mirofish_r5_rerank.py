@@ -129,6 +129,7 @@ def test_rerank_order_and_packet_identity_close_over_exact_validated_overlay():
         'model': 'deepseek-v4-pro',
         'operation': 'scanner_rerank',
         'schema_version': 'mirofish.deepseek_rerank.v1',
+        'max_abs_adjustment': 8.0,
         'status': 'applied',
         'validated': True,
         'result_at': '2026-09-03T06:31:00+00:00',
@@ -299,3 +300,215 @@ def test_non_mapping_rerank_item_is_failed_not_unused():
     assert state['applied'] is False
     assert state['status'] == 'failed'
     assert state['reason'] == 'invalid_item'
+
+
+@pytest.mark.parametrize(
+    ('payload_bound', 'env_bound', 'expected_bound', 'expected_delta'),
+    [
+        (0, '7', 0.0, 0.0),
+        (None, '3', 3.0, 3.0),
+    ],
+    ids=['explicit-numeric-zero', 'explicit-none-uses-env'],
+)
+def test_rerank_request_bound_uses_presence_not_truthiness(
+    monkeypatch, payload_bound, env_bound, expected_bound, expected_delta,
+):
+    candidate = _candidate('000001', 70.0)
+    received_bounds = []
+
+    def fake_rerank(candidates, **kwargs):
+        received_bounds.append(kwargs['max_adjustment'])
+        return {
+            'provider': 'deepseek',
+            'model': 'deepseek-v4-pro',
+            'candidate_count': len(candidates),
+            'overlay': {'items': [{
+                'symbol': '000001',
+                'ranking_adjustment': 5,
+                'deepseek_conviction': 90,
+                'risk_flags': [],
+                'positive_evidence': [],
+                'rationale_ko': 'audit-only bound check',
+            }]},
+            'created_at': '2026-09-03T06:31:00+00:00',
+        }
+
+    monkeypatch.setattr(deepseek_client, 'rerank_scanner_candidates', fake_rerank)
+    monkeypatch.setenv('MIROFISH_DEEPSEEK_MAX_ADJUSTMENT', env_bound)
+    payload = {
+        'deepseek_rerank': True,
+        'deepseek_rerank_limit': 1,
+        'deepseek_max_adjustment': payload_bound,
+    }
+
+    overlay = alpha_scanner._maybe_deepseek_rerank_candidates(
+        [candidate],
+        payload=payload,
+        generated_at='2026-09-03T06:30:30+00:00',
+        requested_symbols={'000001'},
+        limit=1,
+    )
+    result = _apply([candidate], overlay)[0]
+
+    assert received_bounds == [expected_bound]
+    assert overlay['max_abs_adjustment'] == expected_bound
+    state = result['analysis_profile']['deepseek_rerank']
+    assert state['ranking_adjustment'] == expected_delta
+    assert state['base_ranking_score'] == 70.0
+    assert state['final_ranking_score'] == 70.0 + expected_delta
+    source = next(
+        packet for packet in result['source_packets']
+        if packet['source'] == 'deepseek_rerank'
+    )
+    assert source['content']['max_abs_adjustment'] == expected_bound
+    assert source['content']['normalized']['ranking_adjustment'] == expected_delta
+
+
+def test_environment_string_zero_keeps_rerank_audit_only(monkeypatch):
+    candidate = _candidate('000001', 70.0)
+
+    def fake_rerank(candidates, **kwargs):
+        return {
+            'provider': 'deepseek',
+            'model': 'deepseek-v4-pro',
+            'candidate_count': len(candidates),
+            'overlay': {'items': [{
+                'symbol': '000001',
+                'ranking_adjustment': 8,
+                'deepseek_conviction': 90,
+                'risk_flags': [],
+                'positive_evidence': [],
+                'rationale_ko': 'environment zero bound',
+            }]},
+            'created_at': '2026-09-03T06:31:00+00:00',
+        }
+
+    monkeypatch.setattr(deepseek_client, 'rerank_scanner_candidates', fake_rerank)
+    monkeypatch.setenv('MIROFISH_DEEPSEEK_MAX_ADJUSTMENT', '0')
+
+    overlay = alpha_scanner._maybe_deepseek_rerank_candidates(
+        [candidate],
+        payload={'deepseek_rerank': True, 'deepseek_rerank_limit': 1},
+        generated_at='2026-09-03T06:30:30+00:00',
+        requested_symbols={'000001'},
+        limit=1,
+    )
+    result = _apply([candidate], overlay)[0]
+
+    assert overlay['max_abs_adjustment'] == 0.0
+    assert result['ranking_score'] == 70.0
+    state = result['analysis_profile']['deepseek_rerank']
+    assert state['ranking_adjustment'] == 0.0
+    assert state['base_ranking_score'] == state['final_ranking_score'] == 70.0
+
+
+def test_direct_zero_bound_cannot_change_rank_order_or_provenance_delta():
+    rows = [_candidate('000001', 70.0), _candidate('000002', 68.0)]
+    overlay = _overlay('000002', 8.0, max_abs_adjustment=0)
+
+    result = _apply(rows, overlay)
+
+    assert [candidate['symbol'] for candidate in result] == ['000001', '000002']
+    adjusted = next(candidate for candidate in result if candidate['symbol'] == '000002')
+    assert adjusted['ranking_score'] == 68.0
+    state = adjusted['analysis_profile']['deepseek_rerank']
+    assert state['ranking_adjustment'] == 0.0
+    assert state['base_ranking_score'] == state['final_ranking_score'] == 68.0
+    source = next(
+        packet for packet in adjusted['source_packets']
+        if packet['source'] == 'deepseek_rerank'
+    )
+    assert source['content']['max_abs_adjustment'] == 0.0
+    assert source['content']['normalized']['ranking_adjustment'] == 0.0
+
+
+@pytest.mark.parametrize(
+    'invalid_bound',
+    [
+        True,
+        float('nan'),
+        float('inf'),
+        'invalid',
+        pytest.param(10 ** 10000, id='overflowing-int'),
+    ],
+)
+def test_invalid_direct_rerank_bound_fails_closed(invalid_bound):
+    candidate = _candidate('000001', 70.0)
+    overlay = _overlay('000001', 5.0, max_abs_adjustment=invalid_bound)
+
+    result = _apply([candidate], overlay)[0]
+
+    assert result['ranking_score'] == 70.0
+    state = result['analysis_profile']['deepseek_rerank']
+    assert state['applied'] is False
+    assert state['status'] == 'failed'
+    assert state['reason'] == 'invalid_policy_bound'
+    assert all(packet['source'] != 'deepseek_rerank' for packet in result['source_packets'])
+
+
+@pytest.mark.parametrize(
+    'invalid_bound',
+    [
+        True,
+        float('nan'),
+        float('inf'),
+        'invalid',
+        pytest.param(10 ** 10000, id='overflowing-int'),
+    ],
+)
+def test_invalid_requested_rerank_bound_fails_before_provider_call(
+    monkeypatch, invalid_bound,
+):
+    monkeypatch.setattr(
+        deepseek_client,
+        'rerank_scanner_candidates',
+        lambda *_args, **_kwargs: pytest.fail(
+            'invalid rerank policy must not reach the provider boundary'
+        ),
+    )
+
+    candidate = _candidate('000001', 70.0)
+    overlay = alpha_scanner._maybe_deepseek_rerank_candidates(
+        [candidate],
+        payload={
+            'deepseek_rerank': True,
+            'deepseek_rerank_limit': 1,
+            'deepseek_max_adjustment': invalid_bound,
+        },
+        generated_at='2026-09-03T06:30:30+00:00',
+        requested_symbols={'000001'},
+        limit=1,
+    )
+
+    assert overlay['applied'] is False
+    assert overlay['status'] == 'invalid_policy_bound'
+    assert overlay['max_abs_adjustment'] is None
+    result = _apply([candidate], overlay)[0]
+    state = result['analysis_profile']['deepseek_rerank']
+    assert result['ranking_score'] == 70.0
+    assert state['status'] == 'failed'
+    assert state['reason'] == 'invalid_policy_bound'
+    assert state['validated'] is False
+
+
+@pytest.mark.parametrize(
+    ('configured_bound', 'expected_bound'),
+    [(-5, 0.0), (99, 12.0)],
+)
+def test_direct_rerank_bound_is_clamped_to_supported_range(
+    configured_bound, expected_bound,
+):
+    candidate = _candidate('000001', 70.0)
+    overlay = _overlay('000001', 20.0, max_abs_adjustment=configured_bound)
+
+    result = _apply([candidate], overlay)[0]
+
+    expected_delta = expected_bound
+    state = result['analysis_profile']['deepseek_rerank']
+    assert state['ranking_adjustment'] == expected_delta
+    assert state['final_ranking_score'] == 70.0 + expected_delta
+    source = next(
+        packet for packet in result['source_packets']
+        if packet['source'] == 'deepseek_rerank'
+    )
+    assert source['content']['max_abs_adjustment'] == expected_bound

@@ -1529,8 +1529,13 @@ def _maybe_deepseek_rerank_candidates(
         default=max(20, min(60, limit * 3)),
         max_value=60,
     )
-    max_adjustment = _float(payload.get('deepseek_max_adjustment') or os.getenv('MIROFISH_DEEPSEEK_MAX_ADJUSTMENT', '8'))
-    max_adjustment = _clamp(max_adjustment, 0, 12)
+    configured_adjustment = (
+        payload.get('deepseek_max_adjustment')
+        if 'deepseek_max_adjustment' in payload
+        and payload.get('deepseek_max_adjustment') is not None
+        else os.getenv('MIROFISH_DEEPSEEK_MAX_ADJUSTMENT', '8')
+    )
+    max_adjustment = _resolve_rerank_max_adjustment(configured_adjustment)
     model = str(payload.get('deepseek_model') or os.getenv('MIROFISH_DEEPSEEK_RERANK_MODEL') or '').strip() or None
     base = {
         'enabled': bool(enabled),
@@ -1547,6 +1552,8 @@ def _maybe_deepseek_rerank_candidates(
     }
     if not enabled:
         return base
+    if max_adjustment is None:
+        return {**base, 'status': 'invalid_policy_bound'}
     if not rows:
         return {**base, 'status': 'empty_candidate_pool'}
     run_context = {
@@ -1654,8 +1661,14 @@ def _apply_deepseek_rerank_overlay(
     if not overlay.get('applied'):
         if not overlay.get('enabled') or overlay_status == 'disabled':
             state_status, reason, is_validated = 'disabled', 'disabled', False
-        elif overlay_status == 'error':
-            state_status, reason, is_validated = 'failed', 'provider_error', False
+        elif overlay_status in {'error', 'invalid_policy_bound'}:
+            state_status = 'failed'
+            reason = (
+                'provider_error'
+                if overlay_status == 'error'
+                else 'invalid_policy_bound'
+            )
+            is_validated = False
         else:
             state_status, reason, is_validated = 'unused', overlay_status, True
         for candidate in rows:
@@ -1697,7 +1710,25 @@ def _apply_deepseek_rerank_overlay(
         overlay['status'] = reason
         return rows
 
-    max_adjustment = _float(overlay.get('max_abs_adjustment') or 8)
+    configured_adjustment = (
+        overlay.get('max_abs_adjustment')
+        if 'max_abs_adjustment' in overlay
+        and overlay.get('max_abs_adjustment') is not None
+        else 8.0
+    )
+    max_adjustment = _resolve_rerank_max_adjustment(configured_adjustment)
+    if max_adjustment is None:
+        for candidate in rows:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='failed',
+                reason='invalid_policy_bound', validated=False,
+            )
+        overlay['applied'] = False
+        overlay['adjusted_count'] = 0
+        overlay['max_abs_adjustment'] = None
+        overlay['status'] = 'invalid_policy_bound'
+        return rows
+    overlay['max_abs_adjustment'] = max_adjustment
     by_symbol: dict[str, dict[str, Any]] = {}
     invalid_symbols: set[str] = set()
     unsubmitted_symbols: set[str] = set()
@@ -1839,6 +1870,7 @@ def _apply_deepseek_rerank_overlay(
             'model': overlay.get('model'),
             'operation': 'scanner_rerank',
             'schema_version': overlay.get('schema_version') or 'mirofish.deepseek_rerank.v1',
+            'max_abs_adjustment': max_adjustment,
             'status': 'applied',
             'validated': True,
             'result_at': result_at.isoformat(),
@@ -1894,6 +1926,7 @@ def _apply_deepseek_rerank_overlay(
             'provider': 'deepseek',
             'model': overlay.get('model'),
             'ranking_adjustment': round(adjustment, 2),
+            'max_abs_adjustment': max_adjustment,
             'deepseek_conviction': round(conviction, 2),
             'risk_flags': risk_flags,
             'positive_evidence': positive_evidence,
@@ -1998,8 +2031,15 @@ def _finite_number(value: Any) -> bool:
         return False
     try:
         return math.isfinite(float(value))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return False
+
+
+def _resolve_rerank_max_adjustment(value: Any) -> float | None:
+    """Return a finite non-bool policy bound clamped to the supported range."""
+    if not _finite_number(value):
+        return None
+    return round(_clamp(float(value), 0.0, 12.0), 4)
 
 
 def _exact_rerank_symbol(value: Any) -> str | None:
