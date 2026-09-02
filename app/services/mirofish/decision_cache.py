@@ -200,18 +200,44 @@ def consume_deep_quota(user_id: int) -> tuple[bool, int, int]:
                     PRIMARY KEY (day, user_id)
                 )
             """)
+            # 확인·증가를 SQL 한 문장으로 묶는다 — 별도 SELECT 후 증가(check-then-increment)는
+            # 동시 요청이 둘 다 통과해 일일 한도를 넘길 수 있다.
+            cur = con.execute(
+                'INSERT INTO deep_quota(day, user_id, count) VALUES (?,?,1) '
+                'ON CONFLICT(day, user_id) DO UPDATE SET count = count + 1 '
+                'WHERE count < ?',
+                (day, int(user_id), limit))
+            con.commit()
+            if not cur.rowcount:          # 한도 도달 — 증가하지 않았다
+                return False, 0, limit
             row = con.execute('SELECT count FROM deep_quota WHERE day=? AND user_id=?',
                               (day, int(user_id))).fetchone()
-            used = int(row[0]) if row else 0
-            if used >= limit:
-                return False, 0, limit
-            con.execute('INSERT INTO deep_quota(day, user_id, count) VALUES (?,?,1) '
-                        'ON CONFLICT(day, user_id) DO UPDATE SET count = count + 1',
-                        (day, int(user_id)))
-            con.commit()
-            return True, limit - used - 1, limit
+            used = int(row[0]) if row else 1
+            return True, max(limit - used, 0), limit
         finally:
             con.close()
     except Exception as exc:  # noqa: BLE001 — 쿼터 인프라 장애가 기능 장애가 되면 안 된다
         logger.warning('deep quota check failed (fail-open): %s', exc)
         return True, -1, limit
+
+
+def refund_deep_quota(user_id: int) -> None:
+    """잡이 실제로 시작되지 못한 경우(busy·경합상 합류·시작 실패)의 환불.
+
+    라우트 계약 '캐시 적중·합류·busy 는 무료'를 지키기 위해 미리 차감한 1회를
+    되돌린다. 환불 실패는 쿼터 1회 손실로 그친다 — fail-open 정책과 같은 결.
+    """
+    limit = deep_quota_limit()
+    if limit <= 0:
+        return
+    day = _now_kst().strftime('%Y%m%d')
+    try:
+        con = _connect()
+        try:
+            con.execute('UPDATE deep_quota SET count = MAX(count - 1, 0) '
+                        'WHERE day=? AND user_id=?', (day, int(user_id)))
+            con.commit()
+        finally:
+            con.close()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning('deep quota refund failed: %s', exc)

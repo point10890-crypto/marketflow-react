@@ -181,3 +181,53 @@ def test_killswitch_disables_reads_and_writes(cache_db, monkeypatch):
     monkeypatch.setenv('DECISION_CACHE_DISABLED', '1')
     dc.cache_put('deep', '005930', PAYLOAD, now=CLOSED)
     assert dc.cache_get('deep', '005930', now=CLOSED) is None
+
+
+# ─── 심층분석 쿼터 — 원자성·환불 ────────────────────────────
+
+def test_deep_quota_is_atomic_under_concurrency(cache_db, monkeypatch):
+    """확인·증가가 한 문장이어야 동시 요청이 일일 한도를 넘지 못한다."""
+    import threading
+
+    monkeypatch.setenv(dc.DEEP_QUOTA_ENV, '5')
+    barrier = threading.Barrier(10)
+    allowed = []
+    lock = threading.Lock()
+
+    def worker():
+        barrier.wait(5)
+        ok, _remaining, _limit = dc.consume_deep_quota(7)
+        with lock:
+            allowed.append(ok)
+
+    threads = [threading.Thread(target=worker) for _ in range(10)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(5)
+    assert sum(allowed) == 5, '허용 횟수가 한도를 넘거나 밑돌면 안 된다'
+
+
+def test_deep_quota_refund_restores_one_unit(cache_db, monkeypatch):
+    """busy·경합상 합류 환불 — 계약 '캐시 적중·합류·busy 는 무료'의 저장소 측 절반."""
+    monkeypatch.setenv(dc.DEEP_QUOTA_ENV, '2')
+    assert dc.consume_deep_quota(7) == (True, 1, 2)
+    assert dc.consume_deep_quota(7) == (True, 0, 2)
+    dc.refund_deep_quota(7)
+    assert dc.consume_deep_quota(7) == (True, 0, 2)   # 환불된 1회를 다시 쓸 수 있다
+    assert dc.consume_deep_quota(7)[0] is False
+
+
+def test_deep_quota_refund_never_goes_negative(cache_db, monkeypatch):
+    monkeypatch.setenv(dc.DEEP_QUOTA_ENV, '2')
+    dc.refund_deep_quota(7)                            # 차감 이력 없음 — no-op
+    dc.consume_deep_quota(7)
+    dc.refund_deep_quota(7)
+    dc.refund_deep_quota(7)                            # 과잉 환불도 0 아래로 안 내려간다
+    assert dc.consume_deep_quota(7) == (True, 1, 2)
+
+
+def test_deep_quota_refund_failure_never_raises(cache_db, monkeypatch):
+    monkeypatch.setenv(dc.DEEP_QUOTA_ENV, '2')
+    _break_connection(monkeypatch)
+    dc.refund_deep_quota(7)                            # 예외 없이 통과해야 한다

@@ -94,7 +94,15 @@ def start(key: str, symbol: str) -> dict[str, Any]:
                 job['error'] = f'{type(exc).__name__}: {exc}'
                 job['finished_ts'] = time.time()
 
-    threading.Thread(target=_work, daemon=True, name=f'DeepAnalysis-{key}').start()
+    worker = threading.Thread(target=_work, daemon=True, name=f'DeepAnalysis-{key}')
+    try:
+        worker.start()
+    except Exception as exc:  # noqa: BLE001 — 기동 실패가 유령 'running' 잡을 남기면 안 된다
+        with _LOCK:
+            job['state'] = 'error'
+            job['error'] = f'{type(exc).__name__}: {exc}'
+            job['finished_ts'] = time.time()
+        raise
     return {'status': 'started', 'job': _public(job)}
 
 

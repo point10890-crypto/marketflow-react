@@ -132,8 +132,14 @@ def test_status_vocabulary_excludes_trade_actions():
 # ─── 통합: 소스 팬아웃 + 장애 격리 ──────────────────────────
 
 def _stub_sources(monkeypatch, mapping):
+    # 모든 리더를 먼저 막는다 — 스텁 밖 리더(price/flow/sector_rs/risk)가 실 KIS HTTP
+    # 호출·실데이터를 치면 검증 대상 판정이 호스트/장세에 따라 달라진다.
+    for name in db.SOURCE_READERS:
+        monkeypatch.setitem(db.SOURCE_READERS, name, lambda s: None)
     for name, fn in mapping.items():
         monkeypatch.setitem(db.SOURCE_READERS, name, fn)
+    # 뉴스 원장도 운영 data/omni/omni.db 를 생성·조회하면 안 된다.
+    monkeypatch.setattr(db, '_read_news', lambda code: {'count': 0, 'items': []})
 
 
 def _regime_stub(monkeypatch, phase='uptrend_broadening', gate='GREEN', conflict=False):

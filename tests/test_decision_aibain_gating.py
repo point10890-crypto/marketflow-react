@@ -17,8 +17,13 @@ def app(tmp_path, monkeypatch):
     from app.services.mirofish import decision_cache as dc
     monkeypatch.setattr(dc, 'DB_PATH', str(tmp_path / 'cache.db'))
     from app import create_app
-    flask_app = create_app()
-    flask_app.config['TESTING'] = True
+    # TESTING 은 팩토리 안의 워커 게이트가 읽는다 — 반환 후 설정하면 운영 워커가 뜨고
+    # 기본 DB URI(실제 data/users.db)를 건드린다. 반드시 팩토리에 넘긴다.
+    flask_app = create_app({
+        'TESTING': True,
+        'SECRET_KEY': 'test-only',
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
+    })
     return flask_app
 
 
@@ -52,6 +57,8 @@ def test_aibain_subscriber_passes_the_gate(app, monkeypatch):
                         lambda q, limit=8: {'query': q, 'candidates': []})
     resp = _call(app, monkeypatch, _user(aibain=True), 'GET', '/api/kr/decision/search?q=sk')
     assert resp.status_code == 200
+    # 구독자 전용 응답 — 공유 캐시 저장을 허용하는 public 이 나가면 안 된다.
+    assert 'public' not in resp.headers.get('Cache-Control', '')
 
 
 def test_leading_stocks_stays_pro(app, monkeypatch):

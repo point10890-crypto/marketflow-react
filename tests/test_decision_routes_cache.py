@@ -15,8 +15,13 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv('DECISION_CACHE_DISABLED', '')
 
     from app import create_app
-    app = create_app()
-    app.config['TESTING'] = True
+    # TESTING 은 팩토리 안의 워커 게이트가 읽는다 — 반환 후 설정하면 운영 워커 6개가
+    # 이미 떠 있고, 기본 DB URI(실제 data/users.db)로 마이그레이션까지 돈다.
+    app = create_app({
+        'TESTING': True,
+        'SECRET_KEY': 'test-only',
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
+    })
 
     # 인증은 이 테스트의 관심사가 아니다 — 라우트 함수를 직접 호출한다.
     return app
@@ -180,3 +185,68 @@ def test_deep_error_payload_is_not_cached(client, monkeypatch):
     st = _wait_deep()
     assert st['state'] == 'error'
     assert dc.cache_get('deep', '005930') is None
+
+
+def test_brief_fully_degraded_result_is_not_cached(client, monkeypatch):
+    """전 소스 장애(신호 0 + errors)는 일간 캐시에 넣지 않는다 — 일시 장애 고착 방지."""
+    from app.services.mirofish import decision_brief
+    calls = []
+
+    def degraded(s):
+        calls.append(s)
+        return {'symbol': s, 'status': 'avoid_data_gap', 'signals': [],
+                'data_gaps': ['claw'], 'errors': {'claw': 'OperationalError: locked'}}
+
+    monkeypatch.setattr(decision_brief, 'build_decision_brief', degraded)
+    _call(client, monkeypatch, '/api/kr/decision/005930')
+    _call(client, monkeypatch, '/api/kr/decision/005930')
+    assert len(calls) == 2, '완전 열화 브리프가 캐시에서 서빙되면 안 된다'
+    assert dc.cache_get('brief', '005930') is None
+
+
+def test_brief_with_partial_errors_but_signals_is_still_cached(client, monkeypatch):
+    """일부 소스만 죽고 신호가 있으면 정상 산출물 — 캐시한다."""
+    from app.services.mirofish import decision_brief
+    calls = []
+
+    def partial(s):
+        calls.append(s)
+        return {'symbol': s, 'status': 'watch',
+                'signals': [{'source': 'claw', 'stance': 'positive'}],
+                'errors': {'jongga': 'RuntimeError: down'}}
+
+    monkeypatch.setattr(decision_brief, 'build_decision_brief', partial)
+    _call(client, monkeypatch, '/api/kr/decision/005930')
+    _call(client, monkeypatch, '/api/kr/decision/005930')
+    assert len(calls) == 1
+
+
+def test_deep_busy_rejection_does_not_burn_quota(client, monkeypatch):
+    """계약: 캐시 적중·합류·busy 는 무료 — busy 429 가 쿼터를 태우면 안 된다."""
+    import threading
+    from types import SimpleNamespace
+    from flask import request as flask_request
+    from app.services.mirofish import decision_brief
+
+    monkeypatch.setenv(dc.DEEP_QUOTA_ENV, '2')
+    monkeypatch.setenv('DECISION_JOB_MAX_CONCURRENT', '1')
+    gate = threading.Event()
+    monkeypatch.setattr(decision_brief, 'run_deep_analysis_for',
+                        lambda s, **kw: (gate.wait(3), {'symbol': s, 'error': None})[1])
+    user = SimpleNamespace(id=7, is_admin=False)
+
+    def post(symbol):
+        from app.routes import kr_market
+        with client.test_request_context(f'/api/kr/decision/{symbol}/analyze',
+                                         method='POST', json={}):
+            flask_request.current_user = user
+            return kr_market.kr_decision_deep_analysis.__wrapped__(symbol)
+
+    first = post('005930')                            # 시작 — 쿼터 1 차감 (유료)
+    assert first[1] == 202
+    busy = post('000660')                             # 동시 상한 초과 — 무료여야 한다
+    assert busy[1] == 429 and busy[0].get_json()['error'] == 'busy'
+    gate.set()
+    _wait_deep('005930')
+    # busy 가 환불됐다면 한도 2 중 1회만 쓴 상태 — 다음 소비가 마지막 1회로 성공한다.
+    assert dc.consume_deep_quota(7) == (True, 0, 2)

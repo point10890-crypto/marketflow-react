@@ -97,7 +97,9 @@ def load_universe() -> dict[str, str]:
                 if code and name:
                     table[code] = name
     except OSError:
-        pass
+        # 읽기 실패(파일 부재·재작성 중 잠금)는 캐시하지 않는다 — 빈 테이블을
+        # 프로세스 수명 내내 물고 있으면 이름 해석이 재시작 전까지 죽는다.
+        return table
     _universe_cache = table
     return table
 
