@@ -33,7 +33,7 @@ from app.services.ai_routing.contracts import (
 )
 from app.services.ai_routing.budget import BudgetLimits, BudgetManager
 from app.services.ai_routing.store import RoutingStore
-from app.services.ai_routing.telemetry import record_attempt
+from app.services.ai_routing.telemetry import allocate_and_record_attempt
 from app.services.ai_routing.pricing import estimate_cost_details
 from app.services.ai_routing.router import route_text
 from app.services.ai_routing.providers import classify_exception, normalize_gemini_usage
@@ -269,6 +269,9 @@ class GeminiGroundingClient:
         error_class: ProviderErrorClass | None = None,
     ) -> tuple[ProviderAttempt, Decimal | None, bool]:
         estimate = estimate_cost_details("gemini", self.model_name, usage)
+        # Zero-call preflight events remain auditable without consuming the
+        # physical provider-attempt identity used by a later same-request run.
+        attempt_number = 0 if status.startswith("skipped_") else 1
         attempt = ProviderAttempt(
             request_id=request_id,
             run_id=run_id,
@@ -276,7 +279,7 @@ class GeminiGroundingClient:
             model=self.model_name,
             endpoint=self.ENDPOINT_IDENTITY,
             operation=Operation.SPECIALIZED_GEMINI,
-            attempt_number=1,
+            attempt_number=attempt_number,
             selected=selected,
             status=status,
             latency_ms=max(0.0, latency_ms),
@@ -290,7 +293,8 @@ class GeminiGroundingClient:
         )
         recorded = False
         try:
-            recorded = record_attempt(attempt, store=self.store)
+            attempt = allocate_and_record_attempt(attempt, store=self.store)
+            recorded = True
         except Exception as exc:
             logger.warning(
                 "[GeminiGrounding] telemetry write failed: %s", type(exc).__name__
@@ -303,6 +307,7 @@ class GeminiGroundingClient:
         cost: Decimal | None,
         *,
         telemetry_recorded: bool,
+        terminal_reason: str | None = None,
     ) -> Dict:
         usage = attempt.usage
         usage_complete = (
@@ -311,19 +316,20 @@ class GeminiGroundingClient:
             and usage.mapping_status != "quarantined"
         )
         successful = attempt.status == "success"
+        analysis_status = "SUCCESS_PRIMARY" if successful else "FAILED_TECHNICAL"
         return {
             "operation": Operation.SPECIALIZED_GEMINI.value,
             "run_id": attempt.run_id,
             "request_id": attempt.request_id,
-            "analysis_status": (
-                "SUCCESS_PRIMARY" if successful else "FAILED_TECHNICAL"
-            ),
+            "analysis_status": analysis_status,
+            "transport_status": analysis_status,
+            "domain_status": analysis_status,
             "primary_provider": "gemini",
             "actual_provider": "gemini" if successful else None,
             "model": attempt.model,
             "endpoint": attempt.endpoint,
             "fallback_used": False,
-            "fallback_reason": None,
+            "fallback_reason": terminal_reason,
             "retry_reason": None,
             "usage": _usage_metadata(usage, include_mapping_status=True),
             "usage_complete": usage_complete,
@@ -353,6 +359,7 @@ class GeminiGroundingClient:
         status: str,
         error_class: ProviderErrorClass,
         latency_ms: float = 0.0,
+        terminal_reason: str | None = None,
     ) -> Dict:
         attempt, cost, recorded = self._record(
             run_id=run_id,
@@ -370,9 +377,41 @@ class GeminiGroundingClient:
             "source": "none",
             "usage": _usage_metadata(attempt.usage),
             "routing": self._routing_payload(
-                attempt, cost, telemetry_recorded=recorded
+                attempt,
+                cost,
+                telemetry_recorded=recorded,
+                terminal_reason=terminal_reason,
             ),
         }
+
+    def _close_before_dispatch(
+        self,
+        reservation_id: str,
+        owner_token: str,
+    ) -> bool:
+        """Best-effort, owner-scoped cleanup before any billable dispatch."""
+        try:
+            if self.budget.release(reservation_id, owner_token=owner_token):
+                return True
+        except Exception as exc:
+            logger.warning(
+                "[GeminiGrounding] initial permit cleanup failed: %s",
+                type(exc).__name__,
+            )
+        for cleanup_attempt in range(2):
+            try:
+                if self.budget.release_before_dispatch(
+                    reservation_id,
+                    owner_token=owner_token,
+                ):
+                    return True
+            except Exception as exc:
+                logger.warning(
+                    "[GeminiGrounding] permit cleanup fallback %s failed: %s",
+                    cleanup_attempt + 1,
+                    type(exc).__name__,
+                )
+        return False
 
     async def search_and_analyze(
         self,
@@ -458,48 +497,93 @@ JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."], "news_summ
         reservation_cost = estimate_cost_details(
             "gemini", self.model_name, reservation_usage
         )
-        reservation = self.budget.reserve(
-            run_id=logical_run_id,
-            request_id=logical_request_id,
-            operation=Operation.SPECIALIZED_GEMINI,
-            input_tokens=input_bound,
-            output_tokens=self.MAX_OUTPUT_TOKENS,
-            calls=1,
-            estimated_cost_usd=reservation_cost.cost,
-            cost_pricing_version=reservation_cost.pricing_version,
-        )
-        if not reservation.approved:
+        try:
+            reservation = self.budget.reserve(
+                run_id=logical_run_id,
+                request_id=logical_request_id,
+                operation=Operation.SPECIALIZED_GEMINI,
+                input_tokens=input_bound,
+                output_tokens=self.MAX_OUTPUT_TOKENS,
+                calls=1,
+                estimated_cost_usd=reservation_cost.cost,
+                cost_pricing_version=reservation_cost.pricing_version,
+            )
+        except BaseException as exc:
+            unavailable = self._unavailable(
+                run_id=logical_run_id,
+                request_id=logical_request_id,
+                status="skipped_budget",
+                error_class=ProviderErrorClass.UNKNOWN,
+                terminal_reason="budget_reservation_failed",
+            )
+            if not isinstance(exc, Exception):
+                raise
+            return unavailable
+        if not (
+            reservation.approved
+            and reservation.acquired_by_caller
+            and reservation.reservation_id
+            and reservation.owner_token
+        ):
             return self._unavailable(
                 run_id=logical_run_id,
                 request_id=logical_request_id,
                 status="skipped_budget",
                 error_class=ProviderErrorClass.BUDGET_EXHAUSTED,
             )
-        claimed = self.budget.claim(
-            reservation.reservation_id,
-            run_id=logical_run_id,
-            request_id=logical_request_id,
-            owner_token=reservation.owner_token,
-            input_tokens=input_bound,
-            output_tokens=self.MAX_OUTPUT_TOKENS,
-        )
-        if not claimed.approved:
-            self.budget.release(
-                reservation.reservation_id, owner_token=reservation.owner_token
+        try:
+            claimed = self.budget.claim(
+                reservation.reservation_id,
+                run_id=logical_run_id,
+                request_id=logical_request_id,
+                owner_token=reservation.owner_token,
+                input_tokens=input_bound,
+                output_tokens=self.MAX_OUTPUT_TOKENS,
+            )
+        except BaseException as exc:
+            self._close_before_dispatch(
+                reservation.reservation_id,
+                reservation.owner_token,
+            )
+            unavailable = self._unavailable(
+                run_id=logical_run_id,
+                request_id=logical_request_id,
+                status="skipped_budget",
+                error_class=ProviderErrorClass.UNKNOWN,
+                terminal_reason="budget_claim_failed",
+            )
+            if not isinstance(exc, Exception):
+                raise
+            return unavailable
+        if not (
+            claimed.approved
+            and claimed.acquired_by_caller
+            and claimed.reservation_id == reservation.reservation_id
+            and claimed.owner_token == reservation.owner_token
+        ):
+            self._close_before_dispatch(
+                reservation.reservation_id,
+                reservation.owner_token,
             )
             return self._unavailable(
                 run_id=logical_run_id,
                 request_id=logical_request_id,
                 status="skipped_budget",
                 error_class=ProviderErrorClass.BUDGET_EXHAUSTED,
+                terminal_reason="budget_claim_unavailable",
             )
 
         started = time.perf_counter()
         usage = TokenUsage.unknown()
         error_class: ProviderErrorClass | None = None
         data: Dict | None = None
+        provider_dispatched = False
+        fatal_error: BaseException | None = None
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
+                # From here the remote service may have accepted billable work;
+                # cancellation must still settle conservatively.
+                provider_dispatched = True
                 response = await client.post(
                     f"{self.base_url}?key={self.api_key}",
                     json=payload
@@ -560,26 +644,90 @@ JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."], "news_summ
             data["citations"] = citations
             data["usage"] = _usage_metadata(usage)
 
-        except Exception as e:
-            error_class = error_class or classify_exception(e)
+        except Exception as exc:
+            error_class = error_class or classify_exception(exc)
             logger.warning(
                 "[GeminiGrounding] request failed: %s", error_class.value
             )
             if error_class is ProviderErrorClass.RATE_LIMIT:
-                await _mark_unavailable('gemini_grounding', 'Rate Limit')
+                try:
+                    await _mark_unavailable('gemini_grounding', 'Rate Limit')
+                except BaseException as status_error:
+                    logger.warning(
+                        "[GeminiGrounding] provider-state update failed: %s",
+                        type(status_error).__name__,
+                    )
+                    if not isinstance(status_error, Exception):
+                        fatal_error = status_error
+        except BaseException as exc:
+            # asyncio cancellation and other fatal exits must cross the same
+            # accounting boundary before they propagate to the caller.
+            fatal_error = exc
+            error_class = ProviderErrorClass.UNKNOWN
         latency_ms = (time.perf_counter() - started) * 1000
-        success = data is not None and error_class is None
+        if not provider_dispatched:
+            usage = _known_zero_usage()
+        estimate = estimate_cost_details("gemini", self.model_name, usage)
+        finalized = False
+        finalization_error: BaseException | None = None
+        try:
+            if provider_dispatched:
+                finalized = self.budget.settle(
+                    reservation.reservation_id,
+                    usage,
+                    calls=1,
+                    actual_cost_usd=estimate.cost,
+                )
+            else:
+                finalized = self._close_before_dispatch(
+                    reservation.reservation_id,
+                    reservation.owner_token,
+                )
+        except BaseException as exc:
+            finalization_error = exc
+            logger.warning(
+                "[GeminiGrounding] budget finalization failed: %s", type(exc).__name__
+            )
+        if provider_dispatched and not finalized:
+            try:
+                self.budget.finalize_uncertain_claim(
+                    reservation.reservation_id,
+                    owner_token=reservation.owner_token,
+                    usage=usage,
+                    calls=1,
+                    actual_cost_usd=estimate.cost,
+                )
+            except Exception as recovery_error:
+                logger.warning(
+                    "[GeminiGrounding] conservative finalization failed: %s",
+                    type(recovery_error).__name__,
+                )
+        terminal_reason = None if finalized else "budget_finalization_failed"
+        if not finalized:
+            data = None
+            error_class = ProviderErrorClass.UNKNOWN
+        success = data is not None and error_class is None and finalized
         attempt, cost, recorded = self._record(
             run_id=logical_run_id,
             request_id=logical_request_id,
-            status="success" if success else "failed",
+            status=(
+                "success" if success else "failed" if provider_dispatched else "skipped_dispatch"
+            ),
             selected=success,
             usage=usage,
             latency_ms=latency_ms,
             error_class=error_class,
         )
-        self.budget.settle(reservation.reservation_id, usage, calls=1, actual_cost_usd=cost)
-        routing = self._routing_payload(attempt, cost, telemetry_recorded=recorded)
+        routing = self._routing_payload(
+            attempt,
+            cost,
+            telemetry_recorded=recorded,
+            terminal_reason=terminal_reason,
+        )
+        if fatal_error is not None:
+            raise fatal_error
+        if finalization_error is not None and not isinstance(finalization_error, Exception):
+            raise finalization_error
         if data is None:
             return {
                 "score": 0,
@@ -1216,6 +1364,15 @@ JSON 객체만 반환: {{"score":0~3,"reason":"한 문장","themes":["최대 3�
                 "attempt_count": 0,
                 "telemetry_recorded": False,
             }
+        else:
+            routing = dict(routing)
+        transport_status = routing.get("transport_status") or routing.get("analysis_status")
+        domain_status = output.get("analysis_status") or routing.get("analysis_status")
+        if domain_status:
+            routing["analysis_status"] = domain_status
+            routing["domain_status"] = domain_status
+        if transport_status:
+            routing["transport_status"] = transport_status
         output["routing"] = routing
         output["api_status"] = self.get_api_status()
         return output
@@ -1511,7 +1668,7 @@ def _finite_payload(value) -> bool:
 def _canonical_signal_rows(signals_data: List[Dict]) -> Dict[str, Dict] | None:
     rows: Dict[str, Dict] = {}
     for item in signals_data:
-        if not isinstance(item, dict):
+        if not isinstance(item, dict) or not _finite_payload(item):
             return None
         code = item.get("stock_code")
         if not isinstance(code, str) or not code or code != code.strip() or code in rows:
@@ -1692,16 +1849,39 @@ class DeepSeekScreener(BaseScreener):
         run_id: str | None = None,
         request_id: str | None = None,
     ) -> Dict:
+        logical_run_id = run_id or f"jongga-screener:{uuid4()}"
+        logical_request_id = request_id or f"{logical_run_id}:multi-ai-primary"
         if not signals_data:
             return {"picks": [], "error": "No signals", "generated_at": datetime.now().isoformat()}
 
         canonical_rows = _canonical_signal_rows(signals_data)
         if canonical_rows is None:
+            usage = _known_zero_usage()
             return {
                 "picks": [],
                 "error": "invalid_candidate_input",
+                "error_class": ProviderErrorClass.NUMERIC_MISMATCH.value,
+                "analysis_status": "FAILED_TECHNICAL",
                 "generated_at": datetime.now().isoformat(),
                 "model": self.model_name,
+                "routing": {
+                    "operation": Operation.BULK_TEXT.value,
+                    "run_id": logical_run_id,
+                    "request_id": logical_request_id,
+                    "analysis_status": "FAILED_TECHNICAL",
+                    "primary_provider": "deepseek",
+                    "actual_provider": None,
+                    "model": self.model_name,
+                    "fallback_used": False,
+                    "fallback_reason": "invalid_candidate_input",
+                    "retry_reason": None,
+                    "usage": _usage_metadata(usage),
+                    "usage_complete": True,
+                    "estimated_cost_usd": "0",
+                    "attempt_count": 0,
+                    "telemetry_recorded": False,
+                    "attempts": [],
+                },
             }
         candidates_text = self._build_candidates_summary(signals_data)
         prompt = self._build_screening_prompt(candidates_text, len(signals_data))
@@ -1727,8 +1907,6 @@ class DeepSeekScreener(BaseScreener):
                 seen_codes.add(code)
             return None
 
-        logical_run_id = run_id or f"jongga-screener:{uuid4()}"
-        logical_request_id = request_id or f"{logical_run_id}:multi-ai-primary"
         routed = await asyncio.to_thread(
             route_text,
             RoutingRequest(
@@ -1984,7 +2162,14 @@ class MultiAIConsensusScreener:
     @staticmethod
     def _build_routed_primary(result: Dict, signals_data: List[Dict]) -> Dict:
         routing = result.get("routing") if isinstance(result.get("routing"), dict) else {}
-        actual_provider = routing.get("actual_provider") or "deepseek"
+        no_attempt_failure = (
+            routing.get("attempt_count") == 0
+            and (result.get("analysis_status") or routing.get("analysis_status"))
+            == "FAILED_TECHNICAL"
+        )
+        actual_provider = routing.get("actual_provider")
+        if not actual_provider and not no_attempt_failure:
+            actual_provider = "deepseek"
         source = "openai_fallback" if actual_provider == "openai" else "deepseek"
         canonical_rows = _canonical_signal_rows(signals_data) or {}
         picks = []
@@ -2007,7 +2192,7 @@ class MultiAIConsensusScreener:
                 source=source,
             ))
         model = result.get("model")
-        return {
+        output = {
             "picks": picks,
             "consensus_count": 0,
             "strong_count": 0,
@@ -2027,13 +2212,18 @@ class MultiAIConsensusScreener:
             ][:6],
             "generated_at": result.get("generated_at") or datetime.now().isoformat(),
             "models": [model] if model and picks else [],
-            "models_attempted": [model] if model else [],
+            "models_attempted": [model] if model and not no_attempt_failure else [],
             "models_succeeded": [model] if model and picks else [],
             "consensus_method": "routed_primary_v1",
             "routing": routing,
             "analysis_status": result.get("analysis_status") or routing.get("analysis_status"),
             "total_cost_usd": routing.get("estimated_cost_usd") or 0.0,
         }
+        if result.get("error"):
+            output["error"] = str(result["error"])[:120]
+        if result.get("error_class"):
+            output["error_class"] = str(result["error_class"])[:80]
+        return output
 
     async def _review_strong_picks(self, consensus: Dict, signals_data: List[Dict]) -> Dict:
         """consensus_strong 픽에 대해 Claude 가 반대 입장으로 리스크 검토.

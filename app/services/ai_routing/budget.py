@@ -402,6 +402,86 @@ class BudgetManager:
             ).rowcount
         return updated == 1 and not breached
 
+    def finalize_uncertain_claim(
+        self,
+        reservation_id: str | None,
+        *,
+        owner_token: str | None,
+        usage: TokenUsage,
+        calls: int = 1,
+        actual_cost_usd: Decimal | None = None,
+    ) -> bool:
+        """Terminalize owned post-dispatch work when normal settlement is uncertain.
+
+        A provider may have accepted billable work even when persisting its exact
+        settlement fails.  In that case the safe accounting value is the larger
+        of the reservation and the observed usage/cost, never an open claim and
+        never a release.  The owner check prevents one caller from finalizing a
+        different caller's permit.
+        """
+        if not reservation_id or not owner_token:
+            return False
+        if calls < 0:
+            raise ValueError("actual calls must be non-negative")
+        if actual_cost_usd is not None:
+            actual_cost_usd = Decimal(actual_cost_usd)
+            if not actual_cost_usd.is_finite() or actual_cost_usd < 0:
+                raise ValueError("actual cost must be a non-negative finite decimal")
+
+        with self.store.transaction(write=True) as connection:
+            row = connection.execute(
+                "SELECT status,owner_token,reserved_calls,reserved_input_tokens,"
+                "reserved_output_tokens,reserved_cost_usd FROM budget_reservations "
+                "WHERE reservation_id=? AND pool=? AND provider=?",
+                (reservation_id, self.pool, self.provider),
+            ).fetchone()
+            if row is None or row["owner_token"] != owner_token:
+                return False
+            if row["status"] in {"settled", "breached"}:
+                return True
+            if row["status"] != "claimed":
+                return False
+
+            actual_input = usage.input_tokens if usage.input_tokens is not None else 0
+            actual_output = usage.output_tokens if usage.output_tokens is not None else 0
+            conservative_calls = max(int(row["reserved_calls"]), calls)
+            conservative_input = max(int(row["reserved_input_tokens"]), actual_input)
+            conservative_output = max(int(row["reserved_output_tokens"]), actual_output)
+            reserved_cost = (
+                Decimal(str(row["reserved_cost_usd"]))
+                if row["reserved_cost_usd"] is not None
+                else None
+            )
+            if reserved_cost is None:
+                conservative_cost = actual_cost_usd
+            elif actual_cost_usd is None:
+                conservative_cost = reserved_cost
+            else:
+                conservative_cost = max(reserved_cost, actual_cost_usd)
+
+            updated = connection.execute(
+                """
+                UPDATE budget_reservations
+                SET actual_calls=?, actual_input_tokens=?, actual_output_tokens=?,
+                    actual_cost_usd=?, status='breached', settled_at_utc=?,
+                    lease_expires_at_utc=NULL
+                WHERE reservation_id=? AND pool=? AND provider=? AND owner_token=?
+                  AND status='claimed'
+                """,
+                (
+                    conservative_calls,
+                    conservative_input,
+                    conservative_output,
+                    str(conservative_cost) if conservative_cost is not None else None,
+                    _utc_now(),
+                    reservation_id,
+                    self.pool,
+                    self.provider,
+                    owner_token,
+                ),
+            ).rowcount
+        return updated == 1
+
     def release(self, reservation_id: str | None, *, owner_token: str | None = None) -> bool:
         """Release only an unclaimed hold owned by this acquisition token."""
         if not reservation_id or not owner_token:
@@ -414,6 +494,41 @@ class BudgetManager:
                 (_utc_now(), reservation_id, owner_token),
             ).rowcount
         return updated == 1
+
+    def release_before_dispatch(
+        self,
+        reservation_id: str | None,
+        *,
+        owner_token: str | None,
+    ) -> bool:
+        """Release an owned hold or claim only while no provider was dispatched."""
+        if not reservation_id or not owner_token:
+            return False
+        with self.store.transaction(write=True) as connection:
+            updated = connection.execute(
+                "UPDATE budget_reservations SET status='released', settled_at_utc=?, "
+                "lease_expires_at_utc=NULL WHERE reservation_id=? AND pool=? "
+                "AND provider=? AND owner_token=? AND status IN ('reserved','claimed')",
+                (
+                    _utc_now(),
+                    reservation_id,
+                    self.pool,
+                    self.provider,
+                    owner_token,
+                ),
+            ).rowcount
+            if updated == 1:
+                return True
+            row = connection.execute(
+                "SELECT status,owner_token FROM budget_reservations "
+                "WHERE reservation_id=? AND pool=? AND provider=?",
+                (reservation_id, self.pool, self.provider),
+            ).fetchone()
+        return bool(
+            row is not None
+            and row["owner_token"] == owner_token
+            and row["status"] == "released"
+        )
 
     def release_claimed(self, reservation_id: str | None) -> bool:
         """Central-router-only release after claim; terminal rows are already safe."""

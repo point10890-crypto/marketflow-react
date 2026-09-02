@@ -448,6 +448,72 @@ async def test_routed_primary_rejects_duplicate_unknown_malformed_or_nonfinite_p
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "submitted",
+    [
+        [
+            {"stock_code": "005930", "stock_name": "삼성전자", "entry_price": 70_000},
+            {"stock_code": "005930", "stock_name": "중복", "entry_price": 70_000},
+        ],
+        [{"stock_name": "코드 누락", "entry_price": 70_000}],
+        [{"stock_code": "005930", "stock_name": "NaN", "entry_price": float("nan")}],
+        [{"stock_code": "005930", "stock_name": "Inf", "target_price": float("inf")}],
+        [{"stock_code": "005930", "stock_name": "Nested", "evidence": {"score": float("nan")}}],
+    ],
+    ids=["duplicate", "missing", "nan", "infinite", "nested-nonfinite"],
+)
+async def test_invalid_submitted_rows_survive_final_projection_as_technical_artifact(
+    monkeypatch, submitted
+):
+    monkeypatch.setattr(
+        llm_analyzer_module,
+        "route_text",
+        lambda *_a, **_kw: pytest.fail("invalid canonical input must not call a provider"),
+    )
+    primary = DeepSeekScreener(api_key="mocked")
+    screener = MultiAIConsensusScreener.__new__(MultiAIConsensusScreener)
+    screener.screeners = {MODEL_DEEPSEEK: primary}
+    screener.shadow_compare = False
+    screener.shadow_screeners = {}
+    screener.devil_advocate = None
+
+    result = await screener.screen_candidates(submitted, run_id="invalid-input-run")
+
+    assert result["picks"] == []
+    assert result["analysis_status"] == "FAILED_TECHNICAL"
+    assert result["error"] == "invalid_candidate_input"
+    assert result["error_class"] == "numeric_mismatch"
+    assert result["models_attempted"] == []
+    assert result["models_succeeded"] == []
+    assert result["total_cost_usd"] == "0"
+    assert result["routing"] == {
+        "operation": "bulk_text",
+        "run_id": "invalid-input-run",
+        "request_id": "invalid-input-run:multi-ai-primary",
+        "analysis_status": "FAILED_TECHNICAL",
+        "primary_provider": "deepseek",
+        "actual_provider": None,
+        "model": primary.model_name,
+        "fallback_used": False,
+        "fallback_reason": "invalid_candidate_input",
+        "retry_reason": None,
+        "usage": {
+            "input_tokens": 0,
+            "cached_input_tokens": 0,
+            "output_tokens": 0,
+            "reasoning_tokens": 0,
+            "total_tokens": 0,
+            "usage_estimated": False,
+        },
+        "usage_complete": True,
+        "estimated_cost_usd": "0",
+        "attempt_count": 0,
+        "telemetry_recorded": False,
+        "attempts": [],
+    }
+
+
+@pytest.mark.asyncio
 async def test_explicit_shadow_provider_is_not_started_without_cancel_safe_transport():
     primary = _RoutedSlot({
         "picks": [_pick("PRIMARY")],

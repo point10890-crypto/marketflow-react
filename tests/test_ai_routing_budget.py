@@ -770,3 +770,95 @@ def test_claim_and_settlement_fail_closed_above_reserved_bound(tmp_path):
     assert manager.settle(
         third.reservation_id, TokenUsage(input_tokens=100, output_tokens=100), calls=2,
     ) is False
+
+
+def test_uncertain_claim_finalizer_is_owner_scoped_and_conservative(tmp_path):
+    manager = _manager(tmp_path)
+    permit = manager.reserve(
+        run_id='uncertain-run', request_id='uncertain-request',
+        operation=Operation.SPECIALIZED_GEMINI,
+        input_tokens=900, output_tokens=300, calls=1,
+        estimated_cost_usd=Decimal('0.25'), owner_token='owner-a',
+    )
+    assert manager.claim(
+        permit.reservation_id, run_id='uncertain-run',
+        request_id='uncertain-request', owner_token='owner-a',
+        input_tokens=900, output_tokens=300,
+    ).approved
+
+    assert manager.finalize_uncertain_claim(
+        permit.reservation_id,
+        owner_token='wrong-owner',
+        usage=TokenUsage(input_tokens=12, output_tokens=7),
+        calls=1,
+        actual_cost_usd=Decimal('0.01'),
+    ) is False
+    assert manager.finalize_uncertain_claim(
+        permit.reservation_id,
+        owner_token='owner-a',
+        usage=TokenUsage(input_tokens=12, output_tokens=7),
+        calls=1,
+        actual_cost_usd=Decimal('0.01'),
+    ) is True
+
+    with manager.store.transaction() as connection:
+        row = connection.execute(
+            'SELECT status,actual_calls,actual_input_tokens,actual_output_tokens,'
+            'actual_cost_usd,lease_expires_at_utc FROM budget_reservations '
+            'WHERE reservation_id=?',
+            (permit.reservation_id,),
+        ).fetchone()
+    assert tuple(row) == ('breached', 1, 900, 300, '0.25', None)
+
+
+def test_uncertain_claim_finalizer_accepts_owned_terminal_row_idempotently(tmp_path):
+    manager = _manager(tmp_path)
+    permit = manager.reserve(
+        run_id='terminal-run', request_id='terminal-request',
+        operation=Operation.SPECIALIZED_GEMINI,
+        input_tokens=100, output_tokens=100, owner_token='terminal-owner',
+    )
+    assert manager.claim(
+        permit.reservation_id, run_id='terminal-run',
+        request_id='terminal-request', owner_token='terminal-owner',
+        input_tokens=100, output_tokens=100,
+    ).approved
+    assert manager.settle(
+        permit.reservation_id, TokenUsage(input_tokens=20, output_tokens=10), calls=1,
+    ) is True
+
+    assert manager.finalize_uncertain_claim(
+        permit.reservation_id,
+        owner_token='terminal-owner',
+        usage=TokenUsage.unknown(),
+        calls=1,
+    ) is True
+
+
+def test_owner_scoped_predispatch_release_closes_claim_without_counting_call(tmp_path):
+    manager = _manager(tmp_path)
+    permit = manager.reserve(
+        run_id='predispatch-run', request_id='predispatch-request',
+        operation=Operation.SPECIALIZED_GEMINI,
+        input_tokens=100, output_tokens=100, owner_token='dispatch-owner',
+    )
+    assert manager.claim(
+        permit.reservation_id, run_id='predispatch-run',
+        request_id='predispatch-request', owner_token='dispatch-owner',
+        input_tokens=100, output_tokens=100,
+    ).approved
+
+    assert manager.release_before_dispatch(
+        permit.reservation_id, owner_token='wrong-owner'
+    ) is False
+    assert manager.release_before_dispatch(
+        permit.reservation_id, owner_token='dispatch-owner'
+    ) is True
+
+    with manager.store.transaction() as connection:
+        row = connection.execute(
+            'SELECT status,actual_calls,actual_input_tokens,actual_output_tokens '
+            'FROM budget_reservations WHERE reservation_id=?',
+            (permit.reservation_id,),
+        ).fetchone()
+    assert tuple(row) == ('released', None, None, None)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
@@ -15,9 +16,7 @@ def _value(value: object | None) -> object | None:
     return value.value if hasattr(value, "value") else value
 
 
-def record_attempt(attempt: ProviderAttempt, *, store: RoutingStore | None = None) -> bool:
-    """Insert one idempotent attempt. Returns whether a row was inserted."""
-    ledger = store or default_store()
+def _attempt_values(attempt: ProviderAttempt) -> tuple[object | None, ...]:
     usage = attempt.usage
     try:
         estimate = estimate_cost_details(
@@ -66,23 +65,66 @@ def record_attempt(attempt: ProviderAttempt, *, store: RoutingStore | None = Non
         attempt.market,
         attempt.caller_endpoint,
     )
+    return values
+
+
+_ATTEMPT_COLUMNS = """
+    event_ts_utc, request_id, run_id, provider, model, endpoint,
+    operation, attempt_number, selected, status, latency_ms,
+    max_output_tokens, input_tokens, cached_input_tokens,
+    uncached_input_tokens, output_tokens, reasoning_tokens,
+    total_tokens, raw_total_tokens, usage_mapping_version,
+    usage_mapping_status, estimated_cost_usd, pricing_version,
+    usage_estimated, error_class, fallback_from, fallback_reason, breaker_state,
+    cache_hit, symbol, market, caller_endpoint
+"""
+_ATTEMPT_PLACEHOLDERS = ", ".join("?" for _ in range(32))
+
+
+def _insert_attempt(connection: Any, attempt: ProviderAttempt, *, ignore: bool) -> int:
+    conflict_clause = " OR IGNORE" if ignore else ""
+    cursor = connection.execute(
+        f"INSERT{conflict_clause} INTO provider_attempts "
+        f"({_ATTEMPT_COLUMNS}) VALUES ({_ATTEMPT_PLACEHOLDERS})",
+        _attempt_values(attempt),
+    )
+    return int(cursor.rowcount)
+
+
+def record_attempt(attempt: ProviderAttempt, *, store: RoutingStore | None = None) -> bool:
+    """Insert one idempotent attempt. Returns whether a row was inserted."""
+    ledger = store or default_store()
     with ledger.transaction(write=True) as connection:
-        cursor = connection.execute(
-            """
-            INSERT OR IGNORE INTO provider_attempts (
-                event_ts_utc, request_id, run_id, provider, model, endpoint,
-                operation, attempt_number, selected, status, latency_ms,
-                max_output_tokens, input_tokens, cached_input_tokens,
-                uncached_input_tokens, output_tokens, reasoning_tokens,
-                total_tokens, raw_total_tokens, usage_mapping_version,
-                usage_mapping_status, estimated_cost_usd, pricing_version,
-                usage_estimated, error_class, fallback_from, fallback_reason, breaker_state,
-                cache_hit, symbol, market, caller_endpoint
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            values,
-        )
-        return cursor.rowcount == 1
+        return _insert_attempt(connection, attempt, ignore=True) == 1
+
+
+def allocate_and_record_attempt(
+    attempt: ProviderAttempt,
+    *,
+    store: RoutingStore | None = None,
+) -> ProviderAttempt:
+    """Atomically allocate and insert the next global number for one request.
+
+    ``attempt.attempt_number`` is the minimum requested number. This preserves
+    the specialized grounding convention of skip ``0`` followed by live ``1``
+    while ensuring later writers, even from another run, receive a unique
+    monotonically increasing number.
+    """
+    if isinstance(attempt.attempt_number, bool) or attempt.attempt_number < 0:
+        raise ValueError("attempt_number must be a non-negative integer")
+    ledger = store or default_store()
+    with ledger.transaction(write=True) as connection:
+        row = connection.execute(
+            "SELECT MAX(attempt_number) FROM provider_attempts WHERE request_id=?",
+            (attempt.request_id,),
+        ).fetchone()
+        current_max = row[0] if row is not None else None
+        next_number = int(attempt.attempt_number)
+        if current_max is not None:
+            next_number = max(next_number, int(current_max) + 1)
+        allocated = replace(attempt, attempt_number=next_number)
+        _insert_attempt(connection, allocated, ignore=False)
+    return allocated
 
 
 def _decimal_text(value: object | None) -> str | None:
@@ -103,27 +145,27 @@ def usage_summary(
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     metrics = """
         COUNT(*) AS attempts,
-        SUM(CASE WHEN status <> 'skipped_breaker' THEN 1 ELSE 0 END) AS live_attempts,
+        SUM(CASE WHEN status NOT GLOB 'skipped_*' THEN 1 ELSE 0 END) AS live_attempts,
         SUM(CASE WHEN status = 'skipped_breaker' THEN 1 ELSE 0 END)
             AS breaker_skipped_attempts,
         SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) AS successes,
-        SUM(CASE WHEN fallback_from IS NOT NULL AND status <> 'skipped_breaker'
+        SUM(CASE WHEN fallback_from IS NOT NULL AND status NOT GLOB 'skipped_*'
             THEN 1 ELSE 0 END) AS fallbacks,
-        SUM(CASE WHEN status <> 'skipped_breaker' THEN input_tokens END) AS input_tokens,
-        SUM(CASE WHEN status <> 'skipped_breaker' THEN cached_input_tokens END)
+        SUM(CASE WHEN status NOT GLOB 'skipped_*' THEN input_tokens END) AS input_tokens,
+        SUM(CASE WHEN status NOT GLOB 'skipped_*' THEN cached_input_tokens END)
             AS cached_input_tokens,
-        SUM(CASE WHEN status <> 'skipped_breaker' THEN output_tokens END) AS output_tokens,
-        SUM(CASE WHEN status <> 'skipped_breaker' THEN reasoning_tokens END)
+        SUM(CASE WHEN status NOT GLOB 'skipped_*' THEN output_tokens END) AS output_tokens,
+        SUM(CASE WHEN status NOT GLOB 'skipped_*' THEN reasoning_tokens END)
             AS reasoning_tokens,
-        SUM(CASE WHEN status <> 'skipped_breaker' THEN total_tokens END) AS total_tokens,
-        SUM(CASE WHEN status <> 'skipped_breaker'
+        SUM(CASE WHEN status NOT GLOB 'skipped_*' THEN total_tokens END) AS total_tokens,
+        SUM(CASE WHEN status NOT GLOB 'skipped_*'
             THEN CAST(estimated_cost_usd AS REAL) END) AS known_estimated_cost_usd,
-        SUM(CASE WHEN status <> 'skipped_breaker' AND
+        SUM(CASE WHEN status NOT GLOB 'skipped_*' AND
             (input_tokens IS NULL OR output_tokens IS NULL OR usage_mapping_status = 'quarantined')
             THEN 1 ELSE 0 END) AS unknown_usage_attempts,
-        SUM(CASE WHEN status <> 'skipped_breaker' AND usage_mapping_status = 'quarantined'
+        SUM(CASE WHEN status NOT GLOB 'skipped_*' AND usage_mapping_status = 'quarantined'
             THEN 1 ELSE 0 END) AS quarantined_usage_attempts,
-        SUM(CASE WHEN status <> 'skipped_breaker' AND estimated_cost_usd IS NULL
+        SUM(CASE WHEN status NOT GLOB 'skipped_*' AND estimated_cost_usd IS NULL
             THEN 1 ELSE 0 END) AS unknown_cost_attempts
     """
     with ledger.transaction() as connection:
@@ -135,7 +177,13 @@ def usage_summary(
             FROM provider_attempts
             WHERE event_ts_utc >= ?
             GROUP BY day, provider, model, COALESCE(caller_endpoint, endpoint), operation
-            ORDER BY SUM(CAST(estimated_cost_usd AS REAL)) DESC, SUM(total_tokens) DESC
+            ORDER BY
+                SUM(CASE WHEN status NOT GLOB 'skipped_*'
+                    THEN CAST(estimated_cost_usd AS REAL) END) DESC,
+                SUM(CASE WHEN status NOT GLOB 'skipped_*'
+                    THEN total_tokens END) DESC,
+                SUM(CASE WHEN status NOT GLOB 'skipped_*' THEN 1 ELSE 0 END) DESC,
+                day DESC, provider ASC, model ASC, endpoint ASC, operation ASC
             """,
             (cutoff,),
         ).fetchall()
@@ -146,7 +194,13 @@ def usage_summary(
             FROM provider_attempts
             WHERE event_ts_utc >= ?
             GROUP BY COALESCE(caller_endpoint, endpoint)
-            ORDER BY SUM(CAST(estimated_cost_usd AS REAL)) DESC, SUM(total_tokens) DESC
+            ORDER BY
+                SUM(CASE WHEN status NOT GLOB 'skipped_*'
+                    THEN CAST(estimated_cost_usd AS REAL) END) DESC,
+                SUM(CASE WHEN status NOT GLOB 'skipped_*'
+                    THEN total_tokens END) DESC,
+                SUM(CASE WHEN status NOT GLOB 'skipped_*' THEN 1 ELSE 0 END) DESC,
+                endpoint ASC
             LIMIT ?
             """,
             (cutoff, limit),
