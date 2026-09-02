@@ -2236,7 +2236,7 @@ def run_to_excel_bytes(run_id: str, *, result: str = "all", q: str = "") -> tupl
     records = run.get("records") or []
     rows = [{
         "순번": r.get("rank"),
-        "종목명": f"{r.get('stock_name')}{f' ({r.get('ticker')})' if r.get('ticker') else ''}",
+        "종목명": f"{r.get('stock_name')}" + (f" ({r.get('ticker')})" if r.get("ticker") else ""),
         "시장": r.get("market"),
         "산업": r.get("industry"),
         "분석결과": r.get("result"),
