@@ -21,12 +21,14 @@ import time
 from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import Any, Callable, Iterator
+from uuid import uuid4
 
 from app.services.ai_routing.contracts import Operation, ProviderErrorClass, RoutingRequest, TokenUsage
 from app.services.ai_routing.providers import (
     AdapterResponse,
     CallableAdapter,
     ProviderCallError,
+    classify_exception,
     normalize_gemini_usage,
     normalize_openai_usage,
 )
@@ -51,11 +53,17 @@ _provider_failure: ContextVar[dict[str, str]] = ContextVar(
 _provider_usage: ContextVar[dict[str, TokenUsage]] = ContextVar(
     'mirofish_llm_provider_usage', default={}
 )
+_provider_error_class: ContextVar[dict[str, ProviderErrorClass]] = ContextVar(
+    'mirofish_llm_provider_error_class', default={}
+)
 _last_generation_metadata: ContextVar[dict[str, Any] | None] = ContextVar(
     'mirofish_llm_generation_metadata', default=None
 )
 _generation_collector: ContextVar[list[dict[str, Any]] | None] = ContextVar(
     'mirofish_llm_generation_collector', default=None
+)
+_generation_run_id: ContextVar[str | None] = ContextVar(
+    'mirofish_llm_generation_run_id', default=None
 )
 
 
@@ -63,6 +71,12 @@ def _safe_failure(provider: str, reason: str, exc: Exception | None = None) -> N
     failures = dict(_provider_failure.get())
     failures[provider] = f'{reason}:{type(exc).__name__}' if exc else reason
     _provider_failure.set(failures)
+
+
+def _safe_error_class(provider: str, error_class: ProviderErrorClass) -> None:
+    classes = dict(_provider_error_class.get())
+    classes[provider] = error_class
+    _provider_error_class.set(classes)
 
 
 def _model_for(provider: str, model_env: str | None) -> str:
@@ -93,7 +107,7 @@ def _publish_metadata(metadata: dict[str, Any]) -> None:
 
 
 @contextmanager
-def collect_generation_metadata() -> Iterator[list[dict[str, Any]]]:
+def collect_generation_metadata(run_id: str | None = None) -> Iterator[list[dict[str, Any]]]:
     """Collect all LLM diagnostics produced inside one engine/run scope.
 
     Example::
@@ -106,9 +120,11 @@ def collect_generation_metadata() -> Iterator[list[dict[str, Any]]]:
     """
     collected: list[dict[str, Any]] = []
     token = _generation_collector.set(collected)
+    run_token = _generation_run_id.set(run_id or str(uuid4()))
     try:
         yield collected
     finally:
+        _generation_run_id.reset(run_token)
         _generation_collector.reset(token)
 
 
@@ -233,6 +249,7 @@ def _generate_deepseek(prompt: str, *, system: str | None, model_env: str | None
     if client is None:
         logger.warning('[llm_client] DEEPSEEK_API_KEY is not configured')
         _safe_failure('deepseek', 'client_unavailable')
+        _safe_error_class('deepseek', ProviderErrorClass.CLIENT_UNAVAILABLE)
         return None
     messages: list[dict[str, str]] = []
     if system:
@@ -256,8 +273,10 @@ def _generate_deepseek(prompt: str, *, system: str | None, model_env: str | None
         _provider_usage.set(usage)
         return (resp.choices[0].message.content or '').strip() or None
     except Exception as exc:
-        logger.warning('[llm_client] DeepSeek call failed: %s', type(exc).__name__)
-        _safe_failure('deepseek', 'provider_error', exc)
+        error_class = classify_exception(exc)
+        logger.warning('[llm_client] DeepSeek call failed: %s', error_class.value)
+        _safe_failure('deepseek', error_class.value)
+        _safe_error_class('deepseek', error_class)
         return None
 
 
@@ -268,6 +287,7 @@ def _generate_openai(prompt: str, *, system: str | None, model_env: str | None,
     if client is None:
         logger.warning('[llm_client] OPENAI_API_KEY is not configured')
         _safe_failure('openai', 'client_unavailable')
+        _safe_error_class('openai', ProviderErrorClass.CLIENT_UNAVAILABLE)
         return None
     messages: list[dict[str, str]] = []
     if system:
@@ -291,8 +311,10 @@ def _generate_openai(prompt: str, *, system: str | None, model_env: str | None,
         _provider_usage.set(usage)
         return (resp.choices[0].message.content or '').strip() or None
     except Exception as exc:
-        logger.warning('[llm_client] OpenAI call failed: %s', type(exc).__name__)
-        _safe_failure('openai', 'provider_error', exc)
+        error_class = classify_exception(exc)
+        logger.warning('[llm_client] OpenAI call failed: %s', error_class.value)
+        _safe_failure('openai', error_class.value)
+        _safe_error_class('openai', error_class)
         return None
 
 
@@ -303,6 +325,7 @@ def _generate_gemini(prompt: str, *, system: str | None, model_env: str | None,
     if not api_key:
         logger.warning('[llm_client] GEMINI_API_KEY/GOOGLE_API_KEY is not configured')
         _safe_failure('gemini', 'client_unavailable')
+        _safe_error_class('gemini', ProviderErrorClass.CLIENT_UNAVAILABLE)
         return None
     try:
         from google import genai
@@ -310,6 +333,7 @@ def _generate_gemini(prompt: str, *, system: str | None, model_env: str | None,
     except ImportError:
         logger.warning('[llm_client] google-genai package is not installed')
         _safe_failure('gemini', 'client_unavailable')
+        _safe_error_class('gemini', ProviderErrorClass.CLIENT_UNAVAILABLE)
         return None
     config_kwargs: dict[str, Any] = {
         'temperature': temperature,
@@ -331,8 +355,10 @@ def _generate_gemini(prompt: str, *, system: str | None, model_env: str | None,
         _provider_usage.set(usage)
         return (resp.text or '').strip() or None
     except Exception as exc:
-        logger.warning('[llm_client] Gemini call failed: %s', type(exc).__name__)
-        _safe_failure('gemini', 'provider_error', exc)
+        error_class = classify_exception(exc)
+        logger.warning('[llm_client] Gemini call failed: %s', error_class.value)
+        _safe_failure('gemini', error_class.value)
+        _safe_error_class('gemini', error_class)
         return None
 
 
@@ -356,6 +382,9 @@ def _call_provider(provider: str, prompt: str, *, system: str | None, model_env:
 
 
 def _error_class_for_legacy_failure(provider: str) -> ProviderErrorClass:
+    typed = _provider_error_class.get().get(provider)
+    if typed is not None:
+        return typed
     reason = _provider_failure.get().get(provider, '')
     prefix = reason.split(':', 1)[0]
     return {
@@ -414,6 +443,8 @@ def _usage_metadata(usage: TokenUsage) -> dict[str, Any]:
         'total_tokens': usage.total_tokens,
         'usage_estimated': usage.usage_estimated,
         'mapping_version': usage.mapping_version,
+        'mapping_status': usage.mapping_status,
+        'raw_total_tokens': usage.raw_total_tokens,
     }
 
 
@@ -431,15 +462,17 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
     started = time.perf_counter()
     _provider_failure.set({})
     _provider_usage.set({})
+    _provider_error_class.set({})
     selected_operation = Operation(operation) if operation is not None else Operation.BULK_TEXT
     adapters = _routing_adapters(model_env)
     all_providers_disabled = not adapters
     router = AIRouter(adapters=adapters)
+    effective_run_id = run_id or _generation_run_id.get()
     request = RoutingRequest(
         operation=selected_operation,
         prompt=prompt,
         system=system,
-        run_id=run_id,
+        run_id=effective_run_id,
         request_id=request_id,
         json_mode=json_mode,
         max_output_tokens=max_tokens,
@@ -500,6 +533,7 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
         'breaker_state': breaker_state,
         'numeric_validation': result.numeric_validation,
         'evidence_validated': result.evidence_validated,
+        'run_id': effective_run_id,
     }
     _publish_metadata(metadata)
     return result.text, metadata

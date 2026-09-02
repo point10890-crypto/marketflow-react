@@ -36,6 +36,7 @@ class CircuitBreaker:
         *,
         failure_threshold: int = 3,
         cooldown_seconds: float = 60.0,
+        probe_lease_seconds: float = 30.0,
         clock: Callable[[], float] = time.time,
     ) -> None:
         if failure_threshold <= 0 or cooldown_seconds < 0:
@@ -43,6 +44,7 @@ class CircuitBreaker:
         self.store = store or default_store()
         self.failure_threshold = failure_threshold
         self.cooldown_seconds = cooldown_seconds
+        self.probe_lease_seconds = probe_lease_seconds
         self.clock = clock
 
     @staticmethod
@@ -69,7 +71,17 @@ class CircuitBreaker:
             if row is None or row["state"] == "closed":
                 return True
             if row["state"] == "half_open":
-                return False
+                if now - float(row["updated_at"]) < self.probe_lease_seconds:
+                    return False
+                cursor = connection.execute(
+                    """
+                    UPDATE circuit_breakers SET updated_at = ?, probe_in_flight = 1
+                    WHERE provider = ? AND modality = ? AND model_tier = ?
+                      AND state = 'half_open' AND updated_at = ?
+                    """,
+                    (now, *key, row["updated_at"]),
+                )
+                return cursor.rowcount == 1
             if row["opened_at"] is None or now - float(row["opened_at"]) < self.cooldown_seconds:
                 return False
             cursor = connection.execute(

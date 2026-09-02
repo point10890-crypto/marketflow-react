@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 
 from app.services.ai_routing.contracts import Operation, ProviderAttempt, TokenUsage
-from app.services.ai_routing.pricing import PricingRate, estimate_cost
+from app.services.ai_routing.pricing import PricingRate, estimate_cost, estimate_cost_details
 from app.services.ai_routing.store import RoutingStore
 from app.services.ai_routing.telemetry import record_attempt, usage_summary
 
@@ -117,6 +117,57 @@ def test_attempt_schema_contains_no_secret_or_raw_content_fields(tmp_path):
         }
 
     assert {"prompt", "response", "key", "api_key", "authorization"}.isdisjoint(columns)
+    assert {"raw_total_tokens", "usage_mapping_version", "usage_mapping_status"} <= columns
+
+
+def test_usage_mapping_evidence_and_quarantine_are_persisted(tmp_path):
+    ledger = RoutingStore(tmp_path / "usage.sqlite3")
+    usage = TokenUsage(
+        input_tokens=100,
+        output_tokens=20,
+        raw_total_tokens=999,
+        mapping_version="provider-v1",
+    )
+    record_attempt(_attempt("quarantine", 1, usage=usage, cost=None), store=ledger)
+
+    with sqlite3.connect(ledger.db_path) as connection:
+        row = connection.execute(
+            "SELECT raw_total_tokens, usage_mapping_version, usage_mapping_status, estimated_cost_usd "
+            "FROM provider_attempts WHERE request_id = 'quarantine'"
+        ).fetchone()
+
+    assert row == (999, "provider-v1", "quarantined", None)
+
+
+def test_deepseek_pricing_is_time_tiered_and_versioned():
+    usage = TokenUsage(input_tokens=1_000_000, cached_input_tokens=0, output_tokens=0)
+
+    peak = estimate_cost_details(
+        "deepseek", "deepseek-v4-flash", usage, event_ts_utc="2026-09-02T02:00:00+00:00"
+    )
+    off_peak = estimate_cost_details(
+        "deepseek", "deepseek-v4-flash", usage, event_ts_utc="2026-09-02T05:00:00+00:00"
+    )
+
+    assert peak.cost == Decimal("0.44")
+    assert off_peak.cost == Decimal("0.220")
+    assert peak.pricing_version.endswith(":peak")
+    assert off_peak.pricing_version.endswith(":off_peak")
+
+
+def test_operator_price_override_is_not_labeled_official(monkeypatch):
+    monkeypatch.setenv("AI_ROUTING_PRICE_DEEPSEEK_INPUT_PER_MILLION", "1")
+    monkeypatch.setenv("AI_ROUTING_PRICE_DEEPSEEK_OUTPUT_PER_MILLION", "2")
+    monkeypatch.setenv("AI_ROUTING_PRICE_DEEPSEEK_VERSION", "operator-contract-7")
+
+    estimate = estimate_cost_details(
+        "deepseek",
+        "deepseek-v4-flash",
+        TokenUsage(input_tokens=10, output_tokens=10),
+        event_ts_utc="2026-09-02T02:00:00+00:00",
+    )
+
+    assert estimate.pricing_version == "operator-contract-7"
 
 
 def test_summary_groups_dimensions_and_ranks_cost_by_endpoint(tmp_path):

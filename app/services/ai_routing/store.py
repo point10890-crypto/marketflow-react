@@ -60,6 +60,9 @@ class RoutingStore:
                         output_tokens INTEGER,
                         reasoning_tokens INTEGER,
                         total_tokens INTEGER,
+                        raw_total_tokens INTEGER,
+                        usage_mapping_version TEXT NOT NULL,
+                        usage_mapping_status TEXT NOT NULL,
                         estimated_cost_usd TEXT,
                         pricing_version TEXT,
                         usage_estimated INTEGER NOT NULL,
@@ -112,6 +115,20 @@ class RoutingStore:
                     );
                     """
                 )
+                columns = {
+                    row["name"]
+                    for row in connection.execute("PRAGMA table_info(provider_attempts)").fetchall()
+                }
+                migrations = {
+                    "raw_total_tokens": "INTEGER",
+                    "usage_mapping_version": "TEXT NOT NULL DEFAULT 'legacy-unknown'",
+                    "usage_mapping_status": "TEXT NOT NULL DEFAULT 'unverified'",
+                }
+                for name, declaration in migrations.items():
+                    if name not in columns:
+                        connection.execute(
+                            f"ALTER TABLE provider_attempts ADD COLUMN {name} {declaration}"
+                        )
                 self._initialized = True
             finally:
                 connection.close()

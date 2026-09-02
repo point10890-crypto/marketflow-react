@@ -39,6 +39,7 @@ class ProviderErrorClass(str, Enum):
     EMPTY = "empty"
     REFUSAL = "refusal"
     CLIENT_UNAVAILABLE = "client_unavailable"
+    BREAKER_OPEN = "breaker_open"
     UNKNOWN = "unknown"
 
 
@@ -58,6 +59,7 @@ class TokenUsage:
     usage_estimated: bool = False
     raw_total_tokens: int | None = None
     mapping_version: str = "normalized-v1"
+    mapping_status: str = "unverified"
 
     def __post_init__(self) -> None:
         values = (
@@ -81,6 +83,9 @@ class TokenUsage:
             object.__setattr__(self, "total_tokens", None)
         elif self.input_tokens is not None and self.output_tokens is not None:
             object.__setattr__(self, "total_tokens", self.input_tokens + self.output_tokens)
+        if self.raw_total_tokens is not None:
+            status = "valid" if self.total_tokens == self.raw_total_tokens else "quarantined"
+            object.__setattr__(self, "mapping_status", status)
 
     @property
     def uncached_input_tokens(self) -> int | None:

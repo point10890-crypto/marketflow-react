@@ -66,11 +66,16 @@ def normalize_openai_usage(raw: Any) -> TokenUsage:
 def normalize_gemini_usage(raw: Any) -> TokenUsage:
     if raw is None:
         return TokenUsage.unknown()
+    candidate_tokens = _field(raw, "candidates_token_count")
+    thinking_tokens = _field(raw, "thoughts_token_count", 0) or 0
+    billable_output = (
+        candidate_tokens + thinking_tokens if candidate_tokens is not None else None
+    )
     return TokenUsage(
         input_tokens=_field(raw, "prompt_token_count"),
         cached_input_tokens=_field(raw, "cached_content_token_count", 0),
-        output_tokens=_field(raw, "candidates_token_count"),
-        reasoning_tokens=_field(raw, "thoughts_token_count", 0),
+        output_tokens=billable_output,
+        reasoning_tokens=thinking_tokens,
         raw_total_tokens=_field(raw, "total_token_count"),
         mapping_version="gemini-v1",
     )

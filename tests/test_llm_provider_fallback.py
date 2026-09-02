@@ -1,5 +1,6 @@
 import asyncio
 
+from app.services.ai_routing import store as routing_store
 from app.services.mirofish import llm_client
 from engine.llm_analyzer import LLMAnalyzer, reset_api_status
 
@@ -225,6 +226,21 @@ def test_legacy_helper_forwards_native_usage_to_central_metadata(monkeypatch):
     assert metadata['estimated_cost_usd'] is not None
 
 
+def test_gemini_thinking_tokens_are_billable_output():
+    usage = llm_client.normalize_gemini_usage({
+        'prompt_token_count': 100,
+        'cached_content_token_count': 10,
+        'candidates_token_count': 20,
+        'thoughts_token_count': 7,
+        'total_token_count': 127,
+    })
+
+    assert usage.output_tokens == 27
+    assert usage.reasoning_tokens == 7
+    assert usage.total_tokens == 127
+    assert usage.mapping_status == 'valid'
+
+
 def test_generation_metadata_collector_captures_run_calls(monkeypatch):
     monkeypatch.setenv('MIROFISH_LLM_PROVIDER_ORDER', 'deepseek')
     monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'openai,gemini')
@@ -237,6 +253,59 @@ def test_generation_metadata_collector_captures_run_calls(monkeypatch):
     assert len(calls) == 2
     assert all(call['provider'] == 'deepseek' for call in calls)
     assert all(call['success'] is True for call in calls)
+
+
+def test_generation_metadata_collector_propagates_one_run_budget(tmp_path, monkeypatch):
+    monkeypatch.setattr(routing_store, 'DEFAULT_DB_PATH', tmp_path / 'usage.sqlite3')
+    monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'gemini')
+    openai_calls = []
+    monkeypatch.setattr(llm_client, '_generate_deepseek', lambda *_a, **_k: None)
+
+    def fake_openai(*_args, **_kwargs):
+        openai_calls.append('openai')
+        return 'fallback'
+
+    monkeypatch.setattr(llm_client, '_generate_openai', fake_openai)
+
+    with llm_client.collect_generation_metadata() as calls:
+        results = [
+            llm_client.generate_text(f'call-{index}', operation='decisive_text')
+            for index in range(6)
+        ]
+
+    assert results[:5] == ['fallback'] * 5
+    assert results[5] is None
+    assert openai_calls == ['openai'] * 5
+    assert len({call['run_id'] for call in calls}) == 1
+
+
+def test_legacy_wrapper_preserves_authentication_error_class(tmp_path, monkeypatch):
+    class AuthenticationError(Exception):
+        status_code = 401
+
+    class Completions:
+        @staticmethod
+        def create(**_kwargs):
+            raise AuthenticationError()
+
+    deepseek_client = type(
+        'Client', (), {'chat': type('Chat', (), {'completions': Completions()})()}
+    )()
+    monkeypatch.setattr(routing_store, 'DEFAULT_DB_PATH', tmp_path / 'usage.sqlite3')
+    monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'gemini')
+    monkeypatch.setattr(llm_client, 'get_deepseek_client', lambda: deepseek_client)
+    monkeypatch.setattr(llm_client, '_generate_openai', lambda *_a, **_k: 'fallback')
+
+    _text, metadata = llm_client.generate_text_with_metadata(
+        'one', run_id='run', request_id='one'
+    )
+    _text, second = llm_client.generate_text_with_metadata(
+        'two', run_id='run', request_id='two'
+    )
+
+    assert metadata['attempts'][0]['failure_reason'] == 'authentication'
+    assert metadata['attempts'][0]['breaker_state'] == 'open'
+    assert second['attempts'][0]['status'] == 'skipped_breaker'
 
 
 def test_explicit_decisive_operation_uses_central_policy_and_cap(monkeypatch):

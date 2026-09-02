@@ -24,6 +24,7 @@ class BudgetReservation:
     reservation_id: str | None = None
     reason: str | None = None
     already_reserved: bool = False
+    acquired_by_caller: bool = False
 
 
 @dataclass(frozen=True)
@@ -103,6 +104,7 @@ class BudgetManager:
                     approved=existing["status"] != "released",
                     reservation_id=existing["reservation_id"],
                     already_reserved=True,
+                    acquired_by_caller=False,
                 )
 
             used_calls, used_input, used_output = self._used(connection, run_id)
@@ -142,7 +144,7 @@ class BudgetManager:
                     _utc_now(),
                 ),
             )
-            return BudgetReservation(True, reservation_id=reservation_id)
+            return BudgetReservation(True, reservation_id=reservation_id, acquired_by_caller=True)
 
     def settle(self, reservation_id: str | None, usage: TokenUsage, *, calls: int = 1) -> None:
         if not reservation_id:
@@ -180,4 +182,3 @@ class BudgetManager:
             remaining_input_tokens=max(0, self.limits.max_input_tokens - input_tokens),
             remaining_output_tokens=max(0, self.limits.max_output_tokens - output_tokens),
         )
-

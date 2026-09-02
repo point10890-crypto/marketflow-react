@@ -74,3 +74,21 @@ def test_only_one_half_open_probe_is_admitted_after_cooldown(tmp_path):
 
     breaker.record_success("deepseek", "text", "decisive")
     assert breaker.state("deepseek", "text", "decisive") == "closed"
+
+
+def test_stale_half_open_probe_lease_can_be_reclaimed_once(tmp_path):
+    clock = Clock()
+    breaker = CircuitBreaker(
+        RoutingStore(tmp_path / "usage.sqlite3"),
+        cooldown_seconds=10,
+        probe_lease_seconds=5,
+        clock=clock,
+    )
+    breaker.record_failure("deepseek", "text", "fast", ProviderErrorClass.AUTHENTICATION)
+    clock.value += 11
+    assert breaker.allow("deepseek", "text", "fast") is True
+    assert breaker.allow("deepseek", "text", "fast") is False
+
+    clock.value += 6
+    assert breaker.allow("deepseek", "text", "fast") is True
+    assert breaker.allow("deepseek", "text", "fast") is False

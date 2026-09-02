@@ -1,11 +1,14 @@
-"""Central sequential AI router with budget, breaker, validation, and usage."""
+"""Central sequential AI router with atomic single-flight execution."""
 
 from __future__ import annotations
 
 import logging
+import random
 import time
-from dataclasses import replace
-from threading import Lock
+from collections import OrderedDict
+from dataclasses import dataclass, replace
+from datetime import datetime, timezone
+from threading import Event, Lock
 from uuid import uuid4
 
 from .breaker import CircuitBreaker
@@ -20,7 +23,7 @@ from .contracts import (
     TokenUsage,
 )
 from .policy import policy_for
-from .pricing import PRICING_VERSION, estimate_cost
+from .pricing import estimate_cost_details
 from .providers import AdapterResponse, ProviderAdapter, ProviderCallError, build_default_adapters, classify_exception
 from .store import RoutingStore, default_store
 from .telemetry import record_attempt
@@ -34,6 +37,33 @@ _TRANSIENT = {
     ProviderErrorClass.CONNECTION,
     ProviderErrorClass.SERVER_ERROR,
 }
+_MAX_FLIGHTS = 2_048
+
+
+@dataclass
+class _Flight:
+    completed: Event
+    result: RoutingResult | None = None
+
+
+_FLIGHTS: OrderedDict[tuple[str, str, str], _Flight] = OrderedDict()
+_FLIGHTS_LOCK = Lock()
+
+
+def estimate_reservation_input_tokens(request: RoutingRequest) -> int:
+    """Conservative tokenizer-independent upper bound for fallback admission."""
+    text_parts = [request.system or "", request.prompt]
+    if request.json_mode:
+        text_parts.append("Respond only in valid JSON.")
+    # UTF-8 bytes are a safer upper bound than character/4 for Korean and code.
+    text_tokens = sum(len(part.encode("utf-8")) for part in text_parts) + 64
+    image_tokens = 0
+    for image in request.images:
+        if isinstance(image, (bytes, bytearray)):
+            image_tokens += max(2_048, (len(image) + 2) // 3)
+        else:
+            image_tokens += 2_048
+    return text_tokens + image_tokens
 
 
 class AIRouter:
@@ -44,14 +74,19 @@ class AIRouter:
         budget: BudgetManager | None = None,
         breaker: CircuitBreaker | None = None,
         store: RoutingStore | None = None,
-        result_cache: dict[str, RoutingResult] | None = None,
+        retry_sleeper=time.sleep,
+        retry_delay=lambda: random.uniform(0.05, 0.25),
+        max_retry_delay: float = 2.0,
+        single_flight_wait_seconds: float = 30.0,
     ) -> None:
         self.store = store or default_store()
         self.adapters = build_default_adapters() if adapters is None else adapters
         self.budget = budget or BudgetManager(self.store)
         self.breaker = breaker or CircuitBreaker(self.store)
-        self.result_cache = result_cache if result_cache is not None else {}
-        self._cache_lock = Lock()
+        self.retry_sleeper = retry_sleeper
+        self.retry_delay = retry_delay
+        self.max_retry_delay = max(0.0, max_retry_delay)
+        self.single_flight_wait_seconds = max(0.0, single_flight_wait_seconds)
 
     def route_text(self, request: RoutingRequest) -> RoutingResult:
         if Operation(request.operation) is Operation.VISION:
@@ -63,73 +98,114 @@ class AIRouter:
             request = replace(request, operation=Operation.VISION)
         return self._route(request)
 
+    def _claim_flight(self, run_id: str, request_id: str) -> tuple[bool, _Flight]:
+        key = (str(self.store.db_path.resolve()), run_id, request_id)
+        with _FLIGHTS_LOCK:
+            flight = _FLIGHTS.get(key)
+            if flight is not None:
+                _FLIGHTS.move_to_end(key)
+                return False, flight
+            flight = _Flight(Event())
+            _FLIGHTS[key] = flight
+            while len(_FLIGHTS) > _MAX_FLIGHTS:
+                oldest_key, oldest = next(iter(_FLIGHTS.items()))
+                if not oldest.completed.is_set():
+                    break
+                _FLIGHTS.pop(oldest_key)
+            return True, flight
+
     def _route(self, request: RoutingRequest) -> RoutingResult:
         policy = policy_for(request.operation)
         request_id = request.request_id or str(uuid4())
         run_id = request.run_id or request_id
         request = replace(request, request_id=request_id, run_id=run_id)
-        cache_key = (
-            f"{request.operation.value}:{request.evidence_fingerprint}"
-            if request.evidence_fingerprint
-            else None
-        )
-        if cache_key:
-            with self._cache_lock:
-                cached = self.result_cache.get(cache_key)
-            if cached is not None:
-                return replace(cached, cache_hit=True)
+        owner, flight = self._claim_flight(run_id, request_id)
+        if not owner:
+            flight.completed.wait(self.single_flight_wait_seconds)
+            if flight.result is not None:
+                return flight.result
+            return self._failed_result(
+                policy.operation,
+                policy.providers[0],
+                (),
+                "duplicate_request_in_flight",
+            )
+        try:
+            result = self._route_owned(request)
+        except Exception as exc:
+            logger.warning("[ai_routing] routing infrastructure failed: %s", type(exc).__name__)
+            result = self._failed_result(
+                policy.operation,
+                policy.providers[0],
+                (),
+                ProviderErrorClass.UNKNOWN,
+            )
+        flight.result = result
+        flight.completed.set()
+        return result
 
+    def _route_owned(self, request: RoutingRequest) -> RoutingResult:
+        policy = policy_for(request.operation)
+        request_id = request.request_id or ""
+        run_id = request.run_id or request_id
         max_output_tokens = policy.max_output_tokens
         if request.max_output_tokens is not None:
             max_output_tokens = min(max_output_tokens, max(1, request.max_output_tokens))
-        estimated_input_tokens = max(1, len(request.prompt) // 4)
-        reservation = BudgetReservation(True)
+        reservation = BudgetReservation(True, acquired_by_caller=True)
         if "openai" in policy.providers:
             reservation = self.budget.reserve(
                 run_id=run_id,
                 request_id=request_id,
                 operation=request.operation,
-                input_tokens=estimated_input_tokens,
+                input_tokens=estimate_reservation_input_tokens(request),
                 output_tokens=max_output_tokens,
             )
             if not reservation.approved:
                 return self._failed_result(policy.operation, policy.providers[0], ())
+            if not reservation.acquired_by_caller:
+                return self._failed_result(
+                    policy.operation,
+                    policy.providers[0],
+                    (),
+                    "duplicate_request",
+                )
 
         attempts: list[ProviderAttempt] = []
-        fallback_reason: ProviderErrorClass | None = None
+        fallback_reason: ProviderErrorClass | str | None = None
         openai_usage: TokenUsage | None = None
         openai_called = False
         attempt_number = 0
         for provider_index, provider in enumerate(policy.providers):
             model = policy.models[provider]
             model_tier = "decisive" if policy.operation is Operation.DECISIVE_TEXT else "fast"
-            if not self.breaker.allow(provider, policy.modality, model_tier):
-                attempt_number += 1
-                attempts.append(
-                    self._skipped_attempt(
-                        request,
-                        provider,
-                        model,
-                        attempt_number,
-                        max_output_tokens,
-                        "open",
-                        fallback_reason,
-                    )
-                )
-                continue
             adapter = self.adapters.get(provider)
             if adapter is None:
-                error_class = ProviderErrorClass.CLIENT_UNAVAILABLE
                 if fallback_reason is None:
-                    fallback_reason = error_class
+                    fallback_reason = ProviderErrorClass.CLIENT_UNAVAILABLE
                 continue
-
             provider_tries = 0
-            while True:
+            while provider_tries < 2:
+                if not self.breaker.allow(provider, policy.modality, model_tier):
+                    attempt_number += 1
+                    if provider_index == 0 and fallback_reason is None:
+                        fallback_reason = ProviderErrorClass.BREAKER_OPEN
+                    attempts.append(
+                        self._skipped_attempt(
+                            request,
+                            provider,
+                            model,
+                            attempt_number,
+                            max_output_tokens,
+                            ProviderErrorClass.BREAKER_OPEN,
+                            policy.providers[0] if provider_index > 0 else None,
+                        )
+                    )
+                    break
                 provider_tries += 1
                 attempt_number += 1
+                event_ts = datetime.now(timezone.utc).isoformat()
                 started = time.perf_counter()
-                response: AdapterResponse | None = None
+                response: AdapterResponse
                 error_class: ProviderErrorClass | None = None
                 try:
                     response = adapter.generate(
@@ -145,9 +221,11 @@ class AIRouter:
                 except ProviderCallError as exc:
                     error_class = exc.error_class
                     response = AdapterResponse(text=None, usage=exc.usage)
+                    validation = validate_response(None, request)
                 except Exception as exc:
                     error_class = classify_exception(exc)
                     response = AdapterResponse(text=None)
+                    validation = validate_response(None, request)
 
                 latency_ms = round((time.perf_counter() - started) * 1000, 3)
                 usage = response.usage
@@ -161,8 +239,14 @@ class AIRouter:
                     self.breaker.record_failure(provider, policy.modality, model_tier, error_class)
                     if fallback_reason is None:
                         fallback_reason = error_class
-                cost = estimate_cost(provider, model, usage)
+                estimate = estimate_cost_details(
+                    provider,
+                    model,
+                    usage,
+                    event_ts_utc=event_ts,
+                )
                 attempt = ProviderAttempt(
+                    event_ts_utc=event_ts,
                     request_id=request_id,
                     run_id=run_id,
                     provider=provider,
@@ -175,8 +259,8 @@ class AIRouter:
                     latency_ms=latency_ms,
                     max_output_tokens=max_output_tokens,
                     usage=usage,
-                    estimated_cost_usd=cost,
-                    pricing_version=PRICING_VERSION if cost is not None else None,
+                    estimated_cost_usd=estimate.cost,
+                    pricing_version=estimate.pricing_version,
                     error_class=error_class,
                     fallback_from=policy.providers[0] if provider_index > 0 else None,
                     breaker_state=self.breaker.state(provider, policy.modality, model_tier),
@@ -190,11 +274,8 @@ class AIRouter:
                 except Exception as exc:
                     logger.warning("[ai_routing] telemetry write failed: %s", type(exc).__name__)
                 if successful:
-                    if openai_called:
-                        self.budget.settle(reservation.reservation_id, openai_usage or TokenUsage.unknown())
-                    else:
-                        self.budget.release(reservation.reservation_id)
-                    result = RoutingResult(
+                    self._finish_budget(reservation, openai_called, openai_usage)
+                    return RoutingResult(
                         text=response.text,
                         analysis_status=(
                             AnalysisStatus.SUCCESS_PRIMARY
@@ -209,21 +290,36 @@ class AIRouter:
                         evidence_validated=True,
                         numeric_validation=validation.numeric_validation,
                         usage=usage,
-                        estimated_cost_usd=cost,
+                        estimated_cost_usd=estimate.cost,
                         attempts=tuple(attempts),
                     )
-                    if cache_key:
-                        with self._cache_lock:
-                            self.result_cache[cache_key] = result
-                    return result
-                if error_class not in _TRANSIENT or provider_tries >= 2 or provider_index > 0:
+                should_retry = (
+                    error_class in _TRANSIENT and provider_tries < 2 and provider_index == 0
+                )
+                if not should_retry:
                     break
+                if error_class is ProviderErrorClass.RATE_LIMIT:
+                    delay = min(self.max_retry_delay, max(0.0, float(self.retry_delay())))
+                    self.retry_sleeper(delay)
 
+        self._finish_budget(reservation, openai_called, openai_usage)
+        return self._failed_result(
+            policy.operation,
+            policy.providers[0],
+            tuple(attempts),
+            fallback_reason,
+        )
+
+    def _finish_budget(
+        self,
+        reservation: BudgetReservation,
+        openai_called: bool,
+        openai_usage: TokenUsage | None,
+    ) -> None:
         if openai_called:
             self.budget.settle(reservation.reservation_id, openai_usage or TokenUsage.unknown())
         else:
             self.budget.release(reservation.reservation_id)
-        return self._failed_result(policy.operation, policy.providers[0], tuple(attempts), fallback_reason)
 
     @staticmethod
     def _skipped_attempt(
@@ -232,8 +328,8 @@ class AIRouter:
         model: str,
         attempt_number: int,
         max_output_tokens: int,
-        breaker_state: str,
-        fallback_reason: ProviderErrorClass | None,
+        error_class: ProviderErrorClass,
+        fallback_from: str | None,
     ) -> ProviderAttempt:
         return ProviderAttempt(
             request_id=request.request_id or "",
@@ -245,8 +341,9 @@ class AIRouter:
             attempt_number=attempt_number,
             status="skipped_breaker",
             max_output_tokens=max_output_tokens,
-            error_class=fallback_reason,
-            breaker_state=breaker_state,
+            error_class=error_class,
+            fallback_from=fallback_from,
+            breaker_state="open",
             symbol=request.symbol,
             market=request.market,
             caller_endpoint=request.caller_endpoint,
@@ -257,7 +354,7 @@ class AIRouter:
         operation: Operation,
         primary_provider: str,
         attempts: tuple[ProviderAttempt, ...],
-        fallback_reason: ProviderErrorClass | None = None,
+        fallback_reason: ProviderErrorClass | str | None = None,
     ) -> RoutingResult:
         if operation is Operation.DECISIVE_TEXT:
             status = AnalysisStatus.HOLD_REVIEW
@@ -269,7 +366,7 @@ class AIRouter:
             text=None,
             analysis_status=status,
             primary_provider=primary_provider,
-            fallback_used=len({item.provider for item in attempts if item.endpoint != "skipped"}) > 1,
+            fallback_used=any(attempt.fallback_from is not None for attempt in attempts),
             fallback_reason=fallback_reason,
             attempts=attempts,
         )

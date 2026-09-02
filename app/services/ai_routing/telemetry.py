@@ -7,7 +7,7 @@ from decimal import Decimal
 from typing import Any
 
 from .contracts import Operation, ProviderAttempt, ProviderErrorClass
-from .pricing import PRICING_VERSION, estimate_cost
+from .pricing import estimate_cost_details
 from .store import RoutingStore, default_store
 
 
@@ -19,10 +19,16 @@ def record_attempt(attempt: ProviderAttempt, *, store: RoutingStore | None = Non
     """Insert one idempotent attempt. Returns whether a row was inserted."""
     ledger = store or default_store()
     usage = attempt.usage
-    cost = attempt.estimated_cost_usd
-    if cost is None:
-        cost = estimate_cost(attempt.provider, attempt.model, usage)
-    pricing_version = attempt.pricing_version or (PRICING_VERSION if cost is not None else None)
+    estimate = estimate_cost_details(
+        attempt.provider,
+        attempt.model,
+        usage,
+        event_ts_utc=attempt.event_ts_utc,
+    )
+    cost = None if usage.mapping_status == "quarantined" else attempt.estimated_cost_usd
+    if cost is None and usage.mapping_status != "quarantined":
+        cost = estimate.cost
+    pricing_version = attempt.pricing_version or estimate.pricing_version
     values = (
         attempt.event_ts_utc,
         attempt.request_id,
@@ -42,6 +48,9 @@ def record_attempt(attempt: ProviderAttempt, *, store: RoutingStore | None = Non
         usage.output_tokens,
         usage.reasoning_tokens,
         usage.total_tokens,
+        usage.raw_total_tokens,
+        usage.mapping_version,
+        usage.mapping_status,
         str(cost) if cost is not None else None,
         pricing_version,
         int(usage.usage_estimated),
@@ -61,10 +70,11 @@ def record_attempt(attempt: ProviderAttempt, *, store: RoutingStore | None = Non
                 operation, attempt_number, selected, status, latency_ms,
                 max_output_tokens, input_tokens, cached_input_tokens,
                 uncached_input_tokens, output_tokens, reasoning_tokens,
-                total_tokens, estimated_cost_usd, pricing_version,
+                total_tokens, raw_total_tokens, usage_mapping_version,
+                usage_mapping_status, estimated_cost_usd, pricing_version,
                 usage_estimated, error_class, fallback_from, breaker_state,
                 cache_hit, symbol, market, caller_endpoint
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             values,
         )
