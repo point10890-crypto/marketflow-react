@@ -4,7 +4,7 @@ from app.services.mirofish import llm_client
 from engine.llm_analyzer import LLMAnalyzer, reset_api_status
 
 
-def test_mirofish_llm_client_falls_back_from_gemini_to_deepseek(monkeypatch):
+def test_mirofish_llm_client_ordinary_call_is_deepseek_first(monkeypatch):
     monkeypatch.setenv('MIROFISH_LLM_PROVIDER', 'gemini')
     monkeypatch.delenv('MIROFISH_LLM_PROVIDER_ORDER', raising=False)
     monkeypatch.delenv('MIROFISH_LLM_DISABLED', raising=False)
@@ -31,11 +31,11 @@ def test_mirofish_llm_client_falls_back_from_gemini_to_deepseek(monkeypatch):
 
     assert text == '{"ok": true}'
     assert provider == 'deepseek'
-    assert calls == ['gemini', 'deepseek']
+    assert calls == ['deepseek']
 
 
 def test_mirofish_llm_client_falls_back_to_openai_after_deepseek(monkeypatch):
-    monkeypatch.setenv('MIROFISH_LLM_PROVIDER_ORDER', 'gemini,deepseek,openai')
+    monkeypatch.setenv('MIROFISH_LLM_PROVIDER_ORDER', 'openai,deepseek')
     monkeypatch.delenv('MIROFISH_LLM_DISABLED', raising=False)
 
     calls = []
@@ -60,7 +60,7 @@ def test_mirofish_llm_client_falls_back_to_openai_after_deepseek(monkeypatch):
 
     assert text == 'openai-result'
     assert provider == 'openai'
-    assert calls == ['gemini', 'deepseek', 'openai']
+    assert calls == ['deepseek', 'openai']
 
 
 def test_mirofish_llm_client_can_disable_exhausted_gemini(monkeypatch):
@@ -87,6 +87,17 @@ def test_mirofish_llm_client_can_disable_exhausted_gemini(monkeypatch):
     assert text == 'deepseek-result'
     assert provider == 'deepseek'
     assert calls == ['deepseek']
+
+
+def test_mirofish_llm_client_all_disabled_does_not_rebuild_default_adapters(monkeypatch):
+    monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'deepseek,openai,gemini')
+
+    text, metadata = llm_client.generate_text_with_metadata('analyze')
+
+    assert text is None
+    assert metadata['provider'] == 'none'
+    assert metadata['attempts'] == []
+    assert metadata['failure_reason'] == 'all_providers_disabled'
 
 
 def test_mirofish_llm_metadata_records_secret_free_fallback(monkeypatch):
@@ -180,6 +191,40 @@ def test_deepseek_and_openai_json_mode_use_compatible_response_format(monkeypatc
         assert 'json' in kwargs['messages'][-1]['content'].lower()
 
 
+def test_legacy_helper_forwards_native_usage_to_central_metadata(monkeypatch):
+    class Usage:
+        prompt_tokens = 100
+        completion_tokens = 20
+        total_tokens = 120
+        prompt_tokens_details = {'cached_tokens': 25}
+        completion_tokens_details = {'reasoning_tokens': 7}
+
+    class Message:
+        content = 'ok'
+
+    class Response:
+        choices = [type('Choice', (), {'message': Message()})()]
+        usage = Usage()
+
+    class Completions:
+        @staticmethod
+        def create(**_kwargs):
+            return Response()
+
+    client = type('Client', (), {'chat': type('Chat', (), {'completions': Completions()})()})()
+    monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'openai,gemini')
+    monkeypatch.setattr(llm_client, 'get_deepseek_client', lambda: client)
+
+    _text, metadata = llm_client.generate_text_with_metadata('ordinary')
+
+    assert metadata['usage']['input_tokens'] == 100
+    assert metadata['usage']['cached_input_tokens'] == 25
+    assert metadata['usage']['output_tokens'] == 20
+    assert metadata['usage']['reasoning_tokens'] == 7
+    assert metadata['usage']['total_tokens'] == 120
+    assert metadata['estimated_cost_usd'] is not None
+
+
 def test_generation_metadata_collector_captures_run_calls(monkeypatch):
     monkeypatch.setenv('MIROFISH_LLM_PROVIDER_ORDER', 'deepseek')
     monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'openai,gemini')
@@ -192,6 +237,59 @@ def test_generation_metadata_collector_captures_run_calls(monkeypatch):
     assert len(calls) == 2
     assert all(call['provider'] == 'deepseek' for call in calls)
     assert all(call['success'] is True for call in calls)
+
+
+def test_explicit_decisive_operation_uses_central_policy_and_cap(monkeypatch):
+    monkeypatch.setenv('MIROFISH_LLM_PROVIDER_ORDER', 'openai,deepseek')
+    monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'gemini')
+    calls = []
+
+    def fake_deepseek(*_args, **kwargs):
+        calls.append(('deepseek', kwargs['max_tokens']))
+        return None
+
+    def fake_openai(*_args, **kwargs):
+        calls.append(('openai', kwargs['max_tokens']))
+        return 'reviewed'
+
+    monkeypatch.setattr(llm_client, '_generate_deepseek', fake_deepseek)
+    monkeypatch.setattr(llm_client, '_generate_openai', fake_openai)
+
+    text, metadata = llm_client.generate_text_with_metadata(
+        'decide',
+        operation='decisive_text',
+        max_tokens=4096,
+    )
+
+    assert text == 'reviewed'
+    assert calls == [('deepseek', 1200), ('openai', 1200)]
+    assert metadata['analysis_status'] == 'SUCCESS_FALLBACK'
+
+
+def test_legacy_metadata_additively_exposes_usage_cost_and_breaker(monkeypatch):
+    monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'gemini')
+    monkeypatch.setattr(llm_client, '_generate_deepseek', lambda *_a, **_k: 'ok')
+
+    _text, metadata = llm_client.generate_text_with_metadata('ordinary')
+
+    assert metadata.keys() >= {
+        'analysis_status', 'usage', 'estimated_cost_usd', 'breaker_state', 'attempts'
+    }
+    assert metadata['usage']['usage_estimated'] is True
+    assert metadata['usage']['input_tokens'] is None
+    assert metadata['estimated_cost_usd'] is None
+    assert metadata['breaker_state'] == 'closed'
+
+
+def test_generation_metadata_nested_usage_is_defensively_copied(monkeypatch):
+    monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'gemini')
+    monkeypatch.setattr(llm_client, '_generate_deepseek', lambda *_a, **_k: 'ok')
+
+    _text, metadata = llm_client.generate_text_with_metadata('ordinary')
+    metadata['attempts'][0]['usage']['input_tokens'] = 999
+
+    stored = llm_client.get_last_generation_metadata()
+    assert stored['attempts'][0]['usage']['input_tokens'] is None
 
 
 class FakeGrounding:

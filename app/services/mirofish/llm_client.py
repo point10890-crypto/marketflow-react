@@ -1,18 +1,12 @@
-"""Shared MiroFish LLM client with provider fallback.
+"""Shared MiroFish compatibility wrapper for central AI routing.
 
 The analysis pipeline must keep running when Gemini billing/quota is exhausted.
 This module is intentionally small and dependency-light so GraphRAG extraction,
 agent debate, CIO verdicts, auto-runners, and chat helpers can all share the
 same routing rule.
 
-Default order:
-    deepseek -> openai -> gemini
-
-If MIROFISH_LLM_PROVIDER=gemini is set for Gemini-first operation, the order is:
-    gemini -> deepseek -> openai
-
-Override with MIROFISH_LLM_PROVIDER_ORDER, for example:
-    MIROFISH_LLM_PROVIDER_ORDER=gemini,deepseek,openai
+Text operations use DeepSeek -> OpenAI. Vision uses Gemini -> OpenAI.
+Operation policy cannot be reordered by legacy provider-order settings.
 
 Disable a temporarily bad provider with:
     MIROFISH_LLM_DISABLED=gemini
@@ -22,11 +16,21 @@ from __future__ import annotations
 
 import logging
 import os
-import json
+import copy
 import time
 from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import Any, Callable, Iterator
+
+from app.services.ai_routing.contracts import Operation, ProviderErrorClass, RoutingRequest, TokenUsage
+from app.services.ai_routing.providers import (
+    AdapterResponse,
+    CallableAdapter,
+    ProviderCallError,
+    normalize_gemini_usage,
+    normalize_openai_usage,
+)
+from app.services.ai_routing.router import AIRouter
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +47,9 @@ SUPPORTED_PROVIDERS = ('deepseek', 'openai', 'gemini')
 # URLs with credentials, or exception messages.
 _provider_failure: ContextVar[dict[str, str]] = ContextVar(
     'mirofish_llm_provider_failure', default={}
+)
+_provider_usage: ContextVar[dict[str, TokenUsage]] = ContextVar(
+    'mirofish_llm_provider_usage', default={}
 )
 _last_generation_metadata: ContextVar[dict[str, Any] | None] = ContextVar(
     'mirofish_llm_generation_metadata', default=None
@@ -75,20 +82,14 @@ def get_last_generation_metadata() -> dict[str, Any] | None:
     metadata = _last_generation_metadata.get()
     if metadata is None:
         return None
-    return {
-        **metadata,
-        'attempts': [dict(attempt) for attempt in metadata.get('attempts', [])],
-    }
+    return copy.deepcopy(metadata)
 
 
 def _publish_metadata(metadata: dict[str, Any]) -> None:
-    _last_generation_metadata.set(metadata)
+    _last_generation_metadata.set(copy.deepcopy(metadata))
     collector = _generation_collector.get()
     if collector is not None:
-        collector.append({
-            **metadata,
-            'attempts': [dict(attempt) for attempt in metadata.get('attempts', [])],
-        })
+        collector.append(copy.deepcopy(metadata))
 
 
 @contextmanager
@@ -226,7 +227,8 @@ def _json_prompt(prompt: str, suffix: str) -> str:
 
 
 def _generate_deepseek(prompt: str, *, system: str | None, model_env: str | None,
-                       temperature: float, max_tokens: int, json_mode: bool) -> str | None:
+                       temperature: float, max_tokens: int, json_mode: bool,
+                       model_override: str | None = None) -> str | None:
     client = get_deepseek_client()
     if client is None:
         logger.warning('[llm_client] DEEPSEEK_API_KEY is not configured')
@@ -239,7 +241,7 @@ def _generate_deepseek(prompt: str, *, system: str | None, model_env: str | None
         prompt = _json_prompt(prompt, 'Respond only in valid JSON.')
     messages.append({'role': 'user', 'content': prompt})
     kwargs: dict[str, Any] = {
-        'model': deepseek_model(model_env),
+        'model': model_override or deepseek_model(model_env),
         'messages': messages,
         'temperature': temperature,
         'max_tokens': max_tokens,
@@ -249,6 +251,9 @@ def _generate_deepseek(prompt: str, *, system: str | None, model_env: str | None
         kwargs['response_format'] = {'type': 'json_object'}
     try:
         resp = client.chat.completions.create(**kwargs)
+        usage = dict(_provider_usage.get())
+        usage['deepseek'] = normalize_openai_usage(getattr(resp, 'usage', None))
+        _provider_usage.set(usage)
         return (resp.choices[0].message.content or '').strip() or None
     except Exception as exc:
         logger.warning('[llm_client] DeepSeek call failed: %s', type(exc).__name__)
@@ -257,7 +262,8 @@ def _generate_deepseek(prompt: str, *, system: str | None, model_env: str | None
 
 
 def _generate_openai(prompt: str, *, system: str | None, model_env: str | None,
-                     temperature: float, max_tokens: int, json_mode: bool) -> str | None:
+                     temperature: float, max_tokens: int, json_mode: bool,
+                     model_override: str | None = None) -> str | None:
     client = get_openai_client()
     if client is None:
         logger.warning('[llm_client] OPENAI_API_KEY is not configured')
@@ -269,7 +275,7 @@ def _generate_openai(prompt: str, *, system: str | None, model_env: str | None,
     if json_mode:
         prompt = _json_prompt(prompt, 'Respond only in valid JSON.')
     messages.append({'role': 'user', 'content': prompt})
-    model = openai_model(model_env)
+    model = model_override or openai_model(model_env)
     kwargs: dict[str, Any] = {'model': model, 'messages': messages}
     if model.startswith(('gpt-5', 'o1', 'o3', 'o4')):
         kwargs['max_completion_tokens'] = max_tokens
@@ -280,6 +286,9 @@ def _generate_openai(prompt: str, *, system: str | None, model_env: str | None,
         kwargs['response_format'] = {'type': 'json_object'}
     try:
         resp = client.chat.completions.create(**kwargs)
+        usage = dict(_provider_usage.get())
+        usage['openai'] = normalize_openai_usage(getattr(resp, 'usage', None))
+        _provider_usage.set(usage)
         return (resp.choices[0].message.content or '').strip() or None
     except Exception as exc:
         logger.warning('[llm_client] OpenAI call failed: %s', type(exc).__name__)
@@ -288,7 +297,8 @@ def _generate_openai(prompt: str, *, system: str | None, model_env: str | None,
 
 
 def _generate_gemini(prompt: str, *, system: str | None, model_env: str | None,
-                     temperature: float, max_tokens: int, json_mode: bool) -> str | None:
+                     temperature: float, max_tokens: int, json_mode: bool,
+                     model_override: str | None = None) -> str | None:
     api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
     if not api_key:
         logger.warning('[llm_client] GEMINI_API_KEY/GOOGLE_API_KEY is not configured')
@@ -312,10 +322,13 @@ def _generate_gemini(prompt: str, *, system: str | None, model_env: str | None,
     try:
         client = genai.Client(api_key=api_key)
         resp = client.models.generate_content(
-            model=gemini_model(model_env),
+            model=model_override or gemini_model(model_env),
             contents=prompt,
             config=gt.GenerateContentConfig(**config_kwargs),
         )
+        usage = dict(_provider_usage.get())
+        usage['gemini'] = normalize_gemini_usage(getattr(resp, 'usage_metadata', None))
+        _provider_usage.set(usage)
         return (resp.text or '').strip() or None
     except Exception as exc:
         logger.warning('[llm_client] Gemini call failed: %s', type(exc).__name__)
@@ -324,7 +337,8 @@ def _generate_gemini(prompt: str, *, system: str | None, model_env: str | None,
 
 
 def _call_provider(provider: str, prompt: str, *, system: str | None, model_env: str | None,
-                   temperature: float, max_tokens: int, json_mode: bool) -> str | None:
+                   temperature: float, max_tokens: int, json_mode: bool,
+                   model_override: str | None = None) -> str | None:
     calls: dict[str, ProviderCall] = {
         'deepseek': _generate_deepseek,
         'openai': _generate_openai,
@@ -337,7 +351,70 @@ def _call_provider(provider: str, prompt: str, *, system: str | None, model_env:
         temperature=temperature,
         max_tokens=max_tokens,
         json_mode=json_mode,
+        model_override=model_override,
     )
+
+
+def _error_class_for_legacy_failure(provider: str) -> ProviderErrorClass:
+    reason = _provider_failure.get().get(provider, '')
+    prefix = reason.split(':', 1)[0]
+    return {
+        'client_unavailable': ProviderErrorClass.CLIENT_UNAVAILABLE,
+        'invalid_json': ProviderErrorClass.INVALID_JSON,
+        'empty_response': ProviderErrorClass.EMPTY,
+    }.get(prefix, ProviderErrorClass.UNKNOWN if prefix else ProviderErrorClass.EMPTY)
+
+
+def _routing_adapters(model_env: str | None) -> dict[str, CallableAdapter]:
+    adapters: dict[str, CallableAdapter] = {}
+    disabled = disabled_providers()
+    for provider in SUPPORTED_PROVIDERS:
+        if provider in disabled:
+            continue
+
+        def call(*, request, model, max_output_tokens, _provider=provider):
+            text = _call_provider(
+                _provider,
+                request.prompt,
+                system=request.system,
+                model_env=model_env,
+                temperature=request.temperature,
+                max_tokens=max_output_tokens,
+                json_mode=request.json_mode,
+                model_override=model,
+            )
+            if text is None:
+                raise ProviderCallError(_error_class_for_legacy_failure(_provider))
+            return AdapterResponse(
+                text=text,
+                usage=_provider_usage.get().get(_provider, TokenUsage.unknown()),
+                endpoint='legacy.generate',
+            )
+
+        adapters[provider] = CallableAdapter(call, endpoint='legacy.generate')
+    return adapters
+
+
+def _legacy_failure_reason(error_class: ProviderErrorClass | str | None, status: str) -> str | None:
+    if status == 'success':
+        return None
+    value = error_class.value if isinstance(error_class, ProviderErrorClass) else error_class
+    if value == ProviderErrorClass.EMPTY.value:
+        return 'empty_response'
+    return str(value or status)
+
+
+def _usage_metadata(usage: TokenUsage) -> dict[str, Any]:
+    return {
+        'input_tokens': usage.input_tokens,
+        'cached_input_tokens': usage.cached_input_tokens,
+        'uncached_input_tokens': usage.uncached_input_tokens,
+        'output_tokens': usage.output_tokens,
+        'reasoning_tokens': usage.reasoning_tokens,
+        'total_tokens': usage.total_tokens,
+        'usage_estimated': usage.usage_estimated,
+        'mapping_version': usage.mapping_version,
+    }
 
 
 def generate_text_with_metadata(prompt: str, *, system: str | None = None,
@@ -345,92 +422,112 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
                                 temperature: float = 0.3,
                                 max_tokens: int = 4096,
                                 json_mode: bool = False,
+                                operation: Operation | str | None = None,
+                                run_id: str | None = None,
+                                request_id: str | None = None,
+                                caller_endpoint: str | None = None,
                                 ) -> tuple[str | None, dict[str, Any]]:
-    """Generate text plus secret-free provider/fallback diagnostics."""
-    order = provider_order()
+    """Generate through the central router and publish legacy-safe diagnostics."""
     started = time.perf_counter()
-    attempts: list[dict[str, Any]] = []
     _provider_failure.set({})
-    if not order:
-        logger.warning('[llm_client] every provider is disabled')
-        metadata = {
-            'provider': 'none', 'model': None, 'success': False,
-            'json_mode': json_mode, 'fallback_used': False,
-            'failure_reason': 'all_providers_disabled', 'attempts': attempts,
-            'latency_ms': round((time.perf_counter() - started) * 1000, 2),
+    _provider_usage.set({})
+    selected_operation = Operation(operation) if operation is not None else Operation.BULK_TEXT
+    adapters = _routing_adapters(model_env)
+    all_providers_disabled = not adapters
+    router = AIRouter(adapters=adapters)
+    request = RoutingRequest(
+        operation=selected_operation,
+        prompt=prompt,
+        system=system,
+        run_id=run_id,
+        request_id=request_id,
+        json_mode=json_mode,
+        max_output_tokens=max_tokens,
+        caller_endpoint=caller_endpoint or 'mirofish.llm_client',
+        temperature=temperature,
+    )
+    result = (
+        router.route_vision(request)
+        if selected_operation is Operation.VISION
+        else router.route_text(request)
+    )
+    attempts = [
+        {
+            'attempt': attempt.attempt_number,
+            'provider': attempt.provider,
+            'model': attempt.model,
+            'success': attempt.status == 'success',
+            'failure_reason': _legacy_failure_reason(attempt.error_class, attempt.status),
+            'latency_ms': attempt.latency_ms,
+            'usage': _usage_metadata(attempt.usage),
+            'estimated_cost_usd': (
+                str(attempt.estimated_cost_usd) if attempt.estimated_cost_usd is not None else None
+            ),
+            'pricing_version': attempt.pricing_version,
+            'breaker_state': attempt.breaker_state,
+            'status': attempt.status,
         }
-        _publish_metadata(metadata)
-        return None, metadata
-
-    failed: list[str] = []
-    for attempt_number, provider in enumerate(order, start=1):
-        attempt_started = time.perf_counter()
-        text = _call_provider(
-            provider,
-            prompt,
-            system=system,
-            model_env=model_env,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            json_mode=json_mode,
-        )
-        failure_reason = _provider_failure.get().get(provider)
-        if text and json_mode:
-            try:
-                json.loads(text)
-            except (TypeError, ValueError):
-                _safe_failure(provider, 'invalid_json')
-                failure_reason = 'invalid_json'
-                text = None
-        attempt = {
-            'attempt': attempt_number,
-            'provider': provider,
-            'model': _model_for(provider, model_env),
-            'success': bool(text),
-            'failure_reason': None if text else (failure_reason or 'empty_response'),
-            'latency_ms': round((time.perf_counter() - attempt_started) * 1000, 2),
-        }
-        attempts.append(attempt)
-        if text:
-            if failed:
-                logger.info('[llm_client] provider fallback succeeded: %s after %s', provider, failed)
-            metadata = {
-                'provider': provider, 'model': attempt['model'], 'success': True,
-                'json_mode': json_mode, 'fallback_used': bool(failed),
-                'failure_reason': None, 'attempts': attempts,
-                'latency_ms': round((time.perf_counter() - started) * 1000, 2),
-            }
-            _publish_metadata(metadata)
-            return text, metadata
-        failed.append(provider)
-
-    logger.warning('[llm_client] all providers failed in order: %s', order)
+        for attempt in result.attempts
+    ]
+    breaker_state = next(
+        (attempt['breaker_state'] for attempt in reversed(attempts) if attempt['success']),
+        attempts[-1]['breaker_state'] if attempts else 'closed',
+    )
     metadata = {
-        'provider': 'none', 'model': None, 'success': False,
-        'json_mode': json_mode, 'fallback_used': len(attempts) > 1,
-        'failure_reason': 'all_providers_failed', 'attempts': attempts,
+        'provider': result.actual_provider or 'none',
+        'model': result.model,
+        'success': result.text is not None,
+        'json_mode': json_mode,
+        'fallback_used': result.fallback_used,
+        'failure_reason': (
+            None
+            if result.text is not None
+            else (
+                'all_providers_disabled'
+                if all_providers_disabled
+                else _legacy_failure_reason(result.fallback_reason, 'failed')
+            )
+        ),
+        'attempts': attempts,
         'latency_ms': round((time.perf_counter() - started) * 1000, 2),
+        'analysis_status': result.analysis_status.value,
+        'primary_provider': result.primary_provider,
+        'actual_provider': result.actual_provider,
+        'usage': _usage_metadata(result.usage),
+        'estimated_cost_usd': (
+            str(result.estimated_cost_usd) if result.estimated_cost_usd is not None else None
+        ),
+        'breaker_state': breaker_state,
+        'numeric_validation': result.numeric_validation,
+        'evidence_validated': result.evidence_validated,
     }
     _publish_metadata(metadata)
-    return None, metadata
+    return result.text, metadata
 
 
 def generate_text_with_provider(prompt: str, *, system: str | None = None,
                                 model_env: str | None = None,
                                 temperature: float = 0.3,
                                 max_tokens: int = 4096,
-                                json_mode: bool = False) -> tuple[str | None, str]:
+                                json_mode: bool = False,
+                                operation: Operation | str | None = None,
+                                run_id: str | None = None,
+                                request_id: str | None = None,
+                                caller_endpoint: str | None = None) -> tuple[str | None, str]:
     """Generate text and return the provider that succeeded (legacy API)."""
     text, metadata = generate_text_with_metadata(
         prompt, system=system, model_env=model_env, temperature=temperature,
-        max_tokens=max_tokens, json_mode=json_mode,
+        max_tokens=max_tokens, json_mode=json_mode, operation=operation,
+        run_id=run_id, request_id=request_id, caller_endpoint=caller_endpoint,
     )
     return text, str(metadata['provider'])
 
 
 def generate_text(prompt: str, *, system: str | None = None, model_env: str | None = None,
                   temperature: float = 0.3, max_tokens: int = 4096,
-                  json_mode: bool = False) -> str | None:
+                  json_mode: bool = False, operation: Operation | str | None = None,
+                  run_id: str | None = None, request_id: str | None = None,
+                  caller_endpoint: str | None = None) -> str | None:
     """Generate plain text or JSON text with automatic provider fallback."""
     text, _provider = generate_text_with_provider(
         prompt,
@@ -439,5 +536,9 @@ def generate_text(prompt: str, *, system: str | None = None, model_env: str | No
         temperature=temperature,
         max_tokens=max_tokens,
         json_mode=json_mode,
+        operation=operation,
+        run_id=run_id,
+        request_id=request_id,
+        caller_endpoint=caller_endpoint,
     )
     return text
