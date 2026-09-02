@@ -53,6 +53,13 @@ describe('RenewalBanner', () => {
         expect(screen.getByRole('status')).toHaveTextContent('Pro 이용 기간이 3일 뒤 만료됩니다.');
     });
 
+    it('CTA links straight to the renewal payment page (plan-select current card is disabled)', () => {
+        authState.user = proExpiringSoon;
+        renderBanner();
+        const cta = screen.getByRole('link', { name: /갱신 신청/ });
+        expect(cta).toHaveAttribute('href', '/payment-request?plan=pro&renew=1');
+    });
+
     it('hides the Pro-expiry banner while the Pro clock is paused by an active AI Brain add-on', () => {
         authState.user = {
             ...proExpiringSoon,

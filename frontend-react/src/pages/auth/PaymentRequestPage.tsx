@@ -26,6 +26,8 @@ export default function PaymentRequestPage() {
 
     const rawPlan = searchParams.get('plan');
     const rawAibain = searchParams.get('aibain');
+    // renew=1: 활성 Pro 의 만료 전 갱신 (RenewalBanner 경로) — 백엔드 early_renewal 접수
+    const isRenewal = searchParams.get('renew') === '1';
     const plan: BillingPlan | null = planFromQuery(rawPlan, rawAibain);
     const selectedMeta = plan ? PLAN_PAYMENT_META[plan] : null;
 
@@ -66,11 +68,13 @@ export default function PaymentRequestPage() {
             const sameBaseTier = meta.tier === user.tier;
             const aiBrainAddonOnly = sameBaseTier && meta.includesAibain && !user.is_aibain_active;
             const tierUpgrade = user.tier === 'pro' && meta.tier === 'premium';
-            if (!aiBrainAddonOnly && !tierUpgrade) {
+            // 만료 전 갱신: 활성 Pro + 같은 tier + renew=1 (premium 은 무기한이라 해당 없음)
+            const earlyRenewal = isRenewal && sameBaseTier && meta.tier === 'pro' && !meta.includesAibain;
+            if (!aiBrainAddonOnly && !tierUpgrade && !earlyRenewal) {
                 navigate('/dashboard', { replace: true });
             }
         }
-    }, [user, token, plan, loading, navigate]);
+    }, [user, token, plan, loading, navigate, isRenewal]);
 
     // 입금자명 프리필 = 가입 이름
     useEffect(() => {
@@ -89,9 +93,17 @@ export default function PaymentRequestPage() {
         && meta.includesAibain
         && meta.tier === user.tier
         && !user.is_aibain_active;
-    const displayLabel = isAiBrainAddonOnly ? 'AI Brain 애드온' : meta.label;
+    const isEarlyRenewal = isRenewal
+        && user.status === 'approved'
+        && !user.is_pro_expired
+        && meta.tier === user.tier
+        && meta.tier === 'pro'
+        && !meta.includesAibain;
+    const displayLabel = isAiBrainAddonOnly ? 'AI Brain 애드온'
+        : isEarlyRenewal ? 'Pro 갱신 (만료 전)' : meta.label;
     const displayAmount = isAiBrainAddonOnly ? '40,000원' : meta.amount;
-    const displayPeriod = isAiBrainAddonOnly ? 'AI Brain 30일 갱신' : meta.period;
+    const displayPeriod = isAiBrainAddonOnly ? 'AI Brain 30일 갱신'
+        : isEarlyRenewal ? '승인 시 기존 만료일부터 +30일' : meta.period;
 
     const colorMap = {
         amber:    { ring: 'ring-amber-500/30',    bg: 'bg-amber-500/10',    text: 'text-amber-400',   btn: 'from-amber-500 to-orange-500',          btnText: 'text-black',  icon: 'fas fa-crown' },

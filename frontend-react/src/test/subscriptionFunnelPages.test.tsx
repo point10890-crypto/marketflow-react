@@ -267,6 +267,37 @@ describe('subscription acquisition funnel', () => {
         expect(mocks.auth.refreshUser).toHaveBeenCalledTimes(2);
     });
 
+    it('lets an active Pro through the payment guard with renew=1 and submits an early renewal', async () => {
+        mocks.auth.user = {
+            id: 84, email: 'active@example.test', name: '활성회원', role: 'user',
+            status: 'approved', tier: 'pro', is_pro_expired: false,
+            pro_expires_at: new Date(Date.now() + 5 * 86_400_000).toISOString(),
+        };
+        mocks.auth.token = 'active-token';
+
+        renderAt('/payment-request?plan=pro&renew=1', <PaymentRequestPage />, '/payment-request');
+
+        // 가드에 튕기지 않고 갱신 라벨이 보인다
+        expect(screen.getAllByText(/Pro 갱신 \(만료 전\)/).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/승인 시 기존 만료일부터 \+30일/).length).toBeGreaterThan(0);
+        expect(screen.queryByTestId('location')).toBeNull();
+
+        fireEvent.click(screen.getByRole('button', { name: /승인 신청/ }));
+        expect(await screen.findByTestId('location')).toHaveTextContent('/pending-approval');
+        expect(mocks.requestUpgrade).toHaveBeenCalledWith('pro', 'active-token', '활성회원', false);
+    });
+
+    it('still bounces an active Pro from the payment page without renew=1', async () => {
+        mocks.auth.user = {
+            id: 85, email: 'active2@example.test', name: '활성회원2', role: 'user',
+            status: 'approved', tier: 'pro', is_pro_expired: false,
+        };
+        mocks.auth.token = 'active-token';
+
+        renderAt('/payment-request?plan=pro', <PaymentRequestPage />, '/payment-request');
+        expect(await screen.findByTestId('location')).toHaveTextContent('/dashboard');
+    });
+
     it("maps the stale 'Already on ... tier' 400 to a refresh + dashboard instead of a dead-end error", async () => {
         mocks.auth.user = {
             id: 82, email: 'granted@example.test', name: '부여됨', role: 'user', status: 'pending', tier: null,
