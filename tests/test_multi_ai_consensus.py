@@ -58,6 +58,36 @@ def _build_screener_2way() -> MultiAIConsensusScreener:
     return MultiAIConsensusScreener()
 
 
+def test_shadow_flag_without_explicit_providers_records_not_run(monkeypatch):
+    monkeypatch.setenv("MULTI_AI_SHADOW_COMPARE", "1")
+    monkeypatch.delenv("MULTI_AI_INCLUDE_GEMINI", raising=False)
+    monkeypatch.delenv("MULTI_AI_INCLUDE_GROK", raising=False)
+    screener = MultiAIConsensusScreener()
+
+    class Primary:
+        model_name = "deepseek-v4-pro"
+
+        async def screen_candidates(self, _signals, **_kwargs):
+            return {"picks": [], "model": self.model_name}
+
+    screener.screeners[MODEL_DEEPSEEK] = Primary()
+    output = __import__("asyncio").run(
+        screener.screen_candidates([{"stock_code": "005930"}], run_id="shadow-run")
+    )
+
+    assert screener.shadow_screeners == {}
+    assert output["shadow_comparison"] == {
+        "status": "not_run",
+        "reason": "no_explicit_shadow_providers",
+        "compared": False,
+        "verdict_blended": False,
+        "models_attempted": [],
+    }
+    empty = __import__("asyncio").run(screener.screen_candidates([]))
+    assert empty["shadow_comparison"]["reason"] == "no_explicit_shadow_providers"
+    assert empty["shadow_comparison"]["compared"] is False
+
+
 # ───────────────────────────────────────────────────────────────────
 # Test 1: 3-of-3 intersection → consensus_strong, boost 2 levels
 # ───────────────────────────────────────────────────────────────────
@@ -213,10 +243,101 @@ def test_grok_empty_degrades_to_2way():
 def test_grok_disabled_via_env():
     s = _build_screener_2way()
     assert MODEL_GROK not in s.screeners
-    # 2026-09-02: 기본 투표자 Gemini → DeepSeek 교체 (Gemini 는 MULTI_AI_INCLUDE_GEMINI=1 옵트인)
+    # OpenAI는 DeepSeek logical slot 실패 시 중앙 router 안에서만 한 번 대체한다.
     assert MODEL_DEEPSEEK in s.screeners
-    assert MODEL_OPENAI in s.screeners
+    assert MODEL_OPENAI not in s.screeners
     assert MODEL_GEMINI not in s.screeners
+
+
+def test_openai_cannot_be_enabled_as_a_parallel_shadow_voter(monkeypatch):
+    """OpenAI is a failed-slot replacement, never another verdict path."""
+    monkeypatch.setenv("MULTI_AI_SHADOW_COMPARE", "1")
+    monkeypatch.setenv("MULTI_AI_SHADOW_INCLUDE_OPENAI", "1")
+    monkeypatch.setenv("MULTI_AI_INCLUDE_GEMINI", "0")
+    monkeypatch.setenv("MULTI_AI_INCLUDE_GROK", "0")
+
+    screener = MultiAIConsensusScreener()
+
+    assert MODEL_OPENAI not in screener.screeners
+    assert MODEL_OPENAI not in screener.shadow_screeners
+
+
+class _RoutedSlot:
+    client = True
+    model_name = "logical-deepseek-slot"
+
+    def __init__(self, result):
+        self.result = result
+        self.calls = []
+
+    async def screen_candidates(self, signals_data, *, run_id=None, request_id=None):
+        self.calls.append((signals_data, run_id, request_id))
+        return dict(self.result)
+
+
+@pytest.mark.asyncio
+async def test_routed_primary_slot_uses_stable_identity_and_shadow_never_blends_verdicts():
+    primary = _RoutedSlot({
+        "picks": [_pick("PRIMARY")],
+        "model": "deepseek-v4-flash",
+        "routing": {"actual_provider": "deepseek", "fallback_used": False},
+        "market_view": "primary",
+        "top_themes": ["primary-theme"],
+    })
+    shadow = _RoutedSlot({
+        "picks": [_pick("SHADOW")],
+        "model": "shadow-model",
+        "market_view": "shadow",
+        "top_themes": ["shadow-theme"],
+    })
+    screener = MultiAIConsensusScreener.__new__(MultiAIConsensusScreener)
+    screener.screeners = {MODEL_DEEPSEEK: primary}
+    screener.shadow_compare = True
+    screener.shadow_screeners = {MODEL_GEMINI: shadow}
+    screener.devil_advocate = None
+
+    out = await screener.screen_candidates(
+        [{"stock_code": "PRIMARY"}], run_id="jongga-run"
+    )
+
+    assert [pick["stock_code"] for pick in out["picks"]] == ["PRIMARY"]
+    assert out["consensus_method"] == "routed_primary_v1"
+    assert out["routing"]["actual_provider"] == "deepseek"
+    assert out["shadow_comparison"]["picks"] == ["SHADOW"]
+    assert "SHADOW" not in {pick["stock_code"] for pick in out["picks"]}
+    assert primary.calls[0][1:] == (
+        "jongga-run",
+        "jongga-run:multi-ai-primary",
+    )
+
+
+@pytest.mark.asyncio
+async def test_primary_routed_slot_has_no_shorter_outer_timeout(monkeypatch):
+    """The central provider deadlines own cancellation; to_thread must not outlive UI."""
+    primary = _RoutedSlot({
+        "picks": [],
+        "model": "deepseek-v4-flash",
+        "routing": {"actual_provider": "deepseek", "fallback_used": False},
+    })
+    screener = MultiAIConsensusScreener.__new__(MultiAIConsensusScreener)
+    screener.screeners = {MODEL_DEEPSEEK: primary}
+    screener.shadow_compare = False
+    screener.shadow_screeners = {}
+    screener.devil_advocate = None
+    monkeypatch.setattr(
+        "engine.llm_analyzer.asyncio.wait_for",
+        lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("central routed slot must not use an outer timeout")
+        ),
+    )
+
+    result = await screener.screen_candidates(
+        [{"stock_code": "005930"}], run_id="jongga-run"
+    )
+
+    assert result["consensus_method"] == "routed_primary_v1"
+    assert len(primary.calls) == 1
+    assert result["routing"]["actual_provider"] == "deepseek"
 
 
 # ───────────────────────────────────────────────────────────────────

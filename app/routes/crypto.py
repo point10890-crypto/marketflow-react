@@ -13,6 +13,8 @@ import logging
 import math
 import threading
 import subprocess
+from decimal import Decimal
+from uuid import uuid4
 from app.utils.atomic_json import write_json_atomic
 import traceback
 from datetime import datetime
@@ -22,6 +24,8 @@ from app.auth.decorators import pro_required, admin_required
 from app.utils.paths import BASE_DIR, DATA_DIR, CRYPTO_MARKET_DIR, CRYPTO_OUTPUT_DIR
 from app.utils.safety import safe_float, load_json_file
 from app.utils.freshness import attach_freshness
+from app.services.ai_routing.contracts import Operation, RoutingRequest, RoutingResult
+from app.services.ai_routing.router import route_text
 
 logger = logging.getLogger(__name__)
 
@@ -512,37 +516,101 @@ def list_lead_lag_charts():
 # Signal Analysis (GPT)
 # ═══════════════════════════════════════════════════════
 
+def _routing_metadata(
+    result: RoutingResult,
+    *,
+    run_id: str | None = None,
+    request_id: str | None = None,
+) -> dict:
+    usage = result.usage
+    first_attempt = result.attempts[0] if result.attempts else None
+    enum_value = lambda value: getattr(value, 'value', value)
+    return {
+        'run_id': run_id or (first_attempt.run_id if first_attempt else None),
+        'request_id': request_id or (
+            first_attempt.request_id if first_attempt else None
+        ),
+        'analysis_status': result.analysis_status.value,
+        'primary_provider': result.primary_provider,
+        'actual_provider': result.actual_provider,
+        'model': result.model,
+        'fallback_used': result.fallback_used,
+        'fallback_reason': enum_value(result.fallback_reason),
+        'retry_reason': enum_value(result.retry_reason),
+        'usage': {
+            'input_tokens': usage.input_tokens,
+            'cached_input_tokens': usage.cached_input_tokens,
+            'output_tokens': usage.output_tokens,
+            'reasoning_tokens': usage.reasoning_tokens,
+            'total_tokens': usage.total_tokens,
+            'usage_estimated': usage.usage_estimated,
+        },
+        'estimated_cost_usd': (
+            str(result.estimated_cost_usd)
+            if isinstance(result.estimated_cost_usd, Decimal)
+            else result.estimated_cost_usd
+        ),
+        'attempt_count': len(result.attempts),
+    }
+
 @crypto_bp.route('/signal-analysis', methods=['POST'])
 @pro_required
 def crypto_signal_analysis():
     """LLM으로 VCP 시그널 분석 (Pro only)"""
     try:
-        from openai import OpenAI
         data = request.json
         if not data or 'symbol' not in data:
             return jsonify({'error': 'symbol required'}), 400
 
-        symbol = data['symbol']
-        score = data.get('score', 0)
-        pivot_high = data.get('pivot_high', 0)
-        vol_ratio = data.get('vol_ratio', 0)
-        current_price = data.get('current_price', 0)
-        signal_type = data.get('signal_type', 'VCP')
+        symbol = str(data['symbol']).strip().upper()[:30]
+        if not symbol:
+            return jsonify({'error': 'symbol required'}), 400
+        score = safe_float(data.get('score', 0))
+        pivot_high = safe_float(data.get('pivot_high', 0))
+        vol_ratio = safe_float(data.get('vol_ratio', 0))
+        current_price = safe_float(data.get('current_price', 0))
+        signal_type = str(data.get('signal_type', 'VCP')).strip()[:40]
         dist = ((current_price / pivot_high - 1) * 100) if pivot_high > 0 and current_price > 0 else 0
 
         prompt = f"""암호화폐 VCP 분석. {symbol} / {signal_type} / 점수 {score}/100 / 피봇 ${pivot_high} / 현재 ${current_price} ({dist:+.1f}%) / 거래량 {vol_ratio:.2f}x
 1. 패턴 해석 2. 피봇 분석 3. 리스크/리워드 4. 주의사항. 한국어 200자 이내."""
 
-        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-        resp = client.chat.completions.create(
-            model='gpt-4o-mini',
-            messages=[{'role': 'system', 'content': '암호화폐 기술적 분석 전문가.'}, {'role': 'user', 'content': prompt}],
-            max_tokens=600, temperature=0.3,
+        logical_id = str(uuid4())
+        routed = route_text(
+            RoutingRequest(
+                operation=Operation.BULK_TEXT,
+                prompt=prompt,
+                system='암호화폐 기술적 분석 전문가.',
+                run_id=logical_id,
+                request_id=logical_id,
+                symbol=symbol,
+                market='CRYPTO',
+                max_output_tokens=600,
+                caller_endpoint='/api/crypto/signal-analysis',
+                temperature=0.3,
+            )
         )
-        return jsonify({'analysis': resp.choices[0].message.content, 'symbol': symbol, 'model': 'gpt-4o-mini'})
+        routing = _routing_metadata(
+            routed,
+            run_id=logical_id,
+            request_id=logical_id,
+        )
+        if not routed.text:
+            return jsonify({
+                'error': 'AI analysis unavailable',
+                'symbol': symbol,
+                'analysis_status': routed.analysis_status.value,
+                'routing': routing,
+            }), 503
+        return jsonify({
+            'analysis': routed.text,
+            'symbol': symbol,
+            'model': routed.model,
+            'routing': routing,
+        })
     except Exception as e:
-        traceback.print_exc()
-        return jsonify({'error': str(e)}), 500
+        logger.error('[Crypto] signal analysis failed: %s', type(e).__name__)
+        return jsonify({'error': 'AI analysis unavailable'}), 500
 
 
 # ═══════════════════════════════════════════════════════

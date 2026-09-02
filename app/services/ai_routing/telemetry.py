@@ -59,6 +59,7 @@ def record_attempt(attempt: ProviderAttempt, *, store: RoutingStore | None = Non
         int(usage.usage_estimated),
         _value(attempt.error_class),
         attempt.fallback_from,
+        _value(attempt.fallback_reason),
         attempt.breaker_state,
         int(attempt.cache_hit),
         attempt.symbol,
@@ -75,9 +76,9 @@ def record_attempt(attempt: ProviderAttempt, *, store: RoutingStore | None = Non
                 uncached_input_tokens, output_tokens, reasoning_tokens,
                 total_tokens, raw_total_tokens, usage_mapping_version,
                 usage_mapping_status, estimated_cost_usd, pricing_version,
-                usage_estimated, error_class, fallback_from, breaker_state,
+                usage_estimated, error_class, fallback_from, fallback_reason, breaker_state,
                 cache_hit, symbol, market, caller_endpoint
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             values,
         )

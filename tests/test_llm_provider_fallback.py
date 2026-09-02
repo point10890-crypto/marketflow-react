@@ -1,8 +1,12 @@
 import asyncio
 import openai
+from datetime import datetime, timezone
+from decimal import Decimal
 
 from app.services.ai_routing import store as routing_store
+from app.services.ai_routing.contracts import AnalysisStatus, RoutingResult, TokenUsage
 from app.services.mirofish import llm_client
+from engine import llm_analyzer as llm_analyzer_module
 from engine.llm_analyzer import LLMAnalyzer, reset_api_status
 
 
@@ -427,88 +431,281 @@ def test_generation_metadata_nested_usage_is_defensively_copied(monkeypatch):
     assert stored['attempts'][0]['usage']['input_tokens'] is None
 
 
-class FakeGrounding:
-    def __init__(self, result):
-        self.result = result
-
-    async def search_and_analyze(self, *_args, **_kwargs):
-        return dict(self.result)
-
-
-class FakeProvider:
-    def __init__(self, result):
-        self.result = result
-        self.calls = 0
-
-    async def analyze_news(self, *_args, **_kwargs):
-        self.calls += 1
-        return dict(self.result)
-
-
-class ShouldNotCall:
-    async def analyze_news(self, *_args, **_kwargs):
-        raise AssertionError('provider should not be called')
-
-
-class ShouldNotCallGrounding:
-    async def search_and_analyze(self, *_args, **_kwargs):
-        raise AssertionError('grounding should not be called')
-
-
 def _bare_analyzer():
     reset_api_status()
     analyzer = LLMAnalyzer.__new__(LLMAnalyzer)
-    analyzer.xai = ShouldNotCall()
+    analyzer.grounding = None
     return analyzer
 
 
-def test_jongga_news_analysis_deepseek_is_primary():
-    """2026-09-02 순위 변경 — DeepSeek 이 1순위, 성공 시 다른 provider 는 호출 자체가 없다."""
-    analyzer = _bare_analyzer()
-    analyzer.grounding = ShouldNotCallGrounding()
-    analyzer.deepseek = FakeProvider({'score': 2, 'reason': 'DART 수주와 거래대금 증가', 'themes': ['수주']})
-    analyzer.claude = ShouldNotCall()
-    analyzer.openai = ShouldNotCall()
+def _routed_news(*, provider='deepseek', fallback=False, text=None):
+    return RoutingResult(
+        text=text or '{"score":2,"reason":"확인된 수주","themes":["수주"]}',
+        analysis_status=(
+            AnalysisStatus.SUCCESS_FALLBACK if fallback else AnalysisStatus.SUCCESS_PRIMARY
+        ),
+        primary_provider='deepseek',
+        actual_provider=provider,
+        model='deepseek-v4-flash' if provider == 'deepseek' else 'gpt-5.5',
+        fallback_used=fallback,
+        fallback_reason='timeout' if fallback else None,
+        evidence_validated=True,
+        usage=TokenUsage(input_tokens=40, output_tokens=20),
+        estimated_cost_usd=Decimal('0.001'),
+    )
 
-    result = asyncio.run(analyzer.analyze_news_sentiment('테스트종목', [{'title': '수주', 'summary': '계약'}]))
+
+def _attributed_news():
+    return [{
+        'title': '수주',
+        'summary': '계약',
+        'source': '연합뉴스',
+        'url': 'https://example.test/news/1',
+        'published_at': datetime.now(timezone.utc).isoformat(),
+    }]
+
+
+def test_jongga_news_analysis_routes_deepseek_first_with_source_attribution(monkeypatch):
+    """The central ordinary slot owns DS -> OA and keeps deterministic sources."""
+    analyzer = _bare_analyzer()
+    seen = []
+    monkeypatch.setattr(
+        llm_analyzer_module,
+        'route_text',
+        lambda request: seen.append(request) or _routed_news(),
+    )
+
+    result = asyncio.run(
+        analyzer.analyze_news_sentiment(
+            '테스트종목',
+            _attributed_news(),
+            run_id='jongga-run',
+            request_id='jongga-run:005930:news',
+        )
+    )
 
     assert result['source'] == 'deepseek'
     assert result['score'] == 2
     assert result['themes'] == ['수주']
+    assert result['buy_evidence_eligible'] is True
+    assert result['non_grounded_summary'] is False
+    assert result['citations'] == ['https://example.test/news/1']
+    assert result['routing']['actual_provider'] == 'deepseek'
+    request = seen[0]
+    assert request.operation.value == 'bulk_text'
+    assert request.run_id == 'jongga-run'
+    assert request.request_id == 'jongga-run:005930:news'
 
 
-def test_jongga_news_analysis_falls_deepseek_then_openai():
-    """DeepSeek 실패 → OpenAI(보조)가 2순위로 응답. Grounding/Claude 는 그 뒤라 미호출."""
+def test_jongga_news_analysis_exposes_openai_only_as_failed_slot_replacement(monkeypatch):
     analyzer = _bare_analyzer()
-    analyzer.grounding = ShouldNotCallGrounding()
-    analyzer.deepseek = FakeProvider({'score': 0, 'reason': 'No DeepSeek Client', 'themes': []})
-    analyzer.claude = ShouldNotCall()
-    analyzer.openai = FakeProvider({'score': 0, 'reason': '확인된 호재가 제한적입니다.', 'themes': []})
+    monkeypatch.setattr(
+        llm_analyzer_module,
+        'route_text',
+        lambda request: _routed_news(
+            provider='openai',
+            fallback=True,
+            text='{"score":1,"reason":"제한적","themes":[]}',
+        ),
+    )
 
-    result = asyncio.run(analyzer.analyze_news_sentiment('테스트종목', [{'title': '중립', 'summary': '중립'}]))
+    result = asyncio.run(analyzer.analyze_news_sentiment('테스트종목', _attributed_news()))
 
     assert result['source'] == 'openai_fallback'
-    assert result['score'] == 0
-    assert analyzer.deepseek.calls == 1
-    assert analyzer.openai.calls == 1
+    assert result['routing']['fallback_used'] is True
+    assert result['routing']['fallback_reason'] == 'timeout'
 
 
-def test_jongga_news_analysis_reaches_claude_after_grounding():
-    """DeepSeek·OpenAI·Grounding 모두 실패해도 체인이 Claude 까지 이어진다."""
+def test_jongga_unattributed_text_uses_rule_before_any_non_grounded_llm(monkeypatch):
+    """Source-less prose must never become standalone BUY evidence."""
     analyzer = _bare_analyzer()
-    analyzer.grounding = FakeGrounding({
-        'score': 0,
-        'reason': 'No Gemini API Key',
-        'themes': [],
-        'source': 'none',
-    })
-    analyzer.deepseek = FakeProvider({'score': 0, 'reason': 'No DeepSeek Client', 'themes': []})
-    analyzer.openai = FakeProvider({'score': 0, 'reason': 'No OpenAI Client', 'themes': []})
-    analyzer.claude = FakeProvider({'score': 1, 'reason': '중립적 재료', 'themes': []})
+    monkeypatch.setattr(
+        llm_analyzer_module,
+        'route_text',
+        lambda request: (_ for _ in ()).throw(AssertionError('LLM must not run')),
+    )
 
-    result = asyncio.run(analyzer.analyze_news_sentiment('테스트종목', [{'title': '중립', 'summary': '중립'}]))
+    result = asyncio.run(
+        analyzer.analyze_news_sentiment(
+            '테스트종목',
+            [{'title': '대규모 수주', 'summary': '계약 성공'}],
+        )
+    )
 
-    assert result['source'] == 'claude_fallback'
-    assert analyzer.deepseek.calls == 1
-    assert analyzer.openai.calls == 1
-    assert analyzer.claude.calls == 1
+    assert result['source'] == 'keyword_fallback'
+    assert result['score'] <= 1
+    assert result['buy_evidence_eligible'] is False
+    assert result['non_grounded_summary'] is True
+
+
+def test_jongga_dart_text_without_freshness_cannot_become_buy_evidence(monkeypatch):
+    """A source name alone is not a substitute for dated/citable evidence."""
+    analyzer = _bare_analyzer()
+    monkeypatch.setattr(
+        llm_analyzer_module,
+        'route_text',
+        lambda request: (_ for _ in ()).throw(AssertionError('LLM must not run')),
+    )
+
+    result = asyncio.run(
+        analyzer.analyze_news_sentiment(
+            '테스트종목',
+            [],
+            dart_text='대규모 공급계약 체결',
+        )
+    )
+
+    assert result['score'] <= 1
+    assert result['buy_evidence_eligible'] is False
+    assert result['non_grounded_summary'] is True
+    assert result['source_evidence'][0]['source'] == 'DART'
+
+
+def test_jongga_attribution_and_freshness_must_exist_on_same_record(monkeypatch):
+    analyzer = _bare_analyzer()
+    monkeypatch.setattr(
+        llm_analyzer_module,
+        'route_text',
+        lambda request: (_ for _ in ()).throw(AssertionError('LLM must not run')),
+    )
+    split_evidence = [
+        {
+            'title': 'URL만 있음',
+            'summary': '계약',
+            'source': '연합뉴스',
+            'url': 'https://example.test/news/1',
+            'published_at': '',
+        },
+        {
+            'title': '날짜만 있음',
+            'summary': '계약',
+            'source': '연합뉴스',
+            'url': '',
+            'published_at': datetime.now(timezone.utc).isoformat(),
+        },
+    ]
+
+    result = asyncio.run(analyzer.analyze_news_sentiment('테스트종목', split_evidence))
+
+    assert result['buy_evidence_eligible'] is False
+    assert result['analysis_status'] == 'DEGRADED'
+
+
+def test_jongga_stale_news_cannot_enter_llm_buy_evidence(monkeypatch):
+    analyzer = _bare_analyzer()
+    monkeypatch.setattr(
+        llm_analyzer_module,
+        'route_text',
+        lambda request: (_ for _ in ()).throw(AssertionError('LLM must not run')),
+    )
+    stale = [{
+        'title': '오래된 계약',
+        'summary': '과거 자료',
+        'source': '연합뉴스',
+        'url': 'https://example.test/old',
+        'published_at': '2020-01-01T00:00:00+00:00',
+    }]
+
+    result = asyncio.run(analyzer.analyze_news_sentiment('테스트종목', stale))
+
+    assert result['buy_evidence_eligible'] is False
+    assert result['analysis_status'] == 'DEGRADED'
+
+
+def test_jongga_unknown_source_sentinel_is_not_verified_evidence(monkeypatch):
+    analyzer = _bare_analyzer()
+    monkeypatch.setattr(
+        llm_analyzer_module,
+        'route_text',
+        lambda request: (_ for _ in ()).throw(AssertionError('LLM must not run')),
+    )
+    sentinel = [{
+        'title': '출처 미상',
+        'summary': '계약',
+        'source': 'Unknown',
+        'url': 'https://example.test/news',
+        'published_at': datetime.now(timezone.utc).isoformat(),
+    }]
+
+    result = asyncio.run(analyzer.analyze_news_sentiment('테스트종목', sentinel))
+
+    assert result['buy_evidence_eligible'] is False
+    assert result['analysis_status'] == 'DEGRADED'
+
+
+def test_naive_korean_news_timestamp_is_interpreted_as_kst():
+    record = {
+        'source': '연합뉴스',
+        'url': 'https://example.test/news',
+        'published_at': '2026-09-03T09:00:00',
+    }
+
+    assert llm_analyzer_module._fresh_attributed_news_record(
+        record,
+        now=datetime(2026, 9, 3, 0, 0, tzinfo=timezone.utc),
+    ) is True
+
+
+def test_grounding_without_verified_freshness_cannot_alone_create_buy_evidence():
+    class Grounding:
+        model_name = 'gemini-2.5-flash'
+
+        async def search_and_analyze(self, *_args, **_kwargs):
+            return {
+                'score': 3,
+                'reason': '검색 결과',
+                'themes': ['테마'],
+                'source': 'gemini_grounding',
+                'citations': ['https://example.test/result'],
+            }
+
+    reset_api_status()
+    analyzer = LLMAnalyzer.__new__(LLMAnalyzer)
+    analyzer.grounding = Grounding()
+
+    result = asyncio.run(analyzer.analyze_news_sentiment('테스트종목', []))
+
+    assert result['source'] == 'gemini_grounding'
+    assert result['score'] <= 1
+    assert result['buy_evidence_eligible'] is False
+    assert result['analysis_status'] == 'DEGRADED'
+
+
+def test_specialized_grounding_keeps_parent_run_identity_and_usage():
+    class Grounding:
+        model_name = 'gemini-2.5-flash'
+
+        async def search_and_analyze(self, *_args, **_kwargs):
+            return {
+                'score': 2,
+                'reason': '검증된 검색 결과',
+                'themes': ['테마'],
+                'source': 'gemini_grounding',
+                'citations': ['https://example.test/result'],
+                'freshness_verified': True,
+                'usage': {
+                    'input_tokens': 30,
+                    'cached_input_tokens': 0,
+                    'output_tokens': 10,
+                    'reasoning_tokens': 0,
+                    'total_tokens': 40,
+                    'usage_estimated': False,
+                },
+            }
+
+    reset_api_status()
+    analyzer = LLMAnalyzer.__new__(LLMAnalyzer)
+    analyzer.grounding = Grounding()
+
+    result = asyncio.run(
+        analyzer.analyze_news_sentiment(
+            '테스트종목',
+            [],
+            run_id='jongga-run',
+            request_id='jongga-run:005930:news',
+        )
+    )
+
+    assert result['routing']['run_id'] == 'jongga-run'
+    assert result['routing']['request_id'] == 'jongga-run:005930:news'
+    assert result['routing']['usage']['total_tokens'] == 40

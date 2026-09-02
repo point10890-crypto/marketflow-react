@@ -68,6 +68,7 @@ class RoutingStore:
                         usage_estimated INTEGER NOT NULL,
                         error_class TEXT,
                         fallback_from TEXT,
+                        fallback_reason TEXT,
                         breaker_state TEXT NOT NULL,
                         cache_hit INTEGER NOT NULL,
                         symbol TEXT,
@@ -129,6 +130,7 @@ class RoutingStore:
                     "raw_total_tokens": "INTEGER",
                     "usage_mapping_version": "TEXT NOT NULL DEFAULT 'legacy-unknown'",
                     "usage_mapping_status": "TEXT NOT NULL DEFAULT 'unverified'",
+                    "fallback_reason": "TEXT",
                 }
                 for name, declaration in migrations.items():
                     if name not in columns:

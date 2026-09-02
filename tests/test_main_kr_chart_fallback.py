@@ -8,10 +8,15 @@ gpt-4o-mini 로 넘어가 통째로 드롭됐다. 100종목 중 37종목만 분�
 from __future__ import annotations
 
 import asyncio
+import importlib
 import sys
 import types
+from decimal import Decimal
 
 import pytest
+
+from app.services.ai_routing.contracts import AnalysisStatus, RoutingResult, TokenUsage
+from app.services.ai_routing.validation import validate_response
 
 
 @pytest.fixture()
@@ -51,75 +56,332 @@ def _run(mk, calls, tickers):
     async def go():
         out = []
         for ticker in tickers:
-            out.append(await mk.analyze_chart(None, ticker, ticker, "chart.png", sem))
+            out.append(
+                await mk.analyze_chart(
+                    None,
+                    ticker,
+                    ticker,
+                    "chart.png",
+                    sem,
+                    run_id="chart-run",
+                    candidate_rank=len(out) + 1,
+                )
+            )
         return out
 
     return asyncio.run(go())
 
 
-def test_single_gemini_parse_failure_does_not_disable_gemini(mk, monkeypatch):
-    """한 종목의 일시적 파싱 실패가 나머지 종목의 Gemini 분석을 막으면 안 된다."""
-    seen: list[str] = []
-
-    def fake_gemini(client, ticker, name, image_path):
-        seen.append(ticker)
-        if ticker == "009150.KS" and seen.count(ticker) <= mk.GEMINI_ITEM_RETRIES + 1:
-            return None  # 이 종목만 재시도까지 전부 실패
-        return {"signal": "BUY", "confidence": 70}
-
-    def fail_openai(*args, **kwargs):
-        return None  # 폴백은 계정 권한 문제로 항상 실패한다고 가정
-
-    monkeypatch.setattr(mk, "_call_gemini", fake_gemini)
-    monkeypatch.setattr(mk, "_call_openai_vision", fail_openai)
-
-    results = _run(mk, None, ["005930.KS", "009150.KS", "000660.KS", "035420.KS"])
-
-    assert results[1] is None, "실패한 종목 자체는 드롭되는 게 맞다"
-    assert [r["signal"] for r in (results[0], results[2], results[3])] == ["BUY"] * 3, (
-        "1건 실패 후 후속 종목이 Gemini 로 정상 분석돼야 한다"
+def _routing_result(text, *, provider="gemini", fallback=False):
+    return RoutingResult(
+        text=text,
+        analysis_status=(
+            AnalysisStatus.SUCCESS_FALLBACK if fallback else AnalysisStatus.SUCCESS_PRIMARY
+        ),
+        primary_provider="gemini",
+        actual_provider=provider,
+        model="model-used",
+        fallback_used=fallback,
+        fallback_reason="timeout" if fallback else None,
+        evidence_validated=True,
+        usage=TokenUsage(input_tokens=20, output_tokens=10),
+        estimated_cost_usd=Decimal("0.001"),
     )
 
 
-def test_gemini_disabled_only_after_consecutive_failures(mk, monkeypatch):
-    """연속 실패가 임계치를 넘으면 그때는 Gemini 호출을 멈춘다(키 소진 대응)."""
-    calls: list[str] = []
+def test_analyze_chart_uses_central_vision_and_preserves_business_shape(
+    mk, monkeypatch, tmp_path
+):
+    """Central routing must stay additive to the historical chart payload."""
+    image = tmp_path / "chart.png"
+    image.write_bytes(b"fake-png")
+    seen = []
 
-    monkeypatch.setattr(mk, "_call_gemini",
-                        lambda client, ticker, name, path: calls.append(ticker) or None)
-    monkeypatch.setattr(mk, "_call_openai_vision",
-                        lambda ticker, name, path: {"signal": "HOLD", "confidence": 50})
+    def fake_route(request, **_kwargs):
+        seen.append(request)
+        return _routing_result(
+            '{"signal":"BUY","confidence":77,"reasons":["근거"]}',
+            provider="gemini",
+        )
 
-    tickers = [f"{i:06d}.KS" for i in range(mk.GEMINI_FAILURE_THRESHOLD + 5)]
-    results = _run(mk, None, tickers)
+    monkeypatch.setattr(mk, "route_vision", fake_route)
 
-    assert all(r is not None for r in results), "폴백이 살아있으면 결과는 나와야 한다"
-    attempted = len(set(calls))
-    assert attempted == mk.GEMINI_FAILURE_THRESHOLD, (
-        f"연속 {mk.GEMINI_FAILURE_THRESHOLD}종목 실패 후 Gemini 시도를 멈춰야 한다 "
-        f"(실제 {attempted}종목 시도)"
+    result = asyncio.run(
+        mk.analyze_chart(
+            None,
+            "005930.KS",
+            "삼성전자",
+            str(image),
+            asyncio.Semaphore(1),
+            run_id="chart-run",
+            candidate_rank=1,
+        )
     )
 
+    request = seen[0]
+    assert request.operation.value == "vision"
+    assert request.run_id == "chart-run"
+    assert request.request_id == "chart-run:005930.KS"
+    assert request.max_output_tokens == 768
+    assert request.openai_fallback_allowed is True
+    assert request.images[0].data == b"fake-png"
+    assert result["signal"] == "BUY"
+    assert result["종목코드"] == "005930"
+    assert result["종목명"] == "삼성전자"
+    assert result["시장"] == "코스피"
+    assert result["routing"]["actual_provider"] == "gemini"
+    assert result["routing"]["usage"]["total_tokens"] == 30
 
-def test_gemini_success_resets_failure_streak(mk, monkeypatch):
-    """중간에 성공하면 연속 실패 카운터가 초기화돼 래치가 트립되지 않는다."""
-    state = {"n": 0}
 
-    def flaky(client, ticker, name, image_path):
-        state["n"] += 1
-        # 실패/성공을 번갈아 — 연속 실패는 절대 임계치에 못 미친다
-        return None if state["n"] % 2 else {"signal": "BUY", "confidence": 60}
+def test_only_top_five_candidates_are_openai_fallback_eligible(mk, monkeypatch, tmp_path):
+    image = tmp_path / "chart.png"
+    image.write_bytes(b"fake-png")
+    requests = []
 
-    monkeypatch.setattr(mk, "_call_gemini", flaky)
-    monkeypatch.setattr(mk, "_call_openai_vision", lambda *a, **k: None)
+    def fake_route(request, **_kwargs):
+        requests.append(request)
+        return _routing_result(None)
 
-    tickers = [f"{i:06d}.KS" for i in range(mk.GEMINI_FAILURE_THRESHOLD * 3)]
-    _run(mk, None, tickers)
+    monkeypatch.setattr(mk, "route_vision", fake_route)
 
-    assert mk.gemini_is_available(), "간헐적 실패로 Gemini 가 꺼지면 안 된다"
+    async def go():
+        semaphore = asyncio.Semaphore(1)
+        for rank in range(1, 8):
+            await mk.analyze_chart(
+                None,
+                f"{rank:06d}.KS",
+                f"종목{rank}",
+                str(image),
+                semaphore,
+                run_id="same-run",
+                candidate_rank=rank,
+            )
+
+    asyncio.run(go())
+
+    assert [request.openai_fallback_allowed for request in requests] == [
+        True, True, True, True, True, False, False
+    ]
+
+
+def test_unranked_legacy_caller_cannot_bypass_openai_top_five_cap(
+    mk, monkeypatch, tmp_path
+):
+    image = tmp_path / "chart.png"
+    image.write_bytes(b"fake-png")
+    requests = []
+    monkeypatch.setattr(
+        mk,
+        "route_vision",
+        lambda request, **_kwargs: requests.append(request) or _routing_result(None),
+    )
+
+    asyncio.run(
+        mk.analyze_chart(
+            None,
+            "005930.KS",
+            "삼성전자",
+            str(image),
+            asyncio.Semaphore(1),
+            run_id="legacy-unranked-run",
+        )
+    )
+
+    assert requests[0].openai_fallback_allowed is False
+
+
+def test_vision_batch_admits_only_first_twenty_ranked_candidates(mk):
+    chart_map = {f"{rank:06d}.KS": f"chart-{rank}.png" for rank in range(1, 26)}
+
+    admitted = mk._ranked_vision_candidates(chart_map)
+
+    assert len(admitted) == 20
+    assert admitted[0][0] == "000001.KS"
+    assert admitted[-1][0] == "000020.KS"
+
+
+def test_vision_failure_keeps_secret_free_unavailable_metadata(mk, monkeypatch, tmp_path):
+    image = tmp_path / "chart.png"
+    image.write_bytes(b"fake-png")
+    monkeypatch.setattr(
+        mk,
+        "route_vision",
+        lambda request, **_kwargs: RoutingResult(
+            text=None,
+            analysis_status=AnalysisStatus.FAILED_TECHNICAL,
+            primary_provider="gemini",
+            fallback_used=True,
+            fallback_reason="authentication",
+        ),
+    )
+
+    result = asyncio.run(
+        mk.analyze_chart(
+            None,
+            "005930.KS",
+            "삼성전자",
+            str(image),
+            asyncio.Semaphore(1),
+            run_id="chart-run",
+            candidate_rank=1,
+        )
+    )
+
+    assert result == {
+        "종목코드": "005930",
+        "종목명": "삼성전자",
+        "시장": "코스피",
+        "image_analysis_status": "unavailable",
+        "routing": {
+            "run_id": "chart-run",
+            "request_id": "chart-run:005930.KS",
+            "analysis_status": "FAILED_TECHNICAL",
+            "primary_provider": "gemini",
+            "actual_provider": None,
+            "model": None,
+            "fallback_used": True,
+            "fallback_reason": "authentication",
+            "retry_reason": None,
+            "usage": {
+                "input_tokens": None,
+                "cached_input_tokens": None,
+                "output_tokens": None,
+                "reasoning_tokens": None,
+                "total_tokens": None,
+                "usage_estimated": True,
+            },
+            "estimated_cost_usd": None,
+            "attempt_count": 0,
+            "attempts": [],
+        },
+    }
+
+
+def test_summary_artifact_preserves_terminal_vision_status_and_routing(
+    mk, monkeypatch
+):
+    monkeypatch.setattr(mk.pd.DataFrame, "to_csv", lambda *_args, **_kwargs: None)
+    unavailable = {
+        "종목코드": "005930",
+        "종목명": "삼성전자",
+        "시장": "코스피",
+        "image_analysis_status": "unavailable",
+        "routing": {
+            "run_id": "chart-run",
+            "request_id": "chart-run:005930.KS",
+            "analysis_status": "FAILED_TECHNICAL",
+            "primary_provider": "gemini",
+            "actual_provider": None,
+            "model": None,
+            "fallback_used": True,
+            "fallback_reason": "authentication",
+            "usage": {"total_tokens": None},
+            "estimated_cost_usd": None,
+        },
+    }
+
+    frame = mk.summarize_results([unavailable])
+    record = frame.iloc[0].to_dict()
+
+    assert record["image_analysis_status"] == "unavailable"
+    assert record["ai_analysis_status"] == "FAILED_TECHNICAL"
+    assert record["ai_primary_provider"] == "gemini"
+    assert record["ai_fallback_used"] is True
+    assert record["ai_fallback_reason"] == "authentication"
+    assert record["ai_run_id"] == "chart-run"
+    assert record["ai_request_id"] == "chart-run:005930.KS"
+
+
+@pytest.mark.parametrize(
+    "provider_text",
+    [
+        '```json\n{"signal":"HOLD","confidence":61,"reasons":["steady"]}\n```',
+        '{"signal":"HOLD","confidence":61,"reasons":["steady"]',
+    ],
+)
+def test_chart_local_json_repair_happens_before_central_validation(
+    mk, monkeypatch, tmp_path, provider_text
+):
+    image = tmp_path / "chart.png"
+    image.write_bytes(b"fake-png")
+
+    def validating_route(request, **_kwargs):
+        validation = validate_response(provider_text, request)
+        assert validation.valid is True
+        return _routing_result(provider_text)
+
+    monkeypatch.setattr(mk, "route_vision", validating_route)
+
+    result = asyncio.run(
+        mk.analyze_chart(
+            None,
+            "005930.KS",
+            "삼성전자",
+            str(image),
+            asyncio.Semaphore(1),
+            run_id="chart-repair-run",
+            candidate_rank=6,
+        )
+    )
+
+    assert result is not None
+    assert result["signal"] == "HOLD"
 
 
 def test_openai_fallback_uses_supported_model_default(mk):
     """계정에 없는 gpt-4o-mini 를 하드코딩하면 폴백이 항상 403 이다."""
     assert mk.OPENAI_VISION_MODEL != "gpt-4o-mini"
     assert mk.OPENAI_VISION_MODEL, "폴백 모델명은 환경변수로 교체 가능해야 한다"
+
+
+def test_displayed_vision_model_uses_same_env_as_central_policy(mk, monkeypatch):
+    monkeypatch.setenv("AI_GEMINI_VISION_MODEL", "gemini-vision-explicit")
+
+    reloaded = importlib.reload(mk)
+
+    assert reloaded.MODEL == "gemini-vision-explicit"
+
+
+def test_buy_candidate_batch_passes_one_run_and_global_candidate_ranks(
+    mk, monkeypatch
+):
+    import importlib
+    import pandas as pd
+
+    script = importlib.import_module("scripts.screen_buy_candidates")
+    monkeypatch.setattr(sys.modules["google.genai"], "Client", lambda **_kwargs: object())
+    monkeypatch.setattr(mk, "render_chart", lambda *_a, **_k: "chart.png")
+    seen = []
+
+    async def fake_analyze(_client, ticker, _name, _path, _semaphore, **kwargs):
+        seen.append((ticker, kwargs["run_id"], kwargs["candidate_rank"]))
+        return {"signal": "HOLD"}
+
+    monkeypatch.setattr(mk, "analyze_chart", fake_analyze)
+    frame = pd.DataFrame({
+        "date": pd.date_range("2026-01-01", periods=60),
+        "Open": [1] * 60,
+        "High": [2] * 60,
+        "Low": [1] * 60,
+        "Close": [2] * 60,
+        "Volume": [100] * 60,
+    })
+    batch = [
+        (f"{rank:06d}", f"{rank:06d}.KS", f"종목{rank}")
+        for rank in range(1, 8)
+    ]
+    prices = {code: frame for code, _ticker, _name in batch}
+
+    results = asyncio.run(
+        script.analyze_batch(
+            batch,
+            prices,
+            concurrency=2,
+            run_id="buy-screen-run",
+            rank_offset=0,
+        )
+    )
+
+    assert len(results) == 7  # Gemini primary remains available to every candidate.
+    assert {run_id for _ticker, run_id, _rank in seen} == {"buy-screen-run"}
+    assert [rank for _ticker, _run_id, rank in seen] == list(range(1, 8))

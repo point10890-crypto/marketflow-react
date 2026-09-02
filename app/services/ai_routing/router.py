@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+import math
+import os
 import random
 import time
 from collections import OrderedDict
@@ -14,7 +16,7 @@ from threading import Event, Lock, Thread
 from uuid import uuid4
 
 from .breaker import CircuitBreaker
-from .budget import BudgetManager, BudgetReservation
+from .budget import BudgetLimits, BudgetManager, BudgetReservation
 from .contracts import (
     AnalysisStatus,
     Operation,
@@ -23,6 +25,7 @@ from .contracts import (
     RoutingRequest,
     RoutingResult,
     TokenUsage,
+    VisionImage,
 )
 from .policy import policy_for
 from .pricing import CostEstimate, estimate_cost_details
@@ -40,6 +43,102 @@ _TRANSIENT = {
     ProviderErrorClass.SERVER_ERROR,
 }
 _MAX_FLIGHTS = 2_048
+VISION_BUDGET_POOL = "vision"
+_DEFAULT_VISION_INPUT_TOKENS = 100_000
+_DEFAULT_VISION_OUTPUT_TOKENS = 6_000
+_UNKNOWN_VISION_IMAGE_TOKENS = 8_192
+_MAX_VISION_IMAGE_TOKENS = 8_192
+_DEFAULT_VISION_PAYLOAD_BYTES = 20 * 1024 * 1024
+
+
+def _bounded_env_int(name: str, default: int, *, minimum: int, maximum: int) -> int:
+    try:
+        value = int(os.getenv(name, str(default)))
+    except (TypeError, ValueError):
+        value = default
+    return max(minimum, min(maximum, value))
+
+
+def vision_budget_limits() -> BudgetLimits:
+    """Dedicated atomic cap for the five ranked OpenAI Vision fallbacks."""
+    return BudgetLimits(
+        max_calls=_bounded_env_int(
+            "AI_OPENAI_VISION_MAX_CALLS", 5, minimum=1, maximum=5
+        ),
+        max_input_tokens=_bounded_env_int(
+            "AI_OPENAI_VISION_MAX_INPUT_TOKENS",
+            _DEFAULT_VISION_INPUT_TOKENS,
+            minimum=10_000,
+            maximum=1_000_000,
+        ),
+        max_output_tokens=_bounded_env_int(
+            "AI_OPENAI_VISION_MAX_OUTPUT_TOKENS",
+            _DEFAULT_VISION_OUTPUT_TOKENS,
+            minimum=768,
+            maximum=50_000,
+        ),
+        # Vision has its own pool; admitting the fifth ranked hold does not
+        # consume the decisive-text reserve in the automatic pool.
+        low_priority_cutoff=1.0,
+    )
+
+
+def _vision_payload_limit_bytes() -> int:
+    return _bounded_env_int(
+        "AI_VISION_MAX_PAYLOAD_BYTES",
+        _DEFAULT_VISION_PAYLOAD_BYTES,
+        minimum=64 * 1024,
+        maximum=100 * 1024 * 1024,
+    )
+
+
+def _vision_payload_bytes(request: RoutingRequest) -> int:
+    return sum(
+        len(image.data)
+        if isinstance(image, VisionImage)
+        else len(image)
+        if isinstance(image, (bytes, bytearray))
+        else 0
+        for image in request.images
+    )
+
+
+def _vision_image_token_bound(image: VisionImage) -> int:
+    """Conservative cross-model image-token bound from dimensions/detail.
+
+    The bound covers both the 512px high-detail tile family and capped 32px
+    patch families with a deliberately conservative multiplier. Compressed
+    bytes are guarded separately and never treated as tokens.
+    """
+    width = image.width_px
+    height = image.height_px
+    if width is None or height is None:
+        return _UNKNOWN_VISION_IMAGE_TOKENS
+    if image.detail == "low":
+        return 1_024
+
+    # High-detail tile family: fit into 2048 square, then make the short side
+    # at most 768 before counting 512px tiles.
+    scale = min(1.0, 2048.0 / max(width, height))
+    scaled_width = max(1, math.ceil(width * scale))
+    scaled_height = max(1, math.ceil(height * scale))
+    short_side = min(scaled_width, scaled_height)
+    if short_side > 768:
+        short_scale = 768.0 / short_side
+        scaled_width = max(1, math.ceil(scaled_width * short_scale))
+        scaled_height = max(1, math.ceil(scaled_height * short_scale))
+    tile_bound = 85 + 170 * (
+        math.ceil(scaled_width / 512) * math.ceil(scaled_height / 512)
+    )
+
+    # Patch-family inputs cap the effective patch count. A 4x multiplier is a
+    # conservative upper bound across supported image-input model families.
+    patch_count = min(1_536, math.ceil(width / 32) * math.ceil(height / 32))
+    patch_bound = patch_count * 4
+    return min(
+        _MAX_VISION_IMAGE_TOKENS,
+        max(1_024, tile_bound, patch_bound),
+    )
 
 
 @dataclass
@@ -128,6 +227,7 @@ class _PermitHeartbeat:
 @dataclass
 class _BudgetFinalizer:
     reservation: BudgetReservation
+    budget: BudgetManager
     heartbeat: _PermitHeartbeat | None = None
     openai_called: bool = False
     openai_usage: TokenUsage | None = None
@@ -163,10 +263,12 @@ def estimate_reservation_input_tokens(request: RoutingRequest) -> int:
     text_tokens = sum(len(part.encode("utf-8")) for part in text_parts) + 64
     image_tokens = 0
     for image in request.images:
-        if isinstance(image, (bytes, bytearray)):
-            image_tokens += max(2_048, (len(image) + 2) // 3)
+        if isinstance(image, VisionImage):
+            image_tokens += _vision_image_token_bound(image)
+        elif isinstance(image, (bytes, bytearray)):
+            image_tokens += _UNKNOWN_VISION_IMAGE_TOKENS
         else:
-            image_tokens += 2_048
+            image_tokens += _UNKNOWN_VISION_IMAGE_TOKENS
     return text_tokens + image_tokens
 
 
@@ -176,9 +278,16 @@ def reserve_openai_fallback(
 ) -> BudgetReservation:
     """Hold one provider fallback allowance before a worker is submitted."""
     policy = policy_for(request.operation)
-    if "openai" not in policy.providers:
+    if "openai" not in policy.providers or not request.openai_fallback_allowed:
         return BudgetReservation(True)
-    manager = budget or BudgetManager()
+    manager = budget or (
+        BudgetManager(
+            limits=vision_budget_limits(),
+            pool=VISION_BUDGET_POOL,
+        )
+        if Operation(request.operation) is Operation.VISION
+        else BudgetManager()
+    )
     max_output_tokens = policy.max_output_tokens
     if request.max_output_tokens is not None:
         max_output_tokens = min(max_output_tokens, max(1, request.max_output_tokens))
@@ -232,6 +341,7 @@ class AIRouter:
         adapters: dict[str, ProviderAdapter] | None = None,
         *,
         budget: BudgetManager | None = None,
+        vision_budget: BudgetManager | None = None,
         breaker: CircuitBreaker | None = None,
         store: RoutingStore | None = None,
         retry_sleeper=time.sleep,
@@ -242,6 +352,15 @@ class AIRouter:
         self.store = store or default_store()
         self.adapters = build_default_adapters() if adapters is None else adapters
         self.budget = budget or BudgetManager(self.store)
+        self.vision_budget = vision_budget or (
+            budget
+            if budget is not None
+            else BudgetManager(
+                self.store,
+                limits=vision_budget_limits(),
+                pool=VISION_BUDGET_POOL,
+            )
+        )
         self.breaker = breaker or CircuitBreaker(self.store)
         adapter_deadlines = [
             float(adapter.request_timeout_seconds)
@@ -353,6 +472,7 @@ class AIRouter:
                 budget_finalized = False
                 try:
                     budget_finalized = self._finish_budget(
+                        finalizer.budget,
                         finalizer.reservation,
                         finalizer.openai_called,
                         finalizer.openai_usage,
@@ -410,6 +530,26 @@ class AIRouter:
 
     def _route_owned(self, request: RoutingRequest) -> RoutingResult:
         policy = policy_for(request.operation)
+        if (
+            policy.operation is Operation.VISION
+            and _vision_payload_bytes(request) > _vision_payload_limit_bytes()
+        ):
+            return self._failed_result(
+                policy.operation,
+                policy.providers[0],
+                (),
+                ProviderErrorClass.PAYLOAD_TOO_LARGE,
+            )
+        budget_manager = (
+            self.vision_budget
+            if policy.operation is Operation.VISION
+            else self.budget
+        )
+        providers = tuple(
+            provider
+            for provider in policy.providers
+            if provider != "openai" or request.openai_fallback_allowed
+        )
         request_id = request.request_id or ""
         run_id = request.run_id or request_id
         max_output_tokens = policy.max_output_tokens
@@ -423,19 +563,19 @@ class AIRouter:
                 "permit_lease_renewal_failed",
             )
         reservation = BudgetReservation(True, acquired_by_caller=True)
-        if "openai" in policy.providers:
+        if "openai" in providers:
             if request.reservation_id:
-                reservation = self.budget.claim(
+                reservation = budget_manager.claim(
                     request.reservation_id, run_id=run_id, request_id=request_id,
                     owner_token=request.reservation_owner_token,
                     input_tokens=estimate_reservation_input_tokens(request),
                     output_tokens=max_output_tokens,
                 )
             else:
-                reservation = reserve_openai_fallback(request, budget=self.budget)
+                reservation = reserve_openai_fallback(request, budget=budget_manager)
                 if reservation.approved and reservation.acquired_by_caller:
-                    _ACTIVE_BUDGET.set(_BudgetFinalizer(reservation))
-                    reservation = self.budget.claim(
+                    _ACTIVE_BUDGET.set(_BudgetFinalizer(reservation, budget_manager))
+                    reservation = budget_manager.claim(
                         reservation.reservation_id,
                         run_id=run_id,
                         request_id=request_id,
@@ -444,6 +584,19 @@ class AIRouter:
                         output_tokens=max_output_tokens,
                     )
             if not reservation.approved:
+                if policy.operation is Operation.VISION:
+                    # OpenAI is only a paid recovery path. Exhausting its
+                    # dedicated permit must not suppress Gemini (or a verified
+                    # DeepSeek Vision hop), so continue the same logical
+                    # request with that provider removed and no extra call.
+                    return self._route_owned(
+                        replace(
+                            request,
+                            openai_fallback_allowed=False,
+                            reservation_id=None,
+                            reservation_owner_token=None,
+                        )
+                    )
                 self._signal_permit_abort(request)
                 return self._failed_result(
                     policy.operation,
@@ -459,10 +612,10 @@ class AIRouter:
                     (),
                     "duplicate_request",
                 )
-            finalizer = _BudgetFinalizer(reservation)
+            finalizer = _BudgetFinalizer(reservation, budget_manager)
             _ACTIVE_BUDGET.set(finalizer)
             try:
-                permit_alive = self.budget.renew(
+                permit_alive = budget_manager.renew(
                     reservation.reservation_id,
                     owner_token=reservation.owner_token,
                 )
@@ -480,7 +633,7 @@ class AIRouter:
                     "permit_renewal_failed",
                 )
             heartbeat = _PermitHeartbeat(
-                self.budget,
+                budget_manager,
                 str(reservation.reservation_id),
                 str(reservation.owner_token),
                 interval_seconds=openai_permit_heartbeat_seconds(),
@@ -499,14 +652,20 @@ class AIRouter:
         attempts: list[ProviderAttempt] = []
         primary_failure_reason: ProviderErrorClass | str | None = None
         primary_retry_reason: ProviderErrorClass | str | None = None
+        previous_provider: str | None = None
+        previous_failure_reason: ProviderErrorClass | str | None = None
         attempt_number = 0
-        for provider_index, provider in enumerate(policy.providers):
+        for provider_index, provider in enumerate(providers):
+            provider_failure_reason: ProviderErrorClass | str | None = None
             model = policy.models[provider]
             model_tier = "decisive" if policy.operation is Operation.DECISIVE_TEXT else "fast"
             adapter = self.adapters.get(provider)
             if adapter is None:
+                provider_failure_reason = ProviderErrorClass.CLIENT_UNAVAILABLE
                 if provider_index == 0 and primary_failure_reason is None:
-                    primary_failure_reason = ProviderErrorClass.CLIENT_UNAVAILABLE
+                    primary_failure_reason = provider_failure_reason
+                previous_provider = provider
+                previous_failure_reason = provider_failure_reason
                 continue
             provider_tries = 0
             while provider_tries < 2:
@@ -544,6 +703,7 @@ class AIRouter:
                     attempt_number += 1
                     if provider_index == 0:
                         primary_failure_reason = ProviderErrorClass.BREAKER_OPEN
+                    provider_failure_reason = ProviderErrorClass.BREAKER_OPEN
                     skipped = self._skipped_attempt(
                         request,
                         provider,
@@ -551,7 +711,8 @@ class AIRouter:
                         attempt_number,
                         max_output_tokens,
                         ProviderErrorClass.BREAKER_OPEN,
-                        policy.providers[0] if provider_index > 0 else None,
+                        previous_provider if provider_index > 0 else None,
+                        previous_failure_reason if provider_index > 0 else None,
                     )
                     attempts.append(skipped)
                     try:
@@ -591,7 +752,7 @@ class AIRouter:
                     finalizer = _ACTIVE_BUDGET.get()
                     if finalizer is not None:
                         try:
-                            permit_alive = self.budget.renew(
+                            permit_alive = budget_manager.renew(
                                 finalizer.reservation.reservation_id,
                                 owner_token=finalizer.reservation.owner_token,
                             )
@@ -682,6 +843,8 @@ class AIRouter:
                     primary_failure_reason = error_class
                     if error_class in _TRANSIENT and provider_tries < 2:
                         primary_retry_reason = error_class
+                if not successful:
+                    provider_failure_reason = error_class
                 if breaker_persistence_failed:
                     breaker_state = "persistence_error"
                 else:
@@ -711,7 +874,10 @@ class AIRouter:
                     estimated_cost_usd=estimate.cost,
                     pricing_version=estimate.pricing_version,
                     error_class=error_class,
-                    fallback_from=policy.providers[0] if provider_index > 0 else None,
+                    fallback_from=previous_provider if provider_index > 0 else None,
+                    fallback_reason=(
+                        previous_failure_reason if provider_index > 0 else None
+                    ),
                     breaker_state=breaker_state,
                     symbol=request.symbol,
                     market=request.market,
@@ -752,6 +918,8 @@ class AIRouter:
                 if error_class is ProviderErrorClass.RATE_LIMIT:
                     delay = min(self.max_retry_delay, max(0.0, float(self.retry_delay())))
                     self.retry_sleeper(delay)
+            previous_provider = provider
+            previous_failure_reason = provider_failure_reason
 
         return self._failed_result(
             policy.operation,
@@ -792,20 +960,21 @@ class AIRouter:
 
     def _finish_budget(
         self,
+        budget: BudgetManager,
         reservation: BudgetReservation,
         openai_called: bool,
         openai_usage: TokenUsage | None,
         openai_cost_usd: Decimal | None,
     ) -> bool:
         if openai_called:
-            return self.budget.settle(
+            return budget.settle(
                 reservation.reservation_id,
                 openai_usage or TokenUsage.unknown(),
                 actual_cost_usd=openai_cost_usd,
             )
         return (
-            self.budget.release_claimed(reservation.reservation_id)
-            or self.budget.release(
+            budget.release_claimed(reservation.reservation_id)
+            or budget.release(
                 reservation.reservation_id, owner_token=reservation.owner_token,
             )
         )
@@ -819,6 +988,7 @@ class AIRouter:
         max_output_tokens: int,
         error_class: ProviderErrorClass,
         fallback_from: str | None,
+        fallback_reason: ProviderErrorClass | str | None,
     ) -> ProviderAttempt:
         return ProviderAttempt(
             request_id=request.request_id or "",
@@ -832,6 +1002,7 @@ class AIRouter:
             max_output_tokens=max_output_tokens,
             error_class=error_class,
             fallback_from=fallback_from,
+            fallback_reason=fallback_reason,
             breaker_state="open",
             symbol=request.symbol,
             market=request.market,

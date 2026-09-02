@@ -30,10 +30,18 @@ def _path_value(document: Any, path: str) -> Any:
 def validate_response(text: str | None, request: RoutingRequest) -> ValidationResult:
     if not text or not text.strip():
         return ValidationResult(False, ProviderErrorClass.EMPTY)
+    normalized_text = text
+    if request.response_normalizer is not None:
+        try:
+            normalized_text = request.response_normalizer(text)
+        except Exception:
+            normalized_text = None
+        if not normalized_text or not normalized_text.strip():
+            return ValidationResult(False, ProviderErrorClass.INVALID_JSON)
     parsed: Any = None
     if request.json_mode or request.expected_numbers:
         try:
-            parsed = json.loads(text)
+            parsed = json.loads(normalized_text)
         except (TypeError, ValueError):
             return ValidationResult(False, ProviderErrorClass.INVALID_JSON)
     if request.expected_numbers:

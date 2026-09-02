@@ -10,13 +10,133 @@ import re
 import asyncio
 import logging
 import httpx
+import hashlib
 from google import genai
 from google.genai import types as genai_types
 from typing import List, Dict, Optional
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+from decimal import Decimal
+from urllib.parse import urlsplit
+from uuid import uuid4
+from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 
+from app.services.ai_routing.contracts import (
+    Operation,
+    ProviderErrorClass,
+    RoutingRequest,
+    RoutingResult,
+)
+from app.services.ai_routing.router import route_text
+from app.services.ai_routing.providers import normalize_gemini_usage
+
 logger = logging.getLogger(__name__)
+
+_KST = ZoneInfo("Asia/Seoul")
+
+
+def _enum_value(value):
+    return getattr(value, "value", value)
+
+
+def _routing_metadata(
+    result: RoutingResult,
+    *,
+    run_id: str | None = None,
+    request_id: str | None = None,
+) -> Dict:
+    usage = result.usage
+    first_attempt = result.attempts[0] if result.attempts else None
+    resolved_run_id = run_id or (
+        first_attempt.run_id if first_attempt is not None else None
+    )
+    resolved_request_id = request_id or (
+        first_attempt.request_id if first_attempt is not None else None
+    )
+    return {
+        "run_id": resolved_run_id,
+        "request_id": resolved_request_id,
+        "analysis_status": result.analysis_status.value,
+        "primary_provider": result.primary_provider,
+        "actual_provider": result.actual_provider,
+        "model": result.model,
+        "fallback_used": result.fallback_used,
+        "fallback_reason": _enum_value(result.fallback_reason),
+        "retry_reason": _enum_value(result.retry_reason),
+        "usage": {
+            "input_tokens": usage.input_tokens,
+            "cached_input_tokens": usage.cached_input_tokens,
+            "output_tokens": usage.output_tokens,
+            "reasoning_tokens": usage.reasoning_tokens,
+            "total_tokens": usage.total_tokens,
+            "usage_estimated": usage.usage_estimated,
+        },
+        "estimated_cost_usd": (
+            str(result.estimated_cost_usd)
+            if isinstance(result.estimated_cost_usd, Decimal)
+            else result.estimated_cost_usd
+        ),
+        "attempt_count": len(result.attempts),
+    }
+
+
+def _news_response_validator(payload) -> ProviderErrorClass | None:
+    if not isinstance(payload, dict):
+        return ProviderErrorClass.INVALID_JSON
+    score = payload.get("score")
+    if isinstance(score, bool) or not isinstance(score, (int, float)) or not 0 <= score <= 3:
+        return ProviderErrorClass.INVALID_JSON
+    if not isinstance(payload.get("reason"), str):
+        return ProviderErrorClass.INVALID_JSON
+    if not isinstance(payload.get("themes"), list):
+        return ProviderErrorClass.INVALID_JSON
+    return None
+
+
+def _parse_json_object(text: str | None) -> Dict | None:
+    if not text:
+        return None
+    try:
+        payload = json.loads(text)
+    except (TypeError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _valid_http_url(value: object) -> bool:
+    try:
+        parsed = urlsplit(str(value or ""))
+    except (TypeError, ValueError):
+        return False
+    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+
+
+def _fresh_attributed_news_record(
+    record: Dict,
+    *,
+    now: datetime | None = None,
+) -> bool:
+    """Require source, citation, and recent timestamp on the same record."""
+    source = str(record.get("source") or "").strip()
+    if source.casefold() in {"", "unknown", "none", "n/a", "na", "미상", "알 수 없음"}:
+        return False
+    if not _valid_http_url(record.get("url")):
+        return False
+    published_text = str(record.get("published_at") or "").strip()
+    if not published_text:
+        return False
+    try:
+        published = datetime.fromisoformat(published_text.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    if published.tzinfo is None:
+        # Korean news collectors yield naive local timestamps.  Interpret
+        # them as KST before comparing in UTC; treating them as UTC can make a
+        # current article appear to be in the future.
+        published = published.replace(tzinfo=_KST)
+    reference = now or datetime.now(timezone.utc)
+    age = reference.astimezone(timezone.utc) - published.astimezone(timezone.utc)
+    return -timedelta(hours=1) <= age <= timedelta(days=7)
 
 # 환경변수 로드
 load_dotenv()
@@ -161,17 +281,38 @@ JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."], "news_summ
 
             data["source"] = "gemini_grounding"
             data["citations"] = citations
+            raw_usage = resp_data.get("usageMetadata") or {}
+            usage = normalize_gemini_usage({
+                "prompt_token_count": raw_usage.get("promptTokenCount"),
+                "cached_content_token_count": raw_usage.get("cachedContentTokenCount", 0),
+                "candidates_token_count": raw_usage.get("candidatesTokenCount"),
+                "thoughts_token_count": raw_usage.get("thoughtsTokenCount", 0),
+                "total_token_count": raw_usage.get("totalTokenCount"),
+            })
+            data["usage"] = {
+                "input_tokens": usage.input_tokens,
+                "cached_input_tokens": usage.cached_input_tokens,
+                "output_tokens": usage.output_tokens,
+                "reasoning_tokens": usage.reasoning_tokens,
+                "total_tokens": usage.total_tokens,
+                "usage_estimated": usage.usage_estimated,
+            }
             return data
 
         except Exception as e:
             error_msg = str(e).lower()
-            print(f"[ERROR] Gemini Grounding Failed: {e}")
+            print(f"[ERROR] Gemini Grounding Failed: {type(e).__name__}")
 
             if 'rate' in error_msg or 'limit' in error_msg or '429' in error_msg or 'quota' in error_msg or 'resource' in error_msg:
                 await _mark_unavailable('gemini_grounding', 'Rate Limit')
                 print("[WARN] Gemini Grounding Rate Limit - 임시 비활성화")
 
-            return {"score": 0, "reason": f"Grounding Error: {e}", "themes": [], "source": "none"}
+            return {
+                "score": 0,
+                "reason": f"Grounding Error: {type(e).__name__}",
+                "themes": [],
+                "source": "none",
+            }
 
 class OpenAIAnalyzer:
     """OpenAI GPT를 이용한 뉴스 종합 분석 (Gemini Fallback)"""
@@ -252,7 +393,7 @@ class GeminiAnalyzer:
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
         if self.api_key:
             self.client = genai.Client(api_key=self.api_key)
-            self.model_name = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+            self.model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
         else:
             self.client = None
             self.model_name = None
@@ -556,24 +697,15 @@ JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."]}}"""
 
 
 class LLMAnalyzer:
-    """통합 뉴스 분석 오케스트레이터 (DeepSeek -> OpenAI -> Gemini Grounding -> Claude -> xAI -> Fallback)
+    """Source-bounded news analysis with one centrally owned DS -> OA slot.
 
-    6중 API 폴백 시스템 (2026-09-02 순위 변경 — Gemini 크레딧 소진 재발로 DeepSeek 주력):
-    1. DeepSeek V4 (주력, 최저가) - 실패 시 OpenAI 로 폴백
-    2. OpenAI (보조) - 실패 시 Gemini Grounding 으로 폴백
-    3. Gemini + Google Search Grounding (검색+분석 통합) - 크레딧 있을 때만 성공
-    4. Claude (분석) - Rate Limit 시 xAI로 폴백
-    5. xAI Grok (분석) - Rate Limit 시 키워드 분석으로 폴백
-    6. Keyword (최종 폴백)
+    Gemini Search Grounding remains a specialized source acquisition path when
+    no stored source packet exists.  It is never silently substituted by an
+    ungrounded multi-provider chain.
     """
 
     def __init__(self):
         self.grounding = GeminiGroundingClient()
-        self.gemini = GeminiAnalyzer()
-        self.deepseek = DeepSeekAnalyzer()
-        self.claude = ClaudeAnalyzer()
-        self.openai = OpenAIAnalyzer()
-        self.xai = XAIAnalyzer()
 
     def get_api_status(self) -> Dict:
         """현재 API 상태 반환"""
@@ -625,80 +757,194 @@ class LLMAnalyzer:
         )
         return not any(marker in reason for marker in failure_markers)
 
-    async def analyze_news_sentiment(self, stock_name: str, news_items: List[Dict] = None, dart_text: str = "") -> Dict:
-        """뉴스 감성 분석 통합 프로세스 (5중 폴백 시스템) + DART 공시 정보"""
-        analysis = None
-        citations = []
-        news_context = ""
+    async def analyze_news_sentiment(
+        self,
+        stock_name: str,
+        news_items: List[Dict] = None,
+        dart_text: str = "",
+        *,
+        run_id: str | None = None,
+        request_id: str | None = None,
+    ) -> Dict:
+        """Interpret verified source records through BULK_TEXT.
 
-        # 1. DeepSeek V4 (주력 — 2026-09-02 순위 변경, 수집된 뉴스+DART 만으로 분석)
-        if API_STATUS['deepseek']['available']:
-            analysis = await self.deepseek.analyze_news(stock_name, news_context, news_items, dart_text)
-            if self._is_usable_analysis(analysis):
-                analysis["source"] = "deepseek"
-            else:
-                analysis = None
-        else:
-            print(f"[SKIP] DeepSeek Rate Limited - {stock_name}")
+        OpenAI is only the central router's one replacement for the failed
+        DeepSeek slot. Source-less text is handled by deterministic rules and
+        cannot independently contribute BUY evidence.
+        """
+        items = [dict(item) for item in (news_items or []) if isinstance(item, dict)][:5]
+        logical_run_id = run_id or f"jongga-news:{uuid4()}"
+        logical_request_id = request_id or f"{logical_run_id}:news"
+        source_evidence = self._source_evidence(items, dart_text)
+        eligible_evidence = [
+            item for item in source_evidence if _fresh_attributed_news_record(item)
+        ]
+        citations = [str(item["url"]) for item in eligible_evidence]
 
-        # 2. OpenAI Fallback (보조)
-        if analysis is None and API_STATUS['openai']['available']:
-            print(f"[FALLBACK] DeepSeek Failed for {stock_name}, trying OpenAI...")
-            analysis = await self.openai.analyze_news(stock_name, news_context, news_items, dart_text)
-            if self._is_usable_analysis(analysis):
-                analysis["source"] = "openai_fallback"
-            else:
-                analysis = None
-        elif analysis is None and not API_STATUS['openai']['available']:
-            print(f"[SKIP] OpenAI Rate Limited - {stock_name}")
+        if not source_evidence:
+            grounded = await self._ground_when_no_sources(
+                stock_name,
+                items,
+                dart_text,
+                run_id=logical_run_id,
+                request_id=logical_request_id,
+            )
+            if grounded is not None:
+                return grounded
+            return self._rule_only_result(stock_name, items, dart_text)
 
-        # 3. Gemini + Google Search Grounding (검색+분석 통합 — 크레딧 있을 때만)
-        if analysis is None and API_STATUS['gemini_grounding']['available']:
-            print(f"[FALLBACK] OpenAI Failed for {stock_name}, trying Gemini Grounding...")
-            result = await self.grounding.search_and_analyze(stock_name, news_items, dart_text)
-            if self._is_usable_analysis(result):
-                citations = result.pop("citations", [])
-                analysis = result
-                news_context = analysis.get("news_summary", "")
-                # Rate Limit 방지
-                await asyncio.sleep(0.5)
-        elif analysis is None and not API_STATUS['gemini_grounding']['available']:
-            print(f"[SKIP] Gemini Grounding Rate Limited - {stock_name}")
+        if not eligible_evidence:
+            return self._rule_only_result(stock_name, items, dart_text)
 
-        # 4. Claude Fallback
-        if analysis is None and API_STATUS['claude']['available']:
-            print(f"[FALLBACK] Gemini Grounding Failed for {stock_name}, trying Claude...")
-            analysis = await self.claude.analyze_news(stock_name, news_context, news_items, dart_text)
-            if self._is_usable_analysis(analysis):
-                analysis["source"] = "claude_fallback"
-            else:
-                analysis = None
-        elif analysis is None and not API_STATUS['claude']['available']:
-            print(f"[SKIP] Claude Rate Limited - {stock_name}")
+        evidence_lines = [
+            json.dumps(item, ensure_ascii=False, sort_keys=True)
+            for item in eligible_evidence
+        ]
+        prompt = f"""'{stock_name}' 뉴스·공시 근거를 해석하세요.
 
-        # 5. xAI Grok Fallback
-        if analysis is None and API_STATUS['xai']['available']:
-            print(f"[FALLBACK] Claude Failed for {stock_name}, trying xAI Grok...")
-            analysis = await self.xai.analyze_news(stock_name, news_context, news_items, dart_text)
-            if self._is_usable_analysis(analysis):
-                analysis["source"] = "xai_fallback"
-            else:
-                analysis = None
-        elif analysis is None and not API_STATUS['xai']['available']:
-            print(f"[SKIP] xAI Rate Limited - {stock_name}")
+[검증된 근거 레코드]
+{chr(10).join(evidence_lines)}
 
-        # 6. Final Fallback (Keyword) - 모든 LLM 실패 시
-        if analysis is None or (analysis.get("score") == 0 and ("Error" in analysis.get("reason", "") or "Rate" in analysis.get("reason", ""))):
-            print(f"[FALLBACK] All LLMs failed for {stock_name}, using keywords...")
-            return self._keyword_fallback(stock_name, news_items)
+JSON 객체만 반환: {{"score":0~3,"reason":"한 문장","themes":["최대 3개"]}}.
+제공되지 않은 사실·수치·출처를 만들지 마세요."""
+        routed = await asyncio.to_thread(
+            route_text,
+            RoutingRequest(
+                operation=Operation.BULK_TEXT,
+                prompt=prompt,
+                system="한국 주식 뉴스 근거 해석기. 검증된 입력만 사용하고 JSON으로 답하세요.",
+                run_id=logical_run_id,
+                request_id=logical_request_id,
+                json_mode=True,
+                max_output_tokens=512,
+                caller_endpoint="engine.llm_analyzer.analyze_news_sentiment",
+                domain_validator=_news_response_validator,
+            ),
+        )
+        analysis = _parse_json_object(routed.text)
+        if analysis is None:
+            fallback = self._rule_only_result(stock_name, items, dart_text)
+            fallback["routing"] = _routing_metadata(
+                routed,
+                run_id=logical_run_id,
+                request_id=logical_request_id,
+            )
+            return fallback
 
-        # 성공 시 결과 반환
-        if not isinstance(analysis, dict):
-            return self._keyword_fallback(stock_name, news_items)
-
+        analysis["source"] = (
+            "openai_fallback" if routed.actual_provider == "openai" else "deepseek"
+        )
         analysis["citations"] = citations
+        analysis["source_evidence"] = source_evidence
+        analysis["eligible_evidence_ids"] = [
+            item["evidence_id"] for item in eligible_evidence
+        ]
+        analysis["non_grounded_summary"] = False
+        analysis["buy_evidence_eligible"] = True
+        analysis["routing"] = _routing_metadata(
+            routed,
+            run_id=logical_run_id,
+            request_id=logical_request_id,
+        )
         analysis["api_status"] = self.get_api_status()
         return analysis
+
+    @staticmethod
+    def _source_evidence(news_items: List[Dict], dart_text: str) -> List[Dict]:
+        records: List[Dict] = []
+        for item in news_items[:5]:
+            title = str(item.get("title") or "")[:240]
+            summary = str(item.get("summary") or "")[:400]
+            source = str(item.get("source") or "")[:100]
+            url = str(item.get("url") or "")[:1_000]
+            published_at = str(item.get("published_at") or "")[:80]
+            fingerprint = "|".join((title, source, url, published_at))
+            records.append({
+                "evidence_id": "news:" + hashlib.sha256(fingerprint.encode("utf-8")).hexdigest()[:16],
+                "title": title,
+                "summary": summary,
+                "source": source,
+                "url": url,
+                "published_at": published_at,
+            })
+        if dart_text:
+            bounded = str(dart_text)[:2_000]
+            records.append({
+                "evidence_id": "dart:" + hashlib.sha256(bounded.encode("utf-8")).hexdigest()[:16],
+                "title": "DART 공시",
+                "summary": bounded,
+                "source": "DART",
+                "url": "",
+                "published_at": "",
+            })
+        return records
+
+    async def _ground_when_no_sources(
+        self,
+        stock_name: str,
+        news_items: List[Dict],
+        dart_text: str,
+        *,
+        run_id: str,
+        request_id: str,
+    ) -> Dict | None:
+        grounding = getattr(self, "grounding", None)
+        if grounding is None or not API_STATUS["gemini_grounding"]["available"]:
+            return None
+        result = await grounding.search_and_analyze(stock_name, news_items, dart_text)
+        if not self._is_usable_analysis(result):
+            return None
+        citations = [
+            str(value)
+            for value in result.get("citations", [])
+            if _valid_http_url(value)
+        ]
+        if not citations:
+            return None
+        freshness_verified = result.get("freshness_verified") is True
+        output = dict(result)
+        output["source"] = "gemini_grounding"
+        output["citations"] = citations
+        output["non_grounded_summary"] = False
+        output["freshness_verified"] = freshness_verified
+        output["buy_evidence_eligible"] = freshness_verified
+        if not freshness_verified:
+            output["score"] = min(1, int(output.get("score") or 0))
+            output["analysis_status"] = "DEGRADED"
+        output["routing"] = {
+            "operation": Operation.SPECIALIZED_GEMINI.value,
+            "run_id": run_id,
+            "request_id": request_id,
+            "analysis_status": output.get(
+                "analysis_status", "SUCCESS_PRIMARY"
+            ),
+            "primary_provider": "gemini",
+            "actual_provider": "gemini",
+            "model": getattr(grounding, "model_name", None),
+            "fallback_used": False,
+            "fallback_reason": None,
+            "retry_reason": None,
+            "usage": output.get("usage"),
+            "estimated_cost_usd": None,
+            "attempt_count": 1,
+        }
+        output["api_status"] = self.get_api_status()
+        return output
+
+    def _rule_only_result(
+        self,
+        stock_name: str,
+        news_items: List[Dict],
+        dart_text: str = "",
+    ) -> Dict:
+        output = self._keyword_fallback(stock_name, news_items)
+        output["score"] = min(1, int(output.get("score") or 0))
+        output["citations"] = []
+        output["source_evidence"] = self._source_evidence(news_items, dart_text)
+        output["non_grounded_summary"] = True
+        output["buy_evidence_eligible"] = False
+        output["analysis_status"] = "DEGRADED"
+        return output
 
     def _keyword_fallback(self, stock_name: str, news_items: List[Dict]) -> Dict:
         """API 실패 시 키워드 기반 단순 분석"""
@@ -1036,57 +1282,73 @@ class OpenAIScreener(BaseScreener):
 
 
 class DeepSeekScreener(BaseScreener):
-    """DeepSeek V4 기반 독립적 종목 선별기 (OpenAI 호환 API)
-
-    2026-09-02: Gemini 크레딧 소진 재발로 Multi-AI Consensus 의 기본 투표자를
-    Gemini → DeepSeek 으로 교체. 최저가 모델이면서 OpenAI/Grok 과 다른 학습
-    계열이라 독립 투표자 요건을 유지한다.
-    """
+    """One logical DeepSeek-first slot with one central OpenAI replacement."""
 
     def __init__(self, api_key: str = None):
         self.api_key = api_key or os.getenv("DEEPSEEK_API_KEY")
-        self.model_name = (
-            os.getenv("DEEPSEEK_SCREENER_MODEL")
-            or os.getenv("DEEPSEEK_MODEL", "deepseek-v4-flash")
-        )
-        self.client = None
-        if self.api_key:
-            from openai import AsyncOpenAI
-            self.client = AsyncOpenAI(
-                api_key=self.api_key,
-                base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
-            )
+        self.model_name = os.getenv("AI_DEEPSEEK_FAST_MODEL", "deepseek-v4-flash")
+        # Historical callers use this as an availability marker. The central
+        # slot can also run when only the approved OpenAI fallback is configured.
+        self.client = bool(self.api_key or os.getenv("OPENAI_API_KEY"))
 
-    async def screen_candidates(self, signals_data: List[Dict]) -> Dict:
-        if not self.client:
-            return {"picks": [], "error": "No DeepSeek Client", "generated_at": datetime.now().isoformat()}
+    async def screen_candidates(
+        self,
+        signals_data: List[Dict],
+        *,
+        run_id: str | None = None,
+        request_id: str | None = None,
+    ) -> Dict:
         if not signals_data:
             return {"picks": [], "error": "No signals", "generated_at": datetime.now().isoformat()}
 
         candidates_text = self._build_candidates_summary(signals_data)
         prompt = self._build_screening_prompt(candidates_text, len(signals_data))
+        allowed_codes = {
+            str(item.get("stock_code") or "") for item in signals_data
+            if item.get("stock_code")
+        }
 
-        try:
-            response = await self._chat_with_token_limit(
-                self.client,
-                model=self.model_name,
-                max_output_tokens=4096,
-                messages=[
-                    {"role": "system", "content": "You are a professional Korean stock market portfolio manager. Respond only in valid JSON. Analyze all candidates comprehensively."},
-                    {"role": "user", "content": prompt}
-                ],
-                response_format={"type": "json_object"},
-                # 구조화 추출은 thinking 없이가 빠르고 안정적 (mirofish llm_client 와 동일 정책)
-                extra_body={"thinking": {"type": "disabled"}},
-            )
-            content = response.choices[0].message.content.strip()
-            result = self._parse_json_response(content)
-            result["generated_at"] = datetime.now().isoformat()
-            result["model"] = self.model_name
-            return result
-        except Exception as e:
-            print(f"[ERROR] DeepSeek Screener Failed: {e}")
-            return {"picks": [], "error": str(e), "generated_at": datetime.now().isoformat(), "model": self.model_name}
+        def validate(payload):
+            if not isinstance(payload, dict) or not isinstance(payload.get("picks"), list):
+                return ProviderErrorClass.INVALID_JSON
+            for pick in payload["picks"]:
+                if not isinstance(pick, dict):
+                    return ProviderErrorClass.INVALID_JSON
+                if str(pick.get("stock_code") or "") not in allowed_codes:
+                    return ProviderErrorClass.NUMERIC_MISMATCH
+            return None
+
+        logical_run_id = run_id or f"jongga-screener:{uuid4()}"
+        logical_request_id = request_id or f"{logical_run_id}:multi-ai-primary"
+        routed = await asyncio.to_thread(
+            route_text,
+            RoutingRequest(
+                operation=Operation.BULK_TEXT,
+                prompt=prompt,
+                system=(
+                    "You are a professional Korean stock market portfolio manager. "
+                    "Respond only in valid JSON and use only supplied candidates."
+                ),
+                run_id=logical_run_id,
+                request_id=logical_request_id,
+                json_mode=True,
+                max_output_tokens=768,
+                caller_endpoint="engine.MultiAIConsensusScreener.primary",
+                domain_validator=validate,
+            ),
+        )
+        result = self._parse_json_response(routed.text) if routed.text else {"picks": []}
+        result["generated_at"] = datetime.now().isoformat()
+        result["model"] = routed.model
+        result["routing"] = _routing_metadata(
+            routed,
+            run_id=logical_run_id,
+            request_id=logical_request_id,
+        )
+        if not routed.text:
+            result["error"] = "AI screening unavailable"
+            result["analysis_status"] = routed.analysis_status.value
+        return result
 
 
 class GrokScreener(BaseScreener):
@@ -1164,69 +1426,145 @@ _MODEL_DEFAULT = {
 
 
 class MultiAIConsensusScreener:
-    """Multi-AI Consensus 종목 선별기 (N-way, v2)
-
-    Gemini + OpenAI + Grok 세 AI 가 독립적으로 종목을 선별:
-    - 3-of-3 합의 → consensus_strong (confidence 2단계 상향, HIGH 캡)
-    - 2-of-3 합의 → consensus (1단계 상향, 기존 호환)
-    - 1-of-3 단독 → <model>_only (1단계 하향, 기존 호환)
-
-    MULTI_AI_INCLUDE_GROK=0 으로 legacy 2-way 회귀 가능.
-    Grok 실패 시 graceful degradation (자동 2-way 합의).
-    """
+    """Cost-aware primary verdict plus an explicitly isolated shadow comparison."""
 
     GROK_TIMEOUT = 90    # reasoning 모델은 60s 초과 가능
     DEFAULT_TIMEOUT = 60
 
     def __init__(self):
-        # 2026-09-02: Gemini 크레딧 소진 재발 — 기본 투표자를 DeepSeek+OpenAI(+Grok)로 교체.
-        # Gemini 는 MULTI_AI_INCLUDE_GEMINI=1 로 4번째 투표자로 복귀 가능.
+        # This dictionary contains logical verdict paths, not physical providers.
+        # OpenAI lives only inside the central DeepSeek slot as one replacement.
         self.screeners: Dict[str, "BaseScreener"] = {
             MODEL_DEEPSEEK: DeepSeekScreener(),
-            MODEL_OPENAI: OpenAIScreener(),
         }
-        if os.getenv("MULTI_AI_INCLUDE_GROK", "1") == "1":
-            self.screeners[MODEL_GROK] = GrokScreener()
-        if os.getenv("MULTI_AI_INCLUDE_GEMINI", "0") == "1":
-            self.screeners[MODEL_GEMINI] = GeminiScreener()
-        # Devil's Advocate (consensus_strong post-review)
+        self.shadow_compare = os.getenv("MULTI_AI_SHADOW_COMPARE", "0") == "1"
+        self.shadow_screeners: Dict[str, "BaseScreener"] = {}
+        if self.shadow_compare:
+            if os.getenv("MULTI_AI_INCLUDE_GEMINI", "0") == "1":
+                self.shadow_screeners[MODEL_GEMINI] = GeminiScreener()
+            if os.getenv("MULTI_AI_INCLUDE_GROK", "0") == "1":
+                self.shadow_screeners[MODEL_GROK] = GrokScreener()
+        # The legacy Claude critic is not part of the user verdict path. Decisive
+        # review is owned by the central DECISIVE_TEXT pipeline elsewhere.
         self.devil_advocate: Optional["ClaudeDevilAdvocate"] = None
-        if os.getenv("DEVIL_ADVOCATE_ENABLED", "1") == "1":
-            try:
-                self.devil_advocate = ClaudeDevilAdvocate()
-            except Exception as e:
-                logger.warning(f"[DevilAdvocate] init failed: {e}")
-                self.devil_advocate = None
 
-    async def screen_candidates(self, signals_data: List[Dict]) -> Dict:
-        """활성 스크리너를 병렬 실행 후 N-way 합의 도출 + (옵션) Devil's Advocate 후검증"""
+    async def screen_candidates(
+        self,
+        signals_data: List[Dict],
+        *,
+        run_id: str | None = None,
+    ) -> Dict:
+        """Run one DS-first logical path; shadow output never mutates its picks."""
         if not signals_data:
-            return {
+            empty_result = {
                 "picks": [], "consensus_count": 0, "strong_count": 0,
-                "gemini_count": 0, "openai_count": 0, "grok_count": 0,
+                "deepseek_count": 0, "gemini_count": 0, "openai_count": 0, "grok_count": 0,
                 "market_view": "", "top_themes": [],
                 "generated_at": datetime.now().isoformat(),
                 "models": [], "models_attempted": list(self.screeners.keys()),
-                "models_succeeded": [], "consensus_method": "multi_ai_v2",
+                "models_succeeded": [], "consensus_method": "routed_primary_v1",
+            }
+            if self.shadow_compare:
+                empty_result["shadow_comparison"] = {
+                    "status": "not_run",
+                    "reason": (
+                        "no_candidates"
+                        if self.shadow_screeners
+                        else "no_explicit_shadow_providers"
+                    ),
+                    "compared": False,
+                    "verdict_blended": False,
+                    "models_attempted": [],
+                }
+            return empty_result
+
+        logical_run_id = run_id or f"jongga-multi-ai:{uuid4()}"
+        primary = self.screeners[MODEL_DEEPSEEK]
+        try:
+            # The central route owns provider deadlines and fallback. Wrapping
+            # its to_thread call in a shorter asyncio timeout would only detach
+            # the worker while it continues spending in the background.
+            primary_result = await primary.screen_candidates(
+                signals_data,
+                run_id=logical_run_id,
+                request_id=f"{logical_run_id}:multi-ai-primary",
+            )
+        except Exception as exc:
+            logger.warning("[MultiAI] primary routed slot failed: %s", type(exc).__name__)
+            primary_result = {
+                "picks": [],
+                "error": "AI screening unavailable",
+                "model": getattr(primary, "model_name", None),
             }
 
-        # 1. 활성 스크리너 병렬 실행 (key 순서 보존)
-        names = list(self.screeners.keys())
-        coros = [
-            self._safe_screen(self.screeners[name], signals_data, self._timeout_for(name))
-            for name in names
-        ]
-        gathered = await asyncio.gather(*coros)
-        results: Dict[str, Dict] = dict(zip(names, gathered))
+        output = self._build_routed_primary(primary_result)
+        if self.shadow_compare:
+            if self.shadow_screeners:
+                names = list(self.shadow_screeners)
+                shadow_results = await asyncio.gather(*[
+                    self._safe_screen(
+                        self.shadow_screeners[name], signals_data, self._timeout_for(name)
+                    )
+                    for name in names
+                ])
+                shadow = self._build_consensus(dict(zip(names, shadow_results)))
+                primary_codes = {
+                    str(item.get("stock_code")) for item in output.get("picks", [])
+                }
+                shadow_codes = [
+                    str(item.get("stock_code")) for item in shadow.get("picks", [])
+                ]
+                output["shadow_comparison"] = {
+                    "status": "completed",
+                    "compared": True,
+                    "picks": shadow_codes,
+                    "overlap_count": len(primary_codes.intersection(shadow_codes)),
+                    "models_attempted": shadow.get("models_attempted", []),
+                    "verdict_blended": False,
+                }
+            else:
+                output["shadow_comparison"] = {
+                    "status": "not_run",
+                    "reason": "no_explicit_shadow_providers",
+                    "compared": False,
+                    "verdict_blended": False,
+                    "models_attempted": [],
+                }
+        return output
 
-        # 2. N-way 합의 도출
-        consensus = self._build_consensus(results)
-
-        # 3. Devil's Advocate 후검증 (consensus_strong 픽만)
-        if self.devil_advocate and self.devil_advocate.client:
-            consensus = await self._review_strong_picks(consensus, signals_data)
-
-        return consensus
+    @staticmethod
+    def _build_routed_primary(result: Dict) -> Dict:
+        routing = result.get("routing") if isinstance(result.get("routing"), dict) else {}
+        actual_provider = routing.get("actual_provider") or "deepseek"
+        source = "openai_fallback" if actual_provider == "openai" else "deepseek"
+        picks = []
+        for rank, item in enumerate(result.get("picks", []), 1):
+            if not isinstance(item, dict):
+                continue
+            pick = dict(item)
+            pick["rank"] = rank
+            pick["source"] = source
+            picks.append(pick)
+        model = result.get("model")
+        return {
+            "picks": picks,
+            "consensus_count": 0,
+            "strong_count": 0,
+            "deepseek_count": len(picks) if actual_provider == "deepseek" else 0,
+            "gemini_count": 0,
+            "openai_count": len(picks) if actual_provider == "openai" else 0,
+            "grok_count": 0,
+            "market_view": result.get("market_view", ""),
+            "top_themes": list(result.get("top_themes", []))[:6],
+            "generated_at": result.get("generated_at") or datetime.now().isoformat(),
+            "models": [model] if model and picks else [],
+            "models_attempted": [model] if model else [],
+            "models_succeeded": [model] if model and picks else [],
+            "consensus_method": "routed_primary_v1",
+            "routing": routing,
+            "analysis_status": result.get("analysis_status") or routing.get("analysis_status"),
+            "total_cost_usd": routing.get("estimated_cost_usd") or 0.0,
+        }
 
     async def _review_strong_picks(self, consensus: Dict, signals_data: List[Dict]) -> Dict:
         """consensus_strong 픽에 대해 Claude 가 반대 입장으로 리스크 검토.

@@ -7,11 +7,21 @@
 """
 import pytest
 
-from engine.llm_analyzer import GeminiGroundingClient
+from engine import llm_analyzer as llm_analyzer_module
+from engine.llm_analyzer import GeminiAnalyzer, GeminiGroundingClient
 
 
 def test_default_model_is_not_the_retired_one():
     assert GeminiGroundingClient.DEFAULT_MODEL != 'gemini-2.0-flash'
+
+
+def test_plain_gemini_analyzer_also_avoids_retired_model(monkeypatch):
+    monkeypatch.delenv('GEMINI_MODEL', raising=False)
+    monkeypatch.setattr(llm_analyzer_module.genai, 'Client', lambda **_kwargs: object())
+
+    analyzer = GeminiAnalyzer(api_key='x')
+
+    assert analyzer.model_name == 'gemini-2.5-flash'
 
 
 def test_default_model_is_used_when_env_is_absent(monkeypatch):
@@ -58,8 +68,17 @@ def _payload_of(client, monkeypatch):
 
     class _Resp:
         def raise_for_status(self): pass
-        def json(self): return {'candidates': [{'content': {'parts': [
-            {'text': '{"score":1,"reason":"x","themes":[],"news_summary":"y"}'}]}}]}
+        def json(self): return {
+            'candidates': [{'content': {'parts': [
+                {'text': '{"score":1,"reason":"x","themes":[],"news_summary":"y"}'}
+            ]}}],
+            'usageMetadata': {
+                'promptTokenCount': 12,
+                'candidatesTokenCount': 7,
+                'thoughtsTokenCount': 0,
+                'totalTokenCount': 19,
+            },
+        }
 
     class _Client:
         async def __aenter__(self): return self
@@ -70,7 +89,7 @@ def _payload_of(client, monkeypatch):
             return _Resp()
 
     monkeypatch.setattr(httpx, 'AsyncClient', lambda **k: _Client())
-    asyncio.run(client.search_and_analyze('삼성전자'))
+    captured['result'] = asyncio.run(client.search_and_analyze('삼성전자'))
     return captured
 
 
@@ -97,3 +116,16 @@ def test_google_search_tool_is_still_attached(monkeypatch):
     body = _payload_of(GeminiGroundingClient(api_key='k'), monkeypatch)['body']
 
     assert body['tools'] == [{'google_search': {}}]
+
+
+def test_grounding_normalizes_native_usage(monkeypatch):
+    result = _payload_of(GeminiGroundingClient(api_key='k'), monkeypatch)['result']
+
+    assert result['usage'] == {
+        'input_tokens': 12,
+        'cached_input_tokens': 0,
+        'output_tokens': 7,
+        'reasoning_tokens': 0,
+        'total_tokens': 19,
+        'usage_estimated': False,
+    }

@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import os
+import base64
 from dataclasses import dataclass, field
 from typing import Any, Callable, Mapping, Protocol
 
-from .contracts import ProviderErrorClass, RoutingRequest, TokenUsage
+from .contracts import ProviderErrorClass, RoutingRequest, TokenUsage, VisionImage
 
 
 OPENAI_COMPATIBLE_REQUEST_TIMEOUT_SECONDS = 90
@@ -166,7 +167,22 @@ class OpenAICompatibleAdapter:
             prompt = f"{prompt}\n\nRespond only in valid JSON."
         user_content: Any = prompt
         if request.images:
-            user_content = [{"type": "text", "text": prompt}, *request.images]
+            image_parts: list[Any] = []
+            for image in request.images:
+                if isinstance(image, VisionImage):
+                    encoded = base64.b64encode(image.data).decode("ascii")
+                    image_parts.append(
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:{image.mime_type};base64,{encoded}",
+                                "detail": image.detail,
+                            },
+                        }
+                    )
+                else:
+                    image_parts.append(image)
+            user_content = [{"type": "text", "text": prompt}, *image_parts]
         messages.append({"role": "user", "content": user_content})
         kwargs: dict[str, Any] = {"model": model, "messages": messages}
         if model.startswith(("gpt-5", "o1", "o3", "o4")):
@@ -198,10 +214,12 @@ class GeminiAdapter:
         client_factory: Callable[[], Any],
         config_factory: Callable[..., Any],
         *,
+        image_part_factory: Callable[..., Any] | None = None,
         request_timeout_seconds: float = GEMINI_REQUEST_TIMEOUT_SECONDS,
     ) -> None:
         self.client_factory = client_factory
         self.config_factory = config_factory
+        self.image_part_factory = image_part_factory
         self.request_timeout_seconds = request_timeout_seconds
 
     def generate(self, request: RoutingRequest, *, model: str, max_output_tokens: int) -> AdapterResponse:
@@ -216,7 +234,20 @@ class GeminiAdapter:
             config["system_instruction"] = request.system
         if request.json_mode:
             config["response_mime_type"] = "application/json"
-        contents: Any = [request.prompt, *request.images] if request.images else request.prompt
+        if request.images:
+            image_parts: list[Any] = []
+            for image in request.images:
+                if isinstance(image, VisionImage):
+                    if self.image_part_factory is None:
+                        raise ProviderCallError(ProviderErrorClass.CLIENT_UNAVAILABLE)
+                    image_parts.append(
+                        self.image_part_factory(data=image.data, mime_type=image.mime_type)
+                    )
+                else:
+                    image_parts.append(image)
+            contents: Any = [request.prompt, *image_parts]
+        else:
+            contents = request.prompt
         try:
             response = client.models.generate_content(
                 model=model,
@@ -275,6 +306,10 @@ def build_default_adapters() -> dict[str, ProviderAdapter]:
         from google.genai import types
         return types.GenerateContentConfig(**kwargs)
 
+    def gemini_image_part(*, data: bytes, mime_type: str):
+        from google.genai import types
+        return types.Part.from_bytes(data=data, mime_type=mime_type)
+
     return {
         "deepseek": OpenAICompatibleAdapter(
             deepseek_client,
@@ -282,5 +317,9 @@ def build_default_adapters() -> dict[str, ProviderAdapter]:
             extra_body={"thinking": {"type": "disabled"}},
         ),
         "openai": OpenAICompatibleAdapter(openai_client, provider="openai"),
-        "gemini": GeminiAdapter(gemini_client, gemini_config),
+        "gemini": GeminiAdapter(
+            gemini_client,
+            gemini_config,
+            image_part_factory=gemini_image_part,
+        ),
     }

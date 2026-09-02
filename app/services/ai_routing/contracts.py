@@ -41,6 +41,7 @@ class ProviderErrorClass(str, Enum):
     REFUSAL = "refusal"
     CLIENT_UNAVAILABLE = "client_unavailable"
     BREAKER_OPEN = "breaker_open"
+    PAYLOAD_TOO_LARGE = "payload_too_large"
     UNKNOWN = "unknown"
 
 
@@ -100,6 +101,45 @@ class TokenUsage:
 
 
 @dataclass(frozen=True)
+class VisionImage:
+    """Provider-neutral in-memory image; adapters own wire serialization."""
+
+    data: bytes
+    mime_type: str = "image/png"
+    detail: str = "high"
+    width_px: int | None = None
+    height_px: int | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.data, bytes) or not self.data:
+            raise ValueError("vision image data must be non-empty bytes")
+        if not self.mime_type.startswith("image/"):
+            raise ValueError("vision mime type must start with image/")
+        if self.detail not in {"low", "high", "auto"}:
+            raise ValueError("vision detail must be low, high, or auto")
+        if (self.width_px is None) != (self.height_px is None):
+            raise ValueError("vision width and height must be provided together")
+        if self.width_px is not None:
+            if isinstance(self.width_px, bool) or isinstance(self.height_px, bool):
+                raise ValueError("vision dimensions must be positive integers")
+            if not isinstance(self.width_px, int) or not isinstance(self.height_px, int):
+                raise ValueError("vision dimensions must be positive integers")
+            if self.width_px <= 0 or self.height_px <= 0:
+                raise ValueError("vision dimensions must be positive integers")
+        elif (
+            self.mime_type == "image/png"
+            and len(self.data) >= 24
+            and self.data[:8] == b"\x89PNG\r\n\x1a\n"
+            and self.data[12:16] == b"IHDR"
+        ):
+            width = int.from_bytes(self.data[16:20], "big")
+            height = int.from_bytes(self.data[20:24], "big")
+            if width > 0 and height > 0:
+                object.__setattr__(self, "width_px", width)
+                object.__setattr__(self, "height_px", height)
+
+
+@dataclass(frozen=True)
 class RoutingRequest:
     operation: Operation
     prompt: str
@@ -116,9 +156,11 @@ class RoutingRequest:
     images: tuple[Any, ...] = ()
     expected_numbers: Mapping[str, int | float | Decimal] | None = None
     domain_validator: Callable[[Any], ProviderErrorClass | None] | None = None
+    response_normalizer: Callable[[str], str | None] | None = None
     reservation_id: str | None = None
     reservation_owner_token: str | None = None
     permit_abort_event: Any | None = None
+    openai_fallback_allowed: bool = True
 
 
 @dataclass(frozen=True)
@@ -140,6 +182,7 @@ class ProviderAttempt:
     pricing_version: str | None = None
     error_class: ProviderErrorClass | str | None = None
     fallback_from: str | None = None
+    fallback_reason: ProviderErrorClass | str | None = None
     breaker_state: str = "closed"
     cache_hit: bool = False
     symbol: str | None = None

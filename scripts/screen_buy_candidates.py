@@ -21,6 +21,7 @@ import csv
 import datetime
 import sys
 from pathlib import Path
+from uuid import uuid4
 
 import pandas as pd
 
@@ -68,26 +69,44 @@ def build_universe(size: int) -> list[tuple[str, str, str]]:
     ]
 
 
-async def analyze_batch(batch, prices_by_ticker, concurrency: int) -> list[dict]:
-    from google import genai
-
-    charts: list[tuple[str, str, str]] = []
-    for code, ticker, name in batch:
+async def analyze_batch(
+    batch,
+    prices_by_ticker,
+    concurrency: int,
+    *,
+    run_id: str,
+    rank_offset: int = 0,
+) -> list[dict]:
+    charts: list[tuple[int, str, str, str]] = []
+    for candidate_rank, (code, ticker, name) in enumerate(
+        batch,
+        start=rank_offset + 1,
+    ):
         frame = prices_by_ticker.get(code)
         if frame is None or len(frame) < MIN_ROWS:
             continue
         frame = frame.tail(CHART_DAYS).set_index("date")[["Open", "High", "Low", "Close", "Volume"]]
         path = main_kr.render_chart(frame, ticker, name)
         if path:
-            charts.append((ticker, name, path))
+            charts.append((candidate_rank, ticker, name, path))
     print(f"  차트 {len(charts)}/{len(batch)}", flush=True)
     if not charts:
         return []
 
-    client = genai.Client(api_key=main_kr.API_KEY)
     semaphore = asyncio.Semaphore(concurrency)
     results = await asyncio.gather(
-        *(main_kr.analyze_chart(client, t, n, p, semaphore) for t, n, p in charts),
+        *(
+            main_kr.analyze_chart(
+                None,
+                ticker,
+                name,
+                path,
+                semaphore,
+                run_id=run_id,
+                candidate_rank=candidate_rank,
+            )
+            for candidate_rank, ticker, name, path in charts
+        ),
         return_exceptions=True,
     )
     return [r for r in results if isinstance(r, dict)]
@@ -130,12 +149,21 @@ def main() -> int:
     buys: list[dict] = []
     analyzed = 0
     scanned = 0
+    vision_run_id = f"kr-buy-screen:{uuid4()}"
 
     # 목표 개수를 채울 때까지 시총 순으로 배치를 넓혀 간다.
     for start in range(0, len(universe), args.batch):
         batch = universe[start:start + args.batch]
         print(f"[배치 {start + 1}~{start + len(batch)}] 분석 시작", flush=True)
-        results = asyncio.run(analyze_batch(batch, prices_by_ticker, args.concurrency))
+        results = asyncio.run(
+            analyze_batch(
+                batch,
+                prices_by_ticker,
+                args.concurrency,
+                run_id=vision_run_id,
+                rank_offset=start,
+            )
+        )
         analyzed += len(results)
         scanned += len(batch)
         buys += [r for r in results if str(r.get("signal", "")).upper() == "BUY"]

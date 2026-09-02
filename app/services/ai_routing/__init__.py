@@ -9,6 +9,7 @@ from .contracts import (
     RoutingRequest,
     RoutingResult,
     TokenUsage,
+    VisionImage,
 )
 from .policy import policy_for
 
@@ -21,5 +22,6 @@ __all__ = [
     "RoutingRequest",
     "RoutingResult",
     "TokenUsage",
+    "VisionImage",
     "policy_for",
 ]

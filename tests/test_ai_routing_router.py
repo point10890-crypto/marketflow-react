@@ -15,6 +15,7 @@ from app.services.ai_routing.contracts import (
     ProviderErrorClass,
     RoutingRequest,
     TokenUsage,
+    VisionImage,
 )
 from app.services.ai_routing.providers import AdapterResponse, ProviderCallError
 from app.services.ai_routing.router import AIRouter, estimate_reservation_input_tokens, reserve_openai_fallback
@@ -101,7 +102,7 @@ def test_decisive_deepseek_then_one_openai_fallback(tmp_path):
 
 def test_both_decisive_providers_fail_returns_hold_review(tmp_path):
     error = ProviderCallError(ProviderErrorClass.AUTHENTICATION)
-    router, _store = _router(
+    router, store = _router(
         tmp_path,
         {"deepseek": FakeAdapter(error), "openai": FakeAdapter(error)},
     )
@@ -915,6 +916,61 @@ def test_breaker_skipped_primary_still_reports_failed_fallback(tmp_path):
     assert result.fallback_reason is ProviderErrorClass.BREAKER_OPEN
     assert result.attempts[0].error_class is ProviderErrorClass.BREAKER_OPEN
     assert result.attempts[1].fallback_from == "deepseek"
+
+
+def test_three_hop_vision_records_immediate_predecessor_and_reason(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setenv("AI_DEEPSEEK_VISION_MODEL", "deepseek-vision-verified")
+    monkeypatch.setenv("AI_DEEPSEEK_VISION_CAPABILITY_VERIFIED", "1")
+    monkeypatch.setenv("AI_DEEPSEEK_VISION_HEALTH_VERIFIED", "1")
+    auth = ProviderCallError(ProviderErrorClass.AUTHENTICATION)
+    router, store = _router(
+        tmp_path,
+        {
+            "gemini": FakeAdapter(auth),
+            "deepseek": FakeAdapter(auth),
+            "openai": FakeAdapter(_response('{"signal":"HOLD"}')),
+        },
+    )
+    request = RoutingRequest(
+        operation=Operation.VISION,
+        prompt="chart",
+        run_id="three-hop",
+        request_id="three-hop:1",
+        images=(VisionImage(data=b"png"),),
+        json_mode=True,
+    )
+
+    result = router.route_vision(request)
+
+    assert result.fallback_reason is ProviderErrorClass.AUTHENTICATION
+    assert [attempt.provider for attempt in result.attempts] == [
+        "gemini",
+        "deepseek",
+        "openai",
+    ]
+    assert [attempt.fallback_from for attempt in result.attempts] == [
+        None,
+        "gemini",
+        "deepseek",
+    ]
+    assert [attempt.fallback_reason for attempt in result.attempts] == [
+        None,
+        ProviderErrorClass.AUTHENTICATION,
+        ProviderErrorClass.AUTHENTICATION,
+    ]
+    with store.transaction() as connection:
+        persisted = connection.execute(
+            "SELECT provider, fallback_from, fallback_reason "
+            "FROM provider_attempts WHERE request_id=? ORDER BY attempt_number",
+            ("three-hop:1",),
+        ).fetchall()
+    assert [tuple(row) for row in persisted] == [
+        ("gemini", None, None),
+        ("deepseek", "gemini", "authentication"),
+        ("openai", "deepseek", "authentication"),
+    ]
 
 
 def test_429_retry_uses_bounded_injected_delay(tmp_path):
