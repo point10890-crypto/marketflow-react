@@ -48,13 +48,24 @@ Report ($boot -match 'BOOT_OK') "create_app + decision/guard/scheduler imports" 
 & $PYTHON -m pytest tests/test_signal_contract.py tests/test_decision_cache.py tests/test_aibrain_service_guard.py -q -p no:cacheprovider 2>&1 | Select-Object -Last 3
 Report ($LASTEXITCODE -eq 0) "smoke pytest (contract/quota/guard)" "run full: python -m pytest tests/ -q"
 
-# ── 4. 서비스 살아있는지: Flask 5001 ───────────────────────
-try {
-    $resp = Invoke-WebRequest -UseBasicParsing -TimeoutSec 10 'http://localhost:5001/api/kr/market-gate'
-    Report ($resp.StatusCode -eq 200) "Flask 5001 /api/kr/market-gate ($($resp.StatusCode))"
-} catch {
-    Report $false "Flask 5001 /api/kr/market-gate" "restart: run_flask.bat 또는 MarketFlow Flask 태스크 재시작 (8080 은 절대 건드리지 말 것)"
+# ── 4. 서비스 살아있는지: 이원 Flask (5003 API + 5001 producer) ──
+# miniPC 는 설계상 Flask 2개 — 5003(터널용 API, start_flask_task.ps1) + 5001(KIS
+# producer, run_flask.bat). 8080 은 별개 프로젝트(JUST BUY) — 절대 건드리지 말 것.
+foreach ($svc in @(
+    @{ port = 5003; label = 'Flask 5003 API (tunnel origin)'; hint = 'MarketFlow-Flask 태스크 재시작 또는 재부팅' },
+    @{ port = 5001; label = 'Flask 5001 KIS producer';        hint = 'watchdog 5분 주기 자동복구 대기 (run_flask.bat)' }
+)) {
+    try {
+        $resp = Invoke-WebRequest -UseBasicParsing -TimeoutSec 10 "http://127.0.0.1:$($svc.port)/healthz"
+        Report ($resp.StatusCode -eq 200) "$($svc.label) /healthz ($($resp.StatusCode))"
+    } catch {
+        Report $false "$($svc.label) /healthz" $svc.hint
+    }
 }
+# 5001 은 loopback 전용이어야 한다 (LAN 노출 금지, 2026-09-02 정리)
+$exposed = Get-NetTCPConnection -LocalPort 5001 -State Listen -ErrorAction SilentlyContinue |
+    Where-Object { $_.LocalAddress -eq '0.0.0.0' -or $_.LocalAddress -eq '::' }
+Report ($null -eq $exposed) "Flask 5001 bound to loopback only" "run_flask.bat 의 FLASK_HOST=127.0.0.1 적용 후 5001 재기동"
 
 # ── 5. 예약 태스크 상태 (SYSTEM AtStartup 3종 + Claw) ──────
 foreach ($t in 'MarketFlow-Scheduler', 'MarketFlow-Scheduler-Watchdog', 'MarketFlow-Claw', 'MarketFlow-Claw-Watchdog') {
@@ -63,12 +74,17 @@ foreach ($t in 'MarketFlow-Scheduler', 'MarketFlow-Scheduler-Watchdog', 'MarketF
     else { Report ($task.State -ne 'Disabled') "task $t ($($task.State))" "Enable-ScheduledTask -TaskName $t" }
 }
 
-# ── 6. 스케줄러 하트비트 신선도 (<10분) ────────────────────
-$hb = Get-ChildItem "$PROJECT\logs" -Filter '*heartbeat*' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-if ($null -eq $hb) { Report $false "scheduler heartbeat file" "logs\ 에 heartbeat 없음 - 스케줄러 기동 확인" }
-else {
-    $age = (Get-Date) - $hb.LastWriteTime
-    Report ($age.TotalMinutes -lt 10) "scheduler heartbeat ($([int]$age.TotalMinutes)m ago: $($hb.Name))" "watchdog 5분 주기 재기동 대기 또는 수동 재시작"
+# ── 6. 하트비트 신선도 (<10분) — scheduler.py 는 data\ 에 쓴다 ──
+foreach ($hbSpec in @(
+    @{ path = "$PROJECT\data\scheduler_heartbeat.json"; label = 'scheduler heartbeat' },
+    @{ path = "$PROJECT\data\claw\heartbeat.json";      label = 'claw heartbeat' }
+)) {
+    $hb = Get-Item $hbSpec.path -ErrorAction SilentlyContinue
+    if ($null -eq $hb) { Report $false "$($hbSpec.label) file" "$($hbSpec.path) 없음 - 데몬 기동 확인" }
+    else {
+        $age = (Get-Date) - $hb.LastWriteTime
+        Report ($age.TotalMinutes -lt 10) "$($hbSpec.label) ($([int]$age.TotalMinutes)m ago)" "watchdog 5분 주기 재기동 대기 또는 수동 재시작"
+    }
 }
 
 Write-Host "==========================================="

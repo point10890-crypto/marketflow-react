@@ -1,8 +1,24 @@
 @echo off
+REM ============================================================================
+REM Legacy KIS producer instance (port 5001, loopback only).
+REM
+REM MiniPC runs TWO Flask instances by design (see scripts/flask_watchdog_v2.ps1
+REM which health-probes and auto-restarts BOTH):
+REM   - 5003 = API instance for the Cloudflare tunnel (scripts/start_flask_task.ps1)
+REM            owns: expiry checkers + manual-stock-analysis scraper loop
+REM   - 5001 = THIS producer instance
+REM            owns: in-process workers (KIS screener / precompute / alpha monitor)
+REM
+REM Duplicated-worker cleanup (2026-09-02): expiry checkers and the Selenium
+REM scraper loop used to start in BOTH processes (double telegram risk, double
+REM Cloudflare block pressure). They are owned by the 5003 instance now, so this
+REM producer explicitly disables them. FLASK_HOST pins the listener to loopback:
+REM nothing on the LAN consumes 5001, and it must not be exposed.
+REM ============================================================================
 cd /d C:\bitman_marketfloww
 set HOME_SERVER=1
-set PYTHONIOENCODING=utf-8
-REM manual 스크래퍼 루프 부팅 자동시작 — 대시보드 접속(GET) 트리거에 의존하면
-REM 무인 운영 중 Flask 재시작 시 루프가 영영 멈출 수 있다 (2026-07-25 10일 정지 재발 방지)
-set MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART=true
+set PYTHONIOENCODING=utf-8
+set FLASK_HOST=127.0.0.1
+set MARKETFLOW_EXPIRY_WORKERS_ENABLED=false
+set MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART=false
 C:\bitman_marketfloww\.venv\Scripts\python.exe flask_app.py >> C:\bitman_marketfloww\logs\flask_stdout.log 2>> C:\bitman_marketfloww\logs\flask_stderr.log
