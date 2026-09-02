@@ -1,4 +1,4 @@
-# miniPC 배포 후 최종 검증 — git pull 직후 한 번 실행
+﻿# miniPC 배포 후 최종 검증 — git pull 직후 한 번 실행
 #
 #   cd C:\bitman_marketfloww
 #   powershell -ExecutionPolicy Bypass -File scripts\minipc_post_deploy_check.ps1
