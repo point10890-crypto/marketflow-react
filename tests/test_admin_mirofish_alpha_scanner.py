@@ -903,7 +903,7 @@ def test_alpha_scanner_applies_deepseek_v4_bounded_rerank(tmp_path, monkeypatch)
             },
             'usage': {'total_tokens': 42},
             'finish_reason': 'stop',
-            'created_at': '2026-05-05T00:00:00+00:00',
+            'created_at': datetime.now(timezone.utc).isoformat(),
         }
 
     monkeypatch.setattr(deepseek_client, 'rerank_scanner_candidates', fake_rerank)

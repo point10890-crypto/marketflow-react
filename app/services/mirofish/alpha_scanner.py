@@ -6,6 +6,7 @@ import csv
 import hashlib
 import html
 import json
+import math
 import os
 import re
 import threading
@@ -317,7 +318,15 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         requested_symbols=requested_symbols,
         limit=limit,
     )
-    candidate_pool = _apply_deepseek_rerank_overlay(candidate_pool, deepseek_rerank)
+    rerank_validated_at = datetime.now(timezone.utc).isoformat()
+    candidate_pool = _apply_deepseek_rerank_overlay(
+        candidate_pool,
+        deepseek_rerank,
+        validated_at=rerank_validated_at,
+    )
+    generated_at = rerank_validated_at
+    for candidate in candidate_pool:
+        candidate['generated_at'] = generated_at
     candidates = _select_candidates(candidate_pool, limit)
     rejected_candidates = _rejected_candidates(candidate_pool, selected_count=len(candidates), limit=limit)
     feature_vectors = _feature_vectors(candidates)
@@ -1434,6 +1443,22 @@ def _build_candidate_pool(
             cutoff_ceiling=generated_at,
         )[0] is not None
     }
+    eligible_price_symbols = {
+        symbol
+        for symbol in set(prices) | set(artifacts.get('price_history') or {})
+        if any(
+            _normalize_scoring_source(
+                'daily_prices.csv',
+                row,
+                artifacts=artifacts,
+                cutoff_ceiling=generated_at,
+            )[0] is not None
+            for row in (
+                (artifacts.get('price_history') or {}).get(symbol)
+                or [prices.get(symbol) or {}]
+            )
+        )
+    }
     if requested_symbols:
         # An explicit request is an independent, stable universe definition.
         symbols = set(requested_symbols)
@@ -1441,7 +1466,7 @@ def _build_candidate_pool(
         # Never let an unavailable future screener artifact seed the universe.
         symbols = eligible_source_symbols
     else:
-        symbols = set(prices)
+        symbols = eligible_price_symbols
 
     rows = []
     for symbol in sorted(symbols):
@@ -1467,6 +1492,13 @@ def _build_candidate_pool(
             performance_advisory,
             rs_rating=rs_by_symbol.get(symbol),
         )
+        authoritative_packets = [
+            packet for packet in (candidate.get('source_packets') or [])
+            if isinstance(packet, dict)
+            and packet.get('source') != 'workflow_outcomes'
+        ]
+        if not authoritative_packets or not candidate.get('source_cutoff'):
+            continue
         rows.append(candidate)
 
     rows.sort(
@@ -1510,22 +1542,27 @@ def _maybe_deepseek_rerank_candidates(
         'adjusted_count': 0,
         'max_abs_adjustment': max_adjustment,
         'schema_version': 'mirofish.deepseek_rerank.v1',
+        'requested_at': generated_at,
+        'input_fingerprint': None,
     }
     if not enabled:
         return base
     if not rows:
         return {**base, 'status': 'empty_candidate_pool'}
+    run_context = {
+        'generated_at': generated_at,
+        'requested_symbols': sorted(requested_symbols),
+        'base_ranking': 'alpha_score - 0.55*risk_score + deterministic conviction_adjustment',
+        'lookahead_safe': True,
+    }
+    successful_limit = max_items
+    successful_context = run_context
     try:
         from app.services.mirofish import deepseek_client
 
         result = deepseek_client.rerank_scanner_candidates(
             rows,
-            run_context={
-                'generated_at': generated_at,
-                'requested_symbols': sorted(requested_symbols),
-                'base_ranking': 'alpha_score - 0.55*risk_score + deterministic conviction_adjustment',
-                'lookahead_safe': True,
-            },
+            run_context=run_context,
             limit=max_items,
             model=model,
             max_adjustment=max_adjustment,
@@ -1534,16 +1571,14 @@ def _maybe_deepseek_rerank_candidates(
         retry_limit = max(1, min(max_items, max(limit, 5)))
         if retry_limit < max_items:
             try:
+                retry_context = {
+                    **run_context,
+                    'retry_reason': type(exc).__name__,
+                    'retry_mode': 'compact_limit',
+                }
                 result = deepseek_client.rerank_scanner_candidates(
                     rows,
-                    run_context={
-                        'generated_at': generated_at,
-                        'requested_symbols': sorted(requested_symbols),
-                        'base_ranking': 'alpha_score - 0.55*risk_score + deterministic conviction_adjustment',
-                        'lookahead_safe': True,
-                        'retry_reason': f'{type(exc).__name__}: {exc}',
-                        'retry_mode': 'compact_limit',
-                    },
+                    run_context=retry_context,
                     limit=retry_limit,
                     model=model,
                     max_adjustment=max_adjustment,
@@ -1558,6 +1593,8 @@ def _maybe_deepseek_rerank_candidates(
             else:
                 base['status'] = 'applied_retry_compact'
                 base['initial_error'] = f'{type(exc).__name__}: {exc}'
+                successful_limit = retry_limit
+                successful_context = retry_context
         else:
             return {
                 **base,
@@ -1568,6 +1605,18 @@ def _maybe_deepseek_rerank_candidates(
     items = overlay.get('items') if isinstance(overlay, dict) else []
     if not isinstance(items, list):
         items = []
+    input_fingerprint = _deepseek_rerank_input_fingerprint(
+        rows,
+        run_context=successful_context,
+        limit=successful_limit,
+        model=model or base['model'],
+        max_adjustment=max_adjustment,
+    )
+    input_symbols = [
+        symbol
+        for candidate in rows[:successful_limit]
+        if (symbol := _symbol(candidate.get('symbol')))
+    ]
     return {
         **base,
         'applied': bool(items),
@@ -1586,6 +1635,8 @@ def _maybe_deepseek_rerank_candidates(
         'usage': result.get('usage'),
         'finish_reason': result.get('finish_reason'),
         'created_at': result.get('created_at'),
+        'input_fingerprint': input_fingerprint,
+        'input_symbols': input_symbols,
         'initial_error': base.get('initial_error'),
         'portfolio_note_ko': (overlay or {}).get('portfolio_note_ko') or '',
         'items': items,
@@ -1595,20 +1646,93 @@ def _maybe_deepseek_rerank_candidates(
 def _apply_deepseek_rerank_overlay(
     rows: list[dict[str, Any]],
     overlay: dict[str, Any],
+    *,
+    validated_at: Any = None,
 ) -> list[dict[str, Any]]:
+    validated = _parse_precise_source_instant(validated_at) or datetime.now(timezone.utc)
+    overlay_status = str(overlay.get('status') or 'unknown')
     if not overlay.get('applied'):
+        if not overlay.get('enabled') or overlay_status == 'disabled':
+            state_status, reason, is_validated = 'disabled', 'disabled', False
+        elif overlay_status == 'error':
+            state_status, reason, is_validated = 'failed', 'provider_error', False
+        else:
+            state_status, reason, is_validated = 'unused', overlay_status, True
+        for candidate in rows:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status=state_status,
+                reason=reason, validated=is_validated,
+            )
         return rows
+
+    result_at = _parse_precise_source_instant(overlay.get('created_at'))
+    requested_at = _parse_precise_source_instant(overlay.get('requested_at'))
+    input_fingerprint = str(overlay.get('input_fingerprint') or '').strip().lower()
+    raw_input_symbols = overlay.get('input_symbols')
+    input_symbols = (
+        [_exact_rerank_symbol(value) for value in raw_input_symbols]
+        if isinstance(raw_input_symbols, list)
+        else []
+    )
+    submitted_symbols = {symbol for symbol in input_symbols if symbol}
+    timestamp_safe = bool(
+        result_at is not None
+        and result_at <= validated
+        and (requested_at is None or result_at >= requested_at)
+    )
+    identity_safe = bool(
+        re.fullmatch(r'[0-9a-f]{64}', input_fingerprint)
+        and submitted_symbols
+        and len(submitted_symbols) == len(input_symbols)
+    )
+    if not timestamp_safe or not identity_safe:
+        reason = 'invalid_timestamp' if not timestamp_safe else 'invalid_input_identity'
+        for candidate in rows:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='failed',
+                reason=reason, validated=False,
+            )
+        overlay['applied'] = False
+        overlay['adjusted_count'] = 0
+        overlay['status'] = reason
+        return rows
+
     max_adjustment = _float(overlay.get('max_abs_adjustment') or 8)
-    by_symbol = {}
-    for item in overlay.get('items') or []:
-        if not isinstance(item, dict):
-            continue
-        symbol = _symbol(item.get('symbol'))
-        if symbol:
+    by_symbol: dict[str, dict[str, Any]] = {}
+    invalid_symbols: set[str] = set()
+    unsubmitted_symbols: set[str] = set()
+    raw_items = overlay.get('items')
+    if not isinstance(raw_items, list) or any(
+        not isinstance(item, dict)
+        or _exact_rerank_symbol(item.get('symbol')) is None
+        for item in raw_items
+    ):
+        for candidate in rows:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='failed',
+                reason='invalid_item', validated=False,
+            )
+        overlay['applied'] = False
+        overlay['adjusted_count'] = 0
+        overlay['status'] = 'invalid_item'
+        return rows
+    for item in raw_items:
+        symbol = _exact_rerank_symbol(item.get('symbol'))
+        if symbol not in submitted_symbols:
+            unsubmitted_symbols.add(symbol)
+            by_symbol[symbol] = item
+        elif symbol in by_symbol:
+            invalid_symbols.add(symbol)
+        else:
             by_symbol[symbol] = item
     if not by_symbol:
         overlay['applied'] = False
         overlay['status'] = 'no_matching_symbols'
+        for candidate in rows:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='unused',
+                reason='no_matching_symbol', validated=True,
+            )
         return rows
 
     adjusted = 0
@@ -1616,17 +1740,77 @@ def _apply_deepseek_rerank_overlay(
         symbol = _symbol(candidate.get('symbol'))
         item = by_symbol.get(symbol)
         if not item:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='unused',
+                reason=(
+                    'not_returned' if symbol in submitted_symbols
+                    else 'outside_limit'
+                ),
+                validated=True,
+            )
             continue
-        adjustment = _clamp(_float(item.get('ranking_adjustment')), -max_adjustment, max_adjustment)
-        conviction = _clamp(_float(item.get('deepseek_conviction')), 0, 100)
-        risk_flags = [str(flag)[:80] for flag in (item.get('risk_flags') or []) if isinstance(flag, (str, int, float))][:6]
+        raw_adjustment = item.get('ranking_adjustment')
+        raw_conviction = item.get('deepseek_conviction')
+        if (
+            symbol in unsubmitted_symbols
+            or symbol not in submitted_symbols
+        ):
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='failed',
+                reason='symbol_not_submitted', validated=False,
+            )
+            continue
+        if (
+            symbol in invalid_symbols
+            or not _finite_number(raw_adjustment)
+            or not _finite_number(raw_conviction)
+            or not _valid_deepseek_rerank_qualitative_fields(item)
+        ):
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='failed',
+                reason='invalid_item', validated=False,
+            )
+            continue
+        input_source_cutoff = str(
+            candidate.get('source_cutoff')
+            or (candidate.get('replay_context') or {}).get('source_cutoff')
+            or ''
+        ).strip()
+        input_cutoff_dt = _parse_precise_source_instant(input_source_cutoff)
+        if input_cutoff_dt is None or result_at < input_cutoff_dt:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='failed',
+                reason='invalid_timestamp', validated=False,
+            )
+            continue
+        input_evidence_fingerprint = hashlib.sha256(
+            json.dumps(
+                {
+                    'source_cutoff': input_source_cutoff,
+                    'source_packets': candidate.get('source_packets') or [],
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(',', ':'),
+                default=str,
+            ).encode('utf-8')
+        ).hexdigest()
+        adjustment = _clamp(float(raw_adjustment), -max_adjustment, max_adjustment)
+        conviction = _clamp(float(raw_conviction), 0, 100)
+        risk_flags = [
+            flag.strip()[:80]
+            for flag in item.get('risk_flags')
+            if flag.strip()
+        ][:6]
         positive_evidence = [
-            str(value)[:100]
-            for value in (item.get('positive_evidence') or [])
-            if isinstance(value, (str, int, float))
+            value.strip()[:100]
+            for value in item.get('positive_evidence')
+            if value.strip()
         ][:6]
         rationale = str(item.get('rationale_ko') or '').strip()[:240]
-        candidate['ranking_score'] = round(_float(candidate.get('ranking_score')) + adjustment, 2)
+        base_ranking_score = round(_float(candidate.get('ranking_score')), 2)
+        final_ranking_score = round(base_ranking_score + adjustment, 2)
+        candidate['ranking_score'] = final_ranking_score
         candidate.setdefault('strategy_tags', [])
         if adjustment > 0 and 'deepseek_v4_confirmed' not in candidate['strategy_tags']:
             candidate['strategy_tags'].append('deepseek_v4_confirmed')
@@ -1640,9 +1824,74 @@ def _apply_deepseek_rerank_overlay(
                 'rationale_ko': rationale,
             })
         ]
+        normalized = {
+            'symbol': symbol,
+            'base_ranking_score': base_ranking_score,
+            'ranking_adjustment': round(adjustment, 2),
+            'final_ranking_score': final_ranking_score,
+            'deepseek_conviction': round(conviction, 2),
+            'risk_flags': risk_flags,
+            'positive_evidence': positive_evidence,
+            'rationale_ko': rationale,
+        }
+        content = {
+            'provider': 'deepseek',
+            'model': overlay.get('model'),
+            'operation': 'scanner_rerank',
+            'schema_version': overlay.get('schema_version') or 'mirofish.deepseek_rerank.v1',
+            'status': 'applied',
+            'validated': True,
+            'result_at': result_at.isoformat(),
+            'input_source_cutoff': input_cutoff_dt.isoformat(),
+            'input_fingerprint': input_fingerprint,
+            'input_evidence_fingerprint': input_evidence_fingerprint,
+            'normalized': normalized,
+        }
+        identity = hashlib.sha256(
+            json.dumps(
+                content, ensure_ascii=False, sort_keys=True,
+                separators=(',', ':'), default=str,
+            ).encode('utf-8')
+        ).hexdigest()[:20]
+        source_packet = {
+            'evidence_id': f'{symbol}-{identity}',
+            'source_type': 'model_attachment',
+            'source': 'deepseek_rerank',
+            'title': f'{symbol} DeepSeek scanner rerank',
+            'observed_at': result_at.isoformat(),
+            'freshness': _freshness_label(result_at.isoformat(), validated.isoformat()),
+            'confidence': round(conviction / 100.0, 4),
+            'content': content,
+        }
+        source_packets = [
+            packet for packet in (candidate.get('source_packets') or [])
+            if isinstance(packet, dict) and packet.get('source') != 'deepseek_rerank'
+        ]
+        source_packets.append(source_packet)
+        source_packets.sort(
+            key=lambda row: (
+                str(row.get('source') or ''), str(row.get('evidence_id') or ''),
+            )
+        )
+        candidate['source_packets'] = source_packets
+        candidate['source_cutoff'] = result_at.isoformat()
+        replay = candidate.get('replay_context') if isinstance(candidate.get('replay_context'), dict) else {}
+        data_sources = [str(value) for value in (replay.get('data_sources') or []) if value]
+        if 'deepseek_rerank' not in data_sources:
+            data_sources.append('deepseek_rerank')
+        replay.update({
+            'source_cutoff': result_at.isoformat(),
+            'data_sources': data_sources,
+            'lookahead_safe': bool(source_packets and not candidate.get('provenance_missing')),
+        })
+        candidate['replay_context'] = replay
         profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
         profile['deepseek_rerank'] = {
             'applied': True,
+            'status': 'applied',
+            'reason': None,
+            'validated': True,
+            'provider': 'deepseek',
             'model': overlay.get('model'),
             'ranking_adjustment': round(adjustment, 2),
             'deepseek_conviction': round(conviction, 2),
@@ -1650,8 +1899,17 @@ def _apply_deepseek_rerank_overlay(
             'positive_evidence': positive_evidence,
             'rationale_ko': rationale,
             'lookahead_safe': True,
+            'base_ranking_score': base_ranking_score,
+            'final_ranking_score': final_ranking_score,
+            'result_at': result_at.isoformat(),
+            'input_source_cutoff': input_cutoff_dt.isoformat(),
+            'input_fingerprint': input_fingerprint,
         }
         candidate['analysis_profile'] = profile
+        candidate['ranking_provenance'] = {
+            **(candidate.get('ranking_provenance') or {}),
+            'deepseek_rerank': dict(profile['deepseek_rerank']),
+        }
         adjusted += 1
 
     rows.sort(
@@ -1666,7 +1924,101 @@ def _apply_deepseek_rerank_overlay(
     for index, item in enumerate(rows, start=1):
         item['pool_rank'] = index
     overlay['adjusted_count'] = adjusted
+    overlay['applied'] = bool(adjusted)
+    if not adjusted:
+        overlay['status'] = 'no_valid_items'
+    overlay['validated_at'] = validated.isoformat()
+    overlay['result_at'] = result_at.isoformat()
     return rows
+
+
+def _deepseek_rerank_input_fingerprint(
+    rows: list[dict[str, Any]],
+    *,
+    run_context: dict[str, Any],
+    limit: int,
+    model: str,
+    max_adjustment: float,
+) -> str:
+    """Bind the exact compact candidates and policy submitted for reranking."""
+    from app.services.mirofish import deepseek_client
+
+    compact = deepseek_client._compact_rerank_candidates(rows[:limit])
+    payload = {
+        'operation': 'scanner_rerank',
+        'schema_version': 'mirofish.deepseek_rerank.v1',
+        'model': model,
+        'limit': limit,
+        'max_abs_adjustment': round(max_adjustment, 4),
+        'run_context': run_context,
+        'candidates': compact,
+    }
+    return hashlib.sha256(
+        json.dumps(
+            payload, ensure_ascii=False, sort_keys=True,
+            separators=(',', ':'), default=str,
+        ).encode('utf-8')
+    ).hexdigest()
+
+
+def _set_deepseek_rerank_state(
+    candidate: dict[str, Any],
+    *,
+    overlay: dict[str, Any],
+    status: str,
+    reason: str,
+    validated: bool,
+) -> None:
+    base_score = round(_float(candidate.get('ranking_score')), 2)
+    state = {
+        'applied': False,
+        'status': status,
+        'reason': reason,
+        'validated': bool(validated),
+        'provider': 'deepseek',
+        'model': overlay.get('model'),
+        'ranking_adjustment': 0.0,
+        'base_ranking_score': base_score,
+        'final_ranking_score': base_score,
+        'lookahead_safe': bool(
+            (candidate.get('replay_context') or {}).get('lookahead_safe')
+        ),
+    }
+    profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
+    profile['deepseek_rerank'] = state
+    candidate['analysis_profile'] = profile
+    candidate['ranking_provenance'] = {
+        **(candidate.get('ranking_provenance') or {}),
+        'deepseek_rerank': dict(state),
+    }
+
+
+def _finite_number(value: Any) -> bool:
+    if isinstance(value, bool):
+        return False
+    try:
+        return math.isfinite(float(value))
+    except (TypeError, ValueError):
+        return False
+
+
+def _exact_rerank_symbol(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    symbol = value.strip()
+    return symbol if re.fullmatch(r'\d{6}', symbol) else None
+
+
+def _valid_deepseek_rerank_qualitative_fields(item: dict[str, Any]) -> bool:
+    risk_flags = item.get('risk_flags')
+    positive_evidence = item.get('positive_evidence')
+    return bool(
+        isinstance(risk_flags, list)
+        and all(isinstance(value, str) for value in risk_flags)
+        and isinstance(positive_evidence, list)
+        and all(isinstance(value, str) for value in positive_evidence)
+        and isinstance(item.get('rationale_ko'), str)
+    )
 
 
 def _deepseek_rerank_provider_status(overlay: dict[str, Any]) -> dict[str, Any]:
@@ -1999,6 +2351,12 @@ def _score_symbol(
         freshness=source_freshness,
         risk=risk,
     )
+    workflow_outcomes = _workflow_outcomes_source_payload(
+        performance_advisory,
+        performance_memory=mcp_adjustment.get('performance_memory'),
+        tag_memory=tag_memory,
+        total_ranking_delta=mcp_ranking_delta,
+    )
     data_sources = _candidate_sources(
         price,
         screener,
@@ -2012,6 +2370,7 @@ def _score_symbol(
         dart_event,
         news_theme_social,
         rs_rating,
+        workflow_outcomes,
     )
     source_packets, source_cutoff, provenance_missing = _authoritative_source_packets(
         symbol=symbol,
@@ -2031,6 +2390,7 @@ def _score_symbol(
             'dart_event_latest.json': dart_event,
             'news_theme_social_latest.json': news_theme_social,
             'alpha_rs_ratings.json': rs_rating,
+            'workflow_outcomes': workflow_outcomes,
         },
         required_sources=data_sources,
         cutoff_ceiling=generated_at,
@@ -2108,7 +2468,9 @@ def _score_symbol(
             'price_date': price.get('date'),
             'source_cutoff': source_cutoff,
             'data_sources': data_sources,
-            'lookahead_safe': not provenance_missing,
+            'lookahead_safe': bool(
+                source_packets and source_cutoff and not provenance_missing
+            ),
         },
         'price': {
             'date': price.get('date'),
@@ -3136,6 +3498,71 @@ def _performance_tag_memory_adjustment(performance_advisory: dict[str, Any], tag
     }
 
 
+def _workflow_outcomes_source_payload(
+    performance_advisory: dict[str, Any],
+    *,
+    performance_memory: Any,
+    tag_memory: Any,
+    total_ranking_delta: float,
+) -> dict[str, Any] | None:
+    """Freeze the exact replay-safe outcome inputs that affected this symbol."""
+    memory = performance_memory if isinstance(performance_memory, dict) else {}
+    tag = tag_memory if isinstance(tag_memory, dict) else {}
+    if not (memory.get('applied') or tag.get('applied')):
+        return None
+    available_at = _parse_precise_source_instant(
+        performance_advisory.get('available_at')
+        or performance_advisory.get('asof')
+        or performance_advisory.get('as_of')
+    )
+    if available_at is None or not performance_advisory.get('lookahead_safe'):
+        return None
+    recommendations = (
+        performance_advisory.get('recommendations')
+        if isinstance(performance_advisory.get('recommendations'), dict)
+        else {}
+    )
+    matched_tags = tag.get('matched_tags') if isinstance(tag.get('matched_tags'), dict) else {}
+    evaluated_count = int(_float(performance_advisory.get('evaluated_count')))
+    normalized = {
+        'source': 'workflow_outcomes',
+        'available_at': available_at.isoformat(),
+        'as_of': available_at.isoformat(),
+        'lookahead_safe': True,
+        'evaluated_count': evaluated_count,
+        'workflow_count_scanned': int(
+            _float(performance_advisory.get('workflow_count_scanned'))
+        ),
+        'horizon_days': int(_float(performance_advisory.get('horizon_days'))),
+        'hit_rate_recent': round(_float(performance_advisory.get('hit_rate_recent')), 6),
+        'baseline_hit_rate': round(
+            _float(
+                memory.get('baseline_hit_rate')
+                if memory.get('baseline_hit_rate') is not None
+                else recommendations.get('baseline_hit_rate')
+            ),
+            6,
+        ),
+        'global_ranking_delta': round(_float(memory.get('ranking_delta')), 2),
+        'tag_ranking_delta': round(_float(tag.get('ranking_delta')), 2),
+        'total_ranking_delta': round(_float(total_ranking_delta), 2),
+        'matched_tags': {
+            str(key): round(_float(value), 2)
+            for key, value in sorted(matched_tags.items())
+        },
+    }
+    return {
+        'source': 'workflow_outcomes',
+        'schema_version': 'mirofish.workflow_outcomes.ranking.v1',
+        'available_at': available_at.isoformat(),
+        'lookahead_safe': True,
+        'confidence': round(
+            _clamp(0.55 + evaluated_count * 0.004, 0.55, 0.95), 4
+        ),
+        'normalized': normalized,
+    }
+
+
 def _learning_score_control(performance_advisory: dict[str, Any]) -> dict[str, Any]:
     policy = performance_advisory.get('learning_policy') if isinstance(performance_advisory, dict) else None
     control = policy.get('score_control') if isinstance(policy, dict) else None
@@ -3504,6 +3931,7 @@ def _candidate_sources(
     dart_event: dict[str, Any] | None = None,
     news_theme_social: dict[str, Any] | None = None,
     rs_rating: dict[str, Any] | None = None,
+    workflow_outcomes: dict[str, Any] | None = None,
 ) -> list[str]:
     sources = []
     if _float(price.get('current_price')) > 0:
@@ -3530,6 +3958,8 @@ def _candidate_sources(
         sources.append('news_theme_social_latest.json')
     if rs_rating:
         sources.append('alpha_rs_ratings.json')
+    if workflow_outcomes:
+        sources.append('workflow_outcomes')
     return sources
 
 
@@ -4098,6 +4528,9 @@ def _performance_advisory() -> dict[str, Any]:
         }
     return {
         **base,
+        # This is the immutable receipt time after outcome, agent-overlay, and
+        # learning-policy inputs have all been assembled for scoring.
+        'available_at': datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -4111,14 +4544,15 @@ def _performance_advisory_at_cutoff(
     normalized = dict(advisory)
     if not normalized.get('available'):
         return normalized
-    observed = next((
+    observed_values = [
         parsed
         for key in (
             'available_at', 'asof', 'as_of', 'fetched_at',
             'observed_at', 'updated_at', 'generated_at',
         )
         if (parsed := _parse_precise_source_instant(normalized.get(key))) is not None
-    ), None)
+    ]
+    observed = max(observed_values) if observed_values else None
     cutoff = _parse_dt(cutoff_ceiling)
     reason = None
     if not normalized.get('lookahead_safe'):
