@@ -42,7 +42,8 @@ from app.services.mirofish import decision_brief, decision_cache, decision_jobs,
 import scheduler
 print('BOOT_OK')
 "@ 2>&1
-Report ($boot -match 'BOOT_OK') "create_app + decision/guard/scheduler imports" "python import error above"
+# $boot 는 출력 배열 — 배열에 -match 를 쓰면 매치된 요소 배열이 반환돼 [bool] 바인딩이 깨진다
+Report ([bool]($boot -match 'BOOT_OK')) "create_app + decision/guard/scheduler imports" "python import error above"
 
 # ── 3. 빠른 스모크 테스트 (풀스위트는 CI 가 이미 통과) ─────
 & $PYTHON -m pytest tests/test_signal_contract.py tests/test_decision_cache.py tests/test_aibrain_service_guard.py -q -p no:cacheprovider 2>&1 | Select-Object -Last 3
