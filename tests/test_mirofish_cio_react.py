@@ -180,3 +180,17 @@ def test_cio_requires_valid_final_answer_inside_router_attempt(monkeypatch, mock
     invalid = {'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
                'alignment_score': mock_brain['alignment_score'], 'steps': []}
     assert captured['domain_validator'](invalid) is not None
+
+
+def test_cio_domain_validator_requires_known_tools_and_final_step_last():
+    invalid = {
+        'steps': [
+            {'thought': 'done', 'action': {'tool': 'final_answer', 'args': {
+                'action': 'BUY', 'confidence': 0.8, 'allocation_pct': 20,
+                'reasoning': 'r', 'opposing_scenario': 'o',
+            }}},
+            {'thought': 'bad', 'action': {'tool': 'unknown_tool', 'args': {}}},
+            {'thought': 'later', 'action': {'tool': 'query_brain', 'args': {'dimension': 'macro'}}},
+        ],
+    }
+    assert cr._cio_domain_validator(invalid) is not None

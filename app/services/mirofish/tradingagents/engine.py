@@ -43,6 +43,7 @@ import json
 import logging
 import os
 import re
+from uuid import uuid4
 from datetime import datetime, timezone
 from typing import Any
 
@@ -55,12 +56,13 @@ from app.services.mirofish.tradingagents import learning
 from app.services.mirofish.tradingagents import run_cache
 from app.services.mirofish import evidence_packet as evidence_packet_mod
 from app.services.mirofish import llm_client
-from app.services.ai_routing.contracts import Operation, RoutingRequest
+from app.services.ai_routing.contracts import Operation, ProviderErrorClass, RoutingRequest
 from app.services.ai_routing.policy import policy_for
 from app.services.ai_routing.router import reserve_openai_fallback, release_openai_reservations
 from app.utils.atomic_json import write_json_atomic
 
 logger = logging.getLogger(__name__)
+DIGEST_SYSTEM = '결정론적 점수와 EvidencePacket을 변경하지 말고 짧게 요약하세요.'
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 RUNS_ROOT = os.path.join(REPO_ROOT, 'data', 'admin_mirofish', 'tradingagents_runs')
@@ -88,6 +90,7 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
                       routing_run_id: str | None = None,
                       request_ids: dict[str, str] | None = None,
                       reservation_ids: dict[str, str] | None = None,
+                      reservation_owner_tokens: dict[str, str] | None = None,
                       permits_preflighted: bool = False) -> dict[str, Any]:
     """Run an analysis, reusing only immutable validated compact artifacts."""
     profile = str(profile or 'full').strip().lower()
@@ -99,6 +102,7 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
         run_id=artifact_run_id, force=force,
         routing_run_id=routing_run_id or artifact_run_id,
         request_ids=request_ids, reservation_ids=reservation_ids,
+        reservation_owner_tokens=reservation_owner_tokens,
         permits_preflighted=permits_preflighted,
     )
     try:
@@ -112,7 +116,7 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
             lambda result: os.path.join(RUNS_ROOT, f"{result['id']}.json"),
         )
     finally:
-        release_compact_permits(reservation_ids)
+        release_compact_permits(reservation_ids, reservation_owner_tokens)
 
 
 def _execute_deep_analysis(target: str, *, symbol: str | None = None,
@@ -124,6 +128,7 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
                       routing_run_id: str | None = None,
                       request_ids: dict[str, str] | None = None,
                       reservation_ids: dict[str, str] | None = None,
+                      reservation_owner_tokens: dict[str, str] | None = None,
                       permits_preflighted: bool = False) -> dict[str, Any]:
     """Run the full deep-verification pipeline for one target and persist it.
 
@@ -142,6 +147,7 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
     routing_run_id = routing_run_id or stable_run_id
     request_ids = request_ids or {}
     reservation_ids = dict(reservation_ids or {})
+    reservation_owner_tokens = dict(reservation_owner_tokens or {})
 
     if profile == 'compact':
         packet = evidence_packet or {}
@@ -149,6 +155,15 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
             raise ValueError('compact EvidencePacket identity mismatch')
         if not packet.get('market'):
             raise ValueError('compact EvidencePacket identity missing market')
+        execution_inputs = packet.get('execution_inputs')
+        if not isinstance(execution_inputs, dict) or bool(execution_inputs.get('use_llm')) != bool(use_llm):
+            raise ValueError('compact EvidencePacket execution mode mismatch')
+        packet_brain = execution_inputs.get('brain')
+        if brain is not None and json.dumps(brain, sort_keys=True, default=str) != json.dumps(packet_brain, sort_keys=True, default=str):
+            raise ValueError('compact EvidencePacket brain mismatch')
+        if use_llm and dict(packet.get('models') or {}) != routing_model_ids():
+            raise ValueError('compact EvidencePacket model identity mismatch')
+        brain = packet_brain
         bundle = data_hub.bundle_from_evidence_packet(packet, brain=brain)
     else:
         bundle = data_hub.gather_bundle(target, brain=brain) or {}
@@ -165,12 +180,18 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
         )
         if profile == 'compact' and digest_llm_enabled:
             raw_digest, digest_meta = llm_client.generate_text_with_metadata(
-                _compact_digest_prompt(target, reports, evidence_packet or {}),
-                system='결정론적 점수와 EvidencePacket을 변경하지 말고 짧게 요약하세요.',
+                evidence_packet_mod.bound_compact_prompt(
+                    _compact_digest_prompt(target, reports, evidence_packet or {}), 'bulk_text',
+                ),
+                system=DIGEST_SYSTEM,
                 temperature=0.2, max_tokens=768, json_mode=True,
                 operation='bulk_text', run_id=routing_run_id,
                 request_id=request_ids.get('bulk_text') or f'{stable_run_id}:evidence-digest',
                 reservation_id=reservation_ids.get('bulk_text'),
+                reservation_owner_token=reservation_owner_tokens.get('bulk_text'),
+                domain_validator=_digest_domain_validator(
+                    set((evidence_packet or {}).get('evidence_ids') or []),
+                ),
                 symbol=bundle.get('symbol') or symbol, market=bundle.get('market'),
                 caller_endpoint='mirofish.tradingagents.compact_digest',
             )
@@ -203,6 +224,7 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
                 target, reports, use_llm=debate_llm_enabled, run_id=routing_run_id,
                 request_id=request_ids.get('compact_debate') or f'{stable_run_id}:compact-debate',
                 reservation_id=reservation_ids.get('compact_debate'), evidence_packet=evidence_packet,
+                reservation_owner_token=reservation_owner_tokens.get('compact_debate'),
             )
             if use_llm and not debate_llm_enabled:
                 debate['analysis_status'] = 'DEGRADED'
@@ -227,6 +249,7 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
             name=bundle.get('display_name') or target, evidence_packet=evidence_packet,
             request_id=request_ids.get('decisive_text'),
             reservation_id=reservation_ids.get('decisive_text'),
+            reservation_owner_token=reservation_owner_tokens.get('decisive_text'),
         )
         if use_llm and not decisive_llm_enabled:
             tr['analysis_status'] = 'HOLD_REVIEW'
@@ -284,6 +307,19 @@ def routing_model_ids() -> dict[str, str]:
     return out
 
 
+def _digest_domain_validator(allowed: set[str]):
+    def validate(data: Any) -> ProviderErrorClass | None:
+        if not isinstance(data, dict) or not str(data.get('digest') or '').strip():
+            return ProviderErrorClass.INVALID_JSON
+        evidence_ids = data.get('evidence_ids')
+        if not isinstance(evidence_ids, list) or not evidence_ids:
+            return ProviderErrorClass.INVALID_JSON
+        if any(not isinstance(value, str) for value in evidence_ids) or not set(evidence_ids) <= allowed:
+            return ProviderErrorClass.INVALID_JSON
+        return None
+    return validate
+
+
 def compact_request_ids(run_id: str, packet: dict[str, Any]) -> dict[str, str]:
     identity = f"{run_id}:{packet['symbol']}:{packet['fingerprint']}"
     return {operation.value: f'{identity}:{operation.value}' for operation in (
@@ -291,10 +327,16 @@ def compact_request_ids(run_id: str, packet: dict[str, Any]) -> dict[str, str]:
     )}
 
 
-def release_compact_permits(reservation_ids: dict[str, str] | None) -> None:
+def release_compact_permits(
+    reservation_ids: dict[str, str] | None,
+    reservation_owner_tokens: dict[str, str] | None = None,
+) -> None:
     """Idempotently release every preflight hold not already settled/released."""
-    if reservation_ids:
-        release_openai_reservations(list(reservation_ids.values()))
+    if reservation_ids and reservation_owner_tokens:
+        release_openai_reservations([
+            (reservation_id, reservation_owner_tokens.get(operation, ''))
+            for operation, reservation_id in reservation_ids.items()
+        ])
 
 
 def reserve_compact_batch(
@@ -307,19 +349,23 @@ def reserve_compact_batch(
         ids = compact_request_ids(run_id, packet)
         request = RoutingRequest(
             operation=Operation.DECISIVE_TEXT,
-            prompt=json.dumps(packet, ensure_ascii=False, sort_keys=True, default=str),
+            prompt=evidence_packet_mod.compact_reservation_prompt('decisive_text'),
+            system=trader_risk.PM_SYSTEM,
             run_id=run_id, request_id=ids['decisive_text'],
             symbol=packet['symbol'], market=packet['market'], json_mode=True,
             max_output_tokens=1200,
         )
-        permit = reserve_openai_fallback(request)
+        permit = reserve_openai_fallback(
+            request, owner_token=f'compact:{os.getpid()}:{uuid4()}',
+        )
         record = {'symbol': packet['symbol'], 'request_ids': ids,
                   'permits': {}, 'status': 'admitted' if permit.approved else 'deferred',
                   'reason': permit.reason}
-        if permit.approved and permit.reservation_id:
+        if permit.approved and permit.acquired_by_caller and permit.reservation_id and permit.owner_token:
             record['permits']['decisive_text'] = permit.reservation_id
             prepared.append({'packet': packet, 'request_ids': ids,
-                             'reservation_ids': record['permits']})
+                             'reservation_ids': record['permits'],
+                             'reservation_owner_tokens': {'decisive_text': permit.owner_token}})
         records.append(record)
     by_symbol = {item['packet']['symbol']: item for item in prepared}
     for operation, cap in ((Operation.BULK_TEXT, 768), (Operation.COMPACT_DEBATE, 768)):
@@ -329,14 +375,19 @@ def reserve_compact_batch(
                 continue
             request = RoutingRequest(
                 operation=operation,
-                prompt=json.dumps(item['packet'], ensure_ascii=False, sort_keys=True, default=str),
+                prompt=evidence_packet_mod.compact_reservation_prompt(operation.value),
+                system=(DIGEST_SYSTEM if operation is Operation.BULK_TEXT
+                        else research_debate.COMPACT_DEBATE_SYSTEM),
                 run_id=run_id, request_id=item['request_ids'][operation.value],
                 symbol=item['packet']['symbol'], market=item['packet']['market'],
                 json_mode=True, max_output_tokens=cap,
             )
-            permit = reserve_openai_fallback(request)
-            if permit.approved and permit.reservation_id:
+            permit = reserve_openai_fallback(
+                request, owner_token=f'compact:{os.getpid()}:{uuid4()}',
+            )
+            if permit.approved and permit.acquired_by_caller and permit.reservation_id and permit.owner_token:
                 item['reservation_ids'][operation.value] = permit.reservation_id
+                item['reservation_owner_tokens'][operation.value] = permit.owner_token
                 record['permits'][operation.value] = permit.reservation_id
             else:
                 record.setdefault('degraded_stages', []).append(

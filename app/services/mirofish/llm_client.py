@@ -507,6 +507,7 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
                                 expected_numbers: dict[str, int | float] | None = None,
                                 domain_validator: Callable[[Any], ProviderErrorClass | None] | None = None,
                                 reservation_id: str | None = None,
+                                reservation_owner_token: str | None = None,
                                 ) -> tuple[str | None, dict[str, Any]]:
     """Generate through the central router and publish legacy-safe diagnostics."""
     started = time.perf_counter()
@@ -533,6 +534,7 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
         expected_numbers=expected_numbers,
         domain_validator=domain_validator,
         reservation_id=reservation_id,
+        reservation_owner_token=reservation_owner_token,
     )
     result = (
         router.route_vision(request)
@@ -617,7 +619,8 @@ def generate_text_with_provider(prompt: str, *, system: str | None = None,
                                 expected_identity: dict[str, str] | None = None,
                                 expected_numbers: dict[str, int | float] | None = None,
                                 domain_validator: Callable[[Any], ProviderErrorClass | None] | None = None,
-                                reservation_id: str | None = None) -> tuple[str | None, str]:
+                                reservation_id: str | None = None,
+                                reservation_owner_token: str | None = None) -> tuple[str | None, str]:
     """Generate text and return the provider that succeeded (legacy API)."""
     text, metadata = generate_text_with_metadata(
         prompt, system=system, model_env=model_env, temperature=temperature,
@@ -626,6 +629,7 @@ def generate_text_with_provider(prompt: str, *, system: str | None = None,
         symbol=symbol, market=market, expected_identity=expected_identity,
         expected_numbers=expected_numbers,
         domain_validator=domain_validator, reservation_id=reservation_id,
+        reservation_owner_token=reservation_owner_token,
     )
     return text, str(metadata['provider'])
 
@@ -639,7 +643,8 @@ def generate_text(prompt: str, *, system: str | None = None, model_env: str | No
                   expected_identity: dict[str, str] | None = None,
                   expected_numbers: dict[str, int | float] | None = None,
                   domain_validator: Callable[[Any], ProviderErrorClass | None] | None = None,
-                  reservation_id: str | None = None) -> str | None:
+                  reservation_id: str | None = None,
+                  reservation_owner_token: str | None = None) -> str | None:
     """Generate plain text or JSON text with automatic provider fallback."""
     text, _provider = generate_text_with_provider(
         prompt,
@@ -658,5 +663,6 @@ def generate_text(prompt: str, *, system: str | None = None, model_env: str | No
         expected_numbers=expected_numbers,
         domain_validator=domain_validator,
         reservation_id=reservation_id,
+        reservation_owner_token=reservation_owner_token,
     )
     return text

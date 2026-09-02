@@ -117,6 +117,7 @@ class RoutingRequest:
     expected_numbers: Mapping[str, int | float | Decimal] | None = None
     domain_validator: Callable[[Any], ProviderErrorClass | None] | None = None
     reservation_id: str | None = None
+    reservation_owner_token: str | None = None
 
 
 @dataclass(frozen=True)

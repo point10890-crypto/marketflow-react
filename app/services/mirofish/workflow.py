@@ -1072,19 +1072,55 @@ def _complete_workflow(
             admission_summary['deferred'] += len(work_items)
             admission_summary['admitted'] = 0
             admission_summary['reason'] = 'tradingagents_disabled'
-            work_items = []
+            for record in admission_summary.get('records') or []:
+                if record.get('status') == 'admitted':
+                    record.update(status='deferred', reason='tradingagents_disabled')
+            workflow.update({
+                'status': 'disabled',
+                'analysis_status': 'DISABLED',
+                'disabled_at': datetime.now(timezone.utc).isoformat(),
+                'elapsed_ms': int((time.perf_counter() - started) * 1000),
+                'budget_summary': admission_summary,
+                'analysis_runs': [],
+                'top3': [],
+                'progress': {
+                    'phase': 'disabled', 'completed': 0,
+                    'total': len(work_items), 'percent': 0,
+                },
+                'summary': {
+                    'status': 'disabled', 'reason': 'tradingagents_disabled',
+                    'analyzed_count': 0, 'selected_count': 0,
+                },
+                'tradingagents_summary': {
+                    'status': 'disabled', 'analyzed': 0,
+                    'legacy_duplicate_removed': True,
+                },
+            })
+            _write_workflow(workflow)
+            return workflow
         else:
+            compact_use_llm = _mode(mode) not in {'rule', 'local', 'no-llm'}
             valid_items: list[dict[str, Any]] = []
             for item in work_items:
                 try:
-                    item['evidence_packet'] = _build_candidate_packet(item['candidate'])
+                    item['evidence_packet'] = _build_candidate_packet(
+                        item['candidate'], use_llm=compact_use_llm,
+                    )
                     valid_items.append(item)
                 except ValueError as exc:
-                    admission_summary['records'].append({
-                        'symbol': item['candidate'].get('symbol'), 'status': 'rejected',
-                        'reason': f'evidence_invalid:{exc}',
-                    })
+                    symbol = str(item['candidate'].get('symbol') or '')
+                    admission_record = next((
+                        record for record in admission_summary.get('records') or []
+                        if str(record.get('symbol') or '') == symbol
+                    ), None)
+                    if admission_record is not None:
+                        admission_record.update(
+                            status='rejected', reason=f'evidence_invalid:{exc}',
+                        )
                     admission_summary['rejected'] += 1
+                    admission_summary['admitted'] = max(
+                        0, int(admission_summary.get('admitted') or 0) - 1,
+                    )
             work_items = valid_items
             if _mode(mode) not in {'rule', 'local', 'no-llm'}:
                 prepared, permit_records = ta_engine.reserve_compact_batch(
@@ -1117,20 +1153,25 @@ def _complete_workflow(
                 _invoke_analysis_run, item['candidate'], agent_count, mode, workflow_id,
                 bool(workflow.get('force')), evidence_packet=item.get('evidence_packet'),
                 request_ids=item.get('request_ids'), reservation_ids=item.get('reservation_ids'),
+                reservation_owner_tokens=item.get('reservation_owner_tokens'),
                 permits_preflighted=bool(item.get('reservation_ids')),
             ): item['candidate']
             for item in work_items
         }
         permits_by_symbol = {
-            str(item['candidate'].get('symbol')): item.get('reservation_ids')
+            str(item['candidate'].get('symbol')): (
+                item.get('reservation_ids'), item.get('reservation_owner_tokens'),
+            )
             for item in work_items
         }
         for future, candidate in future_map.items():
-            reservation_ids = permits_by_symbol.get(str(candidate.get('symbol')))
+            reservation_ids, owner_tokens = permits_by_symbol.get(
+                str(candidate.get('symbol')), (None, None),
+            )
             if reservation_ids:
                 future.add_done_callback(
-                    lambda _future, permits=dict(reservation_ids):
-                    ta_engine.release_compact_permits(permits)
+                    lambda _future, permits=dict(reservation_ids), owners=dict(owner_tokens or {}):
+                    ta_engine.release_compact_permits(permits, owners)
                 )
         for future in concurrent.futures.as_completed(future_map):
             candidate = future_map[future]
@@ -1267,6 +1308,7 @@ def _invoke_analysis_run(
     workflow_id: str, force: bool, *, evidence_packet: dict[str, Any] | None = None,
     request_ids: dict[str, str] | None = None,
     reservation_ids: dict[str, str] | None = None,
+    reservation_owner_tokens: dict[str, str] | None = None,
     permits_preflighted: bool = False,
 ) -> dict[str, Any]:
     parameters = inspect.signature(_create_analysis_run).parameters
@@ -1275,6 +1317,7 @@ def _invoke_analysis_run(
             'workflow_id': workflow_id, 'force': force,
             'evidence_packet': evidence_packet, 'request_ids': request_ids,
             'reservation_ids': reservation_ids,
+            'reservation_owner_tokens': reservation_owner_tokens,
             'permits_preflighted': permits_preflighted,
         }
         accepts_kwargs = any(
@@ -1295,28 +1338,40 @@ def _create_analysis_run(
     evidence_packet: dict[str, Any] | None = None,
     request_ids: dict[str, str] | None = None,
     reservation_ids: dict[str, str] | None = None,
+    reservation_owner_tokens: dict[str, str] | None = None,
     permits_preflighted: bool = False,
 ) -> dict[str, Any]:
     """Automatic-only compact seam; standalone ``store.create_run`` is unchanged."""
     if ta_engine.is_disabled():
         raise RuntimeError('TradingAgents automatic analysis is disabled')
     target = candidate.get('display_name') or candidate.get('name') or candidate.get('symbol')
-    packet = evidence_packet or _build_candidate_packet(candidate)
+    compact_use_llm = _mode(mode) not in {'rule', 'local', 'no-llm'}
+    packet = evidence_packet or _build_candidate_packet(candidate, use_llm=compact_use_llm)
     ta = ta_engine.run_deep_analysis(
-        str(target), symbol=candidate.get('symbol'), use_llm=_mode(mode) not in {'rule', 'local', 'no-llm'},
+        str(target), symbol=candidate.get('symbol'), use_llm=compact_use_llm,
         profile='compact', evidence_packet=packet, force=force,
         routing_run_id=workflow_id, request_ids=request_ids,
         reservation_ids=reservation_ids,
+        reservation_owner_tokens=reservation_owner_tokens,
         permits_preflighted=permits_preflighted,
     )
     return store.create_compact_run(candidate, ta, agent_count=agent_count)
 
 
-def _build_candidate_packet(candidate: dict[str, Any]) -> dict[str, Any]:
+def _build_candidate_packet(
+    candidate: dict[str, Any], *, use_llm: bool, brain: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    provenance_missing = [
+        str(value) for value in (candidate.get('provenance_missing') or []) if value
+    ]
+    if provenance_missing:
+        raise ValueError(
+            'required provenance missing: ' + ','.join(sorted(set(provenance_missing)))
+        )
     enriched = {
         **candidate,
-        'as_of': candidate.get('as_of') or candidate.get('generated_at')
-                 or (candidate.get('replay_context') or {}).get('generated_at'),
+        'as_of': candidate.get('source_cutoff')
+                 or (candidate.get('replay_context') or {}).get('source_cutoff'),
     }
     return evidence_packet_mod.build_evidence_packet(
         enriched, profile='compact', models=ta_engine.routing_model_ids(),
@@ -1324,7 +1379,7 @@ def _build_candidate_packet(candidate: dict[str, Any]) -> dict[str, Any]:
             'alpha': candidate.get('alpha_score'), 'risk': candidate.get('risk_score'),
             'relative_strength': _extract_rs_rating(candidate),
             'profitability': ((candidate.get('analysis_profile') or {}).get('profitability_scorecard') or {}).get('goal_fit_score'),
-        },
+        }, execution_inputs={'use_llm': bool(use_llm), 'brain': brain},
         risk_gates=((candidate.get('analysis_profile') or {}).get('profitability_scorecard') or {}),
     )
 
@@ -1370,12 +1425,20 @@ def _analysis_result(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
         'market': run.get('market') or candidate.get('market'),
         'verdict': {
             'action': verdict.get('action') or verdict.get('label'),
+            'analysis_status': (
+                verdict.get('analysis_status') or run.get('analysis_status') or 'SUCCESS_PRIMARY'
+            ),
+            'rule_candidate_verdict': (
+                verdict.get('rule_candidate_verdict') or run.get('rule_candidate_verdict')
+            ),
             'confidence_pct': verdict.get('confidence_pct'),
             'bullish': verdict.get('bullish'),
             'neutral': verdict.get('neutral'),
             'bearish': verdict.get('bearish'),
             'target': verdict_target_label,
             'summary': verdict.get('summary'),
+            'reasoning': verdict.get('reasoning'),
+            'opposing_scenario': verdict.get('opposing_scenario'),
             # ── P0 #4: 종목 식별 + 분석 기준일 (UI/Telegram 직접 사용) ──
             'symbol': verdict_symbol,
             'market': verdict_market,
@@ -1401,6 +1464,9 @@ def _analysis_result(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
         'artifacts': run.get('artifacts') or {},
         'source_run_id': run.get('source_run_id'),
         'analysis_status': run.get('analysis_status') or verdict.get('analysis_status') or 'SUCCESS_PRIMARY',
+        'rule_candidate_verdict': (
+            run.get('rule_candidate_verdict') or verdict.get('rule_candidate_verdict')
+        ),
         'provider_usage': run.get('provider_usage') or {},
         'profile': run.get('profile'),
         'evidence_fingerprint': run.get('evidence_fingerprint'),
@@ -1938,30 +2004,10 @@ def _extract_rs_rating(candidate: dict[str, Any]) -> int | None:
 
 def _candidate_summary(candidate: dict[str, Any]) -> dict[str, Any]:
     source_packets = list(candidate.get('source_packets') or [])
-    source = str(candidate.get('source') or '').strip()
-    fetched_at = str(
-        candidate.get('generated_at')
-        or (candidate.get('replay_context') or {}).get('generated_at')
-        or ''
-    ).strip()
-    if not source_packets and source and fetched_at:
-        evidence_hash = hashlib.sha256(
-            f"{source}:{candidate.get('symbol')}:{fetched_at}".encode('utf-8')
-        ).hexdigest()[:20]
-        source_packets = [{
-            'evidence_id': f'scanner-{evidence_hash}',
-            'source': source,
-            'fetched_at': fetched_at,
-            'freshness': (candidate.get('freshness') or {}).get('status'),
-            'content': {
-                'price': candidate.get('price') or {},
-                'action': candidate.get('action'),
-                'alpha_score': candidate.get('alpha_score'),
-                'risk_score': candidate.get('risk_score'),
-                'analysis_profile': candidate.get('analysis_profile') or {},
-                'entry_plan': candidate.get('entry_plan') or {},
-            },
-        }]
+    source_cutoff = candidate.get('source_cutoff') or (candidate.get('replay_context') or {}).get('source_cutoff')
+    if not source_cutoff and source_packets:
+        observed = [str(row.get('fetched_at') or row.get('observed_at') or '') for row in source_packets]
+        source_cutoff = max((value for value in observed if value), default=None)
     return {
         'rank': candidate.get('rank'),
         'symbol': candidate.get('symbol'),
@@ -1980,9 +2026,11 @@ def _candidate_summary(candidate: dict[str, Any]) -> dict[str, Any]:
         'replay_context': candidate.get('replay_context') or {},
         'price': candidate.get('price') or {},
         'generated_at': candidate.get('generated_at'),
+        'source_cutoff': source_cutoff,
         'source': candidate.get('source'),
         'freshness': candidate.get('freshness') or {},
         'source_packets': source_packets,
+        'provenance_missing': list(candidate.get('provenance_missing') or []),
     }
 
 

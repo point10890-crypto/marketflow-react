@@ -30,10 +30,12 @@ import json
 import logging
 from typing import Any
 
+from app.services.mirofish import evidence_packet as evidence_packet_mod
 from app.services.mirofish import llm_client
 from app.services.ai_routing.contracts import ProviderErrorClass
 
 logger = logging.getLogger(__name__)
+COMPACT_DEBATE_SYSTEM = '강세/약세 논거를 분리해 같은 EvidencePacket만 인용하세요.'
 
 _MANAGER_BULL_CUTOFF = 10.0
 _MANAGER_BEAR_CUTOFF = -10.0
@@ -150,6 +152,7 @@ def run_compact_debate(
     target: str, reports: list[dict[str, Any]], *, use_llm: bool = True,
     run_id: str | None = None, request_id: str | None = None,
     reservation_id: str | None = None,
+    reservation_owner_token: str | None = None,
     evidence_packet: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """One logical bull/bear call; the research manager remains deterministic."""
@@ -161,21 +164,23 @@ def run_compact_debate(
     bull_case, bear_case = rule_bull, rule_bear
     bull_ids = list(packet.get('evidence_ids') or [])
     bear_ids = list(packet.get('evidence_ids') or [])
+    allowed = set(packet.get('evidence_ids') or [])
     if use_llm:
-        prompt = (
+        prompt = evidence_packet_mod.bound_compact_prompt((
             f"분석 대상: {target}\nEvidencePacket: {json.dumps(packet, ensure_ascii=False, default=str)}\n"
             'JSON: {"bull_case":"...","bear_case":"...","bull_evidence_ids":[],"bear_evidence_ids":[]}'
-        )
+        ), 'compact_debate')
         raw, llm_meta = llm_client.generate_text_with_metadata(
-            prompt, system='강세/약세 논거를 분리해 같은 EvidencePacket만 인용하세요.',
+            prompt, system=COMPACT_DEBATE_SYSTEM,
             temperature=0.2, max_tokens=768, json_mode=True,
             operation='compact_debate', run_id=run_id, request_id=request_id,
             reservation_id=reservation_id,
+            reservation_owner_token=reservation_owner_token,
+            domain_validator=_compact_debate_domain_validator(allowed),
             symbol=packet.get('symbol'), market=packet.get('market'),
             caller_endpoint='mirofish.tradingagents.compact_debate',
         )
         data = _parse_json_obj(raw)
-        allowed = set(packet.get('evidence_ids') or [])
         if data and str(data.get('bull_case') or '').strip() and str(data.get('bear_case') or '').strip():
             proposed_bull = list(data.get('bull_evidence_ids') or [])
             proposed_bear = list(data.get('bear_evidence_ids') or [])
@@ -197,6 +202,24 @@ def run_compact_debate(
         'llm': llm_meta,
         'rule_candidate_verdict': manager,
     }
+
+
+def _compact_debate_domain_validator(allowed: set[str]):
+    def validate(data: Any) -> ProviderErrorClass | None:
+        if not isinstance(data, dict):
+            return ProviderErrorClass.INVALID_JSON
+        if not str(data.get('bull_case') or '').strip() or not str(data.get('bear_case') or '').strip():
+            return ProviderErrorClass.INVALID_JSON
+        bull_ids = data.get('bull_evidence_ids')
+        bear_ids = data.get('bear_evidence_ids')
+        if not isinstance(bull_ids, list) or not bull_ids or not isinstance(bear_ids, list) or not bear_ids:
+            return ProviderErrorClass.INVALID_JSON
+        if any(not isinstance(value, str) for value in bull_ids + bear_ids):
+            return ProviderErrorClass.INVALID_JSON
+        if not set(bull_ids + bear_ids) <= allowed:
+            return ProviderErrorClass.INVALID_JSON
+        return None
+    return validate
 
 
 # ── Method bookkeeping ──────────────────────────────────────────────

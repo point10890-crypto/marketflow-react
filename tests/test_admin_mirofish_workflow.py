@@ -52,6 +52,7 @@ def _candidate(symbol, name, alpha, risk, rank=1, action='BUY_CANDIDATE'):
         'entry_plan': {'status': 'ready'},
         'price': {'date': '2026-05-07', 'current_price': 1000 * rank},
         'generated_at': observed_at,
+        'source_cutoff': observed_at,
         'source': 'local_marketflow_artifacts',
         'freshness': {'status': 'fresh'},
         'source_packets': [{
@@ -133,16 +134,21 @@ def test_automatic_analysis_seam_uses_compact_once_without_legacy_stack(monkeypa
     assert captured[0]['routing_run_id'] == 'mcp_parent'
 
 
-def test_scanner_summary_promotes_explicit_source_provenance():
+def test_scanner_summary_never_synthesizes_missing_source_provenance():
     candidate = _candidate('005930', '삼성전자', 85, 20)
     candidate.pop('source_packets')
 
     summary = workflow._candidate_summary(candidate)
-    packet = workflow._build_candidate_packet(summary)
+    with pytest.raises(ValueError, match='provenance'):
+        workflow._build_candidate_packet(summary, use_llm=True)
 
-    assert packet['sources'][0]['source'] == 'local_marketflow_artifacts'
-    assert packet['sources'][0]['fetched_at'] == candidate['generated_at']
-    assert packet['sources'][0]['content']['price']['current_price'] == 1000
+
+def test_scanner_candidate_with_partial_required_provenance_is_rejected():
+    candidate = _candidate('005930', '삼성전자', 85, 20)
+    candidate['provenance_missing'] = ['dart_event_latest.json']
+
+    with pytest.raises(ValueError, match='required provenance'):
+        workflow._build_candidate_packet(candidate, use_llm=True)
 
 
 def test_candidate_admission_happens_before_executor_submission(tmp_path, monkeypatch):
@@ -196,6 +202,53 @@ def test_automatic_kill_switch_does_not_run_compact_or_legacy(monkeypatch):
     monkeypatch.setattr(workflow.store, 'create_run', pytest.fail)
     with pytest.raises(RuntimeError, match='disabled'):
         workflow._create_analysis_run(candidate, 10, 'full', workflow_id='wf')
+
+
+def test_automatic_kill_switch_projects_explicit_disabled_workflow(tmp_path, monkeypatch):
+    candidate = _candidate('005930', '삼성전자', 90, 20)
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(
+        workflow.alpha_scanner, 'run_scanner_alert_check',
+        lambda *args, **kwargs: _scanner_result([candidate]),
+    )
+    monkeypatch.setattr(workflow.ta_engine, 'run_deep_analysis', pytest.fail)
+    monkeypatch.setattr(workflow.ta_engine, 'reserve_compact_batch', pytest.fail)
+    monkeypatch.setattr(workflow.store, 'create_run', pytest.fail)
+
+    result = workflow.start_workflow_from_scanner_events(
+        {'max_events': 1, 'top_n': 1, 'require_buy': False}, async_mode=False,
+    )
+
+    assert result['status'] == 'disabled'
+    assert result['analysis_status'] == 'DISABLED'
+    assert result['analysis_runs'] == []
+    assert result['top3'] == []
+    assert result['progress']['phase'] == 'disabled'
+    assert result['progress']['percent'] < 100
+    assert result['budget_summary']['reason'] == 'tradingagents_disabled'
+
+
+def test_analysis_projection_preserves_decision_diagnostics():
+    candidate = _candidate('005930', '삼성전자', 90, 20)
+    run = _analysis_run(candidate)
+    run['analysis_status'] = 'SUCCESS_FALLBACK'
+    run['rule_candidate_verdict'] = {'action': 'HOLD', 'confidence': 0.51}
+    run['verdict'].update({
+        'analysis_status': 'SUCCESS_FALLBACK',
+        'rule_candidate_verdict': {'action': 'HOLD', 'confidence': 0.51},
+        'reasoning': 'fallback evidence is decisive',
+        'opposing_scenario': 'volume confirmation fails',
+    })
+
+    result = workflow._analysis_result(candidate, run)
+
+    assert result['analysis_status'] == 'SUCCESS_FALLBACK'
+    assert result['rule_candidate_verdict'] == {'action': 'HOLD', 'confidence': 0.51}
+    assert result['verdict']['analysis_status'] == 'SUCCESS_FALLBACK'
+    assert result['verdict']['rule_candidate_verdict']['action'] == 'HOLD'
+    assert result['verdict']['reasoning'] == 'fallback evidence is decisive'
+    assert result['verdict']['opposing_scenario'] == 'volume confirmation fails'
 
 
 def test_workflow_runs_multi_target_graphrag_and_selects_top3(tmp_path, monkeypatch):

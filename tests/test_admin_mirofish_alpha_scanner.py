@@ -179,6 +179,15 @@ def test_alpha_scanner_creates_ranked_deterministic_run(tmp_path, monkeypatch):
     assert run['candidates'][1]['risk_score'] > run['candidates'][0]['risk_score']
     assert {'rank', 'symbol', 'name', 'display_name', 'market', 'alpha_score', 'risk_score'} <= set(run['candidates'][0])
     assert run['candidates'][0]['evidence']
+    packets = run['candidates'][0]['source_packets']
+    assert packets and all(packet.get('observed_at') for packet in packets)
+    assert run['candidates'][0]['source_cutoff'] == max(
+        packet['observed_at'] for packet in packets
+    )
+    assert run['candidates'][0]['source_cutoff'] != run['generated_at']
+    price_packet = next(packet for packet in packets if packet['source'] == 'daily_prices.csv')
+    assert price_packet['content']['price']['current_price'] == 108.0
+    assert price_packet['content']['evidence']
 
     saved = alpha_scanner.read_scanner_run(run['id'])
     candidate_payload = alpha_scanner.read_scanner_candidates(run['id'])

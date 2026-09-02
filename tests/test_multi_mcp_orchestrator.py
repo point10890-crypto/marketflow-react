@@ -256,6 +256,14 @@ def test_stale_market_observation_is_blocked_before_agents(
     assert calls == []
 
 
+def test_evidence_packet_retains_stable_underlying_source_cutoff():
+    candidate = orchestrator._normalize_candidate(_candidate())
+    first = orchestrator._evidence_packet(candidate, use_llm=True)
+    second = orchestrator._evidence_packet(candidate, use_llm=True)
+    assert first['as_of'] == candidate['observed_at']
+    assert first['fingerprint'] == second['fingerprint']
+
+
 def test_live_market_scan_uses_kis_candidate_pool(monkeypatch):
     captured = {}
     monkeypatch.setattr(

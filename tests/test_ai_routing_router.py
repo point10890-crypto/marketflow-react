@@ -135,7 +135,10 @@ def test_router_claims_pre_reserved_permit_and_settles_without_second_debit(tmp_
     )
     permit = reserve_openai_fallback(request, budget=budget)
     assert permit.approved and permit.reservation_id
-    routed = RoutingRequest(**{**request.__dict__, 'reservation_id': permit.reservation_id})
+    routed = RoutingRequest(**{
+        **request.__dict__, 'reservation_id': permit.reservation_id,
+        'reservation_owner_token': permit.owner_token,
+    })
     router = AIRouter(
         {'deepseek': FakeAdapter(ProviderCallError(ProviderErrorClass.AUTHENTICATION)),
          'openai': FakeAdapter(_response('{"verdict":"BUY"}'))},
@@ -148,6 +151,36 @@ def test_router_claims_pre_reserved_permit_and_settles_without_second_debit(tmp_
             "SELECT status, actual_calls FROM budget_reservations WHERE run_id='permit-run'"
         ).fetchall()
     assert [(row['status'], row['actual_calls']) for row in rows] == [('settled', 1)]
+
+
+def test_router_fails_closed_when_provider_usage_exceeds_reservation(tmp_path):
+    store = RoutingStore(tmp_path / 'usage.sqlite3')
+    budget = BudgetManager(store)
+    request = RoutingRequest(
+        operation=Operation.DECISIVE_TEXT, prompt='fixture', run_id='breach-run',
+        request_id='breach-request', json_mode=True, max_output_tokens=1,
+    )
+    permit = reserve_openai_fallback(request, budget=budget, owner_token='owner-a')
+    routed = RoutingRequest(**{
+        **request.__dict__, 'reservation_id': permit.reservation_id,
+        'reservation_owner_token': permit.owner_token,
+    })
+    response = AdapterResponse(
+        text='{"verdict":"BUY"}', usage=TokenUsage(input_tokens=1, output_tokens=2),
+    )
+    router = AIRouter(
+        {'deepseek': FakeAdapter(ProviderCallError(ProviderErrorClass.AUTHENTICATION)),
+         'openai': FakeAdapter(response)},
+        budget=budget, breaker=CircuitBreaker(store), store=store,
+    )
+    result = router.route_text(routed)
+    assert result.analysis_status is AnalysisStatus.HOLD_REVIEW
+    assert result.fallback_reason == 'reservation_breached'
+    with store.transaction() as connection:
+        row = connection.execute(
+            "SELECT status FROM budget_reservations WHERE run_id='breach-run'"
+        ).fetchone()
+    assert row['status'] == 'breached'
 
 
 def test_auth_failure_opens_breaker_and_next_request_skips_dead_provider(tmp_path):

@@ -46,6 +46,9 @@ def test_cache_key_changes_for_replay_contract_dimensions():
     ):
         changed = {**packet, field: value}
         assert cache_key(changed) != base
+    changed_execution = {**packet, 'execution_inputs': {'use_llm': False, 'brain': None}}
+    changed_execution['fingerprint'] = 'changed-execution'
+    assert cache_key(changed_execution) != base
 
 
 def test_packet_rejects_missing_or_after_cutoff_provenance():

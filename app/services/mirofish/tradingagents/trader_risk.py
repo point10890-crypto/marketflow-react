@@ -35,6 +35,7 @@ import json
 import logging
 from typing import Any
 
+from app.services.mirofish import evidence_packet as evidence_packet_mod
 from app.services.mirofish import llm_client
 from app.services.ai_routing.contracts import ProviderErrorClass
 
@@ -73,6 +74,7 @@ _PM_SYSTEM = (
     '당신은 포트폴리오 매니저입니다. 트레이더 계획과 리스크팀 3인의 투표를 종합해 '
     '최종 판정을 내리세요. 판정은 STRONG_BUY/BUY/HOLD/SELL 중 하나여야 합니다.'
 )
+PM_SYSTEM = _PM_SYSTEM
 _PM_JSON = (
     '다음 JSON 형식으로만 응답하세요: '
     '{"symbol":"고정값","name":"고정값","market":"고정값","analyst_mean":고정숫자,'
@@ -98,6 +100,7 @@ def run_trader_and_risk(
     name: str | None = None,
     evidence_packet: dict[str, Any] | None = None,
     request_id: str | None = None, reservation_id: str | None = None,
+    reservation_owner_token: str | None = None,
 ) -> dict[str, Any]:
     """Run trader plan → 3-role risk debate → PM final decision.
 
@@ -141,6 +144,7 @@ def run_trader_and_risk(
         run_id=run_id, symbol=symbol, market=market, name=name or target,
         evidence_packet=evidence_packet,
         request_id=request_id, reservation_id=reservation_id,
+        reservation_owner_token=reservation_owner_token,
     )
     llm_ok, llm_fail = _accumulate(used, use_llm, llm_ok, llm_fail)
 
@@ -318,6 +322,7 @@ def _pm_decision(target: str, debate: dict[str, Any], trader_plan: dict[str, Any
                  market: str | None = None, name: str | None = None,
                  evidence_packet: dict[str, Any] | None = None,
                  request_id: str | None = None, reservation_id: str | None = None,
+                 reservation_owner_token: str | None = None,
                  ) -> tuple[dict[str, Any], bool]:
     rule = _pm_decision_rule(debate, regime_adjustment)
     if use_llm:
@@ -327,6 +332,7 @@ def _pm_decision(target: str, debate: dict[str, Any], trader_plan: dict[str, Any
                 run_id=run_id, symbol=symbol, market=market, name=name,
                 evidence_packet=evidence_packet,
                 request_id=request_id, reservation_id=reservation_id,
+                reservation_owner_token=reservation_owner_token,
             )
             if llm:
                 return llm, True
@@ -372,10 +378,11 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
             name: str | None = None,
             evidence_packet: dict[str, Any] | None = None,
             request_id: str | None = None, reservation_id: str | None = None,
+            reservation_owner_token: str | None = None,
             ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     votes = ', '.join(f'{r["role"]}={r["vote"]}' for r in risk_debate)
     regime_block = f'[시장 레짐]\n{regime_line}\n\n' if regime_line else ''
-    prompt = (
+    prompt = evidence_packet_mod.bound_compact_prompt((
         f'{regime_block}'
         f'분석 대상: {target}\n'
         f'트레이더 계획: {trader_plan.get("action_hint", "")}\n'
@@ -384,12 +391,13 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
         f'애널리스트 평균 점수: {_analyst_mean(debate):+.1f}\n'
         f'고정 식별자: symbol={symbol or ""}, name={name or target}, market={market or ""}\n'
         f'EvidencePacket: {json.dumps(evidence_packet or {}, ensure_ascii=False, default=str)}\n\n{_PM_JSON}'
-    )
+    ), 'decisive_text')
     raw, llm_meta = llm_client.generate_text_with_metadata(
         prompt, system=_PM_SYSTEM, temperature=0.3, max_tokens=1200, json_mode=True,
         operation='decisive_text', run_id=run_id,
         request_id=request_id or (f'{run_id}:{symbol or target}:portfolio-manager' if run_id else None),
         reservation_id=reservation_id,
+        reservation_owner_token=reservation_owner_token,
         symbol=symbol, market=market,
         expected_identity=(
             {'symbol': symbol, 'name': name or target, 'market': market}

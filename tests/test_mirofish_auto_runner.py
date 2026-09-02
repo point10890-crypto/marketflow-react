@@ -108,7 +108,9 @@ def test_auto_runner_quality_hold_commits_events_without_telegram(monkeypatch):
         lambda **kwargs: {
             'id': 'mcp_low_quality',
             'status': 'completed',
-            'top3': [{'symbol': '000001', 'final_score': 40.0}],
+            'top3': [{'symbol': '000001', 'final_score': 40.0,
+                      'analysis_status': 'SUCCESS_PRIMARY',
+                      'verdict': {'action': 'BUY', 'analysis_status': 'SUCCESS_PRIMARY'}}],
             'summary': {
                 'quality': {
                     'recommendation': 'hold',

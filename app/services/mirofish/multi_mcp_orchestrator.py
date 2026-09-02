@@ -116,7 +116,7 @@ def run_multi_mcp_analysis(
         include_deferred=False,
     )
 
-    evidence_packets = [_evidence_packet(row, as_of=started.isoformat()) for row in clean_candidates]
+    evidence_packets = [_evidence_packet(row, use_llm=use_llm) for row in clean_candidates]
     eligible = [packet for packet in evidence_packets if packet['profit_gate']['passed']]
     admission = ta_run_cache.AdmissionManager(os.path.join(RUNS_ROOT, 'candidate_admission.sqlite3'))
     admitted, budget_summary = admission.admit(run_id, eligible, limit=max(0, min(int(max_candidates), 5)))
@@ -140,16 +140,18 @@ def run_multi_mcp_analysis(
                 routing_run_id=run_id,
                 request_ids=(prepared_by_symbol.get(packet['symbol']) or {}).get('request_ids'),
                 reservation_ids=(prepared_by_symbol.get(packet['symbol']) or {}).get('reservation_ids'),
+                reservation_owner_tokens=(prepared_by_symbol.get(packet['symbol']) or {}).get('reservation_owner_tokens'),
                 permits_preflighted=use_llm,
             ): packet
             for packet in admitted
         }
         for future, packet in pending.items():
             reservation_ids = (prepared_by_symbol.get(packet['symbol']) or {}).get('reservation_ids')
+            owner_tokens = (prepared_by_symbol.get(packet['symbol']) or {}).get('reservation_owner_tokens')
             if reservation_ids:
                 future.add_done_callback(
-                    lambda _future, permits=dict(reservation_ids):
-                    tradingagents.release_compact_permits(permits)
+                    lambda _future, permits=dict(reservation_ids), owners=dict(owner_tokens or {}):
+                    tradingagents.release_compact_permits(permits, owners)
                 )
         for future in as_completed(pending):
             packet = pending[future]
@@ -268,10 +270,14 @@ def _normalize_candidate(row: Any) -> dict[str, Any] | None:
         'observed_at': row.get('observed_at'),
         'market': market,
         'source_packets': row.get('source_packets') or [],
+        'source_cutoff': row.get('source_cutoff') or max((
+            str(packet.get('fetched_at') or packet.get('observed_at') or '')
+            for packet in (row.get('source_packets') or []) if isinstance(packet, dict)
+        ), default=str(row.get('observed_at') or '')),
     }
 
 
-def _evidence_packet(candidate: dict[str, Any], *, as_of: str | None = None) -> dict[str, Any]:
+def _evidence_packet(candidate: dict[str, Any], *, use_llm: bool = True) -> dict[str, Any]:
     trend = get_price_trend_metrics(
         candidate['symbol'],
         current_price=candidate['current_price'],
@@ -305,13 +311,13 @@ def _evidence_packet(candidate: dict[str, Any], *, as_of: str | None = None) -> 
         },
     }
     canonical = evidence_packet_mod.build_evidence_packet(
-        {**legacy, 'as_of': as_of or candidate.get('observed_at'), 'risk_flags': risk_flags},
+        {**legacy, 'as_of': candidate.get('source_cutoff'), 'risk_flags': risk_flags},
         profile='compact',
         models=tradingagents.routing_model_ids(),
         deterministic_scores={
             'alpha': candidate.get('alpha_score'), 'risk': candidate.get('risk_score'),
             'trend': trend.get('trend_score'), 'relative_strength': candidate.get('rs_rating'),
-        }, risk_gates=checks,
+        }, risk_gates=checks, execution_inputs={'use_llm': bool(use_llm), 'brain': None},
     )
     return {**legacy, **canonical, 'profit_gate': legacy['profit_gate'], 'trend': trend}
 

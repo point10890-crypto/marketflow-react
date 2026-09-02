@@ -1907,6 +1907,26 @@ def _score_symbol(
         dart_event,
         news_theme_social,
     )
+    source_packets, source_cutoff, provenance_missing = _authoritative_source_packets(
+        symbol=symbol,
+        evidence=clean_evidence,
+        artifacts=artifacts,
+        sources={
+            'daily_prices.csv': {'price': price, 'price_metrics': price_metrics},
+            'screener_leading_latest.json': screener,
+            'vcp_kr_latest.json': vcp,
+            'jongga_v2_latest.json': jongga,
+            'tradingview_mcp': {'signal': tradingview, 'adjustment': tradingview_adjustment}
+                if tradingview_adjustment.get('applied') else None,
+            'all_institutional_trend_data.csv': institutional,
+            'kind_blacklist_latest.json': kind_blacklist,
+            'credit_balance_latest.json': credit_balance,
+            'KIS API: live price/investor flow': kis_live,
+            'dart_event_latest.json': dart_event,
+            'news_theme_social_latest.json': news_theme_social,
+        },
+        required_sources=data_sources,
+    )
     profitability_scorecard = _profitability_scorecard(
         alpha=alpha,
         risk=risk,
@@ -1978,9 +1998,9 @@ def _score_symbol(
         'entry_plan': entry_plan,
         'replay_context': {
             'price_date': price.get('date'),
-            'generated_at': generated_at,
+            'source_cutoff': source_cutoff,
             'data_sources': data_sources,
-            'lookahead_safe': True,
+            'lookahead_safe': not provenance_missing,
         },
         'price': {
             'date': price.get('date'),
@@ -1990,6 +2010,9 @@ def _score_symbol(
             'trading_value': trading_value,
         },
         'generated_at': generated_at,
+        'source_cutoff': source_cutoff,
+        'source_packets': source_packets,
+        'provenance_missing': provenance_missing,
         'source': 'local_marketflow_artifacts',
         'freshness': source_freshness,
         'tradingview': tradingview_adjustment,
@@ -3316,6 +3339,77 @@ def _candidate_sources(
     return sources
 
 
+def _authoritative_source_packets(
+    *, symbol: str, evidence: list[dict[str, Any]], artifacts: dict[str, Any],
+    sources: dict[str, Any], required_sources: list[str],
+) -> tuple[list[dict[str, Any]], str | None, list[str]]:
+    """Project source-owned observations; never substitute scanner generation time."""
+    file_observed = {
+        os.path.basename(str(item.get('file') or '')): item.get('generated_at') or item.get('modified_at')
+        for item in _source_files(artifacts)
+        if isinstance(item, dict)
+    }
+    artifact_keys = {
+        'screener_leading_latest.json': 'screener',
+        'vcp_kr_latest.json': 'vcp',
+        'jongga_v2_latest.json': 'jongga',
+    }
+    packets: list[dict[str, Any]] = []
+    missing: list[str] = []
+    observed_values: list[datetime] = []
+    for source in required_sources:
+        payload = sources.get(source)
+        if not payload:
+            missing.append(source)
+            continue
+        observed_at = _resource_observed_at(payload) if isinstance(payload, dict) else None
+        artifact_key = artifact_keys.get(source)
+        artifact = artifacts.get(artifact_key) if artifact_key else None
+        if not observed_at and isinstance(artifact, dict):
+            observed_at = artifact.get('generated_at') or artifact.get('mtime')
+        if not observed_at:
+            observed_at = file_observed.get(source)
+        parsed = _parse_dt(observed_at)
+        if parsed is None:
+            missing.append(source)
+            continue
+        normalized_time = parsed.isoformat()
+        observed_values.append(parsed)
+        source_evidence = [row for row in evidence if str(row.get('source') or '') == source]
+        content = ({**payload, 'evidence': source_evidence}
+                   if isinstance(payload, dict)
+                   else {'raw': payload, 'evidence': source_evidence})
+        identity = hashlib.sha256(
+            json.dumps(content, ensure_ascii=False, sort_keys=True, default=str).encode('utf-8')
+        ).hexdigest()[:20]
+        packets.append({
+            'evidence_id': f'{symbol}-{identity}',
+            'source_type': _source_packet_type(source),
+            'source': source,
+            'title': f'{symbol} {source}',
+            'observed_at': normalized_time,
+            'freshness': _freshness_label(normalized_time, max_age_days=7),
+            'confidence': max([_float(row.get('confidence')) for row in source_evidence] or [0.7]),
+            'content': content,
+        })
+    packets.sort(key=lambda row: (row['source'], row['evidence_id']))
+    cutoff = max(observed_values).isoformat() if observed_values else None
+    return packets, cutoff, sorted(set(missing))
+
+
+def _source_packet_type(source: str) -> str:
+    lowered = source.lower()
+    if 'dart' in lowered:
+        return 'filing'
+    if 'news' in lowered:
+        return 'news'
+    if 'price' in lowered or 'kis' in lowered:
+        return 'market_quote'
+    if 'tradingview' in lowered:
+        return 'technical'
+    return 'signal'
+
+
 def _feature_vectors(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [_feature_vector(candidate) for candidate in candidates]
 
@@ -3721,7 +3815,7 @@ def _resource_observed_at(item: dict[str, Any]) -> Any:
         value = item.get(key)
         if value:
             return value
-    for key in ('quote', 'investor', 'metadata'):
+    for key in ('price', 'quote', 'investor', 'metadata'):
         nested = item.get(key)
         if isinstance(nested, dict):
             value = _resource_observed_at(nested)

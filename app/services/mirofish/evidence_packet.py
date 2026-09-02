@@ -10,6 +10,31 @@ from typing import Any, Mapping
 
 SCHEMA_VERSION = "mirofish.evidence.v1"
 PROMPT_VERSION = "compact.v1"
+COMPACT_PROMPT_BYTE_CAPS = {
+    "bulk_text": 5_200,
+    "compact_debate": 6_000,
+    "decisive_text": 5_500,
+}
+
+
+def bound_compact_prompt(text: str, operation: str) -> str:
+    """Bound UTF-8 prompt bytes while preserving both context head and schema tail."""
+    cap = COMPACT_PROMPT_BYTE_CAPS[str(operation)]
+    encoded = str(text or "").encode("utf-8")
+    if len(encoded) <= cap:
+        return str(text or "")
+    marker = b"\n...[bounded]...\n"
+    remaining = cap - len(marker)
+    head_size = remaining * 2 // 3
+    head = encoded[:head_size].decode("utf-8", errors="ignore").encode("utf-8")
+    tail_size = cap - len(marker) - len(head)
+    tail = encoded[-tail_size:].decode("utf-8", errors="ignore")
+    return head.decode("utf-8") + marker.decode("ascii") + tail
+
+
+def compact_reservation_prompt(operation: str) -> str:
+    """ASCII is one byte each, producing the exact conservative prompt-byte cap."""
+    return "x" * COMPACT_PROMPT_BYTE_CAPS[str(operation)]
 
 
 def _canonical(value: Any) -> str:
@@ -60,6 +85,7 @@ def build_evidence_packet(
     schema_version: str = SCHEMA_VERSION, prompt_version: str = PROMPT_VERSION,
     deterministic_scores: Mapping[str, Any] | None = None,
     risk_gates: Mapping[str, Any] | None = None,
+    execution_inputs: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return a canonical value whose fingerprint excludes transient generation time."""
     symbol = str(candidate.get("symbol") or candidate.get("code") or "").strip()
@@ -113,6 +139,7 @@ def build_evidence_packet(
         "allowed_verdicts": ["STRONG_BUY", "BUY", "HOLD", "SELL"],
         "schema_version": str(schema_version), "prompt_version": str(prompt_version),
         "profile": str(profile), "models": dict(models or {}),
+        "execution_inputs": deepcopy(dict(execution_inputs or {"use_llm": True, "brain": None})),
         "cache_eligible": bool(sources),
     }
     packet["fingerprint"] = _sha(packet)
@@ -121,7 +148,8 @@ def build_evidence_packet(
 
 def cache_key(packet: Mapping[str, Any]) -> str:
     return _sha({key: packet.get(key) for key in (
-        "symbol", "as_of", "fingerprint", "profile", "models", "prompt_version", "schema_version"
+        "symbol", "as_of", "fingerprint", "profile", "models", "execution_inputs",
+        "prompt_version", "schema_version"
     )})
 
 

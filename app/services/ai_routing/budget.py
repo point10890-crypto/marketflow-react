@@ -27,6 +27,7 @@ class BudgetReservation:
     reason: str | None = None
     already_reserved: bool = False
     acquired_by_caller: bool = False
+    owner_token: str | None = None
 
 
 @dataclass(frozen=True)
@@ -69,12 +70,12 @@ class BudgetManager:
         row = connection.execute(
             """
             SELECT
-                COALESCE(SUM(CASE WHEN status = 'settled'
+                COALESCE(SUM(CASE WHEN status IN ('settled', 'breached')
                     THEN COALESCE(actual_calls, reserved_calls) ELSE reserved_calls END), 0),
-                COALESCE(SUM(CASE WHEN status = 'settled'
+                COALESCE(SUM(CASE WHEN status IN ('settled', 'breached')
                     THEN COALESCE(actual_input_tokens, reserved_input_tokens)
                     ELSE reserved_input_tokens END), 0),
-                COALESCE(SUM(CASE WHEN status = 'settled'
+                COALESCE(SUM(CASE WHEN status IN ('settled', 'breached')
                     THEN COALESCE(actual_output_tokens, reserved_output_tokens)
                     ELSE reserved_output_tokens END), 0)
             FROM budget_reservations
@@ -110,7 +111,7 @@ class BudgetManager:
         for row in rows:
             raw = (
                 row["actual_cost_usd"]
-                if row["status"] == "settled" and row["actual_cost_usd"] is not None
+                if row["status"] in {"settled", "breached"} and row["actual_cost_usd"] is not None
                 else row["reserved_cost_usd"]
             )
             if raw is not None:
@@ -128,6 +129,7 @@ class BudgetManager:
         calls: int = 1,
         estimated_cost_usd: Decimal | None = None,
         cost_pricing_version: str | None = None,
+        owner_token: str | None = None,
     ) -> BudgetReservation:
         if min(input_tokens, output_tokens, calls) < 0 or calls == 0:
             raise ValueError("reservation amounts must be non-negative and calls positive")
@@ -136,21 +138,38 @@ class BudgetManager:
             estimated_cost_usd = Decimal(estimated_cost_usd)
             if not estimated_cost_usd.is_finite() or estimated_cost_usd < 0:
                 raise ValueError("estimated cost must be a non-negative finite decimal")
+        acquisition_token = str(owner_token or uuid4())
         with self.store.transaction(write=True) as connection:
+            released_reservation_id: str | None = None
             existing = connection.execute(
                 """
-                SELECT reservation_id, status FROM budget_reservations
+                SELECT reservation_id, status, owner_token, operation FROM budget_reservations
                 WHERE run_id = ? AND request_id = ? AND pool = ? AND provider = ?
                 """,
                 (run_id, request_id, self.pool, self.provider),
             ).fetchone()
             if existing is not None:
-                return BudgetReservation(
-                    approved=existing["status"] != "released",
-                    reservation_id=existing["reservation_id"],
-                    already_reserved=True,
-                    acquired_by_caller=False,
-                )
+                if existing["status"] == "settled":
+                    return BudgetReservation(False, existing["reservation_id"], "already_settled", True)
+                if existing["status"] in {"claimed", "breached"}:
+                    return BudgetReservation(False, existing["reservation_id"], "permit_in_use", True)
+                if existing["status"] == "reserved":
+                    same_owner = bool(owner_token) and existing["owner_token"] == acquisition_token
+                    return BudgetReservation(
+                        same_owner, existing["reservation_id"],
+                        None if same_owner else "permit_in_use", True, same_owner,
+                        acquisition_token if same_owner else None,
+                    )
+                if existing["status"] == "released":
+                    if existing["operation"] != operation.value:
+                        return BudgetReservation(
+                            False, existing["reservation_id"], "permit_mismatch", True,
+                        )
+                    released_reservation_id = existing["reservation_id"]
+                else:
+                    return BudgetReservation(
+                        False, existing["reservation_id"], "permit_unavailable", True,
+                    )
 
             daily_limit, daily_error = (
                 self._daily_limit()
@@ -185,6 +204,27 @@ class BudgetManager:
             ):
                 return BudgetReservation(False, reason="hard_cap")
 
+            if released_reservation_id is not None:
+                updated = connection.execute(
+                    """UPDATE budget_reservations SET reserved_calls=?,
+                    reserved_input_tokens=?, reserved_output_tokens=?, billing_day_utc=?,
+                    reserved_cost_usd=?, cost_pricing_version=?, actual_calls=NULL,
+                    actual_input_tokens=NULL, actual_output_tokens=NULL, actual_cost_usd=NULL,
+                    status='reserved', owner_token=?, created_at_utc=?, settled_at_utc=NULL
+                    WHERE reservation_id=? AND status='released'""",
+                    (calls, input_tokens, output_tokens, billing_day_utc,
+                     str(estimated_cost_usd) if estimated_cost_usd is not None else None,
+                     cost_pricing_version, acquisition_token, _utc_now(), released_reservation_id),
+                ).rowcount
+                if updated != 1:
+                    return BudgetReservation(
+                        False, released_reservation_id, "permit_in_use", True,
+                    )
+                return BudgetReservation(
+                    True, released_reservation_id, already_reserved=True,
+                    acquired_by_caller=True, owner_token=acquisition_token,
+                )
+
             reservation_id = str(uuid4())
             connection.execute(
                 """
@@ -192,8 +232,8 @@ class BudgetManager:
                     reservation_id, run_id, request_id, pool, provider, operation,
                     reserved_calls, reserved_input_tokens, reserved_output_tokens,
                     billing_day_utc, reserved_cost_usd, cost_pricing_version,
-                    status, created_at_utc
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved', ?)
+                    status, owner_token, created_at_utc
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved', ?, ?)
                 """,
                 (
                     reservation_id,
@@ -208,10 +248,12 @@ class BudgetManager:
                     billing_day_utc,
                     str(estimated_cost_usd) if estimated_cost_usd is not None else None,
                     cost_pricing_version,
+                    acquisition_token,
                     _utc_now(),
                 ),
             )
-            return BudgetReservation(True, reservation_id=reservation_id, acquired_by_caller=True)
+            return BudgetReservation(True, reservation_id=reservation_id, acquired_by_caller=True,
+                                     owner_token=acquisition_token)
 
     def settle(
         self,
@@ -220,21 +262,37 @@ class BudgetManager:
         *,
         calls: int = 1,
         actual_cost_usd: Decimal | None = None,
-    ) -> None:
+    ) -> bool:
         if not reservation_id:
-            return
+            return False
+        if calls < 0:
+            raise ValueError("actual calls must be non-negative")
         with self.store.transaction(write=True) as connection:
             if actual_cost_usd is not None:
                 actual_cost_usd = Decimal(actual_cost_usd)
                 if not actual_cost_usd.is_finite() or actual_cost_usd < 0:
                     raise ValueError("actual cost must be a non-negative finite decimal")
-            connection.execute(
+            row = connection.execute(
+                "SELECT reserved_calls,reserved_input_tokens,reserved_output_tokens,reserved_cost_usd,status "
+                "FROM budget_reservations WHERE reservation_id=?", (reservation_id,),
+            ).fetchone()
+            if row is None or row["status"] not in {"reserved", "claimed"}:
+                return False
+            breached = (
+                calls > row["reserved_calls"]
+                or (usage.input_tokens is not None and usage.input_tokens > row["reserved_input_tokens"])
+                or (usage.output_tokens is not None and usage.output_tokens > row["reserved_output_tokens"])
+                or (actual_cost_usd is not None and row["reserved_cost_usd"] is not None
+                    and actual_cost_usd > Decimal(str(row["reserved_cost_usd"])))
+            )
+            status = "breached" if breached else "settled"
+            updated = connection.execute(
                 """
                 UPDATE budget_reservations
                 SET actual_calls = ?, actual_input_tokens = COALESCE(?, reserved_input_tokens),
                     actual_output_tokens = COALESCE(?, reserved_output_tokens),
                     actual_cost_usd = COALESCE(?, reserved_cost_usd),
-                    status = 'settled', settled_at_utc = ?
+                    status = ?, settled_at_utc = ?
                 WHERE reservation_id = ? AND status IN ('reserved', 'claimed')
                 """,
                 (
@@ -242,38 +300,65 @@ class BudgetManager:
                     usage.input_tokens,
                     usage.output_tokens,
                     str(actual_cost_usd) if actual_cost_usd is not None else None,
+                    status,
                     _utc_now(),
                     reservation_id,
                 ),
-            )
+            ).rowcount
+        return updated == 1 and not breached
 
-    def release(self, reservation_id: str | None) -> None:
-        if not reservation_id:
-            return
+    def release(self, reservation_id: str | None, *, owner_token: str | None = None) -> bool:
+        """Release only an unclaimed hold owned by this acquisition token."""
+        if not reservation_id or not owner_token:
+            return False
         with self.store.transaction(write=True) as connection:
-            connection.execute(
+            updated = connection.execute(
                 "UPDATE budget_reservations SET status = 'released', settled_at_utc = ? "
-                "WHERE reservation_id = ? AND status IN ('reserved', 'claimed')",
+                "WHERE reservation_id = ? AND status = 'reserved' AND owner_token=?",
+                (_utc_now(), reservation_id, owner_token),
+            ).rowcount
+        return updated == 1
+
+    def release_claimed(self, reservation_id: str | None) -> bool:
+        """Central-router-only release after it has claimed a permit."""
+        if not reservation_id:
+            return False
+        with self.store.transaction(write=True) as connection:
+            updated = connection.execute(
+                "UPDATE budget_reservations SET status='released', settled_at_utc=? "
+                "WHERE reservation_id=? AND status='claimed'",
                 (_utc_now(), reservation_id),
-            )
+            ).rowcount
+        return updated == 1
 
     def claim(
         self, reservation_id: str | None, *, run_id: str, request_id: str,
+        owner_token: str | None = None, input_tokens: int = 0, output_tokens: int = 0,
     ) -> BudgetReservation:
         """Atomically hand a preflight hold to the central router exactly once."""
         if not reservation_id:
             return BudgetReservation(False, reason="permit_missing")
         with self.store.transaction(write=True) as connection:
             row = connection.execute(
-                "SELECT status FROM budget_reservations "
+                "SELECT status,owner_token,reserved_input_tokens,reserved_output_tokens FROM budget_reservations "
                 "WHERE reservation_id=? AND run_id=? AND request_id=? AND pool=? AND provider=?",
                 (reservation_id, run_id, request_id, self.pool, self.provider),
             ).fetchone()
             if row is None:
                 return BudgetReservation(False, reason="permit_mismatch")
+            if not owner_token or row["owner_token"] != owner_token:
+                return BudgetReservation(False, reservation_id=reservation_id, reason="permit_owner_mismatch")
             if row["status"] != "reserved":
                 return BudgetReservation(False, reservation_id=reservation_id,
                                          reason="permit_already_claimed")
+            if input_tokens > row["reserved_input_tokens"] or output_tokens > row["reserved_output_tokens"]:
+                connection.execute(
+                    "UPDATE budget_reservations SET status='breached',settled_at_utc=? "
+                    "WHERE reservation_id=? AND status='reserved'",
+                    (_utc_now(), reservation_id),
+                )
+                return BudgetReservation(False, reservation_id=reservation_id,
+                                         reason="permit_bound_exceeded")
             updated = connection.execute(
                 "UPDATE budget_reservations SET status='claimed' "
                 "WHERE reservation_id=? AND status='reserved'", (reservation_id,),
@@ -282,7 +367,8 @@ class BudgetManager:
                 return BudgetReservation(False, reservation_id=reservation_id,
                                          reason="permit_already_claimed")
         return BudgetReservation(True, reservation_id=reservation_id,
-                                 already_reserved=True, acquired_by_caller=True)
+                                 already_reserved=True, acquired_by_caller=True,
+                                 owner_token=owner_token)
 
     def snapshot(self, run_id: str) -> BudgetSnapshot:
         with self.store.transaction() as connection:

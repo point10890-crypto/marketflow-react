@@ -94,6 +94,7 @@ def estimate_reservation_input_tokens(request: RoutingRequest) -> int:
 
 def reserve_openai_fallback(
     request: RoutingRequest, *, budget: BudgetManager | None = None,
+    owner_token: str | None = None,
 ) -> BudgetReservation:
     """Hold one provider fallback allowance before a worker is submitted."""
     policy = policy_for(request.operation)
@@ -116,17 +117,21 @@ def reserve_openai_fallback(
         operation=request.operation, input_tokens=input_tokens,
         output_tokens=max_output_tokens, estimated_cost_usd=estimate.cost,
         cost_pricing_version=estimate.pricing_version,
+        owner_token=owner_token,
     )
 
 
 def release_openai_reservations(
-    reservation_ids: list[str] | tuple[str, ...] | set[str], *,
+    reservations: list[tuple[str, str]], *,
     budget: BudgetManager | None = None,
 ) -> None:
     """Release any still-unused preflight holds; settled permits are unchanged."""
     manager = budget or BudgetManager()
-    for reservation_id in dict.fromkeys(str(value) for value in reservation_ids if value):
-        manager.release(reservation_id)
+    for reservation_id, owner_token in dict.fromkeys(
+        (str(reservation_id), str(owner_token))
+        for reservation_id, owner_token in reservations if reservation_id and owner_token
+    ):
+        manager.release(reservation_id, owner_token=owner_token)
 
 
 class AIRouter:
@@ -212,6 +217,7 @@ class AIRouter:
                 primary_provider=policy.providers[0],
             )
         finalizer_token = _ACTIVE_BUDGET.set(None)
+        budget_finalized = True
         try:
             try:
                 result = self._route_owned(request)
@@ -229,7 +235,7 @@ class AIRouter:
             finalizer = _ACTIVE_BUDGET.get()
             if finalizer is not None:
                 try:
-                    self._finish_budget(
+                    budget_finalized = self._finish_budget(
                         finalizer.reservation,
                         finalizer.openai_called,
                         finalizer.openai_usage,
@@ -240,6 +246,14 @@ class AIRouter:
                         "[ai_routing] budget finalization failed: %s", type(exc).__name__
                     )
             _ACTIVE_BUDGET.reset(finalizer_token)
+        if not budget_finalized:
+            logger.error(
+                "[ai_routing] provider usage breached its preflight reservation"
+            )
+            result = self._failed_result(
+                policy.operation, policy.providers[0], tuple(result.attempts),
+                "reservation_breached",
+            )
         flight.result = result
         flight.completed.set()
         return result
@@ -254,7 +268,12 @@ class AIRouter:
         reservation = BudgetReservation(True, acquired_by_caller=True)
         if "openai" in policy.providers:
             reservation = (
-                self.budget.claim(request.reservation_id, run_id=run_id, request_id=request_id)
+                self.budget.claim(
+                    request.reservation_id, run_id=run_id, request_id=request_id,
+                    owner_token=request.reservation_owner_token,
+                    input_tokens=estimate_reservation_input_tokens(request),
+                    output_tokens=max_output_tokens,
+                )
                 if request.reservation_id else reserve_openai_fallback(request, budget=self.budget)
             )
             if not reservation.approved:
@@ -453,15 +472,19 @@ class AIRouter:
         openai_called: bool,
         openai_usage: TokenUsage | None,
         openai_cost_usd: Decimal | None,
-    ) -> None:
+    ) -> bool:
         if openai_called:
-            self.budget.settle(
+            return self.budget.settle(
                 reservation.reservation_id,
                 openai_usage or TokenUsage.unknown(),
                 actual_cost_usd=openai_cost_usd,
             )
-        else:
-            self.budget.release(reservation.reservation_id)
+        return (
+            self.budget.release_claimed(reservation.reservation_id)
+            or self.budget.release(
+                reservation.reservation_id, owner_token=reservation.owner_token,
+            )
+        )
 
     @staticmethod
     def _skipped_attempt(

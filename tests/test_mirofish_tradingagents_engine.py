@@ -13,6 +13,9 @@ from concurrent.futures import ThreadPoolExecutor
 import pytest
 
 import app.services.mirofish.tradingagents.engine as engine
+from app.services.ai_routing.budget import BudgetReservation
+from app.services.ai_routing.contracts import RoutingRequest
+from app.services.ai_routing.router import estimate_reservation_input_tokens
 from app.services.mirofish.tradingagents.run_cache import (
     CacheWaitTimeout, LeaseLostError, RunCache, execute_cached,
 )
@@ -229,6 +232,8 @@ def test_compact_profile_makes_exactly_three_calls_with_fixed_caps(monkeypatch, 
         'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
         'as_of': '2026-07-17T06:30:00+00:00', 'fingerprint': 'f' * 64,
         'evidence_ids': ['ev1'], 'schema_version': '1', 'prompt_version': '1',
+        'models': engine.routing_model_ids(),
+        'execution_inputs': {'use_llm': True, 'brain': None},
     }
     run = engine.run_deep_analysis(
         '삼성전자', symbol='005930', use_llm=True, profile='compact',
@@ -257,6 +262,7 @@ def test_compact_cache_reuses_completed_artifact_and_force_bypasses(monkeypatch,
         'evidence_ids': ['ev1'], 'sources': [{'evidence_id': 'ev1', 'content': {'text': '근거'}}],
         'schema_version': '1', 'prompt_version': '1',
         'profile': 'compact', 'models': engine.routing_model_ids(),
+        'execution_inputs': {'use_llm': True, 'brain': None},
     }
     calls = []
 
@@ -270,17 +276,18 @@ def test_compact_cache_reuses_completed_artifact_and_force_bypasses(monkeypatch,
 
     monkeypatch.setattr(engine.llm_client, 'generate_text_with_metadata', fake)
     released = []
-    monkeypatch.setattr(engine, 'release_openai_reservations', lambda ids: released.extend(ids))
+    monkeypatch.setattr(engine, 'release_openai_reservations', lambda permits: released.extend(permits))
     first = engine.run_deep_analysis('삼성전자', symbol='005930', profile='compact', evidence_packet=packet)
     second = engine.run_deep_analysis(
         '삼성전자', symbol='005930', profile='compact', evidence_packet=packet,
-        reservation_ids={'bulk_text': 'unused-cache-hit'}, permits_preflighted=True,
+        reservation_ids={'bulk_text': 'unused-cache-hit'},
+        reservation_owner_tokens={'bulk_text': 'owner-cache-hit'}, permits_preflighted=True,
     )
     third = engine.run_deep_analysis('삼성전자', symbol='005930', profile='compact', evidence_packet=packet, force=True)
     assert second['id'] == first['id'] and second['cache_hit'] is True
     assert third['id'] != first['id']
     assert len(calls) == 6
-    assert released == ['unused-cache-hit']
+    assert released == [('unused-cache-hit', 'owner-cache-hit')]
 
 
 def test_run_cache_concurrent_identical_requests_execute_once(tmp_path):
@@ -359,6 +366,7 @@ def test_compact_replay_never_gathers_live_bundle(monkeypatch, tmp_path):
         'deterministic_scores': {'relative_strength': 90, 'trend': 20},
         'risk_gates': {'profit_gate': True}, 'schema_version': '1', 'prompt_version': '1',
         'profile': 'compact', 'models': {'decisive_text.deepseek': 'pro'},
+        'execution_inputs': {'use_llm': False, 'brain': None},
     }
     run = engine.run_deep_analysis('삼성전자', symbol='005930', use_llm=False,
                                    profile='compact', evidence_packet=packet, force=True)
@@ -379,6 +387,30 @@ def test_compact_replay_rejects_identity_mismatch_before_any_call(monkeypatch, t
     with pytest.raises(ValueError, match='identity'):
         engine.run_deep_analysis('삼성전자', symbol='005930', profile='compact',
                                  evidence_packet=packet, force=True)
+
+
+def test_compact_rejects_execution_mode_or_brain_outside_packet(monkeypatch, tmp_path):
+    monkeypatch.setattr(engine, 'RUNS_ROOT', str(tmp_path))
+    monkeypatch.setattr(engine.llm_client, 'generate_text_with_metadata', pytest.fail)
+    packet = {
+        'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+        'as_of': '2026-07-17T06:30:00+00:00', 'fingerprint': '8' * 64,
+        'evidence_ids': ['ev1'], 'sources': [{'evidence_id': 'ev1', 'content': {'text': '근거'}}],
+        'numeric_inputs': {'current_price': 70000}, 'deterministic_scores': {},
+        'risk_gates': {}, 'schema_version': '1', 'prompt_version': '1',
+        'profile': 'compact', 'models': {},
+        'execution_inputs': {'use_llm': False, 'brain': {'alignment_score': 60}},
+    }
+    with pytest.raises(ValueError, match='execution'):
+        engine.run_deep_analysis(
+            '삼성전자', symbol='005930', profile='compact', evidence_packet=packet,
+            use_llm=True, force=True,
+        )
+    with pytest.raises(ValueError, match='brain'):
+        engine.run_deep_analysis(
+            '삼성전자', symbol='005930', profile='compact', evidence_packet=packet,
+            use_llm=False, brain={'alignment_score': 61}, force=True,
+        )
 
 
 def test_live_cache_owner_renews_lease_across_long_chain(tmp_path):
@@ -449,7 +481,8 @@ def test_invalid_compact_citations_are_degraded_and_not_cached(monkeypatch, tmp_
         'evidence_ids': ['ev1'], 'sources': [{'evidence_id': 'ev1', 'content': {'text': '근거'}}],
         'numeric_inputs': {'current_price': 70000}, 'deterministic_scores': {},
         'risk_gates': {}, 'schema_version': '1', 'prompt_version': '1',
-        'profile': 'compact', 'models': {'decisive_text.deepseek': 'pro'},
+        'profile': 'compact', 'models': engine.routing_model_ids(),
+        'execution_inputs': {'use_llm': True, 'brain': None},
     }
     calls = []
     def fake(_prompt, **kwargs):
@@ -468,6 +501,39 @@ def test_invalid_compact_citations_are_degraded_and_not_cached(monkeypatch, tmp_
     assert len(calls) == 6
 
 
+def test_compact_evidence_calls_forward_citation_validators(monkeypatch, tmp_path):
+    monkeypatch.setattr(engine, 'RUNS_ROOT', str(tmp_path))
+    packet = {
+        'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+        'as_of': '2026-07-17T06:30:00+00:00', 'fingerprint': '7' * 64,
+        'evidence_ids': ['ev1'], 'sources': [{'evidence_id': 'ev1', 'content': {'text': '근거'}}],
+        'numeric_inputs': {'current_price': 70000}, 'deterministic_scores': {},
+        'risk_gates': {}, 'schema_version': '1', 'prompt_version': '1',
+        'profile': 'compact', 'models': engine.routing_model_ids(),
+        'execution_inputs': {'use_llm': True, 'brain': None},
+    }
+    validators = {}
+    def fake(_prompt, **kwargs):
+        validators[kwargs['operation']] = kwargs.get('domain_validator')
+        if kwargs['operation'] == 'bulk_text':
+            return '{"digest":"d","evidence_ids":["ev1"]}', {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'}
+        if kwargs['operation'] == 'compact_debate':
+            return '{"bull_case":"b","bear_case":"r","bull_evidence_ids":["ev1"],"bear_evidence_ids":["ev1"]}', {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'}
+        return ('{"symbol":"005930","name":"삼성전자","market":"KOSPI",'
+                '"analyst_mean":0,"verdict":"HOLD","confidence":50,"reasoning":"ok"}',
+                {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'})
+    monkeypatch.setattr(engine.llm_client, 'generate_text_with_metadata', fake)
+    engine.run_deep_analysis(
+        '삼성전자', symbol='005930', profile='compact', evidence_packet=packet, force=True,
+    )
+    assert validators['bulk_text']({'digest': 'd', 'evidence_ids': []}) is not None
+    assert validators['bulk_text']({'digest': 'd', 'evidence_ids': ['foreign']}) is not None
+    assert validators['bulk_text']({'digest': 'd', 'evidence_ids': ['ev1']}) is None
+    assert validators['compact_debate']({
+        'bull_case': 'b', 'bear_case': 'r', 'bull_evidence_ids': [], 'bear_evidence_ids': ['ev1'],
+    }) is not None
+
+
 def test_preflight_denied_low_priority_stages_are_not_re_reserved(monkeypatch, tmp_path):
     monkeypatch.setattr(engine, 'RUNS_ROOT', str(tmp_path))
     packet = {
@@ -477,6 +543,7 @@ def test_preflight_denied_low_priority_stages_are_not_re_reserved(monkeypatch, t
         'numeric_inputs': {'current_price': 70000}, 'deterministic_scores': {},
         'risk_gates': {}, 'schema_version': '1', 'prompt_version': '1',
         'profile': 'compact', 'models': engine.routing_model_ids(),
+        'execution_inputs': {'use_llm': True, 'brain': None},
     }
     calls = []
     def fake(_prompt, **kwargs):
@@ -497,6 +564,54 @@ def test_preflight_denied_low_priority_stages_are_not_re_reserved(monkeypatch, t
     assert result['analysis_status'] == 'DEGRADED'
 
 
+def test_compact_preflight_bounds_every_actual_runtime_prompt(monkeypatch, tmp_path):
+    monkeypatch.setattr(engine, 'RUNS_ROOT', str(tmp_path))
+    packet = {
+        'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+        'as_of': '2026-07-17T06:30:00+00:00', 'fingerprint': '6' * 64,
+        'evidence_ids': ['ev1'], 'sources': [{'evidence_id': 'ev1', 'content': {'text': '근거' * 2000}}],
+        'numeric_inputs': {'current_price': 70000}, 'deterministic_scores': {},
+        'risk_gates': {}, 'schema_version': '1', 'prompt_version': '1',
+        'profile': 'compact', 'models': engine.routing_model_ids(),
+        'execution_inputs': {'use_llm': True, 'brain': None},
+    }
+    reserved = {}
+    sequence = iter(range(3))
+    def reserve(request, **kwargs):
+        reserved[request.operation.value] = request
+        index = next(sequence)
+        return BudgetReservation(True, f'permit-{index}', acquired_by_caller=True,
+                                 owner_token=kwargs['owner_token'])
+    monkeypatch.setattr(engine, 'reserve_openai_fallback', reserve)
+    prepared, _records = engine.reserve_compact_batch('wf-bound', [packet])
+    actual = {}
+    def fake(prompt, **kwargs):
+        operation = kwargs['operation']
+        actual[operation] = RoutingRequest(
+            operation=operation, prompt=prompt, system=kwargs.get('system'), json_mode=True,
+            max_output_tokens=kwargs['max_tokens'], run_id='wf-bound', request_id=f'actual-{operation}',
+        )
+        if operation == 'bulk_text':
+            return '{"digest":"d","evidence_ids":["ev1"]}', {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'}
+        if operation == 'compact_debate':
+            return '{"bull_case":"b","bear_case":"r","bull_evidence_ids":["ev1"],"bear_evidence_ids":["ev1"]}', {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'}
+        return ('{"symbol":"005930","name":"삼성전자","market":"KOSPI",'
+                '"analyst_mean":0,"verdict":"HOLD","confidence":50,"reasoning":"ok"}',
+                {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'})
+    monkeypatch.setattr(engine.llm_client, 'generate_text_with_metadata', fake)
+    monkeypatch.setattr(engine, 'release_compact_permits', lambda *_: None)
+    item = prepared[0]
+    engine.run_deep_analysis(
+        '삼성전자', symbol='005930', profile='compact', evidence_packet=packet,
+        force=True, routing_run_id='wf-bound', request_ids=item['request_ids'],
+        reservation_ids=item['reservation_ids'],
+        reservation_owner_tokens=item['reservation_owner_tokens'], permits_preflighted=True,
+    )
+    assert set(actual) == {'bulk_text', 'compact_debate', 'decisive_text'}
+    for operation, request in actual.items():
+        assert estimate_reservation_input_tokens(request) <= estimate_reservation_input_tokens(reserved[operation])
+
+
 def test_missing_preflight_decisive_permit_dominates_degraded_stages(monkeypatch, tmp_path):
     monkeypatch.setattr(engine, 'RUNS_ROOT', str(tmp_path))
     monkeypatch.setattr(engine.llm_client, 'generate_text_with_metadata', pytest.fail)
@@ -507,6 +622,7 @@ def test_missing_preflight_decisive_permit_dominates_degraded_stages(monkeypatch
         'numeric_inputs': {'current_price': 70000}, 'deterministic_scores': {},
         'risk_gates': {}, 'schema_version': '1', 'prompt_version': '1',
         'profile': 'compact', 'models': engine.routing_model_ids(),
+        'execution_inputs': {'use_llm': True, 'brain': None},
     }
 
     result = engine.run_deep_analysis(

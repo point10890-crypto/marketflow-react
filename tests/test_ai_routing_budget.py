@@ -194,9 +194,121 @@ def test_only_router_claim_can_convert_reserved_permit_to_spendable(tmp_path):
     )
     claimed = manager.claim(
         reserved.reservation_id, run_id='run-claim', request_id='request-claim',
+        owner_token=reserved.owner_token, input_tokens=100, output_tokens=100,
     )
     duplicate = manager.claim(
         reserved.reservation_id, run_id='run-claim', request_id='request-claim',
+        owner_token=reserved.owner_token, input_tokens=100, output_tokens=100,
     )
     assert claimed.approved and claimed.acquired_by_caller
     assert duplicate.approved is False and duplicate.reason == 'permit_already_claimed'
+
+
+def test_preflight_owner_cannot_release_peer_or_claimed_permit(tmp_path):
+    manager = _manager(tmp_path)
+    reserved = manager.reserve(
+        run_id='owned-run', request_id='owned-request', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='owner-a',
+    )
+    peer = manager.reserve(
+        run_id='owned-run', request_id='owned-request', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='owner-b',
+    )
+    assert reserved.approved and reserved.acquired_by_caller
+    assert peer.approved is False and peer.reason == 'permit_in_use'
+    assert manager.release(reserved.reservation_id, owner_token='owner-b') is False
+    claimed = manager.claim(
+        reserved.reservation_id, run_id='owned-run', request_id='owned-request',
+        owner_token='owner-a', input_tokens=100, output_tokens=100,
+    )
+    assert claimed.approved
+    assert manager.release(reserved.reservation_id, owner_token='owner-a') is False
+    manager.settle(reserved.reservation_id, TokenUsage(input_tokens=50, output_tokens=50))
+    resumed = manager.reserve(
+        run_id='owned-run', request_id='owned-request', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='owner-a',
+    )
+    assert resumed.approved is False and resumed.reason == 'already_settled'
+
+
+def test_released_stable_request_can_be_reacquired_by_new_owner(tmp_path):
+    manager = _manager(tmp_path)
+    first = manager.reserve(
+        run_id='resume-run', request_id='resume-request', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='owner-a',
+    )
+    assert manager.release(first.reservation_id, owner_token='owner-a') is True
+    second = manager.reserve(
+        run_id='resume-run', request_id='resume-request', operation=Operation.DECISIVE_TEXT,
+        input_tokens=90, output_tokens=90, owner_token='owner-b',
+    )
+    assert second.approved and second.acquired_by_caller and second.owner_token == 'owner-b'
+
+
+def test_released_resume_rechecks_current_run_capacity(tmp_path):
+    manager = _manager(
+        tmp_path, BudgetLimits(max_calls=1, max_input_tokens=100, max_output_tokens=100),
+    )
+    first = manager.reserve(
+        run_id='resume-cap', request_id='stable-request', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='owner-a',
+    )
+    assert manager.release(first.reservation_id, owner_token='owner-a') is True
+    assert manager.reserve(
+        run_id='resume-cap', request_id='other-request', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='owner-peer',
+    ).approved
+
+    resumed = manager.reserve(
+        run_id='resume-cap', request_id='stable-request', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='owner-b',
+    )
+
+    assert resumed.approved is False
+    assert resumed.reason == 'hard_cap'
+
+
+def test_claim_and_settlement_fail_closed_above_reserved_bound(tmp_path):
+    manager = _manager(tmp_path)
+    first = manager.reserve(
+        run_id='bound-run', request_id='bound-request', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='owner-a',
+    )
+    claim = manager.claim(
+        first.reservation_id, run_id='bound-run', request_id='bound-request',
+        owner_token='owner-a', input_tokens=101, output_tokens=100,
+    )
+    assert claim.approved is False and claim.reason == 'permit_bound_exceeded'
+
+    second = manager.reserve(
+        run_id='bound-run', request_id='bound-request-2', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, owner_token='owner-b',
+    )
+    assert manager.claim(
+        second.reservation_id, run_id='bound-run', request_id='bound-request-2',
+        owner_token='owner-b', input_tokens=100, output_tokens=100,
+    ).approved
+    assert manager.settle(
+        second.reservation_id, TokenUsage(input_tokens=101, output_tokens=100),
+    ) is False
+    with manager.store.transaction() as connection:
+        status = connection.execute(
+            'SELECT status FROM budget_reservations WHERE reservation_id=?',
+            (second.reservation_id,),
+        ).fetchone()['status']
+    assert status == 'breached'
+    snapshot = manager.snapshot('bound-run')
+    assert snapshot.used_input_tokens == 201
+    assert snapshot.remaining_input_tokens == manager.limits.max_input_tokens - 201
+
+    third = manager.reserve(
+        run_id='bound-run', request_id='bound-request-3', operation=Operation.DECISIVE_TEXT,
+        input_tokens=100, output_tokens=100, calls=1, owner_token='owner-c',
+    )
+    assert manager.claim(
+        third.reservation_id, run_id='bound-run', request_id='bound-request-3',
+        owner_token='owner-c', input_tokens=100, output_tokens=100,
+    ).approved
+    assert manager.settle(
+        third.reservation_id, TokenUsage(input_tokens=100, output_tokens=100), calls=2,
+    ) is False

@@ -449,16 +449,27 @@ def _cio_domain_validator(data: Any) -> ProviderErrorClass | None:
     if not isinstance(data, dict):
         return ProviderErrorClass.INVALID_JSON
     steps = data.get('steps')
-    if not isinstance(steps, list) or len(steps) < MIN_LOOPS:
+    if not isinstance(steps, list) or not MIN_LOOPS <= len(steps) <= MAX_LOOPS:
         return ProviderErrorClass.INVALID_JSON
+    allowed_tools = {
+        'query_brain', 'search_graph', 'check_history', 'interview_agent',
+        'insight_forge', 'panorama_search', 'final_answer',
+    }
     finals = []
-    for step in steps[:MAX_LOOPS]:
+    for index, step in enumerate(steps):
         if not isinstance(step, dict):
+            return ProviderErrorClass.INVALID_JSON
+        if not str(step.get('thought') or '').strip():
             return ProviderErrorClass.INVALID_JSON
         action = step.get('action')
         if not isinstance(action, dict) or not isinstance(action.get('args'), dict):
             return ProviderErrorClass.INVALID_JSON
-        if action.get('tool') == 'final_answer':
+        tool = str(action.get('tool') or '')
+        if tool not in allowed_tools:
+            return ProviderErrorClass.INVALID_JSON
+        if tool == 'final_answer':
+            if index != len(steps) - 1:
+                return ProviderErrorClass.INVALID_JSON
             finals.append(action['args'])
     if len(finals) != 1:
         return ProviderErrorClass.INVALID_JSON
@@ -467,11 +478,13 @@ def _cio_domain_validator(data: Any) -> ProviderErrorClass | None:
         return ProviderErrorClass.INVALID_JSON
     if not str(final.get('reasoning') or '').strip():
         return ProviderErrorClass.INVALID_JSON
+    if not str(final.get('opposing_scenario') or '').strip():
+        return ProviderErrorClass.INVALID_JSON
     try:
         confidence = float(final['confidence'])
         allocation = float(final['allocation_pct'])
     except (KeyError, TypeError, ValueError):
         return ProviderErrorClass.NUMERIC_MISMATCH
-    if not 0 <= confidence <= 1 or not 0 <= allocation <= 100:
+    if not 0 <= confidence <= 1 or not 0 <= allocation <= 50:
         return ProviderErrorClass.NUMERIC_MISMATCH
     return None
