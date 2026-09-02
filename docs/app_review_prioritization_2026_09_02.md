@@ -272,6 +272,7 @@ pykrx/FDR/Naver(collectors.py) · KIS(kis_screener.py) · OpenDART · yfinance �
 
 **배포 시 주의**
 - miniPC 에서 `pip install -r requirements.txt` (flask-compress). 미설치여도 앱은 뜬다(옵셔널 import). 압축을 끄려면 `MARKETFLOW_COMPRESS=0`.
+- Flask 5003 은 코드 변경만으로 재시작되지 않는다. `git pull` 후 `New-Item data\flask_restart.request` 를 만들면 `flask_watchdog_v2.ps1` 이 5분 내 재기동한다(또는 `MarketFlow-Flask` 태스크 재시작). 이후 `scripts\minipc_post_deploy_check.ps1` §7 이 flask-compress 설치·ETag/304·데몬 heartbeat 를 검증한다.
 - Cache-Control 변경으로 인증 GET 데이터가 브라우저에 30초 private 캐시된다. 즉시 반영이 필요한 실시간 라우트는 이미 자체 `no-store` 를 지정하고 있어 영향 없음(`kr_claw.py`, alpha dashboard 등 테스트로 고정).
 
 ### Phase 1 — 2주: "연결하기"

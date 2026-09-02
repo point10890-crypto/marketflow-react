@@ -88,6 +88,31 @@ foreach ($hbSpec in @(
     }
 }
 
+# ── 7. 2026-09-02 리뷰 PR 배포 검증 (flask-compress / ETag / 데몬 status) ──
+# pip 의존성이 새로 추가됐다 — 미설치면 압축만 꺼지고 앱은 뜬다 (옵셔널 import).
+$compressOk = & $PYTHON -c "import flask_compress; print('COMPRESS_OK')" 2>&1
+Report ([bool]($compressOk -match 'COMPRESS_OK')) "flask-compress installed" "$PYTHON -m pip install -r requirements.txt"
+try {
+    $h = Invoke-WebRequest -UseBasicParsing -TimeoutSec 10 -Headers @{ 'Accept-Encoding' = 'gzip' } "http://127.0.0.1:5003/api/health"
+    $etag = $h.Headers['ETag']
+    Report (-not [string]::IsNullOrEmpty($etag)) "5003 /api/health carries ETag ($etag)" "Flask 5003 가 새 코드로 재기동됐는지 확인 - New-Item data\flask_restart.request 후 watchdog 5분 대기"
+    Report ($h.Headers['Cache-Control'] -like 'private*') "5003 /api/health Cache-Control private (now: $($h.Headers['Cache-Control']))" "app/__init__.py add_cache_headers 배포 확인"
+    if ($etag) {
+        try {
+            $r304 = Invoke-WebRequest -UseBasicParsing -TimeoutSec 10 -Headers @{ 'If-None-Match' = $etag } "http://127.0.0.1:5003/api/health"
+            Report ($r304.StatusCode -eq 304) "5003 If-None-Match -> 304 ($($r304.StatusCode))"
+        } catch {
+            # PS5.1 은 304 를 예외로 던진다 — 응답 코드로 판정
+            $code = [int]$_.Exception.Response.StatusCode
+            Report ($code -eq 304) "5003 If-None-Match -> 304 ($code)"
+        }
+    }
+} catch {
+    Report $false "5003 /api/health ETag/Cache-Control probe" "Flask 5003 응답 없음"
+}
+$daemon = & $PYTHON -c "from app.utils.scheduler import _read_daemon_state; s=_read_daemon_state(); print('DAEMON', s.get('alive'), s.get('stale_seconds'), len(s.get('last_runs') or []))" 2>&1
+Report ([bool]($daemon -match 'DAEMON True')) "scheduler daemon heartbeat via status helper ($daemon)" "scheduler.py 데몬 기동 확인 (MarketFlow-Scheduler 태스크)"
+
 Write-Host "==========================================="
 if ($fail -eq 0) { Write-Host "ALL CHECKS PASSED - deploy complete"; exit 0 }
 else { Write-Host "$fail check(s) FAILED - see hints above"; exit 1 }
