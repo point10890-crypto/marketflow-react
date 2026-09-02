@@ -75,7 +75,7 @@ def test_hermes_learning_task_pack_is_read_only_and_replay_safe():
     assert pack['mode'] == 'weekly_post_mortem'
     assert pack['dry_run_only'] is True
     assert pack['executes_tools'] is False
-    assert pack['workdir'].endswith('bitman_marketfloww')
+    assert pack['workdir'] == str(hermes_bridge.REPO_ROOT)
     assert pack['result_artifact_contract']['path_template'] == 'multi_agent/tasks/{YYYY-MM-DD}/result.md'
     assert pack['learning_append_contract']['append_only'] is True
 

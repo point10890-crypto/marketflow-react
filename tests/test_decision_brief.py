@@ -62,10 +62,21 @@ def test_cap_full_when_evidence_complete():
     assert reasons == []
 
 
-def test_cap_deducts_for_each_data_gap():
+def test_cap_deducts_history_gaps_once():
+    """검출계열(scanner/paper 등) 공백은 미검출 종목이면 정상 — 1회만 합산 감산한다."""
     sigs = [_sig('claw', 'positive', 'A'), _sig('jongga', 'positive', 'A')]
     cap, reasons = db.compute_confidence_cap(
         sigs, data_gaps=['scanner', 'paper'], phase='uptrend_broadening',
+        agreement=db.summarize_agreement(sigs))
+    assert cap == pytest.approx(0.65)
+    assert len(reasons) == 1
+
+
+def test_cap_deducts_each_non_history_gap_plus_history_once():
+    """검출계열 밖의 공백은 개별 감산, 검출계열은 묶어서 1회 감산."""
+    sigs = [_sig('claw', 'positive', 'A'), _sig('jongga', 'positive', 'A')]
+    cap, reasons = db.compute_confidence_cap(
+        sigs, data_gaps=['scanner', 'paper', 'regime'], phase='uptrend_broadening',
         agreement=db.summarize_agreement(sigs))
     assert cap == pytest.approx(0.55)
     assert len(reasons) == 2

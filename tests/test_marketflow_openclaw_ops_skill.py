@@ -8,6 +8,7 @@ import os
 import shutil
 import subprocess
 import re
+import sys
 from copy import deepcopy
 from pathlib import Path
 from types import ModuleType
@@ -17,6 +18,9 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+# 운영 머신(Windows)은 리포 venv, 그 외(CI/Linux)는 현재 인터프리터로 실행한다.
+_VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
+PYTHON = str(_VENV_PYTHON) if _VENV_PYTHON.exists() else sys.executable
 SKILL = ROOT / "skills" / "marketflow-openclaw-ops"
 INSTALLER = ROOT / "scripts" / "install_marketflow_codex_skill.ps1"
 VERIFIER = SKILL / "scripts" / "verify_openclaw_readonly.py"
@@ -100,7 +104,7 @@ def _run_exclusivity_verifier(
     env.update(overrides or {})
     return subprocess.run(
         [
-            str(ROOT / ".venv" / "Scripts" / "python.exe"),
+            PYTHON,
             str(EXCLUSIVITY_VERIFIER),
             "--env-file",
             str(env_file),
@@ -1103,7 +1107,7 @@ def test_release_docs_preserve_hardware_gate_and_truthful_task_status() -> None:
 def test_telegram_runbook_matches_current_bound_send_and_public_redaction_contract() -> None:
     """The durable runbook must track the CLI contract implemented at current HEAD."""
     help_result = subprocess.run(
-        [str(ROOT / ".venv" / "Scripts" / "python.exe"),
+        [PYTHON,
          str(ROOT / "scripts" / "run_verified_alpha_telegram.py"), "--help"],
         cwd=ROOT,
         capture_output=True,
