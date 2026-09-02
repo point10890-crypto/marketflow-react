@@ -79,6 +79,13 @@ def _safe_error_class(provider: str, error_class: ProviderErrorClass) -> None:
     _provider_error_class.set(classes)
 
 
+def _clear_provider_attempt_state(provider: str) -> None:
+    for context in (_provider_failure, _provider_usage, _provider_error_class):
+        values = dict(context.get())
+        values.pop(provider, None)
+        context.set(values)
+
+
 def _model_for(provider: str, model_env: str | None) -> str:
     return {
         'deepseek': deepseek_model,
@@ -271,7 +278,11 @@ def _generate_deepseek(prompt: str, *, system: str | None, model_env: str | None
         usage = dict(_provider_usage.get())
         usage['deepseek'] = normalize_openai_usage(getattr(resp, 'usage', None))
         _provider_usage.set(usage)
-        return (resp.choices[0].message.content or '').strip() or None
+        message = resp.choices[0].message
+        text = (message.content or '').strip() or None
+        if text is None and getattr(message, 'refusal', None):
+            _safe_error_class('deepseek', ProviderErrorClass.REFUSAL)
+        return text
     except Exception as exc:
         error_class = classify_exception(exc)
         logger.warning('[llm_client] DeepSeek call failed: %s', error_class.value)
@@ -309,7 +320,11 @@ def _generate_openai(prompt: str, *, system: str | None, model_env: str | None,
         usage = dict(_provider_usage.get())
         usage['openai'] = normalize_openai_usage(getattr(resp, 'usage', None))
         _provider_usage.set(usage)
-        return (resp.choices[0].message.content or '').strip() or None
+        message = resp.choices[0].message
+        text = (message.content or '').strip() or None
+        if text is None and getattr(message, 'refusal', None):
+            _safe_error_class('openai', ProviderErrorClass.REFUSAL)
+        return text
     except Exception as exc:
         error_class = classify_exception(exc)
         logger.warning('[llm_client] OpenAI call failed: %s', error_class.value)
@@ -402,6 +417,7 @@ def _routing_adapters(model_env: str | None) -> dict[str, CallableAdapter]:
             continue
 
         def call(*, request, model, max_output_tokens, _provider=provider):
+            _clear_provider_attempt_state(_provider)
             text = _call_provider(
                 _provider,
                 request.prompt,
@@ -413,7 +429,10 @@ def _routing_adapters(model_env: str | None) -> dict[str, CallableAdapter]:
                 model_override=model,
             )
             if text is None:
-                raise ProviderCallError(_error_class_for_legacy_failure(_provider))
+                raise ProviderCallError(
+                    _error_class_for_legacy_failure(_provider),
+                    usage=_provider_usage.get().get(_provider, TokenUsage.unknown()),
+                )
             return AdapterResponse(
                 text=text,
                 usage=_provider_usage.get().get(_provider, TokenUsage.unknown()),

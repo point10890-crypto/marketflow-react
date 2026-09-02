@@ -308,6 +308,52 @@ def test_legacy_wrapper_preserves_authentication_error_class(tmp_path, monkeypat
     assert second['attempts'][0]['status'] == 'skipped_breaker'
 
 
+def test_retry_then_empty_200_keeps_usage_and_clears_stale_error(tmp_path, monkeypatch):
+    class RateLimitError(Exception):
+        status_code = 429
+
+    class Usage:
+        prompt_tokens = 80
+        completion_tokens = 5
+        total_tokens = 85
+        prompt_tokens_details = {'cached_tokens': 0}
+        completion_tokens_details = {'reasoning_tokens': 0}
+
+    class EmptyMessage:
+        content = ''
+        refusal = None
+
+    class Completions:
+        calls = 0
+
+        @classmethod
+        def create(cls, **_kwargs):
+            cls.calls += 1
+            if cls.calls == 1:
+                raise RateLimitError()
+            return type(
+                'Response', (),
+                {'choices': [type('Choice', (), {'message': EmptyMessage()})()], 'usage': Usage()},
+            )()
+
+    client = type('Client', (), {
+        'chat': type('Chat', (), {'completions': Completions()})(),
+    })()
+    monkeypatch.setattr(routing_store, 'DEFAULT_DB_PATH', tmp_path / 'usage.sqlite3')
+    monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'gemini')
+    monkeypatch.setattr(llm_client, 'get_deepseek_client', lambda: client)
+    monkeypatch.setattr(llm_client, '_generate_openai', lambda *_a, **_k: 'fallback')
+
+    _text, metadata = llm_client.generate_text_with_metadata(
+        'retry', run_id='run', request_id='retry-empty'
+    )
+
+    assert metadata['attempts'][0]['failure_reason'] == 'rate_limit'
+    assert metadata['attempts'][1]['failure_reason'] == 'empty_response'
+    assert metadata['attempts'][1]['usage']['input_tokens'] == 80
+    assert metadata['attempts'][1]['estimated_cost_usd'] is not None
+
+
 def test_explicit_decisive_operation_uses_central_policy_and_cap(monkeypatch):
     monkeypatch.setenv('MIROFISH_LLM_PROVIDER_ORDER', 'openai,deepseek')
     monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'gemini')

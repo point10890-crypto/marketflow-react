@@ -36,7 +36,7 @@ class CircuitBreaker:
         *,
         failure_threshold: int = 3,
         cooldown_seconds: float = 60.0,
-        probe_lease_seconds: float = 30.0,
+        probe_lease_seconds: float = 120.0,
         clock: Callable[[], float] = time.time,
     ) -> None:
         if failure_threshold <= 0 or cooldown_seconds < 0:

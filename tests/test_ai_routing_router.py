@@ -15,6 +15,7 @@ from app.services.ai_routing.providers import AdapterResponse, ProviderCallError
 from app.services.ai_routing.router import AIRouter, estimate_reservation_input_tokens
 from app.services.ai_routing.store import RoutingStore
 from app.services.ai_routing.telemetry import usage_summary
+from app.services.ai_routing import router as router_module
 
 
 class FakeAdapter:
@@ -295,3 +296,70 @@ def test_retry_rechecks_breaker_after_first_transient_failure(tmp_path):
 
     assert result.actual_provider == "openai"
     assert deepseek.calls == 1
+
+
+def test_both_open_breakers_record_decisions_not_live_calls(tmp_path):
+    router, store = _router(
+        tmp_path,
+        {
+            "deepseek": FakeAdapter(_response("unused")),
+            "openai": FakeAdapter(_response("unused")),
+        },
+    )
+    for provider in ("deepseek", "openai"):
+        router.breaker.record_failure(
+            provider, "text", "decisive", ProviderErrorClass.AUTHENTICATION
+        )
+
+    router.route_text(_request())
+    summary = usage_summary(1, 20, store=store)
+
+    assert summary["totals"]["attempts"] == 2
+    assert summary["totals"]["live_attempts"] == 0
+    assert summary["totals"]["breaker_skipped_attempts"] == 2
+    assert summary["totals"]["fallbacks"] == 0
+
+
+def test_pricing_error_after_billable_fallback_still_audits_and_settles(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setenv("AI_ROUTING_PRICE_OPENAI_INPUT_PER_MILLION", "invalid")
+    deepseek = FakeAdapter(ProviderCallError(ProviderErrorClass.AUTHENTICATION))
+    openai = FakeAdapter(_response("fallback", input_tokens=50, output_tokens=10))
+    router, store = _router(tmp_path, {"deepseek": deepseek, "openai": openai})
+
+    result = router.route_text(_request())
+
+    assert result.text == "fallback"
+    assert result.actual_provider == "openai"
+    with store.transaction() as connection:
+        reservation = connection.execute(
+            "SELECT status, actual_input_tokens, actual_output_tokens "
+            "FROM budget_reservations WHERE request_id = 'request-1'"
+        ).fetchone()
+        attempt = connection.execute(
+            "SELECT input_tokens, output_tokens, estimated_cost_usd "
+            "FROM provider_attempts WHERE request_id = 'request-1' AND provider = 'openai'"
+        ).fetchone()
+    assert tuple(reservation) == ("settled", 50, 10)
+    assert tuple(attempt) == (50, 10, None)
+
+
+def test_single_flight_registry_stays_bounded_behind_hung_oldest(tmp_path, monkeypatch):
+    monkeypatch.setattr(router_module, "_MAX_FLIGHTS", 3)
+    with router_module._FLIGHTS_LOCK:
+        router_module._FLIGHTS.clear()
+    router, _store = _router(tmp_path, {"deepseek": FakeAdapter(_response("ok"))})
+
+    _owner, hung = router._claim_flight("run", "hung")
+    for request_id in ("done-1", "done-2"):
+        _owner, flight = router._claim_flight("run", request_id)
+        flight.result = router._failed_result(Operation.BULK_TEXT, "deepseek", ())
+        flight.completed.set()
+
+    for request_id in ("new-1", "new-2", "new-3"):
+        router._claim_flight("run", request_id)
+
+    with router_module._FLIGHTS_LOCK:
+        assert len(router_module._FLIGHTS) <= 3
+    assert hung.completed.is_set() is False

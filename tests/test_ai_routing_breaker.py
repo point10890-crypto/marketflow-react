@@ -92,3 +92,18 @@ def test_stale_half_open_probe_lease_can_be_reclaimed_once(tmp_path):
     clock.value += 6
     assert breaker.allow("deepseek", "text", "fast") is True
     assert breaker.allow("deepseek", "text", "fast") is False
+
+
+def test_default_probe_lease_exceeds_ninety_second_provider_deadline(tmp_path):
+    clock = Clock()
+    breaker = CircuitBreaker(
+        RoutingStore(tmp_path / "usage.sqlite3"), cooldown_seconds=10, clock=clock
+    )
+    breaker.record_failure("deepseek", "text", "fast", ProviderErrorClass.AUTHENTICATION)
+    clock.value += 11
+    assert breaker.allow("deepseek", "text", "fast") is True
+
+    clock.value += 91
+    assert breaker.allow("deepseek", "text", "fast") is False
+    clock.value += 30
+    assert breaker.allow("deepseek", "text", "fast") is True

@@ -6,6 +6,7 @@ import logging
 import random
 import time
 from collections import OrderedDict
+from contextvars import ContextVar
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from threading import Event, Lock
@@ -23,7 +24,7 @@ from .contracts import (
     TokenUsage,
 )
 from .policy import policy_for
-from .pricing import estimate_cost_details
+from .pricing import CostEstimate, estimate_cost_details
 from .providers import AdapterResponse, ProviderAdapter, ProviderCallError, build_default_adapters, classify_exception
 from .store import RoutingStore, default_store
 from .telemetry import record_attempt
@@ -46,8 +47,30 @@ class _Flight:
     result: RoutingResult | None = None
 
 
+@dataclass
+class _BudgetFinalizer:
+    reservation: BudgetReservation
+    openai_called: bool = False
+    openai_usage: TokenUsage | None = None
+
+
 _FLIGHTS: OrderedDict[tuple[str, str, str], _Flight] = OrderedDict()
 _FLIGHTS_LOCK = Lock()
+_ACTIVE_BUDGET: ContextVar[_BudgetFinalizer | None] = ContextVar(
+    "ai_routing_active_budget", default=None
+)
+
+
+def _safe_cost_estimate(
+    provider: str,
+    model: str,
+    usage: TokenUsage,
+    event_ts: str,
+) -> CostEstimate:
+    try:
+        return estimate_cost_details(provider, model, usage, event_ts_utc=event_ts)
+    except ValueError:
+        return CostEstimate(None, "pricing_error")
 
 
 def estimate_reservation_input_tokens(request: RoutingRequest) -> int:
@@ -105,13 +128,19 @@ class AIRouter:
             if flight is not None:
                 _FLIGHTS.move_to_end(key)
                 return False, flight
+            completed_keys = [
+                existing_key
+                for existing_key, existing in _FLIGHTS.items()
+                if existing.completed.is_set()
+            ]
+            while len(_FLIGHTS) >= _MAX_FLIGHTS and completed_keys:
+                _FLIGHTS.pop(completed_keys.pop(0), None)
+            if len(_FLIGHTS) >= _MAX_FLIGHTS:
+                rejected = _Flight(Event())
+                rejected.completed.set()
+                return False, rejected
             flight = _Flight(Event())
             _FLIGHTS[key] = flight
-            while len(_FLIGHTS) > _MAX_FLIGHTS:
-                oldest_key, oldest = next(iter(_FLIGHTS.items()))
-                if not oldest.completed.is_set():
-                    break
-                _FLIGHTS.pop(oldest_key)
             return True, flight
 
     def _route(self, request: RoutingRequest) -> RoutingResult:
@@ -130,16 +159,34 @@ class AIRouter:
                 (),
                 "duplicate_request_in_flight",
             )
+        finalizer_token = _ACTIVE_BUDGET.set(None)
         try:
-            result = self._route_owned(request)
-        except Exception as exc:
-            logger.warning("[ai_routing] routing infrastructure failed: %s", type(exc).__name__)
-            result = self._failed_result(
-                policy.operation,
-                policy.providers[0],
-                (),
-                ProviderErrorClass.UNKNOWN,
-            )
+            try:
+                result = self._route_owned(request)
+            except Exception as exc:
+                logger.warning(
+                    "[ai_routing] routing infrastructure failed: %s", type(exc).__name__
+                )
+                result = self._failed_result(
+                    policy.operation,
+                    policy.providers[0],
+                    (),
+                    ProviderErrorClass.UNKNOWN,
+                )
+        finally:
+            finalizer = _ACTIVE_BUDGET.get()
+            if finalizer is not None:
+                try:
+                    self._finish_budget(
+                        finalizer.reservation,
+                        finalizer.openai_called,
+                        finalizer.openai_usage,
+                    )
+                except Exception as exc:
+                    logger.warning(
+                        "[ai_routing] budget finalization failed: %s", type(exc).__name__
+                    )
+            _ACTIVE_BUDGET.reset(finalizer_token)
         flight.result = result
         flight.completed.set()
         return result
@@ -169,11 +216,10 @@ class AIRouter:
                     (),
                     "duplicate_request",
                 )
+            _ACTIVE_BUDGET.set(_BudgetFinalizer(reservation))
 
         attempts: list[ProviderAttempt] = []
         fallback_reason: ProviderErrorClass | str | None = None
-        openai_usage: TokenUsage | None = None
-        openai_called = False
         attempt_number = 0
         for provider_index, provider in enumerate(policy.providers):
             model = policy.models[provider]
@@ -189,17 +235,22 @@ class AIRouter:
                     attempt_number += 1
                     if provider_index == 0 and fallback_reason is None:
                         fallback_reason = ProviderErrorClass.BREAKER_OPEN
-                    attempts.append(
-                        self._skipped_attempt(
-                            request,
-                            provider,
-                            model,
-                            attempt_number,
-                            max_output_tokens,
-                            ProviderErrorClass.BREAKER_OPEN,
-                            policy.providers[0] if provider_index > 0 else None,
-                        )
+                    skipped = self._skipped_attempt(
+                        request,
+                        provider,
+                        model,
+                        attempt_number,
+                        max_output_tokens,
+                        ProviderErrorClass.BREAKER_OPEN,
+                        policy.providers[0] if provider_index > 0 else None,
                     )
+                    attempts.append(skipped)
+                    try:
+                        record_attempt(skipped, store=self.store)
+                    except Exception as exc:
+                        logger.warning(
+                            "[ai_routing] telemetry write failed: %s", type(exc).__name__
+                        )
                     break
                 provider_tries += 1
                 attempt_number += 1
@@ -230,8 +281,10 @@ class AIRouter:
                 latency_ms = round((time.perf_counter() - started) * 1000, 3)
                 usage = response.usage
                 if provider == "openai":
-                    openai_called = True
-                    openai_usage = usage
+                    finalizer = _ACTIVE_BUDGET.get()
+                    if finalizer is not None:
+                        finalizer.openai_called = True
+                        finalizer.openai_usage = usage
                 successful = error_class is None
                 if successful:
                     self.breaker.record_success(provider, policy.modality, model_tier)
@@ -239,12 +292,7 @@ class AIRouter:
                     self.breaker.record_failure(provider, policy.modality, model_tier, error_class)
                     if fallback_reason is None:
                         fallback_reason = error_class
-                estimate = estimate_cost_details(
-                    provider,
-                    model,
-                    usage,
-                    event_ts_utc=event_ts,
-                )
+                estimate = _safe_cost_estimate(provider, model, usage, event_ts)
                 attempt = ProviderAttempt(
                     event_ts_utc=event_ts,
                     request_id=request_id,
@@ -274,7 +322,6 @@ class AIRouter:
                 except Exception as exc:
                     logger.warning("[ai_routing] telemetry write failed: %s", type(exc).__name__)
                 if successful:
-                    self._finish_budget(reservation, openai_called, openai_usage)
                     return RoutingResult(
                         text=response.text,
                         analysis_status=(
@@ -302,7 +349,6 @@ class AIRouter:
                     delay = min(self.max_retry_delay, max(0.0, float(self.retry_delay())))
                     self.retry_sleeper(delay)
 
-        self._finish_budget(reservation, openai_called, openai_usage)
         return self._failed_result(
             policy.operation,
             policy.providers[0],

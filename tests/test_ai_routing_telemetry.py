@@ -170,6 +170,30 @@ def test_operator_price_override_is_not_labeled_official(monkeypatch):
     assert estimate.pricing_version == "operator-contract-7"
 
 
+def test_mixed_quarantined_usage_marks_token_and_cost_totals_partial(tmp_path):
+    ledger = RoutingStore(tmp_path / "usage.sqlite3")
+    record_attempt(_attempt("known", 1, cost="0.10"), store=ledger)
+    record_attempt(
+        _attempt(
+            "quarantined",
+            1,
+            cost=None,
+            usage=TokenUsage(input_tokens=100, output_tokens=20, raw_total_tokens=999),
+        ),
+        store=ledger,
+    )
+
+    totals = usage_summary(1, 20, store=ledger)["totals"]
+
+    assert totals["quarantined_usage_attempts"] == 1
+    assert totals["unknown_usage_attempts"] == 1
+    assert totals["unknown_cost_attempts"] == 1
+    assert totals["usage_completeness"] == 0.5
+    assert totals["cost_completeness"] == 0.5
+    assert totals["estimated_cost_usd"] is None
+    assert totals["known_estimated_cost_usd"] == "0.1"
+
+
 def test_summary_groups_dimensions_and_ranks_cost_by_endpoint(tmp_path):
     ledger = RoutingStore(tmp_path / "usage.sqlite3")
     record_attempt(_attempt("request-1", 1, endpoint="/api/cheap", cost="0.01"), store=ledger)

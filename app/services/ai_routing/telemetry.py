@@ -7,7 +7,7 @@ from decimal import Decimal
 from typing import Any
 
 from .contracts import Operation, ProviderAttempt, ProviderErrorClass
-from .pricing import estimate_cost_details
+from .pricing import CostEstimate, estimate_cost_details
 from .store import RoutingStore, default_store
 
 
@@ -19,12 +19,15 @@ def record_attempt(attempt: ProviderAttempt, *, store: RoutingStore | None = Non
     """Insert one idempotent attempt. Returns whether a row was inserted."""
     ledger = store or default_store()
     usage = attempt.usage
-    estimate = estimate_cost_details(
-        attempt.provider,
-        attempt.model,
-        usage,
-        event_ts_utc=attempt.event_ts_utc,
-    )
+    try:
+        estimate = estimate_cost_details(
+            attempt.provider,
+            attempt.model,
+            usage,
+            event_ts_utc=attempt.event_ts_utc,
+        )
+    except ValueError:
+        estimate = CostEstimate(None, "pricing_error")
     cost = None if usage.mapping_status == "quarantined" else attempt.estimated_cost_usd
     if cost is None and usage.mapping_status != "quarantined":
         cost = estimate.cost
@@ -97,22 +100,37 @@ def usage_summary(
         raise ValueError("days and limit must be positive")
     ledger = store or default_store()
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    metrics = """
+        COUNT(*) AS attempts,
+        SUM(CASE WHEN status <> 'skipped_breaker' THEN 1 ELSE 0 END) AS live_attempts,
+        SUM(CASE WHEN status = 'skipped_breaker' THEN 1 ELSE 0 END)
+            AS breaker_skipped_attempts,
+        SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) AS successes,
+        SUM(CASE WHEN fallback_from IS NOT NULL AND status <> 'skipped_breaker'
+            THEN 1 ELSE 0 END) AS fallbacks,
+        SUM(CASE WHEN status <> 'skipped_breaker' THEN input_tokens END) AS input_tokens,
+        SUM(CASE WHEN status <> 'skipped_breaker' THEN cached_input_tokens END)
+            AS cached_input_tokens,
+        SUM(CASE WHEN status <> 'skipped_breaker' THEN output_tokens END) AS output_tokens,
+        SUM(CASE WHEN status <> 'skipped_breaker' THEN reasoning_tokens END)
+            AS reasoning_tokens,
+        SUM(CASE WHEN status <> 'skipped_breaker' THEN total_tokens END) AS total_tokens,
+        SUM(CASE WHEN status <> 'skipped_breaker'
+            THEN CAST(estimated_cost_usd AS REAL) END) AS known_estimated_cost_usd,
+        SUM(CASE WHEN status <> 'skipped_breaker' AND
+            (input_tokens IS NULL OR output_tokens IS NULL OR usage_mapping_status = 'quarantined')
+            THEN 1 ELSE 0 END) AS unknown_usage_attempts,
+        SUM(CASE WHEN status <> 'skipped_breaker' AND usage_mapping_status = 'quarantined'
+            THEN 1 ELSE 0 END) AS quarantined_usage_attempts,
+        SUM(CASE WHEN status <> 'skipped_breaker' AND estimated_cost_usd IS NULL
+            THEN 1 ELSE 0 END) AS unknown_cost_attempts
+    """
     with ledger.transaction() as connection:
         rows = connection.execute(
-            """
+            f"""
             SELECT substr(event_ts_utc, 1, 10) AS day, provider, model,
                    COALESCE(caller_endpoint, endpoint) AS endpoint, operation,
-                   COUNT(*) AS attempts,
-                   SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) AS successes,
-                   SUM(CASE WHEN fallback_from IS NOT NULL THEN 1 ELSE 0 END) AS fallbacks,
-                   SUM(input_tokens) AS input_tokens,
-                   SUM(cached_input_tokens) AS cached_input_tokens,
-                   SUM(output_tokens) AS output_tokens,
-                   SUM(reasoning_tokens) AS reasoning_tokens,
-                   SUM(total_tokens) AS total_tokens,
-                   SUM(CAST(estimated_cost_usd AS REAL)) AS estimated_cost_usd,
-                   SUM(CASE WHEN input_tokens IS NULL OR output_tokens IS NULL THEN 1 ELSE 0 END)
-                       AS unknown_usage_attempts
+                   {metrics}
             FROM provider_attempts
             WHERE event_ts_utc >= ?
             GROUP BY day, provider, model, COALESCE(caller_endpoint, endpoint), operation
@@ -121,11 +139,9 @@ def usage_summary(
             (cutoff,),
         ).fetchall()
         endpoint_rows = connection.execute(
-            """
+            f"""
             SELECT COALESCE(caller_endpoint, endpoint) AS endpoint,
-                   COUNT(*) AS attempts,
-                   SUM(total_tokens) AS total_tokens,
-                   SUM(CAST(estimated_cost_usd AS REAL)) AS estimated_cost_usd
+                   {metrics}
             FROM provider_attempts
             WHERE event_ts_utc >= ?
             GROUP BY COALESCE(caller_endpoint, endpoint)
@@ -135,12 +151,8 @@ def usage_summary(
             (cutoff, limit),
         ).fetchall()
         total = connection.execute(
-            """
-            SELECT COUNT(*) AS attempts, SUM(input_tokens) AS input_tokens,
-                   SUM(output_tokens) AS output_tokens, SUM(total_tokens) AS total_tokens,
-                   SUM(CAST(estimated_cost_usd AS REAL)) AS estimated_cost_usd,
-                   SUM(CASE WHEN input_tokens IS NULL OR output_tokens IS NULL THEN 1 ELSE 0 END)
-                       AS unknown_usage_attempts
+            f"""
+            SELECT {metrics}
             FROM provider_attempts WHERE event_ts_utc >= ?
             """,
             (cutoff,),
@@ -148,14 +160,37 @@ def usage_summary(
 
     def mapped(row: Any) -> dict[str, Any]:
         item = dict(row)
-        item["estimated_cost_usd"] = _decimal_text(item.get("estimated_cost_usd"))
+        count_fields = (
+            "attempts",
+            "live_attempts",
+            "breaker_skipped_attempts",
+            "successes",
+            "fallbacks",
+            "unknown_usage_attempts",
+            "quarantined_usage_attempts",
+            "unknown_cost_attempts",
+        )
+        for field in count_fields:
+            item[field] = int(item.get(field) or 0)
+        known_cost = _decimal_text(item.get("known_estimated_cost_usd"))
+        item["known_estimated_cost_usd"] = known_cost
+        item["estimated_cost_usd"] = (
+            None if item["unknown_cost_attempts"] else known_cost
+        )
+        live_attempts = item["live_attempts"]
+        item["usage_completeness"] = (
+            (live_attempts - item["unknown_usage_attempts"]) / live_attempts
+            if live_attempts
+            else None
+        )
+        item["cost_completeness"] = (
+            (live_attempts - item["unknown_cost_attempts"]) / live_attempts
+            if live_attempts
+            else None
+        )
         return item
 
     totals = mapped(total)
-    known_attempts = totals["attempts"] - totals["unknown_usage_attempts"]
-    totals["usage_completeness"] = (
-        known_attempts / totals["attempts"] if totals["attempts"] else None
-    )
     return {
         "days": days,
         "groups": [mapped(row) for row in rows[:limit]],
