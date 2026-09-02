@@ -42,6 +42,7 @@ class ProviderErrorClass(str, Enum):
     CLIENT_UNAVAILABLE = "client_unavailable"
     BREAKER_OPEN = "breaker_open"
     PAYLOAD_TOO_LARGE = "payload_too_large"
+    BUDGET_EXHAUSTED = "budget_exhausted"
     UNKNOWN = "unknown"
 
 

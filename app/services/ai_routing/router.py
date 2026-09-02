@@ -13,6 +13,7 @@ from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from decimal import Decimal
 from threading import Event, Lock, Thread
+from typing import Callable, Mapping
 from uuid import uuid4
 
 from .breaker import CircuitBreaker
@@ -348,6 +349,8 @@ class AIRouter:
         retry_delay=lambda: random.uniform(0.05, 0.25),
         max_retry_delay: float = 2.0,
         single_flight_wait_seconds: float = 30.0,
+        vision_attestation: Mapping[str, object] | None = None,
+        policy_clock: Callable[[], datetime] | None = None,
     ) -> None:
         self.store = store or default_store()
         self.adapters = build_default_adapters() if adapters is None else adapters
@@ -379,6 +382,22 @@ class AIRouter:
         self.retry_delay = retry_delay
         self.max_retry_delay = max(0.0, max_retry_delay)
         self.single_flight_wait_seconds = max(0.0, single_flight_wait_seconds)
+        self.vision_attestation = (
+            dict(vision_attestation)
+            if isinstance(vision_attestation, Mapping)
+            else None
+        )
+        self.policy_clock = policy_clock or (lambda: datetime.now(timezone.utc))
+
+    def _policy_for(self, operation: Operation | str):
+        operation = Operation(operation)
+        if operation is Operation.VISION:
+            return policy_for(
+                operation,
+                vision_attestation=self.vision_attestation,
+                now=self.policy_clock(),
+            )
+        return policy_for(operation)
 
     def route_text(self, request: RoutingRequest) -> RoutingResult:
         if Operation(request.operation) is Operation.VISION:
@@ -413,7 +432,7 @@ class AIRouter:
             return True, flight
 
     def _route(self, request: RoutingRequest) -> RoutingResult:
-        policy = policy_for(request.operation)
+        policy = self._policy_for(request.operation)
         request_id = request.request_id or str(uuid4())
         run_id = request.run_id or request_id
         request = replace(request, request_id=request_id, run_id=run_id)
@@ -529,7 +548,7 @@ class AIRouter:
         return result
 
     def _route_owned(self, request: RoutingRequest) -> RoutingResult:
-        policy = policy_for(request.operation)
+        policy = self._policy_for(request.operation)
         if (
             policy.operation is Operation.VISION
             and _vision_payload_bytes(request) > _vision_payload_limit_bytes()
@@ -1038,5 +1057,18 @@ def route_text(request: RoutingRequest, *, router: AIRouter | None = None) -> Ro
     return (router or AIRouter()).route_text(request)
 
 
-def route_vision(request: RoutingRequest, *, router: AIRouter | None = None) -> RoutingResult:
-    return (router or AIRouter()).route_vision(request)
+def route_vision(
+    request: RoutingRequest,
+    *,
+    router: AIRouter | None = None,
+    vision_attestation: Mapping[str, object] | None = None,
+    policy_clock: Callable[[], datetime] | None = None,
+) -> RoutingResult:
+    if router is not None:
+        if vision_attestation is not None or policy_clock is not None:
+            raise ValueError("vision attestation must be configured on the supplied router")
+        return router.route_vision(request)
+    return AIRouter(
+        vision_attestation=vision_attestation,
+        policy_clock=policy_clock,
+    ).route_vision(request)

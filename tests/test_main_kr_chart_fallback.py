@@ -8,7 +8,9 @@ gpt-4o-mini 로 넘어가 통째로 드롭됐다. 100종목 중 37종목만 분�
 from __future__ import annotations
 
 import asyncio
+import base64
 import importlib
+import json
 import sys
 import types
 from decimal import Decimal
@@ -17,6 +19,16 @@ import pytest
 
 from app.services.ai_routing.contracts import AnalysisStatus, RoutingResult, TokenUsage
 from app.services.ai_routing.validation import validate_response
+
+
+_VALID_PNG = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+)
+
+
+def _write_valid_png(path):
+    path.write_bytes(_VALID_PNG)
+    return path
 
 
 @pytest.fixture()
@@ -94,7 +106,7 @@ def test_analyze_chart_uses_central_vision_and_preserves_business_shape(
 ):
     """Central routing must stay additive to the historical chart payload."""
     image = tmp_path / "chart.png"
-    image.write_bytes(b"fake-png")
+    _write_valid_png(image)
     seen = []
 
     def fake_route(request, **_kwargs):
@@ -124,7 +136,7 @@ def test_analyze_chart_uses_central_vision_and_preserves_business_shape(
     assert request.request_id == "chart-run:005930.KS"
     assert request.max_output_tokens == 768
     assert request.openai_fallback_allowed is True
-    assert request.images[0].data == b"fake-png"
+    assert request.images[0].data == _VALID_PNG
     assert result["signal"] == "BUY"
     assert result["종목코드"] == "005930"
     assert result["종목명"] == "삼성전자"
@@ -135,7 +147,7 @@ def test_analyze_chart_uses_central_vision_and_preserves_business_shape(
 
 def test_only_top_five_candidates_are_openai_fallback_eligible(mk, monkeypatch, tmp_path):
     image = tmp_path / "chart.png"
-    image.write_bytes(b"fake-png")
+    _write_valid_png(image)
     requests = []
 
     def fake_route(request, **_kwargs):
@@ -168,7 +180,7 @@ def test_unranked_legacy_caller_cannot_bypass_openai_top_five_cap(
     mk, monkeypatch, tmp_path
 ):
     image = tmp_path / "chart.png"
-    image.write_bytes(b"fake-png")
+    _write_valid_png(image)
     requests = []
     monkeypatch.setattr(
         mk,
@@ -202,7 +214,7 @@ def test_vision_batch_admits_only_first_twenty_ranked_candidates(mk):
 
 def test_vision_failure_keeps_secret_free_unavailable_metadata(mk, monkeypatch, tmp_path):
     image = tmp_path / "chart.png"
-    image.write_bytes(b"fake-png")
+    _write_valid_png(image)
     monkeypatch.setattr(
         mk,
         "route_vision",
@@ -249,6 +261,10 @@ def test_vision_failure_keeps_secret_free_unavailable_metadata(mk, monkeypatch, 
                 "reasoning_tokens": None,
                 "total_tokens": None,
                 "usage_estimated": True,
+                "raw_total_tokens": None,
+                "mapping_version": "normalized-v1",
+                "mapping_status": "unverified",
+                "complete": False,
             },
             "estimated_cost_usd": None,
             "attempt_count": 0,
@@ -293,6 +309,144 @@ def test_summary_artifact_preserves_terminal_vision_status_and_routing(
 
 
 @pytest.mark.parametrize(
+    ("input_case", "expected_error_class"),
+    [
+        ("missing", "input_unreadable"),
+        ("unreadable", "input_unreadable"),
+        ("empty", "input_empty"),
+        ("corrupt", "input_corrupt"),
+    ],
+)
+def test_chart_input_failure_returns_zero_usage_technical_artifact_without_provider_call(
+    mk, monkeypatch, tmp_path, input_case, expected_error_class
+):
+    """A bad local chart must fail visibly before any billable provider boundary."""
+    image = tmp_path / "chart.png"
+    if input_case == "empty":
+        image.write_bytes(b"")
+    elif input_case == "corrupt":
+        image.write_bytes(b"not-a-png")
+
+    if input_case == "unreadable":
+        real_open = open
+
+        def unreadable_open(path, *args, **kwargs):
+            if str(path) == str(image):
+                raise PermissionError("sensitive-provider-detail")
+            return real_open(path, *args, **kwargs)
+
+        monkeypatch.setattr(mk, "open", unreadable_open, raising=False)
+
+    provider_calls = []
+
+    def forbidden_route(request, **_kwargs):
+        provider_calls.append(request)
+        pytest.fail("route_vision must not run for an invalid local chart")
+
+    monkeypatch.setattr(mk, "route_vision", forbidden_route)
+
+    result = asyncio.run(
+        mk.analyze_chart(
+            None,
+            "005930.KS",
+            "삼성전자",
+            str(image),
+            asyncio.Semaphore(1),
+            run_id="chart-input-run",
+            candidate_rank=1,
+        )
+    )
+
+    assert provider_calls == []
+    assert result["종목코드"] == "005930"
+    assert result["종목명"] == "삼성전자"
+    assert result["시장"] == "코스피"
+    assert result["image_analysis_status"] == "unavailable"
+    routing = result["routing"]
+    assert routing["run_id"] == "chart-input-run"
+    assert routing["request_id"] == "chart-input-run:005930.KS"
+    assert routing["analysis_status"] == "FAILED_TECHNICAL"
+    assert routing["error_class"] == expected_error_class
+    assert routing["failure_reason"] == expected_error_class
+    assert routing["attempt_count"] == 0
+    assert routing["attempts"] == []
+    assert routing["usage"] == {
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "output_tokens": 0,
+        "reasoning_tokens": 0,
+        "total_tokens": 0,
+        "usage_estimated": False,
+        "raw_total_tokens": 0,
+        "mapping_version": "normalized-v1",
+        "mapping_status": "valid",
+        "complete": True,
+    }
+    assert routing["estimated_cost_usd"] == "0"
+    assert "sensitive-provider-detail" not in json.dumps(result, ensure_ascii=False)
+
+
+def test_chart_input_failure_generates_stable_correlation_ids(mk, monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        mk,
+        "route_vision",
+        lambda *_args, **_kwargs: pytest.fail(
+            "route_vision must not run for a missing local chart"
+        ),
+    )
+
+    result = asyncio.run(
+        mk.analyze_chart(
+            None,
+            "000660.KS",
+            "SK하이닉스",
+            str(tmp_path / "missing.png"),
+            asyncio.Semaphore(1),
+            candidate_rank=2,
+        )
+    )
+
+    run_id = result["routing"]["run_id"]
+    assert run_id.startswith("kr-chart:")
+    assert result["routing"]["request_id"] == f"{run_id}:000660.KS"
+
+
+def test_chart_input_failure_is_preserved_in_csv_projection(mk, monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        mk,
+        "route_vision",
+        lambda *_args, **_kwargs: pytest.fail(
+            "route_vision must not run for an empty local chart"
+        ),
+    )
+    monkeypatch.setattr(mk.pd.DataFrame, "to_csv", lambda *_args, **_kwargs: None)
+    image = tmp_path / "empty.png"
+    image.write_bytes(b"")
+
+    artifact = asyncio.run(
+        mk.analyze_chart(
+            None,
+            "005930.KS",
+            "삼성전자",
+            str(image),
+            asyncio.Semaphore(1),
+            run_id="chart-input-run",
+            candidate_rank=1,
+        )
+    )
+    record = mk.summarize_results([artifact]).iloc[0].to_dict()
+
+    assert record["종목코드"] == "005930"
+    assert record["image_analysis_status"] == "unavailable"
+    assert record["ai_analysis_status"] == "FAILED_TECHNICAL"
+    assert record["ai_error_class"] == "input_empty"
+    assert record["ai_failure_reason"] == "input_empty"
+    assert record["ai_total_tokens"] == 0
+    assert record["ai_usage_complete"] is True
+    assert record["ai_estimated_cost_usd"] == "0"
+
+
+@pytest.mark.parametrize(
     "provider_text",
     [
         '```json\n{"signal":"HOLD","confidence":61,"reasons":["steady"]}\n```',
@@ -303,7 +457,7 @@ def test_chart_local_json_repair_happens_before_central_validation(
     mk, monkeypatch, tmp_path, provider_text
 ):
     image = tmp_path / "chart.png"
-    image.write_bytes(b"fake-png")
+    _write_valid_png(image)
 
     def validating_route(request, **_kwargs):
         validation = validate_response(provider_text, request)

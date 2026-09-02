@@ -11,6 +11,8 @@ import asyncio
 import logging
 import httpx
 import hashlib
+import math
+import time
 from google import genai
 from google.genai import types as genai_types
 from typing import List, Dict, Optional
@@ -23,12 +25,18 @@ from dotenv import load_dotenv
 
 from app.services.ai_routing.contracts import (
     Operation,
+    ProviderAttempt,
     ProviderErrorClass,
     RoutingRequest,
     RoutingResult,
+    TokenUsage,
 )
+from app.services.ai_routing.budget import BudgetLimits, BudgetManager
+from app.services.ai_routing.store import RoutingStore
+from app.services.ai_routing.telemetry import record_attempt
+from app.services.ai_routing.pricing import estimate_cost_details
 from app.services.ai_routing.router import route_text
-from app.services.ai_routing.providers import normalize_gemini_usage
+from app.services.ai_routing.providers import classify_exception, normalize_gemini_usage
 
 logger = logging.getLogger(__name__)
 
@@ -167,6 +175,52 @@ def reset_api_status():
     for key in API_STATUS:
         API_STATUS[key] = {'available': True, 'last_error': None, 'error_count': 0}
 
+def _bounded_positive_env(name: str, default: int, maximum: int) -> int:
+    try:
+        parsed = int(os.getenv(name, str(default)))
+    except (TypeError, ValueError):
+        parsed = default
+    return max(1, min(parsed, maximum))
+
+
+def _grounding_budget_limits() -> BudgetLimits:
+    return BudgetLimits(
+        max_calls=_bounded_positive_env("AI_GROUNDING_MAX_CALLS", 30, 500),
+        max_input_tokens=_bounded_positive_env(
+            "AI_GROUNDING_MAX_INPUT_TOKENS", 300_000, 10_000_000
+        ),
+        max_output_tokens=_bounded_positive_env(
+            "AI_GROUNDING_MAX_OUTPUT_TOKENS", 61_440, 2_000_000
+        ),
+        low_priority_cutoff=1.0,
+    )
+
+
+def _known_zero_usage() -> TokenUsage:
+    return TokenUsage(
+        input_tokens=0,
+        cached_input_tokens=0,
+        output_tokens=0,
+        reasoning_tokens=0,
+        raw_total_tokens=0,
+        mapping_version="local-zero-v1",
+    )
+
+
+def _usage_metadata(usage: TokenUsage, *, include_mapping_status: bool = False) -> Dict:
+    payload = {
+        "input_tokens": usage.input_tokens,
+        "cached_input_tokens": usage.cached_input_tokens,
+        "output_tokens": usage.output_tokens,
+        "reasoning_tokens": usage.reasoning_tokens,
+        "total_tokens": usage.total_tokens,
+        "usage_estimated": usage.usage_estimated,
+    }
+    if include_mapping_status:
+        payload["mapping_status"] = usage.mapping_status
+    return payload
+
+
 class GeminiGroundingClient:
     """Gemini + Google Search Grounding (REST API) — 실시간 검색+분석 통합"""
 
@@ -176,18 +230,177 @@ class GeminiGroundingClient:
     # 다음 폐기 때 코드 수정 없이 넘기도록 env 로 뺀다.
     DEFAULT_MODEL = "gemini-2.5-flash"
 
-    def __init__(self, api_key: str = None):
+    ENDPOINT_IDENTITY = "models.generateContent:google_search"
+    MAX_OUTPUT_TOKENS = 2048
+
+    def __init__(
+        self,
+        api_key: str = None,
+        *,
+        store: RoutingStore | None = None,
+        budget: BudgetManager | None = None,
+    ):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
         self.model_name = os.getenv("GEMINI_GROUNDING_MODEL", self.DEFAULT_MODEL)
         self.base_url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model_name}:generateContent"
+        self.store = store
+        self.budget = budget or BudgetManager(
+            store,
+            limits=_grounding_budget_limits(),
+            pool="specialized_gemini",
+            provider="gemini",
+        )
 
-    async def search_and_analyze(self, stock_name: str, traditional_news: List[Dict] = None, dart_text: str = "") -> Dict:
+    @staticmethod
+    def _prompt_token_bound(prompt: str) -> int:
+        # A byte upper bound is deliberately conservative across Korean and
+        # ASCII text and cannot under-reserve because of encoding differences.
+        return max(1, len(prompt.encode("utf-8")))
+
+    def _record(
+        self,
+        *,
+        run_id: str,
+        request_id: str,
+        status: str,
+        selected: bool,
+        usage: TokenUsage,
+        latency_ms: float,
+        error_class: ProviderErrorClass | None = None,
+    ) -> tuple[ProviderAttempt, Decimal | None, bool]:
+        estimate = estimate_cost_details("gemini", self.model_name, usage)
+        attempt = ProviderAttempt(
+            request_id=request_id,
+            run_id=run_id,
+            provider="gemini",
+            model=self.model_name,
+            endpoint=self.ENDPOINT_IDENTITY,
+            operation=Operation.SPECIALIZED_GEMINI,
+            attempt_number=1,
+            selected=selected,
+            status=status,
+            latency_ms=max(0.0, latency_ms),
+            max_output_tokens=self.MAX_OUTPUT_TOKENS,
+            usage=usage,
+            estimated_cost_usd=estimate.cost,
+            pricing_version=estimate.pricing_version,
+            error_class=error_class,
+            breaker_state="closed",
+            caller_endpoint="engine.llm_analyzer.GeminiGroundingClient.search_and_analyze",
+        )
+        recorded = False
+        try:
+            recorded = record_attempt(attempt, store=self.store)
+        except Exception as exc:
+            logger.warning(
+                "[GeminiGrounding] telemetry write failed: %s", type(exc).__name__
+            )
+        return attempt, estimate.cost, recorded
+
+    @staticmethod
+    def _routing_payload(
+        attempt: ProviderAttempt,
+        cost: Decimal | None,
+        *,
+        telemetry_recorded: bool,
+    ) -> Dict:
+        usage = attempt.usage
+        usage_complete = (
+            usage.input_tokens is not None
+            and usage.output_tokens is not None
+            and usage.mapping_status != "quarantined"
+        )
+        successful = attempt.status == "success"
+        return {
+            "operation": Operation.SPECIALIZED_GEMINI.value,
+            "run_id": attempt.run_id,
+            "request_id": attempt.request_id,
+            "analysis_status": (
+                "SUCCESS_PRIMARY" if successful else "FAILED_TECHNICAL"
+            ),
+            "primary_provider": "gemini",
+            "actual_provider": "gemini" if successful else None,
+            "model": attempt.model,
+            "endpoint": attempt.endpoint,
+            "fallback_used": False,
+            "fallback_reason": None,
+            "retry_reason": None,
+            "usage": _usage_metadata(usage, include_mapping_status=True),
+            "usage_complete": usage_complete,
+            "estimated_cost_usd": str(cost) if cost is not None else None,
+            "attempt_count": 1,
+            "telemetry_recorded": telemetry_recorded,
+            "attempts": [{
+                "attempt_number": attempt.attempt_number,
+                "provider": attempt.provider,
+                "model": attempt.model,
+                "endpoint": attempt.endpoint,
+                "operation": Operation.SPECIALIZED_GEMINI.value,
+                "status": attempt.status,
+                "selected": attempt.selected,
+                "latency_ms": attempt.latency_ms,
+                "error_class": _enum_value(attempt.error_class),
+                "usage": _usage_metadata(usage, include_mapping_status=True),
+                "estimated_cost_usd": str(cost) if cost is not None else None,
+            }],
+        }
+
+    def _unavailable(
+        self,
+        *,
+        run_id: str,
+        request_id: str,
+        status: str,
+        error_class: ProviderErrorClass,
+        latency_ms: float = 0.0,
+    ) -> Dict:
+        attempt, cost, recorded = self._record(
+            run_id=run_id,
+            request_id=request_id,
+            status=status,
+            selected=False,
+            usage=_known_zero_usage() if status.startswith("skipped_") else TokenUsage.unknown(),
+            latency_ms=latency_ms,
+            error_class=error_class,
+        )
+        return {
+            "score": 0,
+            "reason": "Grounding unavailable",
+            "themes": [],
+            "source": "none",
+            "usage": _usage_metadata(attempt.usage),
+            "routing": self._routing_payload(
+                attempt, cost, telemetry_recorded=recorded
+            ),
+        }
+
+    async def search_and_analyze(
+        self,
+        stock_name: str,
+        traditional_news: List[Dict] = None,
+        dart_text: str = "",
+        *,
+        run_id: str | None = None,
+        request_id: str | None = None,
+    ) -> Dict:
         """Google Search Grounding으로 실시간 뉴스 검색 + 분석을 단일 호출로 수행"""
+        logical_run_id = run_id or f"gemini-grounding:{uuid4()}"
+        logical_request_id = request_id or f"{logical_run_id}:request"
         if not self.api_key:
-            return {"score": 0, "reason": "No Gemini API Key", "themes": [], "source": "none"}
+            return self._unavailable(
+                run_id=logical_run_id,
+                request_id=logical_request_id,
+                status="skipped_unconfigured",
+                error_class=ProviderErrorClass.CLIENT_UNAVAILABLE,
+            )
 
         if not API_STATUS['gemini_grounding']['available']:
-            return {"score": 0, "reason": f"Rate Limited: {API_STATUS['gemini_grounding']['last_error']}", "themes": [], "source": "none"}
+            return self._unavailable(
+                run_id=logical_run_id,
+                request_id=logical_request_id,
+                status="skipped_breaker",
+                error_class=ProviderErrorClass.BREAKER_OPEN,
+            )
 
         trad_text = ""
         if traditional_news:
@@ -228,11 +441,63 @@ JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."], "news_summ
             "tools": [{"google_search": {}}],
             "generationConfig": {
                 "temperature": 0.2,
-                "maxOutputTokens": 2048,
+                "maxOutputTokens": self.MAX_OUTPUT_TOKENS,
                 "thinkingConfig": {"thinkingBudget": 0},
             }
         }
 
+        input_bound = self._prompt_token_bound(prompt)
+        reservation_usage = TokenUsage(
+            input_tokens=input_bound,
+            cached_input_tokens=0,
+            output_tokens=self.MAX_OUTPUT_TOKENS,
+            reasoning_tokens=0,
+            usage_estimated=True,
+            mapping_version="grounding-reservation-v1",
+        )
+        reservation_cost = estimate_cost_details(
+            "gemini", self.model_name, reservation_usage
+        )
+        reservation = self.budget.reserve(
+            run_id=logical_run_id,
+            request_id=logical_request_id,
+            operation=Operation.SPECIALIZED_GEMINI,
+            input_tokens=input_bound,
+            output_tokens=self.MAX_OUTPUT_TOKENS,
+            calls=1,
+            estimated_cost_usd=reservation_cost.cost,
+            cost_pricing_version=reservation_cost.pricing_version,
+        )
+        if not reservation.approved:
+            return self._unavailable(
+                run_id=logical_run_id,
+                request_id=logical_request_id,
+                status="skipped_budget",
+                error_class=ProviderErrorClass.BUDGET_EXHAUSTED,
+            )
+        claimed = self.budget.claim(
+            reservation.reservation_id,
+            run_id=logical_run_id,
+            request_id=logical_request_id,
+            owner_token=reservation.owner_token,
+            input_tokens=input_bound,
+            output_tokens=self.MAX_OUTPUT_TOKENS,
+        )
+        if not claimed.approved:
+            self.budget.release(
+                reservation.reservation_id, owner_token=reservation.owner_token
+            )
+            return self._unavailable(
+                run_id=logical_run_id,
+                request_id=logical_request_id,
+                status="skipped_budget",
+                error_class=ProviderErrorClass.BUDGET_EXHAUSTED,
+            )
+
+        started = time.perf_counter()
+        usage = TokenUsage.unknown()
+        error_class: ProviderErrorClass | None = None
+        data: Dict | None = None
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(
@@ -260,9 +525,19 @@ JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."], "news_summ
                     if web.get("uri"):
                         citations.append(web["uri"])
 
+            raw_usage = resp_data.get("usageMetadata")
+            usage = normalize_gemini_usage({
+                "prompt_token_count": raw_usage.get("promptTokenCount"),
+                "cached_content_token_count": raw_usage.get("cachedContentTokenCount", 0),
+                "candidates_token_count": raw_usage.get("candidatesTokenCount"),
+                "thoughts_token_count": raw_usage.get("thoughtsTokenCount", 0),
+                "total_token_count": raw_usage.get("totalTokenCount"),
+            }) if isinstance(raw_usage, dict) else TokenUsage.unknown()
+
             text = text.strip()
             if not text:
-                return {"score": 0, "reason": "Empty response from Gemini Grounding", "themes": [], "source": "none"}
+                error_class = ProviderErrorClass.EMPTY
+                raise ValueError("grounding_empty")
 
             # Parse JSON from response
             try:
@@ -272,47 +547,50 @@ JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."], "news_summ
                 if match:
                     data = json.loads(match.group())
                 else:
-                    data = {"score": 0, "reason": f"JSON Decode Failed: {text[:80]}", "themes": []}
+                    error_class = ProviderErrorClass.INVALID_JSON
+                    raise ValueError("grounding_invalid_json")
 
             if isinstance(data, list) and len(data) > 0:
                 data = data[0]
             if not isinstance(data, dict):
-                data = {"score": 0, "reason": "Invalid response format", "themes": []}
+                error_class = ProviderErrorClass.INVALID_JSON
+                raise ValueError("grounding_invalid_json")
 
             data["source"] = "gemini_grounding"
             data["citations"] = citations
-            raw_usage = resp_data.get("usageMetadata") or {}
-            usage = normalize_gemini_usage({
-                "prompt_token_count": raw_usage.get("promptTokenCount"),
-                "cached_content_token_count": raw_usage.get("cachedContentTokenCount", 0),
-                "candidates_token_count": raw_usage.get("candidatesTokenCount"),
-                "thoughts_token_count": raw_usage.get("thoughtsTokenCount", 0),
-                "total_token_count": raw_usage.get("totalTokenCount"),
-            })
-            data["usage"] = {
-                "input_tokens": usage.input_tokens,
-                "cached_input_tokens": usage.cached_input_tokens,
-                "output_tokens": usage.output_tokens,
-                "reasoning_tokens": usage.reasoning_tokens,
-                "total_tokens": usage.total_tokens,
-                "usage_estimated": usage.usage_estimated,
-            }
-            return data
+            data["usage"] = _usage_metadata(usage)
 
         except Exception as e:
-            error_msg = str(e).lower()
-            print(f"[ERROR] Gemini Grounding Failed: {type(e).__name__}")
-
-            if 'rate' in error_msg or 'limit' in error_msg or '429' in error_msg or 'quota' in error_msg or 'resource' in error_msg:
+            error_class = error_class or classify_exception(e)
+            logger.warning(
+                "[GeminiGrounding] request failed: %s", error_class.value
+            )
+            if error_class is ProviderErrorClass.RATE_LIMIT:
                 await _mark_unavailable('gemini_grounding', 'Rate Limit')
-                print("[WARN] Gemini Grounding Rate Limit - 임시 비활성화")
-
+        latency_ms = (time.perf_counter() - started) * 1000
+        success = data is not None and error_class is None
+        attempt, cost, recorded = self._record(
+            run_id=logical_run_id,
+            request_id=logical_request_id,
+            status="success" if success else "failed",
+            selected=success,
+            usage=usage,
+            latency_ms=latency_ms,
+            error_class=error_class,
+        )
+        self.budget.settle(reservation.reservation_id, usage, calls=1, actual_cost_usd=cost)
+        routing = self._routing_payload(attempt, cost, telemetry_recorded=recorded)
+        if data is None:
             return {
                 "score": 0,
-                "reason": f"Grounding Error: {type(e).__name__}",
+                "reason": "Grounding unavailable",
                 "themes": [],
                 "source": "none",
+                "usage": _usage_metadata(usage),
+                "routing": routing,
             }
+        data["routing"] = routing
+        return data
 
 class OpenAIAnalyzer:
     """OpenAI GPT를 이용한 뉴스 종합 분석 (Gemini Fallback)"""
@@ -891,7 +1169,13 @@ JSON 객체만 반환: {{"score":0~3,"reason":"한 문장","themes":["최대 3�
         grounding = getattr(self, "grounding", None)
         if grounding is None or not API_STATUS["gemini_grounding"]["available"]:
             return None
-        result = await grounding.search_and_analyze(stock_name, news_items, dart_text)
+        result = await grounding.search_and_analyze(
+            stock_name,
+            news_items,
+            dart_text,
+            run_id=run_id,
+            request_id=request_id,
+        )
         if not self._is_usable_analysis(result):
             return None
         citations = [
@@ -911,23 +1195,28 @@ JSON 객체만 반환: {{"score":0~3,"reason":"한 문장","themes":["최대 3�
         if not freshness_verified:
             output["score"] = min(1, int(output.get("score") or 0))
             output["analysis_status"] = "DEGRADED"
-        output["routing"] = {
-            "operation": Operation.SPECIALIZED_GEMINI.value,
-            "run_id": run_id,
-            "request_id": request_id,
-            "analysis_status": output.get(
-                "analysis_status", "SUCCESS_PRIMARY"
-            ),
-            "primary_provider": "gemini",
-            "actual_provider": "gemini",
-            "model": getattr(grounding, "model_name", None),
-            "fallback_used": False,
-            "fallback_reason": None,
-            "retry_reason": None,
-            "usage": output.get("usage"),
-            "estimated_cost_usd": None,
-            "attempt_count": 1,
-        }
+        routing = result.get("routing")
+        if not isinstance(routing, dict):
+            # Compatibility test doubles and legacy injected clients have no
+            # physical-attempt ledger contract; never fabricate an attempt.
+            routing = {
+                "operation": Operation.SPECIALIZED_GEMINI.value,
+                "run_id": run_id,
+                "request_id": request_id,
+                "analysis_status": output.get("analysis_status", "SUCCESS_PRIMARY"),
+                "primary_provider": "gemini",
+                "actual_provider": "gemini",
+                "model": getattr(grounding, "model_name", None),
+                "fallback_used": False,
+                "fallback_reason": None,
+                "retry_reason": None,
+                "usage": output.get("usage"),
+                "usage_complete": False,
+                "estimated_cost_usd": None,
+                "attempt_count": 0,
+                "telemetry_recorded": False,
+            }
+        output["routing"] = routing
         output["api_status"] = self.get_api_status()
         return output
 
@@ -1174,12 +1463,9 @@ class BaseScreener:
     "picks": [
         {{
             "stock_code": "코드",
-            "stock_name": "종목명",
-            "rank": 순위,
             "confidence": "HIGH/MEDIUM/LOW",
             "reason": "선별 이유 (한국어, 2~3문장)",
-            "risk": "주요 리스크 (한 문장)",
-            "expected_return": "기대 수익률 범위"
+            "risk": "주요 리스크 (한 문장)"
         }}
     ],
     "market_view": "오늘 시장에 대한 전체적 평가 (한국어, 한 문장)",
@@ -1202,6 +1488,95 @@ class BaseScreener:
         return result
 
 
+_CANONICAL_PRICE_FIELDS = (
+    "current_price",
+    "entry_price",
+    "stop_price",
+    "target_price",
+)
+
+
+def _finite_payload(value) -> bool:
+    if isinstance(value, float):
+        return math.isfinite(value)
+    if isinstance(value, Decimal):
+        return value.is_finite()
+    if isinstance(value, dict):
+        return all(_finite_payload(item) for item in value.values())
+    if isinstance(value, (list, tuple)):
+        return all(_finite_payload(item) for item in value)
+    return True
+
+
+def _canonical_signal_rows(signals_data: List[Dict]) -> Dict[str, Dict] | None:
+    rows: Dict[str, Dict] = {}
+    for item in signals_data:
+        if not isinstance(item, dict):
+            return None
+        code = item.get("stock_code")
+        if not isinstance(code, str) or not code or code != code.strip() or code in rows:
+            return None
+        for field in _CANONICAL_PRICE_FIELDS:
+            value = item.get(field)
+            if value is not None and (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float, Decimal))
+                or not _finite_payload(value)
+            ):
+                return None
+        rows[code] = item
+    return rows
+
+
+def _deterministic_expected_return(row: Dict) -> str:
+    supplied = row.get("expected_return")
+    if isinstance(supplied, str) and supplied.strip() and len(supplied) <= 64:
+        return supplied.strip()
+    if isinstance(supplied, (int, float, Decimal)) and not isinstance(supplied, bool):
+        if _finite_payload(supplied):
+            return str(supplied)
+    entry = row.get("entry_price")
+    target = row.get("target_price")
+    if (
+        isinstance(entry, (int, float, Decimal))
+        and not isinstance(entry, bool)
+        and isinstance(target, (int, float, Decimal))
+        and not isinstance(target, bool)
+        and _finite_payload(entry)
+        and _finite_payload(target)
+        and Decimal(str(entry)) > 0
+    ):
+        percent = (
+            (Decimal(str(target)) - Decimal(str(entry)))
+            / Decimal(str(entry))
+            * Decimal("100")
+        )
+        return f"{percent.quantize(Decimal('0.1'))}%"
+    return ""
+
+
+def _canonical_pick(item: Dict, row: Dict, *, rank: int, source: str) -> Dict:
+    pick = {
+        "stock_code": str(row["stock_code"]),
+        "stock_name": str(row.get("stock_name") or ""),
+        "market": str(row.get("market") or ""),
+        "rank": rank,
+        "confidence": (
+            str(item.get("confidence") or "LOW")
+            if str(item.get("confidence") or "LOW") in {"HIGH", "MEDIUM", "LOW"}
+            else "LOW"
+        ),
+        "reason": str(item.get("reason") or "")[:1_000],
+        "risk": str(item.get("risk") or "")[:500],
+        "expected_return": _deterministic_expected_return(row),
+        "source": source,
+    }
+    for field in _CANONICAL_PRICE_FIELDS:
+        if field in row:
+            pick[field] = row[field]
+    return pick
+
+
 class GeminiScreener(BaseScreener):
     """Gemini 2.5 Flash 기반 독립적 종목 선별기"""
 
@@ -1214,9 +1589,21 @@ class GeminiScreener(BaseScreener):
 
     async def screen_candidates(self, signals_data: List[Dict]) -> Dict:
         if not self.client:
-            return {"picks": [], "error": "No Gemini Client", "generated_at": datetime.now().isoformat()}
+            return {
+                "picks": [],
+                "error": "provider_unavailable",
+                "error_class": ProviderErrorClass.CLIENT_UNAVAILABLE.value,
+                "generated_at": datetime.now().isoformat(),
+                "model": self.model_name,
+            }
         if not signals_data:
-            return {"picks": [], "error": "No signals", "generated_at": datetime.now().isoformat()}
+            return {
+                "picks": [],
+                "error": "no_candidates",
+                "error_class": None,
+                "generated_at": datetime.now().isoformat(),
+                "model": self.model_name,
+            }
 
         candidates_text = self._build_candidates_summary(signals_data)
         prompt = self._build_screening_prompt(candidates_text, len(signals_data))
@@ -1236,8 +1623,15 @@ class GeminiScreener(BaseScreener):
             result["model"] = self.model_name
             return result
         except Exception as e:
-            print(f"[ERROR] Gemini Screener Failed: {e}")
-            return {"picks": [], "error": str(e), "generated_at": datetime.now().isoformat(), "model": self.model_name}
+            error_class = classify_exception(e)
+            logger.warning("[GeminiScreener] provider failed: %s", error_class.value)
+            return {
+                "picks": [],
+                "error": "provider_unavailable",
+                "error_class": error_class.value,
+                "generated_at": datetime.now().isoformat(),
+                "model": self.model_name,
+            }
 
 
 class OpenAIScreener(BaseScreener):
@@ -1301,21 +1695,36 @@ class DeepSeekScreener(BaseScreener):
         if not signals_data:
             return {"picks": [], "error": "No signals", "generated_at": datetime.now().isoformat()}
 
+        canonical_rows = _canonical_signal_rows(signals_data)
+        if canonical_rows is None:
+            return {
+                "picks": [],
+                "error": "invalid_candidate_input",
+                "generated_at": datetime.now().isoformat(),
+                "model": self.model_name,
+            }
         candidates_text = self._build_candidates_summary(signals_data)
         prompt = self._build_screening_prompt(candidates_text, len(signals_data))
-        allowed_codes = {
-            str(item.get("stock_code") or "") for item in signals_data
-            if item.get("stock_code")
-        }
+        allowed_codes = set(canonical_rows)
 
         def validate(payload):
             if not isinstance(payload, dict) or not isinstance(payload.get("picks"), list):
                 return ProviderErrorClass.INVALID_JSON
+            seen_codes = set()
             for pick in payload["picks"]:
                 if not isinstance(pick, dict):
                     return ProviderErrorClass.INVALID_JSON
-                if str(pick.get("stock_code") or "") not in allowed_codes:
+                code = pick.get("stock_code")
+                if (
+                    not isinstance(code, str)
+                    or not code
+                    or code != code.strip()
+                    or code not in allowed_codes
+                    or code in seen_codes
+                    or not _finite_payload(pick)
+                ):
                     return ProviderErrorClass.NUMERIC_MISMATCH
+                seen_codes.add(code)
             return None
 
         logical_run_id = run_id or f"jongga-screener:{uuid4()}"
@@ -1338,6 +1747,22 @@ class DeepSeekScreener(BaseScreener):
             ),
         )
         result = self._parse_json_response(routed.text) if routed.text else {"picks": []}
+        canonical_picks = []
+        seen_codes = set()
+        for rank, item in enumerate(result.get("picks", []), 1):
+            if not isinstance(item, dict) or not _finite_payload(item):
+                continue
+            code = item.get("stock_code")
+            if code not in canonical_rows or code in seen_codes:
+                continue
+            seen_codes.add(code)
+            canonical_picks.append(_canonical_pick(
+                item,
+                canonical_rows[code],
+                rank=rank,
+                source="routed_primary",
+            ))
+        result["picks"] = canonical_picks
         result["generated_at"] = datetime.now().isoformat()
         result["model"] = routed.model
         result["routing"] = _routing_metadata(
@@ -1368,9 +1793,21 @@ class GrokScreener(BaseScreener):
 
     async def screen_candidates(self, signals_data: List[Dict]) -> Dict:
         if not self.client:
-            return {"picks": [], "error": "No xAI Client", "generated_at": datetime.now().isoformat()}
+            return {
+                "picks": [],
+                "error": "provider_unavailable",
+                "error_class": ProviderErrorClass.CLIENT_UNAVAILABLE.value,
+                "generated_at": datetime.now().isoformat(),
+                "model": self.model_name,
+            }
         if not signals_data:
-            return {"picks": [], "error": "No signals", "generated_at": datetime.now().isoformat()}
+            return {
+                "picks": [],
+                "error": "no_candidates",
+                "error_class": None,
+                "generated_at": datetime.now().isoformat(),
+                "model": self.model_name,
+            }
 
         candidates_text = self._build_candidates_summary(signals_data)
         prompt = self._build_screening_prompt(candidates_text, len(signals_data))
@@ -1400,8 +1837,15 @@ class GrokScreener(BaseScreener):
                 logger.info(f"[Grok] tokens in={in_tok} out={out_tok} cost=${cost_est:.4f}")
             return result
         except Exception as e:
-            print(f"[ERROR] Grok Screener Failed: {e}")
-            return {"picks": [], "error": str(e), "generated_at": datetime.now().isoformat(), "model": self.model_name}
+            error_class = classify_exception(e)
+            logger.warning("[GrokScreener] provider failed: %s", error_class.value)
+            return {
+                "picks": [],
+                "error": "provider_unavailable",
+                "error_class": error_class.value,
+                "generated_at": datetime.now().isoformat(),
+                "model": self.model_name,
+            }
 
 
 # Multi-AI 모델 식별자 상수
@@ -1455,6 +1899,7 @@ class MultiAIConsensusScreener:
         run_id: str | None = None,
     ) -> Dict:
         """Run one DS-first logical path; shadow output never mutates its picks."""
+        logical_run_id = run_id or f"jongga-multi-ai:{uuid4()}"
         if not signals_data:
             empty_result = {
                 "picks": [], "consensus_count": 0, "strong_count": 0,
@@ -1476,9 +1921,17 @@ class MultiAIConsensusScreener:
                     "verdict_blended": False,
                     "models_attempted": [],
                 }
+                if self.shadow_screeners:
+                    empty_result["shadow_comparison"].update({
+                        "models_requested": list(self.shadow_screeners),
+                        "run_id": logical_run_id,
+                        "request_ids": {
+                            name: f"{logical_run_id}:multi-ai-shadow:{name}"
+                            for name in self.shadow_screeners
+                        },
+                    })
             return empty_result
 
-        logical_run_id = run_id or f"jongga-multi-ai:{uuid4()}"
         primary = self.screeners[MODEL_DEEPSEEK]
         try:
             # The central route owns provider deadlines and fallback. Wrapping
@@ -1497,30 +1950,26 @@ class MultiAIConsensusScreener:
                 "model": getattr(primary, "model_name", None),
             }
 
-        output = self._build_routed_primary(primary_result)
+        output = self._build_routed_primary(primary_result, signals_data)
         if self.shadow_compare:
             if self.shadow_screeners:
                 names = list(self.shadow_screeners)
-                shadow_results = await asyncio.gather(*[
-                    self._safe_screen(
-                        self.shadow_screeners[name], signals_data, self._timeout_for(name)
-                    )
-                    for name in names
-                ])
-                shadow = self._build_consensus(dict(zip(names, shadow_results)))
-                primary_codes = {
-                    str(item.get("stock_code")) for item in output.get("picks", [])
-                }
-                shadow_codes = [
-                    str(item.get("stock_code")) for item in shadow.get("picks", [])
-                ]
+                # Current Gemini/Grok SDK transports run blocking work that
+                # cannot be cancelled after an asyncio timeout. Do not start a
+                # billable request until a transport-owned deadline plus
+                # central attempt accounting is available.
                 output["shadow_comparison"] = {
-                    "status": "completed",
-                    "compared": True,
-                    "picks": shadow_codes,
-                    "overlap_count": len(primary_codes.intersection(shadow_codes)),
-                    "models_attempted": shadow.get("models_attempted", []),
+                    "status": "not_run",
+                    "reason": "unsafe_billable_shadow_transport",
+                    "compared": False,
                     "verdict_blended": False,
+                    "models_attempted": [],
+                    "models_requested": names,
+                    "run_id": logical_run_id,
+                    "request_ids": {
+                        name: f"{logical_run_id}:multi-ai-shadow:{name}"
+                        for name in names
+                    },
                 }
             else:
                 output["shadow_comparison"] = {
@@ -1533,18 +1982,30 @@ class MultiAIConsensusScreener:
         return output
 
     @staticmethod
-    def _build_routed_primary(result: Dict) -> Dict:
+    def _build_routed_primary(result: Dict, signals_data: List[Dict]) -> Dict:
         routing = result.get("routing") if isinstance(result.get("routing"), dict) else {}
         actual_provider = routing.get("actual_provider") or "deepseek"
         source = "openai_fallback" if actual_provider == "openai" else "deepseek"
+        canonical_rows = _canonical_signal_rows(signals_data) or {}
         picks = []
-        for rank, item in enumerate(result.get("picks", []), 1):
-            if not isinstance(item, dict):
+        seen_codes = set()
+        for item in result.get("picks", []):
+            if not isinstance(item, dict) or not _finite_payload(item):
                 continue
-            pick = dict(item)
-            pick["rank"] = rank
-            pick["source"] = source
-            picks.append(pick)
+            code = item.get("stock_code")
+            if (
+                not isinstance(code, str)
+                or code not in canonical_rows
+                or code in seen_codes
+            ):
+                continue
+            seen_codes.add(code)
+            picks.append(_canonical_pick(
+                item,
+                canonical_rows[code],
+                rank=len(picks) + 1,
+                source=source,
+            ))
         model = result.get("model")
         return {
             "picks": picks,
@@ -1554,8 +2015,16 @@ class MultiAIConsensusScreener:
             "gemini_count": 0,
             "openai_count": len(picks) if actual_provider == "openai" else 0,
             "grok_count": 0,
-            "market_view": result.get("market_view", ""),
-            "top_themes": list(result.get("top_themes", []))[:6],
+            "market_view": (
+                str(result.get("market_view") or "")[:1_000]
+                if isinstance(result.get("market_view", ""), str)
+                else ""
+            ),
+            "top_themes": [
+                str(item)[:120]
+                for item in result.get("top_themes", [])
+                if isinstance(item, str)
+            ][:6],
             "generated_at": result.get("generated_at") or datetime.now().isoformat(),
             "models": [model] if model and picks else [],
             "models_attempted": [model] if model else [],
@@ -1623,13 +2092,22 @@ class MultiAIConsensusScreener:
                 timeout=timeout
             )
         except asyncio.TimeoutError:
-            logger.warning(f"[MultiAI] {model_name} screener timed out after {timeout}s")
-            return {"picks": [], "error": f"Timeout after {timeout}s", "model": model_name}
+            logger.warning("[MultiAI] shadow screener failed: timeout")
+            return {
+                "picks": [],
+                "error": "provider_unavailable",
+                "error_class": ProviderErrorClass.TIMEOUT.value,
+                "model": model_name,
+            }
         except Exception as e:
-            logger.warning(
-                f"[MultiAI] {model_name} screener failed: {type(e).__name__}: {e}"
-            )
-            return {"picks": [], "error": str(e), "model": model_name}
+            error_class = classify_exception(e)
+            logger.warning("[MultiAI] shadow screener failed: %s", error_class.value)
+            return {
+                "picks": [],
+                "error": "provider_unavailable",
+                "error_class": error_class.value,
+                "model": model_name,
+            }
 
     def _build_consensus(self, results: Dict[str, Dict]) -> Dict:
         """N-way 합의 알고리즘.

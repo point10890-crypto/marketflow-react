@@ -62,7 +62,7 @@ def _response(text, *, input_tokens=10, output_tokens=4):
     )
 
 
-def _router(tmp_path, adapters):
+def _router(tmp_path, adapters, **router_kwargs):
     store = RoutingStore(tmp_path / "usage.sqlite3")
     return (
         AIRouter(
@@ -70,6 +70,7 @@ def _router(tmp_path, adapters):
             budget=BudgetManager(store),
             breaker=CircuitBreaker(store),
             store=store,
+            **router_kwargs,
         ),
         store,
     )
@@ -922,8 +923,17 @@ def test_three_hop_vision_records_immediate_predecessor_and_reason(
     tmp_path, monkeypatch
 ):
     monkeypatch.setenv("AI_DEEPSEEK_VISION_MODEL", "deepseek-vision-verified")
-    monkeypatch.setenv("AI_DEEPSEEK_VISION_CAPABILITY_VERIFIED", "1")
-    monkeypatch.setenv("AI_DEEPSEEK_VISION_HEALTH_VERIFIED", "1")
+    policy_now = datetime(2026, 9, 3, 3, 0, tzinfo=timezone.utc)
+    vision_attestation = {
+        "provider": "deepseek",
+        "endpoint": "https://api.deepseek.com/chat/completions",
+        "model": "deepseek-vision-verified",
+        "modality": "vision",
+        "checked_at": "2026-09-03T02:59:30+00:00",
+        "ttl_seconds": 300,
+        "capable": True,
+        "healthy": True,
+    }
     auth = ProviderCallError(ProviderErrorClass.AUTHENTICATION)
     router, store = _router(
         tmp_path,
@@ -932,6 +942,8 @@ def test_three_hop_vision_records_immediate_predecessor_and_reason(
             "deepseek": FakeAdapter(auth),
             "openai": FakeAdapter(_response('{"signal":"HOLD"}')),
         },
+        vision_attestation=vision_attestation,
+        policy_clock=lambda: policy_now,
     )
     request = RoutingRequest(
         operation=Operation.VISION,

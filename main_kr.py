@@ -11,6 +11,7 @@ import asyncio
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
+from io import BytesIO
 from uuid import uuid4
 
 import matplotlib
@@ -22,12 +23,15 @@ import pandas as pd
 import yfinance as yf
 from dotenv import load_dotenv
 from google import genai
+from PIL import Image
 
 from app.services.ai_routing.contracts import (
+    AnalysisStatus,
     Operation,
     ProviderErrorClass,
     RoutingRequest,
     RoutingResult,
+    TokenUsage,
     VisionImage,
 )
 from app.services.ai_routing.router import route_vision
@@ -333,6 +337,12 @@ def _enum_value(value: object) -> object:
 
 def _usage_metadata(result: RoutingResult) -> dict[str, object]:
     usage = result.usage
+    complete = (
+        usage.input_tokens is not None
+        and usage.output_tokens is not None
+        and not usage.usage_estimated
+        and usage.mapping_status != 'quarantined'
+    )
     return {
         'input_tokens': usage.input_tokens,
         'cached_input_tokens': usage.cached_input_tokens,
@@ -340,6 +350,10 @@ def _usage_metadata(result: RoutingResult) -> dict[str, object]:
         'reasoning_tokens': usage.reasoning_tokens,
         'total_tokens': usage.total_tokens,
         'usage_estimated': usage.usage_estimated,
+        'raw_total_tokens': usage.raw_total_tokens,
+        'mapping_version': usage.mapping_version,
+        'mapping_status': usage.mapping_status,
+        'complete': complete,
     }
 
 
@@ -383,6 +397,77 @@ def _routing_metadata(
     }
 
 
+def _chart_image_error_class(image_data: bytes) -> str | None:
+    """Return one bounded local-input error code without exposing decoder detail."""
+    if not image_data:
+        return 'input_empty'
+    try:
+        with Image.open(BytesIO(image_data)) as image:
+            if image.format != 'PNG':
+                return 'input_corrupt'
+            image.verify()
+    except Exception:
+        return 'input_corrupt'
+    return None
+
+
+def _unavailable_chart_artifact(
+    ticker: str,
+    name: str,
+    routed: RoutingResult,
+    *,
+    run_id: str,
+    request_id: str,
+    error_class: str | None = None,
+) -> dict[str, object]:
+    routing = _routing_metadata(
+        routed,
+        run_id=run_id,
+        request_id=request_id,
+    )
+    if error_class is not None:
+        routing['error_class'] = error_class
+        routing['failure_reason'] = error_class
+    return {
+        '종목코드': ticker.split('.')[0],
+        '종목명': name,
+        '시장': '코스피' if ticker.endswith('.KS') else '코스닥',
+        'image_analysis_status': 'unavailable',
+        'routing': routing,
+    }
+
+
+def _chart_input_failure_artifact(
+    ticker: str,
+    name: str,
+    *,
+    run_id: str,
+    request_id: str,
+    error_class: str,
+) -> dict[str, object]:
+    routed = RoutingResult(
+        text=None,
+        analysis_status=AnalysisStatus.FAILED_TECHNICAL,
+        primary_provider=None,
+        usage=TokenUsage(
+            input_tokens=0,
+            cached_input_tokens=0,
+            output_tokens=0,
+            reasoning_tokens=0,
+            raw_total_tokens=0,
+        ),
+        estimated_cost_usd=Decimal('0'),
+    )
+    return _unavailable_chart_artifact(
+        ticker,
+        name,
+        routed,
+        run_id=run_id,
+        request_id=request_id,
+        error_class=error_class,
+    )
+
+
 async def analyze_chart(client: genai.Client, ticker: str, name: str,
                         image_path: str, semaphore: asyncio.Semaphore, *,
                         run_id: str | None = None,
@@ -390,20 +475,49 @@ async def analyze_chart(client: genai.Client, ticker: str, name: str,
     """Analyze one chart through the budgeted central vision route."""
     async with semaphore:
         loop = asyncio.get_event_loop()
+        effective_run_id = run_id or f'kr-chart:{uuid4()}'
+        request_id = f'{effective_run_id}:{ticker}'
         try:
             with open(image_path, 'rb') as image_file:
                 image_data = image_file.read()
-        except OSError as exc:
-            logger.error('[VISION INPUT ERROR] %s(%s): %s', name, ticker, type(exc).__name__)
-            return None
+        except OSError:
+            error_class = 'input_unreadable'
+            logger.error(
+                '[VISION INPUT ERROR] %s(%s): class=%s',
+                name,
+                ticker,
+                error_class,
+            )
+            return _chart_input_failure_artifact(
+                ticker,
+                name,
+                run_id=effective_run_id,
+                request_id=request_id,
+                error_class=error_class,
+            )
 
-        effective_run_id = run_id or f'kr-chart:{ticker}'
+        input_error_class = _chart_image_error_class(image_data)
+        if input_error_class is not None:
+            logger.error(
+                '[VISION INPUT ERROR] %s(%s): class=%s',
+                name,
+                ticker,
+                input_error_class,
+            )
+            return _chart_input_failure_artifact(
+                ticker,
+                name,
+                run_id=effective_run_id,
+                request_id=request_id,
+                error_class=input_error_class,
+            )
+
         request = RoutingRequest(
             operation=Operation.VISION,
             prompt=ANALYSIS_PROMPT.format(name=name, ticker=ticker),
             system='You are a professional technical chart analyst. Respond only in valid JSON.',
             run_id=effective_run_id,
-            request_id=f'{effective_run_id}:{ticker}',
+            request_id=request_id,
             symbol=ticker.split('.')[0],
             market='KOSPI' if ticker.endswith('.KS') else 'KOSDAQ',
             json_mode=True,
@@ -442,17 +556,13 @@ async def analyze_chart(client: genai.Client, ticker: str, name: str,
             routed.analysis_status.value,
             _enum_value(routed.fallback_reason),
         )
-        return {
-            '종목코드': ticker.split('.')[0],
-            '종목명': name,
-            '시장': '코스피' if ticker.endswith('.KS') else '코스닥',
-            'image_analysis_status': 'unavailable',
-            'routing': _routing_metadata(
-                routed,
-                run_id=effective_run_id,
-                request_id=request.request_id,
-            ),
-        }
+        return _unavailable_chart_artifact(
+            ticker,
+            name,
+            routed,
+            run_id=effective_run_id,
+            request_id=request.request_id,
+        )
 
 
 # ════════════════════════════════════════════════
@@ -486,7 +596,10 @@ def summarize_results(results: list[dict]) -> pd.DataFrame:
             'ai_model': routing.get('model'),
             'ai_fallback_used': routing.get('fallback_used', False),
             'ai_fallback_reason': routing.get('fallback_reason'),
+            'ai_error_class': routing.get('error_class'),
+            'ai_failure_reason': routing.get('failure_reason'),
             'ai_total_tokens': usage.get('total_tokens'),
+            'ai_usage_complete': usage.get('complete'),
             'ai_estimated_cost_usd': routing.get('estimated_cost_usd'),
         })
 
