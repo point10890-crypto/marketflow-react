@@ -4823,6 +4823,14 @@ def main():
     logger.info(f"   SCHEDULE: {Config.SCHEDULE_ENABLED}")
     logger.info("=" * 60)
 
+    # 부팅 설정 검증 (log only) — 누락 키가 있어도 데몬은 나머지 잡을 계속 돌린다.
+    try:
+        from config import validate_runtime_config
+        for _problem in validate_runtime_config(strict=False):
+            logger.warning(f"⚠️ [config] {_problem}")
+    except Exception as _exc:
+        logger.warning(f"⚠️ 설정 검증 건너뜀: {type(_exc).__name__}")
+
     # ── 개별 작업 실행 ──
     ran_any = False
 

@@ -101,6 +101,20 @@ def create_app(config=None):
             'SECRET_KEY is not configured; using a process-local random key. '
             'Existing auth tokens will be invalid after restart.'
         )
+    # 부팅 시 런타임 설정 검증 — 문제마다 WARNING(값은 로그하지 않음),
+    # MARKETFLOW_STRICT_CONFIG=1 이면 기동을 중단한다 (config.validate_runtime_config).
+    _config_log = logging.getLogger(__name__)
+    try:
+        from config import RuntimeConfigError, validate_runtime_config
+        _config_problems = validate_runtime_config(strict=False)
+    except ImportError:  # pragma: no cover — 루트 config.py 가 sys.path 에 없는 임베딩 환경
+        RuntimeConfigError = RuntimeError
+        _config_problems = []
+    for _problem in _config_problems:
+        _config_log.warning('[config] %s', _problem)
+    if _config_problems and os.getenv('MARKETFLOW_STRICT_CONFIG', '').strip().lower() in ('1', 'true', 'yes', 'on'):
+        raise RuntimeConfigError('MARKETFLOW_STRICT_CONFIG=1: ' + '; '.join(_config_problems))
+
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(
         os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'data', 'users.db'
     ).replace('\\', '/')

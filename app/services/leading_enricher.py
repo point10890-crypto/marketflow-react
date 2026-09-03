@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 from threading import Lock
 
 from app.utils.paths import DATA_DIR
+from app.services.mirofish import llm_response_cache
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ def _get_gemini_key():
 _enrichment_cache = {}   # {code: {"data": {...}, "ts": float}}
 _enrichment_lock = Lock()
 _ENRICH_TTL = 900        # 15분 (초)
+_NEWS_CACHE_TTL = 900    # SQLite 응답 캐시 TTL — 인메모리 캐시와 동일 (프로세스 간·재기동 간 공유)
 _last_enrich_ts = 0      # 마지막 보강 실행 시각
 
 
@@ -98,8 +100,50 @@ def _analyze_news_gemini(stock_name, stock_code, change_pct):
     return {"ai_score": 0, "ai_reason": "", "themes": []}
 
 
+def _news_cache_key(stock_code, change_pct):
+    """(종목, 오늘 날짜, 등락률 정수 반올림) — 장중 0.x% 드리프트로는 재과금하지 않는다."""
+    try:
+        bucket = int(round(float(change_pct or 0)))
+    except (TypeError, ValueError):
+        bucket = 0
+    return llm_response_cache.make_key(
+        'leading_enricher_news_v1', stock_code, datetime.now().strftime('%Y-%m-%d'), bucket,
+    )
+
+
+def _read_news_cache(stock_code, change_pct):
+    if _NEWS_CACHE_TTL <= 0 or llm_response_cache.is_disabled():
+        return None
+    hit = llm_response_cache.get(_news_cache_key(stock_code, change_pct))
+    if not hit or not hit.get("text"):
+        return None
+    try:
+        data = json.loads(hit["text"])
+    except ValueError:
+        return None
+    return data if isinstance(data, dict) and "ai_score" in data else None
+
+
+def _write_news_cache(stock_code, change_pct, result, provider):
+    # 빈 사유(키 없음/429/타임아웃)는 저장하지 않는다 — 다음 사이클에 재시도해야 한다
+    if _NEWS_CACHE_TTL <= 0 or not result or not result.get("ai_reason"):
+        return
+    llm_response_cache.put(
+        _news_cache_key(stock_code, change_pct), provider=provider or "unknown", model=None,
+        text=json.dumps(result, ensure_ascii=False), usage=None, ttl=_NEWS_CACHE_TTL,
+    )
+
+
 def _analyze_news_llm(stock_name, stock_code, change_pct):
-    """주도주 뉴스분석 — DeepSeek → OpenAI 우선, Gemini REST 는 백업 (2026-09-02 순위 변경)."""
+    """주도주 뉴스분석 — DeepSeek → OpenAI 우선, Gemini REST 는 백업 (2026-09-02 순위 변경).
+
+    프로세스 내 15분 캐시(_enrichment_cache) 아래에 SQLite 응답 캐시를 한 겹 더 둔다 —
+    Flask 5001/5003 이중 프로세스와 재기동 사이에서도 같은 종목·같은 날 사유를 재과금하지 않는다.
+    """
+    cached = _read_news_cache(stock_code, change_pct)
+    if cached is not None:
+        return cached
+
     prompt = (
         f"한국 주식 '{stock_name}'({stock_code})이 오늘 {change_pct:+.1f}% 변동.\n"
         f"상승/하락 이유를 분석하세요.\n\n"
@@ -110,14 +154,18 @@ def _analyze_news_llm(stock_name, stock_code, change_pct):
         from llm_fallback import generate_json_fallback
         data, provider = generate_json_fallback(prompt, max_tokens=150, temperature=0.3)
         if isinstance(data, dict) and data:
-            return {
+            result = {
                 "ai_score": min(3, max(0, int(data.get("ai_score", 0) or 0))),
                 "ai_reason": str(data.get("ai_reason", ""))[:30],
                 "themes": [str(t)[:10] for t in data.get("themes", [])][:3],
             }
+            _write_news_cache(stock_code, change_pct, result, provider)
+            return result
     except Exception as e:
         logger.warning(f"DeepSeek/OpenAI 주도주 분석 실패 {stock_name}: {e}")
-    return _analyze_news_gemini(stock_name, stock_code, change_pct)
+    result = _analyze_news_gemini(stock_name, stock_code, change_pct)
+    _write_news_cache(stock_code, change_pct, result, "gemini")
+    return result
 
 
 # ─── 1-b. 수치 검증 (L4 number_guard) ───

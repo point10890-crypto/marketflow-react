@@ -95,7 +95,14 @@ def alpha_service_dashboard():
 def agent_status():
     from app.services.mirofish import alpha_brain_agent
 
-    return jsonify(alpha_brain_agent.get_agent_status())
+    status = alpha_brain_agent.get_agent_status()
+    # LLM 실측 비용 원장 요약 (additive 키) — auto_runner 가 트리거마다 data/llm_cost_ledger.json 에 기록
+    try:
+        from app.services.mirofish.llm_cost_ledger import get_llm_cost_summary
+        status['llm_cost'] = get_llm_cost_summary(days=7)
+    except Exception as exc:
+        status['llm_cost'] = {'error': type(exc).__name__}
+    return jsonify(status)
 
 
 @admin_mirofish_bp.route('/paper/overview', methods=['GET'])

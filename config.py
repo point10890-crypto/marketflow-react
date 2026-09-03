@@ -180,3 +180,88 @@ SECTORS = {
     "인터넷": ["035420", "035720", "377300"],
     "에너지": ["096770", "010950", "034020"],
 }
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 부팅 시 런타임 설정 검증 (리뷰 2026-09-02 §3.4-7)
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# 누락된 키는 지금까지 "조용히 폴백"(LLM → 키워드, DART → 0점, 텔레그램 → 미발송)으로
+# 흡수돼 며칠 뒤에야 드러났다. 부팅 시 한 번 이름만(값은 절대 로그하지 않음) 점검한다.
+#   - create_app()      : 문제마다 WARNING, MARKETFLOW_STRICT_CONFIG=1 이면 기동 중단
+#   - scheduler.py 데몬 : WARNING 만 (누락 키가 있어도 나머지 잡은 계속 돈다)
+import os as _os
+
+
+class RuntimeConfigError(RuntimeError):
+    """strict 모드에서 필수 설정이 빠졌을 때. 메시지는 변수 이름만 담는다."""
+
+
+def _env_present(name: str) -> bool:
+    return bool((_os.getenv(name) or '').strip())
+
+
+def _env_truthy(name: str, default: bool = False) -> bool:
+    raw = _os.getenv(name)
+    if raw is None or raw.strip() == '':
+        return default
+    return raw.strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+LLM_PROVIDER_KEYS = ('DEEPSEEK_API_KEY', 'OPENAI_API_KEY', 'GEMINI_API_KEY', 'GOOGLE_API_KEY')
+TELEGRAM_REQUIRED = ('TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID')
+KIS_REQUIRED = ('KIS_APP_KEY', 'KIS_APP_SECRET')
+
+
+def validate_runtime_config(strict: "bool | None" = None) -> "list[str]":
+    """운영에 실제로 영향을 주는 환경변수의 존재 여부를 점검한다.
+
+    Returns:
+        사람이 읽을 수 있는 문제 목록 (비어 있으면 정상). 값은 절대 포함하지 않는다.
+    Raises:
+        RuntimeConfigError: strict=True (또는 strict=None 이고 MARKETFLOW_STRICT_CONFIG=1)
+        이며 문제가 하나라도 있을 때.
+    """
+    problems: list[str] = []
+
+    if not _env_present('SECRET_KEY'):
+        problems.append('SECRET_KEY is not set — auth tokens will not survive a restart')
+
+    if not any(_env_present(key) for key in LLM_PROVIDER_KEYS):
+        problems.append(
+            'no LLM provider key set (need one of DEEPSEEK_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY) '
+            '— every LLM path will silently fall back to keyword/template output'
+        )
+
+    telegram_flags = sorted(
+        name for name, value in _os.environ.items()
+        if name.endswith('_TELEGRAM_ENABLED') and value.strip().lower() in ('1', 'true', 'yes', 'on')
+    )
+    if telegram_flags:
+        missing = [name for name in TELEGRAM_REQUIRED if not _env_present(name)]
+        if missing:
+            problems.append(
+                f"{' and '.join(missing)} not set while telegram is enabled via {', '.join(telegram_flags)}"
+            )
+
+    if not _env_present('DART_API_KEY'):
+        problems.append('DART_API_KEY is not set — disclosure score will always be 0')
+
+    kis_consumers = []
+    if _env_truthy('MIROFISH_USE_KIS', default=True):      # live_data.py 기본값 on
+        kis_consumers.append('MIROFISH_USE_KIS')
+    if _env_truthy('WORKER_SCREENER_ENABLED', default=True):  # app/__init__.py 기본값 on
+        kis_consumers.append('WORKER_SCREENER_ENABLED')
+    if kis_consumers:
+        missing = [name for name in KIS_REQUIRED if not _env_present(name)]
+        if missing:
+            problems.append(
+                f"{' and '.join(missing)} not set while {', '.join(kis_consumers)} is on "
+                '(KIS OpenAPI screener/live data will fail)'
+            )
+
+    if strict is None:
+        strict = _env_truthy('MARKETFLOW_STRICT_CONFIG')
+    if strict and problems:
+        raise RuntimeConfigError('runtime config invalid: ' + '; '.join(problems))
+    return problems

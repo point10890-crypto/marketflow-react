@@ -78,3 +78,31 @@ def _isolate_decision_cache(tmp_path_factory, monkeypatch):
 
     path = tmp_path_factory.mktemp('decision_cache') / 'cache.db'
     monkeypatch.setattr(decision_cache, 'DB_PATH', str(path))
+
+
+@pytest.fixture(autouse=True)
+def _isolate_llm_response_cache(tmp_path_factory, monkeypatch):
+    """LLM 응답 캐시(data/llm_response_cache.db)가 테스트 사이·운영 파일로 새지 않게 한다.
+
+    rerank/주도주 사유 경로는 기본 TTL 로 캐시를 쓰므로, 같은 후보 집합을 쓰는 두 테스트가
+    서로의 응답을 적중시키면 안 된다. 테스트마다 빈 DB 경로를 준다.
+    """
+    try:
+        from app.services.mirofish import llm_response_cache
+    except ImportError:
+        return
+
+    path = tmp_path_factory.mktemp('llm_cache') / 'llm_response_cache.db'
+    monkeypatch.setattr(llm_response_cache, 'DB_PATH', str(path))
+
+
+@pytest.fixture(autouse=True)
+def _isolate_llm_cost_ledger(tmp_path_factory, monkeypatch):
+    """LLM 비용 원장(data/llm_cost_ledger.json)을 테스트가 읽거나 쓰지 않게 한다."""
+    try:
+        from app.services.mirofish import llm_cost_ledger
+    except ImportError:
+        return
+
+    path = tmp_path_factory.mktemp('llm_cost') / 'llm_cost_ledger.json'
+    monkeypatch.setattr(llm_cost_ledger, 'LEDGER_PATH', str(path))

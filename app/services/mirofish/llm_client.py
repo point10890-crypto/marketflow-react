@@ -16,6 +16,10 @@ Override with MIROFISH_LLM_PROVIDER_ORDER, for example:
 
 Disable a temporarily bad provider with:
     MIROFISH_LLM_DISABLED=gemini
+
+Response cache (opt-in per call via ``cache_ttl`` seconds, SQLite at
+``data/llm_response_cache.db``; kill-switch ``MIROFISH_LLM_CACHE_DISABLED=1``):
+    generate_text(prompt, cache_ttl=1800, cache_scope='scanner_rerank')
 """
 
 from __future__ import annotations
@@ -28,6 +32,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import Any, Callable, Iterator
 
+from app.services.mirofish import llm_response_cache
 from app.services.mirofish.llm_pricing import estimate_cost_usd
 
 logger = logging.getLogger(__name__)
@@ -381,18 +386,67 @@ def _call_provider(provider: str, prompt: str, *, system: str | None, model_env:
     )
 
 
+def purge_expired_cache() -> int:
+    """만료된 응답 캐시 항목 삭제 (운영 잡/관리자 호출용)."""
+    return llm_response_cache.purge_expired()
+
+
+purge_expired = purge_expired_cache
+
+
+def _cache_key(order: list[str], model_env: str | None, system: str | None, prompt: str,
+               temperature: float, max_tokens: int, json_mode: bool, cache_scope: str) -> str:
+    """sha256(provider_order|model_env|resolved models|system|prompt|temperature|max_tokens|json_mode|scope).
+
+    resolved model 이름도 섞는다 — DEEPSEEK_MODEL 등 env 가 바뀌면 이전 모델의 응답을
+    돌려주지 않기 위해서다.
+    """
+    models = [_model_for(provider, model_env) for provider in order]
+    return llm_response_cache.make_key(
+        ','.join(order), model_env or '', ','.join(models), system or '', prompt,
+        temperature, max_tokens, json_mode, cache_scope or '',
+    )
+
+
 def generate_text_with_metadata(prompt: str, *, system: str | None = None,
                                 model_env: str | None = None,
                                 temperature: float = 0.3,
                                 max_tokens: int = 4096,
                                 json_mode: bool = False,
+                                cache_ttl: int | None = None,
+                                cache_scope: str = '',
                                 ) -> tuple[str | None, dict[str, Any]]:
-    """Generate text plus secret-free provider/fallback diagnostics."""
+    """Generate text plus secret-free provider/fallback diagnostics.
+
+    cache_ttl (seconds, None = no cache): 같은 (provider order, model, system, prompt,
+    temperature, max_tokens, json_mode, cache_scope) 조합의 성공 응답을 SQLite 에
+    보관하고 TTL 안에서는 provider 를 호출하지 않는다. 적중 시 메타데이터는
+    ``cache_hit=True``, ``est_cost_usd=0.0`` 이며 collector 에도 그대로 게시된다.
+    """
     order = provider_order()
     started = time.perf_counter()
     attempts: list[dict[str, Any]] = []
     _provider_failure.set({})
     _provider_usage.set({})
+
+    use_cache = cache_ttl is not None and int(cache_ttl) > 0 and not llm_response_cache.is_disabled()
+    cache_key = ''
+    if use_cache and order:
+        cache_key = _cache_key(order, model_env, system, prompt, temperature, max_tokens, json_mode, cache_scope)
+        hit = llm_response_cache.get(cache_key)
+        if hit and hit.get('text'):
+            metadata = {
+                'provider': hit.get('provider') or 'cache', 'model': hit.get('model'), 'success': True,
+                'json_mode': json_mode, 'fallback_used': False,
+                'failure_reason': None, 'attempts': attempts,
+                'latency_ms': round((time.perf_counter() - started) * 1000, 2),
+                'usage': hit.get('usage'),
+                'est_cost_usd': 0.0,
+                'cache_hit': True,
+                'cache_scope': cache_scope or None,
+            }
+            _publish_metadata(metadata)
+            return str(hit['text']), metadata
     if not order:
         logger.warning('[llm_client] every provider is disabled')
         metadata = {
@@ -447,7 +501,13 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
                 'latency_ms': round((time.perf_counter() - started) * 1000, 2),
                 'usage': attempt_usage,
                 'est_cost_usd': _sum_cost(attempts),
+                'cache_hit': False,
             }
+            if cache_key:
+                llm_response_cache.put(
+                    cache_key, provider=provider, model=attempt['model'], text=text,
+                    usage=attempt_usage, ttl=int(cache_ttl or 0),
+                )
             _publish_metadata(metadata)
             return text, metadata
         failed.append(provider)
@@ -468,18 +528,22 @@ def generate_text_with_provider(prompt: str, *, system: str | None = None,
                                 model_env: str | None = None,
                                 temperature: float = 0.3,
                                 max_tokens: int = 4096,
-                                json_mode: bool = False) -> tuple[str | None, str]:
+                                json_mode: bool = False,
+                                cache_ttl: int | None = None,
+                                cache_scope: str = '') -> tuple[str | None, str]:
     """Generate text and return the provider that succeeded (legacy API)."""
     text, metadata = generate_text_with_metadata(
         prompt, system=system, model_env=model_env, temperature=temperature,
         max_tokens=max_tokens, json_mode=json_mode,
+        cache_ttl=cache_ttl, cache_scope=cache_scope,
     )
     return text, str(metadata['provider'])
 
 
 def generate_text(prompt: str, *, system: str | None = None, model_env: str | None = None,
                   temperature: float = 0.3, max_tokens: int = 4096,
-                  json_mode: bool = False) -> str | None:
+                  json_mode: bool = False, cache_ttl: int | None = None,
+                  cache_scope: str = '') -> str | None:
     """Generate plain text or JSON text with automatic provider fallback."""
     text, _provider = generate_text_with_provider(
         prompt,
@@ -488,5 +552,7 @@ def generate_text(prompt: str, *, system: str | None = None, model_env: str | No
         temperature=temperature,
         max_tokens=max_tokens,
         json_mode=json_mode,
+        cache_ttl=cache_ttl,
+        cache_scope=cache_scope,
     )
     return text

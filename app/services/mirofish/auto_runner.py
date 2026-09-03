@@ -47,7 +47,7 @@ from typing import Any
 
 from filelock import Timeout as FileLockTimeout
 
-from app.services.mirofish import agent_actions, alpha_scanner, workflow as workflow_svc
+from app.services.mirofish import agent_actions, alpha_scanner, llm_client, llm_cost_ledger, workflow as workflow_svc
 from app.utils.atomic_json import write_json_atomic
 
 
@@ -58,6 +58,9 @@ DATA_ROOT = os.path.join(REPO_ROOT, 'data')
 STATE_DIR = os.path.join(DATA_ROOT, 'admin_mirofish')
 STATE_PATH = os.path.join(STATE_DIR, 'auto_runner_state.json')
 HISTORY_PATH = os.path.join(STATE_DIR, 'auto_runner_history.jsonl')
+
+# LLM 실측 비용 원장(data/llm_cost_ledger.json) 읽기 — 관리자 status 의 `llm_cost` 키로 노출
+get_llm_cost_summary = llm_cost_ledger.get_llm_cost_summary
 
 try:
     from zoneinfo import ZoneInfo
@@ -117,6 +120,8 @@ def _tunables() -> dict[str, Any]:
         'monthly_cap_usd': _env_float('MIROFISH_AUTO_RUNNER_MONTHLY_CAP_USD', 50.0),
         'circuit_breaker_failures': max(2, _env_int('MIROFISH_AUTO_RUNNER_CB_FAILS', 3)),
         'circuit_open_minutes': max(5, _env_int('MIROFISH_AUTO_RUNNER_CB_MIN', 60)),
+        # 실측(llm_client est_cost_usd 합계)이 없을 때만 쓰는 고정 추정치 — 리뷰 §3.5 ⑦ 이후
+        # 트리거 비용은 collect_generation_metadata() 로 측정해 llm_cost_ledger 에 기록한다.
         'est_cost_per_trigger_usd': _env_float('MIROFISH_AUTO_RUNNER_COST_PER_TRIGGER', 0.07),
         'analysis_timeout_seconds': max(60, _env_int('MIROFISH_AUTO_RUNNER_TIMEOUT', 180)),
         'dry_run': _env_bool('MIROFISH_AUTO_RUNNER_DRY_RUN', True),
@@ -441,198 +446,249 @@ def _fire_workflow_transaction(tuning: dict[str, Any], gates: dict[str, Any], cy
             _write_state(state)
         return {'fired': True, 'dry_run': True}
 
-    # Phase: ANALYZING — call underlying workflow svc directly (in-process trusted)
-    with _state_lock:
-        state = _read_state()
-        state['phase'] = 'ANALYZING'
-        _write_state(state)
-
-    try:
-        # force=True → workflow에 force 플래그 전달해서 dedup 우회 (관리자 강제 트리거 경로)
-        # 일반 폴링은 force=False → workflow가 자체 event_state로 dedup
-        result = workflow_svc.start_workflow_from_scanner_events(
-            payload={
-                'min_alpha': tuning['min_alpha'],
-                'max_risk': tuning['max_risk'],
-                'max_events': 5,
-                'top_n': 3,
-                'agent_count': 5,
-                'allow_stale_sources': bool(tuning['allow_stale_sources']),
-                'force': bool(force),
-            },
-            async_mode=False,
-            commit_event_state=False,
-        )
-    except Exception as exc:
-        _record_failure(cycle_record, started, f'workflow_error:{type(exc).__name__}:{exc}', tuning)
-        return {'fired': True, 'success': False, 'error': str(exc)}
-
-    status = str(result.get('status') or '')
-    if status in {'blocked', 'failed'}:
-        _record_failure(cycle_record, started, f'workflow_{status}:{result.get("blocked_reason") or result.get("error") or ""}', tuning)
-        return {'fired': True, 'success': False, 'workflow': result}
-
-    if status == 'no_new_events':
-        # Counted as triggered but no work — return to IDLE (no failure)
+    # 트리거 한 번의 모든 LLM 호출 메타데이터(usage/est_cost_usd)를 모아 실측 비용으로 기록한다.
+    with llm_client.collect_generation_metadata() as llm_calls:
+        # Phase: ANALYZING — call underlying workflow svc directly (in-process trusted)
         with _state_lock:
             state = _read_state()
-            state['phase'] = 'IDLE'
-            _trim_recent({'at': _now_iso(), 'outcome': 'no_new_events'}, state)
+            state['phase'] = 'ANALYZING'
             _write_state(state)
-        cycle_record.update({'outcome': 'no_new_events', 'duration_s': round(time.perf_counter() - started, 2)})
-        _append_history(cycle_record)
-        return {'fired': True, 'success': True, 'no_new_events': True}
 
-    top3 = result.get('top3') or result.get('analysis_runs') or []
-    workflow_id = result.get('id')
-    cycle_record['workflow_id'] = workflow_id
-    cycle_record['top3_count'] = len(top3)
+        try:
+            # force=True → workflow에 force 플래그 전달해서 dedup 우회 (관리자 강제 트리거 경로)
+            # 일반 폴링은 force=False → workflow가 자체 event_state로 dedup
+            result = workflow_svc.start_workflow_from_scanner_events(
+                payload={
+                    'min_alpha': tuning['min_alpha'],
+                    'max_risk': tuning['max_risk'],
+                    'max_events': 5,
+                    'top_n': 3,
+                    'agent_count': 5,
+                    'allow_stale_sources': bool(tuning['allow_stale_sources']),
+                    'force': bool(force),
+                },
+                async_mode=False,
+                commit_event_state=False,
+            )
+        except Exception as exc:
+            _record_failure(cycle_record, started, f'workflow_error:{type(exc).__name__}:{exc}', tuning, llm_calls=llm_calls)
+            return {'fired': True, 'success': False, 'error': str(exc)}
 
-    should_notify, notify_reason = workflow_svc.should_send_workflow_top3(
-        result,
-        min_top_score=tuning['min_top_score'],
-    )
-    cycle_record['top3_quality_gate'] = {
-        'ok': should_notify,
-        'reason': notify_reason,
-        'min_top_score': tuning['min_top_score'],
-    }
+        status = str(result.get('status') or '')
+        if status in {'blocked', 'failed'}:
+            _record_failure(cycle_record, started, f'workflow_{status}:{result.get("blocked_reason") or result.get("error") or ""}', tuning, llm_calls=llm_calls)
+            return {'fired': True, 'success': False, 'workflow': result}
 
-    if not should_notify:
-        if workflow_id:
-            try:
-                workflow_svc.commit_workflow_event_state(result, sync_dashboard=False)
-            except Exception as exc:
-                logger.warning(f'[auto_runner] commit low-quality workflow state failed: {exc}')
-        _record_quality_hold(cycle_record, started, notify_reason, tuning, top3_count=len(top3))
-        return {
-            'fired': True,
-            'success': True,
-            'workflow_id': workflow_id,
-            'top3_count': len(top3),
-            'telegram_ok': False,
-            'quality_hold': True,
-            'quality_reason': notify_reason,
+        if status == 'no_new_events':
+            # Counted as triggered but no work — return to IDLE (no failure)
+            with _state_lock:
+                state = _read_state()
+                state['phase'] = 'IDLE'
+                _trim_recent({'at': _now_iso(), 'outcome': 'no_new_events'}, state)
+                _write_state(state)
+            cycle_record.update({'outcome': 'no_new_events', 'duration_s': round(time.perf_counter() - started, 2)})
+            _append_history(cycle_record)
+            return {'fired': True, 'success': True, 'no_new_events': True}
+
+        top3 = result.get('top3') or result.get('analysis_runs') or []
+        workflow_id = result.get('id')
+        cycle_record['workflow_id'] = workflow_id
+        cycle_record['top3_count'] = len(top3)
+
+        should_notify, notify_reason = workflow_svc.should_send_workflow_top3(
+            result,
+            min_top_score=tuning['min_top_score'],
+        )
+        cycle_record['top3_quality_gate'] = {
+            'ok': should_notify,
+            'reason': notify_reason,
+            'min_top_score': tuning['min_top_score'],
         }
 
-    # Phase: NOTIFYING — send to channel + AIbain in parallel
-    with _state_lock:
-        state = _read_state()
-        state['phase'] = 'NOTIFYING'
-        state['last_workflow_id'] = workflow_id
-        state['last_top3_count'] = len(top3)
-        _write_state(state)
-
-    message = ''
-    try:
-        message = workflow_svc.build_workflow_top3_telegram_message(result)
-    except Exception as exc:
-        logger.warning(f'[auto_runner] build_workflow_top3_telegram_message failed: {exc}')
-
-    telegram_ok = False
-    aibain_ok = False
-    if message and top3:
-        try:
-            with alpha_scanner.scanner_alert_delivery_guard():
-                event_candidates = result.get('event_candidates')
-                if not isinstance(event_candidates, list):
-                    event_candidates = result.get('candidates')
-                delivery_check = alpha_scanner.revalidate_scanner_alert_delivery(event_candidates)
-                cycle_record['canonical_delivery_check'] = delivery_check
-                if not delivery_check.get('ok'):
-                    reason = str(delivery_check.get('status') or 'delivery_revalidation_failed')
-                    if reason == 'event_overlap':
-                        if workflow_id:
-                            try:
-                                workflow_svc.commit_workflow_event_state(result, sync_dashboard=False)
-                            except Exception as exc:
-                                logger.warning(f'[auto_runner] commit overlapping workflow state failed: {exc}')
-                        _record_quality_hold(cycle_record, started, reason, tuning, top3_count=len(top3))
-                        return {
-                            'fired': True,
-                            'success': True,
-                            'workflow_id': workflow_id,
-                            'top3_count': len(top3),
-                            'telegram_ok': False,
-                            'canonical_hold': True,
-                            'quality_reason': reason,
-                        }
-                    _record_failure(cycle_record, started, reason, tuning)
-                    return {
-                        'fired': True,
-                        'success': False,
-                        'workflow_id': workflow_id,
-                        'telegram_ok': False,
-                        'error': reason,
-                    }
-
-                # AI Brain 알파 스캐너 TOP 3 메세지 — 개인봇만, 채널 발송 금지
-                # (사용자 요청: t.me/+gC5JgpGLsPJhZWJl 채널에는 알파 스캐너 메세지 보내지 않음)
-                from app.utils.scheduler import _send_telegram_long
-                telegram_ok = bool(_send_telegram_long(message, channel=False))
-
-                # AIbain parallel — failure doesn't break main flow
+        if not should_notify:
+            if workflow_id:
                 try:
-                    from app.utils.aibain_notify import send_workflow_top3
-                    aibain_ok = bool(send_workflow_top3(message))
+                    workflow_svc.commit_workflow_event_state(result, sync_dashboard=False)
                 except Exception as exc:
-                    logger.debug(f'[auto_runner] aibain send failed: {exc}')
-
-                if (telegram_ok or aibain_ok) and workflow_id:
-                    workflow_svc.commit_workflow_event_state(result)
-        except FileLockTimeout:
-            _record_failure(cycle_record, started, 'alert_delivery_guard_timeout', tuning)
+                    logger.warning(f'[auto_runner] commit low-quality workflow state failed: {exc}')
+            _record_quality_hold(cycle_record, started, notify_reason, tuning, top3_count=len(top3), llm_calls=llm_calls)
             return {
                 'fired': True,
-                'success': False,
+                'success': True,
                 'workflow_id': workflow_id,
+                'top3_count': len(top3),
                 'telegram_ok': False,
-                'error': 'alert_delivery_guard_timeout',
+                'quality_hold': True,
+                'quality_reason': notify_reason,
             }
-        except Exception as exc:
-            logger.warning(f'[auto_runner] guarded telegram delivery failed: {exc}')
 
-    cycle_record['telegram_ok'] = telegram_ok
-    cycle_record['aibain_ok'] = aibain_ok
+        # Phase: NOTIFYING — send to channel + AIbain in parallel
+        with _state_lock:
+            state = _read_state()
+            state['phase'] = 'NOTIFYING'
+            state['last_workflow_id'] = workflow_id
+            state['last_top3_count'] = len(top3)
+            _write_state(state)
 
-    delivered = bool(telegram_ok or aibain_ok)
-
-    if delivered and workflow_id:
-        # Deep enrich — TOP 3 각 종목에 대해 뉴스/공시/네이버 메타 수집해서
-        # follow-up 메시지로 발송 (메인 텔레그램 메시지는 그대로, 추가 보강만)
+        message = ''
         try:
-            enrich_msg = _build_deep_enrich_message(top3)
-            if enrich_msg:
-                try:
-                    # Deep enrich follow-up 메시지 — 개인봇만, 채널 발송 금지 (위와 동일 정책)
-                    from app.utils.scheduler import _send_telegram_long
-                    deep_ok = bool(_send_telegram_long(enrich_msg, channel=False))
-                    cycle_record['deep_enrich_ok'] = deep_ok
-                except Exception as exc:
-                    logger.debug(f'[auto_runner] deep enrich telegram failed: {exc}')
-                    cycle_record['deep_enrich_ok'] = False
+            message = workflow_svc.build_workflow_top3_telegram_message(result)
         except Exception as exc:
-            logger.debug(f'[auto_runner] deep enrich build failed: {exc}')
+            logger.warning(f'[auto_runner] build_workflow_top3_telegram_message failed: {exc}')
 
-    # Mark success/failure + transition
-    if delivered:
-        _record_success(cycle_record, started, tuning, top3_count=len(top3))
-    else:
-        _record_failure(cycle_record, started, 'telegram_send_failed', tuning)
+        telegram_ok = False
+        aibain_ok = False
+        if message and top3:
+            try:
+                with alpha_scanner.scanner_alert_delivery_guard():
+                    event_candidates = result.get('event_candidates')
+                    if not isinstance(event_candidates, list):
+                        event_candidates = result.get('candidates')
+                    delivery_check = alpha_scanner.revalidate_scanner_alert_delivery(event_candidates)
+                    cycle_record['canonical_delivery_check'] = delivery_check
+                    if not delivery_check.get('ok'):
+                        reason = str(delivery_check.get('status') or 'delivery_revalidation_failed')
+                        if reason == 'event_overlap':
+                            if workflow_id:
+                                try:
+                                    workflow_svc.commit_workflow_event_state(result, sync_dashboard=False)
+                                except Exception as exc:
+                                    logger.warning(f'[auto_runner] commit overlapping workflow state failed: {exc}')
+                            _record_quality_hold(cycle_record, started, reason, tuning, top3_count=len(top3), llm_calls=llm_calls)
+                            return {
+                                'fired': True,
+                                'success': True,
+                                'workflow_id': workflow_id,
+                                'top3_count': len(top3),
+                                'telegram_ok': False,
+                                'canonical_hold': True,
+                                'quality_reason': reason,
+                            }
+                        _record_failure(cycle_record, started, reason, tuning, llm_calls=llm_calls)
+                        return {
+                            'fired': True,
+                            'success': False,
+                            'workflow_id': workflow_id,
+                            'telegram_ok': False,
+                            'error': reason,
+                        }
 
-    return {
-        'fired': True,
-        'success': delivered,
-        'workflow_id': workflow_id,
-        'top3_count': len(top3),
-        'telegram_ok': telegram_ok,
-        'aibain_ok': aibain_ok,
-    }
+                    # AI Brain 알파 스캐너 TOP 3 메세지 — 개인봇만, 채널 발송 금지
+                    # (사용자 요청: t.me/+gC5JgpGLsPJhZWJl 채널에는 알파 스캐너 메세지 보내지 않음)
+                    from app.utils.scheduler import _send_telegram_long
+                    telegram_ok = bool(_send_telegram_long(message, channel=False))
+
+                    # AIbain parallel — failure doesn't break main flow
+                    try:
+                        from app.utils.aibain_notify import send_workflow_top3
+                        aibain_ok = bool(send_workflow_top3(message))
+                    except Exception as exc:
+                        logger.debug(f'[auto_runner] aibain send failed: {exc}')
+
+                    if (telegram_ok or aibain_ok) and workflow_id:
+                        workflow_svc.commit_workflow_event_state(result)
+            except FileLockTimeout:
+                _record_failure(cycle_record, started, 'alert_delivery_guard_timeout', tuning, llm_calls=llm_calls)
+                return {
+                    'fired': True,
+                    'success': False,
+                    'workflow_id': workflow_id,
+                    'telegram_ok': False,
+                    'error': 'alert_delivery_guard_timeout',
+                }
+            except Exception as exc:
+                logger.warning(f'[auto_runner] guarded telegram delivery failed: {exc}')
+
+        cycle_record['telegram_ok'] = telegram_ok
+        cycle_record['aibain_ok'] = aibain_ok
+
+        delivered = bool(telegram_ok or aibain_ok)
+
+        if delivered and workflow_id:
+            # Deep enrich — TOP 3 각 종목에 대해 뉴스/공시/네이버 메타 수집해서
+            # follow-up 메시지로 발송 (메인 텔레그램 메시지는 그대로, 추가 보강만)
+            try:
+                enrich_msg = _build_deep_enrich_message(top3)
+                if enrich_msg:
+                    try:
+                        # Deep enrich follow-up 메시지 — 개인봇만, 채널 발송 금지 (위와 동일 정책)
+                        from app.utils.scheduler import _send_telegram_long
+                        deep_ok = bool(_send_telegram_long(enrich_msg, channel=False))
+                        cycle_record['deep_enrich_ok'] = deep_ok
+                    except Exception as exc:
+                        logger.debug(f'[auto_runner] deep enrich telegram failed: {exc}')
+                        cycle_record['deep_enrich_ok'] = False
+            except Exception as exc:
+                logger.debug(f'[auto_runner] deep enrich build failed: {exc}')
+
+        # Mark success/failure + transition
+        if delivered:
+            _record_success(cycle_record, started, tuning, top3_count=len(top3), llm_calls=llm_calls)
+        else:
+            _record_failure(cycle_record, started, 'telegram_send_failed', tuning, llm_calls=llm_calls)
+
+        return {
+            'fired': True,
+            'success': delivered,
+            'workflow_id': workflow_id,
+            'top3_count': len(top3),
+            'telegram_ok': telegram_ok,
+            'aibain_ok': aibain_ok,
+        }
 
 
-def _record_success(cycle_record: dict[str, Any], started: float, tuning: dict[str, Any], *, top3_count: int) -> None:
+def _account_trigger_cost(llm_calls: list[dict[str, Any]] | None, tuning: dict[str, Any]) -> dict[str, Any] | None:
+    """트리거 한 번의 LLM 실측 비용을 원장에 기록하고 요약을 돌려준다.
+
+    llm_calls 가 None 이면(분석 전 실패, dry-run) 아무것도 기록하지 않는다. 실측이 0/None 이면
+    ledger 가 고정 추정치(est_cost_per_trigger_usd)로 대체하고 `estimated=True` 로 표시한다.
+    """
+    if llm_calls is None:
+        return None
+    try:
+        return llm_cost_ledger.record_trigger_cost(
+            llm_calls, fallback_usd=float(tuning['est_cost_per_trigger_usd']),
+        )
+    except Exception as exc:
+        logger.warning(f'[auto_runner] cost accounting failed: {exc}')
+        return {
+            'usd': float(tuning['est_cost_per_trigger_usd']), 'measured_usd': 0.0, 'estimated': True,
+            'calls': 0, 'cache_hits': 0, 'by_model': {},
+        }
+
+
+def _apply_cost_to_state(state: dict[str, Any], cost: dict[str, Any] | None) -> None:
+    """오늘 버킷에 비용/호출 수를 더한다 (est_cost_usd 는 캡 게이트가 읽는 기존 키)."""
+    if not cost:
+        return
+    today = state['today']
+    today['est_cost_usd'] = round(float(today.get('est_cost_usd', 0.0)) + float(cost.get('usd') or 0.0), 4)
+    today['measured_cost_usd'] = round(
+        float(today.get('measured_cost_usd', 0.0)) + float(cost.get('measured_usd') or 0.0), 4,
+    )
+    today['llm_calls'] = int(today.get('llm_calls', 0)) + int(cost.get('calls') or 0)
+    today['llm_cache_hits'] = int(today.get('llm_cache_hits', 0)) + int(cost.get('cache_hits') or 0)
+    if cost.get('estimated'):
+        today['estimated_cost_triggers'] = int(today.get('estimated_cost_triggers', 0)) + 1
+
+
+def _projected_trigger_cost(tuning: dict[str, Any]) -> tuple[float, str]:
+    """다음 트리거 예상 비용 — 최근 7일 실측 평균(트리거당)이 있으면 그것, 없으면 고정 추정치."""
+    flat = float(tuning['est_cost_per_trigger_usd'])
+    try:
+        avg = llm_cost_ledger.get_llm_cost_summary(days=7).get('avg_usd_per_trigger')
+    except Exception:
+        avg = None
+    if avg is None or float(avg) <= 0:
+        return flat, 'flat_estimate'
+    return float(avg), 'measured_7d_avg'
+
+
+def _record_success(cycle_record: dict[str, Any], started: float, tuning: dict[str, Any], *, top3_count: int,
+                    llm_calls: list[dict[str, Any]] | None = None) -> None:
     duration = round(time.perf_counter() - started, 2)
     cooldown_until = datetime.now(timezone.utc) + timedelta(minutes=tuning['cooldown_minutes'])
+    cost = _account_trigger_cost(llm_calls, tuning)
     with _state_lock:
         state = _read_state()
         state['phase'] = 'COOLDOWN'
@@ -641,18 +697,16 @@ def _record_success(cycle_record: dict[str, Any], started: float, tuning: dict[s
         state['consecutive_failures'] = 0
         state['today']['successes'] = int(state['today'].get('successes', 0)) + 1
         state['today']['telegram_sent'] = int(state['today'].get('telegram_sent', 0)) + 1
-        state['today']['est_cost_usd'] = round(
-            float(state['today'].get('est_cost_usd', 0.0)) + float(tuning['est_cost_per_trigger_usd']),
-            4,
-        )
+        _apply_cost_to_state(state, cost)
         _trim_recent({
             'at': _now_iso(),
             'outcome': 'success',
             'top3': top3_count,
             'duration_s': duration,
+            'cost_usd': (cost or {}).get('usd'),
         }, state)
         _write_state(state)
-    cycle_record.update({'outcome': 'success', 'duration_s': duration, 'top3_count': top3_count})
+    cycle_record.update({'outcome': 'success', 'duration_s': duration, 'top3_count': top3_count, 'llm_cost': cost})
     _append_history(cycle_record)
 
 
@@ -663,9 +717,11 @@ def _record_quality_hold(
     tuning: dict[str, Any],
     *,
     top3_count: int,
+    llm_calls: list[dict[str, Any]] | None = None,
 ) -> None:
     duration = round(time.perf_counter() - started, 2)
     cooldown_until = datetime.now(timezone.utc) + timedelta(minutes=tuning['cooldown_minutes'])
+    cost = _account_trigger_cost(llm_calls, tuning)
     with _state_lock:
         state = _read_state()
         state['phase'] = 'COOLDOWN'
@@ -677,6 +733,7 @@ def _record_quality_hold(
         state['today']['successes'] = int(state['today'].get('successes', 0)) + 1
         skips = state['today'].setdefault('skip_reasons', {})
         skips['top3_quality_hold'] = int(skips.get('top3_quality_hold') or 0) + 1
+        _apply_cost_to_state(state, cost)
         _trim_recent({
             'at': _now_iso(),
             'outcome': 'quality_hold',
@@ -690,19 +747,24 @@ def _record_quality_hold(
         'reason': reason,
         'duration_s': duration,
         'top3_count': top3_count,
+        'llm_cost': cost,
     })
     _append_history(cycle_record)
 
 
-def _record_failure(cycle_record: dict[str, Any], started: float, reason: str, tuning: dict[str, Any]) -> None:
+def _record_failure(cycle_record: dict[str, Any], started: float, reason: str, tuning: dict[str, Any], *,
+                    llm_calls: list[dict[str, Any]] | None = None) -> None:
     duration = round(time.perf_counter() - started, 2)
     cb_threshold = int(tuning['circuit_breaker_failures'])
     cb_minutes = int(tuning['circuit_open_minutes'])
+    # 실패해도 분석 단계에서 LLM 을 이미 호출했으면 비용은 발생했다 — 캡에 반영
+    cost = _account_trigger_cost(llm_calls, tuning) if llm_calls else None
     with _state_lock:
         state = _read_state()
         state['last_failure_at'] = _now_iso()
         state['consecutive_failures'] = int(state.get('consecutive_failures') or 0) + 1
         state['today']['failures'] = int(state['today'].get('failures', 0)) + 1
+        _apply_cost_to_state(state, cost)
         if state['consecutive_failures'] >= cb_threshold:
             release = datetime.now(timezone.utc) + timedelta(minutes=cb_minutes)
             state['phase'] = 'CIRCUIT_OPEN'
@@ -717,7 +779,7 @@ def _record_failure(cycle_record: dict[str, Any], started: float, reason: str, t
             'duration_s': duration,
         }, state)
         _write_state(state)
-    cycle_record.update({'outcome': 'failed', 'reason': reason, 'duration_s': duration})
+    cycle_record.update({'outcome': 'failed', 'reason': reason, 'duration_s': duration, 'llm_cost': cost})
     _append_history(cycle_record)
 
 
@@ -858,10 +920,11 @@ def _evaluate_gates(*, force: bool, tuning: dict[str, Any]) -> dict[str, Any]:
     # G7 cost cap
     today_cost = float((state.get('today') or {}).get('est_cost_usd') or 0.0)
     daily_cap = float(tuning['daily_cap_usd'])
-    if today_cost + float(tuning['est_cost_per_trigger_usd']) > daily_cap:
-        add('cost_cap', False, f'daily ${today_cost:.2f} + ${tuning["est_cost_per_trigger_usd"]:.2f} > cap ${daily_cap:.2f}')
+    projected, projection_source = _projected_trigger_cost(tuning)
+    if today_cost + projected > daily_cap:
+        add('cost_cap', False, f'daily ${today_cost:.2f} + ${projected:.2f} ({projection_source}) > cap ${daily_cap:.2f}')
         return _gate_result(results)
-    add('cost_cap', True, f'today ${today_cost:.2f} / cap ${daily_cap:.2f}')
+    add('cost_cap', True, f'today ${today_cost:.2f} / cap ${daily_cap:.2f} (next ~${projected:.2f}, {projection_source})')
 
     # G4 + G5 new events + quality (single scanner_alert_check call serves both)
     # 중요: workflow의 자체 event_state 와 동일한 경로 사용 — 아니면 게이트가 새 이벤트를 본다고
