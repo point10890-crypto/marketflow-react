@@ -11,6 +11,7 @@ from app.services.ai_routing.contracts import Operation, ProviderAttempt, TokenU
 from app.services.ai_routing.store import RoutingStore
 from app.services.ai_routing.telemetry import record_attempt
 from app.services.mirofish import evidence_packet
+from app.services.mirofish.tradingagents import engine as tradingagents_engine
 
 
 UTC = timezone.utc
@@ -48,7 +49,7 @@ def _packet() -> dict:
                 },
             ],
         },
-        models={},
+        models=tradingagents_engine.routing_model_ids(),
         execution_inputs={"use_llm": True, "brain": {"regime": "bull"}},
     )
 
@@ -85,6 +86,12 @@ def _healthy_snapshot(packet: dict) -> dict:
         "schema_version": "ai-routing-health-v1",
         "checked_at": "2026-09-02T06:29:30+00:00",
         "ttl_seconds": 300,
+        "telemetry": {"complete": True, "status": "complete"},
+        "cost_saving_activation": {
+            "ready": True,
+            "status": "ready",
+            "reason": "deepseek_decisive_healthy",
+        },
         "providers": [
             {
                 "provider": "deepseek",
@@ -111,18 +118,24 @@ def _healthy_snapshot(packet: dict) -> dict:
 
 
 def _attempt(
-    *, run_id: str, request_id: str, attempt_number: int, usage: TokenUsage
+    *,
+    run_id: str,
+    request_id: str,
+    attempt_number: int,
+    usage: TokenUsage,
+    provider: str = "deepseek",
+    status: str = "success",
 ) -> ProviderAttempt:
     return ProviderAttempt(
         request_id=request_id,
         run_id=run_id,
-        provider="deepseek",
-        model="deepseek-v4-pro",
+        provider=provider,
+        model="gpt-5.5" if provider == "openai" else "deepseek-v4-pro",
         endpoint="chat.completions",
         operation=Operation.DECISIVE_TEXT,
         attempt_number=attempt_number,
-        selected=True,
-        status="success",
+        selected=status == "success",
+        status=status,
         latency_ms=12,
         max_output_tokens=1200,
         usage=usage,
@@ -250,6 +263,282 @@ def test_ledger_tokens_are_reported_and_partial_usage_stays_unknown(tmp_path):
     assert compact["usage_completeness"] == 0.5
 
 
+def test_claimed_provider_calls_without_a_ledger_fail_closed():
+    from scripts import compare_tradingagents_profiles as comparison
+
+    packet = _packet()
+    report = comparison.compare_profiles(
+        packet,
+        full_result=_result(packet, "full", calls=3),
+        compact_result=_result(packet, "compact", calls=3),
+        store=None,
+    )
+
+    assert report["blocked"] is True
+    assert report["blocked_reason"] == "ledger_usage_unverifiable"
+    assert report["profiles"]["full"]["total_tokens"] is None
+    assert report["profiles"]["full"]["ledger_available"] is False
+    assert {
+        item["code"] for item in report["hidden_failures"]
+    } == {"ledger_unavailable"}
+
+
+def test_unreadable_supplied_ledger_fails_closed_without_raw_error():
+    from scripts import compare_tradingagents_profiles as comparison
+
+    class UnreadableStore:
+        def transaction(self):
+            raise OSError("Bearer raw-ledger-error-that-must-never-leak")
+
+    packet = _packet()
+    report = comparison.compare_profiles(
+        packet,
+        full_result=_result(packet, "full", calls=0),
+        compact_result=_result(packet, "compact", calls=0),
+        store=UnreadableStore(),
+    )
+
+    assert report["blocked"] is True
+    assert report["blocked_reason"] == "ledger_usage_unverifiable"
+    assert {item["code"] for item in report["hidden_failures"]} == {
+        "ledger_unavailable"
+    }
+    assert "raw-ledger-error" not in json.dumps(report)
+
+
+def test_zero_claimed_attempts_with_a_live_ledger_row_fail_closed(tmp_path):
+    from scripts import compare_tradingagents_profiles as comparison
+
+    packet = _packet()
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    record_attempt(
+        _attempt(
+            run_id="routing-full",
+            request_id="unexpected-full-attempt",
+            attempt_number=1,
+            usage=TokenUsage(input_tokens=10, output_tokens=2),
+        ),
+        store=store,
+    )
+
+    report = comparison.compare_profiles(
+        packet,
+        full_result=_result(packet, "full", calls=0),
+        compact_result=_result(packet, "compact", calls=0),
+        store=store,
+    )
+
+    assert report["blocked"] is True
+    assert report["blocked_reason"] == "ledger_usage_unverifiable"
+    assert any(
+        item["profile"] == "full"
+        and item["code"] == "ledger_attempt_count_mismatch"
+        for item in report["hidden_failures"]
+    )
+
+
+def test_fallback_physical_attempts_reconcile_without_false_block(tmp_path):
+    from scripts import compare_tradingagents_profiles as comparison
+
+    packet = _packet()
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    for attempt_number in (1, 2):
+        record_attempt(
+            _attempt(
+                run_id="routing-full",
+                request_id="full-fallback",
+                attempt_number=attempt_number,
+                usage=TokenUsage(input_tokens=10, output_tokens=2),
+            ),
+            store=store,
+        )
+    full = _result(packet, "full", calls=1)
+    full["provider_usage"].update({"attempts": 2, "fallbacks": 1})
+
+    report = comparison.compare_profiles(
+        packet,
+        full_result=full,
+        compact_result=_result(packet, "compact", calls=0),
+        store=store,
+    )
+
+    assert report["blocked"] is False
+    assert report["profiles"]["full"]["call_count"] == 1
+    assert report["profiles"]["full"]["attempt_count"] == 2
+    assert report["profiles"]["full"]["ledger_logical_calls"] == 1
+    assert report["profiles"]["full"]["ledger_live_attempts"] == 2
+    assert not any(
+        item["code"] == "ledger_attempt_count_mismatch"
+        for item in report["hidden_failures"]
+    )
+
+
+def test_two_ledger_request_ids_cannot_be_claimed_as_one_logical_call(tmp_path):
+    from scripts import compare_tradingagents_profiles as comparison
+
+    packet = _packet()
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    for request_id in ("full-call-1", "full-call-2"):
+        record_attempt(
+            _attempt(
+                run_id="routing-full",
+                request_id=request_id,
+                attempt_number=1,
+                usage=TokenUsage(input_tokens=10, output_tokens=2),
+            ),
+            store=store,
+        )
+    full = _result(packet, "full", calls=1)
+    full["provider_usage"]["attempts"] = 2
+
+    report = comparison.compare_profiles(
+        packet,
+        full_result=full,
+        compact_result=_result(packet, "compact", calls=0),
+        store=store,
+    )
+
+    assert report["profiles"]["full"]["ledger_logical_calls"] == 2
+    assert report["blocked"] is True
+    assert report["blocked_reason"] == "ledger_usage_unverifiable"
+    assert any(
+        item["profile"] == "full" and item["code"] == "ledger_call_count_mismatch"
+        for item in report["hidden_failures"]
+    )
+
+
+def test_one_ledger_request_id_cannot_be_claimed_as_zero_logical_calls(tmp_path):
+    from scripts import compare_tradingagents_profiles as comparison
+
+    packet = _packet()
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    record_attempt(
+        _attempt(
+            run_id="routing-full",
+            request_id="full-unclaimed-call",
+            attempt_number=1,
+            usage=TokenUsage(input_tokens=10, output_tokens=2),
+        ),
+        store=store,
+    )
+    full = _result(packet, "full", calls=0)
+    full["provider_usage"]["attempts"] = 1
+
+    report = comparison.compare_profiles(
+        packet,
+        full_result=full,
+        compact_result=_result(packet, "compact", calls=0),
+        store=store,
+    )
+
+    assert report["profiles"]["full"]["ledger_logical_calls"] == 1
+    assert report["blocked"] is True
+    assert report["blocked_reason"] == "ledger_usage_unverifiable"
+    assert any(
+        item["profile"] == "full" and item["code"] == "ledger_call_count_mismatch"
+        for item in report["hidden_failures"]
+    )
+
+
+def test_skipped_breaker_attempt_reconciles_but_is_excluded_from_token_usage(tmp_path):
+    from scripts import compare_tradingagents_profiles as comparison
+
+    packet = _packet()
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    record_attempt(
+        _attempt(
+            run_id="routing-full",
+            request_id="full-breaker-fallback",
+            attempt_number=1,
+            usage=TokenUsage.unknown(),
+            status="skipped_breaker",
+        ),
+        store=store,
+    )
+    record_attempt(
+        _attempt(
+            run_id="routing-full",
+            request_id="full-breaker-fallback",
+            attempt_number=2,
+            usage=TokenUsage(input_tokens=10, output_tokens=2),
+            provider="openai",
+        ),
+        store=store,
+    )
+    full = _result(packet, "full", calls=1)
+    full["provider_usage"].update({"attempts": 2, "fallbacks": 1})
+
+    report = comparison.compare_profiles(
+        packet,
+        full_result=full,
+        compact_result=_result(packet, "compact", calls=0),
+        store=store,
+    )
+
+    assert report["blocked"] is False
+    assert report["profiles"]["full"]["ledger_attempts"] == 2
+    assert report["profiles"]["full"]["ledger_live_attempts"] == 1
+    assert report["profiles"]["full"]["total_tokens"] == 12
+    assert report["profiles"]["full"]["unknown_usage_attempts"] == 0
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "summary_field", "code"),
+    [
+        ("calls", True, "call_count", "call_count_invalid"),
+        ("attempts", "2", "attempt_count", "attempt_count_invalid"),
+    ],
+)
+def test_provider_usage_call_and_attempt_counts_are_strictly_validated(
+    field, value, summary_field, code
+):
+    from scripts import compare_tradingagents_profiles as comparison
+
+    packet = _packet()
+    full = _result(packet, "full", calls=0)
+    full["provider_usage"][field] = value
+
+    report = comparison.compare_profiles(
+        packet,
+        full_result=full,
+        compact_result=_result(packet, "compact", calls=0),
+    )
+
+    assert report["profiles"]["full"][summary_field] is None
+    assert report["profiles"]["full"]["schema_success"] is False
+    assert any(
+        item["profile"] == "full" and item["code"] == code
+        for item in report["schema_violations"]
+    )
+
+
+def test_attempt_count_below_logical_calls_cannot_evade_ledger_requirement():
+    from scripts import compare_tradingagents_profiles as comparison
+
+    packet = _packet()
+    full = _result(packet, "full", calls=1)
+    full["provider_usage"]["attempts"] = 0
+
+    report = comparison.compare_profiles(
+        packet,
+        full_result=full,
+        compact_result=_result(packet, "compact", calls=0),
+    )
+
+    assert report["blocked"] is True
+    assert report["blocked_reason"] == "ledger_usage_unverifiable"
+    assert report["profiles"]["full"]["attempt_count"] is None
+    assert any(
+        item["profile"] == "full" and item["code"] == "attempt_count_invalid"
+        for item in report["schema_violations"]
+    )
+    assert any(
+        item["profile"] == "full"
+        and item["code"] == "ledger_attempt_count_unverifiable"
+        for item in report["hidden_failures"]
+    )
+
+
 def test_comparison_reports_verdict_numeric_source_schema_identity_and_hidden_failures():
     from scripts import compare_tradingagents_profiles as comparison
 
@@ -275,10 +564,41 @@ def test_comparison_reports_verdict_numeric_source_schema_identity_and_hidden_fa
     assert report["profiles"]["compact"]["schema_success"] is False
 
 
+def test_violation_report_never_echoes_untrusted_result_strings():
+    from scripts import compare_tradingagents_profiles as comparison
+
+    packet = _packet()
+    full = _result(packet, "full")
+    compact = _result(packet, "compact")
+    raw_numeric = "Bearer raw-result-secret-that-must-never-leak"
+    raw_evidence = "sk-raw-result-secret-that-must-never-leak"
+    raw_verdict = "Authorization raw-verdict-secret-that-must-never-leak"
+    raw_status = "api_key=raw-status-secret-that-must-never-leak"
+    compact["verdict"]["current_price"] = raw_numeric
+    compact["verdict"]["evidence_ids"] = [raw_evidence]
+    compact["verdict"]["verdict"] = raw_verdict
+    compact["analysis_status"] = raw_status
+
+    report = comparison.compare_profiles(
+        packet,
+        full_result=full,
+        compact_result=compact,
+    )
+    serialized = json.dumps(report, ensure_ascii=False)
+
+    assert "numeric_mismatch" in serialized
+    assert "unknown_evidence_id" in serialized
+    assert raw_numeric not in serialized
+    assert raw_evidence not in serialized
+    assert raw_verdict not in serialized
+    assert raw_status not in serialized
+
+
 def test_live_comparison_is_blocked_when_only_openai_is_healthy(monkeypatch):
     from scripts import compare_tradingagents_profiles as comparison
 
     monkeypatch.setenv("AI_DEEPSEEK_DECISIVE_MODEL", "deepseek-v4-pro")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "configured")
     packet = _packet()
     snapshot = _healthy_snapshot(packet)
     snapshot["providers"][0].update({"available": False, "status": "authentication"})
@@ -319,6 +639,53 @@ def test_explicit_malformed_health_never_falls_back_to_another_snapshot(monkeypa
     assert report["blocked_reason"] == "deepseek_decisive_health_unavailable"
 
 
+def test_live_replay_rejects_saved_health_after_deepseek_is_unconfigured(monkeypatch):
+    from scripts import compare_tradingagents_profiles as comparison
+
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    packet = _packet()
+    called = []
+
+    report = comparison.compare_profiles(
+        packet,
+        live=True,
+        runner=lambda **kwargs: called.append(kwargs),
+        health_snapshot=_healthy_snapshot(packet),
+        now=datetime(2026, 9, 2, 6, 30, tzinfo=UTC),
+    )
+
+    assert called == []
+    assert report["blocked"] is True
+    assert report["blocked_reason"] == "deepseek_decisive_health_unavailable"
+
+
+def test_live_replay_rejects_unaccounted_health_snapshot(monkeypatch):
+    from scripts import compare_tradingagents_profiles as comparison
+
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "configured")
+    packet = _packet()
+    snapshot = _healthy_snapshot(packet)
+    snapshot["telemetry"] = {"complete": False, "status": "unavailable"}
+    snapshot["cost_saving_activation"] = {
+        "ready": False,
+        "status": "blocked",
+        "reason": "health_accounting_unavailable",
+    }
+    called = []
+
+    report = comparison.compare_profiles(
+        packet,
+        live=True,
+        runner=lambda **kwargs: called.append(kwargs),
+        health_snapshot=snapshot,
+        now=datetime(2026, 9, 2, 6, 30, tzinfo=UTC),
+    )
+
+    assert called == []
+    assert report["blocked"] is True
+    assert report["blocked_reason"] == "deepseek_decisive_health_unavailable"
+
+
 def test_non_finite_canonical_numeric_input_is_rejected_before_runner():
     from scripts import compare_tradingagents_profiles as comparison
 
@@ -340,6 +707,7 @@ def test_live_comparison_passes_identical_frozen_inputs_to_isolated_profiles(mon
     from scripts import compare_tradingagents_profiles as comparison
 
     monkeypatch.setenv("AI_DEEPSEEK_DECISIVE_MODEL", "deepseek-v4-pro")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "configured")
     packet = _packet()
     calls = []
 
@@ -365,10 +733,34 @@ def test_live_comparison_passes_identical_frozen_inputs_to_isolated_profiles(mon
     assert calls[1]["force"] is True
 
 
-def test_runner_mutation_of_canonical_packet_fails_closed(tmp_path):
+def test_live_model_identity_mismatch_blocks_before_full_profile_spend(tmp_path):
     from scripts import compare_tradingagents_profiles as comparison
 
     packet = _packet()
+    packet["models"] = {"decisive_text.deepseek": "stale-model"}
+    packet["fingerprint"] = evidence_packet._sha({
+        key: value for key, value in packet.items() if key != "fingerprint"
+    })
+    called = []
+
+    with pytest.raises(comparison.ReplayValidationError, match="^packet_model_identity_mismatch$"):
+        comparison.compare_profiles(
+            packet,
+            live=True,
+            runner=lambda **kwargs: called.append(kwargs),
+            health_snapshot=_healthy_snapshot(packet),
+            artifact_root=tmp_path,
+            now=datetime(2026, 9, 2, 6, 30, tzinfo=UTC),
+        )
+
+    assert called == []
+
+
+def test_runner_mutation_of_canonical_packet_fails_closed(tmp_path, monkeypatch):
+    from scripts import compare_tradingagents_profiles as comparison
+
+    packet = _packet()
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "configured")
 
     def mutating_runner(**kwargs):
         kwargs["packet"]["symbol"] = "000000"

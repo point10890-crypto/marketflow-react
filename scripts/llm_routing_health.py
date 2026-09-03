@@ -301,9 +301,9 @@ def _record_probe_attempt(
     latency_ms: float,
     usage: TokenUsage,
     error_class: ProviderErrorClass | None,
-) -> None:
+) -> bool:
     if recorder is None:
-        return
+        return False
     attempt = ProviderAttempt(
         request_id=spec.request.request_id or f"llm-health-{spec.provider}",
         run_id=spec.request.run_id,
@@ -326,18 +326,27 @@ def _record_probe_attempt(
         caller_endpoint=_CALLER_ENDPOINT,
     )
     try:
-        recorder(attempt)
+        result = recorder(attempt)
     except Exception:
         # A local telemetry failure must not cause a second external probe.  The
         # snapshot still truthfully represents the one physical call just made.
-        return
+        return False
+    # Existing recorders such as ``list.append`` return None.  Only an explicit
+    # False means the idempotent ledger insert did not account for this probe.
+    return result is not False
 
 
 def _activation(
-    providers: list[dict[str, object]], *, live: bool
+    providers: list[dict[str, object]], *, live: bool, telemetry_complete: bool = True
 ) -> dict[str, object]:
     if not live:
         return {"ready": False, "status": "blocked", "reason": "live_probe_required"}
+    if not telemetry_complete:
+        return {
+            "ready": False,
+            "status": "blocked",
+            "reason": "health_accounting_unavailable",
+        }
     decisive = next(
         item
         for item in providers
@@ -377,6 +386,7 @@ def run_health_check(
     specs = _provider_specs()
     provider_records: list[dict[str, object]] = []
     accepted_attestation: dict[str, object] | None = None
+    telemetry_complete = True
 
     if not live:
         for spec in specs:
@@ -436,7 +446,7 @@ def run_health_check(
                     ttl_seconds=ttl,
                 )
             )
-            _record_probe_attempt(
+            recorded = _record_probe_attempt(
                 spec,
                 recorder=recorder if callable(recorder) else None,
                 checked_at=checked_at,
@@ -444,6 +454,7 @@ def run_health_check(
                 usage=usage,
                 error_class=error_class,
             )
+            telemetry_complete = recorded and telemetry_complete
 
             if (
                 spec.provider == "deepseek"
@@ -471,8 +482,17 @@ def run_health_check(
         "checked_at": checked_at,
         "ttl_seconds": ttl,
         "providers": provider_records,
-        "cost_saving_activation": _activation(provider_records, live=live),
+        "cost_saving_activation": _activation(
+            provider_records,
+            live=live,
+            telemetry_complete=telemetry_complete,
+        ),
     }
+    if live:
+        report["telemetry"] = {
+            "complete": telemetry_complete,
+            "status": "complete" if telemetry_complete else "unavailable",
+        }
     if accepted_attestation is not None:
         report["vision_attestation"] = accepted_attestation
     if live:

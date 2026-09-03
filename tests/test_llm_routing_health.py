@@ -155,6 +155,63 @@ def test_live_calls_each_configured_vendor_once_records_once_and_writes_snapshot
         "status": "ready",
         "reason": "deepseek_decisive_healthy",
     }
+    assert report["telemetry"] == {"complete": True, "status": "complete"}
+
+
+@pytest.mark.parametrize("recorder_result", [False, OSError("raw-ledger-secret")])
+def test_live_telemetry_failure_is_persisted_and_blocks_activation(
+    tmp_path, monkeypatch, recorder_result
+):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "configured")
+    deepseek = _Adapter(AdapterResponse(text="healthy"))
+
+    def recorder(_attempt):
+        if isinstance(recorder_result, Exception):
+            raise recorder_result
+        return recorder_result
+
+    snapshot_path = tmp_path / "health.json"
+    report = health.run_health_check(
+        live=True,
+        adapters={"deepseek": deepseek},
+        attempt_recorder=recorder,
+        snapshot_path=snapshot_path,
+        now=_NOW,
+    )
+
+    assert len(deepseek.calls) == 1
+    assert report["telemetry"] == {"complete": False, "status": "unavailable"}
+    assert report["cost_saving_activation"] == {
+        "ready": False,
+        "status": "blocked",
+        "reason": "health_accounting_unavailable",
+    }
+    assert json.loads(snapshot_path.read_text(encoding="utf-8")) == report
+    serialized = json.dumps(report, sort_keys=True)
+    assert "raw-ledger-secret" not in serialized
+
+
+def test_live_physical_probe_without_recorder_fails_accounting_closed(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "configured")
+    deepseek = _Adapter(AdapterResponse(text="healthy"))
+
+    report = health.run_health_check(
+        live=True,
+        adapters={"deepseek": deepseek},
+        attempt_recorder=None,
+        snapshot_path=tmp_path / "health.json",
+        now=_NOW,
+    )
+
+    assert len(deepseek.calls) == 1
+    assert report["telemetry"] == {"complete": False, "status": "unavailable"}
+    assert report["cost_saving_activation"] == {
+        "ready": False,
+        "status": "blocked",
+        "reason": "health_accounting_unavailable",
+    }
 
 
 @pytest.mark.parametrize(

@@ -251,6 +251,7 @@ def test_openai_shares_use_full_window_before_limit(tmp_path):
 def test_status_reads_only_allowlisted_fresh_health_breakers_and_utc_budget(
     tmp_path, monkeypatch
 ):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "configured-for-test")
     store = RoutingStore(tmp_path / "usage.sqlite3")
     now = datetime(2026, 9, 3, 0, 30, tzinfo=UTC)
     health_path = tmp_path / "health.json"
@@ -339,5 +340,241 @@ def test_stale_health_snapshot_is_unknown_not_configured_health(tmp_path):
 
     assert report["freshness"]["status"] == "stale"
     deepseek = next(row for row in report["providers"] if row["provider"] == "deepseek" and row["operation"] == "decisive_text")
+    assert deepseek["available"] is None
+    assert deepseek["status"] == "unknown"
+
+
+def test_fresh_snapshot_never_revives_a_stale_provider_record(tmp_path, monkeypatch):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "configured-for-test")
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    health_path = tmp_path / "health.json"
+    health_path.write_text(json.dumps({
+        "schema_version": "ai-routing-health-v1",
+        "checked_at": "2026-09-03T00:09:50+00:00",
+        "ttl_seconds": 300,
+        "providers": [{
+            "provider": "deepseek", "operation": "decisive_text",
+            "configured": True, "available": True, "model": "deepseek-v4-pro",
+            "status": "healthy", "checked_at": "2026-09-03T00:00:00+00:00",
+            "ttl_seconds": 60,
+        }],
+    }), encoding="utf-8")
+
+    report = get_llm_routing_status(
+        store=store,
+        health_path=health_path,
+        now=datetime(2026, 9, 3, 0, 10, tzinfo=UTC),
+    )
+
+    assert report["freshness"]["status"] == "fresh"
+    deepseek = next(
+        row for row in report["providers"]
+        if row["provider"] == "deepseek" and row["operation"] == "decisive_text"
+    )
+    assert deepseek["available"] is None
+    assert deepseek["status"] == "unknown"
+
+
+def test_health_record_configuration_must_match_current_provider_state(tmp_path, monkeypatch):
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    health_path = tmp_path / "health.json"
+    health_path.write_text(json.dumps({
+        "schema_version": "ai-routing-health-v1",
+        "checked_at": "2026-09-03T00:09:50+00:00",
+        "ttl_seconds": 300,
+        "providers": [{
+            "provider": "deepseek", "operation": "decisive_text",
+            "configured": True, "available": True, "model": "deepseek-v4-pro",
+            "status": "healthy", "checked_at": "2026-09-03T00:09:50+00:00",
+            "ttl_seconds": 300,
+        }],
+    }), encoding="utf-8")
+
+    report = get_llm_routing_status(
+        store=store,
+        health_path=health_path,
+        now=datetime(2026, 9, 3, 0, 10, tzinfo=UTC),
+    )
+
+    deepseek = next(
+        row for row in report["providers"]
+        if row["provider"] == "deepseek" and row["operation"] == "decisive_text"
+    )
+    assert deepseek["configured"] is False
+    assert deepseek["available"] is None
+    assert deepseek["status"] == "unknown"
+
+
+def test_whitespace_credential_is_not_currently_configured(tmp_path, monkeypatch):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "   ")
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    health_path = tmp_path / "health.json"
+    health_path.write_text(json.dumps({
+        "schema_version": "ai-routing-health-v1",
+        "checked_at": "2026-09-03T00:09:50+00:00",
+        "ttl_seconds": 300,
+        "providers": [{
+            "provider": "deepseek", "operation": "decisive_text",
+            "configured": True, "available": True, "model": "deepseek-v4-pro",
+            "status": "healthy", "checked_at": "2026-09-03T00:09:50+00:00",
+            "ttl_seconds": 300,
+        }],
+    }), encoding="utf-8")
+
+    report = get_llm_routing_status(
+        store=store,
+        health_path=health_path,
+        now=datetime(2026, 9, 3, 0, 10, tzinfo=UTC),
+    )
+
+    deepseek = next(
+        row for row in report["providers"]
+        if row["provider"] == "deepseek" and row["operation"] == "decisive_text"
+    )
+    assert deepseek["configured"] is False
+    assert deepseek["available"] is None
+    assert deepseek["status"] == "unknown"
+
+
+def test_google_key_is_a_current_gemini_configuration(tmp_path, monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.setenv("GOOGLE_API_KEY", "configured-for-test")
+    monkeypatch.setenv("AI_GEMINI_VISION_MODEL", "gemini-2.5-pro")
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    health_path = tmp_path / "health.json"
+    health_path.write_text(json.dumps({
+        "schema_version": "ai-routing-health-v1",
+        "checked_at": "2026-09-03T00:09:50+00:00",
+        "ttl_seconds": 300,
+        "providers": [{
+            "provider": "gemini", "operation": "vision",
+            "configured": True, "available": True, "model": "gemini-2.5-pro",
+            "status": "healthy", "checked_at": "2026-09-03T00:09:50+00:00",
+            "ttl_seconds": 300,
+        }],
+    }), encoding="utf-8")
+
+    report = get_llm_routing_status(
+        store=store,
+        health_path=health_path,
+        now=datetime(2026, 9, 3, 0, 10, tzinfo=UTC),
+    )
+
+    gemini = next(
+        row for row in report["providers"]
+        if row["provider"] == "gemini" and row["operation"] == "vision"
+    )
+    assert gemini["configured"] is True
+    assert gemini["available"] is True
+    assert gemini["status"] == "healthy"
+
+
+def test_unaccounted_health_snapshot_cannot_activate_deepseek_vision(tmp_path, monkeypatch):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "configured-for-test")
+    monkeypatch.setenv("AI_DEEPSEEK_VISION_MODEL", "deepseek-vision-tested")
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    health_path = tmp_path / "health.json"
+    health_path.write_text(json.dumps({
+        "schema_version": "ai-routing-health-v1",
+        "checked_at": "2026-09-03T00:09:50+00:00",
+        "ttl_seconds": 300,
+        "telemetry": {"complete": False, "status": "unavailable"},
+        "cost_saving_activation": {
+            "ready": False,
+            "status": "blocked",
+            "reason": "health_accounting_unavailable",
+        },
+        "providers": [],
+        "vision_attestation": {
+            "provider": "deepseek",
+            "endpoint": "https://api.deepseek.com/chat/completions",
+            "model": "deepseek-vision-tested",
+            "modality": "vision",
+            "checked_at": "2026-09-03T00:09:50+00:00",
+            "ttl_seconds": 300,
+            "capable": True,
+            "healthy": True,
+        },
+    }), encoding="utf-8")
+
+    report = get_llm_routing_status(
+        store=store,
+        health_path=health_path,
+        now=datetime(2026, 9, 3, 0, 10, tzinfo=UTC),
+    )
+
+    assert report["provider_order"]["vision"] == ["gemini", "openai"]
+
+
+@pytest.mark.parametrize("current_key", [None, "   "])
+def test_saved_attestation_cannot_activate_unconfigured_deepseek_vision(
+    tmp_path, monkeypatch, current_key
+):
+    if current_key is None:
+        monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    else:
+        monkeypatch.setenv("DEEPSEEK_API_KEY", current_key)
+    monkeypatch.setenv("AI_DEEPSEEK_VISION_MODEL", "deepseek-vision-tested")
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    health_path = tmp_path / "health.json"
+    health_path.write_text(json.dumps({
+        "schema_version": "ai-routing-health-v1",
+        "checked_at": "2026-09-03T00:09:50+00:00",
+        "ttl_seconds": 300,
+        "telemetry": {"complete": True, "status": "complete"},
+        "cost_saving_activation": {
+            "ready": True,
+            "status": "ready",
+            "reason": "deepseek_decisive_healthy",
+        },
+        "providers": [],
+        "vision_attestation": {
+            "provider": "deepseek",
+            "endpoint": "https://api.deepseek.com/chat/completions",
+            "model": "deepseek-vision-tested",
+            "modality": "vision",
+            "checked_at": "2026-09-03T00:09:50+00:00",
+            "ttl_seconds": 300,
+            "capable": True,
+            "healthy": True,
+        },
+    }), encoding="utf-8")
+
+    report = get_llm_routing_status(
+        store=store,
+        health_path=health_path,
+        now=datetime(2026, 9, 3, 0, 10, tzinfo=UTC),
+    )
+
+    assert report["provider_order"]["vision"] == ["gemini", "openai"]
+
+
+def test_fresh_snapshot_rejects_a_future_dated_provider_record(tmp_path, monkeypatch):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "configured-for-test")
+    store = RoutingStore(tmp_path / "usage.sqlite3")
+    health_path = tmp_path / "health.json"
+    health_path.write_text(json.dumps({
+        "schema_version": "ai-routing-health-v1",
+        "checked_at": "2026-09-03T00:09:50+00:00",
+        "ttl_seconds": 300,
+        "providers": [{
+            "provider": "deepseek", "operation": "decisive_text",
+            "configured": True, "available": True, "model": "deepseek-v4-pro",
+            "status": "healthy", "checked_at": "2026-09-03T00:10:01+00:00",
+            "ttl_seconds": 300,
+        }],
+    }), encoding="utf-8")
+
+    report = get_llm_routing_status(
+        store=store,
+        health_path=health_path,
+        now=datetime(2026, 9, 3, 0, 10, tzinfo=UTC),
+    )
+
+    deepseek = next(
+        row for row in report["providers"]
+        if row["provider"] == "deepseek" and row["operation"] == "decisive_text"
+    )
     assert deepseek["available"] is None
     assert deepseek["status"] == "unknown"

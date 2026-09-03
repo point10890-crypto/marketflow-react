@@ -393,23 +393,27 @@ def _load_health_snapshot(path: Path, now: datetime) -> tuple[dict[str, Any] | N
     return value, freshness
 
 
+def _provider_is_configured(*names: str) -> bool:
+    return any(bool(os.getenv(name, "").strip()) for name in names)
+
+
 def _provider_slots() -> list[dict[str, Any]]:
     decisive = policy_for(Operation.DECISIVE_TEXT)
     vision = policy_for(Operation.VISION)
     slots = [
         {
             "provider": "deepseek", "operation": Operation.DECISIVE_TEXT.value,
-            "configured": bool(os.getenv("DEEPSEEK_API_KEY")),
+            "configured": _provider_is_configured("DEEPSEEK_API_KEY"),
             "model": decisive.models["deepseek"],
         },
         {
             "provider": "openai", "operation": Operation.DECISIVE_TEXT.value,
-            "configured": bool(os.getenv("OPENAI_API_KEY")),
+            "configured": _provider_is_configured("OPENAI_API_KEY"),
             "model": decisive.models["openai"],
         },
         {
             "provider": "gemini", "operation": Operation.VISION.value,
-            "configured": bool(os.getenv("GEMINI_API_KEY")),
+            "configured": _provider_is_configured("GEMINI_API_KEY", "GOOGLE_API_KEY"),
             "model": vision.models["gemini"],
         },
     ]
@@ -417,7 +421,7 @@ def _provider_slots() -> list[dict[str, Any]]:
     if deepseek_vision:
         slots.append({
             "provider": "deepseek", "operation": Operation.VISION.value,
-            "configured": bool(os.getenv("DEEPSEEK_API_KEY")),
+            "configured": _provider_is_configured("DEEPSEEK_API_KEY"),
             "model": deepseek_vision,
         })
     return slots
@@ -426,6 +430,8 @@ def _provider_slots() -> list[dict[str, Any]]:
 def _providers_from_health(
     snapshot: dict[str, Any] | None,
     freshness: Mapping[str, Any],
+    *,
+    now: datetime,
 ) -> list[dict[str, Any]]:
     slots = _provider_slots()
     fresh = freshness.get("status") == "fresh"
@@ -446,22 +452,28 @@ def _providers_from_health(
         status = record.get("status") if record is not None else None
         available = record.get("available") if record is not None else None
         record_model = record.get("model") if record is not None else None
+        record_configured = record.get("configured") if record is not None else None
         checked_at = _parse_utc(record.get("checked_at")) if record is not None else None
         ttl = _safe_ttl(record.get("ttl_seconds")) if record is not None else None
+        age_seconds = (now - checked_at).total_seconds() if checked_at is not None else None
         record_valid = (
             record is not None
             and status in _HEALTH_STATUSES
             and (available is None or isinstance(available, bool))
             and record_model == slot["model"]
+            and isinstance(record_configured, bool)
+            and record_configured is slot["configured"]
             and checked_at is not None
             and ttl is not None
+            and age_seconds is not None
+            and 0 <= age_seconds < ttl
         )
         result.append({
             **slot,
             "available": available if record_valid else None,
             "status": status if record_valid else "unknown",
-            "checked_at": checked_at.isoformat() if record_valid else freshness.get("checked_at"),
-            "ttl_seconds": ttl if record_valid else freshness.get("ttl_seconds"),
+            "checked_at": checked_at.isoformat() if checked_at is not None else freshness.get("checked_at"),
+            "ttl_seconds": ttl if ttl is not None else freshness.get("ttl_seconds"),
         })
     return sorted(result, key=lambda item: (item["provider"], item["operation"]))
 
@@ -570,9 +582,24 @@ def get_llm_routing_status(
         Path(health_path) if health_path is not None else HEALTH_SNAPSHOT_PATH,
         current,
     )
+    telemetry = snapshot.get("telemetry") if snapshot is not None else None
+    activation = (
+        snapshot.get("cost_saving_activation") if snapshot is not None else None
+    )
+    attestation_accounted = (
+        _provider_is_configured("DEEPSEEK_API_KEY")
+        and isinstance(telemetry, Mapping)
+        and telemetry.get("complete") is True
+        and telemetry.get("status") == "complete"
+        and isinstance(activation, Mapping)
+        and activation.get("ready") is True
+        and activation.get("status") == "ready"
+    )
     attestation = (
         snapshot.get("vision_attestation")
-        if snapshot is not None and freshness["status"] == "fresh"
+        if snapshot is not None
+        and freshness["status"] == "fresh"
+        and attestation_accounted
         else None
     )
     policies = {
@@ -587,7 +614,7 @@ def get_llm_routing_status(
         "checked_at": current.isoformat(),
         "freshness": freshness,
         "provider_order": policies,
-        "providers": _providers_from_health(snapshot, freshness),
+        "providers": _providers_from_health(snapshot, freshness, now=current),
         "breakers": _breaker_rows(ledger, policies),
         "budget": _daily_budget(ledger, current),
         "hold_review": {

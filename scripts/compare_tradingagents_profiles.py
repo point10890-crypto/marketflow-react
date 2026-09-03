@@ -170,6 +170,10 @@ def validate_evidence_packet(packet: Mapping[str, Any]) -> dict[str, Any]:
 def _blank_profile() -> dict[str, Any]:
     return {
         "call_count": None,
+        "attempt_count": None,
+        "ledger_available": False,
+        "ledger_logical_calls": 0,
+        "ledger_attempts": 0,
         "ledger_live_attempts": 0,
         "input_tokens": None,
         "output_tokens": None,
@@ -248,6 +252,19 @@ def deepseek_decisive_is_healthy(
     """Require a fresh exact-model DeepSeek decisive record; OA is irrelevant."""
     if not isinstance(snapshot, Mapping) or snapshot.get("schema_version") != HEALTH_SCHEMA_VERSION:
         return False
+    if not os.getenv("DEEPSEEK_API_KEY", "").strip():
+        return False
+    telemetry = snapshot.get("telemetry")
+    activation = snapshot.get("cost_saving_activation")
+    if not (
+        isinstance(telemetry, Mapping)
+        and telemetry.get("complete") is True
+        and telemetry.get("status") == "complete"
+        and isinstance(activation, Mapping)
+        and activation.get("ready") is True
+        and activation.get("status") == "ready"
+    ):
+        return False
     current = _aware_now(now)
     if not _health_timestamp_is_fresh(
         snapshot.get("checked_at"), snapshot.get("ttl_seconds"), current
@@ -303,6 +320,9 @@ def _iter_fields(value: Any, *, prefix: str = ""):
 
 def _ledger_metrics(store: RoutingStore | None, run_id: object) -> dict[str, Any]:
     empty = {
+        "ledger_available": store is not None,
+        "ledger_logical_calls": 0,
+        "ledger_attempts": 0,
         "ledger_live_attempts": 0,
         "input_tokens": None,
         "output_tokens": None,
@@ -312,18 +332,32 @@ def _ledger_metrics(store: RoutingStore | None, run_id: object) -> dict[str, Any
         "known_total_tokens": 0,
         "unknown_usage_attempts": 0,
         "usage_completeness": None,
+        "_ledger_error": False,
     }
     if store is None or not isinstance(run_id, str) or not run_id:
         return empty
-    with store.transaction() as connection:
-        rows = connection.execute(
-            """SELECT status, input_tokens, output_tokens, usage_mapping_status
-               FROM provider_attempts WHERE run_id=? ORDER BY request_id, attempt_number""",
-            (run_id,),
-        ).fetchall()
+    try:
+        with store.transaction() as connection:
+            rows = connection.execute(
+                """SELECT status, input_tokens, output_tokens, usage_mapping_status
+                   FROM provider_attempts WHERE run_id=? ORDER BY request_id, attempt_number""",
+                (run_id,),
+            ).fetchall()
+            logical_row = connection.execute(
+                """SELECT COUNT(DISTINCT request_id) AS logical_calls
+                   FROM provider_attempts WHERE run_id=?""",
+                (run_id,),
+            ).fetchone()
+    except Exception:
+        return {**empty, "ledger_available": False, "_ledger_error": True}
+    logical_calls = int(logical_row["logical_calls"] or 0)
     live_rows = [row for row in rows if not str(row["status"] or "").startswith("skipped_")]
     if not live_rows:
-        return empty
+        return {
+            **empty,
+            "ledger_logical_calls": logical_calls,
+            "ledger_attempts": len(rows),
+        }
     known_input = 0
     known_output = 0
     unknown = 0
@@ -336,6 +370,9 @@ def _ledger_metrics(store: RoutingStore | None, run_id: object) -> dict[str, Any
         known_output += int(row["output_tokens"])
     complete = unknown == 0
     return {
+        "ledger_available": True,
+        "ledger_logical_calls": logical_calls,
+        "ledger_attempts": len(rows),
         "ledger_live_attempts": len(live_rows),
         "input_tokens": known_input if complete else None,
         "output_tokens": known_output if complete else None,
@@ -345,6 +382,7 @@ def _ledger_metrics(store: RoutingStore | None, run_id: object) -> dict[str, Any
         "known_total_tokens": known_input + known_output,
         "unknown_usage_attempts": unknown,
         "usage_completeness": (len(live_rows) - unknown) / len(live_rows),
+        "_ledger_error": False,
     }
 
 
@@ -396,6 +434,7 @@ def _profile_report(
     allowed = set(packet.get("allowed_verdicts") or [])
     if not verdict or verdict not in allowed:
         violations["schema_violations"].append(_violation(profile, "verdict_schema_invalid"))
+        verdict = ""
 
     analysis_status = result.get("analysis_status")
     if not isinstance(analysis_status, str) or not analysis_status:
@@ -407,9 +446,11 @@ def _profile_report(
         violations["schema_violations"].append(
             _violation(profile, "analysis_status_invalid")
         )
+        analysis_status = None
 
     usage = result.get("provider_usage")
     calls: int | None = None
+    attempts: int | None = None
     if isinstance(usage, Mapping):
         value = usage.get("calls")
         if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
@@ -418,10 +459,22 @@ def _profile_report(
             violations["schema_violations"].append(
                 _violation(profile, "call_count_invalid")
             )
+        value = usage.get("attempts")
+        if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+            attempts = value
+        else:
+            violations["schema_violations"].append(
+                _violation(profile, "attempt_count_invalid")
+            )
     else:
         violations["schema_violations"].append(
             _violation(profile, "provider_usage_missing")
         )
+    if calls is not None and attempts is not None and attempts < calls:
+        violations["schema_violations"].append(
+            _violation(profile, "attempt_count_invalid")
+        )
+        attempts = None
 
     authoritative: dict[str, Any] = {}
     authoritative.update(dict(packet.get("numeric_inputs") or {}))
@@ -433,14 +486,7 @@ def _profile_report(
         actual_number = _decimal_number(actual)
         if expected_number is None or actual_number != expected_number:
             violations["numeric_violations"].append(
-                _violation(
-                    profile,
-                    "numeric_mismatch",
-                    path=path,
-                    field=key,
-                    expected=authoritative[key],
-                    actual=actual if isinstance(actual, (int, float, str)) else None,
-                )
+                _violation(profile, "numeric_mismatch")
             )
 
     allowed_ids = set(packet.get("evidence_ids") or [])
@@ -453,19 +499,41 @@ def _profile_report(
         for evidence_id in cited:
             if evidence_id not in allowed_ids:
                 violations["source_violations"].append(
-                    _violation(
-                        profile,
-                        "unknown_evidence_id",
-                        path=path,
-                        evidence_id=str(evidence_id)[:128],
-                    )
+                    _violation(profile, "unknown_evidence_id")
                 )
 
     ledger = _ledger_metrics(store, result.get("routing_run_id"))
-    if store is not None and calls and ledger["ledger_live_attempts"] == 0:
+    ledger_error = bool(ledger.pop("_ledger_error", False))
+    if ledger_error:
         violations["hidden_failures"].append(
-            _violation(profile, "ledger_attempts_missing")
+            _violation(profile, "ledger_unavailable")
         )
+    elif attempts is None:
+        if ledger["ledger_attempts"] > 0 or (calls is not None and calls > 0):
+            violations["hidden_failures"].append(
+                _violation(profile, "ledger_attempt_count_unverifiable")
+            )
+    elif attempts > 0 and not ledger["ledger_available"]:
+        violations["hidden_failures"].append(
+            _violation(profile, "ledger_unavailable")
+        )
+    elif ledger["ledger_available"] and ledger["ledger_attempts"] != attempts:
+        violations["hidden_failures"].append(
+            _violation(profile, "ledger_attempt_count_mismatch")
+        )
+    if not ledger_error:
+        if calls is None and ledger["ledger_logical_calls"] > 0:
+            violations["hidden_failures"].append(
+                _violation(profile, "ledger_call_count_unverifiable")
+            )
+        elif (
+            calls is not None
+            and ledger["ledger_available"]
+            and ledger["ledger_logical_calls"] != calls
+        ):
+            violations["hidden_failures"].append(
+                _violation(profile, "ledger_call_count_mismatch")
+            )
     if analysis_status in _SUCCESS_STATUSES and not verdict:
         violations["hidden_failures"].append(
             _violation(profile, "success_without_verdict")
@@ -476,6 +544,7 @@ def _profile_report(
     )
     summary = {
         "call_count": calls,
+        "attempt_count": attempts,
         **ledger,
         "verdict": verdict or None,
         "analysis_status": analysis_status,
@@ -567,6 +636,8 @@ def compare_profiles(
             raise ReplayValidationError("saved_results_required")
         results = {"full": full_result, "compact": compact_result}
     else:
+        if dict(frozen_packet.get("models") or {}) != engine.routing_model_ids():
+            raise ReplayValidationError("packet_model_identity_mismatch")
         current = _aware_now(now)
         snapshot = (
             health_snapshot
@@ -636,6 +707,20 @@ def compare_profiles(
         for key, values in violations.items():
             all_violations[key].extend(values)
     report.update(all_violations)
+    if any(
+        item.get("code")
+        in {
+            "ledger_unavailable",
+            "ledger_attempts_missing",
+            "ledger_attempt_count_mismatch",
+            "ledger_attempt_count_unverifiable",
+            "ledger_call_count_mismatch",
+            "ledger_call_count_unverifiable",
+        }
+        for item in report["hidden_failures"]
+    ):
+        report["blocked"] = True
+        report["blocked_reason"] = "ledger_usage_unverifiable"
     full_verdict = report["profiles"]["full"]["verdict"]
     compact_verdict = report["profiles"]["compact"]["verdict"]
     report["verdict_disagreement"] = (
