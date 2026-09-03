@@ -46,20 +46,24 @@ sys.path = [p for p in sys.path if not any(b.lower() in p.lower() for b in _bloc
 sys.path.insert(0, _FIXED_BASE)
 
 from dotenv import load_dotenv
-load_dotenv(override=True)
+_preserve_process_env = os.getenv('MARKETFLOW_PRESERVE_ENV', '').strip().lower() in {
+    '1', 'true', 'yes', 'on',
+}
+load_dotenv(override=not _preserve_process_env)
 import time
 import logging
 import subprocess
 import signal as signal_module
 import argparse
 import atexit
-from datetime import datetime
+from datetime import datetime, timedelta
 import hashlib
 import re
 from pathlib import Path
 from typing import Optional
 import json
 import threading
+import uuid
 
 # Windows 환경에서 콘솔 출력 인코딩 강제 설정
 if sys.platform.startswith('win'):
@@ -84,9 +88,10 @@ except ImportError:
             json.dump(data, f, ensure_ascii=False, indent=kw.get('indent', 2))
 
 try:
-    from app.utils.freshness import build_freshness
+    from app.utils.freshness import build_freshness, parse_datetime_value
 except ImportError:
     build_freshness = None
+    parse_datetime_value = None
 
 # 로컬 Flask API base — 포트 드리프트 방지 (5001 → 5003 이전 대응)
 try:
@@ -476,6 +481,14 @@ class Config:
     HISTORY_TIMEOUT = int(os.environ.get('KR_MARKET_HISTORY_TIMEOUT', '900'))
     CRYPTO_TASK_TIMEOUT = int(os.environ.get('CRYPTO_MARKET_TASK_TIMEOUT', '600'))
     CRYPTO_BRIEFING_TIMEOUT = int(os.environ.get('CRYPTO_MARKET_BRIEFING_TIMEOUT', '300'))
+    CRYPTO_PIPELINE_TIMEOUT = min(
+        7200,
+        max(60, int(os.environ.get('CRYPTO_PIPELINE_TIMEOUT_SECONDS', '3600'))),
+    )
+    CRYPTO_FAILURE_RETRY_MINUTES = min(
+        240,
+        max(5, int(os.environ.get('CRYPTO_FAILURE_RETRY_MINUTES', '60'))),
+    )
 
     # Python 실행 경로 (가상환경 우선) — POSIX/Windows 양쪽 호환
     _VENV_PYTHON_WIN = os.path.join(_SCRIPT_DIR, '.venv', 'Scripts', 'python.exe')
@@ -503,7 +516,10 @@ def setup_logging():
     from logging.handlers import RotatingFileHandler
     Config.ensure_dirs()
 
-    log_file = os.path.join(Config.LOG_DIR, 'scheduler.log')
+    log_file = os.environ.get('MARKETFLOW_SCHEDULER_LOG_FILE') or os.path.join(
+        Config.LOG_DIR, 'scheduler.log'
+    )
+    Path(log_file).parent.mkdir(parents=True, exist_ok=True)
 
     file_handler = RotatingFileHandler(
         log_file, maxBytes=10*1024*1024, backupCount=5, encoding='utf-8'
@@ -2967,48 +2983,199 @@ def _notify_crypto_briefing_impl() -> bool:
 
 # ── Crypto 전체 파이프라인 ──
 
-def run_crypto_pipeline(skip_sync: bool = False):
-    """Crypto 전체 파이프라인 (4시간마다 실행)"""
+_CRYPTO_WORKER_SCHEMA = 'marketflow.crypto_pipeline_worker.v1'
+_CRYPTO_ATTEMPT_SCHEMA = 'marketflow.crypto_pipeline_attempt.v1'
+_CRYPTO_STEP_KEYS = ('gate', 'vcp', 'briefing', 'prediction', 'risk', 'lead_lag')
+_crypto_worker_thread_lock = threading.Lock()
+
+
+def _crypto_worker_lock_path() -> str:
+    """Return the process-wide lock path without caching a mutable Config path."""
+    return os.path.join(Config.DATA_DIR, 'runtime', 'crypto_pipeline_worker.lock')
+
+
+def _crypto_execution_lock_path() -> str:
+    """Worker-held lock that survives an unexpected parent process exit."""
+    return os.path.join(Config.DATA_DIR, 'runtime', 'crypto_pipeline_execution.lock')
+
+
+def _crypto_attempt_state_path() -> str:
+    return os.path.join(Config.DATA_DIR, 'runtime', 'crypto_pipeline_attempt.json')
+
+
+def _record_crypto_attempt(slot: datetime, attempted_at: Optional[datetime] = None) -> None:
+    """Persist an attempt separately from the last verified-success record."""
+    current = attempted_at or datetime.now()
+    write_json_atomic(
+        _crypto_attempt_state_path(),
+        {
+            'schema_version': _CRYPTO_ATTEMPT_SCHEMA,
+            'slot': slot.isoformat(timespec='minutes'),
+            'attempted_at': current.isoformat(timespec='seconds'),
+        },
+    )
+
+
+def _crypto_retry_allowed(slot: datetime, now: Optional[datetime] = None) -> bool:
+    """Throttle repeated catch-up failures without marking the slot successful."""
+    try:
+        with open(_crypto_attempt_state_path(), 'r', encoding='utf-8') as handle:
+            state = json.load(handle)
+        if not isinstance(state, dict) or state.get('schema_version') != _CRYPTO_ATTEMPT_SCHEMA:
+            return True
+        if state.get('slot') != slot.isoformat(timespec='minutes'):
+            return True
+        attempted_at = _parse_iso_datetime(state.get('attempted_at'))
+        if attempted_at is None:
+            return True
+        elapsed = ((now or datetime.now()).timestamp() - attempted_at.timestamp())
+        return elapsed >= Config.CRYPTO_FAILURE_RETRY_MINUTES * 60
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return True
+
+
+def _crypto_artifact_specs() -> tuple[tuple[str, tuple[str, ...]], ...]:
+    """Return each required artifact with its contract timestamp field."""
+    return (
+        (os.path.join(Config.CRYPTO_OUTPUT_DIR, 'market_gate.json'), ('generated_at',)),
+        (os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json'), ('metadata', 'generated_at')),
+        (os.path.join(Config.CRYPTO_OUTPUT_DIR, 'crypto_briefing.json'), ('timestamp',)),
+        (os.path.join(Config.CRYPTO_OUTPUT_DIR, 'btc_prediction.json'), ('timestamp',)),
+        (os.path.join(Config.CRYPTO_OUTPUT_DIR, 'crypto_risk.json'), ('timestamp',)),
+        (os.path.join(Config.CRYPTO_MARKET_DIR, 'lead_lag', 'results.json'), ('metadata', 'generated_at')),
+    )
+
+
+def _crypto_artifact_paths() -> tuple[str, ...]:
+    return tuple(path for path, _ in _crypto_artifact_specs())
+
+
+def _valid_crypto_artifact_shape(step: str, payload: dict) -> bool:
+    """Reject fresh timestamps that contain no usable analysis result."""
+    if step == 'gate':
+        score = payload.get('score')
+        return (
+            str(payload.get('gate', '')).upper() in {'GREEN', 'YELLOW', 'RED'}
+            and isinstance(score, (int, float))
+            and not isinstance(score, bool)
+            and isinstance(payload.get('metrics'), dict)
+            and bool(payload['metrics'])
+            and isinstance(payload.get('reasons'), list)
+        )
+    if step == 'vcp':
+        metadata = payload.get('metadata')
+        universe_size = metadata.get('universe_size') if isinstance(metadata, dict) else None
+        return (
+            isinstance(metadata, dict)
+            and str(metadata.get('market', '')).upper() == 'CRYPTO'
+            and isinstance(universe_size, int)
+            and not isinstance(universe_size, bool)
+            and universe_size > 0
+            and isinstance(payload.get('signals'), list)
+            and isinstance(payload.get('summary'), dict)
+        )
+    if step == 'briefing':
+        return (
+            isinstance(payload.get('market_summary'), dict)
+            and bool(payload['market_summary'])
+            and isinstance(payload.get('major_coins'), dict)
+            and bool(payload['major_coins'])
+        )
+    if step == 'prediction':
+        predictions = payload.get('predictions')
+        return (
+            isinstance(predictions, dict)
+            and isinstance(predictions.get('BTC'), dict)
+            and bool(predictions['BTC'])
+        )
+    if step == 'risk':
+        summary = payload.get('portfolio_summary')
+        total_coins = summary.get('total_coins') if isinstance(summary, dict) else None
+        return (
+            isinstance(summary, dict)
+            and isinstance(total_coins, int)
+            and not isinstance(total_coins, bool)
+            and total_coins > 0
+            and str(summary.get('risk_level', '')).upper() != 'NO_DATA'
+            and isinstance(payload.get('correlation_matrix'), dict)
+        )
+    if step == 'lead_lag':
+        return isinstance(payload.get('lead_lag'), list) and bool(payload['lead_lag'])
+    return False
+
+
+def _snapshot_crypto_artifacts() -> dict[str, dict[str, object]]:
+    """Capture readable payloads, timestamps, and absent paths before a run."""
+    snapshot: dict[str, dict[str, object]] = {}
+    for artifact_path in _crypto_artifact_paths():
+        try:
+            artifact_stat = os.stat(artifact_path)
+            with open(artifact_path, 'r', encoding='utf-8') as handle:
+                payload = json.load(handle)
+            snapshot[artifact_path] = {
+                'existed': True,
+                'payload': payload,
+                'atime_ns': artifact_stat.st_atime_ns,
+                'mtime_ns': artifact_stat.st_mtime_ns,
+            }
+        except FileNotFoundError:
+            snapshot[artifact_path] = {'existed': False}
+        except (OSError, ValueError, TypeError, json.JSONDecodeError):
+            continue
+    return snapshot
+
+
+def _restore_crypto_artifacts(snapshot: dict[str, dict[str, object]]) -> None:
+    """Restore the exact pre-run presence and freshness state after a failure."""
+    for artifact_path, state in snapshot.items():
+        try:
+            if state.get('existed') is False:
+                Path(artifact_path).unlink(missing_ok=True)
+                continue
+            write_json_atomic(artifact_path, state['payload'])
+            atime_ns = state.get('atime_ns')
+            mtime_ns = state.get('mtime_ns')
+            if type(atime_ns) is int and type(mtime_ns) is int:
+                os.utime(artifact_path, ns=(atime_ns, mtime_ns))
+        except Exception as exc:
+            logger.error(
+                "Crypto artifact rollback failed (%s)",
+                type(exc).__name__,
+            )
+
+
+def _run_crypto_pipeline_core() -> dict[str, bool]:
+    """Run the native Crypto stages inside the short-lived worker process only."""
     logger.info("=" * 60)
     logger.info("🪙 Crypto 전체 파이프라인 시작 (4시간 주기)")
     logger.info("=" * 60)
 
     start_time = time.time()
-    results = []
-
-    # 1. Gate Check
-    results.append(('Gate Check', run_crypto_gate_check()))
-
-    # 2. VCP Scan (RED 시 자동 스킵)
-    results.append(('VCP Scan', run_crypto_vcp_scan()))
-
-    # 3. Briefing
-    results.append(('Briefing', run_crypto_briefing()))
-
-    # 4. Prediction
-    results.append(('Prediction', run_crypto_prediction()))
-
-    # 5. Risk
-    results.append(('Risk', run_crypto_risk()))
-
-    # 6. Lead-Lag
-    results.append(('Lead-Lag', run_crypto_leadlag()))
+    stages = (
+        ('Gate Check', 'gate', run_crypto_gate_check),
+        ('VCP Scan', 'vcp', run_crypto_vcp_scan),
+        ('Briefing', 'briefing', run_crypto_briefing),
+        ('Prediction', 'prediction', run_crypto_prediction),
+        ('Risk', 'risk', run_crypto_risk),
+        ('Lead-Lag', 'lead_lag', run_crypto_leadlag),
+    )
+    results = [(label, key, bool(task())) for label, key, task in stages]
 
     # 7. Briefing 텔레그램 알림
     notify_crypto_briefing()
 
     elapsed = time.time() - start_time
-    success_count = sum(1 for _, ok in results if ok)
+    success_count = sum(1 for _, _, ok in results if ok)
     total_count = len(results)
 
-    for name, ok in results:
+    for name, _, ok in results:
         status = "✅" if ok else "❌"
         logger.info(f"  {status} {name}")
 
     logger.info(f"🪙 Crypto 파이프라인 완료: {success_count}/{total_count} ({elapsed:.0f}초)")
 
     # 개별 실패 알림
-    failed = [name for name, ok in results if not ok]
+    failed = [name for name, _, ok in results if not ok]
     if failed:
         send_telegram(
             f"⚠️ <b>Crypto 파이프라인 부분 실패</b>\n\n"
@@ -3018,11 +3185,342 @@ def run_crypto_pipeline(skip_sync: bool = False):
             channel=False
         )
 
-    # Git 자동 커밋 + 푸시 (→ Render 자동 배포)
-    if not skip_sync:
-        auto_git_push('crypto')
+    return {key: ok for _, key, ok in results}
 
-    return success_count == total_count
+
+def _validate_crypto_worker_result(
+    result_path: Path,
+    run_id: str,
+    launch_epoch: float,
+) -> tuple[bool, str]:
+    """Validate the worker manifest and content timestamps without trusting mtime."""
+    try:
+        with result_path.open('r', encoding='utf-8') as handle:
+            payload = json.load(handle)
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return False, 'manifest_unreadable'
+
+    if not isinstance(payload, dict):
+        return False, 'manifest_shape'
+    if payload.get('schema_version') != _CRYPTO_WORKER_SCHEMA:
+        return False, 'manifest_schema'
+    if payload.get('run_id') != run_id:
+        return False, 'manifest_run_id'
+    if payload.get('status') != 'succeeded' or payload.get('ok') is not True:
+        return False, 'worker_failed'
+
+    child_pid = payload.get('pid')
+    if type(child_pid) is not int or child_pid <= 0 or child_pid == os.getpid():
+        return False, 'manifest_pid'
+
+    started_at = _parse_iso_datetime(payload.get('started_at'))
+    completed_at = _parse_iso_datetime(payload.get('completed_at'))
+    if started_at is None or completed_at is None or completed_at < started_at:
+        return False, 'manifest_time'
+
+    steps = payload.get('steps')
+    if not isinstance(steps, dict) or set(steps) != set(_CRYPTO_STEP_KEYS):
+        return False, 'manifest_steps'
+    if any(steps[key] is not True for key in _CRYPTO_STEP_KEYS):
+        return False, 'stage_failed'
+
+    if parse_datetime_value is None:
+        return False, 'freshness_unavailable'
+    for step, (artifact_path, timestamp_path) in zip(
+        _CRYPTO_STEP_KEYS,
+        _crypto_artifact_specs(),
+    ):
+        try:
+            with open(artifact_path, 'r', encoding='utf-8') as handle:
+                artifact = json.load(handle)
+        except (OSError, ValueError, TypeError, json.JSONDecodeError):
+            return False, 'artifact_unreadable'
+        timestamp_value = artifact
+        for key in timestamp_path:
+            if not isinstance(timestamp_value, dict) or key not in timestamp_value:
+                return False, 'artifact_timestamp_missing'
+            timestamp_value = timestamp_value[key]
+        content_time = parse_datetime_value(timestamp_value)
+        if content_time is None or content_time.timestamp() < launch_epoch:
+            return False, 'artifact_stale'
+        if not isinstance(artifact, dict) or not _valid_crypto_artifact_shape(step, artifact):
+            return False, 'artifact_empty'
+
+    return True, 'ok'
+
+
+def _is_trusted_crypto_worker_busy(result_path: Path, run_id: str) -> bool:
+    """Recognize only this launch's fail-closed execution-lock contention."""
+    try:
+        with result_path.open('r', encoding='utf-8') as handle:
+            payload = json.load(handle)
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return False
+    if not isinstance(payload, dict):
+        return False
+    child_pid = payload.get('pid')
+    steps = payload.get('steps')
+    started_at = _parse_iso_datetime(payload.get('started_at'))
+    completed_at = _parse_iso_datetime(payload.get('completed_at'))
+    return (
+        payload.get('schema_version') == _CRYPTO_WORKER_SCHEMA
+        and payload.get('run_id') == run_id
+        and payload.get('status') == 'failed'
+        and payload.get('ok') is False
+        and payload.get('error_type') == 'WorkerBusy'
+        and type(child_pid) is int
+        and child_pid > 0
+        and child_pid != os.getpid()
+        and isinstance(steps, dict)
+        and set(steps) == set(_CRYPTO_STEP_KEYS)
+        and all(steps[key] is False for key in _CRYPTO_STEP_KEYS)
+        and started_at is not None
+        and completed_at is not None
+        and completed_at >= started_at
+    )
+
+
+def _terminate_posix_process_tree_by_parentage(root_pid: int) -> bool:
+    """Kill one POSIX process subtree without terminating its parent group."""
+    try:
+        completed = subprocess.run(
+            ['ps', '-eo', 'pid=,ppid='],
+            shell=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+        if completed.returncode != 0:
+            return False
+        children: dict[int, list[int]] = {}
+        for line in completed.stdout.splitlines():
+            fields = line.split()
+            if len(fields) != 2:
+                continue
+            try:
+                pid, ppid = (int(fields[0]), int(fields[1]))
+            except ValueError:
+                continue
+            children.setdefault(ppid, []).append(pid)
+
+        descendants: list[int] = []
+        pending = list(children.get(root_pid, ()))
+        while pending:
+            pid = pending.pop()
+            descendants.append(pid)
+            pending.extend(children.get(pid, ()))
+
+        for pid in reversed(descendants):
+            try:
+                os.kill(pid, signal_module.SIGKILL)
+            except ProcessLookupError:
+                pass
+        try:
+            os.kill(root_pid, signal_module.SIGKILL)
+        except ProcessLookupError:
+            pass
+        return True
+    except Exception:
+        return False
+
+
+def _terminate_crypto_process_tree(process) -> None:
+    """Terminate the still-running worker and every subprocess it started."""
+    tree_terminated = False
+    try:
+        if os.name == 'nt':
+            completed = subprocess.run(
+                ['taskkill', '/PID', str(process.pid), '/T', '/F'],
+                shell=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=30,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+            )
+            tree_terminated = completed.returncode == 0
+        else:
+            process_group = os.getpgid(process.pid)
+            if process_group == process.pid:
+                os.killpg(process_group, signal_module.SIGKILL)
+                tree_terminated = True
+            else:
+                tree_terminated = _terminate_posix_process_tree_by_parentage(process.pid)
+    except Exception:
+        tree_terminated = False
+
+    if not tree_terminated:
+        try:
+            process.kill()
+        except Exception:
+            pass
+    try:
+        process.wait(timeout=30)
+    except Exception:
+        try:
+            process.kill()
+        except Exception:
+            pass
+        try:
+            process.wait(timeout=5)
+        except Exception:
+            pass
+
+
+def _run_crypto_worker_process(
+    command: list[str],
+    popen_kwargs: dict,
+    *,
+    timeout: int,
+) -> tuple[int, int]:
+    """Wait for the worker and kill its process tree before releasing locks."""
+    process = subprocess.Popen(command, **popen_kwargs)
+    try:
+        returncode = process.wait(timeout=timeout)
+        if returncode != 0:
+            _terminate_crypto_process_tree(process)
+        return returncode, process.pid
+    except BaseException:
+        _terminate_crypto_process_tree(process)
+        raise
+
+
+def _launch_crypto_worker(*, no_notify: bool) -> Optional[bool]:
+    """Return True/False for an attempt, or None for execution-lock contention."""
+    run_id = uuid.uuid4().hex
+    runtime_dir = Path(Config.DATA_DIR) / 'runtime'
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    result_path = runtime_dir / f'crypto_pipeline_worker_{run_id}.json'
+    worker_script = Path(__file__).resolve().parent / 'scripts' / 'run_crypto_pipeline_worker.py'
+    command = [
+        Config.PYTHON_PATH,
+        str(worker_script),
+        '--run-id',
+        run_id,
+        '--result',
+        str(result_path),
+    ]
+    if no_notify:
+        command.append('--no-notify')
+
+    worker_env = os.environ.copy()
+    worker_env['KR_MARKET_DIR'] = Config.BASE_DIR
+    worker_env['PYTHONPATH'] = Config.BASE_DIR
+    worker_env['PYTHONIOENCODING'] = 'utf-8'
+    worker_env['PYTHONUTF8'] = '1'
+    worker_env['MARKETFLOW_PRESERVE_ENV'] = '1'
+    if no_notify:
+        telegram_keys = {
+            key for key in worker_env if 'TELEGRAM' in key.upper()
+        } | {
+            'TELEGRAM_BOT_TOKEN',
+            'TELEGRAM_CHAT_ID',
+            'TELEGRAM_CHANNEL_BOT_TOKEN',
+            'TELEGRAM_CHANNEL_CHAT_ID',
+        }
+        for key in telegram_keys:
+            worker_env[key] = ''
+    worker_env['MARKETFLOW_SCHEDULER_LOG_FILE'] = os.path.join(
+        Config.LOG_DIR, 'crypto_pipeline_worker.log'
+    )
+    popen_kwargs = {
+        'cwd': Config.BASE_DIR,
+        'env': worker_env,
+        'shell': False,
+        'stdout': subprocess.DEVNULL,
+        'stderr': subprocess.DEVNULL,
+    }
+    if os.name == 'nt':
+        popen_kwargs['creationflags'] = (
+            subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
+        )
+    elif os.getenv('MARKETFLOW_CRYPTO_INHERIT_PROCESS_GROUP', '').strip().lower() not in {
+        '1', 'true', 'yes', 'on',
+    }:
+        popen_kwargs['start_new_session'] = True
+
+    launch_epoch = time.time()
+    try:
+        returncode, _launcher_pid = _run_crypto_worker_process(
+            command,
+            popen_kwargs,
+            timeout=Config.CRYPTO_PIPELINE_TIMEOUT,
+        )
+        if returncode != 0:
+            if _is_trusted_crypto_worker_busy(result_path, run_id):
+                logger.info("Crypto execution lock is busy; leaving live artifacts untouched")
+                return None
+            logger.error("Crypto worker failed (exit=%s)", returncode)
+            return False
+        valid, reason = _validate_crypto_worker_result(
+            result_path,
+            run_id,
+            launch_epoch,
+        )
+        if not valid:
+            logger.error("Crypto worker result rejected (%s)", reason)
+            return False
+        return True
+    except subprocess.TimeoutExpired:
+        logger.error("Crypto worker timed out")
+        return False
+    except Exception as exc:
+        logger.error("Crypto worker launch failed (%s)", type(exc).__name__)
+        return False
+    finally:
+        try:
+            result_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def run_crypto_pipeline(skip_sync: bool = False, no_notify: bool = False) -> bool:
+    """Run Crypto in a dedicated process, then optionally sync validated output."""
+    if not _crypto_worker_thread_lock.acquire(blocking=False):
+        logger.info("Crypto worker already running in this scheduler; skipping duplicate")
+        return False
+
+    try:
+        if FileLock is None or FileLockTimeout is None:
+            logger.error("Crypto worker process lock is unavailable")
+            return False
+
+        lock_path = _crypto_worker_lock_path()
+        Path(lock_path).parent.mkdir(parents=True, exist_ok=True)
+        try:
+            with FileLock(lock_path, timeout=0):
+                artifact_snapshot = _snapshot_crypto_artifacts()
+                attempt_slot = _latest_crypto_slot(datetime.now(), include_current=True)
+                analysis_ok = _launch_crypto_worker(no_notify=no_notify)
+                if analysis_ok is None:
+                    return False
+                if attempt_slot is not None:
+                    try:
+                        _record_crypto_attempt(attempt_slot)
+                    except Exception as exc:
+                        logger.warning(
+                            "Crypto attempt state write failed (%s)",
+                            type(exc).__name__,
+                        )
+                if analysis_ok is False:
+                    _restore_crypto_artifacts(artifact_snapshot)
+                    return False
+
+                if not skip_sync:
+                    try:
+                        if not auto_git_push('crypto'):
+                            logger.warning("Crypto output Git sync did not complete")
+                    except Exception as exc:
+                        logger.warning("Crypto output Git sync failed (%s)", type(exc).__name__)
+                return True
+        except FileLockTimeout:
+            logger.info("Crypto worker process lock is busy; skipping duplicate")
+            return False
+        except Exception as exc:
+            logger.error("Crypto worker lock failed (%s)", type(exc).__name__)
+            return False
+    finally:
+        _crypto_worker_thread_lock.release()
 
 
 # ============================================================
@@ -3206,6 +3704,37 @@ def _was_run_recently(task_key: str, hours: float = 4) -> bool:
         return False
 
 
+def _latest_crypto_slot(now: datetime, *, include_current: bool) -> Optional[datetime]:
+    """Return the fixed Crypto slot owned by a catch-up or scheduled invocation."""
+    valid_times = _valid_hhmm_times(Config.CRYPTO_TIMES, 'CRYPTO_TIMES')
+    candidates = []
+    for day_offset in (0, -1):
+        day = (now + timedelta(days=day_offset)).date()
+        for hhmm in valid_times:
+            hour, minute = (int(part) for part in hhmm.split(':', 1))
+            slot = datetime(day.year, day.month, day.day, hour, minute)
+            is_eligible = slot <= now if include_current else slot < now
+            if is_eligible:
+                candidates.append(slot)
+    return max(candidates) if candidates else None
+
+
+def _crypto_slot_due(
+    now: datetime,
+    *,
+    include_current: bool,
+) -> tuple[bool, Optional[datetime]]:
+    """Return whether the latest fixed slot lacks a successful completion."""
+    slot = _latest_crypto_slot(now, include_current=include_current)
+    if slot is None:
+        return False, None
+
+    with _last_run_lock:
+        last_run_raw = _load_last_run().get('crypto')
+    last_run = _parse_iso_datetime(last_run_raw)
+    return last_run is None or last_run < slot, slot
+
+
 def _was_run_today(task_key: str) -> bool:
     """해당 task_key가 오늘 실행됐거나 최근 2시간 내 실행됐는지 (자정 경계 안전, 락 보호)"""
     with _last_run_lock:
@@ -3305,10 +3834,6 @@ def check_and_run_missed_tasks():
                     (slot_min, f"aibrain_prewarm_{hm.replace(':', '')}", run_aibrain_prewarm,
                      f'AI Brain 판단 프리웜 {hm}', min(slot_min + 90, 23 * 60 + 59), None))
 
-        # ── 매일 실행 작업 (Crypto - 주말 포함) ──
-        # Crypto는 4시간 간격이라 가장 최근 놓친 것만 복구
-        crypto_times_min = [0, 4*60, 8*60, 12*60, 16*60, 20*60]
-
         recovered = []
 
         # 평일/요일별 작업 복구
@@ -3345,21 +3870,35 @@ def check_and_run_missed_tasks():
             except Exception as e:
                 logger.error(f"  ❌ 복구 실패: {label} — {e}", exc_info=True)
 
-        # Crypto 복구 (주말 포함)
-        # 현재 시각 이전의 가장 최근 crypto 시각 찾기
-        past_crypto = [t for t in crypto_times_min if t < hour_min]
-        if past_crypto:
-            latest_crypto_min = max(past_crypto)
-            if not _was_run_recently('crypto', hours=4):
-                # 마지막 실행이 오늘이 아니면 복구
-                logger.info(f"  ⚠️ 놓친 Crypto 파이프라인 감지 (최근 예정 {latest_crypto_min//60:02d}:00) → 즉시 실행")
-                try:
-                    run_crypto_pipeline()
+        # Crypto 복구 (주말 포함): 현재 시각보다 이전인 최신 고정 슬롯만 소유한다.
+        crypto_due, crypto_slot = _crypto_slot_due(now, include_current=False)
+        if (
+            crypto_due
+            and crypto_slot is not None
+            and not _crypto_retry_allowed(crypto_slot, now)
+        ):
+            logger.info(
+                "  ⏭️ Crypto 파이프라인 실패 재시도 대기 중 (슬롯 %s, %s분 backoff)",
+                crypto_slot.strftime('%Y-%m-%d %H:%M'),
+                Config.CRYPTO_FAILURE_RETRY_MINUTES,
+            )
+        elif crypto_due and crypto_slot is not None:
+            logger.info(
+                "  ⚠️ 놓친 Crypto 파이프라인 감지 (최근 예정 %s) → 즉시 실행",
+                crypto_slot.strftime('%Y-%m-%d %H:%M'),
+            )
+            try:
+                if run_crypto_pipeline():
                     record_task_run('crypto')
                     recovered.append('Crypto 파이프라인')
-                    logger.info(f"  ✅ 복구 완료: Crypto 파이프라인")
-                except Exception as e:
-                    logger.error(f"  ❌ 복구 실패: Crypto 파이프라인 — {e}", exc_info=True)
+                    logger.info("  ✅ 복구 완료: Crypto 파이프라인")
+                else:
+                    logger.error("  ❌ 복구 실패: Crypto 파이프라인 worker 결과 불충족")
+            except Exception as exc:
+                logger.error(
+                    "  ❌ 복구 실패: Crypto 파이프라인 (%s)",
+                    type(exc).__name__,
+                )
 
         if recovered:
             logger.info(f"🔄 놓친 스케줄 복구: {len(recovered)}개 — {', '.join(recovered)}")
@@ -3938,7 +4477,7 @@ class Scheduler:
                     return send_telegram(message)
 
             # 중복 실행 방지 (catch-up 복구와의 충돌, 워치독 재시작 후 이중 실행 방지)
-            # - crypto: 4시간 주기 → 3시간 쿨다운
+            # - crypto: Config.CRYPTO_TIMES 고정 슬롯별 1회 성공
             # - kiwoom_ai_theme: 장중 15분 주기 → 10분 쿨다운 (하루 1회 제한 해제)
             # - interval_cooldowns: 분 주기 interval job 은 주기의 0.8배 쿨다운
             #   (하루 1회 게이트에 걸리면 10~15분 주기가 하루 1회로 죽는다 — kiwoom_ai_theme 버그 재발 방지)
@@ -3951,8 +4490,12 @@ class Scheduler:
             }
 
             if task_key == 'crypto':
-                if _was_run_recently(task_key, hours=3):
-                    logger.info(f"⏭️ {task_key}: 최근 3시간 내 실행됨, 스킵")
+                crypto_due, crypto_slot = _crypto_slot_due(
+                    datetime.now(), include_current=True
+                )
+                if not crypto_due:
+                    slot_label = crypto_slot.isoformat(timespec='minutes') if crypto_slot else 'invalid'
+                    logger.info(f"⏭️ {task_key}: 고정 슬롯 완료됨 ({slot_label}), 스킵")
                     return None
             elif task_key == 'kiwoom_ai_theme':
                 # 장중 연속 갱신 허용: 10분 이내 재실행만 방지
@@ -3973,6 +4516,20 @@ class Scheduler:
                     if attempt > 0:
                         logger.info(f"🔄 {task_key} 재시도 {attempt}/{max_retries} ({retry_delay}초 후)")
                         time.sleep(retry_delay)
+                        if task_key == 'crypto':
+                            retry_due, retry_slot = _crypto_slot_due(
+                                datetime.now(), include_current=True
+                            )
+                            if not retry_due:
+                                slot_label = (
+                                    retry_slot.isoformat(timespec='minutes')
+                                    if retry_slot else 'invalid'
+                                )
+                                logger.info(
+                                    f"⏭️ {task_key}: 재시도 전 슬롯 완료 확인 "
+                                    f"({slot_label}), 중복 실행 스킵"
+                                )
+                                return None
 
                     result = task_fn()
 
@@ -4245,7 +4802,7 @@ class Scheduler:
                               max_retries=1, retry_delay=600))
 
         # Crypto — 매 4시간 24/7 (00/04/08/12/16/20 KST)
-        for t in Config.CRYPTO_TIMES:
+        for t in _valid_hhmm_times(Config.CRYPTO_TIMES, 'CRYPTO_TIMES'):
             schedule.every().day.at(t).do(
                 self._with_record(run_crypto_pipeline, 'crypto',
                                   max_retries=1, retry_delay=600, verify_fn=crypto_verify))

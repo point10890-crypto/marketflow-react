@@ -13,6 +13,7 @@ import logging
 import math
 import threading
 import subprocess
+import signal
 from decimal import Decimal
 from uuid import uuid4
 from app.utils.atomic_json import write_json_atomic
@@ -645,33 +646,201 @@ def crypto_monthly_report():
 _running_tasks: dict = {}
 _task_lock = threading.Lock()
 _PYTHON_EXE = sys.executable
+_CRYPTO_SINGLE_STEP_BRIDGE = os.path.join(BASE_DIR, 'scripts', 'run_crypto_single_step.py')
+_SUBPROCESS_REAP_TIMEOUT_SECONDS = 30
+_CRYPTO_ROLLBACK_GRACE_SECONDS = 90
 
 
-def _run_subprocess_task(task_id: str, script_path: str, cwd: str | None = None):
+def _positive_timeout_env(name: str, default: int) -> int:
+    try:
+        return max(60, int(os.environ.get(name, str(default))))
+    except (TypeError, ValueError):
+        return default
+
+
+def _single_step_bridge_timeout(step: str, requested: int | None = None) -> int:
+    """Keep the Flask owner alive until the root runner can rollback safely."""
+    if step == 'briefing':
+        inner_timeout = _positive_timeout_env(
+            'CRYPTO_MARKET_BRIEFING_TIMEOUT', 300
+        )
+        minimum = inner_timeout + _CRYPTO_ROLLBACK_GRACE_SECONDS
+    elif step in {'prediction', 'risk', 'lead_lag'}:
+        inner_timeout = _positive_timeout_env('CRYPTO_MARKET_TASK_TIMEOUT', 600)
+        minimum = inner_timeout + _CRYPTO_ROLLBACK_GRACE_SECONDS
+    elif step == 'vcp':
+        minimum = 900
+    else:
+        minimum = 600
+    return max(minimum, requested or 0)
+
+
+def _terminate_subprocess_tree(process) -> None:
+    """Terminate a managed child and its descendants, then reap the child."""
+    tree_terminated = False
+    if os.name == 'nt':
+        try:
+            result = subprocess.run(
+                ['taskkill', '/PID', str(process.pid), '/T', '/F'],
+                shell=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=_SUBPROCESS_REAP_TIMEOUT_SECONDS,
+                check=False,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+            )
+            tree_terminated = result.returncode == 0
+        except Exception:
+            pass
+    else:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+            tree_terminated = True
+        except Exception:
+            pass
+
+    if not tree_terminated:
+        try:
+            process.kill()
+        except Exception:
+            pass
+
+    try:
+        process.wait(timeout=_SUBPROCESS_REAP_TIMEOUT_SECONDS)
+        return
+    except Exception:
+        pass
+
+    try:
+        process.kill()
+    except Exception:
+        pass
+    try:
+        process.wait(timeout=_SUBPROCESS_REAP_TIMEOUT_SECONDS)
+    except Exception:
+        pass
+
+
+def _start_python_process(
+    script_path: str,
+    *,
+    args: list[str] | None = None,
+    cwd: str | None = None,
+    suppress_telegram: bool = False,
+    capture_output: bool = True,
+):
+    """Start one isolated Python child with a sanitized environment."""
+    child_env = os.environ.copy()
+    child_env['KR_MARKET_DIR'] = BASE_DIR
+    child_env['PYTHONPATH'] = BASE_DIR
+    child_env['PYTHONIOENCODING'] = 'utf-8'
+    child_env['PYTHONUTF8'] = '1'
+    child_env['PYTHON_DOTENV_DISABLED'] = '1'
+    child_env['MARKETFLOW_PRESERVE_ENV'] = '1'
+    if suppress_telegram:
+        child_env['MARKETFLOW_SCHEDULER_LOG_FILE'] = os.path.join(
+            BASE_DIR, 'logs', 'crypto_manual_bridge.log'
+        )
+        telegram_keys = {
+            key for key in child_env if 'TELEGRAM' in key.upper()
+        } | {
+            'TELEGRAM_BOT_TOKEN',
+            'TELEGRAM_CHAT_ID',
+            'TELEGRAM_CHANNEL_BOT_TOKEN',
+            'TELEGRAM_CHANNEL_CHAT_ID',
+        }
+        for key in telegram_keys:
+            child_env[key] = ''
+
+    popen_kwargs = {
+        'cwd': cwd or CRYPTO_MARKET_DIR,
+        'env': child_env,
+        'shell': False,
+        'stdout': subprocess.PIPE if capture_output else subprocess.DEVNULL,
+        'stderr': subprocess.PIPE if capture_output else subprocess.DEVNULL,
+    }
+    if capture_output:
+        popen_kwargs.update({
+            'text': True,
+            'encoding': 'utf-8',
+            'errors': 'replace',
+        })
+    if os.name == 'nt':
+        popen_kwargs['creationflags'] = (
+            subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
+        )
+    else:
+        popen_kwargs['start_new_session'] = True
+
+    return subprocess.Popen(
+        [_PYTHON_EXE, script_path, *(args or [])],
+        **popen_kwargs,
+    )
+
+
+def _run_python_process(
+    script_path: str,
+    *,
+    args: list[str] | None = None,
+    cwd: str | None = None,
+    timeout: int = 600,
+    suppress_telegram: bool = False,
+) -> tuple[int, str, str]:
+    """Run one Python child with bounded lifetime and process-tree cleanup."""
+    process = _start_python_process(
+        script_path,
+        args=args,
+        cwd=cwd,
+        suppress_telegram=suppress_telegram,
+        capture_output=True,
+    )
+    try:
+        stdout, stderr = process.communicate(timeout=timeout)
+    except BaseException:
+        _terminate_subprocess_tree(process)
+        raise
+    return process.returncode, stdout or '', stderr or ''
+
+
+def _run_subprocess_task(
+    task_id: str,
+    script_path: str,
+    cwd: str | None = None,
+    *,
+    args: list[str] | None = None,
+    timeout: int = 600,
+    suppress_telegram: bool = False,
+):
     """Run a Python script in a subprocess and track status."""
     with _task_lock:
         _running_tasks[task_id] = {'status': 'running', 'started': datetime.now().isoformat()}
     try:
-        result = subprocess.run(
-            [_PYTHON_EXE, script_path],
-            cwd=cwd or CRYPTO_MARKET_DIR,
-            capture_output=True, text=True, timeout=600,
-            env={**os.environ, 'PYTHONIOENCODING': 'utf-8'}
+        returncode, stdout, stderr = _run_python_process(
+            script_path,
+            args=args,
+            cwd=cwd,
+            timeout=timeout,
+            suppress_telegram=suppress_telegram,
         )
         with _task_lock:
             _running_tasks[task_id] = {
-                'status': 'completed' if result.returncode == 0 else 'failed',
-                'returncode': result.returncode,
-                'stdout_tail': (result.stdout or '')[-500:],
-                'stderr_tail': (result.stderr or '')[-500:],
+                'status': 'completed' if returncode == 0 else 'failed',
+                'returncode': returncode,
+                'stdout_tail': stdout[-500:],
+                'stderr_tail': stderr[-500:],
                 'finished': datetime.now().isoformat(),
             }
     except subprocess.TimeoutExpired:
         with _task_lock:
             _running_tasks[task_id] = {'status': 'timeout', 'finished': datetime.now().isoformat()}
-    except Exception as e:
+    except Exception as exc:
         with _task_lock:
-            _running_tasks[task_id] = {'status': 'error', 'error': str(e), 'finished': datetime.now().isoformat()}
+            _running_tasks[task_id] = {
+                'status': 'error',
+                'error': 'Subprocess execution failed',
+                'error_type': type(exc).__name__,
+                'finished': datetime.now().isoformat(),
+            }
 
 
 # ═══════════════════════════════════════════════════════
@@ -689,12 +858,20 @@ def run_scan():
         if not force:
             return jsonify({'status': 'skipped', 'reason': 'Market gate is RED. Send force=true to override.'})
 
-    script = os.path.join(CRYPTO_MARKET_DIR, 'run_scan.py')
-    if not os.path.exists(script):
-        return jsonify({'error': f'Script not found: run_scan.py'}), 404
+    if not os.path.exists(_CRYPTO_SINGLE_STEP_BRIDGE):
+        return jsonify({'error': 'Crypto VCP bridge not found'}), 404
 
     task_id = f'scan_{datetime.now().strftime("%H%M%S")}'
-    t = threading.Thread(target=_run_subprocess_task, args=(task_id, script), daemon=True)
+    t = threading.Thread(
+        target=_run_subprocess_task,
+        args=(task_id, _CRYPTO_SINGLE_STEP_BRIDGE, BASE_DIR),
+        kwargs={
+            'args': ['vcp'],
+            'timeout': _single_step_bridge_timeout('vcp'),
+            'suppress_telegram': True,
+        },
+        daemon=True,
+    )
     t.start()
     return jsonify({'status': 'started', 'task_id': task_id})
 
@@ -703,38 +880,46 @@ def run_scan():
 @admin_required
 def gate_scan():
     """Market Gate 스캔 실행 (동기 — 결과 직접 반환)"""
-    script = os.path.join(CRYPTO_MARKET_DIR, 'market_gate.py')
-    if not os.path.exists(script):
-        return jsonify({'error': 'market_gate.py not found'}), 404
+    if not os.path.exists(_CRYPTO_SINGLE_STEP_BRIDGE):
+        return jsonify({'error': 'Crypto Gate bridge not found'}), 404
     try:
-        result = subprocess.run(
-            [_PYTHON_EXE, script],
-            cwd=CRYPTO_MARKET_DIR,
-            capture_output=True, text=True, timeout=120,
-            env={**os.environ, 'PYTHONIOENCODING': 'utf-8'}
+        returncode, _stdout, _stderr = _run_python_process(
+            _CRYPTO_SINGLE_STEP_BRIDGE,
+            args=['gate'],
+            cwd=BASE_DIR,
+            timeout=_single_step_bridge_timeout('gate'),
+            suppress_telegram=True,
         )
         # Reload fresh gate data
         gate = load_json_file(os.path.join(CRYPTO_OUTPUT_DIR, 'market_gate.json'))
         return jsonify({
-            'status': 'completed' if result.returncode == 0 else 'failed',
+            'status': 'completed' if returncode == 0 else 'failed',
             'gate': gate,
-            'returncode': result.returncode,
+            'returncode': returncode,
         })
     except subprocess.TimeoutExpired:
         return jsonify({'status': 'timeout'}), 504
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        return jsonify({'error': 'Crypto Gate execution failed'}), 500
 
 
 @crypto_bp.route('/run-prediction', methods=['POST'])
 @admin_required
 def run_prediction():
     """BTC 예측 모델 재학습/실행"""
-    script = os.path.join(CRYPTO_MARKET_DIR, 'crypto_prediction.py')
-    if not os.path.exists(script):
-        return jsonify({'error': 'crypto_prediction.py not found'}), 404
+    if not os.path.exists(_CRYPTO_SINGLE_STEP_BRIDGE):
+        return jsonify({'error': 'Crypto Prediction bridge not found'}), 404
     task_id = f'prediction_{datetime.now().strftime("%H%M%S")}'
-    t = threading.Thread(target=_run_subprocess_task, args=(task_id, script), daemon=True)
+    t = threading.Thread(
+        target=_run_subprocess_task,
+        args=(task_id, _CRYPTO_SINGLE_STEP_BRIDGE, BASE_DIR),
+        kwargs={
+            'args': ['prediction'],
+            'timeout': _single_step_bridge_timeout('prediction'),
+            'suppress_telegram': True,
+        },
+        daemon=True,
+    )
     t.start()
     return jsonify({'status': 'started', 'task_id': task_id})
 
@@ -743,11 +928,19 @@ def run_prediction():
 @admin_required
 def run_risk():
     """리스크 분석 실행"""
-    script = os.path.join(CRYPTO_MARKET_DIR, 'crypto_risk.py')
-    if not os.path.exists(script):
-        return jsonify({'error': 'crypto_risk.py not found'}), 404
+    if not os.path.exists(_CRYPTO_SINGLE_STEP_BRIDGE):
+        return jsonify({'error': 'Crypto Risk bridge not found'}), 404
     task_id = f'risk_{datetime.now().strftime("%H%M%S")}'
-    t = threading.Thread(target=_run_subprocess_task, args=(task_id, script), daemon=True)
+    t = threading.Thread(
+        target=_run_subprocess_task,
+        args=(task_id, _CRYPTO_SINGLE_STEP_BRIDGE, BASE_DIR),
+        kwargs={
+            'args': ['risk'],
+            'timeout': _single_step_bridge_timeout('risk'),
+            'suppress_telegram': True,
+        },
+        daemon=True,
+    )
     t.start()
     return jsonify({'status': 'started', 'task_id': task_id})
 
@@ -756,30 +949,47 @@ def run_risk():
 @admin_required
 def run_briefing():
     """브리핑 재생성"""
-    # 기존 캐시 삭제
-    cache_path = os.path.join(CRYPTO_OUTPUT_DIR, 'crypto_briefing.json')
-    if os.path.exists(cache_path):
-        try:
-            os.remove(cache_path)
-        except Exception:
-            pass
-    # _generate_live_briefing() 호출하여 새로 생성
+    if not os.path.exists(_CRYPTO_SINGLE_STEP_BRIDGE):
+        return jsonify({'error': 'Crypto Briefing bridge not found'}), 404
     try:
-        briefing = _generate_live_briefing()
+        returncode, _stdout, _stderr = _run_python_process(
+            _CRYPTO_SINGLE_STEP_BRIDGE,
+            args=['briefing'],
+            cwd=BASE_DIR,
+            timeout=_single_step_bridge_timeout('briefing'),
+            suppress_telegram=True,
+        )
+        if returncode != 0:
+            return jsonify({'status': 'failed', 'returncode': returncode}), 500
+        briefing = load_json_file(
+            os.path.join(CRYPTO_OUTPUT_DIR, 'crypto_briefing.json')
+        )
+        if not isinstance(briefing, dict):
+            return jsonify({'status': 'failed', 'reason': 'Briefing artifact unavailable'}), 500
         return jsonify({'status': 'completed', 'briefing': briefing})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except subprocess.TimeoutExpired:
+        return jsonify({'status': 'timeout'}), 504
+    except Exception:
+        return jsonify({'error': 'Crypto Briefing execution failed'}), 500
 
 
 @crypto_bp.route('/run-leadlag', methods=['POST'])
 @admin_required
 def run_leadlag():
     """Lead-Lag 분석 실행"""
-    script = os.path.join(CRYPTO_MARKET_DIR, 'lead_lag', 'lead_lag_analysis.py')
-    if not os.path.exists(script):
-        return jsonify({'error': 'lead_lag_analysis.py not found'}), 404
+    if not os.path.exists(_CRYPTO_SINGLE_STEP_BRIDGE):
+        return jsonify({'error': 'Crypto Lead-Lag bridge not found'}), 404
     task_id = f'leadlag_{datetime.now().strftime("%H%M%S")}'
-    t = threading.Thread(target=_run_subprocess_task, args=(task_id, script, os.path.join(CRYPTO_MARKET_DIR, 'lead_lag')), daemon=True)
+    t = threading.Thread(
+        target=_run_subprocess_task,
+        args=(task_id, _CRYPTO_SINGLE_STEP_BRIDGE, BASE_DIR),
+        kwargs={
+            'args': ['lead_lag'],
+            'timeout': _single_step_bridge_timeout('lead_lag'),
+            'suppress_telegram': True,
+        },
+        daemon=True,
+    )
     t.start()
     return jsonify({'status': 'started', 'task_id': task_id})
 

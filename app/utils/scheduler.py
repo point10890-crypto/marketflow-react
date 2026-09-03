@@ -8,7 +8,7 @@
 특징:
 - schedule 라이브러리 기반 (무료, 유료 플랜 불필요)
 - gunicorn 멀티워커에서 한 워커만 스케줄러 실행 (파일 락)
-- subprocess 대신 in-process 함수 호출 (Render 호환)
+- 일반 작업은 in-process, 무거운 Crypto 분석은 격리 subprocess 실행
 - KST 시간대 기반 스케줄링
 - 텔레그램 알림 지원
 """
@@ -18,6 +18,7 @@ import sys
 import json
 import time
 import logging
+import signal
 import subprocess
 import threading
 import traceback
@@ -396,87 +397,123 @@ def _send_us_smart_money_telegram():
         logger.error(f"US 텔레그램 전송 실패: {e}")
 
 
-def _run_crypto_pipeline():
-    """Crypto 전체 파이프라인 — in-process (가능한 것만)"""
-    logger.info("🪙 Crypto 파이프라인 시작...")
+def _bounded_crypto_parent_timeout() -> int:
+    """Return a bounded outer timeout without making bad env values fatal."""
     try:
-        if BASE_DIR not in sys.path:
-            sys.path.insert(0, BASE_DIR)
+        configured_raw = os.environ.get('CLOUD_CRYPTO_PIPELINE_TIMEOUT_SECONDS')
+        if configured_raw is None:
+            configured = int(os.environ.get('CRYPTO_PIPELINE_TIMEOUT_SECONDS', '3600')) + 60
+        else:
+            configured = int(configured_raw)
+    except (TypeError, ValueError):
+        configured = 3900
+    return min(7500, max(120, configured))
 
-        crypto_dir = os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market')
-        if not os.path.isdir(crypto_dir):
-            logger.warning("⚠️ crypto-analytics 디렉토리 없음 — 스킵")
+
+_CRYPTO_PARENT_TIMEOUT_SECONDS = _bounded_crypto_parent_timeout()
+_CRYPTO_PARENT_REAP_TIMEOUT_SECONDS = 30
+
+
+def _terminate_crypto_parent_tree(process) -> None:
+    """Terminate the isolated parent and all descendants, then reap it."""
+    tree_terminated = False
+    if os.name == 'nt':
+        try:
+            completed = subprocess.run(
+                ['taskkill', '/PID', str(process.pid), '/T', '/F'],
+                shell=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=_CRYPTO_PARENT_REAP_TIMEOUT_SECONDS,
+                check=False,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+            )
+            tree_terminated = completed.returncode == 0
+        except BaseException:
+            pass
+    else:
+        try:
+            # The bridge is created with start_new_session=True, so its PID is
+            # the stable process-group ID even after the leader has exited.
+            os.killpg(process.pid, signal.SIGKILL)
+            tree_terminated = True
+        except BaseException:
+            pass
+
+    if not tree_terminated:
+        try:
+            process.kill()
+        except BaseException:
+            pass
+
+    try:
+        process.wait(timeout=_CRYPTO_PARENT_REAP_TIMEOUT_SECONDS)
+        return
+    except BaseException:
+        pass
+
+    try:
+        process.kill()
+    except BaseException:
+        pass
+    try:
+        process.wait(timeout=_CRYPTO_PARENT_REAP_TIMEOUT_SECONDS)
+    except BaseException:
+        pass
+
+
+def _run_crypto_pipeline():
+    """Run Crypto outside the Flask/Render process and require full success."""
+    parent_script = Path(BASE_DIR) / 'scripts' / 'run_crypto_pipeline_parent.py'
+    if not parent_script.is_file():
+        logger.error("Crypto parent bridge is unavailable")
+        return False
+
+    command = [sys.executable, str(parent_script)]
+    child_env = os.environ.copy()
+    child_env['KR_MARKET_DIR'] = BASE_DIR
+    child_env['PYTHONPATH'] = BASE_DIR
+    child_env['PYTHONIOENCODING'] = 'utf-8'
+    child_env['PYTHONUTF8'] = '1'
+    child_env['PYTHON_DOTENV_DISABLED'] = '1'
+    child_env['MARKETFLOW_PRESERVE_ENV'] = '1'
+    child_env['MARKETFLOW_SCHEDULER_LOG_FILE'] = os.path.join(
+        LOG_DIR, 'crypto_pipeline_cloud_parent.log'
+    )
+    popen_kwargs = {
+        'cwd': BASE_DIR,
+        'env': child_env,
+        'shell': False,
+        'stdout': subprocess.DEVNULL,
+        'stderr': subprocess.DEVNULL,
+    }
+    if os.name == 'nt':
+        popen_kwargs['creationflags'] = (
+            subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
+        )
+    else:
+        popen_kwargs['start_new_session'] = True
+
+    logger.info("🪙 Crypto 격리 파이프라인 시작...")
+    try:
+        process = subprocess.Popen(command, **popen_kwargs)
+        try:
+            returncode = process.wait(timeout=_CRYPTO_PARENT_TIMEOUT_SECONDS)
+            if returncode != 0:
+                _terminate_crypto_parent_tree(process)
+                logger.error("Crypto parent bridge failed (exit=%s)", returncode)
+                return False
+            return True
+        except subprocess.TimeoutExpired:
+            _terminate_crypto_parent_tree(process)
+            logger.error("Crypto parent bridge timed out")
             return False
-
-        if crypto_dir not in sys.path:
-            sys.path.insert(0, crypto_dir)
-
-        results = []
-
-        # Gate Check
-        try:
-            from market_gate import run_market_gate_sync
-            gate_result = run_market_gate_sync()
-            crypto_output = os.path.join(crypto_dir, 'output')
-            os.makedirs(crypto_output, exist_ok=True)
-
-            gate_json = {
-                'gate': gate_result.gate,
-                'score': gate_result.score,
-                'status': 'RISK_ON' if gate_result.gate == 'GREEN' else ('RISK_OFF' if gate_result.gate == 'RED' else 'NEUTRAL'),
-                'reasons': gate_result.reasons,
-                'metrics': gate_result.metrics,
-                'generated_at': datetime.now().isoformat()
-            }
-            with open(os.path.join(crypto_output, 'market_gate.json'), 'w', encoding='utf-8') as f:
-                json.dump(gate_json, f, ensure_ascii=False, indent=2)
-
-            results.append(('Gate', True))
-            logger.info(f"🚦 Crypto Gate: {gate_result.gate} ({gate_result.score})")
-        except Exception as e:
-            logger.error(f"Crypto Gate 실패: {e}")
-            results.append(('Gate', False))
-
-        # VCP Scan
-        try:
-            from run_scan import run_scan_sync
-            scan_result = run_scan_sync()
-            results.append(('VCP', True))
-        except Exception as e:
-            logger.error(f"Crypto VCP 실패: {e}")
-            results.append(('VCP', False))
-
-        # Briefing, Prediction, Risk — subprocess fallback
-        for script_name, label in [
-            ('crypto_briefing.py', 'Briefing'),
-            ('crypto_prediction.py', 'Prediction'),
-            ('crypto_risk.py', 'Risk'),
-        ]:
-            script_path = os.path.join(crypto_dir, script_name)
-            if os.path.exists(script_path):
-                try:
-                    import subprocess
-                    result = subprocess.run(
-                        [sys.executable, script_path],
-                        cwd=os.path.join(BASE_DIR, 'crypto-analytics'),
-                        capture_output=True, text=True, timeout=600,
-                        env={**os.environ, 'PYTHONPATH': BASE_DIR, 'PYTHONIOENCODING': 'utf-8'}
-                    )
-                    results.append((label, result.returncode == 0))
-                except Exception as e:
-                    logger.error(f"Crypto {label} 실패: {e}")
-                    results.append((label, False))
-            else:
-                logger.warning(f"⚠️ {script_name} 없음")
-                results.append((label, False))
-
-        success = sum(1 for _, ok in results if ok)
-        logger.info(f"🪙 Crypto 파이프라인 완료: {success}/{len(results)}")
-        return success > 0
-
-    except Exception as e:
-        logger.error(f"❌ Crypto 파이프라인 실패: {e}")
-        traceback.print_exc()
+        except BaseException as exc:
+            _terminate_crypto_parent_tree(process)
+            logger.error("Crypto parent bridge wait failed (%s)", type(exc).__name__)
+            return False
+    except Exception as exc:
+        logger.error("Crypto parent bridge failed (%s)", type(exc).__name__)
         return False
 
 

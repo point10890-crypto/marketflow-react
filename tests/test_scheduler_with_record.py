@@ -327,6 +327,7 @@ def test_missed_catchup_includes_aibrain_prewarm(monkeypatch):
     monkeypatch.setattr(scheduler, "_was_run_recently", lambda *a, **k: True)
     monkeypatch.setattr(scheduler, "_was_run_today",
                         lambda key: not key.startswith("aibrain_prewarm"))
+    monkeypatch.setattr(scheduler, "_load_last_run", lambda: {"crypto": "2026-09-02T08:00:00"})
     monkeypatch.setattr(scheduler, "record_task_run", lambda key: None)
 
     scheduler.check_and_run_missed_tasks()
@@ -353,11 +354,102 @@ def test_missed_catchup_respects_prewarm_deadline(monkeypatch):
     monkeypatch.setattr(scheduler, "_was_run_recently", lambda *a, **k: True)
     monkeypatch.setattr(scheduler, "_was_run_today",
                         lambda key: not key.startswith("aibrain_prewarm"))
+    monkeypatch.setattr(scheduler, "_load_last_run", lambda: {"crypto": "2026-09-02T08:00:00"})
     monkeypatch.setattr(scheduler, "record_task_run", lambda key: None)
 
     scheduler.check_and_run_missed_tasks()
 
     assert calls == []  # 마감 지남 → 복구하지 않음
+
+
+@pytest.mark.parametrize(
+    ("now_value", "last_success", "worker_result", "expected_runs", "expected_records"),
+    [
+        ("2026-09-06T19:21:00", "2026-09-06T19:18:00", True, 0, 0),
+        ("2026-09-06T23:21:00", "2026-09-06T19:18:00", False, 1, 0),
+        ("2026-09-06T23:21:00", "2026-09-06T19:18:00", True, 1, 1),
+    ],
+)
+def test_crypto_missed_catchup_uses_slot_and_records_only_verified_success(
+    monkeypatch, now_value, last_success, worker_result, expected_runs, expected_records
+):
+    real_dt = scheduler.datetime
+    frozen = real_dt.fromisoformat(now_value)
+
+    class FrozenDT(real_dt):
+        @classmethod
+        def now(cls, tz=None):
+            return frozen
+
+    runs = []
+    records = []
+    monkeypatch.setattr(scheduler, "datetime", FrozenDT)
+    monkeypatch.setattr(scheduler.Config, "CRYPTO_TIMES", ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00"])
+    monkeypatch.setattr(scheduler, "_load_last_run", lambda: {"crypto": last_success})
+    monkeypatch.setattr(
+        scheduler,
+        "run_crypto_pipeline",
+        lambda: runs.append("crypto") or worker_result,
+    )
+    monkeypatch.setattr(scheduler, "record_task_run", lambda key: records.append(key))
+
+    scheduler.check_and_run_missed_tasks()
+
+    assert len(runs) == expected_runs
+    assert records.count("crypto") == expected_records
+
+
+def test_crypto_fixed_wrapper_runs_new_slot_even_inside_old_three_hour_window(monkeypatch):
+    real_dt = scheduler.datetime
+
+    class FrozenDT(real_dt):
+        @classmethod
+        def now(cls, tz=None):
+            return real_dt(2026, 9, 3, 20, 0)
+
+    calls = []
+    records = []
+    monkeypatch.setattr(scheduler, "datetime", FrozenDT)
+    monkeypatch.setattr(scheduler.Config, "CRYPTO_TIMES", ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00"])
+    monkeypatch.setattr(scheduler, "_load_last_run", lambda: {"crypto": "2026-09-03T19:18:00"})
+    monkeypatch.setattr(scheduler, "record_task_run", records.append)
+    monkeypatch.setattr(
+        scheduler,
+        "_was_run_recently",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("crypto used rolling-hour gate")),
+    )
+    task = lambda: calls.append("run") or True
+    task.__name__ = "crypto_task"
+
+    assert Scheduler._with_record(task, "crypto", max_retries=0)() is True
+    assert calls == ["run"]
+    assert records == ["crypto"]
+
+
+def test_crypto_wrapper_rechecks_slot_after_busy_or_failed_first_attempt(monkeypatch):
+    real_dt = scheduler.datetime
+
+    class FrozenDT(real_dt):
+        @classmethod
+        def now(cls, tz=None):
+            return real_dt(2026, 9, 3, 20, 10)
+
+    last_run = {"crypto": "2026-09-03T19:18:00"}
+    calls = []
+    monkeypatch.setattr(scheduler, "datetime", FrozenDT)
+    monkeypatch.setattr(scheduler.Config, "CRYPTO_TIMES", ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00"])
+    monkeypatch.setattr(scheduler, "_load_last_run", lambda: dict(last_run))
+    # The autouse fixture already patches this shared stdlib-module attribute.
+    # Configure that mock instead of stacking monkeypatch on the same target;
+    # mixed fixture teardown order can otherwise leak a MagicMock globally.
+    scheduler.time.sleep.side_effect = (
+        lambda _seconds: last_run.update(crypto="2026-09-03T20:05:00")
+    )
+    task = lambda: calls.append("run") or False
+    task.__name__ = "crypto_task"
+
+    assert Scheduler._with_record(task, "crypto", max_retries=1, retry_delay=600)() is None
+    assert calls == ["run"]
 
 
 def test_alpha_scanner_monitor_sends_telegram_for_new_events(monkeypatch):
