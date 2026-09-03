@@ -43,6 +43,9 @@ interface AuthUser {
     // Pro 만료 카운터 일시정지 (AI Brain 활성 중)
     pro_paused_at?: string | null;
     is_pro_paused?: boolean;
+    // 회원 본인 텔레그램 알림 연결 여부 (/account 연결 카드가 본다)
+    telegram_linked?: boolean;
+    telegram_linked_at?: string | null;
 }
 
 interface AuthContextType {
@@ -91,6 +94,9 @@ function toAuthUser(d: AuthUserData): AuthUser {
         // Pro 일시정지 (AI Brain 활성 중)
         pro_paused_at: d.pro_paused_at ?? null,
         is_pro_paused: d.is_pro_paused ?? false,
+        // 텔레그램 연결 상태 — strip 되면 /account 카드가 영원히 '미연결' 로 보인다
+        telegram_linked: d.telegram_linked ?? false,
+        telegram_linked_at: d.telegram_linked_at ?? null,
     };
 }
 

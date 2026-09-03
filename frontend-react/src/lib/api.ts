@@ -826,6 +826,9 @@ export interface AdminUser {
     is_aibain_active?: boolean;
     is_aibain_expired?: boolean;
     aibain_days_remaining?: number | null;
+    // 회원 본인 텔레그램 알림 연결 여부
+    telegram_linked?: boolean;
+    telegram_linked_at?: string | null;
 }
 
 export interface AdminAuditLogEntry {
@@ -1008,8 +1011,24 @@ export async function putAPI<T>(endpoint: string, body?: any): Promise<T> {
 }
 
 // ── Admin API (Bearer token 기반) ──
+// ── 전환 퍼널 요약 (GET /api/admin/funnel/summary) ──
+export interface FunnelSummary {
+    days: number;
+    since: string;
+    counts: Record<string, number>;   // register / subscription_request / approve / reject / tier_grant
+    users: { registered: number; requested: number; approved: number };
+    conversion: {
+        register_to_request: number | null;
+        request_to_approve: number | null;
+        register_to_approve: number | null;
+    };
+    median_request_to_approve_hours: number | null;
+    approved_requests_sampled: number;
+}
+
 export const adminAPI = {
     getDashboard: (token?: string) => fetchAuthAPI<AdminDashboard>('/api/admin/dashboard', token),
+    getFunnelSummary: (days = 30, token?: string) => fetchAuthAPI<FunnelSummary>(`/api/admin/funnel/summary?days=${days}`, token),
     getUsers: (token?: string, params?: { status?: string; tier?: string; q?: string; page?: number; per_page?: number }) => {
         const qs = new URLSearchParams();
         if (params?.status) qs.set('status', params.status);
@@ -1115,6 +1134,23 @@ export const subscriptionAPI = {
     }>('/api/auth/subscription/status', token),
     updateProfile: (name: string, token?: string) => putAuthAPI<{ user: AdminUser }>('/api/auth/profile', { name }, token),
     changePassword: (currentPassword: string, newPassword: string, token?: string) => putAuthAPI<{ message: string; token?: string }>('/api/auth/change-password', { current_password: currentPassword, new_password: newPassword }, token),
+};
+
+// ── 회원 텔레그램 알림 연결 (승인/만료 안내를 본인에게) ──
+export interface TelegramLinkInfo {
+    code: string;
+    deep_link: string | null;       // https://t.me/<bot>?start=<code> (봇 username 미설정 시 null)
+    bot_username: string | null;
+    expires_at: string;
+    ttl_minutes: number;
+    telegram_linked: boolean;
+    instructions?: string;
+    error?: string;
+}
+
+export const telegramAPI = {
+    getLinkCode: (token?: string) => postAuthAPI<TelegramLinkInfo>('/api/auth/telegram/link-code', undefined, token),
+    unlink: (token?: string) => postAuthAPI<{ message: string; user: AdminUser; error?: string }>('/api/auth/telegram/unlink', undefined, token),
 };
 
 // ── AI Briefing API (조간/마감 브리핑) ──

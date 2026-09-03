@@ -11,7 +11,9 @@ from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify, current_app, has_app_context
 from app.models import db
 from app.models.user import User, SubscriptionRequest
+from app.models.funnel import record_funnel_event, EVENT_REGISTER, EVENT_SUBSCRIPTION_REQUEST
 from app.auth.decorators import generate_token, login_required
+from app.services import member_telegram
 
 
 # ═══════════════════════════════════════════════════════
@@ -290,6 +292,12 @@ def register():
     db.session.add(user)
     db.session.commit()
 
+    # 퍼널 계측: 가입 성공 (best-effort)
+    record_funnel_event(EVENT_REGISTER, user.id, {
+        'requested_tier': requested_tier,
+        'is_first_user': is_first_user,
+    })
+
     # 관리자 텔레그램 알림 (신규 가입 + 요청 플랜)
     tier_label = {'pro': 'Pro (5만원/30일)', 'premium': 'Ultra Pro (120만원/무기한)'}.get(
         requested_tier or '', '미선택'
@@ -556,6 +564,14 @@ def request_subscription():
     db.session.add(sub_request)
     db.session.commit()
 
+    # 퍼널 계측: 구독 신청 생성 (best-effort)
+    record_funnel_event(EVENT_SUBSCRIPTION_REQUEST, user.id, {
+        'request_id': sub_request.id,
+        'request_type': req_type,
+        'to_tier': to_tier,
+        'includes_aibain': includes_aibain,
+    })
+
     # 관리자 텔레그램 + 인앱 알림
     tier_label = {'pro': 'Pro', 'premium': 'Ultra Pro'}.get(to_tier, to_tier)
     if is_aibain_renewal:
@@ -589,6 +605,46 @@ def request_subscription():
     )
 
     return jsonify({'request': sub_request.to_dict()}), 201
+
+
+# ═══════════════════════════════════════════════════════
+#  회원 텔레그램 알림 연결 (승인/만료 안내를 본인에게)
+# ═══════════════════════════════════════════════════════
+
+@auth_bp.route('/telegram/link-code', methods=['POST'])
+@login_required
+def telegram_link_code():
+    """연결 코드 발급 (30분 유효) + 딥링크. 봇 미설정이면 503.
+
+    실제 연결은 회원이 봇에게 /start <code> 를 보내고, 60초 주기 폴러
+    (app/services/member_telegram.poll_link_updates) 가 매칭하면 완료된다.
+    프론트는 /api/auth/me 의 telegram_linked 를 폴링해 상태 전환을 감지한다.
+    """
+    user = request.current_user
+    if user is None:
+        return jsonify({'error': 'Authentication required'}), 401
+    if not member_telegram.is_configured():
+        return jsonify({'error': '텔레그램 알림 연동이 아직 설정되지 않았습니다. 관리자에게 문의하세요.'}), 503
+
+    info = member_telegram.issue_link_code(user)
+    db.session.commit()
+    return jsonify({
+        **info,
+        'telegram_linked': user.is_telegram_linked,
+        'instructions': f"텔레그램 봇에게 '/start {info['code']}' 를 보내면 연결됩니다.",
+    })
+
+
+@auth_bp.route('/telegram/unlink', methods=['POST'])
+@login_required
+def telegram_unlink():
+    """텔레그램 연결 해제 — chat_id / 대기 중 코드 모두 제거."""
+    user = request.current_user
+    if user is None:
+        return jsonify({'error': 'Authentication required'}), 401
+    member_telegram.unlink(user)
+    db.session.commit()
+    return jsonify({'message': '텔레그램 연결이 해제되었습니다.', 'user': user.to_dict()})
 
 
 @auth_bp.route('/subscription/status')

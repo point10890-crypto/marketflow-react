@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
+import { subscriptionAPI, telegramAPI, type SubscriptionRequest, type TelegramLinkInfo } from '@/lib/api';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { InstallGuide } from '@/components/layout/InstallPrompt';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
@@ -23,6 +23,88 @@ export default function AccountPage() {
     const [confirmPw, setConfirmPw] = useState('');
     const [pwMsg, setPwMsg] = useState<{ text: string; error: boolean } | null>(null);
     const [pwLoading, setPwLoading] = useState(false);
+
+    // 텔레그램 알림 연결 — 코드 발급 → 딥링크 열기 → /api/auth/me 를 5초마다 최대 2분 폴링
+    const TG_POLL_MS = 5000;
+    const TG_POLL_WINDOW_MS = 120_000;
+    const tgLinked = !!user?.telegram_linked;
+    const [tgLink, setTgLink] = useState<TelegramLinkInfo | null>(null);
+    const [tgLoading, setTgLoading] = useState(false);
+    const [tgMsg, setTgMsg] = useState<{ text: string; error: boolean } | null>(null);
+    const [tgPollUntil, setTgPollUntil] = useState<number | null>(null);
+    const refreshUserRef = useRef(refreshUser);
+    refreshUserRef.current = refreshUser;
+
+    useEffect(() => {
+        if (!tgPollUntil || tgLinked) return;
+        const id = window.setInterval(() => {
+            if (Date.now() > tgPollUntil) {
+                setTgPollUntil(null);
+                setTgMsg({ text: '아직 연결이 확인되지 않았습니다. 텔레그램에서 "시작"을 눌렀는지 확인 후 "연결 확인"을 눌러주세요.', error: true });
+                return;
+            }
+            void refreshUserRef.current();
+        }, TG_POLL_MS);
+        return () => window.clearInterval(id);
+    }, [tgPollUntil, tgLinked]);
+
+    useEffect(() => {
+        if (!tgLinked) return;
+        // 연결 완료 → 폴링 종료 + 코드 카드 정리
+        setTgPollUntil(null);
+        setTgLink(null);
+        setTgMsg(prev => (prev && !prev.error ? prev : { text: '텔레그램 연결이 완료되었습니다. 승인·만료 안내를 텔레그램으로 보내드립니다.', error: false }));
+    }, [tgLinked]);
+
+    const handleTgLinkCode = async () => {
+        if (!token) return;
+        setTgLoading(true);
+        setTgMsg(null);
+        try {
+            const res = await telegramAPI.getLinkCode(token);
+            if (!res || res.error || !res.code) {
+                setTgMsg({ text: res?.error || '연결 코드 발급에 실패했습니다.', error: true });
+                setTgLink(null);
+            } else {
+                setTgLink(res);
+            }
+        } catch (e) {
+            setTgMsg({ text: e instanceof Error ? e.message : '연결 코드 발급에 실패했습니다.', error: true });
+        } finally {
+            setTgLoading(false);
+        }
+    };
+
+    const handleTgOpenLink = () => {
+        // 딥링크 클릭 직후부터 2분간 /me 폴링 → 연결되면 카드가 자동으로 '연결됨' 으로 전환
+        setTgMsg(null);
+        setTgPollUntil(Date.now() + TG_POLL_WINDOW_MS);
+    };
+
+    const handleTgCheckNow = async () => {
+        setTgLoading(true);
+        try { await refreshUser(); } finally { setTgLoading(false); }
+    };
+
+    const handleTgUnlink = async () => {
+        if (!token) return;
+        if (!window.confirm('텔레그램 알림 연결을 해제할까요? 승인·만료 안내를 더 이상 받지 않습니다.')) return;
+        setTgLoading(true);
+        setTgMsg(null);
+        try {
+            const res = await telegramAPI.unlink(token);
+            if (res?.error) {
+                setTgMsg({ text: res.error, error: true });
+            } else {
+                await refreshUser();
+                setTgMsg({ text: '텔레그램 연결이 해제되었습니다.', error: false });
+            }
+        } catch (e) {
+            setTgMsg({ text: e instanceof Error ? e.message : '연결 해제에 실패했습니다.', error: true });
+        } finally {
+            setTgLoading(false);
+        }
+    };
 
     const pwStrength = (pw: string): { level: number; label: string; cls: string } => {
         if (!pw) return { level: 0, label: '', cls: '' };
@@ -257,6 +339,110 @@ export default function AccountPage() {
                         </button>
                     </div>
                 )}
+            </div>
+
+            {/* Telegram notifications (승인/만료 안내를 본인에게) */}
+            <div className="p-6 rounded-2xl border border-sky-500/20 bg-[#13151f]" data-testid="telegram-link-card">
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center shrink-0">
+                            <i className="fas fa-paper-plane text-sky-400" />
+                        </div>
+                        <div className="min-w-0">
+                            <h3 className="text-white font-bold">텔레그램 알림 연결</h3>
+                            <p className="text-gray-500 text-xs">
+                                {tgLinked
+                                    ? '구독 승인 · 만료 D-3/D-1 안내를 텔레그램으로 받고 있습니다'
+                                    : '구독 승인 · 만료 D-3/D-1 안내를 텔레그램으로 바로 받으세요'}
+                            </p>
+                        </div>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 ${tgLinked ? 'bg-emerald-500/15 text-emerald-400' : 'bg-white/5 text-gray-400'}`}>
+                        {tgLinked ? '연결됨' : '미연결'}
+                    </span>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                    {tgLinked ? (
+                        <>
+                            {user.telegram_linked_at && (
+                                <p className="text-xs text-gray-500">
+                                    연결일: {new Date(user.telegram_linked_at).toLocaleDateString('ko-KR')}
+                                </p>
+                            )}
+                            <button
+                                onClick={handleTgUnlink}
+                                disabled={tgLoading}
+                                className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-sm font-medium transition-colors disabled:opacity-50"
+                            >
+                                {tgLoading ? '처리 중...' : '연결 해제'}
+                            </button>
+                        </>
+                    ) : !tgLink ? (
+                        <button
+                            onClick={handleTgLinkCode}
+                            disabled={tgLoading || !token}
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-400 hover:to-cyan-400 text-black font-bold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                            <i className="fab fa-telegram" />
+                            {tgLoading ? '코드 발급 중...' : '연결 코드 받기'}
+                        </button>
+                    ) : (
+                        <>
+                            <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                                <div className="text-[11px] text-gray-500 mb-1">연결 코드 (30분 유효)</div>
+                                <div className="text-2xl font-mono font-bold tracking-[0.3em] text-white select-all" data-testid="telegram-link-code">
+                                    {tgLink.code}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">
+                                    {tgLink.deep_link
+                                        ? '아래 버튼으로 텔레그램을 열고 "시작"을 누르면 자동으로 연결됩니다.'
+                                        : `텔레그램 봇에게 "/start ${tgLink.code}" 를 보내면 연결됩니다.`}
+                                </p>
+                            </div>
+                            {tgLink.deep_link && (
+                                <a
+                                    href={tgLink.deep_link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={handleTgOpenLink}
+                                    className="w-full py-3 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-400 hover:to-cyan-400 text-black font-bold text-sm transition-all flex items-center justify-center gap-2"
+                                >
+                                    <i className="fab fa-telegram" />
+                                    텔레그램에서 연결하기
+                                </a>
+                            )}
+                            {tgPollUntil && (
+                                <p className="text-xs text-sky-300 flex items-center gap-2" role="status">
+                                    <i className="fas fa-spinner fa-spin" />
+                                    연결 확인 중... 텔레그램에서 "시작"을 누르면 자동으로 완료됩니다.
+                                </p>
+                            )}
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleTgCheckNow}
+                                    disabled={tgLoading}
+                                    className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-sm font-medium transition-colors disabled:opacity-50"
+                                >
+                                    연결 확인
+                                </button>
+                                <button
+                                    onClick={handleTgLinkCode}
+                                    disabled={tgLoading}
+                                    className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-sm font-medium transition-colors disabled:opacity-50"
+                                >
+                                    코드 재발급
+                                </button>
+                            </div>
+                        </>
+                    )}
+                    {tgMsg && (
+                        <p className={`text-sm ${tgMsg.error ? 'text-red-400' : 'text-emerald-400'}`}>
+                            <i className={`fas ${tgMsg.error ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-1`} />
+                            {tgMsg.text}
+                        </p>
+                    )}
+                </div>
             </div>
 
             {/* Subscription Period (Pro users) */}

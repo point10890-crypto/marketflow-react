@@ -55,6 +55,14 @@ class User(db.Model):
     # pro_expiry_checker 는 paused 유저 skip (D-3/D-1/expired 알림 보류).
     pro_paused_at = db.Column(db.DateTime, nullable=True)
 
+    # ── 회원 본인 텔레그램 알림 (승인/만료 안내) ─────────────────────────────
+    # chat_id 는 관리자 외 노출 금지 — to_dict() 는 telegram_linked(bool) 만 내보낸다.
+    # 연결은 딥링크 `https://t.me/<bot>?start=<code>` → 폴러(getUpdates)가 code 매칭.
+    telegram_chat_id = db.Column(db.String(64), nullable=True, index=True)
+    telegram_link_code = db.Column(db.String(32), nullable=True)
+    telegram_link_code_expires_at = db.Column(db.DateTime, nullable=True)
+    telegram_linked_at = db.Column(db.DateTime, nullable=True)
+
     def set_password(self, password: str):
         self.password_hash = bcrypt.hashpw(
             password.encode('utf-8'), bcrypt.gensalt()
@@ -121,6 +129,11 @@ class User(db.Model):
         return self.aibain_expires_at is not None and not self.is_aibain_active
 
     @property
+    def is_telegram_linked(self) -> bool:
+        """회원 본인 텔레그램 chat_id 가 연결돼 있는지."""
+        return bool((self.telegram_chat_id or '').strip())
+
+    @property
     def aibain_days_remaining(self) -> int | None:
         """AI Brain 만료까지 남은 일수 (None = 활성 안 됨 또는 만료)"""
         if not self.is_aibain_active or self.aibain_expires_at is None:
@@ -154,6 +167,9 @@ class User(db.Model):
             # Pro 일시정지 상태 (AI Brain 활성 중 Pro 만료 카운터 보존)
             'pro_paused_at': self.pro_paused_at.isoformat() if self.pro_paused_at else None,
             'is_pro_paused': self.is_pro_paused,
+            # 텔레그램 연결 여부만 노출 (chat_id 자체는 비공개)
+            'telegram_linked': self.is_telegram_linked,
+            'telegram_linked_at': self.telegram_linked_at.isoformat() if self.telegram_linked_at else None,
         }
 
 

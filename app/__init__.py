@@ -132,6 +132,7 @@ def create_app(config=None):
     db.init_app(app)
     with app.app_context():
         from app.models.user import User, AdminAuditLog  # noqa: F401
+        from app.models.funnel import FunnelEvent  # noqa: F401
         from app.models.wave import WaveSignal, WaveTracking, WavePatternStats  # noqa: F401
         from app.models.community import Board, Post, PostImage, Comment  # noqa: F401
         db.create_all()
@@ -171,6 +172,16 @@ def create_app(config=None):
                 # 비밀번호 변경 시각 — 이전 발급 토큰 무효화 근거 (2026-08-11)
                 if 'password_changed_at' not in user_cols:
                     conn.execute(text('ALTER TABLE users ADD COLUMN password_changed_at DATETIME'))
+                # 회원 본인 텔레그램 알림 연결 (2026-09-03) — 승인/만료 안내를 본인에게 발송
+                if 'telegram_chat_id' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN telegram_chat_id VARCHAR(64)'))
+                    conn.execute(text('CREATE INDEX IF NOT EXISTS ix_users_telegram_chat_id ON users (telegram_chat_id)'))
+                if 'telegram_link_code' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN telegram_link_code VARCHAR(32)'))
+                if 'telegram_link_code_expires_at' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN telegram_link_code_expires_at DATETIME'))
+                if 'telegram_linked_at' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN telegram_linked_at DATETIME'))
         except Exception:
             pass  # table may not exist yet (create_all handles it)
 
@@ -521,6 +532,8 @@ def create_app(config=None):
     if expiry_workers_enabled:
         _start_expiry_checker(app)
         _start_aibain_expiry_checker(app)
+        # 회원 텔레그램 연결 폴러 — 만료 알림과 같은 게이트로 on/off (봇 토큰 없으면 자체 skip)
+        _start_member_telegram_link_worker(app)
     else:
         print("[INFO] Subscription expiry workers disabled for this app instance")
 
@@ -661,6 +674,41 @@ def _apply_aibain_expiry_state(user, now):
     user.pro_paused_at = None
     user.pro_expiry_alert_stage = None
     return elapsed
+
+
+def _start_member_telegram_link_worker(app):
+    """회원 텔레그램 연결 폴러 (60초 간격) — /start <code> 를 읽어 User.telegram_chat_id 에 매칭.
+
+    MEMBER_TELEGRAM_LINK_ENABLED=0 이거나 봇 토큰(TELEGRAM_MEMBER_BOT_TOKEN →
+    TELEGRAM_BOT_TOKEN 폴백)이 없으면 시작하지 않는다. 폴러 내부 예외는 로그만.
+    """
+    import threading
+    import time
+
+    try:
+        from app.services import member_telegram
+    except Exception as e:
+        print(f"[WARN] Member telegram service import failed: {e}")
+        return
+    if not member_telegram.link_enabled():
+        print("[INFO] Member telegram link poller disabled (no bot token or MEMBER_TELEGRAM_LINK_ENABLED=0)")
+        return
+
+    def _loop():
+        time.sleep(20)  # Flask 초기화 대기
+        while True:
+            try:
+                with app.app_context():
+                    result = member_telegram.poll_link_updates()
+                    if result.get('linked'):
+                        print(f"[MemberTelegram] linked={result['linked']} updates={result['updates']}")
+            except Exception as e:
+                print(f"[MemberTelegram] poll error: {type(e).__name__}: {e}")
+            time.sleep(60)
+
+    thread = threading.Thread(target=_loop, daemon=True, name='MemberTelegramLink')
+    thread.start()
+    print("[OK] Member telegram link poller started (60s interval)")
 
 
 def _start_aibain_expiry_checker(app):
