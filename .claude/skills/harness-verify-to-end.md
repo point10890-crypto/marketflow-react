@@ -60,7 +60,7 @@ production deploy 후 최소 다음 5가지 확인:
 ## Verify 명령 (Phase G 패턴)
 
 ```bash
-AUTH="Authorization: Bearer 3:1781219291:0e324300d1e528dd932d4c19ddec0792"
+AUTH="Authorization: Bearer ${MARKETFLOW_ADMIN_TOKEN:?set MARKETFLOW_ADMIN_TOKEN}"
 API="https://marketflow-api.bit-man.net/api/admin/mirofish"
 
 # 사용자가 보는 화면의 모든 카드 URL 직접 호출
