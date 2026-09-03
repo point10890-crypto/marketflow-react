@@ -8,7 +8,7 @@ MarketFlow 통합 스케줄러 — US / KR / Crypto
   04:00  US Market  전체 데이터 갱신 → Smart Money Top 5 텔레그램
   09:30  US Market  Track Record 스냅샷 + 성과 추적
   14:50  KR Market  종가베팅 V2 + 수급/AI/리포트 → 텔레그램
-  16:00  전 시장    VCP 시그널 업데이트 (KR + US + Crypto) → 텔레그램
+  16:00  KR / US    VCP 시그널 업데이트 → 텔레그램
   토 10:00  KR     히스토리 수집 (백업)
 ─────────────────────────────────────────────────
   매 4시간 (00/04/08/12/16/20 KST)  Crypto  전체 파이프라인
@@ -22,6 +22,7 @@ MarketFlow 통합 스케줄러 — US / KR / Crypto
 - KR_MARKET_SCHEDULE_ENABLED: 스케줄 활성화 (기본: true)
 - KR_MARKET_UPDATE_TIME: KR 올업데이트 시간
 - KR_MARKET_PYTHON: Python 실행 경로
+- MARKETFLOW_SCHEDULER_GIT_SYNC_ENABLED: 스케줄러 Git pull/push opt-in (기본: false)
 
 실행 방법:
   python scheduler.py --daemon        # 데몬 모드 (전체 스케줄)
@@ -151,17 +152,44 @@ except ImportError:
 
 
 # ============================================================
-# Git 자동 커밋 + 푸시 (→ Render 자동 배포)
+# Scheduler-owned Git pull/push (explicit opt-in only)
 # ============================================================
 _git_lock = threading.Lock()
+_GIT_SYNC_ENABLED_ENV = 'MARKETFLOW_SCHEDULER_GIT_SYNC_ENABLED'
+
+
+def _scheduler_git_sync_enabled() -> bool:
+    """Return whether scheduler-owned Git mutations were explicitly enabled."""
+    return os.environ.get(_GIT_SYNC_ENABLED_ENV, '').strip().lower() in {
+        '1', 'true', 'yes', 'y', 'on',
+    }
+
 
 def _sync_code_from_remote():
-    """원격 코드 변경 자동 반영 (git pull)
+    """명시적으로 활성화된 경우에만 원격 코드 변경을 자동 반영한다.
 
     1시간마다 실행. 소스 코드 변경(scheduler.py, engine/ 등)을 원격에서 받아온다.
     데이터 충돌 방지: unstaged changes가 있으면 stash → pull → stash pop.
     실패해도 데몬은 계속 동작 (로그만 남김).
     """
+    if not _scheduler_git_sync_enabled():
+        logger.info(
+            "Remote Git pull intentionally skipped; set %s=true to opt in",
+            _GIT_SYNC_ENABLED_ENV,
+        )
+        return
+
+    if not _git_lock.acquire(timeout=120):
+        logger.warning("Git sync lock timeout; remote pull intentionally skipped")
+        return
+    try:
+        _sync_code_from_remote_unlocked()
+    finally:
+        _git_lock.release()
+
+
+def _sync_code_from_remote_unlocked():
+    """Run the opted-in remote sync while the shared Git lock is held."""
     import subprocess
     project_dir = os.path.dirname(os.path.abspath(__file__))
     git_env = {**os.environ, 'PYTHONIOENCODING': 'utf-8'}
@@ -234,8 +262,16 @@ def auto_git_push(scope: str = 'all') -> bool:
     Args:
         scope: 'kr', 'us', 'crypto', 'all'
     Returns:
-        True if push succeeded
+        True if push succeeded or the opt-in is disabled intentionally
     """
+    if not _scheduler_git_sync_enabled():
+        logger.info(
+            "Auto Git push intentionally skipped (%s); set %s=true to opt in",
+            scope,
+            _GIT_SYNC_ENABLED_ENV,
+        )
+        return True
+
     import subprocess
     from datetime import datetime
 
@@ -386,7 +422,7 @@ class Config:
     US_UPDATE_TIME = os.environ.get('US_MARKET_UPDATE_TIME', '04:00')
     US_TRACK_TIME = os.environ.get('US_MARKET_TRACK_TIME', '09:30')
     KR_UPDATE_TIME = os.environ.get('KR_MARKET_UPDATE_TIME', '14:50')   # 종가베팅 V2 (14:50 — 장 마감 직전 선제 분석)
-    VCP_UPDATE_TIME = os.environ.get('VCP_UPDATE_TIME', '16:00')         # 전 시장 VCP 시그널
+    VCP_UPDATE_TIME = os.environ.get('VCP_UPDATE_TIME', '16:00')         # KR·US VCP 시그널
     KR_VCP_MORNING_TIME = os.environ.get('KR_VCP_MORNING_TIME', '11:00') # 평일 오전 KR VCP refresh (주말 후 stale 방지)
     WAVE_SCAN_TIME = os.environ.get('WAVE_SCAN_TIME', '16:30')           # Wave 패턴 스캔
     # ── Alpha Position Engine (알파캐치형 완결 신호) 타임라인 ──
@@ -2185,9 +2221,12 @@ def run_kr_vcp_morning_refresh():
 
 
 def run_vcp_all_markets(skip_sync: bool = False):
-    """전 시장 VCP 시그널 업데이트 (16:00) — KR + US + Crypto → 텔레그램"""
+    """KR·US VCP 시그널 업데이트 (16:00).
+
+    Crypto VCP는 4시간 주기의 전용 Crypto 파이프라인만 실행한다.
+    """
     logger.info("=" * 60)
-    logger.info("📈 전 시장 VCP 시그널 업데이트 시작 (16:00)")
+    logger.info("📈 KR·US VCP 시그널 업데이트 시작 (16:00)")
     logger.info("=" * 60)
 
     start_time = time.time()
@@ -2200,17 +2239,14 @@ def run_vcp_all_markets(skip_sync: bool = False):
     # US VCP
     results.append(('US VCP', run_vcp_enhanced_scan('US')))
 
-    # Crypto VCP
-    results.append(('Crypto VCP', run_vcp_enhanced_scan('CRYPTO')))
-
     elapsed = int(time.time() - start_time)
     success_count = sum(1 for _, s in results if s)
     summary_lines = [f"  {'✅' if s else '❌'} {n}" for n, s in results]
 
-    logger.info(f"📋 전 시장 VCP 업데이트 완료: {success_count}/{len(results)} ({elapsed}초)")
+    logger.info(f"📋 KR·US VCP 업데이트 완료: {success_count}/{len(results)} ({elapsed}초)")
 
     send_telegram(
-        f"<b>📈 16시 전 시장 VCP 업데이트 완료</b>\n"
+        f"<b>📈 16시 KR·US VCP 업데이트 완료</b>\n"
         f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M')} ({elapsed}초)\n"
         f"결과: {success_count}/{len(results)}\n\n"
         + "\n".join(summary_lines),
@@ -3538,7 +3574,7 @@ def run_full_update():
     tasks = [
         ("US Market",   "🇺🇸", lambda: run_us_market_update(skip_sync=True)),
         ("KR 종가베팅",  "🇰🇷", lambda: run_kr_full_update(skip_sync=True)),
-        ("VCP 전시장",   "📈", lambda: run_vcp_all_markets(skip_sync=True)),
+        ("VCP KR·US",    "📈", lambda: run_vcp_all_markets(skip_sync=True)),
         ("Crypto",      "🪙", lambda: run_crypto_pipeline(skip_sync=True)),
     ]
 
@@ -3573,7 +3609,10 @@ def run_full_update():
         icon = "✅" if success else "❌"
         task_lines.append(f"  {icon} {emoji} {label}")
 
-    git_text = "✅ Git 푸시 완료" if git_ok else "❌ Git 푸시 실패"
+    if not _scheduler_git_sync_enabled():
+        git_text = "⏭️ Git 자동 동기화 비활성 (의도적 스킵)"
+    else:
+        git_text = "✅ Git 푸시 완료" if git_ok else "❌ Git 푸시 실패"
 
     msg = (
         f"<b>🌐 {hour_str} 전체 올 업데이트 완료</b>\n"
@@ -3811,7 +3850,7 @@ def check_and_run_missed_tasks():
             (11 * 60,      'kr_vcp_morning',   run_kr_vcp_morning_refresh,  'KR VCP 오전 Refresh', 14 * 60, None),
             (14 * 60,      'ai_chart',         _run_ai_chart_analysis,      'KR AI Chart 분석',   23 * 60, None),
             (14 * 60 + 50, 'kr_jongga',        run_kr_full_update,          'KR 종가베팅',        23 * 60, None),
-            (16 * 60,      'vcp_all',          run_vcp_all_markets,         'VCP 전시장',         23 * 60, None),
+            (16 * 60,      'vcp_all',          run_vcp_all_markets,         'VCP KR·US',          23 * 60, None),
             (16 * 60 + 5,  'closing_briefing', run_closing_briefing,        'AI 마감 브리핑',     23 * 60, None),
             (16 * 60 + 30, 'wave_scan',        _run_wave_scan,              'Wave 패턴 스캔',     23 * 60, None),
             (17 * 60 + 30, 'buy_screen',       _run_buy_candidate_screen,   'AI 매수 후보 선별',  23 * 60, None),
@@ -3863,7 +3902,11 @@ def check_and_run_missed_tasks():
 
             logger.info(f"  ⚠️ 놓친 스케줄 감지: {label} (예정 {sched_min//60:02d}:{sched_min%60:02d}) → 즉시 실행")
             try:
-                task_fn()
+                result = task_fn()
+                success = result if result is not None else True
+                if not success:
+                    logger.error(f"  ❌ 복구 실패: {label} — 작업이 실패 결과 반환")
+                    continue
                 record_task_run(task_key)
                 recovered.append(label)
                 logger.info(f"  ✅ 복구 완료: {label}")
@@ -4609,7 +4652,6 @@ class Scheduler:
             checks = [
                 _verify_json_recent(os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json'), 96),
                 _verify_json_recent(os.path.join(Config.DATA_DIR, 'vcp_us_latest.json'), 96),
-                _verify_json_recent(os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json'), 12),
             ]
             return all(check() for check in checks)
 
@@ -4733,7 +4775,7 @@ class Scheduler:
             getattr(schedule.every(), day).at(Config.KR_VCP_MORNING_TIME).do(
                 self._with_record(run_kr_vcp_morning_refresh, 'kr_vcp_morning',
                                   max_retries=1, retry_delay=600))
-            # 16:00 — 전 시장 VCP 시그널 (KR + US + Crypto)
+            # 16:00 — KR·US VCP 시그널 (Crypto는 전용 4시간 파이프라인 소유)
             getattr(schedule.every(), day).at(Config.VCP_UPDATE_TIME).do(
                 self._with_record(run_vcp_all_markets, 'vcp_all',
                                   max_retries=1, retry_delay=600, verify_fn=_verify_vcp_all_recent))
@@ -4819,7 +4861,7 @@ class Scheduler:
         logger.info(f"   🇺🇸 평일 {Config.US_TRACK_TIME}  US Track Record 스냅샷")
         logger.info(f"   🇰🇷 평일 {Config.KR_UPDATE_TIME}  종가베팅 V2 + 수급/AI/리포트 → 텔레그램")
         logger.info(f"   📈 평일 {Config.KR_VCP_MORNING_TIME}  KR VCP 오전 Refresh (주말 후 stale 방지)")
-        logger.info(f"   📈 평일 {Config.VCP_UPDATE_TIME}  전 시장 VCP 시그널 (KR+US+Crypto) → 텔레그램")
+        logger.info(f"   📈 평일 {Config.VCP_UPDATE_TIME}  KR·US VCP 시그널 → 텔레그램")
         logger.info(f"   🌊 평일 {Config.WAVE_SCAN_TIME}  Wave 패턴 스캔 (KR)")
         if Config.CLAW_OUTCOME_ENABLED:
             logger.info(f"   📐 평일 {Config.CLAW_OUTCOME_TIME}  Claw D1/D5 shadow outcome 갱신")
@@ -4878,7 +4920,7 @@ class Scheduler:
                     ).start()
                     last_missed_check = now
 
-                # 주기적 코드 동기화 (git pull) — 원격 코드 변경 자동 반영
+                # 주기적 코드 동기화 — 명시적으로 opt-in 된 경우에만 Git 실행
                 if now - last_code_sync > CODE_SYNC_INTERVAL:
                     threading.Thread(
                         target=_sync_code_from_remote,
@@ -4911,7 +4953,7 @@ def main():
     parser.add_argument('--signals', action='store_true', help='KR VCP 시그널만')
     parser.add_argument('--jongga-v2', action='store_true', help='KR 종가베팅 V2만')
     parser.add_argument('--kr-update', action='store_true', help='KR 종가베팅 업데이트 (14:50)')
-    parser.add_argument('--vcp', action='store_true', help='전 시장 VCP 시그널 (KR+US+Crypto, 16:00)')
+    parser.add_argument('--vcp', action='store_true', help='KR·US VCP 시그널 (16:00)')
     parser.add_argument('--history', action='store_true', help='KR 히스토리 수집만')
 
     # US Market

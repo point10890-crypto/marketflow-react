@@ -249,6 +249,23 @@ def test_greenlet_direct_requirement_excludes_broken_windows_wheels():
     assert greenlet.specifier.contains(Version("3.5.5"))
 
 
+def test_fred_reader_is_declared_for_production_and_crypto_environments():
+    requirement_files = (
+        Path(scheduler.Config.BASE_DIR) / "requirements.txt",
+        Path(scheduler.Config.CRYPTO_DIR) / "requirements.txt",
+    )
+
+    for requirement_file in requirement_files:
+        requirements = [
+            Requirement(line)
+            for line in requirement_file.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
+        assert any(item.name.lower() == "pandas-datareader" for item in requirements), (
+            f"{requirement_file} must install pandas-datareader for FRED lead-lag data"
+        )
+
+
 def test_crypto_core_returns_exact_six_step_results_and_never_syncs_git(monkeypatch):
     calls = []
     functions = (
