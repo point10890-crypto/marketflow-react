@@ -138,7 +138,9 @@ def check_goodrich(now: datetime | None = None) -> dict[str, Any]:
         last_iso = None
         if entries:
             last = entries[-1]
-            for key in ('recorded_at', 'generated_at', 'as_of', 'entry_date', 'date'):
+            # detected_at 이 실제 기록 시각 — date-only 인 entry_date 가 먼저 잡히면
+            # 자정 기준으로 나이가 최대 24h 과장돼 매일 아침 거짓 warn 이 난다 (2026-09-03 실측 33.3h)
+            for key in ('recorded_at', 'generated_at', 'detected_at', 'as_of', 'entry_date', 'date'):
                 if last.get(key):
                     last_iso = str(last[key])
                     break
