@@ -54,7 +54,10 @@ from app.utils.atomic_json import write_json_atomic  # noqa: E402
 
 DEFAULT_TTL_SECONDS = 300
 MAX_TTL_SECONDS = 86_400
-_MAX_OUTPUT_TOKENS = 8
+# Gemini 2.5 Flash can consume about 50-60 reasoning tokens before emitting
+# the one-word vision probe response.  Keep the probe small while leaving
+# enough room to avoid misclassifying a healthy image request as EMPTY.
+_MAX_OUTPUT_TOKENS = 64
 _CALLER_ENDPOINT = "llm_routing_health"
 _DEFAULT_RECORDER = object()
 _SAFE_ATTESTATION_FIELDS = (

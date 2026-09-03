@@ -143,6 +143,10 @@ def test_live_calls_each_configured_vendor_once_records_once_and_writes_snapshot
     assert adapters["deepseek"].calls[0][0].operation is Operation.DECISIVE_TEXT
     assert adapters["openai"].calls[0][0].operation is Operation.DECISIVE_TEXT
     assert adapters["gemini"].calls[0][0].operation is Operation.VISION
+    # Gemini 2.5 Flash may spend roughly 50-60 tokens on internal reasoning
+    # before emitting the one-word health response.  A smaller cap produces a
+    # false EMPTY result even though image authentication and processing work.
+    assert adapters["gemini"].calls[0][2] >= 64
     assert len(attempts) == 3
     assert all(item.attempt_number == 1 for item in attempts)
     assert all(item.fallback_from is None for item in attempts)
