@@ -113,6 +113,14 @@ try {
 $daemon = & $PYTHON -c "from app.utils.scheduler import _read_daemon_state; s=_read_daemon_state(); print('DAEMON', s.get('alive'), s.get('stale_seconds'), len(s.get('last_runs') or []))" 2>&1
 Report ([bool]($daemon -match 'DAEMON True')) "scheduler daemon heartbeat via status helper ($daemon)" "scheduler.py 데몬 기동 확인 (MarketFlow-Scheduler 태스크)"
 
+# ── 8. Phase 1 배포 검증 (잡 레지스트리 파일 / 회원 텔레그램 컬럼 / 핀 의존성) ──
+$jobsFile = Get-Item "$PROJECT\data\scheduler_jobs.json" -ErrorAction SilentlyContinue
+Report ($null -ne $jobsFile) "scheduler_jobs.json present (daemon restarted with Phase 1 code)" "MarketFlow-Scheduler 태스크 재시작 - 잡 상태 보드/재실행 트리거는 이 파일이 있어야 동작"
+$cols = & $PYTHON -c "import sqlite3,os; c=sqlite3.connect(os.path.join(r'$PROJECT','data','users.db')); print('TG_OK' if 'telegram_chat_id' in {r[1] for r in c.execute('PRAGMA table_info(users)')} else 'TG_MISSING')" 2>&1
+Report ([bool]($cols -match 'TG_OK')) "users.telegram_chat_id column migrated" "Flask 5003 재기동 시 create_app 이 ALTER TABLE 을 수행한다"
+$pipChk = & $PYTHON -m pip check 2>&1
+Report ($LASTEXITCODE -eq 0) "pip check (pinned requirements consistent)" "$PYTHON -m pip install -r requirements.txt"
+
 Write-Host "==========================================="
 if ($fail -eq 0) { Write-Host "ALL CHECKS PASSED - deploy complete"; exit 0 }
 else { Write-Host "$fail check(s) FAILED - see hints above"; exit 1 }

@@ -24,14 +24,14 @@
 |---|---|---|---|---|---|
 | 1 | 검색 도구 없는 브리핑 경로에서 "Google Search 뉴스" 요구 제거 (환각 표면 제거) | 분석 | ★★★★★ | ★ | **Phase 0 완료** |
 | 2 | 인증 GET 캐시 dead-branch 수정 + ETag/304 + gzip | 효율 | ★★★★ | ★ | **Phase 0 완료** |
-| 3 | 사용자 대상 승인/만료 알림 (현재 관리자에게만) | 구독 | ★★★★★ | ★★ | Phase 1 |
-| 4 | 공개 Track Record 페이지 (유료벽 밖 성과 증명) | 구독/UX | ★★★★★ | ★★ | Phase 1 |
-| 5 | 종목 허브 `/dashboard/stock/:market/:code` (decision_brief 11소스 재사용) | 검색/UX | ★★★★★ | ★★★ | Phase 1 |
+| 3 | 사용자 대상 승인/만료 알림 (현재 관리자에게만) | 구독 | ★★★★★ | ★★ | **Phase 1 완료** |
+| 4 | 공개 Track Record 페이지 (유료벽 밖 성과 증명) | 구독/UX | ★★★★★ | ★★ | **Phase 1 완료** |
+| 5 | 종목 허브 `/dashboard/stock/:market/:code` (decision_brief 11소스 재사용) | 검색/UX | ★★★★★ | ★★★ | **Phase 1 완료** |
 | 6 | 초성/별칭/퍼지 검색을 CommandPalette 에 연결 | 검색 | ★★★★ | ★ | **Phase 0 완료** |
-| 7 | 신호별 feature snapshot 저장 → 가중치 캘리브레이션 전제 | 분석 | ★★★★★ | ★★ | Phase 1 |
-| 8 | LLM 토큰/비용 계측 + 응답 캐시 + 프롬프트 캐싱 | 경제성 | ★★★★ | ★★ | **계측 Phase 0 완료**, 캐시 Phase 1 |
+| 7 | 신호별 feature snapshot 저장 → 가중치 캘리브레이션 전제 | 분석 | ★★★★★ | ★★ | **Phase 1 완료** |
+| 8 | LLM 토큰/비용 계측 + 응답 캐시 + 프롬프트 캐싱 | 경제성 | ★★★★ | ★★ | **계측 Phase 0 완료**, 캐시 **Phase 1 완료** |
 | 9 | "오늘" 홈: 상단 3카드(오늘의 픽 / 시장 게이트 / 어제와 달라진 것) | UX | ★★★★ | ★★★ | Phase 2 |
-| 10 | 스케줄러 잡 상태 보드 + 재실행 버튼 (status 는 Phase 0 에서 데몬 연결) | 운영 | ★★★★ | ★★ | **status Phase 0 완료**, UI Phase 1 |
+| 10 | 스케줄러 잡 상태 보드 + 재실행 버튼 (status 는 Phase 0 에서 데몬 연결) | 운영 | ★★★★ | ★★ | **status Phase 0 완료**, UI **Phase 1 완료** |
 
 ---
 
@@ -275,17 +275,26 @@ pykrx/FDR/Naver(collectors.py) · KIS(kis_screener.py) · OpenDART · yfinance �
 - Flask 5003 은 코드 변경만으로 재시작되지 않는다. `git pull` 후 `New-Item data\flask_restart.request` 를 만들면 `flask_watchdog_v2.ps1` 이 5분 내 재기동한다(또는 `MarketFlow-Flask` 태스크 재시작). 이후 `scripts\minipc_post_deploy_check.ps1` §7 이 flask-compress 설치·ETag/304·데몬 heartbeat 를 검증한다.
 - Cache-Control 변경으로 인증 GET 데이터가 브라우저에 30초 private 캐시된다. 즉시 반영이 필요한 실시간 라우트는 이미 자체 `no-store` 를 지정하고 있어 영향 없음(`kr_claw.py`, alpha dashboard 등 테스트로 고정).
 
-### Phase 1 — 2주: "연결하기"
-1. 사용자 대상 알림(승인/D-3/D-1/만료) — `telegram_chat_id` 컬럼 + 마이그레이션.
-2. 공개 Track Record 라우트 + 지연 API.
-3. feature snapshot 저장(종가베팅·주도주).
-4. 종목 허브 페이지(decision_brief 렌더) + 리스트 행 딥링크.
-5. 리졸버 DB 부팅 생성 태스크.
-6. number_guard enforce (브리핑·주도주 사유).
-7. LLM 응답 캐시 + 실측 예산 가드(auto_runner 의 $0.07 → 실측 합).
-8. 잡 상태 보드 탭 + 트리거 30잡.
-9. 퍼널 이벤트 4지점.
-10. `load_json_cached` 전면, picks 사전계산, 의존성 핀, 부팅 설정 검증.
+### Phase 1 — "연결하기" (2026-09-03 구현 완료, PR #4)
+| # | 항목 | 구현 | 검증 |
+|---|---|---|---|
+| 1 | 사용자 대상 알림(승인/거절/D-3/D-1/만료) | `User.telegram_chat_id` 등 4컬럼 + 부팅 시 idempotent ALTER 마이그레이션, `POST /api/auth/telegram/link-code`·`/unlink`, `app/services/member_telegram.py`(getUpdates 폴러 60s, `/start <code>` 매칭, `notify_member`), 승인/거절/tier 부여/만료 스윕에서 본인 전송. AccountPage "텔레그램 알림 연결" 카드 | `tests/test_member_telegram.py`(21), FE vitest |
+| 2 | 공개 Track Record | `GET /api/public/track-record`(pro 게이트 예외 `/api/public/`), ≥1거래일 지연·5거래일 미만 종목명 마스킹, forward 결과는 `cumulative_performance.json` 실측만(없으면 `pending`), `/track-record` 페이지(FunnelGate 밖) + 랜딩/PublicShell 링크 + 프리렌더 | `tests/test_public_track_record.py`, `trackRecordPublicPage.test.tsx` |
+| 3 | feature snapshot | `Signal.to_dict()['feature_snapshot']`(schema 1: components/raw/news ids/DART/analyst/52w/MA), 주도주 행 `feature_snapshot`+`time_context.weight`, `feature_store.iter_feature_snapshots()` | `tests/test_feature_snapshot.py` |
+| 4 | 종목 허브 | `GET /api/kr/stock/<code>/hub`(Pro, 아티팩트만·외부 호출 0: 가격 120봉/종가베팅/주도주/VCP/Wave/Claw/이력 10건/옴니 뉴스), `/dashboard/stock/:market/:code`, `components/stock/{StockLink,GradeBadge,CloseLineChart}`, 종가베팅·주도주·VCP·Claw·히스토리 행 딥링크, 팔레트 KR 결과 → 허브 | `tests/test_stock_hub_route.py`, `stockHubPage.test.tsx` |
+| 5 | 리졸버 DB 부팅 생성 | `graphrag/bootstrap.ensure_entities_db()`(부재/7일 경과 시 populate, 무예외), Flask 부팅 데몬 스레드 + 스케줄러 일간 잡 `graphrag_entities_bootstrap` | `tests/test_graphrag_bootstrap.py` |
+| 6 | number_guard enforce | `guard_text_against()`; 브리핑 summary/section, 주도주 AI 사유에 적용(`NUMBER_GUARD_POLICY` enforce 기본), 모순 시 결정론 폴백 + `number_guard` 메타 | `tests/test_number_guard_enforcement.py` |
+| 7 | LLM 응답 캐시 + 실측 예산 | `llm_response_cache.py`(SQLite, `cache_ttl/cache_scope`, `MIROFISH_LLM_CACHE_DISABLED`), rerank 1800s·주도주 사유 캐시, `auto_runner` 트리거 비용을 `collect_generation_metadata` 실측 합으로, `llm_cost_ledger.py` 일별 원장 + agent/status `llm_cost` | `tests/test_c1_economics.py` |
+| 8 | 잡 상태 보드 + 트리거 | `scheduler.JOB_REGISTRY`(34잡) → `data/scheduler_jobs.json`, 트리거 큐 파일(30s 폴링, 결과 200건), `POST /api/scheduler/trigger/<job_key>` 큐 적재, 관리자 "잡 상태" 탭(JobsTab) | `tests/test_scheduler_job_registry.py`, `jobsTab.test.tsx` |
+| 9 | 퍼널 이벤트 | `funnel_events` 테이블, register/request/approve/reject/tier_grant 기록, `GET /api/admin/funnel/summary`, 관리자 대시보드 "전환 퍼널(30일)" 카드 | `tests/test_funnel_events.py`, `funnelCard.test.tsx` |
+| 10 | 캐시·사전계산·핀·검증 | `us_market.py` 27곳 `load_json_cached`, `us_picks_summary.build_picks_summary` + `picks_summary.json` 자가치유, `requirements.in`/핀된 `requirements.txt`/`requirements-dev.txt`, `config.validate_runtime_config()`(`MARKETFLOW_STRICT_CONFIG`) | `tests/test_c1_economics.py` |
+
+**Phase 1 배포 주의**
+- 새 환경변수: `TELEGRAM_MEMBER_BOT_TOKEN`(없으면 `TELEGRAM_BOT_TOKEN`), `TELEGRAM_MEMBER_BOT_USERNAME`(딥링크), `MEMBER_TELEGRAM_LINK_ENABLED`, `GRAPHRAG_BOOTSTRAP_ENABLED/_TIME`, `NUMBER_GUARD_POLICY`, `MIROFISH_LLM_CACHE_DISABLED`, `MARKETFLOW_STRICT_CONFIG`.
+- 회원 봇이 `getUpdates` 를 쓰므로 같은 봇 토큰으로 다른 곳에서 `getUpdates` 를 돌리면 offset 이 충돌한다. 전용 `TELEGRAM_MEMBER_BOT_TOKEN` 권장.
+- `requirements.txt` 가 핀 버전으로 바뀌었다(Linux venv 기준). miniPC(Windows) 에서 `pip install -r requirements.txt` 후 휠 설치 실패가 있으면 `requirements.in` 으로 되돌려 보고.
+- 스케줄러 데몬을 한 번 재시작해야 `scheduler_jobs.json` 이 생성되고 잡 상태 보드·트리거가 활성화된다.
+- Phase 1 스코프 밖: bulk-tier/bulk-approve 경로의 회원 알림·퍼널 기록, `_time_weight` 변경, 공휴일 달력 기반 지연 계산(현재 평일 기준).
 
 ### Phase 2 — 4~6주: "자동화·증명"
 입금 자동 매칭, 관심종목+개인 알림, "오늘" 홈, 티저 티어, UI 프리미티브/토큰/네이밍, 비용 반영 아웃컴, Stripe 자동갱신 + 연간 SKU, `_time_weight` 표시필드화(운영자 확인 후).
