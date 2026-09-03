@@ -259,6 +259,18 @@ export default function DecisionBriefPage() {
         }
     }, [token]);
 
+    // 딥링크 `?symbol=005930` (종목 허브 → 종목 판단). 마운트 시 한 번만 읽는다.
+    // 라우터 훅 대신 window.location 을 읽어 Router 없이 렌더하는 테스트와 호환한다.
+    useEffect(() => {
+        let raw = '';
+        try { raw = new URLSearchParams(window.location.search).get('symbol') || ''; } catch { raw = ''; }
+        const symbol = raw.trim();
+        if (!symbol) return;
+        suppress.current = true;
+        setInput(symbol);
+        void lookup(symbol);
+    }, []);
+
     // 심층분석은 job+poll — 동기 대기는 Cloudflare 엣지 ~100초 한계에 걸린다.
     // 구백엔드(동기 응답)와의 호환: 응답에 analysts 가 있으면 그대로 결과다.
     const runDeep = useCallback(async (symbol: string, force = false) => {

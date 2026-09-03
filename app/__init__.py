@@ -335,6 +335,10 @@ def create_app(config=None):
     _GATE_EXEMPT_PREFIXES = (
         '/api/kr/ai-chart-image/',
         '/api/us/ai-chart-image/',
+        # 공개(비로그인) 읽기 API — 커뮤니티 공개 보드, 지연·마스킹 Track Record.
+        # 프리픽스 자체는 _GATED_PREFIXES 밖이지만, 게이트 목록이 넓어져도 공개 영역이
+        # 우연히 잠기지 않도록 명시적으로 예외에 둔다 (tests/test_public_track_record.py).
+        '/api/public/',
     )
 
     @app.before_request

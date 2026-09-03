@@ -273,7 +273,12 @@ function AgentConsolePreview() {
                         ))}
                     </div>
 
-                    <p className="mt-3 text-center text-[10px] text-gray-600">모든 기록에 원천 시각과 근거가 함께 남아요</p>
+                    <p className="mt-3 text-center text-[10px] text-gray-600">
+                        모든 기록에 원천 시각과 근거가 함께 남아요 ·{' '}
+                        <Link to="/track-record" className="font-bold text-emerald-300/90 underline decoration-emerald-400/30 underline-offset-2 hover:text-emerald-200">
+                            실제 종목·등급은 트랙 레코드에서
+                        </Link>
+                    </p>
                 </div>
             </div>
         </div>
@@ -373,6 +378,12 @@ export default function LandingPage() {
                             >
                                 <i className="fas fa-brain mr-2 text-[12px]" aria-hidden />AI Brain 알아보기
                             </a>
+                            <Link
+                                to="/track-record"
+                                className="inline-flex min-h-[50px] w-full items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-7 text-sm font-bold text-gray-200 transition-colors hover:bg-white/[0.08] sm:w-auto"
+                            >
+                                <i className="fas fa-clipboard-check mr-2 text-[12px] text-emerald-300" aria-hidden />검증된 기록 보기
+                            </Link>
                         </div>
                         <p className="mt-3 text-[11px] leading-relaxed text-gray-600">{action.hint}</p>
 

@@ -101,4 +101,12 @@ def register_blueprints(app):
     from app.routes.public_community import public_community_bp
     app.register_blueprint(public_community_bp, url_prefix='/api/public/community')
 
+    # Public track record (read-only, no auth) — 지연·마스킹된 종가베팅 사후 기록.
+    from app.routes.public_track_record import public_track_record_bp
+    app.register_blueprint(public_track_record_bp, url_prefix='/api/public')
+
+    # Stock hub (Pro) — 한 종목에 대한 Pro 열람 가능 근거 집계 (아티팩트 읽기 전용)
+    from app.routes.kr_stock_hub import kr_stock_hub_bp
+    app.register_blueprint(kr_stock_hub_bp, url_prefix='/api/kr/stock')
+
     print("[OK] Blueprints registered (KR + US + Crypto + Econ + Auth + Admin + MiroFish + Stripe + StockAnalyzer + ManualStockAnalysis + Wave + Briefing + Community)")

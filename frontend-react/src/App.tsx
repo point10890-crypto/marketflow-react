@@ -69,6 +69,8 @@ const PublicCommunityPage = lazy(() => import('@/pages/public/PublicCommunityPag
 const PublicPostPage = lazy(() => import('@/pages/public/PublicPostPage'));
 const GuideListPage = lazy(() => import('@/pages/public/GuidePages').then(m => ({ default: m.GuideListPage })));
 const GuideArticlePage = lazy(() => import('@/pages/public/GuidePages').then(m => ({ default: m.GuideArticlePage })));
+const TrackRecordPublicPage = lazy(() => import('@/pages/public/TrackRecordPublicPage'));
+const StockHubPage = lazy(() => import('@/pages/dashboard/StockHubPage'));
 const PrivacyPage = lazy(() => import('@/pages/static/PolicyPages').then(m => ({ default: m.PrivacyPage })));
 const TermsPage = lazy(() => import('@/pages/static/PolicyPages').then(m => ({ default: m.TermsPage })));
 const AboutPage = lazy(() => import('@/pages/static/PolicyPages').then(m => ({ default: m.AboutPage })));
@@ -205,6 +207,9 @@ export default function App() {
                     <Route path="/community/:board" element={<FunnelGate><Suspense fallback={<LoadingFallback />}><PublicCommunityPage /></Suspense></FunnelGate>} />
                     <Route path="/guide" element={<FunnelGate><Suspense fallback={<LoadingFallback />}><GuideListPage /></Suspense></FunnelGate>} />
                     <Route path="/guide/:slug" element={<FunnelGate><Suspense fallback={<LoadingFallback />}><GuideArticlePage /></Suspense></FunnelGate>} />
+                    {/* 공개 Track Record — 지연·마스킹 기록. 로그인한 비구독 회원(퍼널 도중)도 근거를 봐야 하므로
+                        FunnelGate 를 걸지 않는다. */}
+                    <Route path="/track-record" element={<Suspense fallback={<LoadingFallback />}><TrackRecordPublicPage /></Suspense>} />
                     <Route path="/privacy" element={<Suspense fallback={<LoadingFallback />}><PrivacyPage /></Suspense>} />
                     <Route path="/terms" element={<Suspense fallback={<LoadingFallback />}><TermsPage /></Suspense>} />
                     <Route path="/about" element={<Suspense fallback={<LoadingFallback />}><AboutPage /></Suspense>} />
@@ -223,6 +228,8 @@ export default function App() {
                         <Route path="kr/chatbot" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrChatbotPage /></Suspense></ProGuard>} />
                         <Route path="kr/track-record" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrTrackRecordPage /></Suspense></ProGuard>} />
                         <Route path="kr/ai-chart" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrAIChartAnalysisPage /></Suspense></ProGuard>} />
+                        {/* 종목 허브 — 리스트 행 딥링크 목적지 (Pro). AI Brain 판단은 허브 안의 링크로만 잇는다. */}
+                        <Route path="stock/:market/:code" element={<ProGuard><Suspense fallback={<LoadingFallback />}><StockHubPage /></Suspense></ProGuard>} />
                         <Route path="us" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsOverviewPage /></Suspense></ProGuard>} />
                         <Route path="us/vcp" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsVcpPage /></Suspense></ProGuard>} />
                         <Route path="us/etf" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsEtfPage /></Suspense></ProGuard>} />

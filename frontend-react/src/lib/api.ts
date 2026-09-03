@@ -1434,3 +1434,97 @@ export const publicCommunityAPI = {
     getPost: (id: number) =>
         fetchAPI<{ post: PublicPostDetail; comments: PublicComment[] }>(`/api/public/community/posts/${id}`),
 };
+
+// ── Public Track Record (지연·마스킹, 비로그인) ───────────────────────────────
+export interface PublicTrackForward {
+    outcome: 'TARGET_HIT' | 'STOP_HIT' | 'OPEN' | string;
+    outcome_date: string | null;
+    roi_pct: number | null;
+    hold_roi_pct: number | null;
+    max_high_pct: number | null;
+    days_held: number;
+}
+
+export interface PublicTrackSignal {
+    date: string;
+    grade: string;
+    market: string | null;
+    masked: boolean;
+    stock_name: string;
+    stock_code: string | null;
+    change_pct: number | null;
+    score_total: number | null;
+    forward_return: number | null;
+    verification: 'pending' | 'open' | 'closed' | string;
+    forward: PublicTrackForward | null;
+}
+
+export interface PublicTrackRecord {
+    schema_version: string;
+    generated_at: string;
+    as_of: string | null;
+    date_range: { from: string | null; to: string | null };
+    days_count: number;
+    window_trading_days: number;
+    sample_size: number;
+    masked_count: number;
+    by_grade: Record<string, number>;
+    verification: {
+        evaluated: number; pending: number; closed: number; open: number;
+        wins: number; losses: number;
+        win_rate: number | null; avg_roi_pct: number | null; avg_hold_roi_pct: number | null;
+    };
+    grade_stats: Record<string, { count: number; closed: number; wins: number; win_rate: number | null; avg_roi_pct: number | null }>;
+    days: { date: string; count: number; by_grade: Record<string, number>; masked: boolean }[];
+    signals: PublicTrackSignal[];
+    methodology: Record<string, string>;
+    disclaimer: string;
+}
+
+export const publicTrackRecordAPI = {
+    get: () => fetchAPI<PublicTrackRecord>('/api/public/track-record'),
+};
+
+// ── Stock Hub (Pro) ─────────────────────────────────────────────────────────
+export interface StockHubPrice {
+    close: number; prev_close: number | null; change_pct: number | null;
+    date: string; bars: number; source: string;
+}
+
+export interface StockHubHistoryEntry {
+    date: string; grade: string | null; score_total: number | null; change_pct: number | null;
+    entry_price: number | null; stop_price: number | null; target_price: number | null;
+    outcome: string | null; roi_pct: number | null; hold_roi_pct: number | null; days_held: number | null;
+}
+
+export interface StockHubNews {
+    title: string | null; link: string | null; source: string | null; grade: string | null;
+    score: number | null; published_ts: string | null; summary: string | null;
+}
+
+export interface StockHub {
+    schema_version: string;
+    generated_at: string;
+    code: string;
+    name: string | null;
+    market: string | null;
+    sector: string | null;
+    price: StockHubPrice | null;
+    chart: { date: string; close: number; high: number | null; low: number | null; volume: number | null }[];
+    sources: {
+        jongga: Record<string, any> | null;
+        leading: Record<string, any> | null;
+        vcp: Record<string, any> | null;
+        wave: Record<string, any> | null;
+        claw: Record<string, any> | null;
+    };
+    present: string[];
+    history: StockHubHistoryEntry[];
+    news: StockHubNews[];
+    errors: Record<string, string>;
+    disclaimer: string;
+}
+
+export const stockHubAPI = {
+    get: (code: string) => fetchAPI<StockHub>(`/api/kr/stock/${encodeURIComponent(code)}/hub`, 20000),
+};

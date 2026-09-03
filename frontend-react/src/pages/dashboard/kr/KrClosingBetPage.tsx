@@ -1,3 +1,4 @@
+import StockLink from '@/components/stock/StockLink';
 
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -656,7 +657,7 @@ function SignalCard({ signal, index, onOpenChart }: { signal: Signal, index: num
                         <div className="flex items-center justify-between">
                             <div>
                                 <h3 className="text-2xl font-bold text-white leading-none mb-1">
-                                    {signal.stock_name}
+                                    <StockLink code={signal.stock_code} market={signal.market}>{signal.stock_name}</StockLink>
                                 </h3>
                                 <div className="text-sm text-gray-400 font-mono">{signal.stock_code}</div>
                             </div>

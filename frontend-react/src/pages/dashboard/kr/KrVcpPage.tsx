@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { fetchAPI } from '@/lib/api';
 import { useAutoRefresh, useSmartRefresh } from '@/hooks/useAutoRefresh';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
+import StockLink from '@/components/stock/StockLink';
 import { useNotification } from '@/contexts/NotificationContext';
 
 interface VCPSignal {
@@ -170,8 +171,8 @@ export default function KRVCPPage() {
                         <div className="flex items-start justify-between mb-3">
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-white font-bold">{signal.symbol}</span>
-                                    <span className="text-gray-500 text-sm">{signal.name}</span>
+                                    <StockLink code={signal.symbol} market="KR" className="text-white font-bold">{signal.symbol}</StockLink>
+                                    <StockLink code={signal.symbol} market="KR" className="text-gray-500 text-sm">{signal.name}</StockLink>
                                     {signal.composite?.entry_ready && (
                                         <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400">ENTRY READY</span>
                                     )}

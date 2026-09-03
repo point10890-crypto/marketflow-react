@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { fetchAPI } from '@/lib/api';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
+import StockLink from '@/components/stock/StockLink';
 
 // ─── TypeScript 인터페이스 ───
 
@@ -171,7 +172,7 @@ function StockCard({ stock }: { stock: LeadingStock }) {
                 {/* Row 2: Name + Price + Cap */}
                 <div>
                     <div className="flex items-center gap-2">
-                        <span className="text-base font-bold text-white leading-tight">{stock.name}</span>
+                        <StockLink code={stock.code} market="KR" className="text-base font-bold text-white leading-tight">{stock.name}</StockLink>
                         {/* 시총 뱃지 */}
                         {capTier && capTier !== '미분류' && (
                             <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${CAP_STYLE[capTier] || 'bg-gray-500/10 text-gray-400'}`}>
@@ -563,7 +564,7 @@ function AiThemeCard() {
                             <div className="text-xs font-mono text-purple-400 w-6">#{i + 1}</div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-sm font-bold text-white truncate">{s.name}</span>
+                                    <StockLink code={s.code} market="KR" className="text-sm font-bold text-white truncate">{s.name}</StockLink>
                                     <span className="text-[10px] text-zinc-500 font-mono">{s.code}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-[10px] text-zinc-400 mt-0.5">

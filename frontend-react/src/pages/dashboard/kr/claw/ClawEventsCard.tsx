@@ -1,3 +1,4 @@
+import StockLink from '@/components/stock/StockLink';
 import { useState } from 'react';
 import { ClawOverview, eventChip, fmtPct, hhmm } from '@/lib/claw';
 
@@ -42,7 +43,10 @@ export default function ClawEventsCard({ data }: { data: ClawOverview }) {
                             <li key={`${e.ts}-${e.type}-${e.code}-${i}`} className={`grid grid-cols-[42px_44px_minmax(0,1fr)_16px] items-center gap-2 py-2.5 text-[13px] sm:grid-cols-[44px_46px_minmax(0,1fr)_auto_16px] ${halt ? 'rounded-lg bg-amber-500/[0.06] px-1.5' : ''}`}>
                                 <span className="font-mono text-[12px] tabular-nums text-gray-500">{hhmm(e.ts)}</span>
                                 <span className={`rounded px-1.5 py-0.5 text-center text-[10px] font-bold ${chip.cls}`}>{chip.label}</span>
-                                <span className="min-w-0 truncate text-gray-100">{e.name}{e.code && <span className="ml-1.5 font-mono text-[11px] text-gray-500">{e.code}</span>}</span>
+                                <span className="min-w-0 truncate text-gray-100">
+                                    {e.code ? <StockLink code={e.code} market="KR" className="text-gray-100">{e.name}</StockLink> : e.name}
+                                    {e.code && <span className="ml-1.5 font-mono text-[11px] text-gray-500">{e.code}</span>}
+                                </span>
                                 <span className="hidden whitespace-nowrap font-mono text-[11.5px] text-gray-400 sm:block">{tr}{e.chg != null && e.score != null ? ` · ${fmtPct(e.chg)}` : ''}</span>
                                 <span className={`text-right text-[11px] ${e.reported_at ? 'text-teal-300' : 'text-gray-600'}`} title={e.reported_at ? `발송 ${hhmm(e.reported_at)}` : '미발송'}>
                                     <i className={`fas ${e.reported_at ? 'fa-check' : 'fa-minus'}`} />
