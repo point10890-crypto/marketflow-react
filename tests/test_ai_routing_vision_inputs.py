@@ -100,11 +100,39 @@ def test_gemini_vision_uses_part_factory_for_same_neutral_image():
         operation=Operation.VISION,
         prompt="analyze",
         images=(VisionImage(data=b"png", mime_type="image/png"),),
+        thinking_budget=0,
+        response_schema={
+            "type": "OBJECT",
+            "properties": {"signal": {"type": "STRING"}},
+            "required": ["signal"],
+        },
     )
 
     adapter.generate(request, model="gemini-2.5-flash", max_output_tokens=768)
 
     assert calls[0]["contents"] == ["analyze", ("image/png", b"png")]
+    assert calls[0]["config"]["response_schema"]["required"] == ["signal"]
+    assert calls[0]["config"]["thinking_config"] == {"thinking_budget": 0}
+
+
+def test_gemini_omits_zero_thinking_for_models_that_do_not_support_it():
+    calls = []
+    client = SimpleNamespace(
+        models=SimpleNamespace(
+            generate_content=lambda **kwargs: calls.append(kwargs)
+            or SimpleNamespace(text='{"signal":"HOLD"}', usage_metadata=None)
+        )
+    )
+    adapter = GeminiAdapter(lambda: client, lambda **kwargs: kwargs)
+    request = RoutingRequest(
+        operation=Operation.VISION,
+        prompt="analyze",
+        thinking_budget=0,
+    )
+
+    adapter.generate(request, model="gemini-2.5-pro", max_output_tokens=768)
+
+    assert "thinking_config" not in calls[0]["config"]
 
 
 def test_vision_reservation_uses_dimensions_not_compressed_byte_length():

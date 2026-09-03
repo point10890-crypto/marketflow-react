@@ -687,7 +687,13 @@ class AIRouter:
                 previous_failure_reason = provider_failure_reason
                 continue
             provider_tries = 0
-            while provider_tries < 2:
+            provider_try_limit = 2
+            if provider_index == 0 and request.max_primary_attempts is not None:
+                try:
+                    provider_try_limit = max(1, min(2, int(request.max_primary_attempts)))
+                except (TypeError, ValueError):
+                    provider_try_limit = 2
+            while provider_tries < provider_try_limit:
                 if self._permit_abort_requested(request):
                     return self._failed_result(
                         policy.operation,
@@ -860,7 +866,7 @@ class AIRouter:
                     breaker_persistence_failed = True
                 if not successful and provider_index == 0:
                     primary_failure_reason = error_class
-                    if error_class in _TRANSIENT and provider_tries < 2:
+                    if error_class in _TRANSIENT and provider_tries < provider_try_limit:
                         primary_retry_reason = error_class
                 if not successful:
                     provider_failure_reason = error_class
@@ -930,7 +936,9 @@ class AIRouter:
                         attempts=tuple(attempts),
                     )
                 should_retry = (
-                    error_class in _TRANSIENT and provider_tries < 2 and provider_index == 0
+                    error_class in _TRANSIENT
+                    and provider_tries < provider_try_limit
+                    and provider_index == 0
                 )
                 if not should_retry:
                     break

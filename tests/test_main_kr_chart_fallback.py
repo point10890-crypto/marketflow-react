@@ -130,6 +130,17 @@ def test_analyze_chart_uses_central_vision_and_preserves_business_shape(
         )
     )
 
+    assert seen[0].response_schema["required"] == [
+        "signal",
+        "confidence",
+        "reasons",
+        "ma_status",
+        "rsi_zone",
+        "volume_trend",
+    ]
+    assert seen[0].thinking_budget == 0
+    assert seen[0].max_primary_attempts is None
+
     request = seen[0]
     assert request.operation.value == "vision"
     assert request.run_id == "chart-run"
@@ -451,6 +462,8 @@ def test_chart_input_failure_is_preserved_in_csv_projection(mk, monkeypatch, tmp
     [
         '```json\n{"signal":"HOLD","confidence":61,"reasons":["steady"]}\n```',
         '{"signal":"HOLD","confidence":61,"reasons":["steady"]',
+        '분석 결과: {"signal":"HOLD","confidence":61,"reasons":["steady"]} 완료',
+        "{'signal':'HOLD','confidence':'61%','reasons':'steady'}",
     ],
 )
 def test_chart_local_json_repair_happens_before_central_validation(
@@ -480,6 +493,26 @@ def test_chart_local_json_repair_happens_before_central_validation(
 
     assert result is not None
     assert result["signal"] == "HOLD"
+    assert result["confidence"] == 61
+    assert result["reasons"] == ["steady"]
+
+
+def test_decimal_percentage_confidence_is_integer_and_summary_safe(mk, monkeypatch):
+    normalized = mk._normalize_chart_json(
+        '{"signal":"BUY","confidence":"61.5%","reasons":["steady"]}'
+    )
+    payload = json.loads(normalized)
+
+    assert payload["confidence"] == 62
+    assert isinstance(payload["confidence"], int)
+    assert mk._chart_domain_validator(payload) is None
+
+    payload.update({"종목코드": "005930", "종목명": "삼성전자", "시장": "KOSPI"})
+    monkeypatch.setattr(mk.pd.DataFrame, "to_csv", lambda *_args, **_kwargs: None)
+
+    summary = mk.summarize_results([payload])
+
+    assert summary.iloc[0]["confidence"] == 62
 
 
 def test_openai_fallback_uses_supported_model_default(mk):
@@ -539,3 +572,387 @@ def test_buy_candidate_batch_passes_one_run_and_global_candidate_ranks(
     assert len(results) == 7  # Gemini primary remains available to every candidate.
     assert {run_id for _ticker, run_id, _rank in seen} == {"buy-screen-run"}
     assert [rank for _ticker, _run_id, rank in seen] == list(range(1, 8))
+
+
+def test_buy_candidate_batch_hard_caps_paid_vision_calls(mk, monkeypatch):
+    import importlib
+    import pandas as pd
+
+    script = importlib.import_module("scripts.screen_buy_candidates")
+    monkeypatch.setattr(mk, "render_chart", lambda *_a, **_k: "chart.png")
+    seen = []
+
+    async def fake_analyze(_client, ticker, _name, _path, _semaphore, **kwargs):
+        seen.append((
+            ticker,
+            kwargs["candidate_rank"],
+            kwargs["max_primary_attempts"],
+        ))
+        return {"signal": "HOLD"}
+
+    monkeypatch.setattr(mk, "analyze_chart", fake_analyze)
+    frame = pd.DataFrame({
+        "date": pd.date_range("2026-01-01", periods=60),
+        "Open": [1] * 60,
+        "High": [2] * 60,
+        "Low": [1] * 60,
+        "Close": [2] * 60,
+        "Volume": [100] * 60,
+    })
+    batch = [
+        (f"{rank:06d}", f"{rank:06d}.KS", f"종목{rank}")
+        for rank in range(1, 31)
+    ]
+    prices = {code: frame for code, _ticker, _name in batch}
+
+    async def run_multiple_batches():
+        first = await script.analyze_batch(
+            batch[:12],
+            prices,
+            concurrency=10,
+            run_id="hard-cap-run",
+            rank_offset=0,
+            vision_limit=999,
+        )
+        second = await script.analyze_batch(
+            batch[12:],
+            prices,
+            concurrency=10,
+            run_id="hard-cap-run",
+            rank_offset=12,
+            vision_limit=999,
+        )
+        return first + second
+
+    results = asyncio.run(run_multiple_batches())
+
+    assert len(results) == script.MAX_VISION_CALLS == 20
+    assert len(seen) == 20
+    assert [rank for _ticker, rank, _attempts in seen] == list(range(1, 21))
+    assert {attempts for _ticker, _rank, attempts in seen} == {1}
+
+
+def test_buy_candidate_batch_renders_the_same_sanitized_ohlcv_used_for_ranking(
+    mk,
+    monkeypatch,
+):
+    import importlib
+    import math
+    import pandas as pd
+
+    script = importlib.import_module("scripts.screen_buy_candidates")
+    dates = list(pd.date_range("2026-03-02", periods=60))
+    frame = pd.DataFrame({
+        "date": dates,
+        "Open": [100.0] * 60,
+        "High": [101.0] * 60,
+        "Low": [99.0] * 60,
+        "Close": [100.0] * 60,
+        "Volume": [100_000] * 60,
+    })
+    duplicate = frame.iloc[[20]].copy()
+    duplicate["Close"] = 105.0
+    invalid_future = frame.iloc[[-1]].copy()
+    invalid_future["date"] = pd.Timestamp("2026-05-02")
+    invalid_future["Close"] = float("inf")
+    raw = pd.concat([frame, duplicate, invalid_future], ignore_index=True)
+    captured = []
+
+    def render(clean, *_args, **_kwargs):
+        captured.append(clean.copy())
+        return "chart.png"
+
+    async def analyze(*_args, **_kwargs):
+        return {"signal": "HOLD"}
+
+    monkeypatch.setattr(mk, "render_chart", render)
+    monkeypatch.setattr(mk, "analyze_chart", analyze)
+
+    asyncio.run(
+        script.analyze_batch(
+            [("000010", "000010.KS", "테스트")],
+            {"000010": raw},
+            concurrency=1,
+            run_id="sanitized-chart-run",
+        )
+    )
+
+    assert len(captured) == 1
+    chart = captured[0]
+    assert chart.index.is_unique
+    assert chart.index.max() == dates[-1]
+    assert all(math.isfinite(float(value)) for value in chart["Close"])
+
+
+def test_deterministic_prefilter_ranks_trend_volume_and_liquidity_before_vision(
+    mk,
+):
+    import importlib
+    import pandas as pd
+
+    script = importlib.import_module("scripts.screen_buy_candidates")
+
+    def frame(closes, volumes):
+        return pd.DataFrame({
+            "date": pd.date_range("2026-01-01", periods=len(closes)),
+            "Open": closes,
+            "High": [value * 1.01 for value in closes],
+            "Low": [value * 0.99 for value in closes],
+            "Close": closes,
+            "Volume": volumes,
+        })
+
+    universe = [
+        ("000001", "000001.KS", "하락"),
+        ("000002", "000002.KS", "상승거래증가"),
+        ("000003", "000003.KS", "횡보"),
+    ]
+    prices = {
+        "000001": frame([200 - i for i in range(80)], [100_000] * 80),
+        "000002": frame(
+            [100 + i for i in range(80)],
+            [100_000] * 60 + [300_000] * 20,
+        ),
+        "000003": frame([100] * 80, [100_000] * 80),
+    }
+
+    ranked = script.rank_prefilter_candidates(universe, prices, limit=2)
+
+    assert [candidate[0] for candidate in ranked] == ["000002", "000003"]
+
+
+def test_buy_screen_limits_are_hard_bounded(mk):
+    import importlib
+
+    script = importlib.import_module("scripts.screen_buy_candidates")
+
+    assert script.bounded_run_limits(target=999, vision_calls=999) == (10, 20)
+    assert script.bounded_run_limits(target=8, vision_calls=5) == (5, 5)
+
+
+def test_prefilter_rejects_stale_invalid_data_and_keeps_market_cap_ties(mk):
+    import importlib
+    import pandas as pd
+
+    script = importlib.import_module("scripts.screen_buy_candidates")
+    as_of = pd.Timestamp("2026-04-30")
+
+    def frame(*, end=as_of, invalid_latest=False):
+        closes = [100.0] * 60
+        if invalid_latest:
+            closes[-1] = float("nan")
+        return pd.DataFrame({
+            "date": pd.date_range(end=end, periods=60),
+            "Open": closes,
+            "High": [101.0] * 60,
+            "Low": [99.0] * 60,
+            "Close": closes,
+            "Volume": [100_000] * 60,
+        })
+
+    universe = [
+        ("000002", "000002.KS", "시총선두"),
+        ("000001", "000001.KS", "시총차순"),
+        ("000003", "000003.KS", "지연데이터"),
+        ("000004", "000004.KS", "결측데이터"),
+    ]
+    prices = {
+        "000002": frame(),
+        "000001": frame(),
+        "000003": frame(end=as_of - pd.Timedelta(days=1)),
+        "000004": frame(invalid_latest=True),
+    }
+
+    ranked = script.rank_prefilter_candidates(
+        universe,
+        prices,
+        limit=20,
+        as_of=as_of,
+    )
+
+    assert [candidate[0] for candidate in ranked] == ["000002", "000001"]
+
+
+def test_universe_falls_back_to_local_map_when_live_krx_listing_fails(
+    mk,
+    monkeypatch,
+    tmp_path,
+):
+    import importlib
+    import pandas as pd
+    import FinanceDataReader as fdr
+
+    script = importlib.import_module("scripts.screen_buy_candidates")
+    ticker_map = tmp_path / "ticker_to_yahoo_map.csv"
+    ticker_map.write_text(
+        "ticker,market,yahoo_ticker,name\n"
+        "000010,KOSPI,000010.KS,첫째\n"
+        "000020,KOSDAQ,000020.KQ,둘째\n"
+        "000005,KOSPI,000005.KS,우선주\n"
+        "000030,KOSDAQ,000030.KQ,테스트스팩\n",
+        encoding="utf-8",
+    )
+    prices = pd.DataFrame({
+        "ticker": ["000010", "000020", "000005", "000030"],
+        "date": pd.to_datetime(["2026-04-30"] * 4),
+        "name": ["로컬첫째", "로컬둘째", "로컬우선", "테스트스팩"],
+    })
+    monkeypatch.setattr(script, "TICKER_MAP_CSV", ticker_map)
+
+    def fail_listing(_market):
+        raise ValueError("empty upstream response")
+
+    monkeypatch.setattr(fdr, "StockListing", fail_listing)
+
+    assert script.build_universe(10, prices=prices) == [
+        ("000010", "000010.KS", "로컬첫째"),
+        ("000020", "000020.KQ", "로컬둘째"),
+    ]
+
+
+def test_prefilter_as_of_uses_modal_complete_date_not_one_future_outlier(mk):
+    import importlib
+    import pandas as pd
+
+    script = importlib.import_module("scripts.screen_buy_candidates")
+
+    def frame(end):
+        return pd.DataFrame({
+            "date": pd.date_range(end=end, periods=60),
+            "Open": [100.0] * 60,
+            "High": [101.0] * 60,
+            "Low": [99.0] * 60,
+            "Close": [100.0] * 60,
+            "Volume": [100_000] * 60,
+        })
+
+    universe = [
+        ("000010", "000010.KS", "정상1"),
+        ("000020", "000020.KS", "정상2"),
+        ("000030", "000030.KS", "정상3"),
+        ("000040", "000040.KS", "미래이상치"),
+    ]
+    prices = {
+        "000010": frame("2026-04-30"),
+        "000020": frame("2026-04-30"),
+        "000030": frame("2026-04-30"),
+        "000040": frame("2026-05-01"),
+    }
+
+    assert script.prefilter_as_of(universe, prices) == pd.Timestamp("2026-04-30")
+
+
+def test_daily_vision_reservation_is_persistent_and_hard_capped(mk, tmp_path):
+    import datetime
+    import importlib
+
+    script = importlib.import_module("scripts.screen_buy_candidates")
+    state_path = tmp_path / "buy_screen_vision_budget.json"
+    day = datetime.date(2026, 4, 30)
+
+    assert script.reserve_daily_vision_calls(15, day=day, state_path=state_path) == 15
+    assert script.reserve_daily_vision_calls(20, day=day, state_path=state_path) == 5
+    assert script.reserve_daily_vision_calls(1, day=day, state_path=state_path) == 0
+    assert (
+        script.reserve_daily_vision_calls(
+            999,
+            day=day + datetime.timedelta(days=1),
+            state_path=state_path,
+        )
+        == 20
+    )
+
+    lower_state = tmp_path / "buy_screen_vision_budget_lower.json"
+    assert (
+        script.reserve_daily_vision_calls(
+            5,
+            day=day,
+            state_path=lower_state,
+            daily_limit=5,
+        )
+        == 5
+    )
+    assert (
+        script.reserve_daily_vision_calls(
+            5,
+            day=day,
+            state_path=lower_state,
+            daily_limit=5,
+        )
+        == 0
+    )
+    assert not script.daily_vision_run_completed(day=day, state_path=lower_state)
+    script.mark_daily_vision_run_completed(
+        run_id="completed-run",
+        day=day,
+        state_path=lower_state,
+    )
+    assert script.daily_vision_run_completed(day=day, state_path=lower_state)
+
+
+def test_non_trading_override_allows_only_latest_trading_day(mk, monkeypatch):
+    import datetime
+    import importlib
+    import pandas as pd
+
+    script = importlib.import_module("scripts.screen_buy_candidates")
+    monkeypatch.setenv("ALLOW_KR_NON_TRADING_RUN", "true")
+    sunday = datetime.date(2026, 4, 26)
+
+    assert script.price_data_is_fresh(pd.Timestamp("2026-04-24"), today=sunday)
+    assert not script.price_data_is_fresh(pd.Timestamp("2026-04-23"), today=sunday)
+    assert not script.price_data_is_fresh(pd.Timestamp("2026-04-27"), today=sunday)
+
+
+def test_all_vision_failures_preserve_last_known_good_csv(
+    mk,
+    monkeypatch,
+    tmp_path,
+):
+    import importlib
+    import pandas as pd
+
+    script = importlib.import_module("scripts.screen_buy_candidates")
+    output = tmp_path / "buy_candidates_kr.csv"
+    output.write_text("last-known-good", encoding="utf-8")
+    prices = pd.DataFrame({
+        "ticker": ["000010"],
+        "date": pd.to_datetime(["2026-04-30"]),
+        "name": ["테스트"],
+    })
+    candidate = ("000010", "000010.KS", "테스트")
+    monkeypatch.setattr(script, "OUT_CSV", output)
+    monkeypatch.setattr(script, "load_prices", lambda: prices)
+    monkeypatch.setattr(script, "build_universe", lambda *_a, **_k: [candidate])
+    monkeypatch.setattr(script, "prefilter_as_of", lambda *_a, **_k: pd.Timestamp("2026-04-30"))
+    monkeypatch.setattr(script, "price_data_is_fresh", lambda *_a, **_k: True)
+    monkeypatch.setattr(script, "rank_prefilter_candidates", lambda *_a, **_k: [candidate])
+    monkeypatch.setattr(script, "reserve_daily_vision_calls", lambda *_a, **_k: 1)
+    monkeypatch.setattr(mk, "reset_vision_health", lambda: None)
+
+    async def unavailable(*_args, **_kwargs):
+        return [{"image_analysis_status": "unavailable"}]
+
+    monkeypatch.setattr(script, "analyze_batch", unavailable)
+    monkeypatch.setattr(sys, "argv", ["screen_buy_candidates.py", "--no-send"])
+
+    assert script.main() == 1
+    assert output.read_text(encoding="utf-8") == "last-known-good"
+
+
+def test_chart_renderer_is_declared_as_runtime_dependency():
+    from pathlib import Path
+
+    requirements = (Path(__file__).parents[1] / "requirements.txt").read_text(
+        encoding="utf-8",
+    ).lower()
+
+    assert "mplfinance" in requirements
+
+
+def test_daily_vision_budget_runtime_state_is_gitignored():
+    from pathlib import Path
+
+    ignore = (Path(__file__).parents[1] / ".gitignore").read_text(encoding="utf-8")
+
+    assert "data/runtime/buy_screen_vision_budget.json" in ignore.splitlines()

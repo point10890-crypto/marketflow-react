@@ -18,6 +18,11 @@ MAX_PROVIDER_REQUEST_TIMEOUT_SECONDS = max(
 )
 
 
+def _gemini_supports_disabled_thinking(model: str) -> bool:
+    """Only 2.5 Flash-family models accept a zero thinking budget."""
+    return str(model).strip().lower().startswith("gemini-2.5-flash")
+
+
 @dataclass(frozen=True)
 class AdapterResponse:
     text: str | None
@@ -234,6 +239,18 @@ class GeminiAdapter:
             config["system_instruction"] = request.system
         if request.json_mode:
             config["response_mime_type"] = "application/json"
+        if request.response_schema is not None:
+            config["response_schema"] = dict(request.response_schema)
+        if (
+            request.thinking_budget is not None
+            and (
+                int(request.thinking_budget) != 0
+                or _gemini_supports_disabled_thinking(model)
+            )
+        ):
+            config["thinking_config"] = {
+                "thinking_budget": int(request.thinking_budget),
+            }
         if request.images:
             image_parts: list[Any] = []
             for image in request.images:

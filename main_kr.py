@@ -7,10 +7,11 @@ import os
 import sys
 import re
 import json
+import ast
 import asyncio
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from io import BytesIO
 from uuid import uuid4
 
@@ -147,6 +148,26 @@ ANALYSIS_PROMPT = """당신은 25년 경력의 기술적 분석 전문가입니�
   "volume_trend": "증가 또는 감소 또는 보합"
 }}"""
 
+CHART_RESPONSE_SCHEMA = {
+    "type": "OBJECT",
+    "properties": {
+        "signal": {"type": "STRING", "enum": ["BUY", "HOLD", "SELL"]},
+        "confidence": {"type": "INTEGER", "minimum": 0, "maximum": 100},
+        "reasons": {"type": "ARRAY", "items": {"type": "STRING"}},
+        "ma_status": {"type": "STRING"},
+        "rsi_zone": {"type": "STRING"},
+        "volume_trend": {"type": "STRING"},
+    },
+    "required": [
+        "signal",
+        "confidence",
+        "reasons",
+        "ma_status",
+        "rsi_zone",
+        "volume_trend",
+    ],
+}
+
 
 # ════════════════════════════════════════════════
 # Step 1: 차트 생성
@@ -238,8 +259,46 @@ def generate_chart(ticker: str, name: str) -> str | None:
 _executor = ThreadPoolExecutor(max_workers=10)
 
 
+def _balanced_json_segment(text: str) -> str | None:
+    """Extract one balanced object/array while respecting quoted braces."""
+    starts = [index for index in (text.find('{'), text.find('[')) if index >= 0]
+    if not starts:
+        return None
+    start = min(starts)
+    stack: list[str] = []
+    quote: str | None = None
+    escaped = False
+    pairs = {'}': '{', ']': '['}
+    for index, char in enumerate(text[start:], start=start):
+        if quote is not None:
+            if escaped:
+                escaped = False
+            elif char == '\\':
+                escaped = True
+            elif char == quote:
+                quote = None
+            continue
+        if char in {'"', "'"}:
+            quote = char
+        elif char in {'{', '['}:
+            stack.append(char)
+        elif char in pairs:
+            if not stack or stack[-1] != pairs[char]:
+                return text[start:index]
+            stack.pop()
+            if not stack:
+                return text[start:index + 1]
+    return text[start:]
+
+
+def _json_container(value: object) -> dict | None:
+    if isinstance(value, list):
+        value = value[0] if value else None
+    return value if isinstance(value, dict) else None
+
+
 def _extract_json(text: str) -> dict | None:
-    """Gemini 응답에서 JSON 추출 (마크다운 펜스, 잘림 대응)"""
+    """Gemini 응답에서 JSON 추출 (펜스·부가 문장·잘림·Python 리터럴 대응)."""
     text = text.strip()
 
     # 마크다운 코드 펜스 제거
@@ -247,16 +306,37 @@ def _extract_json(text: str) -> dict | None:
     text = re.sub(r'\s*```$', '', text)
     text = text.strip()
 
-    # 1차: 직접 파싱
-    try:
-        data = json.loads(text)
-        return data[0] if isinstance(data, list) and data else data
-    except json.JSONDecodeError:
-        pass
+    # 1차: 직접 파싱. strict=False는 문자열 안의 제어문자만 허용한다.
+    for strict in (True, False):
+        try:
+            data = _json_container(json.loads(text, strict=strict))
+            if data is not None:
+                return data
+        except (json.JSONDecodeError, TypeError):
+            pass
 
-    # 2차: 잘린 JSON 복구 — 미닫힌 문자열/배열/객체 닫기
-    if '{' in text:
-        candidate = text[text.index('{'):]
+    # 2차: JSON 앞뒤에 설명이 붙은 경우 균형 잡힌 첫 컨테이너만 파싱한다.
+    segment = _balanced_json_segment(text)
+    if segment:
+        for strict in (True, False):
+            try:
+                data = _json_container(json.loads(segment, strict=strict))
+                if data is not None:
+                    return data
+            except (json.JSONDecodeError, TypeError):
+                pass
+        # 일부 모델은 JSON 모드에서도 작은따옴표 Python dict를 반환한다.
+        # literal_eval은 코드 실행 없이 리터럴 컨테이너만 해석한다.
+        try:
+            data = _json_container(ast.literal_eval(segment))
+            if data is not None:
+                return data
+        except (SyntaxError, ValueError, TypeError):
+            pass
+
+    # 3차: 잘린 JSON 복구 — 미닫힌 문자열/배열/객체 닫기
+    if segment and '{' in segment:
+        candidate = segment[segment.index('{'):]
 
         # 미닫힌 문자열 닫기 (홀수 개의 이스케이프 안 된 따옴표)
         in_string = False
@@ -311,7 +391,7 @@ def _chart_domain_validator(payload: object) -> ProviderErrorClass | None:
     if payload.get('signal') not in {'BUY', 'HOLD', 'SELL'}:
         return ProviderErrorClass.INVALID_JSON
     confidence = payload.get('confidence')
-    if isinstance(confidence, bool) or not isinstance(confidence, (int, float)):
+    if isinstance(confidence, bool) or not isinstance(confidence, int):
         return ProviderErrorClass.INVALID_JSON
     if not 0 <= confidence <= 100:
         return ProviderErrorClass.INVALID_JSON
@@ -328,6 +408,30 @@ def _normalize_chart_json(text: str) -> str | None:
     parsed = _extract_json(text)
     if not isinstance(parsed, dict):
         return None
+    signal = str(parsed.get('signal') or '').strip().upper()
+    signal = {
+        '매수': 'BUY',
+        '보유': 'HOLD',
+        '관망': 'HOLD',
+        '매도': 'SELL',
+    }.get(signal, signal)
+    parsed['signal'] = signal
+    confidence = parsed.get('confidence')
+    numeric_text: str | None = None
+    if isinstance(confidence, str):
+        match = re.fullmatch(r'\s*(\d+(?:\.\d+)?)\s*%?\s*', confidence)
+        if match:
+            numeric_text = match.group(1)
+    elif isinstance(confidence, (int, float)) and not isinstance(confidence, bool):
+        numeric_text = str(confidence)
+    if numeric_text is not None:
+        numeric = Decimal(numeric_text)
+        if numeric.is_finite() and Decimal('0') <= numeric <= Decimal('100'):
+            parsed['confidence'] = int(
+                numeric.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+            )
+    if isinstance(parsed.get('reasons'), str):
+        parsed['reasons'] = [parsed['reasons']]
     return json.dumps(parsed, ensure_ascii=False, separators=(',', ':'))
 
 
@@ -471,7 +575,8 @@ def _chart_input_failure_artifact(
 async def analyze_chart(client: genai.Client, ticker: str, name: str,
                         image_path: str, semaphore: asyncio.Semaphore, *,
                         run_id: str | None = None,
-                        candidate_rank: int | None = None) -> dict | None:
+                        candidate_rank: int | None = None,
+                        max_primary_attempts: int | None = None) -> dict | None:
     """Analyze one chart through the budgeted central vision route."""
     async with semaphore:
         loop = asyncio.get_event_loop()
@@ -521,11 +626,17 @@ async def analyze_chart(client: genai.Client, ticker: str, name: str,
             symbol=ticker.split('.')[0],
             market='KOSPI' if ticker.endswith('.KS') else 'KOSDAQ',
             json_mode=True,
+            response_schema=CHART_RESPONSE_SCHEMA,
+            # Chart classification is a bounded structured extraction task.
+            # Disabling Gemini thinking avoids consuming the output budget before
+            # the final JSON and materially lowers truncation/cost.
+            thinking_budget=0,
             max_output_tokens=768,
             images=(VisionImage(data=image_data, mime_type='image/png', detail='high'),),
             caller_endpoint='main_kr.analyze_chart',
             domain_validator=_chart_domain_validator,
             response_normalizer=_normalize_chart_json,
+            max_primary_attempts=max_primary_attempts,
             # An unranked legacy caller cannot prove top-five eligibility and
             # therefore must not consume the bounded OpenAI fallback pool.
             openai_fallback_allowed=(
@@ -533,7 +644,8 @@ async def analyze_chart(client: genai.Client, ticker: str, name: str,
             ),
         )
         routed = await loop.run_in_executor(_executor, route_vision, request)
-        result = _extract_json(routed.text) if routed.text else None
+        normalized = _normalize_chart_json(routed.text) if routed.text else None
+        result = _extract_json(normalized) if normalized else None
 
         if isinstance(result, dict):
             market = '코스피' if ticker.endswith('.KS') else '코스닥'

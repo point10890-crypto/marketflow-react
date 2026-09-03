@@ -150,6 +150,8 @@ class RoutingRequest:
     symbol: str | None = None
     market: str | None = None
     json_mode: bool = False
+    response_schema: Mapping[str, Any] | None = None
+    thinking_budget: int | None = None
     max_output_tokens: int | None = None
     evidence_fingerprint: str | None = None
     caller_endpoint: str | None = None
@@ -162,6 +164,7 @@ class RoutingRequest:
     reservation_owner_token: str | None = None
     permit_abort_event: Any | None = None
     openai_fallback_allowed: bool = True
+    max_primary_attempts: int | None = None
 
 
 @dataclass(frozen=True)

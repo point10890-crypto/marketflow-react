@@ -1011,6 +1011,27 @@ def test_429_retry_uses_bounded_injected_delay(tmp_path):
     assert result.retry_reason is ProviderErrorClass.RATE_LIMIT
 
 
+def test_request_can_disable_primary_retry_for_cost_bounded_vision(tmp_path):
+    gemini = FakeAdapter(ProviderCallError(ProviderErrorClass.RATE_LIMIT))
+    openai = FakeAdapter(_response('{"signal":"HOLD"}'))
+    router, _store = _router(tmp_path, {"gemini": gemini, "openai": openai})
+    request = RoutingRequest(
+        operation=Operation.VISION,
+        prompt="bounded chart",
+        run_id="vision-no-retry",
+        request_id="vision-no-retry:1",
+        json_mode=True,
+        images=(VisionImage(data=b"x", width_px=1, height_px=1),),
+        max_primary_attempts=1,
+    )
+
+    result = router.route_vision(request)
+
+    assert result.actual_provider == "openai"
+    assert gemini.calls == 1
+    assert openai.calls == 1
+
+
 def test_primary_retry_reason_is_separate_from_true_fallback_reason(tmp_path):
     deepseek = FakeAdapter(
         ProviderCallError(ProviderErrorClass.RATE_LIMIT),

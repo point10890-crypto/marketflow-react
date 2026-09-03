@@ -9,6 +9,7 @@ MarketFlow 통합 스케줄러 — US / KR / Crypto
   09:30  US Market  Track Record 스냅샷 + 성과 추적
   14:50  KR Market  종가베팅 V2 + 수급/AI/리포트 → 텔레그램
   16:00  KR / US    VCP 시그널 업데이트 → 텔레그램
+  17:30  KR Market  로컬 전수 사전필터 → Vision 최대 20 → BUY 최대 10
   토 10:00  KR     히스토리 수집 (백업)
 ─────────────────────────────────────────────────
   매 4시간 (00/04/08/12/16/20 KST)  Crypto  전체 파이프라인
@@ -400,6 +401,14 @@ def auto_git_push(scope: str = 'all') -> bool:
 # 설정
 # ============================================================
 
+def _bounded_env_int(name: str, default: int, maximum: int) -> int:
+    """Read one positive integer env while preserving an operational hard cap."""
+    try:
+        value = int(os.environ.get(name, str(default)))
+    except (TypeError, ValueError):
+        value = default
+    return max(1, min(maximum, value))
+
 class Config:
     """통합 스케줄러 설정"""
 
@@ -439,9 +448,12 @@ class Config:
     # AI 매수 후보 선별 — 로컬 daily_prices.csv 를 쓰므로 14:50 KR 갱신 이후,
     # 그리고 16:00 VCP / 16:05 브리핑 / 16:30 Wave 와 겹치지 않는 시각으로 둔다.
     BUY_SCREEN_TIME = os.environ.get('BUY_SCREEN_TIME', '17:30')
-    BUY_SCREEN_TARGET = int(os.environ.get('BUY_SCREEN_TARGET', '100'))
-    BUY_SCREEN_BATCH = int(os.environ.get('BUY_SCREEN_BATCH', '200'))
-    BUY_SCREEN_MAX_UNIVERSE = int(os.environ.get('BUY_SCREEN_MAX_UNIVERSE', '1200'))
+    BUY_SCREEN_TARGET = _bounded_env_int('BUY_SCREEN_TARGET', 10, 10)
+    BUY_SCREEN_BATCH = _bounded_env_int('BUY_SCREEN_BATCH', 20, 20)
+    BUY_SCREEN_MAX_UNIVERSE = _bounded_env_int('BUY_SCREEN_MAX_UNIVERSE', 1200, 1200)
+    BUY_SCREEN_VISION_MAX_CALLS = _bounded_env_int(
+        'BUY_SCREEN_VISION_MAX_CALLS', 20, 20,
+    )
     # 기본은 개인 봇만. 구독자 채널로 내보내려면 명시적으로 켠다.
     BUY_SCREEN_TO_CHANNEL = os.environ.get('BUY_SCREEN_TO_CHANNEL', 'false').lower() == 'true'
     AI_CHART_TIME = os.environ.get('AI_CHART_TIME', '14:00')             # AI Chart Analysis KR (Gemini Vision)
@@ -4235,13 +4247,13 @@ def _run_alpha_intraday_watch() -> bool:
 
 
 def _run_buy_candidate_screen() -> bool:
-    """AI 차트 매수 후보 선별 — BUY 판정 종목을 목표 개수만큼 채워 텔레그램 발송.
+    """Local OHLCV rank -> at most 20 Vision calls -> at most 10 BUY picks.
 
-    _run_ai_chart_analysis 와 다르다: 저쪽은 고정 100종목을 분석해 신호를
-    집계하고, 이쪽은 **BUY 종목을 목표 개수만큼 확보**할 때까지 시총 상위
-    유니버스를 배치로 넓혀 간다. 가격은 로컬 daily_prices.csv 를 쓰므로
-    14:50 KR 갱신 작업이 끝난 뒤에 돌아야 당일 데이터가 반영된다.
+    가격은 로컬 daily_prices.csv 를 쓰므로 14:50 KR 갱신 작업이 끝난 뒤에
+    돌아야 당일 데이터가 반영된다. CLI/env 값과 무관하게 비용 상한은 고정된다.
     """
+    if not _kr_market_task_allowed('buy_screen'):
+        return True
     logger.info("=" * 60)
     logger.info(f"🟢 AI 매수 후보 선별 시작 (목표 {Config.BUY_SCREEN_TARGET}종목)")
     logger.info("=" * 60)
@@ -4251,7 +4263,8 @@ def _run_buy_candidate_screen() -> bool:
         cmd = [Config.PYTHON_PATH, script,
                '--target', str(Config.BUY_SCREEN_TARGET),
                '--batch', str(Config.BUY_SCREEN_BATCH),
-               '--max-universe', str(Config.BUY_SCREEN_MAX_UNIVERSE)]
+               '--max-universe', str(Config.BUY_SCREEN_MAX_UNIVERSE),
+               '--vision-max-calls', str(Config.BUY_SCREEN_VISION_MAX_CALLS)]
         if Config.BUY_SCREEN_TO_CHANNEL:
             cmd.append('--channel')
 
@@ -4272,8 +4285,8 @@ def _run_buy_candidate_screen() -> bool:
         picks = pd.read_csv(csv_path, encoding='utf-8-sig')
         logger.info(f"🟢 매수 후보 선별 완료: {len(picks)}종목")
         if len(picks) < Config.BUY_SCREEN_TARGET:
-            logger.warning(f"⚠️ 목표 {Config.BUY_SCREEN_TARGET}종목 미달 ({len(picks)}종목) "
-                           f"— BUY_SCREEN_MAX_UNIVERSE 확대 검토")
+            logger.info(f"ℹ️ 목표 {Config.BUY_SCREEN_TARGET}종목 미달 ({len(picks)}종목) "
+                        "— 비용 상한 안에서 확인된 BUY만 유지")
         return True
     except subprocess.TimeoutExpired:
         logger.error("❌ 매수 후보 선별 타임아웃 (60분)")
@@ -4788,10 +4801,11 @@ class Scheduler:
                 getattr(schedule.every(), day).at(Config.CLAW_OUTCOME_TIME).do(
                     self._with_record(_run_claw_outcome_update, 'claw_outcomes',
                                       max_retries=1, retry_delay=300))
-            # 17:30 — AI 매수 후보 선별 (BUY 목표 개수 충족까지) → 텔레그램
+            # 17:30 — 로컬 사전순위 후 비용 제한 Vision 선별 → 텔레그램.
+            # 프로세스 재시도는 일일 비용 상한을 보수적으로 지키기 위해 금지한다.
             getattr(schedule.every(), day).at(Config.BUY_SCREEN_TIME).do(
                 self._with_record(_run_buy_candidate_screen, 'buy_screen',
-                                  max_retries=1, retry_delay=900))
+                                  max_retries=0, retry_delay=900))
             # ── Alpha Position Engine 타임라인 (알파캐치형 완결 신호) ──
             getattr(schedule.every(), day).at(Config.ALPHA_MORNING_TIME).do(
                 self._with_record(_run_alpha_morning_top, 'alpha_morning_top',
@@ -4866,7 +4880,9 @@ class Scheduler:
         if Config.CLAW_OUTCOME_ENABLED:
             logger.info(f"   📐 평일 {Config.CLAW_OUTCOME_TIME}  Claw D1/D5 shadow outcome 갱신")
         logger.info(f"   🤖 평일 {Config.AI_CHART_TIME}  AI Chart Analysis KR (Gemini Vision)")
-        logger.info(f"   🟢 평일 {Config.BUY_SCREEN_TIME}  AI 매수 후보 {Config.BUY_SCREEN_TARGET}종목 선별 → 텔레그램"
+        logger.info(f"   🟢 평일 {Config.BUY_SCREEN_TIME}  로컬 사전필터 → Vision 최대 "
+                    f"{Config.BUY_SCREEN_VISION_MAX_CALLS}회 → BUY 최대 {Config.BUY_SCREEN_TARGET}종목"
+                    " → 텔레그램"
                     f"{' (채널 포함)' if Config.BUY_SCREEN_TO_CHANNEL else ' (개인봇)'}")
         logger.info(f"   🤖 평일 {Config.US_AI_CHART_TIME}  US AI Chart Analysis (Gemini Vision)")
         logger.info(f"   📰 평일 {Config.MORNING_BRIEFING_TIME}  AI 조간 브리핑 (Gemini)")

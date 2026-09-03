@@ -13,7 +13,8 @@ import scheduler
 
 def test_config_defaults_are_sane():
     cfg = scheduler.Config
-    assert cfg.BUY_SCREEN_TARGET == 100
+    assert cfg.BUY_SCREEN_TARGET == 10
+    assert cfg.BUY_SCREEN_VISION_MAX_CALLS == 20
     # 로컬 daily_prices.csv 는 14:50 KR 갱신 작업이 채운다 — 그 뒤여야 한다.
     hour, minute = (int(x) for x in cfg.BUY_SCREEN_TIME.split(':'))
     assert hour * 60 + minute > 14 * 60 + 50
@@ -25,6 +26,10 @@ def test_registered_in_weekday_schedule():
     src = inspect.getsource(scheduler.Scheduler.setup_schedules)
     assert 'Config.BUY_SCREEN_TIME' in src
     assert "'buy_screen'" in src
+    compact = " ".join(src.split())
+    assert (
+        "_with_record(_run_buy_candidate_screen, 'buy_screen', max_retries=0" in compact
+    )
 
 
 def test_registered_in_missed_schedule_recovery():
@@ -35,6 +40,7 @@ def test_registered_in_missed_schedule_recovery():
 
 def test_runner_passes_channel_flag_only_when_enabled(monkeypatch):
     captured = {}
+    monkeypatch.setattr(scheduler, '_kr_market_task_allowed', lambda *_a, **_k: True)
 
     class _Result:
         returncode = 0
@@ -55,6 +61,7 @@ def test_runner_passes_channel_flag_only_when_enabled(monkeypatch):
     assert scheduler._run_buy_candidate_screen() is True
     assert '--channel' not in captured['cmd']
     assert '--target' in captured['cmd']
+    assert captured['cmd'][captured['cmd'].index('--vision-max-calls') + 1] == '20'
 
     monkeypatch.setattr(scheduler.Config, 'BUY_SCREEN_TO_CHANNEL', True)
     scheduler._run_buy_candidate_screen()
@@ -67,5 +74,17 @@ def test_runner_reports_failure_on_nonzero_exit(monkeypatch):
         stdout = ''
         stderr = 'boom'
 
+    monkeypatch.setattr(scheduler, '_kr_market_task_allowed', lambda *_a, **_k: True)
     monkeypatch.setattr(scheduler.subprocess, 'run', lambda cmd, **k: _Result())
     assert scheduler._run_buy_candidate_screen() is False
+
+
+def test_runner_skips_non_trading_day_before_starting_subprocess(monkeypatch):
+    monkeypatch.setattr(scheduler, '_kr_market_task_allowed', lambda *_a, **_k: False)
+    monkeypatch.setattr(
+        scheduler.subprocess,
+        'run',
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError('must not start')),
+    )
+
+    assert scheduler._run_buy_candidate_screen() is True
