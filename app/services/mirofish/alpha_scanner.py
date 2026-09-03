@@ -6,6 +6,7 @@ import csv
 import hashlib
 import html
 import json
+import math
 import os
 import re
 import threading
@@ -129,6 +130,14 @@ SOURCE_FILE_POLICIES = {
         'alert_required': False,
         'max_age_days': 2,
     },
+}
+_SOURCE_ARTIFACT_KEYS = {
+    'screener_leading_latest.json': 'screener',
+    'vcp_kr_latest.json': 'vcp',
+    'jongga_v2_latest.json': 'jongga',
+    'kind_blacklist_latest.json': 'kind_blacklist',
+    'credit_balance_latest.json': 'credit_balance',
+    'alpha_rs_ratings.json': 'rs_ratings',
 }
 
 
@@ -294,11 +303,17 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
     payload = payload or {}
     limit = _clean_limit(payload.get('limit'), default=DEFAULT_LIMIT)
     requested_symbols = _clean_symbols(payload.get('symbols'))
-    generated_at = datetime.now(timezone.utc).isoformat()
-    run_id = _run_id(generated_at, requested_symbols, limit)
+    started_at = datetime.now(timezone.utc).isoformat()
+    run_id = _run_id(started_at, requested_symbols, limit)
 
     artifacts = _load_artifacts()
+    _collect_requested_kis_live(artifacts, requested_symbols)
     performance_advisory = _performance_advisory()
+    generated_at = datetime.now(timezone.utc).isoformat()
+    performance_advisory = _performance_advisory_at_cutoff(
+        performance_advisory,
+        generated_at,
+    )
     candidate_pool = _build_candidate_pool(
         artifacts,
         generated_at=generated_at,
@@ -312,12 +327,20 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         requested_symbols=requested_symbols,
         limit=limit,
     )
-    candidate_pool = _apply_deepseek_rerank_overlay(candidate_pool, deepseek_rerank)
+    rerank_validated_at = datetime.now(timezone.utc).isoformat()
+    candidate_pool = _apply_deepseek_rerank_overlay(
+        candidate_pool,
+        deepseek_rerank,
+        validated_at=rerank_validated_at,
+    )
+    generated_at = rerank_validated_at
+    for candidate in candidate_pool:
+        candidate['generated_at'] = generated_at
     candidates = _select_candidates(candidate_pool, limit)
     rejected_candidates = _rejected_candidates(candidate_pool, selected_count=len(candidates), limit=limit)
     feature_vectors = _feature_vectors(candidates)
     evidence_ledger = _evidence_ledger(candidates, rejected_candidates)
-    source_files = _source_files(artifacts)
+    source_files = _source_files(artifacts, cutoff_ceiling=generated_at)
     goal_harness = _profitability_run_summary(candidates, rejected_candidates)
     run = {
         'id': run_id,
@@ -325,7 +348,7 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         'mode': 'deterministic_file_artifacts',
         'source': 'local_marketflow_artifacts',
         'generated_at': generated_at,
-        'created_at': generated_at,
+        'created_at': started_at,
         'limit': limit,
         'requested_symbols': sorted(requested_symbols),
         'universe_size': len(artifacts['candidate_symbols']),
@@ -1330,6 +1353,27 @@ def _load_artifacts() -> dict[str, Any]:
     }
 
 
+def _collect_requested_kis_live(
+    artifacts: dict[str, Any], requested_symbols: set[str],
+) -> None:
+    """Complete optional requested-symbol collection before the scoring cutoff."""
+    if (
+        not _scanner_kis_live_enabled()
+        or not requested_symbols
+        or len(requested_symbols) > 10
+    ):
+        return
+    maps = artifacts.get('ticker_map') or {}
+    snapshots = dict(artifacts.get('kis_live') or {})
+    for symbol in sorted(requested_symbols):
+        if snapshots.get(symbol):
+            continue
+        snapshot = _fetch_kis_live_snapshot_for_symbol(symbol, maps.get(symbol) or {})
+        if snapshot:
+            snapshots[symbol] = snapshot
+    artifacts['kis_live'] = snapshots
+
+
 def _load_source_artifacts() -> dict[str, Any]:
     return {
         'screener': _load_json_artifact('screener_leading_latest.json'),
@@ -1370,6 +1414,10 @@ def _build_candidate_pool(
     requested_symbols: set[str],
     performance_advisory: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
+    performance_advisory = _performance_advisory_at_cutoff(
+        performance_advisory or {},
+        generated_at,
+    )
     maps = artifacts['ticker_map']
     prices = artifacts['daily_prices']
     screener_by_symbol = _index_screener(artifacts['screener'].get('data'))
@@ -1383,19 +1431,56 @@ def _build_candidate_pool(
     kis_live_by_symbol = artifacts.get('kis_live') or {}
     dart_events_by_symbol = artifacts.get('dart_events') or {}
     news_theme_social_by_symbol = artifacts.get('news_theme_social') or {}
-    allow_live_kis = _scanner_kis_live_enabled() and bool(requested_symbols) and len(requested_symbols) <= 10
-
-    symbols = set(artifacts['candidate_symbols'])
+    source_seed_indexes = (
+        ('screener_leading_latest.json', screener_by_symbol),
+        ('vcp_kr_latest.json', vcp_by_symbol),
+        ('jongga_v2_latest.json', jongga_by_symbol),
+    )
+    raw_source_symbols = {
+        symbol
+        for _source, indexed in source_seed_indexes
+        for symbol in indexed
+    }
+    eligible_source_symbols = {
+        symbol
+        for source, indexed in source_seed_indexes
+        for symbol, payload in indexed.items()
+        if _normalize_scoring_source(
+            source,
+            payload,
+            artifacts=artifacts,
+            cutoff_ceiling=generated_at,
+        )[0] is not None
+    }
+    eligible_price_symbols = {
+        symbol
+        for symbol in set(prices) | set(artifacts.get('price_history') or {})
+        if any(
+            _normalize_scoring_source(
+                'daily_prices.csv',
+                row,
+                artifacts=artifacts,
+                cutoff_ceiling=generated_at,
+            )[0] is not None
+            for row in (
+                (artifacts.get('price_history') or {}).get(symbol)
+                or [prices.get(symbol) or {}]
+            )
+        )
+    }
     if requested_symbols:
-        symbols = {symbol for symbol in symbols if symbol in requested_symbols}
-        symbols.update(requested_symbols)
+        # An explicit request is an independent, stable universe definition.
+        symbols = set(requested_symbols)
+    elif raw_source_symbols:
+        # Never let an unavailable future screener artifact seed the universe.
+        symbols = eligible_source_symbols
+    else:
+        symbols = eligible_price_symbols
 
     rows = []
     for symbol in sorted(symbols):
         mapped = maps.get(symbol) or {}
         kis_live = kis_live_by_symbol.get(symbol)
-        if not kis_live and allow_live_kis and symbol in requested_symbols:
-            kis_live = _fetch_kis_live_snapshot_for_symbol(symbol, mapped)
         candidate = _score_symbol(
             symbol,
             mapped,
@@ -1413,9 +1498,16 @@ def _build_candidate_pool(
             news_theme_social_by_symbol.get(symbol),
             artifacts,
             generated_at,
-            performance_advisory or {},
+            performance_advisory,
             rs_rating=rs_by_symbol.get(symbol),
         )
+        authoritative_packets = [
+            packet for packet in (candidate.get('source_packets') or [])
+            if isinstance(packet, dict)
+            and packet.get('source') != 'workflow_outcomes'
+        ]
+        if not authoritative_packets or not candidate.get('source_cutoff'):
+            continue
         rows.append(candidate)
 
     rows.sort(
@@ -1446,8 +1538,13 @@ def _maybe_deepseek_rerank_candidates(
         default=max(20, min(60, limit * 3)),
         max_value=60,
     )
-    max_adjustment = _float(payload.get('deepseek_max_adjustment') or os.getenv('MIROFISH_DEEPSEEK_MAX_ADJUSTMENT', '8'))
-    max_adjustment = _clamp(max_adjustment, 0, 12)
+    configured_adjustment = (
+        payload.get('deepseek_max_adjustment')
+        if 'deepseek_max_adjustment' in payload
+        and payload.get('deepseek_max_adjustment') is not None
+        else os.getenv('MIROFISH_DEEPSEEK_MAX_ADJUSTMENT', '8')
+    )
+    max_adjustment = _resolve_rerank_max_adjustment(configured_adjustment)
     model = str(payload.get('deepseek_model') or os.getenv('MIROFISH_DEEPSEEK_RERANK_MODEL') or '').strip() or None
     base = {
         'enabled': bool(enabled),
@@ -1459,22 +1556,29 @@ def _maybe_deepseek_rerank_candidates(
         'adjusted_count': 0,
         'max_abs_adjustment': max_adjustment,
         'schema_version': 'mirofish.deepseek_rerank.v1',
+        'requested_at': generated_at,
+        'input_fingerprint': None,
     }
     if not enabled:
         return base
+    if max_adjustment is None:
+        return {**base, 'status': 'invalid_policy_bound'}
     if not rows:
         return {**base, 'status': 'empty_candidate_pool'}
+    run_context = {
+        'generated_at': generated_at,
+        'requested_symbols': sorted(requested_symbols),
+        'base_ranking': 'alpha_score - 0.55*risk_score + deterministic conviction_adjustment',
+        'lookahead_safe': True,
+    }
+    successful_limit = max_items
+    successful_context = run_context
     try:
         from app.services.mirofish import deepseek_client
 
         result = deepseek_client.rerank_scanner_candidates(
             rows,
-            run_context={
-                'generated_at': generated_at,
-                'requested_symbols': sorted(requested_symbols),
-                'base_ranking': 'alpha_score - 0.55*risk_score + deterministic conviction_adjustment',
-                'lookahead_safe': True,
-            },
+            run_context=run_context,
             limit=max_items,
             model=model,
             max_adjustment=max_adjustment,
@@ -1483,16 +1587,14 @@ def _maybe_deepseek_rerank_candidates(
         retry_limit = max(1, min(max_items, max(limit, 5)))
         if retry_limit < max_items:
             try:
+                retry_context = {
+                    **run_context,
+                    'retry_reason': type(exc).__name__,
+                    'retry_mode': 'compact_limit',
+                }
                 result = deepseek_client.rerank_scanner_candidates(
                     rows,
-                    run_context={
-                        'generated_at': generated_at,
-                        'requested_symbols': sorted(requested_symbols),
-                        'base_ranking': 'alpha_score - 0.55*risk_score + deterministic conviction_adjustment',
-                        'lookahead_safe': True,
-                        'retry_reason': f'{type(exc).__name__}: {exc}',
-                        'retry_mode': 'compact_limit',
-                    },
+                    run_context=retry_context,
                     limit=retry_limit,
                     model=model,
                     max_adjustment=max_adjustment,
@@ -1507,6 +1609,8 @@ def _maybe_deepseek_rerank_candidates(
             else:
                 base['status'] = 'applied_retry_compact'
                 base['initial_error'] = f'{type(exc).__name__}: {exc}'
+                successful_limit = retry_limit
+                successful_context = retry_context
         else:
             return {
                 **base,
@@ -1517,6 +1621,18 @@ def _maybe_deepseek_rerank_candidates(
     items = overlay.get('items') if isinstance(overlay, dict) else []
     if not isinstance(items, list):
         items = []
+    input_fingerprint = _deepseek_rerank_input_fingerprint(
+        rows,
+        run_context=successful_context,
+        limit=successful_limit,
+        model=model or base['model'],
+        max_adjustment=max_adjustment,
+    )
+    input_symbols = [
+        symbol
+        for candidate in rows[:successful_limit]
+        if (symbol := _symbol(candidate.get('symbol')))
+    ]
     return {
         **base,
         'applied': bool(items),
@@ -1535,6 +1651,8 @@ def _maybe_deepseek_rerank_candidates(
         'usage': result.get('usage'),
         'finish_reason': result.get('finish_reason'),
         'created_at': result.get('created_at'),
+        'input_fingerprint': input_fingerprint,
+        'input_symbols': input_symbols,
         'initial_error': base.get('initial_error'),
         'portfolio_note_ko': (overlay or {}).get('portfolio_note_ko') or '',
         'items': items,
@@ -1544,20 +1662,117 @@ def _maybe_deepseek_rerank_candidates(
 def _apply_deepseek_rerank_overlay(
     rows: list[dict[str, Any]],
     overlay: dict[str, Any],
+    *,
+    validated_at: Any = None,
 ) -> list[dict[str, Any]]:
+    validated = _parse_precise_source_instant(validated_at) or datetime.now(timezone.utc)
+    overlay_status = str(overlay.get('status') or 'unknown')
     if not overlay.get('applied'):
+        if not overlay.get('enabled') or overlay_status == 'disabled':
+            state_status, reason, is_validated = 'disabled', 'disabled', False
+        elif overlay_status in {'error', 'invalid_policy_bound'}:
+            state_status = 'failed'
+            reason = (
+                'provider_error'
+                if overlay_status == 'error'
+                else 'invalid_policy_bound'
+            )
+            is_validated = False
+        else:
+            state_status, reason, is_validated = 'unused', overlay_status, True
+        for candidate in rows:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status=state_status,
+                reason=reason, validated=is_validated,
+            )
         return rows
-    max_adjustment = _float(overlay.get('max_abs_adjustment') or 8)
-    by_symbol = {}
-    for item in overlay.get('items') or []:
-        if not isinstance(item, dict):
-            continue
-        symbol = _symbol(item.get('symbol'))
-        if symbol:
+
+    result_at = _parse_precise_source_instant(overlay.get('created_at'))
+    requested_at = _parse_precise_source_instant(overlay.get('requested_at'))
+    input_fingerprint = str(overlay.get('input_fingerprint') or '').strip().lower()
+    raw_input_symbols = overlay.get('input_symbols')
+    input_symbols = (
+        [_exact_rerank_symbol(value) for value in raw_input_symbols]
+        if isinstance(raw_input_symbols, list)
+        else []
+    )
+    submitted_symbols = {symbol for symbol in input_symbols if symbol}
+    timestamp_safe = bool(
+        result_at is not None
+        and result_at <= validated
+        and (requested_at is None or result_at >= requested_at)
+    )
+    identity_safe = bool(
+        re.fullmatch(r'[0-9a-f]{64}', input_fingerprint)
+        and submitted_symbols
+        and len(submitted_symbols) == len(input_symbols)
+    )
+    if not timestamp_safe or not identity_safe:
+        reason = 'invalid_timestamp' if not timestamp_safe else 'invalid_input_identity'
+        for candidate in rows:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='failed',
+                reason=reason, validated=False,
+            )
+        overlay['applied'] = False
+        overlay['adjusted_count'] = 0
+        overlay['status'] = reason
+        return rows
+
+    configured_adjustment = (
+        overlay.get('max_abs_adjustment')
+        if 'max_abs_adjustment' in overlay
+        and overlay.get('max_abs_adjustment') is not None
+        else 8.0
+    )
+    max_adjustment = _resolve_rerank_max_adjustment(configured_adjustment)
+    if max_adjustment is None:
+        for candidate in rows:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='failed',
+                reason='invalid_policy_bound', validated=False,
+            )
+        overlay['applied'] = False
+        overlay['adjusted_count'] = 0
+        overlay['max_abs_adjustment'] = None
+        overlay['status'] = 'invalid_policy_bound'
+        return rows
+    overlay['max_abs_adjustment'] = max_adjustment
+    by_symbol: dict[str, dict[str, Any]] = {}
+    invalid_symbols: set[str] = set()
+    unsubmitted_symbols: set[str] = set()
+    raw_items = overlay.get('items')
+    if not isinstance(raw_items, list) or any(
+        not isinstance(item, dict)
+        or _exact_rerank_symbol(item.get('symbol')) is None
+        for item in raw_items
+    ):
+        for candidate in rows:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='failed',
+                reason='invalid_item', validated=False,
+            )
+        overlay['applied'] = False
+        overlay['adjusted_count'] = 0
+        overlay['status'] = 'invalid_item'
+        return rows
+    for item in raw_items:
+        symbol = _exact_rerank_symbol(item.get('symbol'))
+        if symbol not in submitted_symbols:
+            unsubmitted_symbols.add(symbol)
+            by_symbol[symbol] = item
+        elif symbol in by_symbol:
+            invalid_symbols.add(symbol)
+        else:
             by_symbol[symbol] = item
     if not by_symbol:
         overlay['applied'] = False
         overlay['status'] = 'no_matching_symbols'
+        for candidate in rows:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='unused',
+                reason='no_matching_symbol', validated=True,
+            )
         return rows
 
     adjusted = 0
@@ -1565,17 +1780,77 @@ def _apply_deepseek_rerank_overlay(
         symbol = _symbol(candidate.get('symbol'))
         item = by_symbol.get(symbol)
         if not item:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='unused',
+                reason=(
+                    'not_returned' if symbol in submitted_symbols
+                    else 'outside_limit'
+                ),
+                validated=True,
+            )
             continue
-        adjustment = _clamp(_float(item.get('ranking_adjustment')), -max_adjustment, max_adjustment)
-        conviction = _clamp(_float(item.get('deepseek_conviction')), 0, 100)
-        risk_flags = [str(flag)[:80] for flag in (item.get('risk_flags') or []) if isinstance(flag, (str, int, float))][:6]
+        raw_adjustment = item.get('ranking_adjustment')
+        raw_conviction = item.get('deepseek_conviction')
+        if (
+            symbol in unsubmitted_symbols
+            or symbol not in submitted_symbols
+        ):
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='failed',
+                reason='symbol_not_submitted', validated=False,
+            )
+            continue
+        if (
+            symbol in invalid_symbols
+            or not _finite_number(raw_adjustment)
+            or not _finite_number(raw_conviction)
+            or not _valid_deepseek_rerank_qualitative_fields(item)
+        ):
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='failed',
+                reason='invalid_item', validated=False,
+            )
+            continue
+        input_source_cutoff = str(
+            candidate.get('source_cutoff')
+            or (candidate.get('replay_context') or {}).get('source_cutoff')
+            or ''
+        ).strip()
+        input_cutoff_dt = _parse_precise_source_instant(input_source_cutoff)
+        if input_cutoff_dt is None or result_at < input_cutoff_dt:
+            _set_deepseek_rerank_state(
+                candidate, overlay=overlay, status='failed',
+                reason='invalid_timestamp', validated=False,
+            )
+            continue
+        input_evidence_fingerprint = hashlib.sha256(
+            json.dumps(
+                {
+                    'source_cutoff': input_source_cutoff,
+                    'source_packets': candidate.get('source_packets') or [],
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(',', ':'),
+                default=str,
+            ).encode('utf-8')
+        ).hexdigest()
+        adjustment = _clamp(float(raw_adjustment), -max_adjustment, max_adjustment)
+        conviction = _clamp(float(raw_conviction), 0, 100)
+        risk_flags = [
+            flag.strip()[:80]
+            for flag in item.get('risk_flags')
+            if flag.strip()
+        ][:6]
         positive_evidence = [
-            str(value)[:100]
-            for value in (item.get('positive_evidence') or [])
-            if isinstance(value, (str, int, float))
+            value.strip()[:100]
+            for value in item.get('positive_evidence')
+            if value.strip()
         ][:6]
         rationale = str(item.get('rationale_ko') or '').strip()[:240]
-        candidate['ranking_score'] = round(_float(candidate.get('ranking_score')) + adjustment, 2)
+        base_ranking_score = round(_float(candidate.get('ranking_score')), 2)
+        final_ranking_score = round(base_ranking_score + adjustment, 2)
+        candidate['ranking_score'] = final_ranking_score
         candidate.setdefault('strategy_tags', [])
         if adjustment > 0 and 'deepseek_v4_confirmed' not in candidate['strategy_tags']:
             candidate['strategy_tags'].append('deepseek_v4_confirmed')
@@ -1589,18 +1864,94 @@ def _apply_deepseek_rerank_overlay(
                 'rationale_ko': rationale,
             })
         ]
+        normalized = {
+            'symbol': symbol,
+            'base_ranking_score': base_ranking_score,
+            'ranking_adjustment': round(adjustment, 2),
+            'final_ranking_score': final_ranking_score,
+            'deepseek_conviction': round(conviction, 2),
+            'risk_flags': risk_flags,
+            'positive_evidence': positive_evidence,
+            'rationale_ko': rationale,
+        }
+        content = {
+            'provider': 'deepseek',
+            'model': overlay.get('model'),
+            'operation': 'scanner_rerank',
+            'schema_version': overlay.get('schema_version') or 'mirofish.deepseek_rerank.v1',
+            'max_abs_adjustment': max_adjustment,
+            'status': 'applied',
+            'validated': True,
+            'result_at': result_at.isoformat(),
+            'input_source_cutoff': input_cutoff_dt.isoformat(),
+            'input_fingerprint': input_fingerprint,
+            'input_evidence_fingerprint': input_evidence_fingerprint,
+            'normalized': normalized,
+        }
+        identity = hashlib.sha256(
+            json.dumps(
+                content, ensure_ascii=False, sort_keys=True,
+                separators=(',', ':'), default=str,
+            ).encode('utf-8')
+        ).hexdigest()[:20]
+        source_packet = {
+            'evidence_id': f'{symbol}-{identity}',
+            'source_type': 'model_attachment',
+            'source': 'deepseek_rerank',
+            'title': f'{symbol} DeepSeek scanner rerank',
+            'observed_at': result_at.isoformat(),
+            'freshness': _freshness_label(result_at.isoformat(), validated.isoformat()),
+            'confidence': round(conviction / 100.0, 4),
+            'content': content,
+        }
+        source_packets = [
+            packet for packet in (candidate.get('source_packets') or [])
+            if isinstance(packet, dict) and packet.get('source') != 'deepseek_rerank'
+        ]
+        source_packets.append(source_packet)
+        source_packets.sort(
+            key=lambda row: (
+                str(row.get('source') or ''), str(row.get('evidence_id') or ''),
+            )
+        )
+        candidate['source_packets'] = source_packets
+        candidate['source_cutoff'] = result_at.isoformat()
+        replay = candidate.get('replay_context') if isinstance(candidate.get('replay_context'), dict) else {}
+        data_sources = [str(value) for value in (replay.get('data_sources') or []) if value]
+        if 'deepseek_rerank' not in data_sources:
+            data_sources.append('deepseek_rerank')
+        replay.update({
+            'source_cutoff': result_at.isoformat(),
+            'data_sources': data_sources,
+            'lookahead_safe': bool(source_packets and not candidate.get('provenance_missing')),
+        })
+        candidate['replay_context'] = replay
         profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
         profile['deepseek_rerank'] = {
             'applied': True,
+            'status': 'applied',
+            'reason': None,
+            'validated': True,
+            'provider': 'deepseek',
             'model': overlay.get('model'),
             'ranking_adjustment': round(adjustment, 2),
+            'max_abs_adjustment': max_adjustment,
             'deepseek_conviction': round(conviction, 2),
             'risk_flags': risk_flags,
             'positive_evidence': positive_evidence,
             'rationale_ko': rationale,
             'lookahead_safe': True,
+            'base_ranking_score': base_ranking_score,
+            'final_ranking_score': final_ranking_score,
+            'result_at': result_at.isoformat(),
+            'input_source_cutoff': input_cutoff_dt.isoformat(),
+            'input_fingerprint': input_fingerprint,
         }
         candidate['analysis_profile'] = profile
+        candidate['ranking_provenance'] = {
+            **(candidate.get('ranking_provenance') or {}),
+            'deepseek_rerank': dict(profile['deepseek_rerank']),
+        }
         adjusted += 1
 
     rows.sort(
@@ -1615,7 +1966,108 @@ def _apply_deepseek_rerank_overlay(
     for index, item in enumerate(rows, start=1):
         item['pool_rank'] = index
     overlay['adjusted_count'] = adjusted
+    overlay['applied'] = bool(adjusted)
+    if not adjusted:
+        overlay['status'] = 'no_valid_items'
+    overlay['validated_at'] = validated.isoformat()
+    overlay['result_at'] = result_at.isoformat()
     return rows
+
+
+def _deepseek_rerank_input_fingerprint(
+    rows: list[dict[str, Any]],
+    *,
+    run_context: dict[str, Any],
+    limit: int,
+    model: str,
+    max_adjustment: float,
+) -> str:
+    """Bind the exact compact candidates and policy submitted for reranking."""
+    from app.services.mirofish import deepseek_client
+
+    compact = deepseek_client._compact_rerank_candidates(rows[:limit])
+    payload = {
+        'operation': 'scanner_rerank',
+        'schema_version': 'mirofish.deepseek_rerank.v1',
+        'model': model,
+        'limit': limit,
+        'max_abs_adjustment': round(max_adjustment, 4),
+        'run_context': run_context,
+        'candidates': compact,
+    }
+    return hashlib.sha256(
+        json.dumps(
+            payload, ensure_ascii=False, sort_keys=True,
+            separators=(',', ':'), default=str,
+        ).encode('utf-8')
+    ).hexdigest()
+
+
+def _set_deepseek_rerank_state(
+    candidate: dict[str, Any],
+    *,
+    overlay: dict[str, Any],
+    status: str,
+    reason: str,
+    validated: bool,
+) -> None:
+    base_score = round(_float(candidate.get('ranking_score')), 2)
+    state = {
+        'applied': False,
+        'status': status,
+        'reason': reason,
+        'validated': bool(validated),
+        'provider': 'deepseek',
+        'model': overlay.get('model'),
+        'ranking_adjustment': 0.0,
+        'base_ranking_score': base_score,
+        'final_ranking_score': base_score,
+        'lookahead_safe': bool(
+            (candidate.get('replay_context') or {}).get('lookahead_safe')
+        ),
+    }
+    profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
+    profile['deepseek_rerank'] = state
+    candidate['analysis_profile'] = profile
+    candidate['ranking_provenance'] = {
+        **(candidate.get('ranking_provenance') or {}),
+        'deepseek_rerank': dict(state),
+    }
+
+
+def _finite_number(value: Any) -> bool:
+    if isinstance(value, bool):
+        return False
+    try:
+        return math.isfinite(float(value))
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
+def _resolve_rerank_max_adjustment(value: Any) -> float | None:
+    """Return a finite non-bool policy bound clamped to the supported range."""
+    if not _finite_number(value):
+        return None
+    return round(_clamp(float(value), 0.0, 12.0), 4)
+
+
+def _exact_rerank_symbol(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    symbol = value.strip()
+    return symbol if re.fullmatch(r'\d{6}', symbol) else None
+
+
+def _valid_deepseek_rerank_qualitative_fields(item: dict[str, Any]) -> bool:
+    risk_flags = item.get('risk_flags')
+    positive_evidence = item.get('positive_evidence')
+    return bool(
+        isinstance(risk_flags, list)
+        and all(isinstance(value, str) for value in risk_flags)
+        and isinstance(positive_evidence, list)
+        and all(isinstance(value, str) for value in positive_evidence)
+        and isinstance(item.get('rationale_ko'), str)
+    )
 
 
 def _deepseek_rerank_provider_status(overlay: dict[str, Any]) -> dict[str, Any]:
@@ -1727,8 +2179,52 @@ def _score_symbol(
     *,
     rs_rating: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    source_file_observed = {
+        os.path.basename(str(item.get('file') or '')): item.get('modified_at')
+        for item in _source_files(artifacts)
+        if isinstance(item, dict)
+    }
+    source_exclusions: dict[str, dict[str, Any]] = {}
+
+    def gate_source(source: str, payload: dict[str, Any] | None) -> dict[str, Any] | None:
+        normalized, exclusion = _normalize_scoring_source(
+            source,
+            payload,
+            artifacts=artifacts,
+            cutoff_ceiling=generated_at,
+            file_observed_at=source_file_observed.get(source),
+        )
+        if exclusion is not None:
+            source_exclusions[source] = exclusion
+        return normalized
+
+    eligible_price_history = []
+    for historical_price in price_history:
+        normalized, _exclusion = _normalize_scoring_source(
+            'daily_prices.csv', historical_price,
+            artifacts=artifacts, cutoff_ceiling=generated_at,
+        )
+        if normalized is not None:
+            eligible_price_history.append(normalized)
+    price_history = eligible_price_history
+    price = gate_source('daily_prices.csv', price)
+    if price is None and price_history:
+        price = price_history[-1]
+    price = price or {}
+    screener = gate_source('screener_leading_latest.json', screener)
+    vcp = gate_source('vcp_kr_latest.json', vcp)
+    jongga = gate_source('jongga_v2_latest.json', jongga)
+    tradingview = gate_source('tradingview_mcp', tradingview)
+    institutional = gate_source('all_institutional_trend_data.csv', institutional)
+    kind_blacklist = gate_source('kind_blacklist_latest.json', kind_blacklist)
+    credit_balance = gate_source('credit_balance_latest.json', credit_balance)
+    kis_live = gate_source('KIS API: live price/investor flow', kis_live)
+    dart_event = gate_source('dart_event_latest.json', dart_event)
+    news_theme_social = gate_source('news_theme_social_latest.json', news_theme_social)
+    rs_rating = gate_source('alpha_rs_ratings.json', rs_rating)
+
     evidence = []
-    kis_overlay = _kis_live_overlay(price, kis_live)
+    kis_overlay = _kis_live_overlay(price, kis_live, as_of=generated_at)
     if kis_overlay.get('applied'):
         price = kis_overlay['price']
     change_rate = _float(price.get('change_rate'))
@@ -1833,7 +2329,7 @@ def _score_symbol(
             rs_adjustment.get('alpha_delta'),
             rs_adjustment.get('rs_rating'),
         ))
-    source_freshness = _symbol_freshness(artifacts)
+    source_freshness = _symbol_freshness(artifacts, cutoff_ceiling=generated_at)
     mcp_adjustment = _mcp_quality_adjustment(
         price=price,
         kis_live=kis_live,
@@ -1844,6 +2340,7 @@ def _score_symbol(
         news_theme_social=news_theme_social,
         freshness=source_freshness,
         performance_advisory=performance_advisory,
+        as_of=generated_at,
     )
     alpha += _float(mcp_adjustment.get('alpha_delta'))
     risk += _float(mcp_adjustment.get('risk_delta'))
@@ -1903,6 +2400,12 @@ def _score_symbol(
         freshness=source_freshness,
         risk=risk,
     )
+    workflow_outcomes = _workflow_outcomes_source_payload(
+        performance_advisory,
+        performance_memory=mcp_adjustment.get('performance_memory'),
+        tag_memory=tag_memory,
+        total_ranking_delta=mcp_ranking_delta,
+    )
     data_sources = _candidate_sources(
         price,
         screener,
@@ -1915,6 +2418,31 @@ def _score_symbol(
         kis_live,
         dart_event,
         news_theme_social,
+        rs_rating,
+        workflow_outcomes,
+    )
+    source_packets, source_cutoff, provenance_missing = _authoritative_source_packets(
+        symbol=symbol,
+        evidence=clean_evidence,
+        artifacts=artifacts,
+        sources={
+            'daily_prices.csv': {'price': price, 'price_metrics': price_metrics},
+            'screener_leading_latest.json': screener,
+            'vcp_kr_latest.json': vcp,
+            'jongga_v2_latest.json': jongga,
+            'tradingview_mcp': {'signal': tradingview, 'adjustment': tradingview_adjustment}
+                if tradingview_adjustment.get('applied') else None,
+            'all_institutional_trend_data.csv': institutional,
+            'kind_blacklist_latest.json': kind_blacklist,
+            'credit_balance_latest.json': credit_balance,
+            'KIS API: live price/investor flow': kis_live,
+            'dart_event_latest.json': dart_event,
+            'news_theme_social_latest.json': news_theme_social,
+            'alpha_rs_ratings.json': rs_rating,
+            'workflow_outcomes': workflow_outcomes,
+        },
+        required_sources=data_sources,
+        cutoff_ceiling=generated_at,
     )
     profitability_scorecard = _profitability_scorecard(
         alpha=alpha,
@@ -1987,9 +2515,11 @@ def _score_symbol(
         'entry_plan': entry_plan,
         'replay_context': {
             'price_date': price.get('date'),
-            'generated_at': generated_at,
+            'source_cutoff': source_cutoff,
             'data_sources': data_sources,
-            'lookahead_safe': True,
+            'lookahead_safe': bool(
+                source_packets and source_cutoff and not provenance_missing
+            ),
         },
         'price': {
             'date': price.get('date'),
@@ -1999,6 +2529,13 @@ def _score_symbol(
             'trading_value': trading_value,
         },
         'generated_at': generated_at,
+        'source_cutoff': source_cutoff,
+        'source_packets': source_packets,
+        'source_availability_excluded': sorted(source_exclusions),
+        'source_availability_exclusion_details': [
+            source_exclusions[source] for source in sorted(source_exclusions)
+        ],
+        'provenance_missing': provenance_missing,
         'source': 'local_marketflow_artifacts',
         'freshness': source_freshness,
         'tradingview': tradingview_adjustment,
@@ -2140,7 +2677,9 @@ def _load_indexed_resource_artifact(filename: str) -> dict[str, dict[str, Any]]:
         enriched = dict(item)
         enriched.setdefault('symbol', symbol)
         enriched.setdefault('source_file', filename)
-        if artifact.get('generated_at') and not _resource_observed_at(enriched):
+        if artifact.get('generated_at'):
+            enriched['source_artifact_available_at'] = artifact.get('generated_at')
+        if artifact.get('generated_at') and _precise_resource_observed_at(enriched) is None:
             enriched['generated_at'] = artifact.get('generated_at')
         indexed[symbol] = enriched
     return indexed
@@ -2291,13 +2830,23 @@ def _load_json_artifact(filename: str) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError, ValueError):
         return artifact
     artifact['data'] = data
-    artifact['generated_at'] = (
-        data.get('timestamp')
-        or data.get('date')
-        or _nested_get(data, ['metadata', 'generated_at'])
-        or artifact['mtime']
-    )
+    artifact['generated_at'] = _artifact_observed_value(data) or artifact['mtime']
     return artifact
+
+
+def _artifact_observed_value(data: Any) -> Any:
+    """Return the first precise producer timestamp, never a date-only label."""
+    if not isinstance(data, dict):
+        return None
+    for key in (
+        'available_at', 'fetched_at', 'observed_at', 'updated_at',
+        'generated_at', 'timestamp', 'date',
+    ):
+        value = data.get(key)
+        if _parse_precise_source_instant(value) is not None:
+            return value
+    metadata = data.get('metadata')
+    return _artifact_observed_value(metadata) if isinstance(metadata, dict) else None
 
 
 def _symbols_from_screener(data: Any) -> set[str]:
@@ -2440,8 +2989,11 @@ def _stddev(values: list[float]) -> float:
     return variance ** 0.5
 
 
-def _source_files(artifacts: dict[str, Any]) -> list[dict[str, Any]]:
+def _source_files(
+    artifacts: dict[str, Any], *, cutoff_ceiling: Any = None,
+) -> list[dict[str, Any]]:
     files = []
+    cutoff = _parse_dt(cutoff_ceiling)
     for filename in WATCHED_SOURCE_FILES:
         path = os.path.join(DATA_ROOT, filename)
         exists = os.path.isfile(path)
@@ -2454,14 +3006,32 @@ def _source_files(artifacts: dict[str, Any]) -> list[dict[str, Any]]:
                 generated_at = artifact.get('generated_at')
         max_age_days = _freshness_max_age_days(filename)
         freshness_value = generated_at or mtime
+        available_at = _parse_precise_source_instant(freshness_value)
+        available = bool(
+            exists
+            and (
+                cutoff is None
+                or (available_at is not None and available_at <= cutoff)
+            )
+        )
         policy = SOURCE_FILE_POLICIES.get(filename, {})
         files.append({
             'file': f'data/{filename}',
             'exists': exists,
+            'available': available,
+            'available_at': available_at.isoformat() if available_at is not None else None,
+            'cutoff': cutoff.isoformat() if cutoff is not None else None,
             'generated_at': generated_at,
             'modified_at': mtime,
-            'freshness': _freshness_label(freshness_value, max_age_days=max_age_days),
-            'age_days': _age_days(freshness_value),
+            'freshness': (
+                _freshness_label(
+                    freshness_value,
+                    cutoff_ceiling,
+                    max_age_days=max_age_days,
+                )
+                if available else 'unavailable'
+            ),
+            'age_days': _age_days(freshness_value, cutoff_ceiling) if available else None,
             'max_age_days': max_age_days,
             'role': policy.get('role'),
             'required': bool(policy.get('required', True)),
@@ -2471,13 +3041,16 @@ def _source_files(artifacts: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _aggregate_freshness(source_files: list[dict[str, Any]]) -> dict[str, Any]:
-    existing = [item for item in source_files if item.get('exists')]
+    def is_available(item: dict[str, Any]) -> bool:
+        return bool(item.get('available', item.get('exists')))
+
+    existing = [item for item in source_files if is_available(item)]
     stale_count = sum(1 for item in existing if item.get('freshness') == 'stale')
     unknown_count = sum(1 for item in existing if item.get('freshness') == 'unknown')
     required_files = [item for item in source_files if item.get('required')]
-    missing_required_count = sum(1 for item in required_files if not item.get('exists'))
+    missing_required_count = sum(1 for item in required_files if not is_available(item))
     missing_count = len(source_files) - len(existing)
-    if not required_files or not any(item.get('exists') for item in required_files):
+    if not required_files or not any(is_available(item) for item in required_files):
         status = 'missing'
     elif stale_count:
         status = 'stale'
@@ -2501,7 +3074,10 @@ def _alert_block_reason(run: dict[str, Any]) -> str | None:
     source_files = [item for item in (run.get('source_files') or []) if isinstance(item, dict)]
     alert_required = [item for item in source_files if item.get('alert_required')]
     if alert_required:
-        existing_required = [item for item in alert_required if item.get('exists')]
+        existing_required = [
+            item for item in alert_required
+            if item.get('available', item.get('exists'))
+        ]
         if not existing_required:
             return 'source_freshness:missing'
         if any(str(item.get('freshness') or '').lower() == 'stale' for item in existing_required):
@@ -2527,21 +3103,38 @@ def _source_warning(run: dict[str, Any], blocked_reason: str | None) -> str | No
     return None
 
 
-def _symbol_freshness(artifacts: dict[str, Any]) -> dict[str, Any]:
-    source_files = _source_files(artifacts)
+def _symbol_freshness(
+    artifacts: dict[str, Any], *, cutoff_ceiling: Any = None,
+) -> dict[str, Any]:
+    source_files = _source_files(artifacts, cutoff_ceiling=cutoff_ceiling)
     return _aggregate_freshness(source_files)
 
 
-def _staleness_penalty(artifacts: dict[str, Any], generated_at: str) -> float:
+def _staleness_penalty(
+    artifacts: dict[str, Any], generated_at: str,
+) -> float:
     penalty = 0.0
-    for key in ['screener', 'vcp', 'jongga']:
-        artifact = artifacts.get(key) or {}
-        if not artifact.get('exists'):
+    cutoff = _parse_dt(generated_at)
+    for source, artifact_key in (
+        ('screener_leading_latest.json', 'screener'),
+        ('vcp_kr_latest.json', 'vcp'),
+        ('jongga_v2_latest.json', 'jongga'),
+    ):
+        artifact = artifacts.get(artifact_key) or {}
+        observed = (
+            _precise_resource_observed_at(artifact)
+            or _parse_precise_source_instant(artifact.get('mtime'))
+        )
+        if (
+            not artifact.get('exists')
+            or observed is None
+            or (cutoff is not None and observed > cutoff)
+        ):
             penalty += 2.5
         elif _freshness_label(
-            artifact.get('generated_at'),
+            observed.isoformat(),
             generated_at,
-            max_age_days=_freshness_max_age_days(artifact.get('filename')),
+            max_age_days=_freshness_max_age_days(source),
         ) == 'stale':
             penalty += 4.0
     return penalty
@@ -2631,7 +3224,9 @@ def _institutional_flow_confirmation(institutional: dict[str, Any] | None) -> di
     }
 
 
-def _kis_live_overlay(price: dict[str, Any], kis_live: dict[str, Any] | None) -> dict[str, Any]:
+def _kis_live_overlay(
+    price: dict[str, Any], kis_live: dict[str, Any] | None, *, as_of: Any = None,
+) -> dict[str, Any]:
     if not isinstance(kis_live, dict) or not kis_live:
         return {'applied': False, 'available': False}
     quote = kis_live.get('quote') if isinstance(kis_live.get('quote'), dict) else kis_live
@@ -2672,7 +3267,9 @@ def _kis_live_overlay(price: dict[str, Any], kis_live: dict[str, Any] | None) ->
         'fetched_at': merged.get('kis_fetched_at'),
         'price': merged,
         'quote': quote,
-        'weight': _resource_weight(kis_live, default_confidence=0.94, max_age_days=1),
+        'weight': _resource_weight(
+            kis_live, default_confidence=0.94, max_age_days=1, as_of=as_of,
+        ),
     }
 
 
@@ -2687,6 +3284,7 @@ def _mcp_quality_adjustment(
     news_theme_social: dict[str, Any] | None,
     freshness: dict[str, Any],
     performance_advisory: dict[str, Any],
+    as_of: Any = None,
 ) -> dict[str, Any]:
     alpha_delta = 0.0
     risk_delta = 0.0
@@ -2696,7 +3294,12 @@ def _mcp_quality_adjustment(
     evidence: list[dict[str, Any]] = []
     resource_weights: dict[str, Any] = {}
 
-    kis_weight = _resource_weight(kis_live, default_confidence=0.94, max_age_days=1) if kis_live else _resource_weight(None)
+    kis_weight = (
+        _resource_weight(
+            kis_live, default_confidence=0.94, max_age_days=1, as_of=as_of,
+        )
+        if kis_live else _resource_weight(None, as_of=as_of)
+    )
     if kis_live and kis_overlay.get('applied'):
         quote = kis_overlay.get('quote') or {}
         investor = kis_live.get('investor') if isinstance(kis_live.get('investor'), dict) else {}
@@ -2734,12 +3337,19 @@ def _mcp_quality_adjustment(
     resource_weights['kis_live'] = kis_weight
 
     if flow_confirmation.get('passed') and institutional:
-        flow_weight = _resource_weight(institutional, default_confidence=0.82, max_age_days=30)
+        flow_weight = _resource_weight(
+            institutional, default_confidence=0.82, max_age_days=30, as_of=as_of,
+        )
         alpha_delta += 1.5 * flow_weight['score_weight']
         evidence.append(_evidence('all_institutional_trend_data.csv', 'flow_quality_weight', 1.5, flow_weight['freshness']))
         resource_weights['capital_flow'] = flow_weight
 
-    dart_weight = _resource_weight(dart_event, default_confidence=0.86, max_age_days=7) if dart_event else _resource_weight(None)
+    dart_weight = (
+        _resource_weight(
+            dart_event, default_confidence=0.86, max_age_days=7, as_of=as_of,
+        )
+        if dart_event else _resource_weight(None, as_of=as_of)
+    )
     if dart_event:
         dart_result = _dart_event_risk_adjustment(dart_event, dart_weight)
         alpha_delta += dart_result['alpha_delta']
@@ -2749,7 +3359,13 @@ def _mcp_quality_adjustment(
         evidence.extend(dart_result['evidence'])
     resource_weights['dart_event'] = dart_weight
 
-    nts_weight = _resource_weight(news_theme_social, default_confidence=0.58, max_age_days=2) if news_theme_social else _resource_weight(None)
+    nts_weight = (
+        _resource_weight(
+            news_theme_social, default_confidence=0.58,
+            max_age_days=2, as_of=as_of,
+        )
+        if news_theme_social else _resource_weight(None, as_of=as_of)
+    )
     if news_theme_social:
         support = _news_theme_social_adjustment(news_theme_social, nts_weight, has_core_confirmation=bool(kis_live or institutional or flow_confirmation.get('passed')))
         alpha_delta += support['alpha_delta']
@@ -2928,6 +3544,71 @@ def _performance_tag_memory_adjustment(performance_advisory: dict[str, Any], tag
         'matched_tags': matched,
         'learning_policy_status': learning_gate.get('status') if learning_gate else None,
         'lookahead_safe': bool(performance_advisory.get('lookahead_safe', True)),
+    }
+
+
+def _workflow_outcomes_source_payload(
+    performance_advisory: dict[str, Any],
+    *,
+    performance_memory: Any,
+    tag_memory: Any,
+    total_ranking_delta: float,
+) -> dict[str, Any] | None:
+    """Freeze the exact replay-safe outcome inputs that affected this symbol."""
+    memory = performance_memory if isinstance(performance_memory, dict) else {}
+    tag = tag_memory if isinstance(tag_memory, dict) else {}
+    if not (memory.get('applied') or tag.get('applied')):
+        return None
+    available_at = _parse_precise_source_instant(
+        performance_advisory.get('available_at')
+        or performance_advisory.get('asof')
+        or performance_advisory.get('as_of')
+    )
+    if available_at is None or not performance_advisory.get('lookahead_safe'):
+        return None
+    recommendations = (
+        performance_advisory.get('recommendations')
+        if isinstance(performance_advisory.get('recommendations'), dict)
+        else {}
+    )
+    matched_tags = tag.get('matched_tags') if isinstance(tag.get('matched_tags'), dict) else {}
+    evaluated_count = int(_float(performance_advisory.get('evaluated_count')))
+    normalized = {
+        'source': 'workflow_outcomes',
+        'available_at': available_at.isoformat(),
+        'as_of': available_at.isoformat(),
+        'lookahead_safe': True,
+        'evaluated_count': evaluated_count,
+        'workflow_count_scanned': int(
+            _float(performance_advisory.get('workflow_count_scanned'))
+        ),
+        'horizon_days': int(_float(performance_advisory.get('horizon_days'))),
+        'hit_rate_recent': round(_float(performance_advisory.get('hit_rate_recent')), 6),
+        'baseline_hit_rate': round(
+            _float(
+                memory.get('baseline_hit_rate')
+                if memory.get('baseline_hit_rate') is not None
+                else recommendations.get('baseline_hit_rate')
+            ),
+            6,
+        ),
+        'global_ranking_delta': round(_float(memory.get('ranking_delta')), 2),
+        'tag_ranking_delta': round(_float(tag.get('ranking_delta')), 2),
+        'total_ranking_delta': round(_float(total_ranking_delta), 2),
+        'matched_tags': {
+            str(key): round(_float(value), 2)
+            for key, value in sorted(matched_tags.items())
+        },
+    }
+    return {
+        'source': 'workflow_outcomes',
+        'schema_version': 'mirofish.workflow_outcomes.ranking.v1',
+        'available_at': available_at.isoformat(),
+        'lookahead_safe': True,
+        'confidence': round(
+            _clamp(0.55 + evaluated_count * 0.004, 0.55, 0.95), 4
+        ),
+        'normalized': normalized,
     }
 
 
@@ -3298,6 +3979,8 @@ def _candidate_sources(
     kis_live: dict[str, Any] | None = None,
     dart_event: dict[str, Any] | None = None,
     news_theme_social: dict[str, Any] | None = None,
+    rs_rating: dict[str, Any] | None = None,
+    workflow_outcomes: dict[str, Any] | None = None,
 ) -> list[str]:
     sources = []
     if _float(price.get('current_price')) > 0:
@@ -3322,7 +4005,225 @@ def _candidate_sources(
         sources.append('dart_event_latest.json')
     if news_theme_social:
         sources.append('news_theme_social_latest.json')
+    if rs_rating:
+        sources.append('alpha_rs_ratings.json')
+    if workflow_outcomes:
+        sources.append('workflow_outcomes')
     return sources
+
+
+def _authoritative_source_packets(
+    *, symbol: str, evidence: list[dict[str, Any]], artifacts: dict[str, Any],
+    sources: dict[str, Any], required_sources: list[str], cutoff_ceiling: Any = None,
+) -> tuple[list[dict[str, Any]], str | None, list[str]]:
+    """Project source-owned observations; never substitute scanner generation time."""
+    file_observed = {
+        os.path.basename(str(item.get('file') or '')): item.get('modified_at')
+        for item in _source_files(artifacts)
+        if isinstance(item, dict)
+    }
+    packets: list[dict[str, Any]] = []
+    missing: list[str] = []
+    observed_values: list[datetime] = []
+    ceiling = _parse_dt(cutoff_ceiling)
+    for source in required_sources:
+        payload = sources.get(source)
+        if not payload:
+            missing.append(source)
+            continue
+        artifact_key = _SOURCE_ARTIFACT_KEYS.get(source)
+        artifact = artifacts.get(artifact_key) if artifact_key else None
+        parsed = _source_available_at(
+            source, payload, artifact=artifact,
+            file_observed_at=file_observed.get(source),
+        )
+        if parsed is None or (ceiling is not None and parsed > ceiling):
+            missing.append(source)
+            continue
+        normalized_time = parsed.isoformat()
+        observed_values.append(parsed)
+        source_evidence = [row for row in evidence if str(row.get('source') or '') == source]
+        content = ({**payload, 'evidence': source_evidence}
+                   if isinstance(payload, dict)
+                   else {'raw': payload, 'evidence': source_evidence})
+        identity = hashlib.sha256(
+            json.dumps(content, ensure_ascii=False, sort_keys=True, default=str).encode('utf-8')
+        ).hexdigest()[:20]
+        packets.append({
+            'evidence_id': f'{symbol}-{identity}',
+            'source_type': _source_packet_type(source),
+            'source': source,
+            'title': f'{symbol} {source}',
+            'observed_at': normalized_time,
+            'freshness': _freshness_label(
+                normalized_time,
+                cutoff_ceiling,
+                max_age_days=7,
+            ),
+            'confidence': max([_float(row.get('confidence')) for row in source_evidence] or [0.7]),
+            'content': content,
+        })
+    packets.sort(key=lambda row: (row['source'], row['evidence_id']))
+    cutoff = max(observed_values).isoformat() if observed_values else None
+    return packets, cutoff, sorted(set(missing))
+
+
+def _daily_bar_available_at(payload: dict[str, Any]) -> datetime | None:
+    """Resolve a daily bar's real availability; date-only bars exist at KRX close."""
+    price = payload.get('price') if isinstance(payload.get('price'), dict) else payload
+    for key in ('available_at', 'fetched_at', 'observed_at', 'updated_at', 'update_time'):
+        parsed = _parse_precise_source_instant(price.get(key))
+        if parsed is not None:
+            return parsed
+    raw_date = str(price.get('date') or '').strip()
+    if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', raw_date):
+        return None
+    session_date = datetime.fromisoformat(raw_date).date()
+    return datetime.combine(session_date, dt_time(15, 30), tzinfo=KST).astimezone(timezone.utc)
+
+
+def _source_available_at(
+    source: str,
+    payload: Any,
+    *,
+    artifact: Any = None,
+    file_observed_at: Any = None,
+) -> datetime | None:
+    """Resolve source-semantic availability without treating dates as instants."""
+    if not isinstance(payload, dict):
+        return None
+    if source == 'daily_prices.csv':
+        return _daily_bar_available_at(payload)
+    if source == 'all_institutional_trend_data.csv':
+        observation = _precise_resource_observed_at(payload)
+        if observation is None:
+            scrape_date = str(payload.get('scrape_date') or '').strip()
+            if re.fullmatch(r'\d{4}-\d{2}-\d{2}', scrape_date):
+                session_date = datetime.fromisoformat(scrape_date).date()
+                observation = datetime.combine(
+                    session_date, dt_time(15, 30), tzinfo=KST,
+                ).astimezone(timezone.utc)
+        envelope = _source_envelope_available_at(
+            payload,
+            artifact=artifact,
+            file_observed_at=file_observed_at,
+        )
+        available = [value for value in (observation, envelope) if value is not None]
+        return max(available) if available else None
+
+    observation = _precise_resource_observed_at(payload)
+    envelope = _source_envelope_available_at(
+        payload,
+        artifact=artifact,
+        file_observed_at=file_observed_at,
+    )
+    available = [value for value in (observation, envelope) if value is not None]
+    return max(available) if available else None
+
+
+def _source_envelope_available_at(
+    payload: dict[str, Any], *, artifact: Any, file_observed_at: Any,
+) -> datetime | None:
+    """Prefer immutable producer/envelope time; use copy mtime only as fallback."""
+    embedded = _parse_precise_source_instant(
+        payload.get('source_artifact_available_at')
+    )
+    artifact_observed = (
+        _precise_resource_observed_at(artifact)
+        if isinstance(artifact, dict)
+        else None
+    )
+    producer_values = [
+        value for value in (embedded, artifact_observed) if value is not None
+    ]
+    if producer_values:
+        return max(producer_values)
+    if isinstance(artifact, dict):
+        artifact_mtime = _parse_precise_source_instant(artifact.get('mtime'))
+        if artifact_mtime is not None:
+            return artifact_mtime
+    return _parse_precise_source_instant(file_observed_at)
+
+
+def _normalize_scoring_source(
+    source: str,
+    payload: dict[str, Any] | None,
+    *,
+    artifacts: dict[str, Any],
+    cutoff_ceiling: Any,
+    file_observed_at: Any = None,
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    """Normalize a source-owned instant and reject data unavailable at scoring time."""
+    if not isinstance(payload, dict) or not payload:
+        return payload, None
+    artifact_key = _SOURCE_ARTIFACT_KEYS.get(source)
+    artifact = artifacts.get(artifact_key) if artifact_key else None
+    available_at = _source_available_at(
+        source,
+        payload,
+        artifact=artifact,
+        file_observed_at=file_observed_at,
+    )
+    cutoff = _parse_dt(cutoff_ceiling)
+    if available_at is None:
+        return None, {
+            'source': source,
+            'reason': 'availability_unknown',
+            'available_at': None,
+        }
+    if cutoff is not None and available_at > cutoff:
+        return None, {
+            'source': source,
+            'reason': 'available_after_scanner_cutoff',
+            'available_at': available_at.isoformat(),
+            'cutoff': cutoff.isoformat(),
+        }
+    normalized = dict(payload)
+    normalized['available_at'] = available_at.isoformat()
+    return normalized, None
+
+
+def _precise_resource_observed_at(item: dict[str, Any]) -> datetime | None:
+    for key in (
+        'available_at', 'fetched_at', 'observed_at', 'updated_at',
+        'generated_at', 'timestamp', 'update_time', 'date', 'scrape_date',
+    ):
+        precise = _parse_precise_source_instant(item.get(key))
+        if precise is not None:
+            return precise
+    for key in ('price', 'quote', 'investor', 'metadata', 'signal'):
+        nested = item.get(key)
+        if isinstance(nested, dict):
+            precise = _precise_resource_observed_at(nested)
+            if precise is not None:
+                return precise
+    return None
+
+
+def _parse_precise_source_instant(value: Any) -> datetime | None:
+    text = str(value or '').strip()
+    if not text or re.fullmatch(r'\d{4}-?\d{2}-?\d{2}', text):
+        return None
+    try:
+        parsed = datetime.fromisoformat(text.replace('Z', '+00:00'))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=KST)
+    return parsed.astimezone(timezone.utc)
+
+
+def _source_packet_type(source: str) -> str:
+    lowered = source.lower()
+    if 'dart' in lowered:
+        return 'filing'
+    if 'news' in lowered:
+        return 'news'
+    if 'price' in lowered or 'kis' in lowered:
+        return 'market_quote'
+    if 'tradingview' in lowered:
+        return 'technical'
+    return 'signal'
 
 
 def _feature_vectors(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -3676,7 +4577,50 @@ def _performance_advisory() -> dict[str, Any]:
         }
     return {
         **base,
+        # This is the immutable receipt time after outcome, agent-overlay, and
+        # learning-policy inputs have all been assembled for scoring.
+        'available_at': datetime.now(timezone.utc).isoformat(),
     }
+
+
+def _performance_advisory_at_cutoff(
+    advisory: dict[str, Any] | None,
+    cutoff_ceiling: Any,
+) -> dict[str, Any]:
+    """Fence outcome memory to the scanner snapshot used for replay/ranking."""
+    if not isinstance(advisory, dict):
+        return {}
+    normalized = dict(advisory)
+    if not normalized.get('available'):
+        return normalized
+    observed_values = [
+        parsed
+        for key in (
+            'available_at', 'asof', 'as_of', 'fetched_at',
+            'observed_at', 'updated_at', 'generated_at',
+        )
+        if (parsed := _parse_precise_source_instant(normalized.get(key))) is not None
+    ]
+    observed = max(observed_values) if observed_values else None
+    cutoff = _parse_dt(cutoff_ceiling)
+    reason = None
+    if not normalized.get('lookahead_safe'):
+        reason = 'lookahead_safety_not_confirmed'
+    elif observed is None:
+        reason = 'availability_unknown'
+    elif cutoff is not None and observed > cutoff:
+        reason = 'available_after_scanner_cutoff'
+    if reason is not None:
+        normalized.update({
+            'available': False,
+            'applied_to_scoring': False,
+            'availability_excluded_reason': reason,
+            'available_at': observed.isoformat() if observed is not None else None,
+            'scanner_cutoff': cutoff.isoformat() if cutoff is not None else None,
+        })
+        return normalized
+    normalized['available_at'] = observed.isoformat()
+    return normalized
 
 
 def _resource_weight(
@@ -3684,6 +4628,7 @@ def _resource_weight(
     *,
     default_confidence: float = 0.60,
     max_age_days: int = 7,
+    as_of: Any = None,
 ) -> dict[str, Any]:
     if not isinstance(item, dict) or not item:
         return {
@@ -3693,8 +4638,9 @@ def _resource_weight(
             'score_weight': 0.0,
             'risk_weight': 1.0,
         }
-    observed_at = _resource_observed_at(item)
-    age = _age_days(observed_at)
+    observed = _precise_resource_observed_at(item)
+    observed_at = observed.isoformat() if observed is not None else None
+    age = _age_days(observed_at, as_of)
     if age is None:
         freshness = 'unknown'
         freshness_weight = 0.45
@@ -3723,22 +4669,6 @@ def _resource_weight(
         'score_weight': round(score_weight, 3),
         'risk_weight': round(risk_weight, 3),
     }
-
-
-def _resource_observed_at(item: dict[str, Any]) -> Any:
-    for key in ('fetched_at', 'updated_at', 'generated_at', 'timestamp', 'date', 'scrape_date', 'observed_at'):
-        value = item.get(key)
-        if value:
-            return value
-    for key in ('quote', 'investor', 'metadata'):
-        nested = item.get(key)
-        if isinstance(nested, dict):
-            value = _resource_observed_at(nested)
-            if value:
-                return value
-    return None
-
-
 def _first_number(item: dict[str, Any], keys: tuple[str, ...]) -> float:
     if not isinstance(item, dict):
         return 0.0

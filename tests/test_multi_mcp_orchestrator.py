@@ -4,6 +4,7 @@ from app.services.mirofish import multi_mcp_orchestrator as orchestrator
 
 
 def _candidate(symbol='005380', name='현대차'):
+    observed_at = datetime.now(timezone.utc).isoformat()
     return {
         'symbol': symbol,
         'name': name,
@@ -11,7 +12,13 @@ def _candidate(symbol='005380', name='현대차'):
         'change_pct': 3.0,
         'volume': 1000000,
         'source': 'KIS',
-        'observed_at': datetime.now(timezone.utc).isoformat(),
+        'market': 'KOSPI',
+        'observed_at': observed_at,
+        'source_packets': [{
+            'evidence_id': f'kis-{symbol}', 'source': 'KIS',
+            'fetched_at': observed_at, 'freshness': 'live', 'confidence': 1.0,
+            'content': {'price': 100000, 'change_pct': 3.0, 'volume': 1000000},
+        }],
     }
 
 
@@ -135,6 +142,15 @@ def _stub_context(monkeypatch, tmp_path, *, trend=None, deep_run=None):
     )
     monkeypatch.setattr(
         orchestrator.tradingagents,
+        'reserve_compact_batch',
+        lambda run_id, packets: ([{
+            'packet': packet,
+            'request_ids': {op: f'{run_id}:{packet["symbol"]}:{op}' for op in ('bulk_text', 'compact_debate', 'decisive_text')},
+            'reservation_ids': {op: f'permit-{packet["symbol"]}-{op}' for op in ('bulk_text', 'compact_debate', 'decisive_text')},
+        } for packet in packets], []),
+    )
+    monkeypatch.setattr(
+        orchestrator.tradingagents,
         'run_deep_analysis',
         lambda *args, **kwargs: deep_run or {
             'id': 'ta_contract',
@@ -240,6 +256,26 @@ def test_stale_market_observation_is_blocked_before_agents(
     assert calls == []
 
 
+def test_evidence_packet_retains_stable_underlying_source_cutoff():
+    candidate = orchestrator._normalize_candidate(_candidate())
+    first = orchestrator._evidence_packet(candidate, use_llm=True)
+    second = orchestrator._evidence_packet(candidate, use_llm=True)
+    assert first['as_of'] == candidate['observed_at']
+    assert first['fingerprint'] == second['fingerprint']
+
+
+def test_candidate_source_cutoff_uses_instant_not_timestamp_text_order():
+    raw = _candidate()
+    raw.pop('source_cutoff', None)
+    raw['source_packets'] = [
+        {**raw['source_packets'][0], 'fetched_at': '2026-09-03T10:00:00+09:00'},
+        {**raw['source_packets'][0], 'evidence_id': 'later',
+         'fetched_at': '2026-09-03T03:00:00+00:00'},
+    ]
+    candidate = orchestrator._normalize_candidate(raw)
+    assert candidate['source_cutoff'] == '2026-09-03T03:00:00+00:00'
+
+
 def test_live_market_scan_uses_kis_candidate_pool(monkeypatch):
     captured = {}
     monkeypatch.setattr(
@@ -266,3 +302,32 @@ def test_live_market_scan_uses_kis_candidate_pool(monkeypatch):
     assert captured['result']['candidate_count'] == 1
     assert result['scanner']['market_status'] == 'open'
     assert result['scanner']['source_counts']['fluctuation'] == 30
+
+
+def test_preflight_limits_work_before_futures_to_five(monkeypatch, tmp_path):
+    _stub_context(monkeypatch, tmp_path)
+    calls = []
+
+    def fake(target, **kwargs):
+        calls.append((target, kwargs))
+        return {'id': target, 'analysis_status': 'SUCCESS_PRIMARY',
+                'verdict': {'verdict': 'HOLD', 'confidence': 50}}
+
+    monkeypatch.setattr(orchestrator.tradingagents, 'run_deep_analysis', fake)
+    candidates = [_candidate(f'{index:06d}', f'종목{index}') for index in range(10)]
+    result = orchestrator.run_multi_mcp_analysis(candidates, max_candidates=5)
+    assert len(calls) == 5
+    assert result['budget_summary']['admitted'] == 5
+    assert result['budget_summary']['deferred'] == 5
+    assert all(call[1]['profile'] == 'compact' for call in calls)
+    assert len({call[1]['routing_run_id'] for call in calls}) == 1
+    assert all(call[1]['reservation_ids']['decisive_text'] for call in calls)
+
+
+def test_hold_review_can_never_pass_critic():
+    packet = {'symbol': '005930', 'name': '삼성전자', 'trend': {'trend_score': 15}}
+    reviewed = orchestrator._critic_review(packet, {
+        'id': 'ta_x', 'analysis_status': 'HOLD_REVIEW',
+        'verdict': {'verdict': 'BUY', 'confidence': 99},
+    })
+    assert reviewed['approved'] is False

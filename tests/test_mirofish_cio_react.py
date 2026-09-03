@@ -149,3 +149,48 @@ def test_consensus_buy_results_in_buy_action(mock_brain, mock_debate):
     """토론 BUY → CIO 도 BUY."""
     out = cr.run_cio('TEST', mock_brain, mock_debate, use_llm=False)
     assert out['final_answer']['action'] == 'BUY'
+
+
+def test_llm_exhaustion_keeps_rule_buy_diagnostic_only(monkeypatch, mock_brain, mock_debate):
+    monkeypatch.setattr(
+        'app.services.mirofish.llm_client.generate_text_with_metadata',
+        lambda *args, **kwargs: (None, {
+            'success': False, 'analysis_status': 'HOLD_REVIEW',
+            'attempts': [{'provider': 'deepseek'}, {'provider': 'openai'}],
+        }),
+    )
+    out = cr.run_cio(
+        '삼성전자', mock_brain, mock_debate, use_llm=True,
+        run_id='mf_1', symbol='005930', market='KOSPI',
+    )
+    assert out['analysis_status'] == 'HOLD_REVIEW'
+    assert out['final_answer']['action'] == 'HOLD_REVIEW'
+    assert out['rule_candidate_verdict']['action'] == 'BUY'
+    assert out['llm']['attempts'] == [{'provider': 'deepseek'}, {'provider': 'openai'}]
+
+
+def test_cio_requires_valid_final_answer_inside_router_attempt(monkeypatch, mock_brain, mock_debate):
+    captured = {}
+    def fake(*args, **kwargs):
+        captured.update(kwargs)
+        return None, {'success': False, 'analysis_status': 'HOLD_REVIEW'}
+    monkeypatch.setattr('app.services.mirofish.llm_client.generate_text_with_metadata', fake)
+    cr.run_cio('삼성전자', mock_brain, mock_debate, use_llm=True,
+               run_id='wf', symbol='005930', market='KOSPI')
+    invalid = {'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+               'alignment_score': mock_brain['alignment_score'], 'steps': []}
+    assert captured['domain_validator'](invalid) is not None
+
+
+def test_cio_domain_validator_requires_known_tools_and_final_step_last():
+    invalid = {
+        'steps': [
+            {'thought': 'done', 'action': {'tool': 'final_answer', 'args': {
+                'action': 'BUY', 'confidence': 0.8, 'allocation_pct': 20,
+                'reasoning': 'r', 'opposing_scenario': 'o',
+            }}},
+            {'thought': 'bad', 'action': {'tool': 'unknown_tool', 'args': {}}},
+            {'thought': 'later', 'action': {'tool': 'query_brain', 'args': {'dimension': 'macro'}}},
+        ],
+    }
+    assert cr._cio_domain_validator(invalid) is not None

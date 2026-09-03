@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 """2026-09-02 전체 리뷰 Phase 0 quick-win 회귀 테스트.
 
+merge note (2026-09-03): llm_analyzer 쿨다운 재개방·llm_client usage/cost 메타데이터
+퀵윈 테스트 4건은 cost-aware ai_routing 스택(CircuitBreaker + 비용 원장)이 상위집합으로
+대체하여 제거 — 해당 계약은 tests/test_ai_routing_router.py·test_ai_routing_telemetry.py·
+test_llm_provider_fallback.py 가 검증한다.
+
 각 테스트는 리뷰에서 확인한 결함 하나를 고정한다:
 - 인증 GET 데이터 응답이 전부 no-store 였던 죽은 캐시 분기 + ETag/304 부재
 - LLM rate-limit 브레이커가 프로세스 수명 동안 영구 비활성
@@ -61,31 +66,6 @@ def test_sensitive_prefixes_and_errors_stay_no_store(api_app):
 
 
 # ─────────────────────────── LLM circuit breaker ────────────────────────────
-
-def test_llm_breaker_reopens_after_cooldown(monkeypatch):
-    from engine import llm_analyzer as la
-
-    la.reset_api_status()
-    assert la.is_api_available('deepseek')
-
-    asyncio.run(la._mark_unavailable('deepseek', 'Rate Limit'))
-    assert not la.is_api_available('deepseek')
-    assert la.API_STATUS['deepseek']['retry_at'] is not None
-
-    # 쿨다운 경과를 시계 조작으로 흉내낸다
-    monkeypatch.setattr(la.time, 'monotonic', lambda: la.API_STATUS['deepseek']['retry_at'] + 1)
-    assert la.is_api_available('deepseek')
-    assert la.API_STATUS['deepseek']['available'] is True
-    la.reset_api_status()
-
-
-def test_llm_breaker_cooldown_grows_with_consecutive_errors():
-    from engine import llm_analyzer as la
-
-    assert la._cooldown_seconds(1) == la._BREAKER_BASE_COOLDOWN_SEC
-    assert la._cooldown_seconds(2) == min(la._BREAKER_BASE_COOLDOWN_SEC * 2, la._BREAKER_MAX_COOLDOWN_SEC)
-    assert la._cooldown_seconds(50) == la._BREAKER_MAX_COOLDOWN_SEC
-
 
 # ─────────────────────────── Briefing prompt honesty ─────────────────────────
 
@@ -179,28 +159,6 @@ def test_search_endpoint_merges_smart_and_substring(kr_search_env, monkeypatch, 
 
 # ─────────────────────────── LLM usage + cost metadata ───────────────────────
 
-def test_llm_metadata_carries_usage_and_cost(monkeypatch):
-    from app.services.mirofish import llm_client, llm_pricing
-
-    monkeypatch.setenv('MIROFISH_LLM_PROVIDER_ORDER', 'openai')
-    monkeypatch.delenv('MIROFISH_LLM_DISABLED', raising=False)
-    monkeypatch.delenv('MIROFISH_LLM_PRICE_JSON', raising=False)
-    monkeypatch.setenv('OPENAI_MODEL', 'gpt-4o-mini')
-    llm_pricing.reset_price_cache()
-
-    def fake_openai(prompt, *, system, model_env, temperature, max_tokens, json_mode):
-        llm_client._record_usage('openai', 1_000_000, 100_000)
-        return 'ok'
-
-    monkeypatch.setattr(llm_client, '_generate_openai', fake_openai)
-    text, meta = llm_client.generate_text_with_metadata('hi')
-    assert text == 'ok'
-    assert meta['usage'] == {'prompt_tokens': 1_000_000, 'completion_tokens': 100_000, 'total_tokens': 1_100_000}
-    # gpt-4o-mini: $0.15 in + $0.60 out per 1M → 0.15 + 0.06
-    assert meta['est_cost_usd'] == pytest.approx(0.21)
-    assert meta['attempts'][0]['usage']['total_tokens'] == 1_100_000
-
-
 def test_llm_pricing_unknown_model_returns_none_not_a_guess(monkeypatch):
     from app.services.mirofish import llm_pricing
 
@@ -213,16 +171,6 @@ def test_llm_pricing_unknown_model_returns_none_not_a_guess(monkeypatch):
     llm_pricing.reset_price_cache()
     assert llm_pricing.estimate_cost_usd('totally-unknown-model', {'prompt_tokens': 1_000_000, 'completion_tokens': 0}) == pytest.approx(1.0)
     llm_pricing.reset_price_cache()
-
-
-def test_usage_extractors_tolerate_missing_fields():
-    from app.services.mirofish import llm_client
-
-    assert llm_client._usage_from_openai_like(SimpleNamespace()) == (None, None)
-    resp = SimpleNamespace(usage=SimpleNamespace(prompt_tokens=5, completion_tokens=7))
-    assert llm_client._usage_from_openai_like(resp) == (5, 7)
-    gem = SimpleNamespace(usage_metadata=SimpleNamespace(prompt_token_count=3, candidates_token_count=4))
-    assert llm_client._usage_from_gemini(gem) == (3, 4)
 
 
 # ─────────────────────────── Scheduler daemon status ─────────────────────────

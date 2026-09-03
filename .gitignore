@@ -49,6 +49,7 @@ data/backtest/
 data/ai/
 data/institutional/
 data/admin_mirofish/
+data/ai_routing/
 data/manual_stock_analysis/
 data/briefing/*.json
 !data/briefing/.gitkeep

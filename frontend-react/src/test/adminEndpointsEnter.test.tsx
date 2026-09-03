@@ -5,6 +5,8 @@ import AdminEndpointsPage from '@/pages/admin/AdminEndpointsPage';
 
 const mockApi = vi.hoisted(() => ({
   getStatus: vi.fn(),
+  getLlmRoutingStatus: vi.fn(),
+  getLlmUsage: vi.fn(),
   getDataSources: vi.fn(),
   listRuns: vi.fn(),
   searchTargets: vi.fn(),
@@ -147,6 +149,39 @@ beforeEach(() => {
     source: 'test',
     brain: { score: 63, regime: 'neutral', crisis: 'Lv.2' },
     pipeline: { status: 'ready', graph_links: 0, similar_events: 0, agent_count: 10 },
+  });
+  mockApi.getLlmRoutingStatus.mockResolvedValue({
+    schema_version: 'ai-routing-status-v1',
+    service: 'ai-routing',
+    checked_at: '2026-09-03T01:00:00+00:00',
+    freshness: { status: 'fresh', checked_at: '2026-09-03T01:00:00+00:00', age_seconds: 0, ttl_seconds: 300 },
+    provider_order: { decisive_text: ['deepseek', 'openai'] },
+    providers: [],
+    breakers: [],
+    budget: {
+      scope: 'utc_calendar_day', day_utc: '2026-09-03', pool: 'automatic', provider: 'openai',
+      daily_cap_usd_configured: false, daily_cap_usd: null, used_usd: null,
+      remaining_usd: null, usage_percent: null, status: 'unavailable',
+    },
+    hold_review: { available: false, count: null, rate: null, reason: 'final_outcome_not_recorded' },
+  });
+  mockApi.getLlmUsage.mockResolvedValue({
+    schema_version: 'ai-routing-usage-v1', days: 1, limit: 20,
+    window: { start_utc: '2026-09-03T00:00:00+00:00', end_utc: '2026-09-03T01:00:00+00:00', timezone: 'UTC' },
+    groups: [], top_cost_endpoints: [], top_operations: [],
+    totals: {
+      attempts: 0, live_attempts: 0, breaker_skipped_attempts: 0, successes: 0, fallbacks: 0,
+      input_tokens: 0, cached_input_tokens: 0, output_tokens: 0, reasoning_tokens: 0,
+      total_tokens: 0, known_input_tokens: 0, known_output_tokens: 0, known_total_tokens: 0,
+      estimated_cost_usd: '0', known_estimated_cost_usd: '0', unknown_usage_attempts: 0,
+      quarantined_usage_attempts: 0, unknown_cost_attempts: 0, usage_completeness: null,
+      cost_completeness: null, latency_ms: { p50: null, p95: null },
+    },
+    openai_shares: { attempts: null, tokens: 0, cost: 0 }, fallback_count: 0,
+    fallback_attempt_share: null,
+    hold_review: { available: false, count: null, rate: null, reason: 'final_outcome_not_recorded' },
+    freshness: { status: 'unknown', last_event_at: null, age_seconds: null, ttl_seconds: 300 },
+    generated_at: '2026-09-03T01:00:00+00:00',
   });
   mockApi.getDataSources.mockResolvedValue({ files: [] });
   mockApi.getAlphaServiceDashboard.mockResolvedValue(alphaServiceDashboard);
@@ -876,7 +911,7 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect((await screen.findAllByText(/best momentum/i)).length).toBeGreaterThan(0);
     const alphaServiceClock = await screen.findByRole('region', { name: 'Alpha Service Clock' });
     expect(alphaServiceClock).toBeInTheDocument();
-    expect(alphaServiceClock.parentElement?.firstElementChild).toBe(alphaServiceClock);
+    expect(alphaServiceClock.previousElementSibling).toHaveAttribute('aria-label', 'LLM 라우팅 비용');
     expect(await screen.findByText('전일 시장 정리')).toBeInTheDocument();
     expect(mockApi.getAlphaServiceDashboard).toHaveBeenCalledTimes(1);
   });
@@ -888,6 +923,30 @@ describe('AdminEndpointsPage analysis start input', () => {
     fireEvent.click(screen.getByRole('button', { name: '운영 현황 새로고침' }));
 
     await waitFor(() => expect(mockApi.getAlphaServiceDashboard).toHaveBeenCalledTimes(2));
+  });
+
+  it('places the admin-only LLM cost card before the alpha clock and remounts both', async () => {
+    await renderPage();
+
+    const costCard = await screen.findByRole('region', { name: 'LLM 라우팅 비용' });
+    const alphaClock = await screen.findByRole('region', { name: 'Alpha Service Clock' });
+    expect(costCard.parentElement).toBe(alphaClock.parentElement);
+    expect(costCard.nextElementSibling).toBe(alphaClock);
+    await waitFor(() => expect(mockApi.getLlmUsage).toHaveBeenCalledTimes(1));
+    expect(mockApi.getLlmRoutingStatus).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: '운영 현황 새로고침' }));
+
+    await waitFor(() => expect(mockApi.getLlmUsage).toHaveBeenCalledTimes(2));
+    expect(mockApi.getLlmRoutingStatus).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not expose the LLM cost card in subscriber mode', async () => {
+    await renderSubscriberPage();
+
+    expect(screen.queryByRole('region', { name: 'LLM 라우팅 비용' })).toBeNull();
+    expect(mockApi.getLlmUsage).not.toHaveBeenCalled();
+    expect(mockApi.getLlmRoutingStatus).not.toHaveBeenCalled();
   });
 
   it('restores the last non-empty alpha scanner result until a newer result arrives', async () => {

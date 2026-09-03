@@ -6,6 +6,10 @@ from flask import Blueprint, Response, jsonify, request
 
 from app.auth.decorators import admin_required, admin_or_aibain_required
 from app.services import mirofish
+from app.services.ai_routing.reporting import (
+    get_llm_routing_status,
+    get_llm_usage_report,
+)
 from app.services.mirofish import alpha_scanner as alpha_scanner_service
 from app.services.mirofish import events as mf_events
 
@@ -61,6 +65,44 @@ def _strict_dashboard_int_arg(name: str, default: int, minimum: int, maximum: in
     if value < minimum or value > maximum:
         raise ValueError(f'{name} must be an integer between {minimum} and {maximum}')
     return value
+
+
+def _llm_report_response(payload: dict, status_code: int = 200):
+    response = jsonify(payload)
+    response.headers['Cache-Control'] = 'no-store, max-age=0'
+    return (response, status_code) if status_code != 200 else response
+
+
+@admin_mirofish_bp.route('/llm-routing/status', methods=['GET'])
+@admin_or_aibain_required
+def llm_routing_status():
+    try:
+        return _llm_report_response(get_llm_routing_status())
+    except Exception:
+        return _llm_report_response({
+            'error': 'llm_routing_report_unavailable',
+            'message': 'LLM routing report is temporarily unavailable',
+        }, 500)
+
+
+@admin_mirofish_bp.route('/llm-usage', methods=['GET'])
+@admin_or_aibain_required
+def llm_usage():
+    try:
+        days = _strict_dashboard_int_arg('days', 7, 1, 180)
+        limit = _strict_dashboard_int_arg('limit', 20, 1, 50)
+    except ValueError as exc:
+        return _llm_report_response({
+            'error': 'invalid_query',
+            'message': str(exc),
+        }, 400)
+    try:
+        return _llm_report_response(get_llm_usage_report(days=days, limit=limit))
+    except Exception:
+        return _llm_report_response({
+            'error': 'llm_routing_report_unavailable',
+            'message': 'LLM routing report is temporarily unavailable',
+        }, 500)
 
 
 @admin_mirofish_bp.route('/status', methods=['GET'])

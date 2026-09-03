@@ -7,18 +7,23 @@
 """
 
 import asyncio
+import hashlib
 import logging
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import List, Optional, Dict, Any
+from zoneinfo import ZoneInfo
 import json
 import os
 import sys
 import tempfile
 import time
+from uuid import uuid4
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
 logger = logging.getLogger(__name__)
+
+_KST = ZoneInfo("Asia/Seoul")
 
 
 def _write_json_atomic(filepath: str, data: Any, indent: int = 2) -> None:
@@ -98,6 +103,7 @@ class SignalGenerator:
         self.position_sizer = PositionSizer(capital, self.config)
         self.llm_analyzer = LLMAnalyzer() # API Key from env
         self.dart_collector = DARTCollector()  # OpenDART 호재공시 수집기
+        self._generation_run_id: str | None = None
 
         self._collector: Optional[KRXCollector] = None
         self._news: Optional[EnhancedNewsCollector] = None
@@ -191,6 +197,7 @@ class SignalGenerator:
         """
         target_date = target_date or date.today()
         markets = markets or ["KOSPI", "KOSDAQ"]
+        self._generation_run_id = f"jongga:{target_date.isoformat()}:{uuid4()}"
 
         all_signals = []
 
@@ -306,8 +313,15 @@ class SignalGenerator:
             dart_text = self.dart_collector.format_for_llm(dart_result) if dart_result else ""
             if news_list or dart_text:
                 print(f"    [LLM] Analyzing {stock.name} news...")
-                news_dicts = [{"title": n.title, "summary": n.summary} for n in news_list]
-                llm_result = await self.llm_analyzer.analyze_news_sentiment(stock.name, news_dicts, dart_text)
+                news_dicts = self._news_payload(news_list)
+                run_id, request_id = self._news_request_identity(stock.code)
+                llm_result = await self.llm_analyzer.analyze_news_sentiment(
+                    stock.name,
+                    news_dicts,
+                    dart_text,
+                    run_id=run_id,
+                    request_id=request_id,
+                )
                 if llm_result:
                    print(f"      -> Score: {llm_result.get('score')}, Reason: {llm_result.get('reason')}")
 
@@ -337,7 +351,16 @@ class SignalGenerator:
                 print(f"    ⚠ Financial health error: {e}")
 
             # 7. 점수 계산 (LLM 결과 + DART 공시 + 애널리스트 + 재무건전성 반영)
-            score, checklist = self.scorer.calculate(stock, charts, news_list, supply, llm_result, dart_result, analyst_result, financial_result)
+            score, checklist = self.scorer.calculate(
+                stock,
+                charts,
+                news_list,
+                supply,
+                self._llm_result_for_scoring(llm_result),
+                dart_result,
+                analyst_result,
+                financial_result,
+            )
 
             # 7. 등급 결정
             grade = self.scorer.determine_grade(stock, score)
@@ -389,6 +412,50 @@ class SignalGenerator:
         except Exception as e:
             # print(f"    분석 실패: {e}")
             return None
+
+    @staticmethod
+    def _news_payload(news_list: List[Any]) -> List[Dict[str, str]]:
+        """Keep source identity and freshness attached to each LLM input."""
+        payload: List[Dict[str, str]] = []
+        for item in news_list[:5]:
+            published = getattr(item, "published_at", None)
+            # Naver search currently stamps `now()` when it cannot parse the
+            # article date and identifies that path with an empty stock code.
+            # Do not present that collection timestamp as source freshness.
+            if getattr(item, "code", None) == "":
+                published_text = ""
+            elif isinstance(published, datetime):
+                # Naver Finance exposes parsed publication times in Korean
+                # local time.  Attach that source timezone before producing a
+                # UTC timestamp so freshness checks do not treat a current KST
+                # article as nine hours into the future.
+                if published.tzinfo is None:
+                    published = published.replace(tzinfo=_KST)
+                published_text = published.astimezone(timezone.utc).isoformat()
+            elif published and hasattr(published, "isoformat"):
+                published_text = published.isoformat()
+            else:
+                published_text = str(published or "")
+            payload.append({
+                "title": str(getattr(item, "title", "")),
+                "summary": str(getattr(item, "summary", "")),
+                "source": str(getattr(item, "source", "")),
+                "url": str(getattr(item, "url", "")),
+                "published_at": published_text,
+            })
+        return payload
+
+    @staticmethod
+    def _llm_result_for_scoring(result: Optional[Dict]) -> Optional[Dict]:
+        """Keep explicitly unverified model text out of the BUY score path."""
+        if result and result.get("buy_evidence_eligible") is False:
+            return None
+        return result
+
+    def _news_request_identity(self, stock_code: str) -> tuple[str, str]:
+        run_id = self._generation_run_id or f"jongga:adhoc:{uuid4()}"
+        self._generation_run_id = run_id
+        return run_id, f"{run_id}:{stock_code}:news"
     
     def get_summary(self, signals: List[Signal]) -> Dict:
         """시그널 요약 정보"""
@@ -430,6 +497,7 @@ async def run_screener(
         signals = await generator.generate(markets=markets, target_date=target_date)
         print(f"✅ {len(signals)}개 시그널 생성됨", flush=True)
         summary = generator.get_summary(signals)
+        generation_run_id = generator._generation_run_id
     
     processing_time = (time.time() - start_time) * 1000
     
@@ -443,7 +511,7 @@ async def run_screener(
         processing_time_ms=processing_time,
     )
     
-    # Multi-AI Consensus 독립 종목 스크리닝 (Gemini + GPT-4o)
+    # DeepSeek-first 중앙 슬롯 독립 종목 스크리닝
     claude_picks = {}  # 키 이름 유지 (하위 호환)
     try:
         screener = MultiAIConsensusScreener()
@@ -454,19 +522,26 @@ async def run_screener(
         if active_clients:
             print(f"🤖 Multi-AI Consensus 스크리닝 시작 ({', '.join(active_clients)})...", flush=True)
             signals_data = [s.to_dict() for s in signals]
-            claude_picks = await screener.screen_candidates(signals_data)
+            claude_picks = await screener.screen_candidates(
+                signals_data,
+                run_id=generation_run_id,
+            )
             pick_count = len(claude_picks.get("picks", []))
             consensus_count = claude_picks.get("consensus_count", 0)
             print(f"✅ Multi-AI {pick_count}개 종목 선별 완료 (Consensus: {consensus_count}개)", flush=True)
         else:
-            print("⚠ Gemini/OpenAI API Key 미설정 - 독립 스크리닝 스킵", flush=True)
+            print("⚠ AI API Key 미설정 - 독립 스크리닝 스킵", flush=True)
     except Exception as e:
-        print(f"⚠ Multi-AI Screener failed: {e}", flush=True)
-        claude_picks = {"picks": [], "error": str(e)}
+        print(f"⚠ Multi-AI Screener failed: {type(e).__name__}", flush=True)
+        claude_picks = {"picks": [], "error": "AI screening unavailable"}
 
     # 결과 저장
     print("💾 결과 저장 중...", flush=True)
-    save_result_to_json(result, claude_picks=claude_picks)
+    save_result_to_json(
+        result,
+        claude_picks=claude_picks,
+        run_id=generation_run_id,
+    )
     
     print(f"🎉 완료! ({processing_time/1000:.1f}초 소요)", flush=True)
     
@@ -505,6 +580,11 @@ async def analyze_single_stock_by_code(
             
         with open(latest_path, "r", encoding="utf-8") as f:
             data = json.load(f)
+        source_run_id = str(data.get("run_id") or "") or None
+        reanalysis_run_id = (
+            f"jongga:reanalysis:{date.today().isoformat()}:{code}:{uuid4()}"
+        )
+        generator._generation_run_id = reanalysis_run_id
             
         target_signal_data = next((s for s in data["signals"] if s["stock_code"] == code), None)
         
@@ -540,7 +620,13 @@ async def analyze_single_stock_by_code(
             ]
             
             data["signals"] = updated_signals
-            data["updated_at"] = datetime.now().isoformat() # 전체 업데이트 시간 갱신
+            data["updated_at"] = _get_kst_now().isoformat()
+            data["source_run_id"] = source_run_id
+            data["run_id"] = reanalysis_run_id
+            data["reanalysis"] = {
+                "stock_code": code,
+                "source_run_id": source_run_id,
+            }
             
             # 파일 저장 (atomic rename — 크래시 시에도 truncated 파일 방지)
             # 1) Latest
@@ -551,6 +637,12 @@ async def analyze_single_stock_by_code(
             daily_path = os.path.join(base_dir, f"jongga_v2_results_{date_str}.json")
             if os.path.exists(daily_path):
                 _write_json_atomic(daily_path, data)
+            _write_run_artifact(
+                base_dir,
+                date_str,
+                reanalysis_run_id,
+                data,
+            )
             
             return new_signal
             
@@ -558,7 +650,30 @@ async def analyze_single_stock_by_code(
             print("Re-analysis failed or grade too low.")
             return None
 
-def save_result_to_json(result: ScreenerResult, claude_picks: dict = None):
+def _write_run_artifact(
+    base_dir: str,
+    date_str: str,
+    run_id: str,
+    data: Dict[str, Any],
+) -> str:
+    """Persist one run-addressable artifact and return its safe path."""
+    run_dir = os.path.join(base_dir, "jongga_v2_runs")
+    os.makedirs(run_dir, exist_ok=True)
+    run_key = hashlib.sha256(run_id.encode("utf-8")).hexdigest()[:16]
+    run_path = os.path.join(
+        run_dir,
+        f"jongga_v2_results_{date_str}_{run_key}.json",
+    )
+    _write_json_atomic(run_path, data)
+    return run_path
+
+
+def save_result_to_json(
+    result: ScreenerResult,
+    claude_picks: dict = None,
+    *,
+    run_id: str | None = None,
+):
     """결과 JSON 저장 (Daily + Latest) — atomic rename"""
     data = {
         "date": result.date.isoformat(),
@@ -569,7 +684,8 @@ def save_result_to_json(result: ScreenerResult, claude_picks: dict = None):
         "by_market": result.by_market,
         "processing_time_ms": result.processing_time_ms,
         "updated_at": _get_kst_now().isoformat(),
-        "claude_picks": claude_picks or {}
+        "run_id": run_id,
+        "claude_picks": claude_picks or {},
     }
 
     # 1. 날짜별 파일 저장
@@ -587,6 +703,13 @@ def save_result_to_json(result: ScreenerResult, claude_picks: dict = None):
     latest_path = os.path.join(base_dir, "jongga_v2_latest.json")
     _write_json_atomic(latest_path, data)
     print(f"[저장 완료] Latest: {latest_path}")
+
+    # Daily/latest are compatibility pointers and may be overwritten. Keep one
+    # run-addressable artifact so the exact evidence can always be joined back
+    # to provider_attempts.run_id for replay and audit.
+    if run_id:
+        run_path = _write_run_artifact(base_dir, date_str, run_id, data)
+        print(f"[저장 완료] Run: {run_path}")
 
 
 # 테스트용 메인

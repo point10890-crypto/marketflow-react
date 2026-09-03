@@ -4,6 +4,7 @@ KIS 주도주 스크리너 서비스 (프로덕션)
 - 장중 3초 폴링, 장외 마지막 결과 반환
 """
 import requests
+import csv
 import time
 import os
 import json
@@ -24,6 +25,27 @@ logger = logging.getLogger(__name__)
 
 from app.utils.paths import DATA_DIR
 from app.utils.atomic_json import write_json_atomic
+
+_TICKER_MARKET_PATH = os.path.join(DATA_DIR, "ticker_to_yahoo_map.csv")
+_ticker_markets = None
+
+
+def resolve_symbol_market(symbol):
+    """Resolve a KRX symbol from the committed ticker master; never guess."""
+    global _ticker_markets
+    if _ticker_markets is None:
+        markets = {}
+        try:
+            with open(_TICKER_MARKET_PATH, "r", encoding="utf-8-sig", newline="") as handle:
+                for row in csv.DictReader(handle):
+                    ticker = str(row.get("ticker") or "").strip().zfill(6)
+                    market = str(row.get("market") or "").strip().upper()
+                    if ticker and market in {"KOSPI", "KOSDAQ"}:
+                        markets[ticker] = market
+        except OSError as exc:
+            logger.warning("KIS ticker market master unavailable: %s", exc)
+        _ticker_markets = markets
+    return _ticker_markets.get(str(symbol or "").strip().zfill(6))
 
 
 def _load_runtime_env():
@@ -1733,6 +1755,7 @@ def _run_screening_tracked(force=False, *, attempt_tracker):
 
         result_item = {
             "rank": 0, "grade": grade, "code": c["code"], "name": c["name"],
+            "market": resolve_symbol_market(c["code"]),
             "price": c["price"], "change_pct": c["change_pct"],
             "trading_value": c["tr_amt"],
             "trading_value_eok": round(c["tr_amt"] / 1_0000_0000),

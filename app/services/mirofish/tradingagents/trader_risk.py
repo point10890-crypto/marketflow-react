@@ -35,7 +35,9 @@ import json
 import logging
 from typing import Any
 
+from app.services.mirofish import evidence_packet as evidence_packet_mod
 from app.services.mirofish import llm_client
+from app.services.ai_routing.contracts import ProviderErrorClass
 
 logger = logging.getLogger(__name__)
 
@@ -72,9 +74,11 @@ _PM_SYSTEM = (
     '당신은 포트폴리오 매니저입니다. 트레이더 계획과 리스크팀 3인의 투표를 종합해 '
     '최종 판정을 내리세요. 판정은 STRONG_BUY/BUY/HOLD/SELL 중 하나여야 합니다.'
 )
+PM_SYSTEM = _PM_SYSTEM
 _PM_JSON = (
     '다음 JSON 형식으로만 응답하세요: '
-    '{"verdict": "STRONG_BUY|BUY|HOLD|SELL", "confidence": 0~100 정수, '
+    '{"symbol":"고정값","name":"고정값","market":"고정값","analyst_mean":고정숫자,'
+    '"verdict": "STRONG_BUY|BUY|HOLD|SELL", "confidence": 0~100 정수, '
     '"reasoning": "판단 근거 (2~4문장)"}'
 )
 
@@ -89,6 +93,15 @@ def run_trader_and_risk(
     use_llm: bool = True,
     regime_line: str = '',
     regime_adjustment: float = 0.0,
+    profile: str = 'full',
+    run_id: str | None = None,
+    symbol: str | None = None,
+    market: str | None = None,
+    name: str | None = None,
+    evidence_packet: dict[str, Any] | None = None,
+    request_id: str | None = None, reservation_id: str | None = None,
+    reservation_owner_token: str | None = None,
+    permit_abort_event: Any = None,
 ) -> dict[str, Any]:
     """Run trader plan → 3-role risk debate → PM final decision.
 
@@ -103,30 +116,50 @@ def run_trader_and_risk(
     """
     bundle = bundle or {}
     debate = debate or {}
+    symbol = symbol or bundle.get('symbol')
+    market = market or bundle.get('market')
+    name = name or bundle.get('display_name') or target
 
     llm_ok = 0
     llm_fail = 0
 
-    trader_plan, used = _trader_plan(target, bundle, debate, use_llm, regime_line)
+    compact = str(profile).lower() == 'compact'
+    trader_plan, used = (
+        (_trader_plan_rule(bundle, debate), False)
+        if compact else _trader_plan(target, bundle, debate, use_llm, regime_line)
+    )
     llm_ok, llm_fail = _accumulate(used, use_llm, llm_ok, llm_fail)
 
     risk_debate: list[dict[str, Any]] = []
     for role in RISK_ROLES:
-        entry, used = _risk_entry(role, target, bundle, debate, trader_plan, use_llm, regime_line)
+        entry, used = (
+            (_risk_entry_rule(role, bundle, debate), False)
+            if compact else _risk_entry(role, target, bundle, debate, trader_plan, use_llm, regime_line)
+        )
         llm_ok, llm_fail = _accumulate(used, use_llm, llm_ok, llm_fail)
         risk_debate.append(entry)
 
     pm_decision, used = _pm_decision(
         target, debate, trader_plan, risk_debate, use_llm,
         regime_line=regime_line, regime_adjustment=regime_adjustment,
+        compact=compact,
+        run_id=run_id, symbol=symbol, market=market, name=name or target,
+        evidence_packet=evidence_packet,
+        request_id=request_id, reservation_id=reservation_id,
+        reservation_owner_token=reservation_owner_token,
+        permit_abort_event=permit_abort_event,
     )
     llm_ok, llm_fail = _accumulate(used, use_llm, llm_ok, llm_fail)
 
+    status = str(pm_decision.get('analysis_status') or ('SUCCESS_PRIMARY' if not use_llm else 'HOLD_REVIEW'))
     return {
         'trader_plan': trader_plan,
         'risk_debate': risk_debate,
         'pm_decision': pm_decision,
         'method': _resolve_method(use_llm, llm_ok, llm_fail),
+        'analysis_status': status,
+        'rule_candidate_verdict': pm_decision.get('rule_candidate_verdict') or _pm_decision_rule(debate, regime_adjustment),
+        'profile': profile,
     }
 
 
@@ -288,16 +321,38 @@ def _llm_risk(role: str, target: str, bundle: dict[str, Any], debate: dict[str, 
 def _pm_decision(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
                  risk_debate: list[dict[str, Any]], use_llm: bool, *,
                  regime_line: str = '', regime_adjustment: float = 0.0,
+                 compact: bool = False,
+                 run_id: str | None = None, symbol: str | None = None,
+                 market: str | None = None, name: str | None = None,
+                 evidence_packet: dict[str, Any] | None = None,
+                 request_id: str | None = None, reservation_id: str | None = None,
+                 reservation_owner_token: str | None = None,
+                 permit_abort_event: Any = None,
                  ) -> tuple[dict[str, Any], bool]:
     rule = _pm_decision_rule(debate, regime_adjustment)
     if use_llm:
         try:
-            llm = _llm_pm(target, debate, trader_plan, risk_debate, rule, regime_line=regime_line)
+            llm, llm_meta = _llm_pm(
+                target, debate, trader_plan, risk_debate, rule, regime_line=regime_line,
+                compact=compact,
+                run_id=run_id, symbol=symbol, market=market, name=name,
+                evidence_packet=evidence_packet,
+                request_id=request_id, reservation_id=reservation_id,
+                reservation_owner_token=reservation_owner_token,
+                permit_abort_event=permit_abort_event,
+            )
             if llm:
                 return llm, True
         except Exception as exc:  # noqa: BLE001
             logger.warning('[trader_risk] PM LLM failed: %s', exc)
-    return rule, False
+    if use_llm:
+        return {
+            'verdict': 'HOLD_REVIEW', 'confidence': 0.0, 'strong_buy': False,
+            'reasoning': '결정 모델 검증이 완료되지 않아 검토가 필요합니다.',
+            'analysis_status': 'HOLD_REVIEW', 'rule_candidate_verdict': rule,
+            'llm': locals().get('llm_meta'),
+        }, False
+    return {**rule, 'analysis_status': 'SUCCESS_PRIMARY'}, False
 
 
 def _pm_decision_rule(debate: dict[str, Any], regime_adjustment: float = 0.0) -> dict[str, Any]:
@@ -325,7 +380,15 @@ def _pm_decision_rule(debate: dict[str, Any], regime_adjustment: float = 0.0) ->
 
 def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
             risk_debate: list[dict[str, Any]], rule: dict[str, Any],
-            regime_line: str = '') -> dict[str, Any] | None:
+            regime_line: str = '', run_id: str | None = None,
+            compact: bool = False,
+            symbol: str | None = None, market: str | None = None,
+            name: str | None = None,
+            evidence_packet: dict[str, Any] | None = None,
+            request_id: str | None = None, reservation_id: str | None = None,
+            reservation_owner_token: str | None = None,
+            permit_abort_event: Any = None,
+            ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     votes = ', '.join(f'{r["role"]}={r["vote"]}' for r in risk_debate)
     regime_block = f'[시장 레짐]\n{regime_line}\n\n' if regime_line else ''
     prompt = (
@@ -334,23 +397,40 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
         f'트레이더 계획: {trader_plan.get("action_hint", "")}\n'
         f'리스크팀 투표: {votes}\n'
         f'강세 논거: {debate.get("bull_case", "")}\n약세 논거: {debate.get("bear_case", "")}\n'
-        f'애널리스트 평균 점수: {_analyst_mean(debate):+.1f}\n\n{_PM_JSON}'
+        f'애널리스트 평균 점수: {_analyst_mean(debate):+.1f}\n'
+        f'고정 식별자: symbol={symbol or ""}, name={name or target}, market={market or ""}\n'
+        f'EvidencePacket: {json.dumps(evidence_packet or {}, ensure_ascii=False, default=str)}\n\n{_PM_JSON}'
     )
+    if compact:
+        prompt = evidence_packet_mod.bound_compact_prompt(prompt, 'decisive_text')
     raw, llm_meta = llm_client.generate_text_with_metadata(
-        prompt, system=_PM_SYSTEM, temperature=0.3, max_tokens=768, json_mode=True,
+        prompt, system=_PM_SYSTEM, temperature=0.3, max_tokens=1200, json_mode=True,
+        operation='decisive_text', run_id=run_id,
+        request_id=request_id or (f'{run_id}:{symbol or target}:portfolio-manager' if run_id else None),
+        reservation_id=reservation_id,
+        reservation_owner_token=reservation_owner_token,
+        symbol=symbol, market=market,
+        expected_identity=(
+            {'symbol': symbol, 'name': name or target, 'market': market}
+            if symbol and market else None
+        ),
+        expected_numbers={'analyst_mean': _analyst_mean(debate)} if symbol and market else None,
+        domain_validator=_pm_domain_validator,
+        caller_endpoint='mirofish.tradingagents.portfolio_manager',
+        permit_abort_event=permit_abort_event,
     )
     data = _parse_json_obj(raw)
     if not data:
-        return None
+        return None, llm_meta
     verdict = str(data.get('verdict') or '').strip().upper()
     if verdict not in ALLOWED_VERDICTS:
-        return None  # invalid → caller keeps the rule verdict
+        return None, llm_meta
     reasoning = str(data.get('reasoning') or '').strip()
     if not reasoning:
-        return None
+        return None, llm_meta
     confidence = _safe_float(data.get('confidence'))
     if confidence is None:
-        confidence = rule['confidence']
+        return None, llm_meta
     if verdict == 'STRONG_BUY':
         confidence = max(_STRONG_BUY_CONF_FLOOR, confidence)
     confidence = round(_clamp(confidence, 0.0, 100.0), 2)
@@ -360,7 +440,22 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
         'strong_buy': verdict == 'STRONG_BUY',
         'reasoning': reasoning[:1500],
         'llm': llm_meta,
-    }
+        'analysis_status': str(llm_meta.get('analysis_status') or 'SUCCESS_PRIMARY'),
+        'rule_candidate_verdict': rule,
+    }, llm_meta
+
+
+def _pm_domain_validator(data: Any) -> ProviderErrorClass | None:
+    if not isinstance(data, dict):
+        return ProviderErrorClass.INVALID_JSON
+    if str(data.get('verdict') or '').strip().upper() not in ALLOWED_VERDICTS:
+        return ProviderErrorClass.INVALID_JSON
+    if not str(data.get('reasoning') or '').strip():
+        return ProviderErrorClass.INVALID_JSON
+    confidence = _safe_float(data.get('confidence'))
+    if confidence is None or not 0 <= confidence <= 100:
+        return ProviderErrorClass.NUMERIC_MISMATCH
+    return None
 
 
 # ── Shared helpers ──────────────────────────────────────────────────

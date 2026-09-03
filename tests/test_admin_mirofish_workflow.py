@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from flask import Flask
@@ -24,6 +24,7 @@ def _disable_tradingagents_layer(monkeypatch):
 
 
 def _candidate(symbol, name, alpha, risk, rank=1, action='BUY_CANDIDATE'):
+    observed_at = '2026-05-07T06:00:00+00:00'
     return {
         'rank': rank,
         'symbol': symbol,
@@ -50,6 +51,15 @@ def _candidate(symbol, name, alpha, risk, rank=1, action='BUY_CANDIDATE'):
         },
         'entry_plan': {'status': 'ready'},
         'price': {'date': '2026-05-07', 'current_price': 1000 * rank},
+        'generated_at': observed_at,
+        'source_cutoff': observed_at,
+        'source': 'local_marketflow_artifacts',
+        'freshness': {'status': 'fresh'},
+        'source_packets': [{
+            'evidence_id': f'scanner-{symbol}', 'source': 'local_marketflow_artifacts',
+            'fetched_at': observed_at, 'freshness': 'fresh', 'confidence': 1.0,
+            'content': {'price': 1000 * rank},
+        }],
     }
 
 
@@ -81,6 +91,7 @@ def _analysis_run(candidate, action='BUY', confidence=75, graph_links=40, brain_
     return {
         'id': f"mf_{candidate['symbol']}",
         'status': 'completed',
+        'analysis_status': 'SUCCESS_PRIMARY',
         'display_name': candidate['display_name'],
         'symbol': candidate['symbol'],
         'market': candidate['market'],
@@ -98,6 +109,589 @@ def _analysis_run(candidate, action='BUY', confidence=75, graph_links=40, brain_
         },
         'artifacts': {'run': f"/api/admin/mirofish/runs/mf_{candidate['symbol']}"},
     }
+
+
+def test_automatic_analysis_seam_uses_compact_once_without_legacy_stack(monkeypatch):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    candidate = _candidate('005930', '삼성전자', 85, 20)
+    monkeypatch.setattr(workflow.store, 'create_run', pytest.fail)
+    captured = []
+    monkeypatch.setattr(
+        workflow.ta_engine, 'run_deep_analysis',
+        lambda target, **kwargs: captured.append(kwargs) or {
+            'id': 'ta_compact', 'analysis_status': 'SUCCESS_PRIMARY',
+            'verdict': {'verdict': 'BUY', 'confidence': 80},
+        },
+    )
+    monkeypatch.setattr(
+        workflow.store, 'create_compact_run',
+        lambda candidate, ta, **kwargs: {'id': 'mf_compact', 'source_run_id': ta['id']},
+    )
+    out = workflow._create_analysis_run(candidate, 10, 'full', workflow_id='mcp_parent')
+    assert out['source_run_id'] == 'ta_compact'
+    assert len(captured) == 1
+    assert captured[0]['profile'] == 'compact'
+    assert captured[0]['routing_run_id'] == 'mcp_parent'
+
+
+def test_scanner_summary_never_synthesizes_missing_source_provenance():
+    candidate = _candidate('005930', '삼성전자', 85, 20)
+    candidate.pop('source_packets')
+
+    summary = workflow._candidate_summary(candidate)
+    with pytest.raises(ValueError, match='provenance'):
+        workflow._build_candidate_packet(summary, use_llm=True)
+
+
+def test_scanner_candidate_with_partial_required_provenance_is_rejected():
+    candidate = _candidate('005930', '삼성전자', 85, 20)
+    candidate['provenance_missing'] = ['dart_event_latest.json']
+
+    with pytest.raises(ValueError, match='required provenance'):
+        workflow._build_candidate_packet(candidate, use_llm=True)
+
+
+def test_candidate_summary_source_cutoff_uses_timezone_aware_maximum():
+    candidate = _candidate('005930', '삼성전자', 85, 20)
+    candidate.pop('source_cutoff')
+    candidate['source_packets'] = [
+        {**candidate['source_packets'][0], 'fetched_at': '2026-09-03T10:00:00+09:00'},
+        {**candidate['source_packets'][0], 'evidence_id': 'later',
+         'fetched_at': '2026-09-03T03:00:00+00:00'},
+    ]
+
+    summary = workflow._candidate_summary(candidate)
+
+    assert summary['source_cutoff'] == '2026-09-03T03:00:00+00:00'
+
+
+def test_candidate_admission_happens_before_executor_submission(tmp_path, monkeypatch):
+    candidates = [_candidate(f'{index:06d}', f'종목{index}', 90 - index, 20, index) for index in range(10)]
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(workflow.alpha_scanner, 'run_scanner_alert_check', lambda *args, **kwargs: _scanner_result(candidates))
+    submitted = []
+    monkeypatch.setattr(
+        workflow, '_create_analysis_run',
+        lambda candidate, agent_count, mode: submitted.append(candidate['symbol']) or _analysis_run(candidate),
+    )
+    result = workflow.start_workflow_from_scanner_events(
+        {'max_events': 10, 'top_n': 3, 'require_buy': False}, async_mode=False,
+    )
+    assert len(submitted) == 5
+    assert result['budget_summary']['admitted'] == 5
+    assert result['budget_summary']['deferred'] == 5
+
+
+def test_budget_permits_are_reserved_before_worker_submission(tmp_path, monkeypatch):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    candidates = [_candidate('005930', '삼성전자', 90, 20)]
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(workflow.alpha_scanner, 'run_scanner_alert_check', lambda *a, **k: _scanner_result(candidates))
+    order = []
+    def reserve(run_id, packets):
+        order.append('reserve')
+        packet = packets[0]
+        return ([{'packet': packet, 'request_ids': {'decisive_text': 'stable-request'},
+                  'reservation_ids': {'decisive_text': 'permit-1'}}],
+                [{'symbol': packet['symbol'], 'status': 'admitted'}])
+    monkeypatch.setattr(workflow.ta_engine, 'reserve_compact_batch', reserve)
+    def create(candidate, agent_count, mode, *, workflow_id=None, force=False,
+               evidence_packet=None, request_ids=None, reservation_ids=None,
+               permits_preflighted=False):
+        order.append('submit')
+        assert request_ids['decisive_text'] == 'stable-request'
+        assert reservation_ids['decisive_text'] == 'permit-1'
+        return _analysis_run(candidate)
+    monkeypatch.setattr(workflow, '_create_analysis_run', create)
+    workflow.start_workflow_from_scanner_events(
+        {'max_events': 1, 'top_n': 1, 'require_buy': False}, async_mode=False)
+    assert order == ['reserve', 'submit']
+
+
+def test_preflight_permits_are_released_when_executor_creation_fails(tmp_path, monkeypatch):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    candidate = _candidate('005930', '삼성전자', 90, 20)
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(
+        workflow.alpha_scanner, 'run_scanner_alert_check',
+        lambda *args, **kwargs: _scanner_result([candidate]),
+    )
+    monkeypatch.setattr(
+        workflow.ta_engine, 'reserve_compact_batch',
+        lambda run_id, packets: ([{
+            'packet': packets[0],
+            'request_ids': {'decisive_text': 'stable-request'},
+            'reservation_ids': {'decisive_text': 'permit-1'},
+            'reservation_owner_tokens': {'decisive_text': 'owner-1'},
+        }], [{'symbol': '005930', 'status': 'admitted'}]),
+    )
+    released = []
+    monkeypatch.setattr(
+        workflow.ta_engine, 'release_compact_permits',
+        lambda permits, owners: released.append((dict(permits), dict(owners))),
+    )
+    monkeypatch.setattr(
+        workflow.concurrent.futures, 'ThreadPoolExecutor',
+        lambda **kwargs: (_ for _ in ()).throw(OSError('executor unavailable')),
+    )
+
+    with pytest.raises(OSError, match='executor unavailable'):
+        workflow.start_workflow_from_scanner_events(
+            {'max_events': 1, 'top_n': 1, 'require_buy': False}, async_mode=False,
+        )
+
+    assert released == [(
+        {'decisive_text': 'permit-1'}, {'decisive_text': 'owner-1'},
+    )]
+
+
+def test_partial_executor_submission_aborts_already_running_worker(tmp_path, monkeypatch):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    candidates = [
+        _candidate('005930', '삼성전자', 90, 20),
+        _candidate('000660', 'SK하이닉스', 89, 20),
+    ]
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(
+        workflow.alpha_scanner, 'run_scanner_alert_check',
+        lambda *args, **kwargs: _scanner_result(candidates),
+    )
+    monkeypatch.setattr(
+        workflow.ta_engine, 'reserve_compact_batch',
+        lambda run_id, packets: ([{
+            'packet': packet,
+            'request_ids': {'decisive_text': f'request-{index}'},
+            'reservation_ids': {'decisive_text': f'permit-{index}'},
+            'reservation_owner_tokens': {'decisive_text': f'owner-{index}'},
+        } for index, packet in enumerate(packets)], [
+            {'symbol': packet['symbol'], 'status': 'admitted'} for packet in packets
+        ]),
+    )
+    monkeypatch.setattr(workflow.ta_engine, 'release_compact_permits', lambda *_args: None)
+    worker_started = workflow.threading.Event()
+    worker_saw_abort = workflow.threading.Event()
+
+    def invoke(candidate, *args, permit_abort_event=None, **kwargs):
+        worker_started.set()
+        if permit_abort_event.wait(timeout=0.5):
+            worker_saw_abort.set()
+        return _analysis_run(candidate)
+
+    monkeypatch.setattr(workflow, '_invoke_analysis_run', invoke)
+    original_executor = workflow.concurrent.futures.ThreadPoolExecutor
+
+    class PartialFailExecutor:
+        def __init__(self, **kwargs):
+            self.delegate = original_executor(max_workers=1)
+            self.submissions = 0
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            self.delegate.shutdown(wait=True)
+
+        def submit(self, *args, **kwargs):
+            self.submissions += 1
+            if self.submissions == 2:
+                raise OSError('second submit failed')
+            future = self.delegate.submit(*args, **kwargs)
+            assert worker_started.wait(timeout=0.5)
+            return future
+
+    monkeypatch.setattr(workflow.concurrent.futures, 'ThreadPoolExecutor', PartialFailExecutor)
+
+    with pytest.raises(OSError, match='second submit failed'):
+        workflow.start_workflow_from_scanner_events(
+            {'max_events': 2, 'top_n': 2, 'max_parallel': 1, 'require_buy': False},
+            async_mode=False,
+        )
+
+    assert worker_saw_abort.is_set()
+
+
+def test_supervision_exception_aborts_running_worker(tmp_path, monkeypatch):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    candidate = _candidate('005930', '삼성전자', 90, 20)
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(
+        workflow.alpha_scanner, 'run_scanner_alert_check',
+        lambda *args, **kwargs: _scanner_result([candidate]),
+    )
+    monkeypatch.setattr(
+        workflow.ta_engine, 'reserve_compact_batch',
+        lambda run_id, packets: ([{
+            'packet': packets[0], 'request_ids': {'decisive_text': 'request'},
+            'reservation_ids': {'decisive_text': 'permit'},
+            'reservation_owner_tokens': {'decisive_text': 'owner'},
+        }], [{'symbol': '005930', 'status': 'admitted'}]),
+    )
+    monkeypatch.setattr(workflow.ta_engine, 'release_compact_permits', lambda *_args: None)
+    worker_started = workflow.threading.Event()
+    worker_saw_abort = workflow.threading.Event()
+
+    def invoke(candidate, *args, permit_abort_event=None, **kwargs):
+        worker_started.set()
+        if permit_abort_event.wait(timeout=0.5):
+            worker_saw_abort.set()
+        return _analysis_run(candidate)
+
+    def fail_wait(*args, **kwargs):
+        assert worker_started.wait(timeout=0.5)
+        raise OSError('wait failed')
+
+    monkeypatch.setattr(workflow, '_invoke_analysis_run', invoke)
+    monkeypatch.setattr(workflow.concurrent.futures, 'wait', fail_wait)
+
+    with pytest.raises(OSError, match='wait failed'):
+        workflow.start_workflow_from_scanner_events(
+            {'max_events': 1, 'top_n': 1, 'max_parallel': 1, 'require_buy': False},
+            async_mode=False,
+        )
+
+    assert worker_saw_abort.is_set()
+
+
+def test_max_parallel_one_renews_queued_permit_until_second_candidate_claims(
+    tmp_path, monkeypatch,
+):
+    from app.services.ai_routing.budget import BudgetManager
+    from app.services.ai_routing.contracts import Operation, TokenUsage
+    from app.services.ai_routing.store import RoutingStore
+
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    monkeypatch.setenv('AI_OPENAI_PERMIT_LEASE_SECONDS', '1')
+    candidates = [
+        _candidate('005930', '삼성전자', 90, 20),
+        _candidate('000660', 'SK하이닉스', 89, 20),
+    ]
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(
+        workflow.alpha_scanner, 'run_scanner_alert_check',
+        lambda *args, **kwargs: _scanner_result(candidates),
+    )
+    now = {'value': datetime(2026, 9, 3, tzinfo=timezone.utc)}
+    monkeypatch.setattr(
+        'app.services.ai_routing.budget._utc_now_datetime', lambda: now['value'],
+    )
+    manager = BudgetManager(RoutingStore(tmp_path / 'usage.sqlite3'))
+    request_ids = {}
+
+    def reserve_batch(run_id, packets):
+        prepared = []
+        records = []
+        for index, packet in enumerate(packets):
+            request_id = f'{run_id}:{index}:decisive'
+            owner = f'owner-{index}'
+            permit = manager.reserve(
+                run_id=run_id, request_id=request_id,
+                operation=Operation.DECISIVE_TEXT,
+                input_tokens=100, output_tokens=100, owner_token=owner,
+            )
+            request_ids[packet['symbol']] = request_id
+            prepared.append({
+                'packet': packet,
+                'request_ids': {'decisive_text': request_id},
+                'reservation_ids': {'decisive_text': permit.reservation_id},
+                'reservation_owner_tokens': {'decisive_text': owner},
+            })
+            records.append({'symbol': packet['symbol'], 'status': 'admitted'})
+        return prepared, records
+
+    monkeypatch.setattr(workflow.ta_engine, 'reserve_compact_batch', reserve_batch)
+    first_can_finish = workflow.threading.Event()
+    renewals = []
+
+    def renew(permits, owners):
+        now['value'] += timedelta(milliseconds=600)
+        renewals.append(now['value'])
+        ok = manager.renew_many([
+            (reservation_id, owners[operation])
+            for operation, reservation_id in permits.items()
+        ], terminal_ok=True)
+        if len(renewals) >= 2:
+            first_can_finish.set()
+        return ok
+
+    monkeypatch.setattr(workflow.ta_engine, 'renew_compact_permits', renew, raising=False)
+    monkeypatch.setattr(workflow.ta_engine, 'compact_permit_heartbeat_seconds', lambda: 0.001, raising=False)
+    monkeypatch.setattr(
+        workflow.ta_engine, 'release_compact_permits',
+        lambda permits, owners: [
+            manager.release(reservation_id, owner_token=owners[operation])
+            for operation, reservation_id in permits.items()
+        ],
+    )
+    claims = []
+
+    def create(candidate, agent_count, mode, *, workflow_id=None, force=False,
+               evidence_packet=None, request_ids=None, reservation_ids=None,
+               reservation_owner_tokens=None, permits_preflighted=False):
+        operation = 'decisive_text'
+        claim = manager.claim(
+            reservation_ids[operation], run_id=workflow_id,
+            request_id=request_ids[operation],
+            owner_token=reservation_owner_tokens[operation],
+            input_tokens=100, output_tokens=100,
+        )
+        claims.append((candidate['symbol'], claim.approved, claim.reason))
+        if candidate['symbol'] == '005930' and not first_can_finish.wait(timeout=0.2):
+            now['value'] += timedelta(seconds=2)
+        if claim.approved:
+            manager.settle(
+                reservation_ids[operation], TokenUsage(input_tokens=10, output_tokens=5),
+            )
+        return _analysis_run(candidate)
+
+    monkeypatch.setattr(workflow, '_create_analysis_run', create)
+
+    result = workflow.start_workflow_from_scanner_events(
+        {'max_events': 2, 'top_n': 2, 'max_parallel': 1, 'require_buy': False},
+        async_mode=False,
+    )
+
+    assert result['status'] == 'completed'
+    assert len(renewals) >= 2
+    assert claims == [
+        ('005930', True, None),
+        ('000660', True, None),
+    ]
+    assert manager.snapshot(result['id']).used_calls == 2
+
+
+def test_permit_renewal_persistence_failure_fails_closed_workflow(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    candidate = _candidate('005930', '삼성전자', 90, 20)
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(
+        workflow.alpha_scanner, 'run_scanner_alert_check',
+        lambda *args, **kwargs: _scanner_result([candidate]),
+    )
+    monkeypatch.setattr(
+        workflow.ta_engine, 'reserve_compact_batch',
+        lambda run_id, packets: ([{
+            'packet': packets[0],
+            'request_ids': {'decisive_text': 'stable-request'},
+            'reservation_ids': {'decisive_text': 'permit-1'},
+            'reservation_owner_tokens': {'decisive_text': 'owner-1'},
+        }], [{'symbol': '005930', 'status': 'admitted'}]),
+    )
+    worker_can_finish = workflow.threading.Event()
+
+    def renew(*_args, **_kwargs):
+        worker_can_finish.set()
+        raise OSError('budget store unavailable')
+
+    monkeypatch.setattr(workflow.ta_engine, 'renew_compact_permits', renew, raising=False)
+    monkeypatch.setattr(workflow.ta_engine, 'compact_permit_heartbeat_seconds', lambda: 0.001, raising=False)
+    monkeypatch.setattr(workflow.ta_engine, 'release_compact_permits', lambda *_args: None)
+
+    def create(candidate, agent_count, mode, **kwargs):
+        worker_can_finish.wait(timeout=0.2)
+        return _analysis_run(candidate)
+
+    monkeypatch.setattr(workflow, '_create_analysis_run', create)
+
+    result = workflow.start_workflow_from_scanner_events(
+        {'max_events': 1, 'top_n': 1, 'max_parallel': 1, 'require_buy': False},
+        async_mode=False,
+    )
+
+    assert result['status'] == 'failed'
+    assert result['analysis_status'] == 'FAILED_TECHNICAL'
+    assert result['failure_reason'] == 'permit_lease_renewal_failed'
+    assert result['top3'] == []
+    assert result['analysis_runs'][0]['status'] == 'failed'
+    assert result['analysis_runs'][0]['error'] == 'PermitLeaseError: permit_lease_renewal_failed'
+
+
+def test_aborted_permit_worker_never_enters_analysis(monkeypatch):
+    abort = workflow.threading.Event()
+    abort.set()
+    monkeypatch.setattr(workflow, '_create_analysis_run', pytest.fail)
+
+    with pytest.raises(RuntimeError, match='permit_lease_renewal_failed'):
+        workflow._invoke_analysis_run(
+            _candidate('005930', '삼성전자', 90, 20),
+            10, 'full', 'wf-aborted', False,
+            permit_abort_event=abort,
+        )
+
+
+def test_permit_abort_event_is_forwarded_into_compact_engine(monkeypatch):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    abort = workflow.threading.Event()
+    captured = []
+    monkeypatch.setattr(
+        workflow.ta_engine, 'run_deep_analysis',
+        lambda target, **kwargs: captured.append(kwargs) or {
+            'id': 'ta_abort_fence', 'analysis_status': 'SUCCESS_PRIMARY',
+            'verdict': {'verdict': 'BUY', 'confidence': 80},
+        },
+    )
+    monkeypatch.setattr(
+        workflow.store, 'create_compact_run',
+        lambda candidate, ta, **kwargs: {'id': 'mf_abort_fence'},
+    )
+
+    workflow._invoke_analysis_run(
+        _candidate('005930', '삼성전자', 90, 20),
+        10, 'full', 'wf-abort-fence', False,
+        permit_abort_event=abort,
+    )
+
+    assert captured[0]['permit_abort_event'] is abort
+
+
+def test_worker_abort_signal_promotes_workflow_to_lease_failure_without_tick(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    candidate = _candidate('005930', '삼성전자', 90, 20)
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(
+        workflow.alpha_scanner, 'run_scanner_alert_check',
+        lambda *args, **kwargs: _scanner_result([candidate]),
+    )
+    monkeypatch.setattr(
+        workflow.ta_engine, 'reserve_compact_batch',
+        lambda run_id, packets: ([{
+            'packet': packets[0], 'request_ids': {'decisive_text': 'request'},
+            'reservation_ids': {'decisive_text': 'permit'},
+            'reservation_owner_tokens': {'decisive_text': 'owner'},
+        }], [{'symbol': '005930', 'status': 'admitted'}]),
+    )
+    monkeypatch.setattr(workflow.ta_engine, 'release_compact_permits', lambda *_args: None)
+    monkeypatch.setattr(workflow.ta_engine, 'compact_permit_heartbeat_seconds', lambda: 60)
+
+    def create(
+        candidate, *args, workflow_id=None, permit_abort_event=None, **kwargs,
+    ):
+        permit_abort_event.set()
+        raise RuntimeError('permit_lease_renewal_failed')
+
+    monkeypatch.setattr(workflow, '_create_analysis_run', create)
+
+    result = workflow.start_workflow_from_scanner_events(
+        {'max_events': 1, 'top_n': 1, 'max_parallel': 1, 'require_buy': False},
+        async_mode=False,
+    )
+
+    assert result['status'] == 'failed'
+    assert result['failure_reason'] == 'permit_lease_renewal_failed'
+    assert result['top3'] == []
+
+
+def test_renewal_and_cleanup_persistence_failure_still_returns_failed_workflow(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    candidate = _candidate('005930', '삼성전자', 90, 20)
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(
+        workflow.alpha_scanner, 'run_scanner_alert_check',
+        lambda *args, **kwargs: _scanner_result([candidate]),
+    )
+    monkeypatch.setattr(
+        workflow.ta_engine, 'reserve_compact_batch',
+        lambda run_id, packets: ([{
+            'packet': packets[0], 'request_ids': {'decisive_text': 'request'},
+            'reservation_ids': {'decisive_text': 'permit'},
+            'reservation_owner_tokens': {'decisive_text': 'owner'},
+        }], [{'symbol': '005930', 'status': 'admitted'}]),
+    )
+    worker_can_finish = workflow.threading.Event()
+
+    def fail_renew(*_args):
+        worker_can_finish.set()
+        raise OSError('renew unavailable')
+
+    monkeypatch.setattr(workflow.ta_engine, 'renew_compact_permits', fail_renew)
+    monkeypatch.setattr(workflow.ta_engine, 'compact_permit_heartbeat_seconds', lambda: 0.001)
+    monkeypatch.setattr(
+        workflow.ta_engine, 'release_compact_permits',
+        lambda *_args: (_ for _ in ()).throw(OSError('cleanup unavailable')),
+    )
+    monkeypatch.setattr(
+        workflow, '_create_analysis_run',
+        lambda candidate, *args, **kwargs: (
+            worker_can_finish.wait(timeout=0.2) and _analysis_run(candidate)
+        ),
+    )
+
+    result = workflow.start_workflow_from_scanner_events(
+        {'max_events': 1, 'top_n': 1, 'max_parallel': 1, 'require_buy': False},
+        async_mode=False,
+    )
+
+    assert result['status'] == 'failed'
+    assert result['failure_reason'] == 'permit_lease_renewal_failed'
+
+
+def test_automatic_kill_switch_does_not_run_compact_or_legacy(monkeypatch):
+    candidate = _candidate('005930', '삼성전자', 90, 20)
+    monkeypatch.setattr(workflow.ta_engine, 'run_deep_analysis', pytest.fail)
+    monkeypatch.setattr(workflow.store, 'create_run', pytest.fail)
+    with pytest.raises(RuntimeError, match='disabled'):
+        workflow._create_analysis_run(candidate, 10, 'full', workflow_id='wf')
+
+
+def test_automatic_kill_switch_projects_explicit_disabled_workflow(tmp_path, monkeypatch):
+    candidate = _candidate('005930', '삼성전자', 90, 20)
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(
+        workflow.alpha_scanner, 'run_scanner_alert_check',
+        lambda *args, **kwargs: _scanner_result([candidate]),
+    )
+    monkeypatch.setattr(workflow.ta_engine, 'run_deep_analysis', pytest.fail)
+    monkeypatch.setattr(workflow.ta_engine, 'reserve_compact_batch', pytest.fail)
+    monkeypatch.setattr(workflow.store, 'create_run', pytest.fail)
+
+    result = workflow.start_workflow_from_scanner_events(
+        {'max_events': 1, 'top_n': 1, 'require_buy': False}, async_mode=False,
+    )
+
+    assert result['status'] == 'disabled'
+    assert result['analysis_status'] == 'DISABLED'
+    assert result['analysis_runs'] == []
+    assert result['top3'] == []
+    assert result['progress']['phase'] == 'disabled'
+    assert result['progress']['percent'] < 100
+    assert result['budget_summary']['reason'] == 'tradingagents_disabled'
+
+
+def test_analysis_projection_preserves_decision_diagnostics():
+    candidate = _candidate('005930', '삼성전자', 90, 20)
+    run = _analysis_run(candidate)
+    run['analysis_status'] = 'SUCCESS_FALLBACK'
+    run['rule_candidate_verdict'] = {'action': 'HOLD', 'confidence': 0.51}
+    run['verdict'].update({
+        'analysis_status': 'SUCCESS_FALLBACK',
+        'rule_candidate_verdict': {'action': 'HOLD', 'confidence': 0.51},
+        'reasoning': 'fallback evidence is decisive',
+        'opposing_scenario': 'volume confirmation fails',
+    })
+
+    result = workflow._analysis_result(candidate, run)
+
+    assert result['analysis_status'] == 'SUCCESS_FALLBACK'
+    assert result['rule_candidate_verdict'] == {'action': 'HOLD', 'confidence': 0.51}
+    assert result['verdict']['analysis_status'] == 'SUCCESS_FALLBACK'
+    assert result['verdict']['rule_candidate_verdict']['action'] == 'HOLD'
+    assert result['verdict']['reasoning'] == 'fallback evidence is decisive'
+    assert result['verdict']['opposing_scenario'] == 'volume confirmation fails'
 
 
 def test_workflow_runs_multi_target_graphrag_and_selects_top3(tmp_path, monkeypatch):
@@ -170,6 +764,8 @@ def test_workflow_quality_summary_holds_low_confidence_top3():
         'candidate': weak,
         'symbol': weak['symbol'],
         'target': weak['display_name'],
+        'status': 'completed',
+        'analysis_status': 'SUCCESS_PRIMARY',
         'final_score': 42.0,
         'verdict': {'action': 'HOLD'},
     }

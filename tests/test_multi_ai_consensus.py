@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import os
 import sys
+import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -13,11 +15,21 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from engine.llm_analyzer import (  # noqa: E402
+    DeepSeekScreener,
+    GeminiScreener,
+    GrokScreener,
     MultiAIConsensusScreener,
     MODEL_DEEPSEEK,
     MODEL_GEMINI,
     MODEL_OPENAI,
     MODEL_GROK,
+)
+from engine import llm_analyzer as llm_analyzer_module  # noqa: E402
+from app.services.ai_routing.contracts import (  # noqa: E402
+    AnalysisStatus,
+    ProviderErrorClass,
+    RoutingResult,
+    TokenUsage,
 )
 
 
@@ -56,6 +68,36 @@ def _build_screener_2way() -> MultiAIConsensusScreener:
     """2-way legacy (Gemini+OpenAI only)."""
     os.environ["MULTI_AI_INCLUDE_GROK"] = "0"
     return MultiAIConsensusScreener()
+
+
+def test_shadow_flag_without_explicit_providers_records_not_run(monkeypatch):
+    monkeypatch.setenv("MULTI_AI_SHADOW_COMPARE", "1")
+    monkeypatch.delenv("MULTI_AI_INCLUDE_GEMINI", raising=False)
+    monkeypatch.delenv("MULTI_AI_INCLUDE_GROK", raising=False)
+    screener = MultiAIConsensusScreener()
+
+    class Primary:
+        model_name = "deepseek-v4-pro"
+
+        async def screen_candidates(self, _signals, **_kwargs):
+            return {"picks": [], "model": self.model_name}
+
+    screener.screeners[MODEL_DEEPSEEK] = Primary()
+    output = __import__("asyncio").run(
+        screener.screen_candidates([{"stock_code": "005930"}], run_id="shadow-run")
+    )
+
+    assert screener.shadow_screeners == {}
+    assert output["shadow_comparison"] == {
+        "status": "not_run",
+        "reason": "no_explicit_shadow_providers",
+        "compared": False,
+        "verdict_blended": False,
+        "models_attempted": [],
+    }
+    empty = __import__("asyncio").run(screener.screen_candidates([]))
+    assert empty["shadow_comparison"]["reason"] == "no_explicit_shadow_providers"
+    assert empty["shadow_comparison"]["compared"] is False
 
 
 # ───────────────────────────────────────────────────────────────────
@@ -213,10 +255,350 @@ def test_grok_empty_degrades_to_2way():
 def test_grok_disabled_via_env():
     s = _build_screener_2way()
     assert MODEL_GROK not in s.screeners
-    # 2026-09-02: 기본 투표자 Gemini → DeepSeek 교체 (Gemini 는 MULTI_AI_INCLUDE_GEMINI=1 옵트인)
+    # OpenAI는 DeepSeek logical slot 실패 시 중앙 router 안에서만 한 번 대체한다.
     assert MODEL_DEEPSEEK in s.screeners
-    assert MODEL_OPENAI in s.screeners
+    assert MODEL_OPENAI not in s.screeners
     assert MODEL_GEMINI not in s.screeners
+
+
+def test_openai_cannot_be_enabled_as_a_parallel_shadow_voter(monkeypatch):
+    """OpenAI is a failed-slot replacement, never another verdict path."""
+    monkeypatch.setenv("MULTI_AI_SHADOW_COMPARE", "1")
+    monkeypatch.setenv("MULTI_AI_SHADOW_INCLUDE_OPENAI", "1")
+    monkeypatch.setenv("MULTI_AI_INCLUDE_GEMINI", "0")
+    monkeypatch.setenv("MULTI_AI_INCLUDE_GROK", "0")
+
+    screener = MultiAIConsensusScreener()
+
+    assert MODEL_OPENAI not in screener.screeners
+    assert MODEL_OPENAI not in screener.shadow_screeners
+
+
+class _RoutedSlot:
+    client = True
+    model_name = "logical-deepseek-slot"
+
+    def __init__(self, result):
+        self.result = result
+        self.calls = []
+
+    async def screen_candidates(self, signals_data, *, run_id=None, request_id=None):
+        self.calls.append((signals_data, run_id, request_id))
+        return dict(self.result)
+
+
+@pytest.mark.asyncio
+async def test_routed_primary_slot_uses_stable_identity_and_unsafe_shadow_is_not_run():
+    primary = _RoutedSlot({
+        "picks": [_pick("PRIMARY")],
+        "model": "deepseek-v4-flash",
+        "routing": {"actual_provider": "deepseek", "fallback_used": False},
+        "market_view": "primary",
+        "top_themes": ["primary-theme"],
+    })
+    shadow = _RoutedSlot({
+        "picks": [_pick("SHADOW")],
+        "model": "shadow-model",
+        "market_view": "shadow",
+        "top_themes": ["shadow-theme"],
+    })
+    screener = MultiAIConsensusScreener.__new__(MultiAIConsensusScreener)
+    screener.screeners = {MODEL_DEEPSEEK: primary}
+    screener.shadow_compare = True
+    screener.shadow_screeners = {MODEL_GEMINI: shadow}
+    screener.devil_advocate = None
+
+    out = await screener.screen_candidates(
+        [{"stock_code": "PRIMARY"}], run_id="jongga-run"
+    )
+
+    assert [pick["stock_code"] for pick in out["picks"]] == ["PRIMARY"]
+    assert out["consensus_method"] == "routed_primary_v1"
+    assert out["routing"]["actual_provider"] == "deepseek"
+    assert out["shadow_comparison"]["status"] == "not_run"
+    assert out["shadow_comparison"]["reason"] == "unsafe_billable_shadow_transport"
+    assert out["shadow_comparison"]["compared"] is False
+    assert out["shadow_comparison"]["verdict_blended"] is False
+    assert "SHADOW" not in {pick["stock_code"] for pick in out["picks"]}
+    assert shadow.calls == []
+    assert primary.calls[0][1:] == (
+        "jongga-run",
+        "jongga-run:multi-ai-primary",
+    )
+
+
+@pytest.mark.asyncio
+async def test_primary_routed_slot_has_no_shorter_outer_timeout(monkeypatch):
+    """The central provider deadlines own cancellation; to_thread must not outlive UI."""
+    primary = _RoutedSlot({
+        "picks": [],
+        "model": "deepseek-v4-flash",
+        "routing": {"actual_provider": "deepseek", "fallback_used": False},
+    })
+    screener = MultiAIConsensusScreener.__new__(MultiAIConsensusScreener)
+    screener.screeners = {MODEL_DEEPSEEK: primary}
+    screener.shadow_compare = False
+    screener.shadow_screeners = {}
+    screener.devil_advocate = None
+    monkeypatch.setattr(
+        "engine.llm_analyzer.asyncio.wait_for",
+        lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("central routed slot must not use an outer timeout")
+        ),
+    )
+
+    result = await screener.screen_candidates(
+        [{"stock_code": "005930"}], run_id="jongga-run"
+    )
+
+    assert result["consensus_method"] == "routed_primary_v1"
+    assert len(primary.calls) == 1
+    assert result["routing"]["actual_provider"] == "deepseek"
+
+
+@pytest.mark.asyncio
+async def test_primary_pick_identity_and_prices_are_rehydrated_from_submitted_row():
+    primary = _RoutedSlot({
+        "picks": [{
+            "stock_code": "005930",
+            "stock_name": "모델이 만든 이름",
+            "market": "NASDAQ",
+            "current_price": 1,
+            "entry_price": 1,
+            "stop_price": 0,
+            "target_price": 999999,
+            "expected_return": "9999%",
+            "confidence": "HIGH",
+            "reason": "입력 근거 해석",
+            "risk": "변동성",
+        }],
+        "model": "deepseek-v4-flash",
+        "routing": {"actual_provider": "deepseek", "fallback_used": False},
+    })
+    screener = MultiAIConsensusScreener.__new__(MultiAIConsensusScreener)
+    screener.screeners = {MODEL_DEEPSEEK: primary}
+    screener.shadow_compare = False
+    screener.shadow_screeners = {}
+    screener.devil_advocate = None
+    submitted = [{
+        "stock_code": "005930",
+        "stock_name": "삼성전자",
+        "market": "KOSPI",
+        "current_price": 70_000,
+        "entry_price": 70_000,
+        "stop_price": 66_500,
+        "target_price": 77_000,
+    }]
+
+    output = await screener.screen_candidates(submitted, run_id="jongga-run")
+
+    pick = output["picks"][0]
+    assert pick["stock_code"] == "005930"
+    assert pick["stock_name"] == "삼성전자"
+    assert pick["market"] == "KOSPI"
+    assert pick["current_price"] == 70_000
+    assert pick["entry_price"] == 70_000
+    assert pick["stop_price"] == 66_500
+    assert pick["target_price"] == 77_000
+    assert pick["expected_return"] == "10.0%"
+    assert pick["reason"] == "입력 근거 해석"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "model_picks, expected_error",
+    [
+        ([{"stock_code": "005930"}, {"stock_code": "005930"}], ProviderErrorClass.NUMERIC_MISMATCH),
+        ([{"stock_code": 5930}], ProviderErrorClass.NUMERIC_MISMATCH),
+        ([{"stock_code": "UNKNOWN"}], ProviderErrorClass.NUMERIC_MISMATCH),
+        ([{"stock_code": "005930", "expected_return": float("nan")}], ProviderErrorClass.NUMERIC_MISMATCH),
+        ([{"stock_code": "005930", "rank": float("inf")}], ProviderErrorClass.NUMERIC_MISMATCH),
+    ],
+)
+async def test_routed_primary_rejects_duplicate_unknown_malformed_or_nonfinite_picks(
+    monkeypatch, model_picks, expected_error
+):
+    observed = {}
+
+    def enforce_validator(request):
+        payload = {"picks": model_picks, "market_view": "", "top_themes": []}
+        observed["error"] = request.domain_validator(payload)
+        return RoutingResult(
+            text=None,
+            analysis_status=AnalysisStatus.FAILED_TECHNICAL,
+            primary_provider="deepseek",
+            actual_provider=None,
+            model="deepseek-v4-flash",
+            usage=TokenUsage.unknown(),
+        )
+
+    monkeypatch.setattr(llm_analyzer_module, "route_text", enforce_validator)
+    screener = DeepSeekScreener(api_key="mocked")
+
+    result = await screener.screen_candidates([{
+        "stock_code": "005930",
+        "stock_name": "삼성전자",
+        "market": "KOSPI",
+        "entry_price": 70_000,
+        "target_price": 77_000,
+    }])
+
+    assert observed["error"] is expected_error
+    assert result["picks"] == []
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "submitted",
+    [
+        [
+            {"stock_code": "005930", "stock_name": "삼성전자", "entry_price": 70_000},
+            {"stock_code": "005930", "stock_name": "중복", "entry_price": 70_000},
+        ],
+        [{"stock_name": "코드 누락", "entry_price": 70_000}],
+        [{"stock_code": "005930", "stock_name": "NaN", "entry_price": float("nan")}],
+        [{"stock_code": "005930", "stock_name": "Inf", "target_price": float("inf")}],
+        [{"stock_code": "005930", "stock_name": "Nested", "evidence": {"score": float("nan")}}],
+    ],
+    ids=["duplicate", "missing", "nan", "infinite", "nested-nonfinite"],
+)
+async def test_invalid_submitted_rows_survive_final_projection_as_technical_artifact(
+    monkeypatch, submitted
+):
+    monkeypatch.setattr(
+        llm_analyzer_module,
+        "route_text",
+        lambda *_a, **_kw: pytest.fail("invalid canonical input must not call a provider"),
+    )
+    primary = DeepSeekScreener(api_key="mocked")
+    screener = MultiAIConsensusScreener.__new__(MultiAIConsensusScreener)
+    screener.screeners = {MODEL_DEEPSEEK: primary}
+    screener.shadow_compare = False
+    screener.shadow_screeners = {}
+    screener.devil_advocate = None
+
+    result = await screener.screen_candidates(submitted, run_id="invalid-input-run")
+
+    assert result["picks"] == []
+    assert result["analysis_status"] == "FAILED_TECHNICAL"
+    assert result["error"] == "invalid_candidate_input"
+    assert result["error_class"] == "numeric_mismatch"
+    assert result["models_attempted"] == []
+    assert result["models_succeeded"] == []
+    assert result["total_cost_usd"] == "0"
+    assert result["routing"] == {
+        "operation": "bulk_text",
+        "run_id": "invalid-input-run",
+        "request_id": "invalid-input-run:multi-ai-primary",
+        "analysis_status": "FAILED_TECHNICAL",
+        "primary_provider": "deepseek",
+        "actual_provider": None,
+        "model": primary.model_name,
+        "fallback_used": False,
+        "fallback_reason": "invalid_candidate_input",
+        "retry_reason": None,
+        "usage": {
+            "input_tokens": 0,
+            "cached_input_tokens": 0,
+            "output_tokens": 0,
+            "reasoning_tokens": 0,
+            "total_tokens": 0,
+            "usage_estimated": False,
+        },
+        "usage_complete": True,
+        "estimated_cost_usd": "0",
+        "attempt_count": 0,
+        "telemetry_recorded": False,
+        "attempts": [],
+    }
+
+
+@pytest.mark.asyncio
+async def test_explicit_shadow_provider_is_not_started_without_cancel_safe_transport():
+    primary = _RoutedSlot({
+        "picks": [_pick("PRIMARY")],
+        "model": "deepseek-v4-flash",
+        "routing": {"actual_provider": "deepseek", "fallback_used": False},
+    })
+    shadow = _RoutedSlot({"picks": [_pick("SHADOW")], "model": "shadow-model"})
+    screener = MultiAIConsensusScreener.__new__(MultiAIConsensusScreener)
+    screener.screeners = {MODEL_DEEPSEEK: primary}
+    screener.shadow_compare = True
+    screener.shadow_screeners = {MODEL_GEMINI: shadow}
+    screener.devil_advocate = None
+
+    output = await screener.screen_candidates(
+        [{"stock_code": "PRIMARY", "stock_name": "canonical"}],
+        run_id="jongga-shadow-run",
+    )
+
+    assert shadow.calls == []
+    assert output["shadow_comparison"] == {
+        "status": "not_run",
+        "reason": "unsafe_billable_shadow_transport",
+        "compared": False,
+        "verdict_blended": False,
+        "models_attempted": [],
+        "models_requested": [MODEL_GEMINI],
+        "run_id": "jongga-shadow-run",
+        "request_ids": {
+            MODEL_GEMINI: "jongga-shadow-run:multi-ai-shadow:gemini"
+        },
+    }
+
+
+@pytest.mark.asyncio
+async def test_shadow_error_boundaries_return_only_fixed_codes(caplog):
+    secret = "credential-canary-shadow-error-must-not-escape"
+
+    class Failing:
+        model_name = "shadow-model"
+
+        async def screen_candidates(self, _signals):
+            raise RuntimeError(secret)
+
+    screener = MultiAIConsensusScreener.__new__(MultiAIConsensusScreener)
+    safe = await screener._safe_screen(Failing(), [{"stock_code": "005930"}], 1)
+
+    gemini = GeminiScreener.__new__(GeminiScreener)
+    gemini.client = SimpleNamespace(models=SimpleNamespace(
+        generate_content=lambda **_kwargs: (_ for _ in ()).throw(RuntimeError(secret))
+    ))
+    gemini.model_name = "gemini-test"
+    gemini_result = await gemini.screen_candidates([{"stock_code": "005930"}])
+
+    class _Completions:
+        async def create(self, **_kwargs):
+            raise RuntimeError(secret)
+
+    grok = GrokScreener.__new__(GrokScreener)
+    grok.client = SimpleNamespace(chat=SimpleNamespace(completions=_Completions()))
+    grok.model_name = "grok-test"
+    grok_result = await grok.screen_candidates([{"stock_code": "005930"}])
+
+    for result in (safe, gemini_result, grok_result):
+        assert result["error"] == "provider_unavailable"
+        assert result["error_class"] == "unknown"
+        assert secret not in str(result)
+    assert secret not in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_shadow_early_results_use_fixed_reason_and_error_codes():
+    for screener in (
+        GeminiScreener.__new__(GeminiScreener),
+        GrokScreener.__new__(GrokScreener),
+    ):
+        screener.client = None
+        screener.model_name = "shadow-model"
+        unavailable = await screener.screen_candidates([{"stock_code": "005930"}])
+        assert unavailable["error"] == "provider_unavailable"
+        assert unavailable["error_class"] == "client_unavailable"
+
+        screener.client = object()
+        empty = await screener.screen_candidates([])
+        assert empty["error"] == "no_candidates"
+        assert empty["error_class"] is None
 
 
 # ───────────────────────────────────────────────────────────────────

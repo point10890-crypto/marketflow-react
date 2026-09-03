@@ -115,6 +115,33 @@ def gather_bundle(target: str, *, brain: dict[str, Any] | None = None) -> dict[s
     }
 
 
+def bundle_from_evidence_packet(packet: dict[str, Any], *, brain: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Build the compact deterministic bundle exclusively from a frozen packet."""
+    numeric = packet.get('numeric_inputs') or {}
+    scores = packet.get('deterministic_scores') or {}
+    contents = [source.get('content') for source in packet.get('sources') or []]
+    corpus = ' '.join(
+        str(content.get('text') if isinstance(content, dict) and 'text' in content else content)
+        for content in contents if content
+    )
+    trend_score = scores.get('trend')
+    try:
+        trend = 'bullish' if float(trend_score) > 0 else 'bearish' if float(trend_score) < 0 else 'neutral'
+    except (TypeError, ValueError):
+        trend = 'neutral'
+    return {
+        'target': packet['name'], 'symbol': packet['symbol'], 'market': packet['market'],
+        'display_name': packet['name'],
+        'price': {'price': numeric.get('current_price'), 'current_price': numeric.get('current_price'),
+                  'change_pct': numeric.get('change_pct'), 'volume': numeric.get('volume'),
+                  'date': packet.get('as_of')},
+        'corpus': corpus, 'technical': {'trend': trend},
+        'rs': {'rs_rating': scores.get('relative_strength')},
+        'fundamentals': dict(packet.get('fundamentals') or {}), 'errors': {}, 'brain': brain or {},
+        'risk_gates': dict(packet.get('risk_gates') or {}),
+    }
+
+
 def _load_rs_entry(symbol: str | None) -> dict[str, Any]:
     """Return the per-symbol RS entry from the cached artifact (no recompute).
 

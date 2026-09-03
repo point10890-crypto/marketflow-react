@@ -3,11 +3,17 @@ from app.services.mirofish import workflow as wf
 
 
 def _run(action, score):
-    return {'verdict': {'action': action}, 'final_score': score, 'symbol': f'{action}{score}'}
+    return {
+        'status': 'completed', 'analysis_status': 'SUCCESS_PRIMARY',
+        'verdict': {'action': action}, 'final_score': score, 'symbol': f'{action}{score}',
+    }
 
 
 def _run_with_label(label, score):
-    return {'verdict': {'label': label}, 'final_score': score, 'symbol': f'{label}{score}'}
+    return {
+        'status': 'completed', 'analysis_status': 'SUCCESS_PRIMARY',
+        'verdict': {'label': label}, 'final_score': score, 'symbol': f'{label}{score}',
+    }
 
 
 def test_select_top3_buy_only():
@@ -29,14 +35,14 @@ def test_select_top3_require_buy_false_keeps_all():
 
 
 def test_verdict_is_buy_case_insensitive():
-    assert wf._verdict_is_buy({'verdict': {'action': 'buy'}}) is True
-    assert wf._verdict_is_buy({'verdict': {'action': ' BUY '}}) is True
-    assert wf._verdict_is_buy({'verdict': {'action': 'SELL'}}) is False
+    assert wf._verdict_is_buy(_run('buy', 1)) is True
+    assert wf._verdict_is_buy(_run(' BUY ', 1)) is True
+    assert wf._verdict_is_buy(_run('SELL', 1)) is False
     assert wf._verdict_is_buy({}) is False
 
 
 def test_verdict_is_buy_uses_cio_label_but_not_scanner_action():
-    assert wf._verdict_is_buy({'verdict': {'label': 'BUY'}}) is True
+    assert wf._verdict_is_buy(_run_with_label('BUY', 1)) is True
     assert wf._verdict_is_buy({'action': 'BUY_CANDIDATE', 'verdict': {}}) is False
 
 
@@ -72,3 +78,27 @@ def test_telegram_no_buy_message():
     }
     msg = wf.build_workflow_top3_telegram_message(workflow)
     assert '오늘 매수 판정 종목 없음' in msg
+
+
+def test_hold_review_is_never_selected_or_notified():
+    incomplete = {
+        'analysis_status': 'HOLD_REVIEW',
+        'verdict': {'action': 'HOLD_REVIEW'},
+        'final_score': 999,
+    }
+    ordinary_hold = _run('HOLD', 70)
+    assert wf._select_top3([incomplete, ordinary_hold], top_n=3, require_buy=False) == [ordinary_hold]
+    ok, reason = wf.should_send_workflow_top3({
+        'top3': [incomplete],
+        'summary': {'quality': {'recommendation': 'send'}},
+    })
+    assert ok is False and reason == 'hold_review'
+
+
+def test_failed_or_unallowlisted_status_is_never_complete():
+    assert wf._analysis_is_complete({'status': 'failed', 'verdict': {'action': 'BUY'}}) is False
+    assert wf._analysis_is_complete({'analysis_status': 'DEGRADED', 'verdict': {'action': 'BUY'}}) is False
+    assert wf._analysis_is_complete({
+        'status': 'completed', 'analysis_status': 'SUCCESS_PRIMARY',
+        'verdict': {'action': 'HOLD'},
+    }) is True
