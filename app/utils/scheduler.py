@@ -923,6 +923,126 @@ def _safe_run(func, name: str):
 # API 엔드포인트용: 스케줄러 상태 & 수동 트리거
 # ============================================================
 
+# 데몬(scheduler.py)과 파일 이름 규약을 공유한다 — scheduler.py 를 import 하지 않는다.
+SCHEDULER_JOBS_FILENAME = 'scheduler_jobs.json'
+TRIGGER_REQUEST_FILENAME = 'scheduler_trigger_requests.json'
+TRIGGER_RESULT_FILENAME = 'scheduler_trigger_results.json'
+
+
+def _daemon_file(name: str) -> str:
+    from app.utils.paths import DATA_DIR
+    return os.path.join(DATA_DIR, name)
+
+
+def _read_json_or(path: str, default):
+    """파일 없음/손상 → default (진단 경로는 절대 예외를 올리지 않는다)."""
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:  # noqa: BLE001
+        return default
+
+
+def read_daemon_jobs() -> list:
+    """데몬이 기동 시 기록한 잡 목록 (`scheduler_jobs.json` → jobs[]). 없으면 []."""
+    data = _read_json_or(_daemon_file(SCHEDULER_JOBS_FILENAME), None)
+    jobs = data.get('jobs') if isinstance(data, dict) else None
+    return [j for j in (jobs or []) if isinstance(j, dict) and j.get('key')]
+
+
+def read_trigger_results(limit: int = 20) -> list:
+    """데몬이 기록한 수동 재실행 결과 (오래된 순 저장 → 최신 순으로 limit 건)."""
+    rows = _read_json_or(_daemon_file(TRIGGER_RESULT_FILENAME), [])
+    rows = [r for r in rows if isinstance(r, dict)] if isinstance(rows, list) else []
+    return list(reversed(rows))[:max(0, int(limit))]
+
+
+def read_trigger_requests() -> list:
+    """아직 데몬이 소비하지 않은 대기 요청."""
+    rows = _read_json_or(_daemon_file(TRIGGER_REQUEST_FILENAME), [])
+    return [r for r in rows if isinstance(r, dict)] if isinstance(rows, list) else []
+
+
+def enqueue_trigger_request(job_key: str, requested_by: "str | None" = None) -> dict:
+    """수동 재실행 요청을 파일 큐에 append (filelock + 원자적 쓰기). 데몬이 30초 내 소비한다.
+
+    손상된 큐 파일은 리셋한 뒤 append 한다 (요청 유실보다 데몬 폴링과 같은 fail-safe 우선).
+    """
+    import uuid
+    from app.utils.atomic_json import write_json_atomic
+    from app.utils.file_lock import safe_write
+
+    path = _daemon_file(TRIGGER_REQUEST_FILENAME)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    req = {
+        'id': uuid.uuid4().hex[:12],
+        'job_key': str(job_key),
+        'requested_at': datetime.now().isoformat(timespec='seconds'),
+        'requested_by': requested_by,
+    }
+    with safe_write(path, timeout=10):
+        rows = _read_json_or(path, [])
+        if not isinstance(rows, list):
+            rows = []
+        rows = [r for r in rows if isinstance(r, dict)]
+        rows.append(req)
+        write_json_atomic(path, rows)
+    return req
+
+
+def _parse_ts(value) -> "datetime | None":
+    try:
+        return datetime.fromisoformat(str(value))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _merge_daemon_jobs(jobs: list, last_runs: dict, results: list, pending: list, now: datetime) -> list:
+    """잡 목록 + 마지막 실행 + 수동 재실행 결과를 보드 행으로 병합.
+
+    시각별 record_keys 를 가진 잡은 가장 최근 실행을 쓴다. results 는 최신 순.
+    """
+    latest_by_job: dict = {}
+    for r in results:  # 최신 순이므로 첫 항목이 최신
+        k = r.get('job_key')
+        if k and k not in latest_by_job:
+            latest_by_job[k] = r
+    pending_keys = {r.get('job_key') for r in pending}
+
+    rows = []
+    for job in jobs:
+        keys = list(job.get('record_keys') or [])
+        if job.get('record_key') and job['record_key'] not in keys:
+            keys.append(job['record_key'])
+        best_ts, best_dt = None, None
+        for k in keys:
+            ts = last_runs.get(k)
+            dt = _parse_ts(ts) if ts else None
+            if dt and (best_dt is None or dt > best_dt):
+                best_ts, best_dt = ts, dt
+        trig = latest_by_job.get(job['key'])
+        rows.append({
+            'key': job['key'],
+            'label': job.get('label') or job['key'],
+            'schedule': job.get('schedule'),
+            'market': job.get('market') or 'System',
+            'record_key': job.get('record_key'),
+            'last_run': best_ts,
+            'age_minutes': round((now - best_dt).total_seconds() / 60, 1) if best_dt else None,
+            'queued': job['key'] in pending_keys,
+            'running': bool(trig) and trig.get('finished_at') is None,
+            'last_trigger': {
+                'id': trig.get('id'),
+                'ok': trig.get('ok'),
+                'error': trig.get('error'),
+                'started_at': trig.get('started_at'),
+                'finished_at': trig.get('finished_at'),
+                'requested_by': trig.get('requested_by'),
+            } if trig else None,
+        })
+    return rows
+
+
 def _read_daemon_state(now: "datetime | None" = None) -> dict:
     """scheduler.py 데몬(별도 프로세스)의 heartbeat + 작업별 마지막 실행 기록.
 
@@ -968,6 +1088,23 @@ def _read_daemon_state(now: "datetime | None" = None) -> dict:
         pass
     except Exception as e:  # noqa: BLE001
         state['last_run_error'] = str(e)
+
+    # C2(2026-09-03): 데몬 잡 레지스트리 + 수동 재실행 결과 병합 (파일 없으면 빈 목록)
+    try:
+        jobs_meta = _read_json_or(_daemon_file(SCHEDULER_JOBS_FILENAME), None)
+        jobs = read_daemon_jobs()
+        results = read_trigger_results(limit=200)
+        pending = read_trigger_requests()
+        last_map = {r['job']: r['last_run'] for r in state['last_runs']}
+        state['jobs'] = _merge_daemon_jobs(jobs, last_map, results, pending, now)
+        state['jobs_generated_at'] = jobs_meta.get('generated_at') if isinstance(jobs_meta, dict) else None
+        state['trigger_results'] = results[:20]
+        state['pending_triggers'] = len(pending)
+    except Exception as e:  # noqa: BLE001
+        state['jobs'] = []
+        state['trigger_results'] = []
+        state['pending_triggers'] = 0
+        state['jobs_error'] = str(e)
     return state
 
 

@@ -419,17 +419,33 @@ def create_app(config=None):
         return _jsonify(get_scheduler_status())
 
     # ── 스케줄러 수동 트리거 API ──
+    # C2(2026-09-03): 데몬이 기록한 data/scheduler_jobs.json 의 잡 키를 검증하고
+    # data/scheduler_trigger_requests.json 큐에 넣는다 → 데몬(scheduler.py)이 30초 내 소비.
+    # 잡 파일이 없으면(데몬 미기동/구버전) 기존 Flask 내부 5개 태스크 맵으로 폴백 — 회귀 없음.
     from app.auth.decorators import admin_required as _admin_required
-    @app.route('/api/scheduler/trigger/<task>', methods=['POST'])
+    @app.route('/api/scheduler/trigger/<job_key>', methods=['POST'])
     @_admin_required
-    def scheduler_trigger(task):
-        from flask import jsonify as _jsonify
+    def scheduler_trigger(job_key):
+        from flask import jsonify as _jsonify, request as _request
         import threading
+        from app.utils.scheduler import read_daemon_jobs, enqueue_trigger_request
+
+        daemon_keys = [j['key'] for j in read_daemon_jobs()]
+        if daemon_keys:
+            if job_key not in daemon_keys:
+                return _jsonify({'error': f'Unknown job_key: {job_key}', 'available': daemon_keys}), 400
+            user = getattr(_request, 'current_user', None)
+            try:
+                req = enqueue_trigger_request(job_key, requested_by=getattr(user, 'email', None))
+            except Exception as e:  # noqa: BLE001 — 큐 파일 잠금/디스크 오류
+                return _jsonify({'error': f'enqueue failed: {e}', 'job_key': job_key}), 500
+            return _jsonify({'status': 'queued', 'id': req['id'], 'job_key': job_key})
+
+        # 폴백: 기존 5개 Flask 내부 태스크
         from app.utils.scheduler import (
             _run_jongga_v2, _run_round2, _run_us_update, _run_crypto_pipeline,
             _run_all_update
         )
-
         tasks_map = {
             'jongga-v2': _run_jongga_v2,
             'round2': _run_round2,
@@ -437,13 +453,13 @@ def create_app(config=None):
             'crypto': _run_crypto_pipeline,
             'all-update': _run_all_update,
         }
-        func = tasks_map.get(task)
+        func = tasks_map.get(job_key)
         if not func:
-            return _jsonify({'error': f'Unknown task: {task}', 'available': list(tasks_map.keys())}), 400
+            return _jsonify({'error': f'Unknown task: {job_key}', 'available': list(tasks_map.keys())}), 400
 
         # 백그라운드 스레드에서 실행
-        threading.Thread(target=func, daemon=True, name=f'trigger-{task}').start()
-        return _jsonify({'status': 'triggered', 'task': task})
+        threading.Thread(target=func, daemon=True, name=f'trigger-{job_key}').start()
+        return _jsonify({'status': 'triggered', 'task': job_key})
 
     # ── 데이터 freshness 확인 (GitHub Actions용) ──
     @app.route('/api/system/last-update')

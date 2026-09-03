@@ -58,6 +58,7 @@ import hashlib
 import re
 from pathlib import Path
 from typing import Optional
+from contextlib import nullcontext
 import json
 import threading
 
@@ -3138,6 +3139,203 @@ def start_heartbeat_thread():
     return t
 
 
+# ============================================================
+# 수동 재실행 트리거 — Flask(관리자) → 파일 큐 → 데몬 (2026-09-03 C2)
+# ============================================================
+# heartbeat 파일 패턴의 미러: Flask 는 scheduler.py 를 import 하지 않고
+#   - data/scheduler_jobs.json            : 데몬이 기동 시 기록하는 잡 목록(describe_jobs)
+#   - data/scheduler_trigger_requests.json: Flask 가 append 하는 요청 [{id, job_key, requested_at, requested_by}]
+#   - data/scheduler_trigger_results.json : 데몬이 append 하는 결과 [{id, job_key, started_at, finished_at, ok, error}]
+# 세 파일 모두 원자적 쓰기 + filelock(.lock) 으로 두 프로세스 간 동시 접근을 막는다.
+# 경로는 호출 시점의 Config.DATA_DIR 로 계산한다 (테스트에서 tmp DATA_DIR 로 교체 가능).
+
+SCHEDULER_JOBS_FILENAME = 'scheduler_jobs.json'
+TRIGGER_REQUEST_FILENAME = 'scheduler_trigger_requests.json'
+TRIGGER_RESULT_FILENAME = 'scheduler_trigger_results.json'
+TRIGGER_RESULT_CAP = 200
+TRIGGER_POLL_INTERVAL_SEC = 30
+
+try:
+    from filelock import FileLock as _FileLock
+except ImportError:  # filelock 미설치 환경(로컬 실험)에서도 데몬은 떠야 한다
+    _FileLock = None
+
+
+def _jobs_file() -> str:
+    return os.path.join(Config.DATA_DIR, SCHEDULER_JOBS_FILENAME)
+
+
+def _trigger_request_file() -> str:
+    return os.path.join(Config.DATA_DIR, TRIGGER_REQUEST_FILENAME)
+
+
+def _trigger_result_file() -> str:
+    return os.path.join(Config.DATA_DIR, TRIGGER_RESULT_FILENAME)
+
+
+def _trigger_lock(path: str, timeout: int = 10):
+    """파일별 filelock (미설치 시 no-op). Flask 쪽(app/utils/scheduler.py)과 같은 `<path>.lock` 규약."""
+    if _FileLock is None:
+        return nullcontext()
+    return _FileLock(path + '.lock', timeout=timeout)
+
+
+def _read_json_list(path: str, label: str) -> list:
+    """리스트 JSON 읽기. 없으면 []. 손상/형식 오류는 로그만 남기고 [] 로 리셋 (fail-safe)."""
+    try:
+        if not os.path.exists(path):
+            return []
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        if not isinstance(data, list):
+            logger.error(f"⚠️ {label} 형식 오류(list 아님), 리셋")
+            return []
+        return data
+    except Exception as e:  # noqa: BLE001 — 데몬을 죽이지 않는다
+        logger.warning(f"⚠️ {label} 읽기 실패 (리셋): {e}")
+        return []
+
+
+def write_jobs_file() -> bool:
+    """describe_jobs() 를 data/scheduler_jobs.json 에 원자적으로 기록 (데몬 기동 시 1회)."""
+    try:
+        os.makedirs(Config.DATA_DIR, exist_ok=True)
+        write_json_atomic(_jobs_file(), {
+            'generated_at': datetime.now().isoformat(timespec='seconds'),
+            'pid': os.getpid(),
+            'jobs': describe_jobs(),
+        })
+        logger.info(f"📋 잡 레지스트리 기록: {_jobs_file()} ({len(JOB_REGISTRY)}개)")
+        return True
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"⚠️ scheduler_jobs.json 기록 실패: {e}")
+        return False
+
+
+def _upsert_trigger_result(entry: dict) -> None:
+    """결과 파일에 id 기준 upsert (시작 시 running 표시 → 종료 시 갱신). 최근 TRIGGER_RESULT_CAP 건만 유지."""
+    path = _trigger_result_file()
+    try:
+        with _trigger_lock(path):
+            results = _read_json_list(path, 'scheduler_trigger_results.json')
+            for i, row in enumerate(results):
+                if isinstance(row, dict) and row.get('id') == entry.get('id'):
+                    results[i] = entry
+                    break
+            else:
+                results.append(entry)
+            write_json_atomic(path, results[-TRIGGER_RESULT_CAP:])
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"⚠️ 트리거 결과 기록 실패 ({entry.get('job_key')}): {e}")
+
+
+def drain_trigger_requests() -> list:
+    """요청 파일의 대기 요청을 전부 꺼내고 파일을 [] 로 비운다 (락 보호, 손상 시 리셋)."""
+    path = _trigger_request_file()
+    if not os.path.exists(path):
+        return []
+    with _trigger_lock(path):
+        requests = _read_json_list(path, 'scheduler_trigger_requests.json')
+        try:
+            write_json_atomic(path, [])
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"⚠️ 트리거 요청 파일 비우기 실패: {e}")
+    valid = []
+    for req in requests:
+        if isinstance(req, dict) and req.get('id') and req.get('job_key'):
+            valid.append(req)
+        else:
+            logger.warning(f"⚠️ 잘못된 트리거 요청 무시: {req!r}")
+    return valid
+
+
+_trigger_running: set = set()
+_trigger_running_lock = threading.Lock()
+
+
+def run_triggered_job(req: dict) -> dict:
+    """트리거 요청 1건을 정규 스케줄과 같은 _with_record 경로로 실행하고 결과를 기록한다.
+
+    - 워커 스레드에서 호출된다 (poll_trigger_requests).
+    - 재시도 없음(max_retries=0), 검증 함수 없음 — 결과는 ok/error 로 즉시 보드에 노출.
+    - force=True: "오늘 이미 실행" 게이트를 우회 (관리자가 명시적으로 재실행을 눌렀다).
+    - 같은 job_key 가 이미 수동 실행 중이면 중복 시작하지 않는다.
+    """
+    job_key = str(req.get('job_key', ''))
+    now_iso = lambda: datetime.now().isoformat(timespec='seconds')  # noqa: E731
+    result = {
+        'id': req.get('id'),
+        'job_key': job_key,
+        'requested_by': req.get('requested_by'),
+        'started_at': now_iso(),
+        'finished_at': None,
+        'ok': None,
+        'error': None,
+    }
+    job = JOB_REGISTRY.get(job_key)
+    if job is None:
+        result.update(finished_at=now_iso(), ok=False, error=f'unknown job_key: {job_key}')
+        _upsert_trigger_result(result)
+        return result
+    with _trigger_running_lock:
+        if job_key in _trigger_running:
+            result.update(finished_at=now_iso(), ok=False, error='already running (manual trigger)')
+            _upsert_trigger_result(result)
+            return result
+        _trigger_running.add(job_key)
+    _upsert_trigger_result(result)  # running 표시 (finished_at=None)
+    logger.info(f"▶️ 수동 재실행 시작: {job_key} (요청자 {req.get('requested_by')}, id={req.get('id')})")
+    try:
+        wrapped = Scheduler._with_record(
+            job['func'], job['record_key'], max_retries=0, retry_delay=0,
+            force=bool(req.get('force', True)),
+        )
+        out = wrapped()
+        result['ok'] = bool(out)
+        if not result['ok']:
+            result['error'] = 'job returned failure (scheduler log 참고)'
+    except Exception as e:  # noqa: BLE001
+        result['ok'] = False
+        result['error'] = str(e)[:500]
+        logger.error(f"❌ 수동 재실행 예외: {job_key}: {e}", exc_info=True)
+    finally:
+        with _trigger_running_lock:
+            _trigger_running.discard(job_key)
+    result['finished_at'] = now_iso()
+    _upsert_trigger_result(result)
+    logger.info(f"⏹️ 수동 재실행 종료: {job_key} ok={result['ok']}")
+    return result
+
+
+def poll_trigger_requests() -> int:
+    """대기 트리거 요청을 꺼내 워커 스레드로 실행. 반환: 시작한 요청 수. 예외는 삼킨다."""
+    try:
+        requests = drain_trigger_requests()
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"⚠️ 트리거 요청 폴링 실패: {e}")
+        return 0
+    for req in requests:
+        threading.Thread(
+            target=run_triggered_job, args=(req,),
+            name=f"trigger-{req['job_key']}", daemon=True,
+        ).start()
+    return len(requests)
+
+
+def start_trigger_poll_thread(interval: int = TRIGGER_POLL_INTERVAL_SEC):
+    """heartbeat 스레드와 같은 패턴의 전용 폴링 스레드 — 메인 루프가 catch-up 에 묶여도 요청을 소비한다."""
+    def _loop():
+        while True:
+            try:
+                poll_trigger_requests()
+            except Exception:  # noqa: BLE001
+                logger.exception("트리거 폴링 스레드 예외 (계속)")
+            time.sleep(interval)
+    t = threading.Thread(target=_loop, name='trigger-poller', daemon=True)
+    t.start()
+    return t
+
+
 _last_run_lock = threading.Lock()
 
 
@@ -3929,6 +4127,143 @@ def _run_us_ai_chart_analysis() -> bool:
 # 스케줄러
 # ============================================================
 
+# ============================================================
+# 잡 레지스트리 (선언형) — 2026-09-03 C2 운영 보드/수동 재실행용
+# ============================================================
+# Scheduler.setup_schedules() 의 등록 내용을 그대로 미러링한다 (스케줄 자체는 바꾸지 않는다).
+#   key         : Flask/보드가 쓰는 잡 식별자 (POST /api/scheduler/trigger/<key>)
+#   label       : 한글 라벨
+#   func        : 실행 함수 (setup_schedules 와 동일 객체)
+#   schedule    : 사람이 읽는 스케줄 문자열 (KST)
+#   market      : KR | US | Crypto | System
+#   record_key  : scheduler_last_run.json 키 (수동 재실행 시 이 키로 기록)
+#   record_keys : 시각별로 키가 갈리는 잡(leading_screener_0907 …)의 실제 키 목록 — 보드는 최신값을 쓴다
+# 시각별 키를 갖는 잡은 base 키(예: leading_screener)로 수동 실행을 기록해 정규 슬롯의
+# "오늘 이미 실행" 게이트에 영향을 주지 않는다.
+# tests/test_scheduler_job_registry.py 가 setup_schedules 소스와의 동기화를 검사한다.
+
+
+def _build_job_registry() -> dict:
+    reg: dict = {}
+
+    def add(key, label, func, schedule_text, market, record_key=None, record_keys=None):
+        rk = record_key or key
+        reg[key] = {
+            'label': label,
+            'func': func,
+            'schedule': schedule_text,
+            'market': market,
+            'record_key': rk,
+            'record_keys': list(record_keys) if record_keys else [rk],
+        }
+
+    def hhmm_key(prefix, hm):
+        return f"{prefix}_{hm.replace(':', '')}"
+
+    if Config.ALPHA_SCANNER_ENABLED:
+        interval = max(0, int(Config.ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES))
+        if interval:
+            add('alpha_scanner_monitor', '알파 스캐너 변경 감시', run_alpha_scanner_monitor,
+                f'매 {interval}분', 'KR')
+            if Config.MIROFISH_WORKFLOW_ENABLED:
+                add('mirofish_workflow_monitor', 'MiroFish 워크플로우 감시', run_mirofish_workflow_monitor,
+                    f'매 {interval}분', 'KR')
+    if Config.OMNI_NEWS_ENABLED:
+        add('omni_news_sweep', '옴니 뉴스 스윕', run_omni_news_sweep,
+            f'매 {max(5, int(Config.OMNI_NEWS_INTERVAL_MINUTES))}분', 'System')
+    if Config.AIBRAIN_GUARD_ENABLED:
+        guard_interval = max(0, int(Config.AIBRAIN_GUARD_INTERVAL_MINUTES))
+        if guard_interval:
+            add('aibrain_service_guard', 'AI Brain 서비스 가드', run_aibrain_service_guard,
+                f'매 {guard_interval}분', 'System')
+        prewarm_times = _valid_hhmm_times(Config.AIBRAIN_PREWARM_TIMES, 'AIBRAIN_PREWARM_TIMES')
+        if prewarm_times:
+            add('aibrain_prewarm', 'AI Brain 프리웜', run_aibrain_prewarm,
+                f"평일 {', '.join(prewarm_times)}", 'System',
+                record_keys=[hhmm_key('aibrain_prewarm', hm) for hm in prewarm_times])
+    if Config.ALPHA_BACKTEST_ENABLED:
+        add('alpha_backtest_daily', '알파 백테스트 (일간)', run_alpha_backtest_daily,
+            f'매일 {Config.ALPHA_BACKTEST_TIME}', 'KR')
+    if Config.MIROFISH_AGENT_ENABLED:
+        add('alpha_brain_agent_evening', '알파 브레인 에이전트 (저녁)', run_alpha_brain_agent_evening,
+            f'평일 {Config.MIROFISH_AGENT_EVENING_TIME}', 'KR')
+        add('alpha_brain_agent_night', '알파 브레인 에이전트 (야간)', run_alpha_brain_agent_night,
+            f'매일 {Config.MIROFISH_AGENT_NIGHT_TIME}', 'KR')
+
+    add('kis_token_warmup', 'KIS 토큰 웜업', _run_kis_token_warmup, '평일 08:55', 'KR')
+    add('kiwoom_ai_theme', '키움 AI 테마 TOP15', _run_kiwoom_ai_theme, '평일 09:10~15:25 (15분)', 'KR')
+    add('leading_screener', '주도주 LIVE 스크리너', run_leading_screener_refresh,
+        f"평일 {', '.join(Config.LEADING_SCREENER_TIMES)}", 'KR',
+        record_keys=[hhmm_key('leading_screener', hm) for hm in Config.LEADING_SCREENER_TIMES])
+    add('us_market', 'US 마켓 전체 갱신 + Smart Money', run_us_market_update,
+        f'평일 {Config.US_UPDATE_TIME}', 'US')
+    add('morning_report', '일별 상태 리포트', send_morning_status_report,
+        f'평일 {Config.MORNING_REPORT_TIME}', 'System')
+    add('us_track', 'US Track Record 스냅샷', save_us_track_record_snapshot,
+        f'평일 {Config.US_TRACK_TIME}', 'US')
+    add('kr_jongga', '종가베팅 V2 + 수급/AI/리포트', run_kr_full_update,
+        f'평일 {Config.KR_UPDATE_TIME}', 'KR')
+    add('kr_vcp_morning', 'KR VCP 오전 Refresh', run_kr_vcp_morning_refresh,
+        f'평일 {Config.KR_VCP_MORNING_TIME}', 'KR')
+    add('vcp_all', '전 시장 VCP 시그널 (KR+US+Crypto)', run_vcp_all_markets,
+        f'평일 {Config.VCP_UPDATE_TIME}', 'System')
+    add('wave_scan', 'Wave 패턴 스캔', _run_wave_scan, f'평일 {Config.WAVE_SCAN_TIME}', 'KR')
+    if Config.CLAW_OUTCOME_ENABLED:
+        add('claw_outcomes', 'Claw D1/D5 outcome 갱신', _run_claw_outcome_update,
+            f'평일 {Config.CLAW_OUTCOME_TIME}', 'KR')
+    add('buy_screen', 'AI 매수 후보 선별', _run_buy_candidate_screen,
+        f'평일 {Config.BUY_SCREEN_TIME}', 'KR')
+    add('alpha_morning_top', '알파 오전 스코어 상위', _run_alpha_morning_top,
+        f'평일 {Config.ALPHA_MORNING_TIME}', 'KR')
+    add('alpha_close_signals', '알파 마감 매매신호', _run_alpha_close_signals,
+        f'평일 {Config.ALPHA_CLOSE_TIME}', 'KR')
+    add('alpha_performance_brief', '알파 성과 브리핑', _run_alpha_performance_brief,
+        f'평일 {Config.ALPHA_BRIEF_TIME}', 'KR')
+    # 장중 감시는 _with_record 없이 등록되어 정규 슬롯의 실행 기록이 없다 (함수 내부 게이트).
+    add('alpha_intraday_watch', '알파 장중 감시', _run_alpha_intraday_watch,
+        '평일 09:05~15:25 (10분)', 'KR')
+    add('morning_briefing', 'AI 조간 브리핑', run_morning_briefing,
+        f'평일 {Config.MORNING_BRIEFING_TIME}', 'US')
+    add('closing_briefing', 'AI 마감 브리핑', run_closing_briefing,
+        f'평일 {Config.CLOSING_BRIEFING_TIME}', 'KR')
+    add('ai_chart', 'AI 차트 분석 KR (Vision)', _run_ai_chart_analysis,
+        f'평일 {Config.AI_CHART_TIME}', 'KR')
+    add('us_ai_chart', 'US AI 차트 분석 (Vision)', _run_us_ai_chart_analysis,
+        f'평일 {Config.US_AI_CHART_TIME}', 'US')
+    if Config.ALPHA_SCANNER_ENABLED and Config.ALPHA_SCANNER_TIMES:
+        add('alpha_scanner', '알파 스캐너 지정 시각', run_alpha_scanner_monitor,
+            f"평일 {', '.join(Config.ALPHA_SCANNER_TIMES)}", 'KR',
+            record_keys=[hhmm_key('alpha_scanner', hm) for hm in Config.ALPHA_SCANNER_TIMES])
+    add('lotto_analysis', 'AI 로또 분석 게시', run_lotto_analysis_bounded,
+        f'금요일 {Config.LOTTO_POST_TIME}', 'System')
+    add('lotto_analysis_recovery', 'AI 로또 분석 (복구)', run_lotto_analysis_bounded,
+        '토요일 09:00', 'System')
+    add('history', '기관 히스토리 수집', collect_historical_institutional,
+        f'토요일 {Config.HISTORY_TIME}', 'KR')
+    add('crypto', 'Crypto 전체 파이프라인', run_crypto_pipeline,
+        f"매 4시간 ({', '.join(Config.CRYPTO_TIMES)})", 'Crypto')
+    add('orphan_audit', '고아 파일 감사', _run_orphan_file_audit, '매일 09:00', 'System')
+    return reg
+
+
+JOB_REGISTRY: dict = _build_job_registry()
+
+
+def describe_jobs() -> list:
+    """JOB_REGISTRY 의 JSON 안전 뷰 (callable 제외, 등록 순서 유지)."""
+    return [
+        {
+            'key': key,
+            'label': job['label'],
+            'schedule': job['schedule'],
+            'market': job['market'],
+            'record_key': job['record_key'],
+            'record_keys': list(job['record_keys']),
+        }
+        for key, job in JOB_REGISTRY.items()
+    ]
+
+
 class Scheduler:
     """통합 스케줄러 (US + KR + Crypto)"""
 
@@ -3942,7 +4277,8 @@ class Scheduler:
         self.running = False
 
     @staticmethod
-    def _with_record(task_fn, task_key, max_retries=2, retry_delay=900, verify_fn=None):
+    def _with_record(task_fn, task_key, max_retries=2, retry_delay=900, verify_fn=None,
+                     force=False):
         """작업 함수를 래핑: 실행 → 검증 → 실패 시 재시도 → 텔레그램 알림
 
         Args:
@@ -3951,6 +4287,8 @@ class Scheduler:
             max_retries: 최대 재시도 횟수 (기본 2회 = 총 3회 시도)
             retry_delay: 재시도 간격 초 (기본 900초 = 15분)
             verify_fn: 결과 검증 함수 (None이면 리턴값만 체크)
+            force: True 면 중복 실행 게이트(오늘 이미 실행/쿨다운)를 우회한다.
+                   관리자 수동 재실행(run_triggered_job) 전용 — 스케줄 등록에는 쓰지 않는다.
         """
         def wrapper():
             def notify_ops(message: str):
@@ -3974,7 +4312,9 @@ class Scheduler:
                 'aibrain_service_guard': max(1 / 60, Config.AIBRAIN_GUARD_INTERVAL_MINUTES / 60 * 0.8),
             }
 
-            if task_key == 'crypto':
+            if force:
+                logger.info(f"▶️ {task_key}: 수동 재실행 — 중복 실행 게이트 우회")
+            elif task_key == 'crypto':
                 if _was_run_recently(task_key, hours=3):
                     logger.info(f"⏭️ {task_key}: 최근 3시간 내 실행됨, 스킵")
                     return None
@@ -4608,6 +4948,9 @@ def main():
         # startup catch-up 이 장시간(예: ai_chart 100종목 5-15분)을 잡아도
         # 외부 watchdog 가 false positive 로 데몬을 죽이지 않도록.
         start_heartbeat_thread()
+        # 잡 레지스트리 파일 + 관리자 수동 재실행 요청 폴링 (Flask 가 파일로만 통신)
+        write_jobs_file()
+        start_trigger_poll_thread()
         # 놓친 스케줄 복구 (스케줄 등록 후, 데몬 루프 시작 전)
         check_and_run_missed_tasks()
         scheduler.run()
