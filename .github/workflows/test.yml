@@ -9,6 +9,7 @@ on:
 jobs:
   python:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,6 +28,7 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: frontend-react
@@ -38,6 +40,8 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend-react/package-lock.json
       - run: npm ci
+      # lint 는 package.json 에 --max-warnings 0 으로 정의돼 있었지만 CI 에서 실행되지 않았다
+      - run: npm run lint
       - run: npm test
       # 타입 오류·프리렌더 실패가 배포 시점에야 드러나지 않게 빌드까지 검증
       - run: npm run build

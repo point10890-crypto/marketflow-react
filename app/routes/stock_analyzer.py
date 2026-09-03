@@ -646,34 +646,77 @@ def _supplement_with_finnhub(ticker_symbol: str, yf_result: dict) -> dict:
 # API Endpoints
 # ============================================================
 
+def _kr_result(s: dict) -> dict:
+    return {
+        'name': s['name'],
+        'ticker': s['yahoo'],
+        'code': s['ticker'],
+        'market': s['market'],
+        'type': 'KR',
+    }
+
+
+def _kr_smart_matches(q: str, kr_stocks: list, limit: int) -> list:
+    """초성·별칭·접두·퍼지 매칭 (decision_brief.search_symbols 재사용).
+
+    리뷰(2026-09-02): 리졸버에는 이미 ㅅㅅㅈㅈ→삼성전자, 하닉→SK하이닉스 같은
+    매칭이 있었지만 CommandPalette 가 쓰는 이 엔드포인트만 단순 substring 이라
+    오타·초성 검색이 전혀 안 됐다. 리졸버 실패는 조용히 빈 목록 → 기존 substring 폴백.
+    """
+    try:
+        from app.services.mirofish.decision_brief import search_symbols
+        found = search_symbols(q, limit=limit) or {}
+    except Exception as e:  # noqa: BLE001 — 검색 보조 실패가 검색 자체를 막지 않는다
+        logger.debug(f"[StockAnalyzer] smart search unavailable: {e}")
+        return []
+    by_code = {s['ticker']: s for s in kr_stocks if s.get('ticker')}
+    out = []
+    for cand in found.get('candidates') or []:
+        row = by_code.get(str(cand.get('symbol') or '').zfill(6))
+        if row is None:
+            continue
+        item = _kr_result(row)
+        item['match'] = cand.get('reason')
+        item['confidence'] = cand.get('confidence')
+        out.append(item)
+    return out
+
+
 @stock_analyzer_bp.route('/search')
 def search_stocks():
-    """종목 검색 (KR + US, 이름/티커 부분 매칭, 최대 20건)"""
-    q = request.args.get('q', '').strip().lower()
+    """종목 검색 (KR + US, 최대 20건).
+
+    KR: 초성/별칭/퍼지(리졸버) → 이름·코드·yahoo 심볼 substring 순으로 병합.
+    US: 인기 종목 리스트 substring → 직접 티커 입력.
+    """
+    raw_q = request.args.get('q', '').strip()
+    q = raw_q.lower()
     market = request.args.get('market', 'all').strip().lower()
 
     if not q:
         return jsonify([])
 
     results = []
+    seen_codes = set()
 
     # 1) KR 종목 검색
     if market in ('kr', 'all'):
         kr_stocks = _load_kr_stocks()
+        for item in _kr_smart_matches(raw_q, kr_stocks, limit=20):
+            if item['code'] not in seen_codes:
+                seen_codes.add(item['code'])
+                results.append(item)
         for s in kr_stocks:
+            if len(results) >= 20:
+                break
+            if s['ticker'] in seen_codes:
+                continue
             name = s['name'].lower()
             ticker = s['ticker'].lower()
             yahoo = s['yahoo'].lower()
             if q in name or q in ticker or q in yahoo:
-                results.append({
-                    'name': s['name'],
-                    'ticker': s['yahoo'],
-                    'code': s['ticker'],
-                    'market': s['market'],
-                    'type': 'KR',
-                })
-                if len(results) >= 20:
-                    break
+                seen_codes.add(s['ticker'])
+                results.append(_kr_result(s))
 
     # 2) US 종목 검색 (영문명 + 한글명)
     if market in ('us', 'all') and len(results) < 20:
@@ -700,7 +743,7 @@ def search_stocks():
             'type': 'US_DIRECT',
         })
 
-    return jsonify(results)
+    return jsonify(results[:20])
 
 
 _ANALYZE_CACHE_DIR = os.path.join(_DATA_DIR, 'stock_analyzer_cache')

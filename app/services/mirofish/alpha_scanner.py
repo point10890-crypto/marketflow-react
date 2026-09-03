@@ -24,6 +24,15 @@ import app.services.mirofish.sector_rs as sector_rs_service
 import app.services.mirofish.tradingview_provider as tradingview_provider
 from app.utils.atomic_json import write_json_atomic
 
+# 종가베팅 V2 total 을 alpha 10점으로 환산할 때의 포화점.
+# engine.models.ScoreDetail.total 의 이론 최대는 20점(news3+volume3+chart2+candle1
+# +consolidation1+supply2+disclosure2+analyst3+financial3)이지만, 운영 분포에서 15점 이상은
+# 드물어 15 를 포화점으로 써 왔다. 리뷰(2026-09-02): /20 으로 바꾸면 총점 13 인 S급 셋업의
+# 기여가 8.7→6.5 로 내려가 actionable 임계를 넘지 못한다(테스트 고정). 스케일 변경은
+# 임계값 재조정과 함께 운영자 결정으로 남긴다 — docs/app_review_prioritization_2026_09_02.md §8.
+JONGGA_SCORE_SATURATION = 15
+JONGGA_SCORE_THEORETICAL_MAX = 20
+
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 DATA_ROOT = os.path.join(REPO_ROOT, 'data')
@@ -1760,7 +1769,7 @@ def _score_symbol(
     jongga_score = 0.0
     if jongga:
         raw = _nested_float(jongga, ['score', 'total'])
-        jongga_score = _clamp(raw / 15 * 10, 0, 10)
+        jongga_score = _clamp(raw / JONGGA_SCORE_SATURATION * 10, 0, 10)
         alpha += jongga_score
         evidence.append(_evidence('jongga_v2_latest.json', 'jongga_setup', jongga_score, raw))
 

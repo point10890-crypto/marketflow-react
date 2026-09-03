@@ -923,8 +923,56 @@ def _safe_run(func, name: str):
 # API 엔드포인트용: 스케줄러 상태 & 수동 트리거
 # ============================================================
 
+def _read_daemon_state(now: "datetime | None" = None) -> dict:
+    """scheduler.py 데몬(별도 프로세스)의 heartbeat + 작업별 마지막 실행 기록.
+
+    리뷰(2026-09-02): 기존 status 는 Flask 프로세스 내부 `schedule` 레지스트리만
+    보여줘서, 실제 30여 개 잡을 돌리는 데몬이 죽어 있어도 running=True 로 보였다.
+    데몬이 원자적으로 쓰는 두 파일(`scheduler_heartbeat.json`,
+    `scheduler_last_run.json`)을 읽어 잡 이름·마지막 실행·경과 시간을 돌려준다.
+    """
+    from app.utils.paths import DATA_DIR
+
+    now = now or datetime.now()
+    state: dict = {'heartbeat': None, 'alive': None, 'stale_seconds': None,
+                   'last_runs': [], 'last_run_file': None}
+    hb_path = os.path.join(DATA_DIR, 'scheduler_heartbeat.json')
+    try:
+        with open(hb_path, 'r', encoding='utf-8') as f:
+            hb = json.load(f)
+        ts = datetime.fromisoformat(str(hb.get('ts')))
+        stale = max(0.0, (now - ts).total_seconds())
+        state.update({'heartbeat': hb, 'stale_seconds': round(stale, 1),
+                      'alive': stale < 180})
+    except FileNotFoundError:
+        state['alive'] = False
+    except Exception as e:  # noqa: BLE001 — 진단 정보는 실패해도 응답을 막지 않는다
+        state['heartbeat_error'] = str(e)
+
+    lr_path = os.path.join(DATA_DIR, 'scheduler_last_run.json')
+    try:
+        with open(lr_path, 'r', encoding='utf-8') as f:
+            last_runs = json.load(f)
+        state['last_run_file'] = lr_path
+        rows = []
+        for key, ts_str in (last_runs or {}).items():
+            row = {'job': key, 'last_run': ts_str, 'age_minutes': None}
+            try:
+                row['age_minutes'] = round((now - datetime.fromisoformat(str(ts_str))).total_seconds() / 60, 1)
+            except Exception:  # noqa: BLE001
+                pass
+            rows.append(row)
+        rows.sort(key=lambda r: (r['age_minutes'] is None, r['age_minutes'] or 0))
+        state['last_runs'] = rows
+    except FileNotFoundError:
+        pass
+    except Exception as e:  # noqa: BLE001
+        state['last_run_error'] = str(e)
+    return state
+
+
 def get_scheduler_status() -> dict:
-    """스케줄러 상태 반환"""
+    """스케줄러 상태 반환 (Flask 내부 잡 + 외부 데몬 heartbeat/실행 기록)"""
     try:
         import schedule as sched
         jobs = []
@@ -939,6 +987,7 @@ def get_scheduler_status() -> dict:
             'environment': 'render' if os.getenv('RENDER') else 'local',
             'jobs_count': len(jobs),
             'jobs': jobs[:20],
+            'daemon': _read_daemon_state(),
             'kst_now': _get_kst_now().strftime('%Y-%m-%d %H:%M:%S KST'),
         }
     except Exception as e:

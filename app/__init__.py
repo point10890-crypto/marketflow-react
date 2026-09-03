@@ -1,6 +1,7 @@
 # app/__init__.py
 """Flask 애플리케이션 팩토리 (KR Market + Auth + Stripe)"""
 
+import hashlib
 import os
 import logging
 import secrets
@@ -63,6 +64,21 @@ def create_app(config=None):
         CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
     except ImportError:
         print("flask-cors not installed, CORS disabled")
+
+    # 응답 압축 (옵셔널) — 스크리너/Wave JSON 은 0.9~2.2MB 이며 gzip 시 8~10배 축소.
+    # after_request 는 등록 역순으로 실행되므로 여기(캐시/ETag 훅보다 먼저)에 등록해야
+    # ETag 가 원본 본문 기준으로 계산된 뒤 압축이 적용된다.
+    if os.getenv('MARKETFLOW_COMPRESS', '1') != '0':
+        try:
+            from flask_compress import Compress
+            app.config.setdefault('COMPRESS_MIMETYPES', [
+                'application/json', 'text/html', 'text/css', 'text/plain',
+                'application/javascript',
+            ])
+            app.config.setdefault('COMPRESS_MIN_SIZE', 1024)
+            Compress(app)
+        except ImportError:
+            logging.getLogger(__name__).info('flask-compress not installed, response compression disabled')
 
     # 환경변수 로드
     try:
@@ -210,30 +226,34 @@ def create_app(config=None):
         return None
 
     # ── API Cache-Control 정책 ──
+    # 리뷰(2026-09-02): 구독자 요청은 전부 Authorization/Cookie 를 싣기 때문에
+    # 기존 `has_credentials → no-store` 분기가 모든 데이터 GET 을 무캐시로 만들었고
+    # `private, max-age=30` 분기는 사실상 죽은 코드였다. 브라우저 전용(private)
+    # 캐시는 사용자 간 혼합이 없으므로 인증 여부와 무관하게 안전하다.
+    # 민감 prefix(admin/auth/community/stripe)·비GET·오류 응답만 no-store 로 남긴다.
+    _NO_STORE_PREFIXES = (
+        '/api/admin/',
+        '/api/auth/',
+        '/api/community/',
+        '/api/stripe/',
+    )
+    _ETAG_MAX_BYTES = 4 * 1024 * 1024
+
     @app.after_request
     def add_cache_headers(response):
-        """JSON API: 기본 30초 브라우저 캐시 허용, 실시간 엔드포인트는 개별 no-cache 설정
+        """JSON API: 기본 30초 브라우저(private) 캐시 + ETag/304, 민감 경로는 no-store.
 
-        - /api/admin/*, /api/auth/*: 운영자·계정 상태는 즉시 반영 필요 → no-store
-        - 그 외: 기존 정책 (30초 브라우저 캐시)
+        - /api/admin/*, /api/auth/*, /api/community/*, /api/stripe/*: 즉시 반영 필요 → no-store
+        - 라우트가 직접 Cache-Control 을 지정한 경우 그대로 존중 (실시간 엔드포인트의 no-store 등)
+        - 그 외 GET 200 JSON: `private, max-age=30` + 본문 해시 ETag. 폴링 페이지(5s/30s)가
+          If-None-Match 를 보내면 본문 없이 304 로 응답해 대역폭·직렬화 비용을 줄인다.
         """
         if response.content_type and 'application/json' in response.content_type:
             path = (request.path or '')
-            has_credentials = bool(
-                request.headers.get('Authorization')
-                or request.headers.get('Cookie')
-            )
-            sensitive_prefixes = (
-                '/api/admin/',
-                '/api/auth/',
-                '/api/community/',
-                '/api/stripe/',
-            )
             if (
-                has_credentials
-                or request.method != 'GET'
+                request.method != 'GET'
                 or response.status_code >= 400
-                or path.startswith(sensitive_prefixes)
+                or path.startswith(_NO_STORE_PREFIXES)
             ):
                 response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
                 response.headers['Pragma'] = 'no-cache'
@@ -242,6 +262,22 @@ def create_app(config=None):
                 # Browser-private caching preserves the short TTL optimization
                 # without allowing Cloudflare/shared proxies to mix users.
                 response.headers['Cache-Control'] = 'private, max-age=30'
+
+            cache_control = response.headers.get('Cache-Control', '')
+            if (
+                request.method == 'GET'
+                and response.status_code == 200
+                and 'no-store' not in cache_control
+                and not response.direct_passthrough
+                and not response.headers.get('ETag')
+            ):
+                try:
+                    body = response.get_data()
+                    if body and len(body) <= _ETAG_MAX_BYTES:
+                        response.set_etag(hashlib.sha1(body).hexdigest(), weak=True)
+                        response.make_conditional(request)
+                except Exception:  # noqa: BLE001 — ETag 는 최적화일 뿐, 응답을 막지 않는다
+                    pass
 
         # Security headers (all responses)
         response.headers['X-Content-Type-Options'] = 'nosniff'
