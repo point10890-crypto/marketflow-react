@@ -3,11 +3,12 @@ import httpx
 import openai
 
 from app.services.ai_routing.breaker import CircuitBreaker
-from app.services.ai_routing.contracts import Operation, RoutingRequest
+from app.services.ai_routing.contracts import Operation, ProviderErrorClass, RoutingRequest
 from app.services.ai_routing.providers import (
     GEMINI_REQUEST_TIMEOUT_SECONDS,
     MAX_PROVIDER_REQUEST_TIMEOUT_SECONDS,
     build_default_adapters,
+    classify_exception,
     ProviderCallError,
 )
 from app.services.ai_routing.router import AIRouter
@@ -88,3 +89,12 @@ def test_one_adapter_invocation_sends_once_on_retryable_transport_response(monke
         )
 
     assert sends == 1
+
+
+def test_http_402_classifies_as_secret_free_insufficient_balance():
+    class BillingFailure(RuntimeError):
+        status_code = 402
+
+    failure = BillingFailure("Authorization: Bearer must-not-leak")
+
+    assert classify_exception(failure) is ProviderErrorClass.INSUFFICIENT_BALANCE

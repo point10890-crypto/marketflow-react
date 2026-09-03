@@ -99,7 +99,7 @@ def classify_exception(exc: Exception) -> ProviderErrorClass:
     if status in (401, 403):
         return ProviderErrorClass.AUTHENTICATION
     if status == 402:
-        return ProviderErrorClass.INSUFFIC_BALANCE
+        return ProviderErrorClass.INSUFFICIENT_BALANCE
     if status == 429:
         return ProviderErrorClass.RATE_LIMIT
     if status in (404, 410):

@@ -686,6 +686,139 @@ export interface MiroFishDeepSeekStatus {
     checked_at?: string;
 }
 
+export type MiroFishLlmFreshnessStatus = 'fresh' | 'stale' | 'unknown';
+export type MiroFishLlmHealthStatus =
+    | 'healthy'
+    | 'authentication'
+    | 'billing'
+    | 'insufficient_balance'
+    | 'rate_limit'
+    | 'timeout'
+    | 'connection'
+    | 'server_error'
+    | 'model_unavailable'
+    | 'unavailable'
+    | 'unknown';
+
+export interface MiroFishLlmFreshness {
+    status: MiroFishLlmFreshnessStatus;
+    checked_at?: string | null;
+    last_event_at?: string | null;
+    age_seconds: number | null;
+    ttl_seconds: number | null;
+}
+
+export interface MiroFishLlmProviderStatus {
+    provider: string;
+    operation: string;
+    configured: boolean;
+    available: boolean | null;
+    model: string;
+    status: MiroFishLlmHealthStatus;
+    checked_at: string | null;
+    ttl_seconds: number | null;
+}
+
+export interface MiroFishLlmBreakerStatus {
+    provider: string;
+    modality: string;
+    model_tier: string;
+    state: 'closed' | 'open' | 'half_open' | 'unknown';
+    failure_count: number;
+    last_error_class: string | null;
+}
+
+export interface MiroFishLlmBudgetStatus {
+    scope: 'utc_calendar_day';
+    day_utc: string;
+    pool: string;
+    provider: string;
+    daily_cap_usd_configured: boolean;
+    daily_cap_usd: string | null;
+    used_usd: string | null;
+    remaining_usd: string | null;
+    usage_percent: number | null;
+    status: 'configured' | 'unavailable' | 'incomplete' | 'invalid_configuration';
+}
+
+export interface MiroFishLlmHoldReviewStatus {
+    available: boolean;
+    count: number | null;
+    rate: number | null;
+    reason: string;
+}
+
+export interface MiroFishLlmRoutingStatus {
+    schema_version: 'ai-routing-status-v1';
+    service: 'ai-routing';
+    checked_at: string;
+    freshness: MiroFishLlmFreshness;
+    provider_order: Record<string, string[]>;
+    providers: MiroFishLlmProviderStatus[];
+    breakers: MiroFishLlmBreakerStatus[];
+    budget: MiroFishLlmBudgetStatus;
+    hold_review: MiroFishLlmHoldReviewStatus;
+}
+
+export interface MiroFishLlmLatencyPercentiles {
+    p50: number | null;
+    p95: number | null;
+}
+
+export interface MiroFishLlmUsageMetrics {
+    attempts: number;
+    live_attempts: number;
+    breaker_skipped_attempts?: number;
+    successes: number;
+    fallbacks: number;
+    input_tokens?: number | null;
+    cached_input_tokens?: number | null;
+    output_tokens?: number | null;
+    reasoning_tokens?: number | null;
+    total_tokens: number | null;
+    known_input_tokens?: number;
+    known_output_tokens?: number;
+    known_total_tokens: number;
+    estimated_cost_usd: string | null;
+    known_estimated_cost_usd: string;
+    unknown_usage_attempts: number;
+    quarantined_usage_attempts?: number;
+    unknown_cost_attempts: number;
+    usage_completeness: number | null;
+    cost_completeness: number | null;
+    latency_ms: MiroFishLlmLatencyPercentiles;
+}
+
+export interface MiroFishLlmUsageGroup extends MiroFishLlmUsageMetrics {
+    day?: string;
+    provider?: string;
+    model?: string;
+    endpoint?: string;
+    operation?: string;
+}
+
+export interface MiroFishLlmUsageResponse {
+    schema_version: 'ai-routing-usage-v1';
+    days: number;
+    limit: number;
+    window: { start_utc: string; end_utc: string; timezone: 'UTC' };
+    groups: MiroFishLlmUsageGroup[];
+    top_cost_endpoints: Array<MiroFishLlmUsageGroup & { endpoint: string }>;
+    top_operations: Array<MiroFishLlmUsageGroup & { operation: string }>;
+    totals: MiroFishLlmUsageMetrics;
+    openai_shares: { attempts: number | null; tokens: number | null; cost: number | null };
+    fallback_count: number;
+    fallback_attempt_share: number | null;
+    hold_review: MiroFishLlmHoldReviewStatus;
+    freshness: MiroFishLlmFreshness;
+    generated_at: string;
+}
+
+export interface MiroFishLlmUsageParams {
+    days: number;
+    limit: number;
+}
+
 export interface MiroFishTradingViewStatus {
     provider?: string;
     mode?: string;
@@ -1919,6 +2052,19 @@ function normalizeScannerCandidates(payload: any): MiroFishScannerCandidatesResp
 
 export const mirofishApi = {
     getStatus: async () => normalizeStatus(await fetchAuthAPI<any>('/api/admin/mirofish/status')),
+    getLlmRoutingStatus: async () => fetchAuthAPI<MiroFishLlmRoutingStatus>(
+        '/api/admin/mirofish/llm-routing/status',
+        undefined,
+        30000,
+    ),
+    getLlmUsage: async ({ days, limit }: MiroFishLlmUsageParams) => {
+        const search = new URLSearchParams({ days: String(days), limit: String(limit) });
+        return fetchAuthAPI<MiroFishLlmUsageResponse>(
+            `/api/admin/mirofish/llm-usage?${search.toString()}`,
+            undefined,
+            30000,
+        );
+    },
     getDataSources: async () => fetchAuthAPI<any>('/api/admin/mirofish/data-sources'),
     getAlphaServiceDashboard: async (params: MiroFishAlphaServiceDashboardParams = {}) => {
         return fetchAuthAPI<MiroFishAlphaServiceDashboardResponse>(
