@@ -120,6 +120,46 @@ def _analyze_news_llm(stock_name, stock_code, change_pct):
     return _analyze_news_gemini(stock_name, stock_code, change_pct)
 
 
+# ─── 1-b. 수치 검증 (L4 number_guard) ───
+
+AI_REASON_GUARD_FALLBACK = "AI 사유 수치 불일치로 생략"
+
+
+def _guard_ai_reason(ai, row):
+    """LLM 이 만든 `ai_reason` 의 숫자를 종목 행(원천)과 대조한다.
+
+    NUMBER_GUARD_POLICY=enforce(기본): 모순이면 사유를 정직한 짧은 문구로 교체.
+    NUMBER_GUARD_POLICY=shadow: 사유 유지, 집계만 첨부. 검증 실패는 보강을 막지 않는다.
+    """
+    try:
+        from app.services.mirofish.number_guard import guard_text_against, resolve_policy
+
+        reason = str((ai or {}).get("ai_reason") or "")
+        if not reason.strip():
+            return ai
+        policy = resolve_policy(default="enforce")
+        row = row if isinstance(row, dict) else {}
+        truth = {
+            "change_pct": row.get("change_pct"),
+            "price": row.get("price"),
+            "trading_value": row.get("trading_value"),
+            "trading_value_eok": row.get("trading_value_eok"),
+            "volume_ratio": row.get("volume_ratio"),
+        }
+        truth = {k: float(v) for k, v in truth.items()
+                 if isinstance(v, (int, float)) and not isinstance(v, bool)}
+        verdict = guard_text_against(reason, truth, policy=policy)
+        out = dict(ai)
+        out["ai_reason_guard"] = verdict.to_dict()
+        if verdict.should_drop:
+            logger.warning(f"[number_guard] 주도주 AI 사유 폐기 {row.get('name', '')}: {reason!r}")
+            out["ai_reason"] = AI_REASON_GUARD_FALLBACK
+        return out
+    except Exception as e:  # noqa: BLE001 — 검증 실패가 보강을 막지 않는다
+        logger.warning(f"[number_guard] 주도주 사유 검증 건너뜀: {e}")
+        return ai
+
+
 # ─── 2. 연속 주도주 추적 ───
 
 def _count_consecutive_days(stock_code):
@@ -201,7 +241,7 @@ def enrich_stocks(results, price_details=None):
 
         # 1) LLM 뉴스분석 (A등급 이상만 — 비용 최적화, DeepSeek 우선)
         if grade in ("S", "A"):
-            ai = _analyze_news_llm(name, code, change_pct)
+            ai = _guard_ai_reason(_analyze_news_llm(name, code, change_pct), r)
             time.sleep(1.5)  # Rate limit 완충 (구 Gemini free tier 기준 유지)
         else:
             ai = {"ai_score": 0, "ai_reason": "", "themes": []}

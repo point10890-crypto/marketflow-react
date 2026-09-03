@@ -2,6 +2,7 @@
 데이터 모델 정의
 """
 
+import hashlib
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Optional, Dict, List
@@ -252,7 +253,104 @@ class Signal:
     
     # 테마 정보 (LLM 추출)
     themes: List[str] = field(default_factory=list)
-    
+
+    # ── 피처 스냅샷용 원천 입력 (v3.6, 선택) ─────────────────────────
+    # 채점기가 소비한 원천값을 신호 시점에 같이 남긴다. 캘리브레이션/백테스트의 전제.
+    # 채점 로직·기존 to_dict 키에는 영향 없음 (additive).
+    high_52w: int = 0                                  # 52주 최고가 (StockData.high_52w)
+    ma_values: Dict[str, Optional[float]] = field(default_factory=dict)  # {ma5, ma10, ma20, ma60}
+    analyst_consensus: Optional[Dict] = None           # {consensus_score, result, analyst_count}
+    disclosure_raw: Optional[Dict] = None              # {types, score, negative}
+    financial_raw: Optional[Dict] = None               # {score, detail} (DART 재무)
+
+    FEATURE_SNAPSHOT_SCHEMA_VERSION = 1
+
+    @staticmethod
+    def _news_id(item: Dict) -> str:
+        """뉴스 항목의 안정적 ID — url 우선, 없으면 제목 해시."""
+        key = str(item.get("url") or item.get("title") or "")
+        if not key:
+            return ""
+        return hashlib.sha1(key.encode("utf-8")).hexdigest()[:12]
+
+    def build_feature_snapshot(self) -> Dict:
+        """컴포넌트 점수 + 각 컴포넌트가 소비한 원천 입력을 한 dict 로 묶는다.
+
+        outcome_tracker._feature_snapshot 와 같은 취지 — 신호 시점의 문맥을 그대로
+        보존해 나중에 가중치 조정의 효과를 재현·검증할 수 있게 한다.
+        """
+        sc = self.score
+        cl = self.checklist
+        high_52w = int(self.high_52w or 0)
+        current = int(self.current_price or 0)
+        distance_pct = None
+        if high_52w > 0 and current > 0:
+            distance_pct = round((current / high_52w - 1.0) * 100, 2)
+
+        news = []
+        for item in (self.news_items or [])[:5]:
+            if not isinstance(item, dict):
+                continue
+            news.append({
+                "id": self._news_id(item),
+                "title": str(item.get("title") or "")[:120],
+                "published_at": str(item.get("published_at") or ""),
+                "source": str(item.get("source") or ""),
+            })
+
+        ma = self.ma_values or {}
+        analyst = None
+        if isinstance(self.analyst_consensus, dict) and self.analyst_consensus:
+            analyst = {
+                "consensus_score": self.analyst_consensus.get("consensus_score"),
+                "result": self.analyst_consensus.get("result"),
+                "analyst_count": self.analyst_consensus.get("analyst_count"),
+            }
+        disclosure = self.disclosure_raw if isinstance(self.disclosure_raw, dict) else {}
+        financial = self.financial_raw if isinstance(self.financial_raw, dict) else {}
+
+        return {
+            "schema_version": self.FEATURE_SNAPSHOT_SCHEMA_VERSION,
+            "kind": "jongga_v2",
+            "snapshot_at": (self.signal_time or self.created_at or datetime.now()).isoformat(),
+            "components": {
+                "news": sc.news, "volume": sc.volume, "chart": sc.chart,
+                "candle": sc.candle, "consolidation": sc.consolidation,
+                "supply": sc.supply, "disclosure": sc.disclosure,
+                "analyst": sc.analyst, "financial": sc.financial,
+                "total": sc.total, "llm_source": sc.llm_source,
+            },
+            "raw": {
+                "current_price": current,
+                "trading_value": self.trading_value,
+                "volume_ratio": self.volume_ratio,
+                "change_pct": self.change_pct,
+                "foreign_5d": self.foreign_5d,
+                "inst_5d": self.inst_5d,
+                "high_52w": high_52w,
+                "high_52w_distance_pct": distance_pct,
+                "ma5": ma.get("ma5"), "ma10": ma.get("ma10"),
+                "ma20": ma.get("ma20"), "ma60": ma.get("ma60"),
+                "ma_aligned": cl.ma_aligned,
+                "is_new_high": cl.is_new_high,
+                "is_breakout": cl.is_breakout,
+                "good_candle": cl.good_candle,
+                "upper_wick_long": cl.upper_wick_long,
+                "has_consolidation": cl.has_consolidation,
+                "supply_positive": cl.supply_positive,
+                "volume_suspicious": cl.volume_spike_suspicious,
+                "news_count": len(self.news_items or []),
+                "news": news,
+                "negative_news": cl.negative_news,
+                "disclosure_types": list(disclosure.get("types") or cl.disclosure_types or []),
+                "disclosure_negative": bool(disclosure.get("negative", False)),
+                "disclosure_score_raw": disclosure.get("score"),
+                "analyst": analyst,
+                "financial_score_raw": financial.get("score"),
+                "themes": list(self.themes or []),
+            },
+        }
+
     def to_dict(self) -> Dict:
         return {
             "id": self.id,
@@ -280,6 +378,8 @@ class Signal:
             "status": self.status.value,
             "news_items": self.news_items,
             "themes": self.themes,
+            # v3.6 additive — 캘리브레이션용 피처 스냅샷 (프론트엔드 미사용)
+            "feature_snapshot": self.build_feature_snapshot(),
         }
 
 

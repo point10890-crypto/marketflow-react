@@ -382,6 +382,24 @@ class SignalGenerator:
                 status=SignalStatus.PENDING,
                 created_at=datetime.now(),
                 themes=llm_result.get("themes", []) if llm_result else [],
+                # v3.6 피처 스냅샷용 원천 입력 (점수 계산에는 미사용 — additive)
+                high_52w=int(stock.high_52w or 0),
+                ma_values=self._latest_ma_values(charts),
+                analyst_consensus=analyst_result if isinstance(analyst_result, dict) else None,
+                disclosure_raw=(
+                    {
+                        "types": list(dart_result.get("types", []) or []),
+                        "score": dart_result.get("score"),
+                        "negative": bool(dart_result.get("negative", False)),
+                    }
+                    if isinstance(dart_result, dict) and dart_result.get("has_disclosure")
+                    else None
+                ),
+                financial_raw=(
+                    {"score": financial_result.get("score"), "detail": financial_result.get("detail")}
+                    if isinstance(financial_result, dict) and financial_result.get("has_data")
+                    else None
+                ),
             )
             
             return signal
@@ -390,6 +408,22 @@ class SignalGenerator:
             # print(f"    분석 실패: {e}")
             return None
     
+    @staticmethod
+    def _latest_ma_values(charts) -> Dict:
+        """최근 일봉의 이동평균값 — 피처 스냅샷 기록용 (채점 로직과 무관)."""
+        try:
+            latest = charts[-1] if charts else None
+        except (TypeError, IndexError):
+            latest = None
+        if latest is None:
+            return {}
+        return {
+            "ma5": getattr(latest, "ma5", None),
+            "ma10": getattr(latest, "ma10", None),
+            "ma20": getattr(latest, "ma20", None),
+            "ma60": getattr(latest, "ma60", None),
+        }
+
     def get_summary(self, signals: List[Signal]) -> Dict:
         """시그널 요약 정보"""
         summary = {

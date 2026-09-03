@@ -957,6 +957,49 @@ def _time_weight():
     return 1.0
 
 
+LEADING_FEATURE_SNAPSHOT_SCHEMA_VERSION = 1
+
+
+def _build_leading_feature_snapshot(
+    candidate, *, investor_row, foreign, inst, vol_ratio, volume_source_name,
+    high_info, sector_count, market_cap_eok, time_weight, scanned_at,
+):
+    """주도주 행의 피처 스냅샷 — 채점기가 소비한 원천 입력을 그대로 남긴다.
+
+    점수 산식은 건드리지 않는다. `time_context` 는 현재 `_time_weight()` 배수를
+    표시 필드로 기록해 동일 데이터에 대해 점수가 시각에 따라 흔들린 정도를
+    사후 복원할 수 있게 한다 (§3.1 개선안 4/6 의 전제).
+    """
+    investor_row = investor_row if isinstance(investor_row, dict) else {}
+    high_info = high_info if isinstance(high_info, dict) else {}
+    return {
+        "schema_version": LEADING_FEATURE_SNAPSHOT_SCHEMA_VERSION,
+        "kind": "leading",
+        "snapshot_at": scanned_at,
+        "raw": {
+            "price": candidate.get("price"),
+            "change_pct": candidate.get("change_pct"),
+            "trading_value": candidate.get("tr_amt"),
+            "volume": candidate.get("volume"),
+            "volume_ratio": vol_ratio,
+            "volume_ratio_source": volume_source_name,
+            "sector": candidate.get("sector") or "",
+            "sector_rising_count": sector_count,
+            "investor_foreign_net": foreign,
+            "investor_inst_net": inst,
+            "investor_as_of_date": investor_row.get("stck_bsop_date"),
+            "high_52w": high_info.get("high_52w"),
+            "high_52w_date": high_info.get("high_date"),
+            "high_52w_distance_pct": high_info.get("distance_pct"),
+            "market_cap_eok": market_cap_eok,
+        },
+        "time_context": {
+            "weight": time_weight,
+            "scanned_at": scanned_at,
+        },
+    }
+
+
 def _grade(total):
     if total >= 80: return "S"
     if total >= 60: return "A"
@@ -1628,6 +1671,7 @@ def _run_screening_tracked(force=False, *, attempt_tracker):
     )
 
     tw = _time_weight()
+    scan_snapshot_at = datetime.now().isoformat(timespec="seconds")
 
     # The fixed top-15 preselection limits the first batch, but it is not a
     # correctness boundary. A row whose currently known score is C can still
@@ -1783,6 +1827,23 @@ def _run_screening_tracked(force=False, *, attempt_tracker):
         # 시가총액 추가
         if c["code"] in market_caps:
             result_item["market_cap_eok"] = market_caps[c["code"]]
+        # v3.6 additive — 캘리브레이션용 피처 스냅샷 (점수 산식 불변)
+        try:
+            result_item["feature_snapshot"] = _build_leading_feature_snapshot(
+                c,
+                investor_row=investor_row,
+                foreign=foreign,
+                inst=inst,
+                vol_ratio=vol_ratio,
+                volume_source_name=volume_source_name,
+                high_info=high_info,
+                sector_count=sector_count,
+                market_cap_eok=market_caps.get(c["code"]),
+                time_weight=tw,
+                scanned_at=scan_snapshot_at,
+            )
+        except Exception as snap_exc:  # noqa: BLE001 — 스냅샷 실패가 스캔을 막지 않는다
+            logger.debug("leading feature snapshot skipped code=%s: %s", c.get("code"), snap_exc)
         score_complete = not missing_score_inputs
         eligible = grade != "C" and score_complete
         rejection_reason = (

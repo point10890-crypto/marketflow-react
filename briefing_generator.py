@@ -612,6 +612,9 @@ class BriefingGenerator:
         result['date'] = now.strftime('%Y%m%d')
         result['generated_at'] = now.isoformat()
 
+        # L4 수치 검증 — LLM 본문의 숫자를 수집 데이터와 대조 (enforce 시 모순 섹션 폐기)
+        self._apply_number_guard(result, data, kind='morning')
+
         self._save('morning', result)
         logger.info(f"조간 브리핑 생성 완료: {result.get('title', '')}")
         return result
@@ -638,9 +641,130 @@ class BriefingGenerator:
         result['date'] = now.strftime('%Y%m%d')
         result['generated_at'] = now.isoformat()
 
+        # L4 수치 검증 — LLM 본문의 숫자를 수집 데이터와 대조 (enforce 시 모순 섹션 폐기)
+        self._apply_number_guard(result, data, kind='closing')
+
         self._save('closing', result)
         logger.info(f"마감 브리핑 생성 완료: {result.get('title', '')}")
         return result
+
+    # ── Number guard (L4) ──
+
+    @staticmethod
+    def _number_guard_truth(data: dict) -> dict:
+        """수집 데이터를 number_guard 가 대조할 수 있는 평면 수치 사전으로 편다.
+
+        키 접미사가 `change_pct` / `price` 이어야 문맥 키워드('상승','하락','주가'…)
+        기반 모순 판정이 동작하므로, 지수·선물·환율 등의 `change`/`price` 를
+        `<이름>.change_pct` / `<이름>.price` 로 정규화한다. 그 밖의 수치는
+        평면화만 한다 (검증됨/미검증 판정용).
+        """
+        from app.services.mirofish.number_guard import flatten_numeric
+
+        truth: dict = {}
+        if not isinstance(data, dict):
+            return truth
+
+        def _num(val):
+            return float(val) if isinstance(val, (int, float)) and not isinstance(val, bool) else None
+
+        def _quotes(group: str, table):
+            if not isinstance(table, dict):
+                return
+            for key, row in table.items():
+                if not isinstance(row, dict):
+                    continue
+                chg = _num(row.get('change') if row.get('change') is not None else row.get('change_pct'))
+                if chg is not None:
+                    truth[f'{group}.{key}.change_pct'] = chg
+                price = _num(row.get('price') if row.get('price') is not None else row.get('close'))
+                if price is not None:
+                    truth[f'{group}.{key}.price'] = price
+
+        for group in ('indices', 'futures', 'bonds', 'currencies', 'commodities', 'korean_indices'):
+            _quotes(group, data.get(group))
+        us_ctx = data.get('us_context')
+        if isinstance(us_ctx, dict):
+            _quotes('us_context', {k: v for k, v in us_ctx.items() if k in ('spy', 'qqq', 'usdkrw')})
+            _quotes('us_context.futures', us_ctx.get('futures'))
+        jongga = data.get('jongga')
+        if isinstance(jongga, dict):
+            for sig in jongga.get('signals') or []:
+                if not isinstance(sig, dict):
+                    continue
+                code = str(sig.get('code') or sig.get('name') or '')
+                chg = _num(sig.get('change_pct'))
+                if code and chg is not None:
+                    truth[f'jongga.{code}.change_pct'] = chg
+                tv = _num(sig.get('trading_value'))
+                if code and tv is not None:
+                    truth[f'jongga.{code}.trading_value'] = tv
+                    truth[f'jongga.{code}.trading_value_eok'] = round(tv / 1_0000_0000, 1)
+
+        # 나머지 수치(VIX, F&G, 게이트 점수 등)는 평면화만 — 검증/미검증 판정용
+        for key, val in flatten_numeric(data).items():
+            truth.setdefault(key, val)
+        return truth
+
+    def _apply_number_guard(self, result: dict, data: dict, *, kind: str) -> None:
+        """summary + 각 섹션 content 를 수집 데이터와 대조한다.
+
+        NUMBER_GUARD_POLICY=enforce(기본): 모순 섹션 본문 → 짧은 생략 문구로 교체.
+        NUMBER_GUARD_POLICY=shadow: 집계만 `result['number_guard']` 에 남긴다.
+        검증 자체의 실패는 브리핑 생성을 절대 막지 않는다.
+        """
+        try:
+            from app.services.mirofish.number_guard import (
+                CONTRADICTION_NOTE, guard_text_against, resolve_policy,
+            )
+
+            policy = resolve_policy(default='enforce')
+            truth = self._number_guard_truth(data)
+            checked = 0
+            contradicted = 0
+            dropped: list[str] = []
+
+            summary = result.get('summary')
+            if isinstance(summary, str) and summary.strip():
+                checked += 1
+                verdict = guard_text_against(summary, truth, policy=policy)
+                if verdict.contradicted:
+                    contradicted += 1
+                if verdict.should_drop:
+                    fallback = self._fallback_morning(data) if kind == 'morning' else self._fallback_closing(data)
+                    result['summary'] = fallback.get('summary') or CONTRADICTION_NOTE
+                    dropped.append('summary')
+
+            sections = result.get('sections')
+            if isinstance(sections, list):
+                for idx, section in enumerate(sections):
+                    if not isinstance(section, dict):
+                        continue
+                    content = section.get('content')
+                    if not isinstance(content, str) or not content.strip():
+                        continue
+                    checked += 1
+                    verdict = guard_text_against(content, truth, policy=policy)
+                    if verdict.contradicted:
+                        contradicted += 1
+                    if verdict.should_drop:
+                        section['content'] = CONTRADICTION_NOTE
+                        section['number_guard_dropped'] = True
+                        dropped.append(str(section.get('heading') or f'section_{idx}'))
+
+            result['number_guard'] = {
+                'policy': policy,
+                'checked': checked,
+                'contradicted': contradicted,
+                'dropped': dropped,
+                'truth_fields': len(truth),
+            }
+            if dropped:
+                logger.warning(f"[number_guard] {kind} 브리핑 {len(dropped)}개 본문 폐기 (policy={policy}): {dropped}")
+        except Exception as e:  # noqa: BLE001 — 검증 실패가 브리핑 생성을 막지 않는다
+            logger.warning(f"[number_guard] 검증 건너뜀: {e}")
+            result['number_guard'] = {'policy': 'error', 'checked': 0, 'contradicted': 0,
+                                      'dropped': [], 'error': str(e)}
 
     def _save(self, briefing_type: str, data: dict):
         """원자적 저장 — write_json_atomic 사용.

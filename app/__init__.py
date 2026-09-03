@@ -521,6 +521,21 @@ def create_app(config=None):
         except Exception as e:
             print(f"[WARN] Manual scraper boot autostart failed: {e}")
 
+    # ── GraphRAG 엔티티 DB 부트스트랩 (초성/별칭/퍼지 검색의 전제) ──
+    # entities.db 가 없으면 decision_brief._graphrag_matches 가 조용히 [] 를 돌려
+    # 리졸버 코드가 죽은 코드가 된다. 부팅을 막지 않도록 데몬 스레드에서 1회 보장.
+    # GRAPHRAG_BOOTSTRAP_ENABLED=0 으로 끌 수 있다 (기본 on, TESTING 에서는 off).
+    if not app.config.get('TESTING'):
+        if os.getenv('GRAPHRAG_BOOTSTRAP_ENABLED', '1').strip().lower() not in {'0', 'false', 'no', 'off'}:
+            try:
+                from app.services.mirofish.graphrag.bootstrap import start_background_bootstrap
+                start_background_bootstrap()
+                print("[OK] GraphRAG entities.db bootstrap scheduled (background)")
+            except Exception as e:
+                print(f"[WARN] GraphRAG entities bootstrap failed to start: {e}")
+        else:
+            print("[OFF] GraphRAG entities bootstrap disabled via GRAPHRAG_BOOTSTRAP_ENABLED=0")
+
     if not background_workers_enabled:
         print("[INFO] Background workers disabled for this app instance")
         return app

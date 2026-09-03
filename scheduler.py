@@ -437,6 +437,9 @@ class Config:
     ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES = int(os.environ.get('ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES', '120'))
     ALPHA_BACKTEST_ENABLED = os.environ.get('ALPHA_BACKTEST_ENABLED', 'true').lower() == 'true'
     ALPHA_BACKTEST_TIME = os.environ.get('ALPHA_BACKTEST_TIME', '23:00')
+    # GraphRAG entities.db 일일 부트스트랩 (초성/별칭 검색 전제) — 한산한 시간대
+    GRAPHRAG_BOOTSTRAP_TIME = os.environ.get('GRAPHRAG_BOOTSTRAP_TIME', '05:20')
+    GRAPHRAG_BOOTSTRAP_ENABLED = os.environ.get('GRAPHRAG_BOOTSTRAP_ENABLED', '1').strip().lower() not in {'0', 'false', 'no', 'off'}
     ALPHA_BACKTEST_HORIZON_DAYS = int(os.environ.get('ALPHA_BACKTEST_HORIZON_DAYS', '5'))
     ALPHA_BACKTEST_LIMIT_RUNS = int(os.environ.get('ALPHA_BACKTEST_LIMIT_RUNS', '8000'))
     MIROFISH_AGENT_ENABLED = os.environ.get('MIROFISH_AGENT_ENABLED', 'true').lower() == 'true'
@@ -3400,6 +3403,27 @@ def _run_kis_token_warmup() -> bool:
         return False
 
 
+def _run_graphrag_entities_bootstrap() -> bool:
+    """GraphRAG entities.db 부트스트랩 — 없으면/비었으면/7일 경과면 재적재.
+
+    초성(ㅅㅅㅈㅈ)·별칭(하닉)·퍼지 검색은 이 DB 가 있어야 살아난다. 신선하면 skip.
+    """
+    try:
+        from app.services.mirofish.graphrag.bootstrap import ensure_entities_db
+
+        result = ensure_entities_db()
+        status = result.get('status')
+        logger.info("GraphRAG entities bootstrap: status=%s reason=%s entities=%s elapsed_ms=%s",
+                    status, result.get('reason'), result.get('entities'), result.get('elapsed_ms'))
+        if status == 'error':
+            logger.error("GraphRAG entities bootstrap error: %s", result.get('error'))
+            return False
+        return True
+    except Exception as e:
+        logger.error(f"❌ GraphRAG entities bootstrap 에러: {e}", exc_info=True)
+        return False
+
+
 def run_omni_news_sweep() -> bool:
     """옴니소스 O1 — 공개 뉴스 RSS 수집 → 결정론 깔때기 → 사건 원장.
 
@@ -4255,8 +4279,16 @@ class Scheduler:
             self._with_record(_run_orphan_file_audit, 'orphan_audit',
                               max_retries=1, retry_delay=300))
 
+        # GraphRAG entities.db 부트스트랩 — 매일 한산한 시간 (없음/빈 DB/7일 경과 시만 재적재)
+        if Config.GRAPHRAG_BOOTSTRAP_ENABLED:
+            schedule.every().day.at(Config.GRAPHRAG_BOOTSTRAP_TIME).do(
+                self._with_record(_run_graphrag_entities_bootstrap, 'graphrag_entities_bootstrap',
+                                  max_retries=1, retry_delay=300))
+
         logger.info("📅 스케줄 등록 완료:")
         logger.info("   🔑 평일 08:55  KIS 토큰 웜업 (장 시작 전 자격증명 사전 검증)")
+        if Config.GRAPHRAG_BOOTSTRAP_ENABLED:
+            logger.info(f"   🔎 매일 {Config.GRAPHRAG_BOOTSTRAP_TIME}  GraphRAG entities.db 부트스트랩 (초성/별칭 검색)")
         logger.info(f"   🇺🇸 평일 {Config.US_UPDATE_TIME}  US Market 전체 갱신 + Smart Money Top 5")
         logger.info(f"   📋 평일 {Config.MORNING_REPORT_TIME}  일별 상태 리포트 → 텔레그램")
         logger.info(f"   🇺🇸 평일 {Config.US_TRACK_TIME}  US Track Record 스냅샷")
