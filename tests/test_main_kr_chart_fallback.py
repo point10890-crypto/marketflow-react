@@ -888,6 +888,22 @@ def test_daily_vision_reservation_is_persistent_and_hard_capped(mk, tmp_path):
         state_path=lower_state,
     )
     assert script.daily_vision_run_completed(day=day, state_path=lower_state)
+    completed_state = json.loads(lower_state.read_text(encoding="utf-8"))
+
+    assert (
+        script.reserve_daily_vision_calls(
+            5,
+            day=day,
+            state_path=lower_state,
+            run_id="blocked-rerun",
+            daily_limit=5,
+        )
+        == 0
+    )
+
+    rerun_state = json.loads(lower_state.read_text(encoding="utf-8"))
+    assert rerun_state["completed_run_id"] == "completed-run"
+    assert rerun_state["completed_at"] == completed_state["completed_at"]
 
 
 def test_non_trading_override_allows_only_latest_trading_day(mk, monkeypatch):

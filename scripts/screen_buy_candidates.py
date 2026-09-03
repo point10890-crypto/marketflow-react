@@ -319,18 +319,23 @@ def reserve_daily_vision_calls(
             if completed
             else min(requested_calls, max(0, effective_limit - used))
         )
-        write_json_atomic(
-            str(state_path),
-            {
-                "schema_version": 1,
-                "date": day_text,
-                "reserved_calls": used + granted,
-                "hard_cap": effective_limit,
-                "last_run_id": run_id,
-                "completed": completed,
-                "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            },
-        )
+        next_state = {
+            "schema_version": 1,
+            "date": day_text,
+            "reserved_calls": used + granted,
+            "hard_cap": effective_limit,
+            "last_run_id": run_id,
+            "completed": completed,
+            "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        }
+        if completed:
+            # A blocked rerun may update the attempt metadata, but it must not
+            # erase the evidence identifying the run that actually produced
+            # the last-known-good output.
+            for key in ("completed_run_id", "completed_at"):
+                if state.get(key) is not None:
+                    next_state[key] = state[key]
+        write_json_atomic(str(state_path), next_state)
         return granted
 
 
