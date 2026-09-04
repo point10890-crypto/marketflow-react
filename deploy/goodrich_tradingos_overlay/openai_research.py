@@ -229,7 +229,7 @@ class DeepSeekResearchAgent:
             client = OpenAI(
                 api_key=self.api_key,
                 base_url=self.base_url,
-                timeout=60,
+                timeout=90,
                 max_retries=0,
             )
             response = client.responses.create(
