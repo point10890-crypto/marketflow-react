@@ -7,9 +7,10 @@
         "5bb32dfd7f95cad97432fa44d8ad7d23a21464ae3e93988363cde51b3466174d",
         "9047cfc5289aa05480ccd603ded51834845ea6e0cf44dc88ea826a048b3965be",
         "4875cc4a964cf9f913bc614821063e3a03ce0c3df55bd8141b6a3b7df1068148",
-        "c09c4b2cab5778c09193734682ea9027bec8fa29dcf20b09052640da5a6a7dfa"
+        "c09c4b2cab5778c09193734682ea9027bec8fa29dcf20b09052640da5a6a7dfa",
+        "caaed52be800c9fadbb0077ced324c89f398fffb9e2eeed154db43a6bc649274"
       ],
-      "patched_sha256": "c09c4b2cab5778c09193734682ea9027bec8fa29dcf20b09052640da5a6a7dfa"
+      "patched_sha256": "caaed52be800c9fadbb0077ced324c89f398fffb9e2eeed154db43a6bc649274"
     },
     {
       "target": "services/api/src/goodrich/fund_manager.py",

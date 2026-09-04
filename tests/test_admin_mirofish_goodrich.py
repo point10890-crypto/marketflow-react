@@ -573,6 +573,7 @@ def test_goodrich_research_rejects_bounded_recovery_leader(monkeypatch):
     def fake_request(method, url, **kwargs):
         captured['url'] = url
         captured['json'] = kwargs['json']
+        captured['timeout'] = kwargs['timeout']
         return CandidateResponse(
             kwargs['json']['candidates'], kwargs['json']['ranked_candidates']
         )
@@ -584,6 +585,7 @@ def test_goodrich_research_rejects_bounded_recovery_leader(monkeypatch):
         ['005930', '068270', '002210'],
     ]
     assert captured['url'].endswith('/v1/fund-manager/research')
+    assert captured['timeout'] == 180.0
     assert [row['symbol'] for row in captured['json']['candidates']] == ['005930', '068270', '002210']
     assert result['integration']['trend_gate']['passed_count'] == 2
     assert result['integration']['trend_gate']['rejected_count'] == 0

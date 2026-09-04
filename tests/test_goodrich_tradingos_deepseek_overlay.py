@@ -180,7 +180,7 @@ def test_deepseek_v4_pro_is_primary_with_max_reasoning(monkeypatch):
     assert deepseek_call["store"] is False
     client_call = next(call for call in calls if call["kind"] == "client")
     assert client_call["base_url"] == "https://api.deepseek.com"
-    assert client_call["timeout"] == 30
+    assert client_call["timeout"] == 60
     assert client_call["max_retries"] == 0
 
 

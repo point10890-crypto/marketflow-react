@@ -18,7 +18,7 @@ import requests
 
 DEFAULT_BASE_URL = 'http://127.0.0.1:8000'
 DEFAULT_TIMEOUT_SECONDS = 12.0
-RESEARCH_TIMEOUT_SECONDS = 90.0
+RESEARCH_TIMEOUT_SECONDS = 180.0
 # A selective, fully validated portfolio is publishable. Requiring three CIO
 # approvals converted ordinary low-breadth conditions into a detection outage.
 MINIMUM_PUBLISHABLE_CANDIDATES = 1
