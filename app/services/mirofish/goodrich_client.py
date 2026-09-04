@@ -7,8 +7,9 @@ minimum response contract before presenting it to AI Brain subscribers.
 
 from __future__ import annotations
 
-import os
 import json
+import math
+import os
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
 
@@ -33,9 +34,10 @@ class GoodrichServiceError(RuntimeError):
 
 def _safe_float(value) -> float:
     try:
-        return float(value or 0)
+        result = float(value or 0)
     except (TypeError, ValueError):
         return 0.0
+    return result if math.isfinite(result) else 0.0
 
 
 def _base_url() -> str:
@@ -141,9 +143,11 @@ def _validate_and_envelope(payload: dict, *, integration: dict | None = None) ->
     picks = payload.get('picks')
     if not isinstance(picks, list):
         raise GoodrichServiceError('Goodrich TOP 3 응답에 종목 목록이 없습니다.')
+    if len(picks) > 3:
+        raise GoodrichServiceError('Goodrich TOP 3 응답에 허용되지 않은 추가 종목이 있습니다.')
 
     normalized_picks = []
-    for pick in picks[:3]:
+    for pick in picks:
         if not isinstance(pick, dict):
             raise GoodrichServiceError('Goodrich 종목 응답 형식이 올바르지 않습니다.')
         symbol = str(pick.get('symbol') or '').strip()
@@ -465,26 +469,51 @@ def run_research() -> dict:
             },
         },
     )
-    returned_by_symbol = {
-        str(row.get('symbol') or ''): row
-        for row in research.get('picks') or []
-        if isinstance(row, dict)
-    }
     expected_symbols = [candidate['symbol'] for candidate in candidates]
-    if set(returned_by_symbol) != set(expected_symbols):
+    returned_picks = research.get('picks')
+    if not isinstance(returned_picks, list) or len(returned_picks) != len(candidates):
         raise GoodrichServiceError(
             'Goodrich 응답이 요청한 검증 TOP3와 일치하지 않습니다.'
         )
-    research['picks'] = [
-        {
-            **returned_by_symbol[symbol],
+    validated_picks = []
+    for rank, (candidate, expected, returned) in enumerate(
+        zip(candidates, ranked_candidates, returned_picks),
+        start=1,
+    ):
+        if not isinstance(returned, dict):
+            raise GoodrichServiceError(
+                'Goodrich 응답이 요청한 검증 TOP3와 일치하지 않습니다.'
+            )
+        returned_rank = returned.get('rank')
+        returned_score = returned.get('score')
+        if (
+            str(returned.get('symbol') or '') != candidate['symbol']
+            or str(returned.get('name') or '') != candidate['name']
+            or not isinstance(returned_rank, int)
+            or isinstance(returned_rank, bool)
+            or returned_rank != rank
+            or not isinstance(returned_score, (int, float))
+            or isinstance(returned_score, bool)
+            or not math.isfinite(float(returned_score))
+            or float(returned_score) != float(expected['score'])
+        ):
+            raise GoodrichServiceError(
+                'Goodrich 응답의 순위 또는 점수가 검증 입력과 일치하지 않습니다.'
+            )
+        validated_picks.append({
+            **returned,
             'rank': rank,
             'selection_source': str(
-                (selected_by_symbol.get(symbol) or {}).get('selection_source') or ''
+                (selected_by_symbol.get(candidate['symbol']) or {}).get(
+                    'selection_source'
+                ) or ''
             ),
-        }
-        for rank, symbol in enumerate(expected_symbols, start=1)
-    ]
+        })
+    if [pick['symbol'] for pick in validated_picks] != expected_symbols:
+        raise GoodrichServiceError(
+            'Goodrich 응답이 요청한 검증 TOP3와 일치하지 않습니다.'
+        )
+    research['picks'] = validated_picks
     return research
 
 

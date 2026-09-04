@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "target": "services/api/src/goodrich/openai_research.py",
+      "accepted_sha256": [
+        "5bb32dfd7f95cad97432fa44d8ad7d23a21464ae3e93988363cde51b3466174d",
+        "9047cfc5289aa05480ccd603ded51834845ea6e0cf44dc88ea826a048b3965be"
+      ],
+      "patched_sha256": "9047cfc5289aa05480ccd603ded51834845ea6e0cf44dc88ea826a048b3965be"
+    },
+    {
+      "target": "services/api/src/goodrich/fund_manager.py",
+      "accepted_sha256": [
+        "1d3fcf39cba101f4e64759570a88a084bfa9229069552cbfe4f59db5294771e5",
+        "90532e8ea802a5514a224e6b3b4953e09187dcee0b1d992ee0537c19e0d92e34"
+      ],
+      "patched_sha256": "90532e8ea802a5514a224e6b3b4953e09187dcee0b1d992ee0537c19e0d92e34"
+    },
+    {
+      "target": "services/api/src/goodrich/main.py",
+      "accepted_sha256": [
+        "ff3401622f4cffd79af50a69f98697fa3397a208dccf5c2e5e588f8c017bd121",
+        "f67b89b6c49eb1b79cf92e12585ee98e31ff020dd756b721c43ab843e84a3c2a"
+      ],
+      "patched_sha256": "f67b89b6c49eb1b79cf92e12585ee98e31ff020dd756b721c43ab843e84a3c2a"
+    },
+    {
+      "target": "services/api/tests/test_fund_manager.py",
+      "accepted_sha256": [
+        "8f65dfbda34511436115f65d45456800d5574de0fe64498da88da78cdf73cf58",
+        "9856d60c4e0022278aeafb6a0e6526df7558dfcdfc70d043a424a84eeffbce83"
+      ],
+      "patched_sha256": "9856d60c4e0022278aeafb6a0e6526df7558dfcdfc70d043a424a84eeffbce83"
+    },
+    {
+      "target": "services/api/tests/test_marketflow_contract.py",
+      "accepted_sha256": [
+        "7f2a9a530085569be2b23ba9124b27f29fbbb353d176914b1c6ba87bc179d496"
+      ],
+      "patched_sha256": "7f2a9a530085569be2b23ba9124b27f29fbbb353d176914b1c6ba87bc179d496",
+      "optional_before_apply": true
+    }
+  ]
+}

@@ -38,8 +38,9 @@ class FakeResponse:
 
 
 class CandidateResponse(FakeResponse):
-    def __init__(self, candidates):
+    def __init__(self, candidates, ranked_candidates=None):
         self.candidates = list(candidates)
+        self.ranked_candidates = list(ranked_candidates or [])
 
     def json(self):
         payload = super().json()
@@ -51,6 +52,11 @@ class CandidateResponse(FakeResponse):
                 'rank': index,
                 'symbol': str(candidate.get('symbol') or ''),
                 'name': str(candidate.get('name') or ''),
+                'score': (
+                    self.ranked_candidates[index - 1].get('score', 0.0)
+                    if index <= len(self.ranked_candidates)
+                    else 0.0
+                ),
                 'current_price': index * 100,
                 'target_price': index * 110,
                 'stop_price': index * 95,
@@ -95,6 +101,25 @@ def test_goodrich_client_allows_a_verified_selective_portfolio(monkeypatch):
 
     assert result['integration']['universe_size'] == 1
     assert [pick['symbol'] for pick in result['picks']] == ['005930']
+
+
+def test_goodrich_client_rejects_unexpected_fourth_pick(monkeypatch):
+    class ExtraPickResponse(FakeResponse):
+        def json(self):
+            payload = super().json()
+            extra = dict(payload['picks'][-1])
+            extra.update({'rank': 4, 'symbol': '068270', 'name': '셀트리온'})
+            payload['picks'].append(extra)
+            return payload
+
+    monkeypatch.setattr(
+        goodrich_client.requests,
+        'request',
+        lambda *args, **kwargs: ExtraPickResponse(),
+    )
+
+    with pytest.raises(goodrich_client.GoodrichServiceError, match='추가 종목'):
+        goodrich_client.get_fund_manager()
 
 
 def test_goodrich_client_accepts_completed_deepseek_primary_analysis(monkeypatch):
@@ -277,7 +302,9 @@ def test_goodrich_research_keeps_uptrend_leaders_and_excludes_crashers(monkeypat
 
     def fake_request(method, url, **kwargs):
         captured['json'] = kwargs['json']
-        return CandidateResponse(kwargs['json']['candidates'])
+        return CandidateResponse(
+            kwargs['json']['candidates'], kwargs['json']['ranked_candidates']
+        )
 
     monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
     result = goodrich_client.run_research()
@@ -342,9 +369,20 @@ def test_goodrich_research_preserves_multi_mcp_top3_order_and_recovery_metadata(
             'top3_shortfall': 0,
             'top3_guarantee_met': True,
             'selected': [
-                {'symbol': '035420', 'selection_source': 'ai_verified'},
-                {'symbol': '005930', 'selection_source': 'deterministic_kis_fallback'},
-                {'symbol': '000660', 'selection_source': 'deterministic_kis_fallback'},
+                {
+                    'symbol': '035420', 'selection_source': 'ai_verified',
+                    'portfolio_score': 88.125,
+                },
+                {
+                    'symbol': '005930',
+                    'selection_source': 'deterministic_kis_fallback',
+                    'portfolio_score': 70.5,
+                },
+                {
+                    'symbol': '000660',
+                    'selection_source': 'deterministic_kis_fallback',
+                    'portfolio_score': 60.25,
+                },
             ],
         }
 
@@ -355,7 +393,9 @@ def test_goodrich_research_preserves_multi_mcp_top3_order_and_recovery_metadata(
 
     def fake_request(method, url, **kwargs):
         captured['outbound_body'] = kwargs['json']
-        return FakeResponse()
+        return CandidateResponse(
+            kwargs['json']['candidates'], kwargs['json']['ranked_candidates']
+        )
 
     monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
 
@@ -368,15 +408,15 @@ def test_goodrich_research_preserves_multi_mcp_top3_order_and_recovery_metadata(
     assert captured['outbound_body']['ranked_candidates'] == [
         {
             'symbol': '035420', 'name': 'NAVER', 'rank': 1,
-            'score': 0.0, 'tier': 'ai_verified',
+            'score': 88.125, 'tier': 'ai_verified',
         },
         {
             'symbol': '005930', 'name': '삼성전자', 'rank': 2,
-            'score': 0.0, 'tier': 'deterministic_kis_fallback',
+            'score': 70.5, 'tier': 'deterministic_kis_fallback',
         },
         {
             'symbol': '000660', 'name': 'SK하이닉스', 'rank': 3,
-            'score': 0.0, 'tier': 'deterministic_kis_fallback',
+            'score': 60.25, 'tier': 'deterministic_kis_fallback',
         },
     ]
     assert captured['candidate_rows'][0]['score']['total'] == 70
@@ -392,6 +432,23 @@ def test_goodrich_research_preserves_multi_mcp_top3_order_and_recovery_metadata(
         'deterministic_kis_fallback',
         'deterministic_kis_fallback',
     ]
+    assert [row['score'] for row in result['picks']] == [88.125, 70.5, 60.25]
+
+    class TamperedScoreResponse(CandidateResponse):
+        def json(self):
+            payload = super().json()
+            payload['picks'][0]['score'] += 1
+            return payload
+
+    monkeypatch.setattr(
+        goodrich_client.requests,
+        'request',
+        lambda method, url, **kwargs: TamperedScoreResponse(
+            kwargs['json']['candidates'], kwargs['json']['ranked_candidates']
+        ),
+    )
+    with pytest.raises(goodrich_client.GoodrichServiceError, match='점수'):
+        goodrich_client.run_research()
 
 
 def test_goodrich_research_stands_aside_when_profit_trend_gate_fails(monkeypatch):
@@ -516,7 +573,9 @@ def test_goodrich_research_rejects_bounded_recovery_leader(monkeypatch):
     def fake_request(method, url, **kwargs):
         captured['url'] = url
         captured['json'] = kwargs['json']
-        return CandidateResponse(kwargs['json']['candidates'])
+        return CandidateResponse(
+            kwargs['json']['candidates'], kwargs['json']['ranked_candidates']
+        )
 
     monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
     result = goodrich_client.run_research()
@@ -609,7 +668,7 @@ def test_goodrich_trend_gate_never_admits_a_multi_mcp_reject(monkeypatch):
     monkeypatch.setattr(
         goodrich_client.requests, 'request',
         lambda method, url, **kwargs: CandidateResponse(
-            kwargs['json']['candidates']
+            kwargs['json']['candidates'], kwargs['json']['ranked_candidates']
         ),
     )
 
