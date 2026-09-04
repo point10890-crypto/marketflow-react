@@ -7,10 +7,14 @@ export interface Guide {
     category: string;
     /** YYYY-MM-DD */
     date: string;
+    updatedDate: string;
+    methodology: string;
+    sources: Array<{ label: string; url: string; note: string }>;
     readMinutes: number;
-    /** 신뢰된 저장소 내장 HTML (h2/h3/p/ul/ol/strong/table 만 사용) */
+    /** 신뢰된 저장소 내장 교육 HTML */
     html: string;
 }
 
 export declare const GUIDES: Guide[];
 export declare function findGuide(slug: string): Guide | null;
+export declare function renderGuideNotes(guide: Guide): string;

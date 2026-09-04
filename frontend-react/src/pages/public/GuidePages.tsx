@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { AdSlot, PublicShell } from '@/components/public/PublicShell';
-import { GUIDES, findGuide } from '@/data/guides.mjs';
+import { GUIDES, findGuide, renderGuideNotes } from '@/data/guides.mjs';
 import { CREATOR_PROFILE } from '@/data/creator.mjs';
 import { useSeo, SITE_ORIGIN } from '@/lib/seo';
 import { JoinBanner } from './PublicCommunityPage';
@@ -9,7 +9,7 @@ import { JoinBanner } from './PublicCommunityPage';
  * 인사이트 가이드 (공개) — /guide, /guide/:slug.
  *
  * 저장소 내장 오리지널 교육 콘텐츠 존. 백엔드 API 와 무관하게 항상 렌더되므로
- * AdSense 심사·검색 크롤러에게 고유 콘텐츠를 보장하는 핵심 영역이다.
+ * 검색 크롤러와 독자에게 같은 교육 본문을 제공한다.
  * 본문은 scripts/prerender-seo.mjs 가 같은 데이터로 정적 프리렌더한다.
  */
 
@@ -84,7 +84,7 @@ export function GuideListPage() {
                             </h2>
                             <p className="mt-2 flex-1 text-[12.5px] leading-6 text-gray-500">{g.description}</p>
                             <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-3">
-                                <span className="font-mono text-[10px] tabular-nums text-gray-600">{g.date}</span>
+                                <span className="font-mono text-[10px] tabular-nums text-gray-500">보강 {g.updatedDate}</span>
                                 <span className="text-[11px] font-bold text-gray-500 transition-colors group-hover:text-[#ff9b89]">
                                     읽어보기<i className="fas fa-arrow-right ml-1.5 text-[9px]" aria-hidden />
                                 </span>
@@ -116,6 +116,8 @@ export function GuideArticlePage() {
                 headline: guide.title,
                 description: guide.description,
                 datePublished: guide.date,
+                dateModified: guide.updatedDate,
+                citation: guide.sources.map((source) => source.url),
                 author: { '@type': 'Organization', name: 'MarketFlow 리서치', url: `${SITE_ORIGIN}/about#creator` },
                 publisher: { '@type': 'Organization', name: 'MarketFlow', url: SITE_ORIGIN },
                 mainEntityOfPage: `${SITE_ORIGIN}/guide/${guide.slug}`,
@@ -162,7 +164,7 @@ export function GuideArticlePage() {
                 </div>
 
                 <header className="pub-rise mt-3" style={{ animationDelay: '50ms' }}>
-                    <h1 className="text-[26px] font-black leading-[1.3] tracking-tight text-white sm:text-[32px]">
+                    <h1 className="break-keep text-[26px] font-black leading-[1.3] tracking-tight text-white sm:text-[32px]">
                         {guide.title}
                     </h1>
                     <div className="mt-3 flex flex-wrap items-center gap-2.5 border-b border-white/[0.06] pb-5 font-mono text-[11px] tabular-nums text-gray-500">
@@ -170,7 +172,8 @@ export function GuideArticlePage() {
                             MarketFlow 리서치
                         </Link>
                         <span className="text-gray-700">·</span>
-                        <span>{guide.date}</span>
+                        <span>최초 게시: {guide.date}</span>
+                        <span>내용 보강: {guide.updatedDate}</span>
                         <span className="text-gray-700">·</span>
                         <span>{guide.readMinutes}분 읽기</span>
                         <span className={`ml-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${categoryChip(guide.category)}`}>
@@ -187,6 +190,9 @@ export function GuideArticlePage() {
                 {/* 본문 — 저장소 내장 신뢰 HTML */}
                 <div className="pub-prose pub-rise mt-6" style={{ animationDelay: '100ms' }}
                      dangerouslySetInnerHTML={{ __html: guide.html }} />
+
+                <div className="pub-prose mt-8 border-t border-white/10 pt-2"
+                     dangerouslySetInnerHTML={{ __html: renderGuideNotes(guide) }} />
 
                 {/* 면책 — 모든 가이드 공통 */}
                 <p className="mt-8 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-[11.5px] leading-5 text-gray-500">

@@ -14,7 +14,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { GUIDES } from '../src/data/guides.mjs';
+import { GUIDES, renderGuideNotes } from '../src/data/guides.mjs';
 import { CREATOR_ABOUT_JSON_LD, CREATOR_PROFILE } from '../src/data/creator.mjs';
 
 const ORIGIN = 'https://bit-man.net';
@@ -266,7 +266,7 @@ ROUTES.push({
 정리했습니다. 모든 글은 교육 목적이며 투자 권유가 아닙니다.</p>
 <p>${esc(CREATOR_PROFILE.introduction)} <a href="/about#creator">운영자 소개와 채널 보기</a></p>
 <ul>
-${GUIDES.map((g) => `<li><a href="/guide/${g.slug}">${g.title}</a> — ${g.description}</li>`).join('\n')}
+${GUIDES.map((g) => `<li><a href="/guide/${g.slug}">${g.title}</a> — ${g.description} · 보강 ${g.updatedDate}</li>`).join('\n')}
 </ul>`,
 });
 
@@ -282,6 +282,8 @@ for (const g of GUIDES) {
                 headline: g.title,
                 description: g.description,
                 datePublished: g.date,
+                dateModified: g.updatedDate,
+                citation: g.sources.map((source) => source.url),
                 author: { '@type': 'Organization', name: 'MarketFlow 리서치', url: `${ORIGIN}/about#creator` },
                 publisher: { '@type': 'Organization', name: 'MarketFlow', url: ORIGIN },
                 mainEntityOfPage: `${ORIGIN}/guide/${g.slug}`,
@@ -300,9 +302,10 @@ for (const g of GUIDES) {
         body: `
 <p><a href="/guide">← 인사이트 가이드</a></p>
 <h1>${g.title}</h1>
-<p><a href="/about#creator">MarketFlow 리서치</a> · ${g.date} · ${g.readMinutes}분 읽기 · ${g.category}</p>
+<p><a href="/about#creator">MarketFlow 리서치</a> · 최초 게시: ${g.date} · 내용 보강: ${g.updatedDate} · ${g.readMinutes}분 읽기 · ${g.category}</p>
 <p><a href="/about#creator">운영자: ${esc(CREATOR_PROFILE.name)} · ${esc(CREATOR_PROFILE.channelName)}</a></p>
 ${g.html}
+${renderGuideNotes(g)}
 ${GUIDE_DISCLAIMER}`,
     });
 }
