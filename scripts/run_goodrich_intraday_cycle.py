@@ -32,6 +32,25 @@ def _format_price(value: object) -> str:
         return "확인 중"
 
 
+def _gate_value(value: object) -> str:
+    return "-" if value is None else str(value)
+
+
+def _format_pct(value: object) -> str:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return ""
+    return f"{number:+.1f}%"
+
+
+def _format_score(value: object) -> str:
+    try:
+        return f"{float(value):.0f}"
+    except (TypeError, ValueError):
+        return "-"
+
+
 def _build_top3_telegram_message(result: dict) -> str:
     completed_at = result.get("completed_at")
     if isinstance(completed_at, datetime):
@@ -51,9 +70,42 @@ def _build_top3_telegram_message(result: dict) -> str:
         ),
         "",
     ]
+    gates = result.get("gates") if isinstance(result.get("gates"), dict) else {}
+    if gates:
+        lines.append(
+            "게이트: 스캔 {scanned} → 등락>0 {pos} → 추세 {trend} → 신선도 {fresh} → CIO승인 {cio}".format(
+                scanned=_gate_value(gates.get("scanned")),
+                pos=_gate_value(gates.get("positive_session")),
+                trend=_gate_value(gates.get("trend_gate_passed")),
+                fresh=_gate_value(gates.get("profit_gate_passed")),
+                cio=_gate_value(gates.get("cio_approved")),
+            )
+        )
+        lines.append("")
     top3 = list(result.get("top3") or [])[:3]
     if not top3:
-        lines.append("선정된 종목이 없습니다.")
+        reason = result.get("stand_aside_reason")
+        lines.append(
+            "선정 기준 통과 종목 없음"
+            + (f" — {html.escape(str(reason))}" if reason else "")
+        )
+        watchlist = [row for row in (result.get("watchlist") or []) if isinstance(row, dict)][:3]
+        if watchlist:
+            lines.append("")
+            lines.append("👀 <b>관찰 후보 TOP 3</b> <i>(스캐너 순위 · 선정 아님)</i>")
+            for index, row in enumerate(watchlist, start=1):
+                name = html.escape(str(row.get("name") or "종목명 확인 중"))
+                symbol = html.escape(str(row.get("symbol") or "-"))
+                flags = ", ".join(str(f) for f in (row.get("risk_flags") or [])[:3])
+                lines.append(
+                    f"{index}. <b>{name}</b> ({symbol}) "
+                    f"{_format_price(row.get('price'))} {_format_pct(row.get('change_pct'))} · "
+                    f"점수 {_format_score(row.get('score_total'))}"
+                )
+                if flags:
+                    lines.append(f"   미달: {html.escape(flags)}")
+        else:
+            lines.append("관찰 후보도 비어 있음 — 스캐너 입력이 없습니다. 파이프라인 점검 필요.")
     for index, pick in enumerate(top3, start=1):
         name = html.escape(str(pick.get("name") or "종목명 확인 중"))
         symbol = html.escape(str(pick.get("symbol") or "-"))
@@ -146,6 +198,7 @@ def run_cycle(*, force: bool = False) -> dict:
     from app.services.mirofish.goodrich_client import (
         monitor_fund_manager,
         run_research,
+        stand_aside_reason_text,
     )
 
     started_at = datetime.now(UTC)
@@ -177,6 +230,14 @@ def run_cycle(*, force: bool = False) -> dict:
             "detected_candidates": research.get("integration", {}).get("candidate_count"),
             "qualified_candidates": research.get("integration", {}).get("universe_size"),
             "monitored_active_count": monitored.get("active_count"),
+            # 검출 0 방지: 선정이 비어도 관찰 후보와 게이트 카운트는 항상 실린다
+            "gates": research.get("integration", {}).get("gates"),
+            "watchlist": research.get("integration", {}).get("watchlist") or [],
+            "stand_aside_reason": (
+                stand_aside_reason_text(research.get("integration", {}).get("stand_aside_reason"))
+                if not research.get("picks") and research.get("integration", {}).get("stand_aside_reason")
+                else None
+            ),
             "top3": [
                 {
                     "symbol": pick.get("symbol"),

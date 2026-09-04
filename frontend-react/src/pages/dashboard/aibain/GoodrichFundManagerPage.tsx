@@ -54,6 +54,27 @@ interface GoodrichSnapshot {
         ai_role?: string;
         ordering_enabled?: boolean;
     };
+    /** 선정이 비어도 항상 실리는 스캐너 순위 관찰 후보 (선정 아님) */
+    watchlist?: GoodrichWatchRow[];
+    last_research?: {
+        fetched_at?: string;
+        status?: string;
+        reason?: string;
+        reason_text?: string | null;
+        gates?: Record<string, number | null | undefined>;
+        scanner_timestamp?: string;
+    };
+}
+
+interface GoodrichWatchRow {
+    rank?: number;
+    symbol?: string;
+    name?: string;
+    price?: number;
+    change_pct?: number;
+    score_total?: number;
+    grade?: string;
+    risk_flags?: string[];
 }
 
 interface GoodrichHistoryItem {
@@ -239,7 +260,46 @@ export default function GoodrichFundManagerPage() {
                                             승인된 주도주가 3개 미만입니다. AI 펀드매니저는 종목을 임의로 채우지 않고
                                             백그라운드에서 다음 검출을 계속합니다.
                                         </p>
+                                        {data.last_research?.reason_text && (
+                                            <p className="mt-2 text-xs font-bold text-amber-200/90">
+                                                미선정 사유: {data.last_research.reason_text}
+                                            </p>
+                                        )}
+                                        {data.last_research?.gates && (
+                                            <p className="mt-1 text-[11px] text-slate-400" data-testid="goodrich-gates">
+                                                게이트: 스캔 {data.last_research.gates.scanned ?? '-'} → 등락&gt;0 {data.last_research.gates.positive_session ?? '-'}
+                                                {' '}→ 추세 {data.last_research.gates.trend_gate_passed ?? '-'} → 신선도 {data.last_research.gates.profit_gate_passed ?? '-'}
+                                                {' '}→ CIO승인 {data.last_research.gates.cio_approved ?? '-'}
+                                            </p>
+                                        )}
                                     </div>
+                                </div>
+                            </section>
+                        )}
+
+                        {data.picks.length === 0 && (data.watchlist?.length ?? 0) > 0 && (
+                            <section className="rounded-2xl border border-white/[0.08] bg-black/20 p-5" aria-label="관찰 후보">
+                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Watchlist</div>
+                                <h2 className="mt-1 text-xl font-black">관찰 후보 <span className="text-sm font-bold text-slate-500">스캐너 순위 · 선정 아님</span></h2>
+                                <p className="mt-2 text-sm text-slate-400">KIS 스캐너가 검출한 상위 종목입니다. 선정 기준(등락&gt;0 · 신선도 · CIO BUY·신뢰도≥60)을 통과하지 못한 사유를 함께 표시합니다.</p>
+                                <div className="mt-4 overflow-x-auto">
+                                    <table className="min-w-[560px] w-full text-left text-sm">
+                                        <thead className="text-[11px] uppercase tracking-wider text-slate-500">
+                                            <tr><th className="py-2 pr-3">#</th><th className="py-2 pr-3">종목</th><th className="py-2 pr-3 text-right">현재가</th><th className="py-2 pr-3 text-right">등락</th><th className="py-2 pr-3 text-right">점수</th><th className="py-2">미달 사유</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            {data.watchlist?.map((row) => (
+                                                <tr key={row.symbol} className="border-t border-white/[0.06]">
+                                                    <td className="py-2 pr-3 text-slate-500">{row.rank ?? '-'}</td>
+                                                    <td className="py-2 pr-3 font-bold">{row.name || row.symbol}<span className="ml-1 text-xs font-normal text-slate-500">{row.symbol}</span></td>
+                                                    <td className="py-2 pr-3 text-right tabular-nums">{row.price ? `${Math.round(row.price).toLocaleString()}원` : '-'}</td>
+                                                    <td className={`py-2 pr-3 text-right tabular-nums ${(row.change_pct ?? 0) >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>{row.change_pct != null ? `${row.change_pct >= 0 ? '+' : ''}${row.change_pct.toFixed(1)}%` : '-'}</td>
+                                                    <td className="py-2 pr-3 text-right tabular-nums">{row.score_total != null ? Math.round(row.score_total) : '-'}</td>
+                                                    <td className="py-2 text-xs text-slate-400">{(row.risk_flags ?? []).slice(0, 3).join(', ') || '-'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </section>
                         )}

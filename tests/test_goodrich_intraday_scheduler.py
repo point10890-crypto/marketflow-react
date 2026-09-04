@@ -212,3 +212,76 @@ def test_telegram_failure_is_visible_in_status(monkeypatch, tmp_path):
     assert result["telegram_sent"] is False
     saved = json.loads(scheduler.STATUS_PATH.read_text(encoding="utf-8"))
     assert saved["telegram_error"] == "telegram_send_failed"
+
+
+# ── 2026-09-04: "28개 검출 → 0개 선정 / 선정된 종목이 없습니다" 재발 방지 ─────────
+
+def test_top3_message_never_goes_silent_when_nothing_is_selected():
+    message = scheduler._build_top3_telegram_message(
+        {
+            "completed_at": scheduler.datetime(2026, 9, 4, 4, 30, tzinfo=scheduler.UTC),
+            "market_status": "open",
+            "detected_candidates": 28,
+            "qualified_candidates": 0,
+            "gates": {"scanned": 28, "positive_session": 11, "trend_gate_passed": 4,
+                      "profit_gate_passed": 11, "cio_approved": 0},
+            "stand_aside_reason": "에이전트 CIO 승인(BUY·신뢰도≥60) 통과 후보가 없음",
+            "watchlist": [
+                {"rank": 1, "symbol": "005930", "name": "삼성전자", "price": 71000,
+                 "change_pct": 2.4, "score_total": 88, "risk_flags": ["drawdown"]},
+                {"rank": 2, "symbol": "000660", "name": "SK하이닉스", "price": 250000,
+                 "change_pct": -0.5, "score_total": 81, "risk_flags": ["negative_session"]},
+            ],
+            "top3": [],
+        }
+    )
+
+    assert "선정된 종목이 없습니다" not in message
+    assert "게이트: 스캔 28 → 등락>0 11 → 추세 4 → 신선도 11 → CIO승인 0" in message
+    assert "CIO 승인(BUY·신뢰도≥60) 통과 후보가 없음" in message
+    assert "관찰 후보 TOP 3" in message
+    assert "삼성전자" in message and "71,000원" in message and "+2.4%" in message and "점수 88" in message
+    assert "미달: negative_session" in message
+
+
+def test_top3_message_flags_pipeline_fault_when_even_watchlist_is_empty():
+    message = scheduler._build_top3_telegram_message(
+        {"market_status": "open", "detected_candidates": 0, "qualified_candidates": 0,
+         "gates": {"scanned": 0}, "watchlist": [], "top3": []}
+    )
+    assert "파이프라인 점검 필요" in message
+
+
+def test_cycle_carries_watchlist_and_gates_into_status_and_message(monkeypatch, tmp_path):
+    _use_temp_paths(monkeypatch, tmp_path)
+    sent = []
+    monkeypatch.setattr(
+        "app.services.mirofish.goodrich_client.monitor_fund_manager", lambda: {"active_count": 0}
+    )
+    monkeypatch.setattr(
+        "app.services.mirofish.goodrich_client.run_research",
+        lambda: {
+            "picks": [],
+            "integration": {
+                "market_status": "open", "candidate_count": 28, "universe_size": 0,
+                "stand_aside_reason": "multi_mcp_cio_approved_below_minimum",
+                "gates": {"scanned": 28, "positive_session": 9, "trend_gate_passed": 3,
+                          "profit_gate_passed": 9, "cio_approved": 0},
+                "watchlist": [{"rank": 1, "symbol": "005930", "name": "삼성전자", "price": 70000,
+                               "change_pct": 1.0, "score_total": 90, "risk_flags": []}],
+            },
+        },
+    )
+    monkeypatch.setattr(scheduler, "_send_top3_telegram", lambda result: sent.append(result) or True)
+
+    result = scheduler.run_cycle(force=True)
+
+    assert result["status"] == "completed"
+    assert result["top3"] == []
+    assert result["watchlist"][0]["symbol"] == "005930"
+    assert result["gates"]["cio_approved"] == 0
+    assert "CIO 승인" in result["stand_aside_reason"]
+    status = json.loads(scheduler.STATUS_PATH.read_text(encoding="utf-8"))
+    assert status["watchlist"][0]["name"] == "삼성전자"
+    message = scheduler._build_top3_telegram_message(sent[0])
+    assert "관찰 후보 TOP 3" in message and "선정된 종목이 없습니다" not in message

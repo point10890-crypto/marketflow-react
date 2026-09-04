@@ -21,6 +21,14 @@ RESEARCH_TIMEOUT_SECONDS = 90.0
 # A selective, fully validated portfolio is publishable. Requiring three CIO
 # approvals converted ordinary low-breadth conditions into a detection outage.
 MINIMUM_PUBLISHABLE_CANDIDATES = 1
+# 검출 0 방지(2026-09-04): CIO 승인 TOP 3 와 별개로, 스캐너 순위 기반 "관찰 후보" 목록을
+# 매 사이클 반드시 만든다. 게이트(등락>0·신선도·CIO BUY≥60) 중 하나라도 실패하면
+# 이전에는 빈 결과("선정된 종목이 없습니다")만 남아 파이프라인 고장과 구분되지 않았다.
+WATCHLIST_SIZE = 5
+RESEARCH_LATEST_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
+    'data', 'admin_mirofish', 'goodrich_research_latest.json',
+)
 
 
 class GoodrichServiceError(RuntimeError):
@@ -206,6 +214,17 @@ def get_fund_manager() -> dict:
             }
     except (OSError, ValueError, TypeError):
         pass
+    latest_research = read_research_latest()
+    if latest_research:
+        result['last_research'] = {
+            'fetched_at': latest_research.get('fetched_at'),
+            'status': latest_research.get('status'),
+            'reason': latest_research.get('reason'),
+            'reason_text': stand_aside_reason_text(latest_research.get('reason')) if latest_research.get('reason') else None,
+            'gates': latest_research.get('gates') or {},
+            'scanner_timestamp': latest_research.get('scanner_timestamp'),
+        }
+        result['watchlist'] = latest_research.get('watchlist') or []
     return result
 
 
@@ -232,8 +251,113 @@ def stand_aside_fund_manager(
             'reason': reason,
             'candidate_count': max(0, int(candidate_count)),
         },
-        integration=integration,
+        integration={**(integration or {}), 'stand_aside_reason': reason},
     )
+
+
+def _row_score(row: dict) -> float:
+    score = row.get('score')
+    if isinstance(score, dict):
+        return _safe_float(score.get('total_enriched') or score.get('total'))
+    return _safe_float(score)
+
+
+def build_watchlist(rows: list, trend_lookup: dict | None = None, *, size: int = WATCHLIST_SIZE) -> list:
+    """스캐너 순위(점수) 기반 관찰 후보 — 게이트 통과 여부와 무관하게 항상 만든다.
+
+    각 항목에 게이트 실패 사유(`risk_flags`)를 붙여, 왜 TOP 3 로 선정되지 않았는지가
+    메시지·화면에서 그대로 보이게 한다. 우선주·비정상 코드만 제외한다.
+    """
+    from app.services.mirofish.multi_mcp_orchestrator import trend_gate_checks
+
+    trend_lookup = trend_lookup or {}
+    out = []
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        symbol = str(row.get('code') or row.get('symbol') or '').strip()
+        name = str(row.get('name') or '').strip()
+        if len(symbol) != 6 or not symbol.isdigit() or not name or name.endswith(('우', '우B', '우C')):
+            continue
+        change_pct = _safe_float(row.get('change_pct'))
+        trend = trend_lookup.get(symbol) or {}
+        checks = trend_gate_checks(trend) if trend else {}
+        risk_flags = [k for k, ok in checks.items() if not ok]
+        if change_pct <= 0:
+            risk_flags.insert(0, 'negative_session')
+        out.append({
+            'tier': 'watch',
+            'symbol': symbol,
+            'name': name,
+            'price': _safe_float(row.get('price') or row.get('current_price')),
+            'change_pct': change_pct,
+            'volume': _safe_float(row.get('volume')),
+            'score_total': _row_score(row),
+            'grade': row.get('grade'),
+            'trend_score': _safe_float(trend.get('trend_score')) if trend else None,
+            'risk_flags': risk_flags,
+        })
+    out.sort(key=lambda r: (r['score_total'], r['change_pct']), reverse=True)
+    for rank, item in enumerate(out[:size], start=1):
+        item['rank'] = rank
+    return out[:size]
+
+
+def _ranked_analyses(deep_research: dict, *, size: int = 3) -> list:
+    """멀티 MCP 분석 결과를 승인 여부와 무관하게 portfolio_score 순으로 돌려준다."""
+    rows = [r for r in (deep_research.get('agent_analyses') or []) if isinstance(r, dict)]
+    rows.sort(key=lambda r: _safe_float(r.get('portfolio_score')), reverse=True)
+    return [{
+        'symbol': r.get('symbol'), 'name': r.get('name'), 'approved': bool(r.get('approved')),
+        'action': r.get('action'), 'confidence': r.get('confidence'),
+        'portfolio_score': r.get('portfolio_score'), 'error': r.get('error'),
+    } for r in rows[:size]]
+
+
+def _persist_research(result: dict, *, status: str, reason: str | None) -> None:
+    """마지막 research 결과(관찰 후보·게이트 카운트 포함)를 로컬에 남긴다.
+
+    stand-aside 응답에는 Goodrich 서비스 쪽 picks 가 없으므로, 대시보드 GET 이
+    여기서 관찰 후보와 "왜 0개였는지"를 읽는다. 실패해도 research 를 막지 않는다.
+    """
+    try:
+        from app.utils.atomic_json import write_json_atomic
+
+        integration = result.get('integration') if isinstance(result.get('integration'), dict) else {}
+        write_json_atomic(RESEARCH_LATEST_PATH, {
+            'fetched_at': datetime.now(timezone.utc).isoformat(),
+            'status': status,
+            'reason': reason,
+            'picks': result.get('picks') or [],
+            'watchlist': integration.get('watchlist') or [],
+            'gates': integration.get('gates') or {},
+            'multi_mcp': integration.get('multi_mcp'),
+            'scanner_timestamp': integration.get('scanner_timestamp'),
+            'market_status': integration.get('market_status'),
+        })
+    except Exception:  # noqa: BLE001 — 기록 실패는 검출을 막지 않는다
+        pass
+
+
+def read_research_latest(*, max_age_hours: float = 24) -> dict | None:
+    try:
+        with open(RESEARCH_LATEST_PATH, encoding='utf-8') as handle:
+            data = json.load(handle)
+        fetched = datetime.fromisoformat(str(data.get('fetched_at')))
+        if fetched.tzinfo is None:
+            fetched = fetched.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) - fetched > timedelta(hours=max_age_hours):
+            return None
+        return data if isinstance(data, dict) else None
+    except (OSError, ValueError, TypeError):
+        return None
+
+
+def stand_aside_reason_text(reason: str | None) -> str:
+    return {
+        'profit_quality_gate_below_minimum': '등락률>0 · 정상 종목 조건을 통과한 후보가 없음',
+        'multi_mcp_cio_approved_below_minimum': '에이전트 CIO 승인(BUY·신뢰도≥60) 통과 후보가 없음',
+    }.get(str(reason or ''), str(reason or '선정 기준 미달'))
 
 
 def run_research() -> dict:
@@ -257,6 +381,10 @@ def run_research() -> dict:
     candidate_rows = []
     rejected = []
     trend_passed_count = 0
+    trend_lookup: dict[str, dict] = {}
+    # run_screening(force=True) 는 방금 실행됐다 — 타임스탬프가 비어 있으면 "지금" 이
+    # 사실이며, 비워 두면 신선도 게이트가 전 후보를 조용히 탈락시킨다.
+    observed_at = screening.get('timestamp') or datetime.now(timezone.utc).isoformat()
     for row in rows[:20]:
         if not isinstance(row, dict):
             continue
@@ -269,6 +397,8 @@ def run_research() -> dict:
             change_rate=change_pct,
             volume=_safe_float(row.get('volume')),
         )
+        if symbol:
+            trend_lookup[symbol] = trend
         if passes_trend_gate(trend):
             trend_passed_count += 1
         is_preferred = name.endswith(('우', '우B', '우C'))
@@ -289,7 +419,7 @@ def run_research() -> dict:
                 'change_pct': change_pct,
                 'volume': _safe_float(row.get('volume')),
                 'source': 'KIS',
-                'observed_at': screening.get('timestamp'),
+                'observed_at': observed_at,
             })
         else:
             rejected.append({'symbol': symbol, 'trend': trend})
@@ -310,13 +440,24 @@ def run_research() -> dict:
         'scanner_timestamp': screening.get('timestamp'),
         'market_status': screening.get('market_status'),
         'ranking_owner': 'marketflow-kis-rules-then-goodrich-quant',
+        # 항상 존재하는 관찰 후보 + 게이트별 생존 수 (검출 0 과 파이프라인 고장을 구분)
+        'watchlist': build_watchlist(rows[:20], trend_lookup),
+        'gates': {
+            'scanned': len(rows),
+            'positive_session': len(candidates),
+            'trend_gate_passed': trend_passed_count,
+            'profit_gate_passed': None,
+            'cio_approved': None,
+        },
     }
     if len(candidates) < MINIMUM_PUBLISHABLE_CANDIDATES:
-        return stand_aside_fund_manager(
+        result = stand_aside_fund_manager(
             reason='profit_quality_gate_below_minimum',
             candidate_count=len(candidates),
             integration=screening_integration,
         )
+        _persist_research(result, status='stand_aside', reason='profit_quality_gate_below_minimum')
+        return result
 
     deep_research = run_multi_mcp_analysis(
         candidate_rows,
@@ -332,8 +473,12 @@ def run_research() -> dict:
         candidate for candidate in candidates
         if candidate['symbol'] in approved_symbols
     ]
+    screening_integration['gates'].update({
+        'profit_gate_passed': deep_research.get('profit_gate_passed_count'),
+        'cio_approved': len(candidates),
+    })
     if len(candidates) < MINIMUM_PUBLISHABLE_CANDIDATES:
-        return stand_aside_fund_manager(
+        result = stand_aside_fund_manager(
             reason='multi_mcp_cio_approved_below_minimum',
             candidate_count=len(candidates),
             integration={
@@ -347,9 +492,12 @@ def run_research() -> dict:
                     'cash_wait_reason': deep_research.get('cash_wait_reason'),
                     'publishable_top3': deep_research.get('publishable_top3'),
                     'cio_selected_count': len(candidates),
+                    'ranked': _ranked_analyses(deep_research),
                 },
             },
         )
+        _persist_research(result, status='stand_aside', reason='multi_mcp_cio_approved_below_minimum')
+        return result
 
     multi_mcp_snapshot = {
         'id': deep_research.get('id'),
@@ -372,8 +520,9 @@ def run_research() -> dict:
         'architecture': deep_research.get('architecture'),
         'input_mode': deep_research.get('input_mode'),
         'publishable_top3': deep_research.get('publishable_top3'),
+        'ranked': _ranked_analyses(deep_research),
     }
-    return _request(
+    result = _request(
         'POST',
         '/v1/fund-manager/research',
         timeout=RESEARCH_TIMEOUT_SECONDS,
@@ -387,6 +536,8 @@ def run_research() -> dict:
             },
         },
     )
+    _persist_research(result, status='published' if result.get('picks') else 'empty_picks', reason=None)
+    return result
 
 
 def get_detection_history(*, limit: int = 20, offset: int = 0) -> dict:
