@@ -113,6 +113,7 @@ def create_mcp_server(
             candidates,
             use_llm=use_llm,
             max_parallel=max_parallel,
+            input_mode='authenticated_debug',
         )
 
     @mcp.tool()

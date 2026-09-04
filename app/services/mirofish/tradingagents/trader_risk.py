@@ -101,6 +101,7 @@ def run_trader_and_risk(
     evidence_packet: dict[str, Any] | None = None,
     request_id: str | None = None, reservation_id: str | None = None,
     reservation_owner_token: str | None = None,
+    budget_pool: str | None = None,
     permit_abort_event: Any = None,
 ) -> dict[str, Any]:
     """Run trader plan → 3-role risk debate → PM final decision.
@@ -147,6 +148,7 @@ def run_trader_and_risk(
         evidence_packet=evidence_packet,
         request_id=request_id, reservation_id=reservation_id,
         reservation_owner_token=reservation_owner_token,
+        budget_pool=budget_pool,
         permit_abort_event=permit_abort_event,
     )
     llm_ok, llm_fail = _accumulate(used, use_llm, llm_ok, llm_fail)
@@ -327,6 +329,7 @@ def _pm_decision(target: str, debate: dict[str, Any], trader_plan: dict[str, Any
                  evidence_packet: dict[str, Any] | None = None,
                  request_id: str | None = None, reservation_id: str | None = None,
                  reservation_owner_token: str | None = None,
+                 budget_pool: str | None = None,
                  permit_abort_event: Any = None,
                  ) -> tuple[dict[str, Any], bool]:
     rule = _pm_decision_rule(debate, regime_adjustment)
@@ -339,6 +342,7 @@ def _pm_decision(target: str, debate: dict[str, Any], trader_plan: dict[str, Any
                 evidence_packet=evidence_packet,
                 request_id=request_id, reservation_id=reservation_id,
                 reservation_owner_token=reservation_owner_token,
+                budget_pool=budget_pool,
                 permit_abort_event=permit_abort_event,
             )
             if llm:
@@ -387,6 +391,7 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
             evidence_packet: dict[str, Any] | None = None,
             request_id: str | None = None, reservation_id: str | None = None,
             reservation_owner_token: str | None = None,
+            budget_pool: str | None = None,
             permit_abort_event: Any = None,
             ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     votes = ', '.join(f'{r["role"]}={r["vote"]}' for r in risk_debate)
@@ -409,6 +414,7 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
         request_id=request_id or (f'{run_id}:{symbol or target}:portfolio-manager' if run_id else None),
         reservation_id=reservation_id,
         reservation_owner_token=reservation_owner_token,
+        budget_pool=budget_pool,
         symbol=symbol, market=market,
         expected_identity=(
             {'symbol': symbol, 'name': name or target, 'market': market}

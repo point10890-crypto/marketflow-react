@@ -508,6 +508,7 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
                                 domain_validator: Callable[[Any], ProviderErrorClass | None] | None = None,
                                 reservation_id: str | None = None,
                                 reservation_owner_token: str | None = None,
+                                budget_pool: str | None = None,
                                 permit_abort_event: Any = None,
                                 ) -> tuple[str | None, dict[str, Any]]:
     """Generate through the central router and publish legacy-safe diagnostics."""
@@ -536,6 +537,7 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
         domain_validator=domain_validator,
         reservation_id=reservation_id,
         reservation_owner_token=reservation_owner_token,
+        budget_pool=budget_pool,
         permit_abort_event=permit_abort_event,
     )
     result = (

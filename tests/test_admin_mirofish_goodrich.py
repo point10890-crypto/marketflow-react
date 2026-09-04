@@ -26,7 +26,7 @@ class FakeResponse:
             'market_data_source': 'KIS',
             'simulation': False,
         }
-        payload['ai'] = {'provider': 'openai', 'status': 'completed'}
+        payload['ai'] = {'provider': 'deepseek', 'status': 'completed'}
         for index, pick in enumerate(payload['picks'], start=1):
             pick.update({
                 'current_price': index * 100,
@@ -34,6 +34,30 @@ class FakeResponse:
                 'stop_price': index * 95,
                 'observed_at': observed_at,
             })
+        return payload
+
+
+class CandidateResponse(FakeResponse):
+    def __init__(self, candidates):
+        self.candidates = list(candidates)
+
+    def json(self):
+        payload = super().json()
+        observed_at = goodrich_client.datetime.now(
+            goodrich_client.timezone.utc
+        ).isoformat()
+        payload['picks'] = [
+            {
+                'rank': index,
+                'symbol': str(candidate.get('symbol') or ''),
+                'name': str(candidate.get('name') or ''),
+                'current_price': index * 100,
+                'target_price': index * 110,
+                'stop_price': index * 95,
+                'observed_at': observed_at,
+            }
+            for index, candidate in enumerate(self.candidates, start=1)
+        ]
         return payload
 
 
@@ -50,7 +74,7 @@ def test_goodrich_client_adds_safe_integration_metadata(monkeypatch):
     assert captured['method'] == 'GET'
     assert captured['url'].endswith('/v1/fund-manager')
     assert result['integration']['universe_size'] == 3
-    assert result['integration']['ordering_enabled'] is False
+    assert result['integration']['ordering_enabled'] is True
     assert [pick['symbol'] for pick in result['picks']] == ['005930', '000660', '035420']
 
 
@@ -71,6 +95,68 @@ def test_goodrich_client_allows_a_verified_selective_portfolio(monkeypatch):
 
     assert result['integration']['universe_size'] == 1
     assert [pick['symbol'] for pick in result['picks']] == ['005930']
+
+
+def test_goodrich_client_accepts_completed_deepseek_primary_analysis(monkeypatch):
+    class DeepSeekResponse(FakeResponse):
+        def json(self):
+            payload = super().json()
+            payload['ai'] = {
+                'provider': 'deepseek',
+                'model': 'deepseek-v4-pro',
+                'status': 'completed',
+            }
+            return payload
+
+    monkeypatch.setattr(
+        goodrich_client.requests,
+        'request',
+        lambda *args, **kwargs: DeepSeekResponse(),
+    )
+
+    result = goodrich_client.get_fund_manager()
+
+    assert len(result['picks']) == 3
+    assert result['integration']['provider_priority'] == [
+        'deepseek', 'openai_fallback',
+    ]
+
+
+def test_goodrich_client_accepts_attested_openai_fallback_from_deepseek(monkeypatch):
+    class OpenAIFallbackResponse(FakeResponse):
+        def json(self):
+            payload = super().json()
+            payload['ai'] = {
+                'provider': 'openai',
+                'status': 'completed',
+                'fallback_from': 'deepseek',
+            }
+            return payload
+
+    monkeypatch.setattr(
+        goodrich_client.requests,
+        'request',
+        lambda *args, **kwargs: OpenAIFallbackResponse(),
+    )
+
+    assert len(goodrich_client.get_fund_manager()['picks']) == 3
+
+
+def test_goodrich_client_rejects_unattested_openai_primary(monkeypatch):
+    class OpenAIPrimaryResponse(FakeResponse):
+        def json(self):
+            payload = super().json()
+            payload['ai'] = {'provider': 'openai', 'status': 'completed'}
+            return payload
+
+    monkeypatch.setattr(
+        goodrich_client.requests,
+        'request',
+        lambda *args, **kwargs: OpenAIPrimaryResponse(),
+    )
+
+    with pytest.raises(goodrich_client.GoodrichServiceError, match='DeepSeek'):
+        goodrich_client.get_fund_manager()
 
 
 def test_goodrich_client_rejects_missing_pick_identity(monkeypatch):
@@ -191,7 +277,7 @@ def test_goodrich_research_keeps_uptrend_leaders_and_excludes_crashers(monkeypat
 
     def fake_request(method, url, **kwargs):
         captured['json'] = kwargs['json']
-        return FakeResponse()
+        return CandidateResponse(kwargs['json']['candidates'])
 
     monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
     result = goodrich_client.run_research()
@@ -201,6 +287,111 @@ def test_goodrich_research_keeps_uptrend_leaders_and_excludes_crashers(monkeypat
     ]
     assert result['integration']['universe_size'] == 3
     assert result['integration']['market_status'] == 'closed'
+
+
+def test_goodrich_research_preserves_multi_mcp_top3_order_and_recovery_metadata(
+    monkeypatch,
+):
+    captured = {}
+    observed_at = goodrich_client.datetime.now(
+        goodrich_client.timezone.utc
+    ).isoformat()
+    monkeypatch.setattr(
+        'app.services.kis_screener.run_screening',
+        lambda force=True: {
+            'timestamp': observed_at,
+            'market_status': 'open',
+            'candidate_pool': [
+                {
+                    'code': '005930', 'name': '삼성전자', 'price': 100,
+                    'change_pct': 2.1, 'volume': 1000, 'trading_value': 3000,
+                    'score': {'total': 70}, 'score_complete': True, 'grade': 'A',
+                },
+                {
+                    'code': '000660', 'name': 'SK하이닉스', 'price': 200,
+                    'change_pct': 1.8, 'volume': 900, 'trading_value': 2000,
+                    'score': {'total': 68}, 'score_complete': True, 'grade': 'A',
+                },
+                {
+                    'code': '035420', 'name': 'NAVER', 'price': 300,
+                    'change_pct': 1.2, 'volume': 800, 'trading_value': 1000,
+                    'score': {'total': 63}, 'score_complete': True, 'grade': 'B',
+                },
+            ],
+        },
+    )
+    monkeypatch.setattr(
+        'app.services.mirofish.alpha_scanner.get_price_trend_metrics',
+        lambda *args, **kwargs: {
+            'sample_days': 60, 'trend_5d_pct': 4, 'trend_20d_pct': 12,
+            'over_ma20_pct': 6, 'trend_score': 10, 'drawdown_20d_pct': 4,
+        },
+    )
+
+    def multi_mcp(candidates, **kwargs):
+        captured['candidate_rows'] = candidates
+        captured['multi_mcp_options'] = kwargs
+        return {
+            'id': 'multi-ranked',
+            'status': 'portfolio_ready',
+            'candidate_count': 3,
+            'profit_gate_passed_count': 3,
+            'selection_mode': 'ai_plus_deterministic',
+            'ai_selected_count': 1,
+            'deterministic_fallback_count': 2,
+            'top3_shortfall': 0,
+            'top3_guarantee_met': True,
+            'selected': [
+                {'symbol': '035420', 'selection_source': 'ai_verified'},
+                {'symbol': '005930', 'selection_source': 'deterministic_kis_fallback'},
+                {'symbol': '000660', 'selection_source': 'deterministic_kis_fallback'},
+            ],
+        }
+
+    monkeypatch.setattr(
+        'app.services.mirofish.multi_mcp_orchestrator.run_multi_mcp_analysis',
+        multi_mcp,
+    )
+
+    def fake_request(method, url, **kwargs):
+        captured['outbound_body'] = kwargs['json']
+        return FakeResponse()
+
+    monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
+
+    result = goodrich_client.run_research()
+
+    assert [row['symbol'] for row in captured['outbound_body']['candidates']] == [
+        '035420', '005930', '000660',
+    ]
+    assert captured['multi_mcp_options']['input_mode'] == 'verified_kis_pipeline'
+    assert captured['outbound_body']['ranked_candidates'] == [
+        {
+            'symbol': '035420', 'name': 'NAVER', 'rank': 1,
+            'score': 0.0, 'tier': 'ai_verified',
+        },
+        {
+            'symbol': '005930', 'name': '삼성전자', 'rank': 2,
+            'score': 0.0, 'tier': 'deterministic_kis_fallback',
+        },
+        {
+            'symbol': '000660', 'name': 'SK하이닉스', 'rank': 3,
+            'score': 0.0, 'tier': 'deterministic_kis_fallback',
+        },
+    ]
+    assert captured['candidate_rows'][0]['score']['total'] == 70
+    assert captured['candidate_rows'][0]['score_complete'] is True
+    assert result['integration']['multi_mcp']['selection_mode'] == 'ai_plus_deterministic'
+    assert result['integration']['multi_mcp']['deterministic_fallback_count'] == 2
+    assert result['integration']['multi_mcp']['top3_guarantee_met'] is True
+    assert [row['symbol'] for row in result['picks']] == [
+        '035420', '005930', '000660',
+    ]
+    assert [row['selection_source'] for row in result['picks']] == [
+        'ai_verified',
+        'deterministic_kis_fallback',
+        'deterministic_kis_fallback',
+    ]
 
 
 def test_goodrich_research_stands_aside_when_profit_trend_gate_fails(monkeypatch):
@@ -325,7 +516,7 @@ def test_goodrich_research_rejects_bounded_recovery_leader(monkeypatch):
     def fake_request(method, url, **kwargs):
         captured['url'] = url
         captured['json'] = kwargs['json']
-        return FakeResponse()
+        return CandidateResponse(kwargs['json']['candidates'])
 
     monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
     result = goodrich_client.run_research()
@@ -417,7 +608,9 @@ def test_goodrich_trend_gate_never_admits_a_multi_mcp_reject(monkeypatch):
     )
     monkeypatch.setattr(
         goodrich_client.requests, 'request',
-        lambda method, url, **kwargs: FakeResponse(),
+        lambda method, url, **kwargs: CandidateResponse(
+            kwargs['json']['candidates']
+        ),
     )
 
     goodrich_client.run_research()

@@ -18,7 +18,13 @@ from app.services.ai_routing.contracts import (
     VisionImage,
 )
 from app.services.ai_routing.providers import AdapterResponse, ProviderCallError
-from app.services.ai_routing.router import AIRouter, estimate_reservation_input_tokens, reserve_openai_fallback
+from app.services.ai_routing.router import (
+    AIRouter,
+    COMPACT_BUDGET_POOL,
+    compact_budget_limits,
+    estimate_reservation_input_tokens,
+    reserve_openai_fallback,
+)
 from app.services.ai_routing.store import RoutingStore
 from app.services.ai_routing.telemetry import usage_summary
 from app.services.ai_routing import router as router_module
@@ -157,6 +163,95 @@ def test_router_claims_pre_reserved_permit_and_settles_without_second_debit(tmp_
             "SELECT status, actual_calls FROM budget_reservations WHERE run_id='permit-run'"
         ).fetchall()
     assert [(row['status'], row['actual_calls']) for row in rows] == [('settled', 1)]
+
+
+def test_compact_budget_pool_claims_preflight_permit_from_the_same_pool(tmp_path):
+    store = RoutingStore(tmp_path / 'usage.sqlite3')
+    automatic_budget = BudgetManager(store)
+    compact_budget = BudgetManager(
+        store,
+        limits=compact_budget_limits(),
+        pool=COMPACT_BUDGET_POOL,
+    )
+    request = RoutingRequest(
+        operation=Operation.DECISIVE_TEXT,
+        prompt='fixture',
+        run_id='compact-permit-run',
+        request_id='compact-permit-request',
+        json_mode=True,
+        budget_pool=COMPACT_BUDGET_POOL,
+    )
+    permit = reserve_openai_fallback(
+        request,
+        budget=compact_budget,
+        owner_token='compact-owner',
+    )
+    routed = RoutingRequest(**{
+        **request.__dict__,
+        'reservation_id': permit.reservation_id,
+        'reservation_owner_token': permit.owner_token,
+    })
+    router = AIRouter(
+        {
+            'deepseek': FakeAdapter(
+                ProviderCallError(ProviderErrorClass.AUTHENTICATION)
+            ),
+            'openai': FakeAdapter(_response('{"verdict":"BUY"}')),
+        },
+        budget=automatic_budget,
+        compact_budget=compact_budget,
+        breaker=CircuitBreaker(store),
+        store=store,
+    )
+
+    result = router.route_text(routed)
+
+    assert result.analysis_status is AnalysisStatus.SUCCESS_FALLBACK
+    with store.transaction() as connection:
+        row = connection.execute(
+            "SELECT pool, status FROM budget_reservations "
+            "WHERE run_id='compact-permit-run'"
+        ).fetchone()
+    assert (row['pool'], row['status']) == (COMPACT_BUDGET_POOL, 'settled')
+
+
+def test_compact_budget_allows_exactly_three_complete_three_stage_candidates(tmp_path):
+    store = RoutingStore(tmp_path / 'usage.sqlite3')
+    limits = compact_budget_limits()
+    manager = BudgetManager(store, limits=limits, pool=COMPACT_BUDGET_POOL)
+    operations = (
+        Operation.DECISIVE_TEXT,
+        Operation.BULK_TEXT,
+        Operation.COMPACT_DEBATE,
+    )
+
+    permits = []
+    for candidate_index in range(3):
+        for operation in operations:
+            permits.append(manager.reserve(
+                run_id='compact-three',
+                request_id=f'{candidate_index}:{operation.value}',
+                operation=operation,
+                input_tokens=100,
+                output_tokens=768,
+                owner_token=f'owner-{candidate_index}-{operation.value}',
+            ))
+    overflow = manager.reserve(
+        run_id='compact-three',
+        request_id='fourth:decisive_text',
+        operation=Operation.DECISIVE_TEXT,
+        input_tokens=100,
+        output_tokens=768,
+        owner_token='owner-fourth',
+    )
+
+    assert len(permits) == 9
+    assert all(permit.approved for permit in permits)
+    assert overflow.approved is False
+    assert overflow.reason == 'hard_cap'
+    assert limits.max_calls == 9
+    assert limits.max_output_tokens >= (3 * (1200 + 768 + 768))
+    assert BudgetManager(store).limits.max_calls == 5
 
 
 def test_router_fails_closed_when_provider_usage_exceeds_reservation(tmp_path):

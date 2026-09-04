@@ -153,6 +153,7 @@ def run_compact_debate(
     run_id: str | None = None, request_id: str | None = None,
     reservation_id: str | None = None,
     reservation_owner_token: str | None = None,
+    budget_pool: str | None = None,
     evidence_packet: dict[str, Any] | None = None,
     permit_abort_event: Any = None,
 ) -> dict[str, Any]:
@@ -177,6 +178,7 @@ def run_compact_debate(
             operation='compact_debate', run_id=run_id, request_id=request_id,
             reservation_id=reservation_id,
             reservation_owner_token=reservation_owner_token,
+            budget_pool=budget_pool,
             domain_validator=_compact_debate_domain_validator(allowed),
             symbol=packet.get('symbol'), market=packet.get('market'),
             caller_endpoint='mirofish.tradingagents.compact_debate',

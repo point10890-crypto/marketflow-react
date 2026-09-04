@@ -97,12 +97,20 @@ def _validate_market_leader_contract(payload: dict, picks: list) -> None:
     if not 1 <= len(picks) <= 3:
         raise GoodrichServiceError('검증된 시장 주도주가 없어 결과를 게시하지 않습니다.')
     ai = payload.get('ai')
+    ai_provider = str((ai or {}).get('provider') or '').lower()
+    fallback_from = str((ai or {}).get('fallback_from') or '').lower()
     if (
         not isinstance(ai, dict)
-        or str(ai.get('provider') or '').lower() != 'openai'
+        or not (
+            ai_provider == 'deepseek'
+            or (ai_provider == 'openai' and fallback_from == 'deepseek')
+        )
         or ai.get('status') != 'completed'
     ):
-        raise GoodrichServiceError('OpenAI 검증이 완료되지 않아 TOP 3를 게시하지 않습니다.')
+        raise GoodrichServiceError(
+            'DeepSeek 우선 또는 검증된 OpenAI 백업 분석이 완료되지 않아 '
+            'TOP 3를 게시하지 않습니다.'
+        )
 
     seen_symbols: set[str] = set()
     now = datetime.now(timezone.utc)
@@ -152,9 +160,10 @@ def _validate_and_envelope(payload: dict, *, integration: dict | None = None) ->
         'fetched_at': datetime.now(timezone.utc).isoformat(),
         'universe': 'kis-market-leaders',
         'universe_size': len(normalized_picks),
-        'ranking_owner': 'kis-quant-plus-openai-bounded-decision',
-        'ai_role': 'bounded-rerank-and-reject',
-        'ordering_enabled': False,
+        'ranking_owner': 'kis-quant-plus-deepseek-primary-openai-fallback',
+        'ai_role': 'deepseek-primary-openai-fallback-plus-kis-recovery',
+        'provider_priority': ['deepseek', 'openai_fallback'],
+        'ordering_enabled': True,
         **(integration or {}),
     }
     if isinstance(result['integration'].get('multi_mcp'), dict):
@@ -296,6 +305,16 @@ def run_research() -> dict:
                 'source': 'KIS',
                 'observed_at': screening.get('timestamp'),
                 'market': market,
+                'score': (
+                    dict(row.get('score') or {})
+                    if isinstance(row.get('score'), dict) else {}
+                ),
+                'score_complete': bool(row.get('score_complete')),
+                'grade': row.get('grade'),
+                'eligible': row.get('eligible'),
+                'rejection_reason': row.get('rejection_reason'),
+                'incomplete_reasons': row.get('incomplete_reasons') or [],
+                'trading_value': _safe_float(row.get('trading_value')),
                 'source_packets': [{
                     'evidence_id': f'kis-screen-{symbol}', 'source': 'KIS',
                     'source_type': 'market_screen', 'title': name,
@@ -336,15 +355,20 @@ def run_research() -> dict:
         candidate_rows,
         use_llm=True,
         max_parallel=3,
+        input_mode='verified_kis_pipeline',
     )
-    approved_symbols = {
+    selected_symbols = [
         str(row.get('symbol') or '')
         for row in deep_research.get('selected') or []
         if isinstance(row, dict)
+    ]
+    candidate_by_symbol = {
+        candidate['symbol']: candidate for candidate in candidates
     }
     candidates = [
-        candidate for candidate in candidates
-        if candidate['symbol'] in approved_symbols
+        candidate_by_symbol[symbol]
+        for symbol in dict.fromkeys(selected_symbols)
+        if symbol in candidate_by_symbol
     ]
     if len(candidates) < MINIMUM_PUBLISHABLE_CANDIDATES:
         return stand_aside_fund_manager(
@@ -361,6 +385,11 @@ def run_research() -> dict:
                     'cash_wait_reason': deep_research.get('cash_wait_reason'),
                     'publishable_top3': deep_research.get('publishable_top3'),
                     'cio_selected_count': len(candidates),
+                    'selection_mode': deep_research.get('selection_mode'),
+                    'ai_selected_count': deep_research.get('ai_selected_count'),
+                    'deterministic_fallback_count': deep_research.get('deterministic_fallback_count'),
+                    'top3_shortfall': deep_research.get('top3_shortfall'),
+                    'top3_guarantee_met': deep_research.get('top3_guarantee_met'),
                 },
             },
         )
@@ -378,6 +407,9 @@ def run_research() -> dict:
                 'action': row.get('action'),
                 'confidence': row.get('confidence'),
                 'portfolio_score': row.get('portfolio_score'),
+                'selection_source': row.get('selection_source'),
+                'selection_rank': row.get('selection_rank'),
+                'deterministic_score': row.get('deterministic_score'),
             }
             for row in deep_research.get('selected') or []
             if isinstance(row, dict)
@@ -386,12 +418,44 @@ def run_research() -> dict:
         'architecture': deep_research.get('architecture'),
         'input_mode': deep_research.get('input_mode'),
         'publishable_top3': deep_research.get('publishable_top3'),
+        'selection_mode': deep_research.get('selection_mode'),
+        'ai_selected_count': deep_research.get('ai_selected_count'),
+        'deterministic_fallback_count': deep_research.get('deterministic_fallback_count'),
+        'top3_shortfall': deep_research.get('top3_shortfall'),
+        'top3_guarantee_met': deep_research.get('top3_guarantee_met'),
+        'data_shortage_reason': deep_research.get('data_shortage_reason'),
     }
-    return _request(
+    selected_by_symbol = {
+        str(row.get('symbol') or ''): row
+        for row in deep_research.get('selected') or []
+        if isinstance(row, dict)
+    }
+    ranked_candidates = [
+        {
+            'symbol': candidate['symbol'],
+            'name': candidate['name'],
+            'rank': rank,
+            'score': _safe_float(
+                (selected_by_symbol.get(candidate['symbol']) or {}).get(
+                    'portfolio_score'
+                )
+            ),
+            'tier': str(
+                (selected_by_symbol.get(candidate['symbol']) or {}).get(
+                    'selection_source'
+                ) or 'deterministic_kis_fallback'
+            ),
+        }
+        for rank, candidate in enumerate(candidates, start=1)
+    ]
+    research = _request(
         'POST',
         '/v1/fund-manager/research',
         timeout=RESEARCH_TIMEOUT_SECONDS,
-        json_body={'candidates': candidates},
+        json_body={
+            'candidates': candidates,
+            'ranked_candidates': ranked_candidates,
+        },
         integration={
             **screening_integration,
             'universe_size': len(candidates),
@@ -401,6 +465,27 @@ def run_research() -> dict:
             },
         },
     )
+    returned_by_symbol = {
+        str(row.get('symbol') or ''): row
+        for row in research.get('picks') or []
+        if isinstance(row, dict)
+    }
+    expected_symbols = [candidate['symbol'] for candidate in candidates]
+    if set(returned_by_symbol) != set(expected_symbols):
+        raise GoodrichServiceError(
+            'Goodrich 응답이 요청한 검증 TOP3와 일치하지 않습니다.'
+        )
+    research['picks'] = [
+        {
+            **returned_by_symbol[symbol],
+            'rank': rank,
+            'selection_source': str(
+                (selected_by_symbol.get(symbol) or {}).get('selection_source') or ''
+            ),
+        }
+        for rank, symbol in enumerate(expected_symbols, start=1)
+    ]
+    return research
 
 
 def get_detection_history(*, limit: int = 20, offset: int = 0) -> dict:

@@ -194,6 +194,82 @@ def test_top3_message_escapes_names_and_formats_api_prices():
     assert "12개 검출 → 3개 선정" in message
 
 
+def test_top3_message_labels_ai_and_deterministic_recovery_selections():
+    message = scheduler._build_top3_telegram_message(
+        {
+            "completed_at": scheduler.datetime(2026, 9, 4, 1, 0, tzinfo=scheduler.UTC),
+            "market_status": "open",
+            "detected_candidates": 31,
+            "qualified_candidates": 3,
+            "selection_mode": "ai_plus_deterministic",
+            "ai_selected_count": 1,
+            "deterministic_fallback_count": 2,
+            "top3_shortfall": 0,
+            "top3": [
+                {
+                    "symbol": "005930", "name": "삼성전자",
+                    "current_price": 100, "target_price": 110, "stop_price": 95,
+                    "selection_source": "ai_verified",
+                },
+                {
+                    "symbol": "000660", "name": "SK하이닉스",
+                    "current_price": 200, "target_price": 220, "stop_price": 190,
+                    "selection_source": "deterministic_kis_fallback",
+                },
+            ],
+        }
+    )
+
+    assert "분석: AI 검증 1개 · KIS 복구 2개" in message
+    assert "선정 근거: AI 검증" in message
+    assert "선정 근거: KIS 결정론 복구" in message
+
+
+def test_cycle_propagates_multi_mcp_selection_provenance(monkeypatch, tmp_path):
+    _use_temp_paths(monkeypatch, tmp_path)
+    monkeypatch.setattr(
+        "app.services.mirofish.goodrich_client.monitor_fund_manager",
+        lambda: {"active_count": 0},
+    )
+    monkeypatch.setattr(
+        "app.services.mirofish.goodrich_client.run_research",
+        lambda: {
+            "integration": {
+                "market_status": "open",
+                "candidate_count": 5,
+                "universe_size": 3,
+                "multi_mcp": {
+                    "selection_mode": "ai_plus_deterministic",
+                    "ai_selected_count": 1,
+                    "deterministic_fallback_count": 2,
+                    "top3_shortfall": 0,
+                    "selected": [
+                        {"symbol": "005930", "selection_source": "ai_verified"},
+                        {
+                            "symbol": "000660",
+                            "selection_source": "deterministic_kis_fallback",
+                        },
+                    ],
+                },
+            },
+            "picks": [
+                {"symbol": "005930", "name": "삼성전자", "current_price": 100},
+                {"symbol": "000660", "name": "SK하이닉스", "current_price": 200},
+            ],
+        },
+    )
+    monkeypatch.setattr(scheduler, "_send_top3_telegram", lambda result: True)
+
+    result = scheduler.run_cycle(force=True)
+
+    assert result["selection_mode"] == "ai_plus_deterministic"
+    assert result["ai_selected_count"] == 1
+    assert result["deterministic_fallback_count"] == 2
+    assert [row["selection_source"] for row in result["top3"]] == [
+        "ai_verified", "deterministic_kis_fallback",
+    ]
+
+
 def test_telegram_failure_is_visible_in_status(monkeypatch, tmp_path):
     _use_temp_paths(monkeypatch, tmp_path)
     monkeypatch.setattr(

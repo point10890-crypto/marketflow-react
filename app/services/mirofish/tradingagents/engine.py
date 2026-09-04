@@ -59,6 +59,8 @@ from app.services.mirofish import llm_client
 from app.services.ai_routing.contracts import Operation, ProviderErrorClass, RoutingRequest
 from app.services.ai_routing.policy import policy_for
 from app.services.ai_routing.router import (
+    COMPACT_BUDGET_POOL,
+    compact_budget_manager,
     openai_permit_heartbeat_seconds,
     release_openai_reservations,
     renew_openai_reservations,
@@ -200,6 +202,7 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
                 request_id=request_ids.get('bulk_text') or f'{stable_run_id}:evidence-digest',
                 reservation_id=reservation_ids.get('bulk_text'),
                 reservation_owner_token=reservation_owner_tokens.get('bulk_text'),
+                budget_pool=COMPACT_BUDGET_POOL,
                 domain_validator=_digest_domain_validator(
                     set((evidence_packet or {}).get('evidence_ids') or []),
                 ),
@@ -239,6 +242,7 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
                 request_id=request_ids.get('compact_debate') or f'{stable_run_id}:compact-debate',
                 reservation_id=reservation_ids.get('compact_debate'), evidence_packet=evidence_packet,
                 reservation_owner_token=reservation_owner_tokens.get('compact_debate'),
+                budget_pool=COMPACT_BUDGET_POOL,
                 permit_abort_event=permit_abort_event,
             )
             _raise_if_permit_aborted(permit_abort_event)
@@ -267,6 +271,7 @@ def _execute_deep_analysis(target: str, *, symbol: str | None = None,
             request_id=request_ids.get('decisive_text'),
             reservation_id=reservation_ids.get('decisive_text'),
             reservation_owner_token=reservation_owner_tokens.get('decisive_text'),
+            budget_pool=(COMPACT_BUDGET_POOL if profile == 'compact' else None),
             permit_abort_event=permit_abort_event,
         )
         _raise_if_permit_aborted(permit_abort_event)
@@ -361,7 +366,7 @@ def release_compact_permits(
         release_openai_reservations([
             (reservation_id, reservation_owner_tokens.get(operation, ''))
             for operation, reservation_id in reservation_ids.items()
-        ])
+        ], budget=compact_budget_manager())
 
 
 def renew_compact_permits(
@@ -376,7 +381,7 @@ def renew_compact_permits(
     return renew_openai_reservations([
         (reservation_id, reservation_owner_tokens.get(operation, ''))
         for operation, reservation_id in reservation_ids.items()
-    ])
+    ], budget=compact_budget_manager())
 
 
 def compact_permit_heartbeat_seconds() -> float:
@@ -386,58 +391,66 @@ def compact_permit_heartbeat_seconds() -> float:
 def reserve_compact_batch(
     run_id: str, packets: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """Reserve decisive permits first, then low-priority stages, before futures."""
+    """Reserve all three stages per candidate before admitting up to three."""
     prepared: list[dict[str, Any]] = []
     records: list[dict[str, Any]] = []
+    inflight_ids: dict[str, str] = {}
+    inflight_owners: dict[str, str] = {}
     try:
         for packet in packets:
             ids = compact_request_ids(run_id, packet)
-            request = RoutingRequest(
-                operation=Operation.DECISIVE_TEXT,
-                prompt=evidence_packet_mod.compact_reservation_prompt('decisive_text'),
-                system=trader_risk.PM_SYSTEM,
-                run_id=run_id, request_id=ids['decisive_text'],
-                symbol=packet['symbol'], market=packet['market'], json_mode=True,
-                max_output_tokens=1200,
+            record = {
+                'symbol': packet['symbol'],
+                'request_ids': ids,
+                'permits': {},
+                'status': 'deferred',
+                'reason': None,
+            }
+            inflight_ids = {}
+            inflight_owners = {}
+            stages = (
+                (Operation.DECISIVE_TEXT, 1200, trader_risk.PM_SYSTEM),
+                (Operation.BULK_TEXT, 768, DIGEST_SYSTEM),
+                (Operation.COMPACT_DEBATE, 768, research_debate.COMPACT_DEBATE_SYSTEM),
             )
-            permit = reserve_openai_fallback(
-                request, owner_token=f'compact:{os.getpid()}:{uuid4()}',
-            )
-            record = {'symbol': packet['symbol'], 'request_ids': ids,
-                      'permits': {}, 'status': 'admitted' if permit.approved else 'deferred',
-                      'reason': permit.reason}
-            if permit.approved and permit.acquired_by_caller and permit.reservation_id and permit.owner_token:
-                record['permits']['decisive_text'] = permit.reservation_id
-                prepared.append({'packet': packet, 'request_ids': ids,
-                                 'reservation_ids': record['permits'],
-                                 'reservation_owner_tokens': {'decisive_text': permit.owner_token}})
-            records.append(record)
-        by_symbol = {item['packet']['symbol']: item for item in prepared}
-        for operation, cap in ((Operation.BULK_TEXT, 768), (Operation.COMPACT_DEBATE, 768)):
-            for record in records:
-                item = by_symbol.get(record['symbol'])
-                if not item:
-                    continue
+            for operation, cap, system in stages:
                 request = RoutingRequest(
                     operation=operation,
                     prompt=evidence_packet_mod.compact_reservation_prompt(operation.value),
-                    system=(DIGEST_SYSTEM if operation is Operation.BULK_TEXT
-                            else research_debate.COMPACT_DEBATE_SYSTEM),
-                    run_id=run_id, request_id=item['request_ids'][operation.value],
-                    symbol=item['packet']['symbol'], market=item['packet']['market'],
+                    system=system,
+                    run_id=run_id,
+                    request_id=ids[operation.value],
+                    symbol=packet['symbol'],
+                    market=packet['market'],
                     json_mode=True, max_output_tokens=cap,
+                    budget_pool=COMPACT_BUDGET_POOL,
                 )
                 permit = reserve_openai_fallback(
                     request, owner_token=f'compact:{os.getpid()}:{uuid4()}',
                 )
                 if permit.approved and permit.acquired_by_caller and permit.reservation_id and permit.owner_token:
-                    item['reservation_ids'][operation.value] = permit.reservation_id
-                    item['reservation_owner_tokens'][operation.value] = permit.owner_token
-                    record['permits'][operation.value] = permit.reservation_id
+                    inflight_ids[operation.value] = permit.reservation_id
+                    inflight_owners[operation.value] = permit.owner_token
                 else:
-                    record.setdefault('degraded_stages', []).append(
-                        {'operation': operation.value, 'reason': permit.reason})
+                    record['reason'] = permit.reason or 'permit_unavailable'
+                    release_compact_permits(inflight_ids, inflight_owners)
+                    inflight_ids = {}
+                    inflight_owners = {}
+                    break
+            if len(inflight_ids) == len(stages):
+                record['status'] = 'admitted'
+                record['permits'] = dict(inflight_ids)
+                prepared.append({
+                    'packet': packet,
+                    'request_ids': ids,
+                    'reservation_ids': dict(inflight_ids),
+                    'reservation_owner_tokens': dict(inflight_owners),
+                })
+                inflight_ids = {}
+                inflight_owners = {}
+            records.append(record)
     except BaseException:
+        release_compact_permits(inflight_ids, inflight_owners)
         for item in prepared:
             release_compact_permits(
                 item.get('reservation_ids'), item.get('reservation_owner_tokens'),

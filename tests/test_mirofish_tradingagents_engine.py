@@ -254,6 +254,42 @@ def test_default_profile_remains_full(monkeypatch, tmp_path):
     assert run['profile'] == 'full'
 
 
+def test_full_profile_keeps_the_default_automatic_budget_pool(monkeypatch, tmp_path):
+    _patch_sources(monkeypatch, tmp_path)
+    monkeypatch.setattr(
+        engine.analysts,
+        'run_analysts',
+        lambda *args, **kwargs: [
+            {'role': 'technical', 'score': 10, 'method': 'rule'},
+        ],
+    )
+    monkeypatch.setattr(
+        engine.research_debate,
+        'run_research_debate',
+        lambda *args, **kwargs: {
+            'rounds': [], 'bull_case': 'bull', 'bear_case': 'bear',
+            'manager': {}, 'method': 'rule', 'analysis_status': 'SUCCESS_PRIMARY',
+        },
+    )
+    captured = {}
+
+    def trader(*args, **kwargs):
+        captured.update(kwargs)
+        return {
+            'trader_plan': {}, 'risk_debate': [],
+            'pm_decision': {
+                'verdict': 'HOLD', 'confidence': 50, 'reasoning': 'bounded',
+            },
+            'method': 'rule', 'analysis_status': 'SUCCESS_PRIMARY',
+        }
+
+    monkeypatch.setattr(engine.trader_risk, 'run_trader_and_risk', trader)
+
+    engine.run_deep_analysis('삼성전자', use_llm=True, profile='full')
+
+    assert captured['budget_pool'] is None
+
+
 def test_compact_cache_reuses_completed_artifact_and_force_bypasses(monkeypatch, tmp_path):
     _patch_sources(monkeypatch, tmp_path)
     packet = {
@@ -276,7 +312,11 @@ def test_compact_cache_reuses_completed_artifact_and_force_bypasses(monkeypatch,
 
     monkeypatch.setattr(engine.llm_client, 'generate_text_with_metadata', fake)
     released = []
-    monkeypatch.setattr(engine, 'release_openai_reservations', lambda permits: released.extend(permits))
+    monkeypatch.setattr(
+        engine,
+        'release_openai_reservations',
+        lambda permits, **_kwargs: released.extend(permits),
+    )
     first = engine.run_deep_analysis('삼성전자', symbol='005930', profile='compact', evidence_packet=packet)
     second = engine.run_deep_analysis(
         '삼성전자', symbol='005930', profile='compact', evidence_packet=packet,
@@ -603,7 +643,11 @@ def test_preflight_denied_low_priority_stages_are_not_re_reserved(monkeypatch, t
                 '"analyst_mean":0,"verdict":"HOLD","confidence":50,"reasoning":"ok"}',
                 {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'})
     monkeypatch.setattr(engine.llm_client, 'generate_text_with_metadata', fake)
-    monkeypatch.setattr(engine, 'release_openai_reservations', lambda _ids: None)
+    monkeypatch.setattr(
+        engine,
+        'release_openai_reservations',
+        lambda _ids, **_kwargs: None,
+    )
 
     result = engine.run_deep_analysis(
         '삼성전자', symbol='005930', profile='compact', evidence_packet=packet,
@@ -702,7 +746,9 @@ def test_partial_preflight_exception_releases_every_acquired_permit(monkeypatch)
     released = []
     monkeypatch.setattr(engine, 'reserve_openai_fallback', reserve)
     monkeypatch.setattr(
-        engine, 'release_openai_reservations', lambda permits: released.extend(permits),
+        engine,
+        'release_openai_reservations',
+        lambda permits, **_kwargs: released.extend(permits),
     )
 
     with pytest.raises(OSError, match='budget store unavailable'):
@@ -710,3 +756,95 @@ def test_partial_preflight_exception_releases_every_acquired_permit(monkeypatch)
 
     assert {permit for permit, _owner in released} == {'permit-1', 'permit-2'}
     assert all(owner for _permit, owner in released)
+
+
+def test_compact_preflight_is_candidate_atomic_and_caps_at_three(monkeypatch):
+    packets = [
+        {'symbol': f'{index:06d}', 'market': 'KOSPI', 'fingerprint': str(index) * 64}
+        for index in range(1, 6)
+    ]
+    calls = []
+
+    def reserve(request, **kwargs):
+        calls.append((request.symbol, request.operation.value))
+        if len(calls) > 9:
+            return BudgetReservation(False, reason='hard_cap')
+        return BudgetReservation(
+            True,
+            f'permit-{len(calls)}',
+            acquired_by_caller=True,
+            owner_token=kwargs['owner_token'],
+        )
+
+    monkeypatch.setattr(engine, 'reserve_openai_fallback', reserve)
+
+    prepared, records = engine.reserve_compact_batch('workflow-top3', packets)
+
+    assert [item['packet']['symbol'] for item in prepared] == [
+        '000001', '000002', '000003',
+    ]
+    assert all(
+        set(item['reservation_ids'])
+        == {'bulk_text', 'compact_debate', 'decisive_text'}
+        for item in prepared
+    )
+    assert calls[:9] == [
+        (symbol, operation)
+        for symbol in ('000001', '000002', '000003')
+        for operation in ('decisive_text', 'bulk_text', 'compact_debate')
+    ]
+    assert all(record['status'] == 'admitted' for record in records[:3])
+    assert all(record['status'] == 'deferred' for record in records[3:])
+    assert all(not record['permits'] for record in records[3:])
+
+
+def test_compact_preflight_releases_partial_candidate_on_stage_denial(monkeypatch):
+    packet = {'symbol': '005930', 'market': 'KOSPI', 'fingerprint': 'a' * 64}
+    calls = 0
+    released = []
+
+    def reserve(_request, **kwargs):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            return BudgetReservation(False, reason='priority_reserve')
+        return BudgetReservation(
+            True,
+            f'permit-{calls}',
+            acquired_by_caller=True,
+            owner_token=kwargs['owner_token'],
+        )
+
+    monkeypatch.setattr(engine, 'reserve_openai_fallback', reserve)
+    monkeypatch.setattr(
+        engine,
+        'release_openai_reservations',
+        lambda permits, **_kwargs: released.extend(permits),
+    )
+
+    prepared, records = engine.reserve_compact_batch('workflow-partial', [packet])
+
+    assert prepared == []
+    assert records[0]['status'] == 'deferred'
+    assert records[0]['reason'] == 'priority_reserve'
+    assert records[0]['permits'] == {}
+    assert [permit for permit, _owner in released] == ['permit-1']
+    assert all(owner for _permit, owner in released)
+
+
+def test_compact_release_uses_the_same_dedicated_budget_pool(monkeypatch):
+    captured = {}
+
+    def release(permits, *, budget=None):
+        captured['permits'] = permits
+        captured['pool'] = getattr(budget, 'pool', None)
+
+    monkeypatch.setattr(engine, 'release_openai_reservations', release)
+
+    engine.release_compact_permits(
+        {'bulk_text': 'permit-bulk'},
+        {'bulk_text': 'owner-bulk'},
+    )
+
+    assert captured['permits'] == [('permit-bulk', 'owner-bulk')]
+    assert captured['pool'] == engine.COMPACT_BUDGET_POOL

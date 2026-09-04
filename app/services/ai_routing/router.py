@@ -45,8 +45,11 @@ _TRANSIENT = {
 }
 _MAX_FLIGHTS = 2_048
 VISION_BUDGET_POOL = "vision"
+COMPACT_BUDGET_POOL = "compact_top3"
 _DEFAULT_VISION_INPUT_TOKENS = 100_000
 _DEFAULT_VISION_OUTPUT_TOKENS = 6_000
+_DEFAULT_COMPACT_INPUT_TOKENS = 90_000
+_DEFAULT_COMPACT_OUTPUT_TOKENS = 9_000
 _UNKNOWN_VISION_IMAGE_TOKENS = 8_192
 _MAX_VISION_IMAGE_TOKENS = 8_192
 _DEFAULT_VISION_PAYLOAD_BYTES = 20 * 1024 * 1024
@@ -81,6 +84,24 @@ def vision_budget_limits() -> BudgetLimits:
         # Vision has its own pool; admitting the fifth ranked hold does not
         # consume the decisive-text reserve in the automatic pool.
         low_priority_cutoff=1.0,
+    )
+
+
+def compact_budget_limits() -> BudgetLimits:
+    """Bound three complete compact pipelines without enlarging the default pool."""
+    return BudgetLimits(
+        max_calls=9,
+        max_input_tokens=_DEFAULT_COMPACT_INPUT_TOKENS,
+        max_output_tokens=_DEFAULT_COMPACT_OUTPUT_TOKENS,
+        low_priority_cutoff=1.0,
+    )
+
+
+def compact_budget_manager(store: RoutingStore | None = None) -> BudgetManager:
+    return BudgetManager(
+        store or default_store(),
+        limits=compact_budget_limits(),
+        pool=COMPACT_BUDGET_POOL,
     )
 
 
@@ -281,14 +302,17 @@ def reserve_openai_fallback(
     policy = policy_for(request.operation)
     if "openai" not in policy.providers or not request.openai_fallback_allowed:
         return BudgetReservation(True)
-    manager = budget or (
-        BudgetManager(
+    if budget is not None:
+        manager = budget
+    elif Operation(request.operation) is Operation.VISION:
+        manager = BudgetManager(
             limits=vision_budget_limits(),
             pool=VISION_BUDGET_POOL,
         )
-        if Operation(request.operation) is Operation.VISION
-        else BudgetManager()
-    )
+    elif request.budget_pool == COMPACT_BUDGET_POOL:
+        manager = compact_budget_manager()
+    else:
+        manager = BudgetManager()
     max_output_tokens = policy.max_output_tokens
     if request.max_output_tokens is not None:
         max_output_tokens = min(max_output_tokens, max(1, request.max_output_tokens))
@@ -343,6 +367,7 @@ class AIRouter:
         *,
         budget: BudgetManager | None = None,
         vision_budget: BudgetManager | None = None,
+        compact_budget: BudgetManager | None = None,
         breaker: CircuitBreaker | None = None,
         store: RoutingStore | None = None,
         retry_sleeper=time.sleep,
@@ -364,6 +389,7 @@ class AIRouter:
                 pool=VISION_BUDGET_POOL,
             )
         )
+        self.compact_budget = compact_budget or compact_budget_manager(self.store)
         self.breaker = breaker or CircuitBreaker(self.store)
         adapter_deadlines = [
             float(adapter.request_timeout_seconds)
@@ -562,6 +588,8 @@ class AIRouter:
         budget_manager = (
             self.vision_budget
             if policy.operation is Operation.VISION
+            else self.compact_budget
+            if request.budget_pool == COMPACT_BUDGET_POOL
             else self.budget
         )
         providers = tuple(

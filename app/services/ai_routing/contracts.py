@@ -162,6 +162,7 @@ class RoutingRequest:
     response_normalizer: Callable[[str], str | None] | None = None
     reservation_id: str | None = None
     reservation_owner_token: str | None = None
+    budget_pool: str | None = None
     permit_abort_event: Any | None = None
     openai_fallback_allowed: bool = True
     max_primary_attempts: int | None = None

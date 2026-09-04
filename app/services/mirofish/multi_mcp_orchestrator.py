@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import os
 import math
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from datetime import datetime, timezone
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -57,7 +58,7 @@ def passes_trend_gate(trend: dict[str, Any] | None) -> bool:
 def architecture_manifest() -> dict[str, Any]:
     return {
         'schema_version': 'mirofish.multi_mcp.architecture.v1',
-        'objective': 'forward_profit_quality_with_cash_wait',
+        'objective': 'forward_profit_quality_ranked_top3',
         'numeric_authority': 'deterministic_mcp_tools_only',
         'mcp_domains': [
             {'id': 'market', 'owner': 'KIS/regime', 'mode': 'read_only'},
@@ -84,8 +85,9 @@ def architecture_manifest() -> dict[str, Any]:
             'minimum_trend_score': TREND_GATE_RULES['minimum_trend_score'],
             'maximum_drawdown_20d_pct': TREND_GATE_RULES['maximum_drawdown_20d_pct'],
             'minimum_cio_confidence': 60,
-            'forced_top3': False,
-            'automatic_ordering': False,
+            'forced_top3': True,
+            'automatic_ordering': True,
+            'fallback_source': 'verified_fresh_kis_only',
         },
     }
 
@@ -95,7 +97,7 @@ def run_multi_mcp_analysis(
     *,
     use_llm: bool = True,
     max_parallel: int = 3,
-    input_mode: str = 'verified_kis_pipeline',
+    input_mode: str = 'authenticated_debug',
     max_candidates: int = 5,
 ) -> dict[str, Any]:
     started = datetime.now(timezone.utc)
@@ -129,52 +131,174 @@ def run_multi_mcp_analysis(
         budget_summary['deferred'] += budget_summary['admitted'] - len(admitted)
         budget_summary['admitted'] = len(admitted)
     analyses: list[dict[str, Any]] = []
-    with ThreadPoolExecutor(max_workers=max(1, min(int(max_parallel), 5))) as pool:
-        pending = {
-            pool.submit(
+    permit_abort_event = threading.Event()
+    pool: ThreadPoolExecutor | None = None
+    pending: dict[Any, dict[str, Any]] = {}
+
+    def release_all_preflight_permits() -> None:
+        first_error: BaseException | None = None
+        for item in prepared_by_symbol.values():
+            try:
+                tradingagents.release_compact_permits(
+                    item.get('reservation_ids'),
+                    item.get('reservation_owner_tokens'),
+                )
+            except BaseException as exc:
+                if first_error is None:
+                    first_error = exc
+        if first_error is not None:
+            raise first_error
+
+    try:
+        if admitted:
+            pool = ThreadPoolExecutor(
+                max_workers=max(1, min(int(max_parallel), 5)),
+            )
+        for packet in admitted:
+            prepared_item = prepared_by_symbol.get(packet['symbol']) or {}
+            future = pool.submit(
                 tradingagents.run_deep_analysis,
                 packet['name'],
                 symbol=packet['symbol'],
                 use_llm=use_llm,
                 profile='compact', evidence_packet=packet,
                 routing_run_id=run_id,
-                request_ids=(prepared_by_symbol.get(packet['symbol']) or {}).get('request_ids'),
-                reservation_ids=(prepared_by_symbol.get(packet['symbol']) or {}).get('reservation_ids'),
-                reservation_owner_tokens=(prepared_by_symbol.get(packet['symbol']) or {}).get('reservation_owner_tokens'),
+                request_ids=prepared_item.get('request_ids'),
+                reservation_ids=prepared_item.get('reservation_ids'),
+                reservation_owner_tokens=prepared_item.get('reservation_owner_tokens'),
                 permits_preflighted=use_llm,
-            ): packet
-            for packet in admitted
-        }
-        for future, packet in pending.items():
-            reservation_ids = (prepared_by_symbol.get(packet['symbol']) or {}).get('reservation_ids')
-            owner_tokens = (prepared_by_symbol.get(packet['symbol']) or {}).get('reservation_owner_tokens')
+                permit_abort_event=permit_abort_event,
+            )
+            pending[future] = packet
+            reservation_ids = prepared_item.get('reservation_ids')
+            owner_tokens = prepared_item.get('reservation_owner_tokens')
             if reservation_ids:
                 future.add_done_callback(
                     lambda _future, permits=dict(reservation_ids), owners=dict(owner_tokens or {}):
                     tradingagents.release_compact_permits(permits, owners)
                 )
-        for future in as_completed(pending):
-            packet = pending[future]
-            try:
-                deep_run = future.result()
-                analyses.append(_critic_review(packet, deep_run))
-            except Exception as exc:  # isolate one agent branch
-                analyses.append({
-                    'symbol': packet['symbol'],
-                    'name': packet['name'],
-                    'approved': False,
-                    'error': type(exc).__name__,
-                    'reason': str(exc)[:240],
-                })
+
+        active = set(pending)
+        heartbeat_seconds = (
+            tradingagents.compact_permit_heartbeat_seconds()
+            if use_llm and active else None
+        )
+        while active:
+            done, not_done = wait(
+                active,
+                timeout=(
+                    heartbeat_seconds
+                    if use_llm and not permit_abort_event.is_set() else None
+                ),
+                return_when=FIRST_COMPLETED,
+            )
+            if (
+                not done
+                and not_done
+                and use_llm
+                and not permit_abort_event.is_set()
+            ):
+                renewable_ids: dict[str, str] = {}
+                renewable_owners: dict[str, str] = {}
+                for future in not_done:
+                    packet = pending[future]
+                    item = prepared_by_symbol.get(packet['symbol']) or {}
+                    for operation, reservation_id in dict(
+                        item.get('reservation_ids') or {}
+                    ).items():
+                        key = f"{packet['symbol']}:{operation}"
+                        renewable_ids[key] = reservation_id
+                        renewable_owners[key] = str(
+                            (item.get('reservation_owner_tokens') or {}).get(operation) or ''
+                        )
+                try:
+                    renewed = tradingagents.renew_compact_permits(
+                        renewable_ids,
+                        renewable_owners,
+                    )
+                except Exception:
+                    renewed = False
+                if not renewed:
+                    permit_abort_event.set()
+                    for future in not_done:
+                        future.cancel()
+                continue
+
+            active = not_done
+            for future in done:
+                packet = pending[future]
+                try:
+                    deep_run = future.result()
+                    analyses.append(_critic_review(packet, deep_run))
+                except Exception as exc:  # isolate one agent branch
+                    analyses.append({
+                        'symbol': packet['symbol'],
+                        'name': packet['name'],
+                        'approved': False,
+                        'error': type(exc).__name__,
+                        'reason': str(exc)[:240],
+                    })
+    finally:
+        permit_abort_event.set()
+        for future in pending:
+            if not future.done():
+                future.cancel()
+        try:
+            if pool is not None:
+                pool.shutdown(wait=True, cancel_futures=True)
+        finally:
+            release_all_preflight_permits()
 
     approved = sorted(
-        [row for row in analyses if row.get('approved')],
-        key=lambda row: row.get('portfolio_score', 0),
-        reverse=True,
+        [row for row in analyses if use_llm and row.get('approved')],
+        key=lambda row: (
+            -_float(row.get('portfolio_score')),
+            str(row.get('symbol') or ''),
+        ),
     )[:3]
+    selected: list[dict[str, Any]] = [
+        {**row, 'selection_source': 'ai_verified'}
+        for row in approved
+    ]
+    selected_symbols = {
+        str(row.get('symbol') or '') for row in selected
+    }
+    analysis_by_symbol = {
+        str(row.get('symbol') or ''): row for row in analyses
+        if isinstance(row, dict)
+    }
+    fallback_packets = sorted(
+        [packet for packet in eligible if packet['symbol'] not in selected_symbols],
+        key=_deterministic_fallback_rank,
+    )
+    for packet in fallback_packets:
+        if len(selected) >= 3:
+            break
+        selected.append(_deterministic_fallback_selection(
+            packet,
+            analysis_by_symbol.get(packet['symbol']),
+        ))
+    selected = [
+        {**row, 'selection_rank': index}
+        for index, row in enumerate(selected[:3], start=1)
+    ]
+    ai_selected_count = sum(
+        row.get('selection_source') == 'ai_verified' for row in selected
+    )
+    deterministic_fallback_count = sum(
+        row.get('selection_source') == 'deterministic_kis_fallback'
+        for row in selected
+    )
+    selection_mode = (
+        'ai_only' if selected and deterministic_fallback_count == 0
+        else 'deterministic_only' if selected and ai_selected_count == 0
+        else 'ai_plus_deterministic' if selected
+        else 'unavailable'
+    )
+    top3_shortfall = max(0, 3 - len(selected))
     status = (
-        'portfolio_ready' if len(approved) == 3
-        else 'selective_portfolio' if approved
+        'portfolio_ready' if len(selected) == 3
+        else 'selective_portfolio' if selected
         else 'cash_wait'
     )
     completed = datetime.now(timezone.utc)
@@ -198,10 +322,28 @@ def run_multi_mcp_analysis(
         'budget_summary': budget_summary,
         'evidence_packets': evidence_packets,
         'agent_analyses': analyses,
-        'selected': approved,
+        'selected': selected,
+        'selection_mode': selection_mode,
+        'ai_selected_count': ai_selected_count,
+        'deterministic_fallback_count': deterministic_fallback_count,
+        'deterministic_fallback_used': deterministic_fallback_count > 0,
+        'deterministic_fallback_reason': (
+            'ai_selection_below_top3' if deterministic_fallback_count else None
+        ),
+        'deterministic_ranking': 'verified_kis_scanner_trend_v1',
+        'deterministic_ranking_fields': [
+            'scanner_eligible', 'score_complete', 'scanner_score',
+            'trend_checks', 'change_rate', 'trading_value', 'volume', 'symbol',
+        ],
+        'top3_shortfall': top3_shortfall,
+        'top3_guarantee_met': top3_shortfall == 0,
+        'data_shortage_reason': (
+            'verified_kis_candidates_below_three'
+            if len(eligible) < 3 else None
+        ),
         'cash_wait_reason': (
-            'No candidate survived deterministic trend gates and CIO review.'
-            if not approved else None
+            'No verified fresh positive KIS candidate was available.'
+            if not selected else None
         ),
     }
     os.makedirs(RUNS_ROOT, exist_ok=True)
@@ -270,6 +412,25 @@ def _normalize_candidate(row: Any) -> dict[str, Any] | None:
         'observed_at': row.get('observed_at'),
         'market': market,
         'source_packets': row.get('source_packets') or [],
+        'scanner_score': _float(
+            (row.get('score') or {}).get('total')
+            if isinstance(row.get('score'), dict)
+            else row.get('scanner_score')
+        ),
+        'scanner_score_components': (
+            dict(row.get('score') or {}) if isinstance(row.get('score'), dict) else {}
+        ),
+        'score_complete': (
+            row.get('score_complete')
+            if isinstance(row.get('score_complete'), bool) else None
+        ),
+        'scanner_eligible': (
+            row.get('eligible') if isinstance(row.get('eligible'), bool) else None
+        ),
+        'scanner_grade': row.get('grade'),
+        'scanner_rejection_reason': row.get('rejection_reason'),
+        'incomplete_reasons': list(row.get('incomplete_reasons') or []),
+        'trading_value': _float(row.get('trading_value')),
         'source_cutoff': row.get('source_cutoff') or evidence_packet_mod.latest_source_cutoff(tuple(
             str(packet.get('fetched_at') or packet.get('observed_at') or '')
             for packet in (row.get('source_packets') or []) if isinstance(packet, dict)
@@ -355,6 +516,100 @@ def _critic_review(packet: dict[str, Any], deep_run: dict[str, Any]) -> dict[str
         'cio_reasoning': verdict.get('reasoning'),
         'deep_run_id': deep_run.get('id'),
         'analysis_status': deep_run.get('analysis_status') or verdict.get('analysis_status'),
+    }
+
+
+def _deterministic_fallback_rank(packet: dict[str, Any]) -> tuple[Any, ...]:
+    """Rank only deterministic KIS/trend values with an explicit stable tie-break."""
+    checks = (packet.get('profit_gate') or {}).get('checks') or {}
+    passed_checks = sum(value is True for value in checks.values())
+    trend_score = _float((packet.get('trend') or {}).get('trend_score'))
+    return (
+        0 if packet.get('scanner_eligible') is True else 1,
+        0 if packet.get('score_complete') is True else 1,
+        -_float(packet.get('scanner_score')),
+        -passed_checks,
+        -trend_score,
+        -_float(packet.get('change_rate')),
+        -_float(packet.get('trading_value')),
+        -_float(packet.get('volume')),
+        str(packet.get('symbol') or ''),
+    )
+
+
+def _deterministic_fallback_score(packet: dict[str, Any]) -> float:
+    scanner_score = _float(packet.get('scanner_score'))
+    if scanner_score > 0:
+        return round(max(0.0, min(100.0, scanner_score)), 2)
+    checks = (packet.get('profit_gate') or {}).get('checks') or {}
+    pass_ratio = (
+        sum(value is True for value in checks.values()) / len(checks)
+        if checks else 0.0
+    )
+    trend_score = max(0.0, min(15.0, _float(
+        (packet.get('trend') or {}).get('trend_score')
+    )))
+    positive_change = max(0.0, min(10.0, _float(packet.get('change_rate'))))
+    return round(
+        (pass_ratio * 45.0)
+        + (trend_score / 15.0 * 35.0)
+        + (positive_change / 10.0 * 20.0),
+        2,
+    )
+
+
+def _deterministic_fallback_selection(
+    packet: dict[str, Any],
+    analysis: dict[str, Any] | None,
+) -> dict[str, Any]:
+    prior = analysis or {}
+    data_quality_status = (
+        'verified_complete'
+        if packet.get('scanner_eligible') is True
+        and packet.get('score_complete') is True
+        else 'verified_limited'
+    )
+    risk_flags = list(
+        (packet.get('profit_gate') or {}).get('risk_flags') or []
+    )
+    if packet.get('scanner_eligible') is False:
+        risk_flags.append('scanner_ineligible')
+    if packet.get('score_complete') is False:
+        risk_flags.append('scanner_score_incomplete')
+    return {
+        'symbol': packet['symbol'],
+        'name': packet['name'],
+        'market': packet.get('market'),
+        'approved': False,
+        'action': 'WATCH',
+        'confidence': 0.0,
+        'confidence_valid': True,
+        'portfolio_score': _deterministic_fallback_score(packet),
+        'deterministic_score': _deterministic_fallback_score(packet),
+        'scanner_score': _float(packet.get('scanner_score')),
+        'scanner_score_components': packet.get('scanner_score_components') or {},
+        'score_complete': packet.get('score_complete'),
+        'scanner_eligible': packet.get('scanner_eligible'),
+        'scanner_grade': packet.get('scanner_grade'),
+        'scanner_rejection_reason': packet.get('scanner_rejection_reason'),
+        'incomplete_reasons': packet.get('incomplete_reasons') or [],
+        'data_quality_status': data_quality_status,
+        'source': 'KIS',
+        'observed_at': packet.get('observed_at'),
+        'current_price': packet.get('current_price'),
+        'change_rate': packet.get('change_rate'),
+        'volume': packet.get('volume'),
+        'trend': packet.get('trend') or {},
+        'risk_flags': list(dict.fromkeys(risk_flags)),
+        'selection_source': 'deterministic_kis_fallback',
+        'analysis_status': 'DETERMINISTIC_FALLBACK',
+        'ai_action': prior.get('action'),
+        'ai_confidence': prior.get('confidence'),
+        'ai_analysis_status': prior.get('analysis_status'),
+        'cio_reasoning': (
+            'AI 검증 선정 수가 TOP3에 미달해 최신 KIS 가격·거래량·추세 '
+            '근거만으로 복구 선별했습니다.'
+        ),
     }
 
 

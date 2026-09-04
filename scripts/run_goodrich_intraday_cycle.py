@@ -49,8 +49,18 @@ def _build_top3_telegram_message(result: dict) -> str:
             f"후보: {result.get('detected_candidates') or 0}개 검출 → "
             f"{result.get('qualified_candidates') or 0}개 선정"
         ),
-        "",
     ]
+    if result.get("selection_mode"):
+        lines.append(
+            f"분석: AI 검증 {int(result.get('ai_selected_count') or 0)}개 · "
+            f"KIS 복구 {int(result.get('deterministic_fallback_count') or 0)}개"
+        )
+    if int(result.get("top3_shortfall") or 0) > 0:
+        lines.append(
+            f"⚠️ 검증 데이터 부족: TOP3 중 "
+            f"{int(result.get('top3_shortfall') or 0)}개 미달"
+        )
+    lines.append("")
     top3 = list(result.get("top3") or [])[:3]
     if not top3:
         lines.append("선정된 종목이 없습니다.")
@@ -67,6 +77,11 @@ def _build_top3_telegram_message(result: dict) -> str:
                 ),
             ]
         )
+        selection_source = str(pick.get("selection_source") or "")
+        if selection_source == "ai_verified":
+            lines.append("   선정 근거: AI 검증")
+        elif selection_source == "deterministic_kis_fallback":
+            lines.append("   선정 근거: KIS 결정론 복구")
     lines.extend(["", "⚠️ 투자 판단 참고용 · 자동주문 없음"])
     return "\n".join(lines)
 
@@ -169,13 +184,30 @@ def run_cycle(*, force: bool = False) -> dict:
     try:
         monitored = monitor_fund_manager()
         research = run_research()
+        integration = research.get("integration", {})
+        multi_mcp = (
+            integration.get("multi_mcp")
+            if isinstance(integration.get("multi_mcp"), dict)
+            else research.get("multi_mcp")
+            if isinstance(research.get("multi_mcp"), dict)
+            else {}
+        )
+        selection_by_symbol = {
+            str(row.get("symbol") or ""): str(row.get("selection_source") or "")
+            for row in multi_mcp.get("selected") or []
+            if isinstance(row, dict)
+        }
         result = {
             "status": "completed",
             "started_at": started_at,
             "completed_at": datetime.now(UTC),
-            "market_status": research.get("integration", {}).get("market_status"),
-            "detected_candidates": research.get("integration", {}).get("candidate_count"),
-            "qualified_candidates": research.get("integration", {}).get("universe_size"),
+            "market_status": integration.get("market_status"),
+            "detected_candidates": integration.get("candidate_count"),
+            "qualified_candidates": integration.get("universe_size"),
+            "selection_mode": multi_mcp.get("selection_mode"),
+            "ai_selected_count": multi_mcp.get("ai_selected_count"),
+            "deterministic_fallback_count": multi_mcp.get("deterministic_fallback_count"),
+            "top3_shortfall": multi_mcp.get("top3_shortfall"),
             "monitored_active_count": monitored.get("active_count"),
             "top3": [
                 {
@@ -185,6 +217,10 @@ def run_cycle(*, force: bool = False) -> dict:
                     "current_price": pick.get("current_price"),
                     "target_price": pick.get("target_price"),
                     "stop_price": pick.get("stop_price"),
+                    "selection_source": (
+                        pick.get("selection_source")
+                        or selection_by_symbol.get(str(pick.get("symbol") or ""))
+                    ),
                 }
                 for pick in research.get("picks", [])[:3]
             ],
