@@ -97,8 +97,25 @@ def _verified_input(candidates: list[dict]) -> str:
     return json.dumps(candidates, ensure_ascii=False, separators=(",", ":"))
 
 
+def _completed_output_text(response: object) -> str:
+    if (
+        str(getattr(response, "status", "")).lower() != "completed"
+        or getattr(response, "error", None) is not None
+        or getattr(response, "incomplete_details", None) is not None
+    ):
+        raise ValueError("리서치 응답이 완료되지 않았습니다.")
+    output_text = getattr(response, "output_text", None)
+    if not isinstance(output_text, str) or not output_text.strip():
+        raise ValueError("리서치 응답 본문이 비어 있습니다.")
+    return output_text
+
+
 def _validate_result(result: object, candidates: list[dict]) -> dict:
-    if not isinstance(result, dict) or not isinstance(result.get("market_summary"), str):
+    if (
+        not isinstance(result, dict)
+        or set(result) != {"market_summary", "analyses"}
+        or not isinstance(result.get("market_summary"), str)
+    ):
         raise ValueError("리서치 응답의 시장 요약 형식이 올바르지 않습니다.")
     analyses = result.get("analyses")
     if not isinstance(analyses, list):
@@ -108,16 +125,24 @@ def _validate_result(result: object, candidates: list[dict]) -> dict:
     received: list[str] = []
     normalized: list[dict] = []
     for row in analyses:
-        if not isinstance(row, dict):
+        if not isinstance(row, dict) or set(row) != {
+            "symbol",
+            "thesis",
+            "risk",
+            "verdict",
+            "conviction_score",
+            "monitoring_focus",
+        }:
             raise ValueError("리서치 종목 분석 형식이 올바르지 않습니다.")
-        symbol = str(row.get("symbol") or "")
-        verdict = str(row.get("verdict") or "").upper()
-        try:
-            conviction = int(row.get("conviction_score"))
-        except (TypeError, ValueError) as exc:
-            raise ValueError("리서치 확신도 형식이 올바르지 않습니다.") from exc
+        symbol = row.get("symbol")
+        verdict = row.get("verdict")
+        conviction = row.get("conviction_score")
+        if not isinstance(symbol, str):
+            raise ValueError("리서치 종목 코드 형식이 올바르지 않습니다.")
         if verdict not in {"BUY_CANDIDATE", "WATCH", "REJECT"}:
             raise ValueError("리서치 판정 형식이 올바르지 않습니다.")
+        if type(conviction) is not int:
+            raise ValueError("리서치 확신도 형식이 올바르지 않습니다.")
         if not 0 <= conviction <= 100:
             raise ValueError("리서치 확신도 범위가 올바르지 않습니다.")
         for field in ("thesis", "risk", "monitoring_focus"):
@@ -168,7 +193,9 @@ class OpenAIResearchAgent:
                 },
                 store=False,
             )
-            result = _validate_result(json.loads(response.output_text), candidates)
+            result = _validate_result(
+                json.loads(_completed_output_text(response)), candidates
+            )
         except OpenAIConfigurationError:
             raise
         except Exception as error:
@@ -205,22 +232,24 @@ class DeepSeekResearchAgent:
                 timeout=30,
                 max_retries=0,
             )
-            response = client.chat.completions.create(
+            response = client.responses.create(
                 model=self.model,
-                messages=[
-                    {"role": "system", "content": _instructions()},
-                    {
-                        "role": "user",
-                        "content": f"검증된 KIS 후보 데이터:\n{_verified_input(candidates)}",
-                    },
-                ],
-                reasoning_effort="max",
-                extra_body={"thinking": {"type": "enabled"}},
-                response_format={"type": "json_object"},
-                max_tokens=4096,
+                instructions=_instructions(),
+                input=f"검증된 KIS 후보 데이터:\n{_verified_input(candidates)}",
+                reasoning={"effort": "max"},
+                max_output_tokens=4096,
+                text={
+                    "format": {
+                        "type": "json_schema",
+                        "name": "fund_manager_research",
+                        "schema": _schema(),
+                    }
+                },
+                store=False,
             )
-            content = response.choices[0].message.content
-            result = _validate_result(json.loads(content or ""), candidates)
+            result = _validate_result(
+                json.loads(_completed_output_text(response)), candidates
+            )
         except DeepSeekConfigurationError:
             raise
         except Exception as error:

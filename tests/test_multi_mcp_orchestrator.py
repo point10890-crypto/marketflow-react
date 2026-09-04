@@ -1,5 +1,4 @@
 import threading
-import time
 from concurrent.futures import Future
 from datetime import datetime, timedelta, timezone
 
@@ -479,14 +478,17 @@ def test_multi_mcp_renews_all_queued_compact_permits(monkeypatch, tmp_path):
     _stub_context(monkeypatch, tmp_path)
     renewals = []
     abort_events = []
+    renewal_started = threading.Event()
 
     def renew(permits, owners):
         renewals.append((dict(permits), dict(owners)))
+        renewal_started.set()
         return True
 
     def analyze(target, **kwargs):
         abort_events.append(kwargs.get('permit_abort_event'))
-        time.sleep(0.02)
+        if not renewal_started.wait(timeout=2):
+            raise TimeoutError('permit renewal did not start')
         return {
             'id': target,
             'analysis_status': 'SUCCESS_PRIMARY',

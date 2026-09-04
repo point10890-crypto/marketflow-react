@@ -39,6 +39,27 @@ foreach ($path in $required) {
     }
 }
 
+$sdkProbe = @'
+from inspect import signature
+from openai import OpenAI
+client = OpenAI(api_key='compatibility-check')
+create = getattr(getattr(client, 'responses', None), 'create', None)
+parameters = set(signature(create).parameters) if callable(create) else set()
+required = {'text', 'reasoning', 'max_output_tokens', 'store'}
+raise SystemExit(0 if required.issubset(parameters) else 1)
+'@
+$global:LASTEXITCODE = $null
+& $python -c $sdkProbe
+$sdkProbeSucceeded = $?
+$sdkProbeExitCode = $LASTEXITCODE
+if (
+    -not $sdkProbeSucceeded -or
+    $null -eq $sdkProbeExitCode -or
+    [int]$sdkProbeExitCode -ne 0
+) {
+    throw 'Goodrich OpenAI SDK Responses API support is required.'
+}
+
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 $preApplyRecords = @()
 $goodrichRootPrefix = [IO.Path]::GetFullPath($goodrichRoot).TrimEnd('\') + '\'

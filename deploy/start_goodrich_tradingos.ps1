@@ -1,16 +1,43 @@
+param(
+    [string]$Root = 'C:\GoodrichTradingOS',
+    [string]$MarketFlowEnv = 'C:\bitman_marketfloww\.env'
+)
+
 $ErrorActionPreference = 'Stop'
 
-$root = 'C:\GoodrichTradingOS'
 $python = Join-Path $root '.venv\Scripts\python.exe'
 $apiDir = Join-Path $root 'services\api'
 $logDir = Join-Path $root 'logs'
-$marketFlowEnv = 'C:\bitman_marketfloww\.env'
+$databaseFile = [IO.Path]::GetFullPath(
+    (Join-Path $root 'data\goodrich.db')
+).Replace('\', '/')
 
 if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
     throw 'Goodrich TradingOS Python runtime is missing.'
 }
 if (-not (Test-Path -LiteralPath $apiDir -PathType Container)) {
     throw 'Goodrich TradingOS API directory is missing.'
+}
+
+$sdkProbe = @'
+from inspect import signature
+from openai import OpenAI
+client = OpenAI(api_key='compatibility-check')
+create = getattr(getattr(client, 'responses', None), 'create', None)
+parameters = set(signature(create).parameters) if callable(create) else set()
+required = {'text', 'reasoning', 'max_output_tokens', 'store'}
+raise SystemExit(0 if required.issubset(parameters) else 1)
+'@
+$global:LASTEXITCODE = $null
+& $python -c $sdkProbe
+$sdkProbeSucceeded = $?
+$sdkProbeExitCode = $LASTEXITCODE
+if (
+    -not $sdkProbeSucceeded -or
+    $null -eq $sdkProbeExitCode -or
+    [int]$sdkProbeExitCode -ne 0
+) {
+    throw 'Goodrich OpenAI SDK Responses API support is required.'
 }
 
 function Read-EnvValue([string]$Path, [string]$Key) {
@@ -34,7 +61,7 @@ New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
 $env:PYTHONIOENCODING = 'utf-8'
 $env:GOODRICH_ENVIRONMENT = 'production'
-$env:GOODRICH_DATABASE_URL = 'sqlite:///C:/GoodrichTradingOS/data/goodrich.db'
+$env:GOODRICH_DATABASE_URL = "sqlite:///$databaseFile"
 $env:GOODRICH_KIS_CREDENTIALS_FILE = Join-Path $root 'secrets\kis_credentials.txt'
 $env:GOODRICH_DEEPSEEK_API_KEY = $deepSeekApiKey
 $env:GOODRICH_DEEPSEEK_MODEL = 'deepseek-v4-pro'
