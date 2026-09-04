@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { AdSlot, PublicShell } from '@/components/public/PublicShell';
 import { GUIDES, findGuide } from '@/data/guides.mjs';
+import { CREATOR_PROFILE } from '@/data/creator.mjs';
 import { useSeo, SITE_ORIGIN } from '@/lib/seo';
 import { JoinBanner } from './PublicCommunityPage';
 
@@ -57,6 +58,12 @@ export function GuideListPage() {
                         차트·수급·공시·리스크 관리까지, MarketFlow 팀이 서비스에 녹인 분석 원리를
                         누구나 읽을 수 있게 정리했습니다. 모든 글은 교육 목적이며 투자 권유가 아닙니다.
                     </p>
+                    <p className="mt-3 max-w-[64ch] text-[13px] leading-relaxed text-gray-400">
+                        {CREATOR_PROFILE.introduction}{' '}
+                        <Link to="/about#creator" className="text-[#ff9b89] underline underline-offset-4">
+                            운영자 소개와 채널 보기
+                        </Link>
+                    </p>
                 </div>
 
                 <div className="pub-rise mt-6 grid gap-3 sm:grid-cols-2" style={{ animationDelay: '80ms' }}>
@@ -109,7 +116,7 @@ export function GuideArticlePage() {
                 headline: guide.title,
                 description: guide.description,
                 datePublished: guide.date,
-                author: { '@type': 'Organization', name: 'MarketFlow 리서치' },
+                author: { '@type': 'Organization', name: 'MarketFlow 리서치', url: `${SITE_ORIGIN}/about#creator` },
                 publisher: { '@type': 'Organization', name: 'MarketFlow', url: SITE_ORIGIN },
                 mainEntityOfPage: `${SITE_ORIGIN}/guide/${guide.slug}`,
                 inLanguage: 'ko',
@@ -159,7 +166,9 @@ export function GuideArticlePage() {
                         {guide.title}
                     </h1>
                     <div className="mt-3 flex flex-wrap items-center gap-2.5 border-b border-white/[0.06] pb-5 font-mono text-[11px] tabular-nums text-gray-500">
-                        <span className="text-gray-400">MarketFlow 리서치</span>
+                        <Link to="/about#creator" className="text-gray-400 underline underline-offset-4 hover:text-white">
+                            MarketFlow 리서치
+                        </Link>
                         <span className="text-gray-700">·</span>
                         <span>{guide.date}</span>
                         <span className="text-gray-700">·</span>
@@ -168,6 +177,11 @@ export function GuideArticlePage() {
                             {guide.category}
                         </span>
                     </div>
+                    <p className="mt-3 text-[12px] leading-6 text-gray-400">
+                        <Link to="/about#creator" className="underline underline-offset-4 hover:text-white">
+                            운영자: {CREATOR_PROFILE.name} · {CREATOR_PROFILE.channelName}
+                        </Link>
+                    </p>
                 </header>
 
                 {/* 본문 — 저장소 내장 신뢰 HTML */}

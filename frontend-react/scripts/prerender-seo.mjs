@@ -15,6 +15,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { GUIDES } from '../src/data/guides.mjs';
+import { CREATOR_ABOUT_JSON_LD, CREATOR_PROFILE } from '../src/data/creator.mjs';
 
 const ORIGIN = 'https://bit-man.net';
 const DIST = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist');
@@ -28,7 +29,7 @@ const FOOTER = `
 과거의 결과는 미래 수익을 보장하지 않습니다.</p>
 <p>문의: point10890@gmail.com · © MarketFlow</p></footer>`;
 
-/** @type {Array<{path: string, title: string, description: string, body: string}>} */
+/** @type {Array<{path: string, title: string, description: string, body: string, jsonLd?: object | object[]}>} */
 const ROUTES = [
     {
         path: '/',
@@ -76,11 +77,18 @@ const ROUTES = [
         title: '서비스 소개 | MarketFlow',
         description:
             'MarketFlow 는 시장 데이터를 반복 관찰하고 데이터 품질을 확인한 뒤 의미 있는 변화만 기록하는 AI 시장 관찰 서비스입니다. 핵심 에이전트 Claw 의 작동 방식과 운영 원칙을 소개합니다.',
+        jsonLd: CREATOR_ABOUT_JSON_LD,
         body: `
 <h1>서비스 소개</h1>
 <p><strong>MarketFlow</strong> 는 시장 데이터를 반복 관찰하고, 원천 시각과 데이터 품질을 확인한 뒤
 의미 있는 변화만 기록하는 시장 관찰 서비스입니다. 핵심 에이전트 <strong>Claw</strong> 와 함께
 한국·미국·암호화폐 분석 도구를 한 대시보드에서 제공합니다.</p>
+<section id="creator">
+<h2>운영자 소개</h2>
+<p>${esc(CREATOR_PROFILE.introduction)}</p>
+<p><a href="${esc(CREATOR_PROFILE.channelUrl)}" target="_blank" rel="noopener noreferrer">${esc(CREATOR_PROFILE.channelName)}</a> 유튜브 채널에서 공개 영상과 채널 활동을 확인할 수 있습니다.</p>
+<p>구독자 수 기준: ${esc(CREATOR_PROFILE.subscriberAsOf)}</p>
+</section>
 <h2>Claw는 어떻게 작동하나요</h2>
 <ul>
 <li><strong>관찰</strong> — 정해진 주기로 시장 원천과 후보군을 수집합니다.</li>
@@ -240,10 +248,23 @@ ROUTES.push({
     path: '/guide',
     title: '인사이트 가이드 — 시장 분석 교육 콘텐츠 | MarketFlow',
     description: 'VCP 패턴, 수급 분석, 시장 레짐, 종가베팅 체크리스트, 포지션 사이징, 공시 읽기, AI 신호 활용까지 — MarketFlow 팀이 쓴 시장 분석 교육 가이드 모음입니다.',
+    jsonLd: {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: 'MarketFlow 인사이트 가이드',
+        url: `${ORIGIN}/guide`,
+        inLanguage: 'ko',
+        hasPart: GUIDES.map((g) => ({
+            '@type': 'Article',
+            headline: g.title,
+            url: `${ORIGIN}/guide/${g.slug}`,
+        })),
+    },
     body: `
 <h1>인사이트 가이드</h1>
 <p>차트·수급·공시·리스크 관리까지, MarketFlow 팀이 서비스에 녹인 분석 원리를 누구나 읽을 수 있게
 정리했습니다. 모든 글은 교육 목적이며 투자 권유가 아닙니다.</p>
+<p>${esc(CREATOR_PROFILE.introduction)} <a href="/about#creator">운영자 소개와 채널 보기</a></p>
 <ul>
 ${GUIDES.map((g) => `<li><a href="/guide/${g.slug}">${g.title}</a> — ${g.description}</li>`).join('\n')}
 </ul>`,
@@ -254,10 +275,33 @@ for (const g of GUIDES) {
         path: `/guide/${g.slug}`,
         title: `${g.title} | MarketFlow 가이드`,
         description: g.description,
+        jsonLd: [
+            {
+                '@context': 'https://schema.org',
+                '@type': 'Article',
+                headline: g.title,
+                description: g.description,
+                datePublished: g.date,
+                author: { '@type': 'Organization', name: 'MarketFlow 리서치', url: `${ORIGIN}/about#creator` },
+                publisher: { '@type': 'Organization', name: 'MarketFlow', url: ORIGIN },
+                mainEntityOfPage: `${ORIGIN}/guide/${g.slug}`,
+                inLanguage: 'ko',
+            },
+            {
+                '@context': 'https://schema.org',
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                    { '@type': 'ListItem', position: 1, name: '홈', item: ORIGIN },
+                    { '@type': 'ListItem', position: 2, name: '인사이트 가이드', item: `${ORIGIN}/guide` },
+                    { '@type': 'ListItem', position: 3, name: g.title, item: `${ORIGIN}/guide/${g.slug}` },
+                ],
+            },
+        ],
         body: `
 <p><a href="/guide">← 인사이트 가이드</a></p>
 <h1>${g.title}</h1>
-<p>MarketFlow 리서치 · ${g.date} · ${g.readMinutes}분 읽기 · ${g.category}</p>
+<p><a href="/about#creator">MarketFlow 리서치</a> · ${g.date} · ${g.readMinutes}분 읽기 · ${g.category}</p>
+<p><a href="/about#creator">운영자: ${esc(CREATOR_PROFILE.name)} · ${esc(CREATOR_PROFILE.channelName)}</a></p>
 ${g.html}
 ${GUIDE_DISCLAIMER}`,
     });
@@ -278,6 +322,11 @@ function renderRoute(template, route) {
         .replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${url}$2`)
         .replace(/(<meta name="twitter:title" content=")[^"]*(")/, `$1${esc(route.title)}$2`)
         .replace(/(<meta name="twitter:description" content=")[^"]*(")/, `$1${esc(route.description)}$2`);
+
+    if (route.jsonLd) {
+        const json = JSON.stringify(route.jsonLd).replace(/</g, '\\u003c');
+        html = html.replace('</head>', `    <script type="application/ld+json" data-seo="jsonld">${json}</script>\n</head>`);
+    }
 
     const snapshot = `<div id="seo-content" style="max-width:760px;margin:0 auto;padding:32px 20px;color:#d4d4d8;line-height:1.7">${NAV}${route.body}${FOOTER}</div>\n    `;
     html = html.replace('<div id="root">', `${snapshot}<div id="root">`);

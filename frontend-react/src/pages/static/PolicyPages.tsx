@@ -1,17 +1,18 @@
-import { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { ReactNode, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { PublicShell } from '@/components/public/PublicShell';
 import { useSeo } from '@/lib/seo';
+import { CREATOR_PROFILE, CREATOR_ABOUT_JSON_LD } from '@/data/creator.mjs';
 
 /**
  * 정책·정보 페이지 3종 (공개) — /privacy, /terms, /about.
  * AdSense 심사 필수 페이지. 광고는 싣지 않는다(정책 페이지 관례).
  */
 
-function PolicyLayout({ label, title, updated, path, description, children }: {
-    label: string; title: string; updated?: string; path: string; description: string; children: ReactNode;
+function PolicyLayout({ label, title, updated, path, description, jsonLd, children }: {
+    label: string; title: string; updated?: string; path: string; description: string; jsonLd?: object; children: ReactNode;
 }) {
-    useSeo({ title: `${title} | MarketFlow`, description, path });
+    useSeo({ title: `${title} | MarketFlow`, description, path, jsonLd });
     return (
         <PublicShell section={label.toLowerCase()}>
             <div className="mx-auto max-w-[760px] px-4 pb-6 pt-8 sm:px-6 sm:pt-12">
@@ -162,14 +163,29 @@ export function TermsPage() {
 }
 
 export function AboutPage() {
+    const { hash } = useLocation();
+    useEffect(() => {
+        if (hash === '#creator') document.getElementById('creator')?.scrollIntoView({ block: 'start' });
+    }, [hash]);
+
     return (
-        <PolicyLayout label="ABOUT" title="서비스 소개" path="/about"
+        <PolicyLayout label="ABOUT" title="서비스 소개" path="/about" jsonLd={CREATOR_ABOUT_JSON_LD}
                       description="MarketFlow 는 시장 데이터를 반복 관찰하고 데이터 품질을 확인한 뒤 의미 있는 변화만 기록하는 AI 시장 관찰 서비스입니다. 핵심 에이전트 Claw 의 작동 방식과 운영 원칙을 소개합니다.">
             <p>
                 <strong>MarketFlow</strong> 는 시장 데이터를 반복 관찰하고, 원천 시각과 데이터 품질을 확인한 뒤
                 의미 있는 변화만 기록하는 시장 관찰 서비스입니다. 핵심 에이전트 <strong>Claw</strong> 와 함께
                 한국·미국·암호화폐 분석 도구를 한 대시보드에서 제공합니다.
             </p>
+
+            <h2 id="creator" className="scroll-mt-24">운영자 소개</h2>
+            <p>{CREATOR_PROFILE.introduction}</p>
+            <p>
+                <a href={CREATOR_PROFILE.channelUrl} target="_blank" rel="noopener noreferrer">
+                    {CREATOR_PROFILE.channelName} 유튜브 채널
+                </a>
+                에서 공개 영상과 채널 활동을 확인할 수 있습니다.
+            </p>
+            <p>구독자 수 기준: {CREATOR_PROFILE.subscriberAsOf}</p>
 
             <h2>Claw는 어떻게 작동하나요</h2>
             <ul>
