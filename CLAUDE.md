@@ -929,3 +929,14 @@ echo "=== Done ==="
 - miniPC Task: `deploy/register_claw_task.ps1` → `MarketFlow-Claw`(SYSTEM·AtStartup) + `MarketFlow-Claw-Watchdog`(5분, heartbeat 180s). 호스트 가드 `MINIPC-NQYLP`.
 - 텔레그램 봇: `TELEGRAM_CHANNEL_BOT_TOKEN`=@bitman75_bot(사용자 봇). 구 개인봇 @bitmanHermes_bot은 대화방 삭제로 403 → 토큰 교체로 해소(본PC 완료, miniPC는 apply 스크립트).
 - 대시보드 테마: 페이지 JSX 무수정, `frontend-react/src/index.css`의 `.claw-theme` 레이어. 등급/KRX/경고 의미색 유지.
+
+---
+
+## 17. Marketing Studio (독립 수익화 앱) — 2026-09-05
+
+> 위치: `marketing_studio/` (MarketFlow 코드와 독립, `C:\marketing_studio` 로 복사해 사용). 설계: `docs/superpowers/specs/2026-09-05-marketing-studio-design.md`, 사용법: `marketing_studio/README.md`
+
+- 파이프라인: 브랜드커넥트/스마트스토어 URL → 상세정보 + 스크린샷 3장↑ → 키워드 → SEO 블로그(100점 채점) → 영상 대본 → edge-tts 영상(1080x1920 MP4) → 발행 패키지 → 수익 관리.
+- 실행: `setup.bat` → `run_studio.bat` (http://127.0.0.1:5080) · CLI `python -m studio {serve|login|crawl|import|run|doctor|probe}`.
+- 자동 발행 없음(의도). 브랜드커넥트 DOM 은 `probe` + `data/selectors.override.json` 으로 튜닝.
+- 테스트: `cd marketing_studio && python -m pytest -q` (CI: `.github/workflows/marketing-studio-test.yml`). 루트 `tests/` 와 분리.

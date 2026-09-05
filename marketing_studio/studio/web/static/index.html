@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marketing Studio</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand"><span class="logo">🎬</span><div><div class="brand-name">Marketing Studio</div><div class="brand-sub" id="version">브랜드커넥트 → 블로그 → 영상</div></div></div>
+    <nav id="nav">
+      <a href="#/dashboard" data-view="dashboard">📊 대시보드</a>
+      <a href="#/brandconnect" data-view="brandconnect">🔗 브랜드커넥트</a>
+      <a href="#/products" data-view="products">📦 상품</a>
+      <a href="#/contents" data-view="contents">✍️ 콘텐츠 스튜디오</a>
+      <a href="#/videos" data-view="videos">🎥 영상</a>
+      <a href="#/earnings" data-view="earnings">💰 수익 관리</a>
+      <a href="#/settings" data-view="settings">⚙️ 설정</a>
+    </nav>
+    <div class="sys" id="sysStatus">상태 확인 중…</div>
+  </aside>
+  <main>
+    <header class="topbar"><div id="jobsBar" class="jobs-bar"></div></header>
+    <section id="view" class="view"></section>
+  </main>
+</div>
+<div id="modal" class="modal hidden" onclick="if(event.target===this)closeModal()"><div class="modal-card"><button class="modal-close" onclick="closeModal()">✕</button><div id="modalBody"></div></div></div>
+<div id="toast" class="toast hidden"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

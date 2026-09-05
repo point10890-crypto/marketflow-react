@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "_comment": "브랜드커넥트 DOM 후보 셀렉터. 앞에서부터 순서대로 시도하며, 첫 번째로 결과가 나오는 셀렉터를 사용. data/selectors.override.json 으로 덮어쓸 수 있음. 'python -m studio probe <url>' 로 실제 구조 확인 후 조정.",
+  "list": {
+    "path_hints": ["campaign", "캠페인", "connect", "product"],
+    "item": [
+      "[class*='campaign'] li",
+      "[class*='Campaign'] li",
+      "[class*='campaign-list'] > *",
+      "ul[class*='list'] > li",
+      "[class*='CardList'] > *",
+      "[class*='card_list'] > *",
+      "[class*='card']",
+      "article"
+    ],
+    "title": ["[class*='title']", "[class*='Title']", "[class*='name']", "h3", "h4", "strong", "img[alt]"],
+    "brand": ["[class*='brand']", "[class*='Brand']", "[class*='store']", "[class*='company']", "[class*='advertiser']"],
+    "reward": ["[class*='reward']", "[class*='Reward']", "[class*='benefit']", "[class*='commission']", "[class*='fee']", "[class*='point']", "[class*='price']"],
+    "period": ["[class*='period']", "[class*='Period']", "[class*='date']", "[class*='Date']", "[class*='dday']", "time"],
+    "type": ["[class*='type']", "[class*='badge']", "[class*='Badge']", "[class*='label']", "[class*='tag']", "[class*='chip']"],
+    "link": ["a[href]"],
+    "thumbnail": ["img"],
+    "next": ["a[rel='next']", "button[aria-label*='다음']", "a[aria-label*='다음']", "[class*='next']:not([disabled])"],
+    "load_more_text": ["더보기", "더 보기", "캠페인 더보기", "more"]
+  },
+  "detail": {
+    "title": ["h1", "h2[class*='title']", "[class*='campaign_title']", "[class*='title']"],
+    "brand": ["[class*='brand']", "[class*='Brand']", "[class*='store']", "[class*='company']", "[class*='advertiser']"],
+    "reward": ["[class*='reward']", "[class*='Reward']", "[class*='benefit']", "[class*='commission']", "[class*='fee']"],
+    "period": ["[class*='period']", "[class*='Period']", "[class*='date']", "[class*='schedule']", "time"],
+    "mission": ["[class*='mission']", "[class*='Mission']", "[class*='guide']", "[class*='require']", "[class*='condition']", "[class*='notice']"],
+    "description": ["[class*='desc']", "[class*='Desc']", "[class*='content']", "[class*='detail']", "article", "main"],
+    "product_link": [
+      "a[href*='smartstore.naver.com']",
+      "a[href*='brand.naver.com']",
+      "a[href*='shopping.naver.com']",
+      "a[href*='m.smartstore.naver.com']",
+      "a[href*='naver.me']",
+      "a[href*='coupang.com']",
+      "a[href*='product']"
+    ],
+    "images": ["[class*='thumb'] img", "[class*='Thumb'] img", "[class*='image'] img", "[class*='Image'] img", "[class*='img'] img", "[class*='swiper'] img", "[class*='slide'] img", "[class*='gallery'] img", "article img", "main img", "img"],
+    "type": ["[class*='type']", "[class*='badge']", "[class*='label']", "[class*='chip']"]
+  },
+  "login_markers": ["a[href*='nidlogin']", "a[href*='nid.naver.com']"]
+}
