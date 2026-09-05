@@ -175,3 +175,13 @@ handoff_kit/
 # 옴니소스 사건 원장 (런타임 데이터)
 data/omni/
 .venv-ci/
+
+# Marketing Studio (marketing_studio/) runtime — DB, 브라우저 프로필, 스크린샷, 생성물
+marketing_studio/data/
+marketing_studio/output/
+marketing_studio/logs/
+marketing_studio/.venv/
+marketing_studio/assets/bgm/*
+marketing_studio/assets/fonts/*
+!marketing_studio/assets/bgm/.gitkeep
+!marketing_studio/assets/fonts/.gitkeep
