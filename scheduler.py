@@ -782,16 +782,17 @@ def _flush_telegram_queue():
         _telegram_queue.pop(i)
 
 
-def send_telegram(message: str, channel: bool = True) -> bool:
+def send_telegram(message: str, channel: bool = True, *, queue_on_failure: bool = True) -> bool:
     """텔레그램 메시지 전송 (실패 시 큐 저장 + 이전 실패 재전송)
     channel=True  → 개인+채널 (분석 결과, 기본값)
     channel=False → 개인만 (시스템 메시지)
+    queue_on_failure=False → 호출자가 자체 재시도/상태 관리를 할 때 큐 저장 생략
     """
     _flush_telegram_queue()
 
     success = _try_send_telegram(message, channel=channel)
 
-    if not success:
+    if not success and queue_on_failure:
         _telegram_queue.append((message, time.time()))
         logger.warning(f"⚠️ 텔레그램 전송 실패 → 큐 저장 (대기: {len(_telegram_queue)}건)")
     return success
@@ -1053,10 +1054,12 @@ def run_alpha_scanner_monitor() -> bool:
 
 
 def run_aibrain_service_guard() -> bool:
-    """AI Brain 3대 서비스(스캐너·펀드매니저·판단) 지속성 가드 — 상태전이 시 개인봇 알림."""
+    """AI Brain 3대 서비스(스캐너·펀드매니저·판단) 지속성 가드 — 실패 진입 시 개인봇 알림."""
     try:
         from app.services.mirofish import service_guard
-        result = service_guard.run_guard(send_fn=lambda msg: send_telegram(msg, channel=False))
+        result = service_guard.run_guard(
+            send_fn=lambda msg: send_telegram(msg, channel=False, queue_on_failure=False)
+        )
         if result.get('overall') != 'ok':
             logger.warning("AI Brain service guard: overall=%s statuses=%s",
                            result.get('overall'),

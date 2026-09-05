@@ -17,7 +17,7 @@
 1. **`app/services/mirofish/service_guard.py`** — 읽기전용 체커 3개 + `run_guard(send_fn)`:
    - 결과 `{generated_at, overall: ok|warn|fail, services: {scanner|goodrich|decision: {status, detail, checked_ms}}}`
    - `data/admin_mirofish/service_guard_latest.json`(atomic) + `service_guard_history.jsonl`(일 단위 append, 30일 보존은 후속)
-   - **상태전이 알림만**: 서비스별 직전 상태를 state 파일에 저장, `ok→warn/fail` 1회, `→ok` 복구 1회, 동일 상태 재알림 쿨다운 30분. 발송은 주입된 send_fn(개인봇) — 서비스 모듈은 텔레그램을 모른다.
+   - **실패 진입 알림만**: 서비스별 직전 상태를 state 파일에 저장하고 `fail` 진입 때 1회 발송한다. `warn`, `ok`, 복구, 동일 `fail` 지속은 상태·히스토리로만 기록한다. 발송은 주입된 send_fn(개인봇) — 서비스 모듈은 텔레그램을 모른다.
 2. **남용 차단(보안책)** — `POST /api/kr/decision/<symbol>/analyze` 에 사용자별 일일 쿼터:
    - `decision_cache` DB에 `deep_quota(day, user_id, count)` — 기본 20회/일(`DECISION_DEEP_DAILY_QUOTA`, 0=무제한), admin 면제, 초과 시 429 `{error: quota_exceeded, remaining: 0, limit}` (캐시 적중은 차감하지 않음 — 재조회는 무료)
    - 근거: 심층분석 1회 = LLM 8~12콜. 유료 사용자라도 무제한이면 비용·경합 폭주.
@@ -37,9 +37,9 @@
 - FE 관리 카드 / 히스토리 보존정책 — 후속
 
 ## 4. 검증
-- 단위: 각 체커 픽스처(신선/노후/부재), 전이 알림(1회·쿨다운·복구), 쿼터(차감·면제·429·캐시적중 무차감), 프리웜(핫셋 구성·캐시 채움·이미 캐시 스킵)
+- 단위: 각 체커 픽스처(신선/노후/부재), 실패 진입 알림(1회·warn/복구 침묵·전송 실패 재시도), 쿼터(차감·면제·429·캐시적중 무차감), 프리웜(핫셋 구성·캐시 채움·이미 캐시 스킵)
 - 통합: 로컬 실행 `aibrain_guard.py --json`, 기존 decision/scanner 스위트 회귀
-- 배포: miniPC pull + Flask 재부팅(스케줄러 재시작 포함), 가동 후 첫 가드 알림 확인
+- 배포: miniPC pull + 스케줄러 재시작, 상태 파일과 `/api/admin/mirofish/service-guard` 최신 JSON 확인. 알림 검증은 실제 텔레그램 발송 없이 단위 테스트와 상태 파일로 확인.
 
 ## 5. 후속 이행 (같은 날 2차)
 

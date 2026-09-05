@@ -7,7 +7,7 @@
 원칙
 - 읽기전용 + 프로브. 스캔·발송·주문을 트리거하지 않는다(판단 프로브의 캐시 워밍 제외).
 - 체커 하나의 예외가 가드 전체를 죽이지 않는다 — 예외는 그 서비스의 fail 로 환산.
-- 알림은 상태전이(→warn/fail 1회, →ok 복구 1회)만. 같은 비정상 상태의 재알림은 쿨다운.
+- 알림은 실제 장애(→fail) 진입 때만 보낸다. warn/ok/복구와 동일 fail 지속은 기록만 한다.
 - 발송 함수는 주입받는다(send_fn). 이 모듈은 텔레그램을 모른다.
 """
 from __future__ import annotations
@@ -31,9 +31,6 @@ STATE_PATH = os.path.join(GUARD_ROOT, 'service_guard_state.json')
 
 KST = timezone(timedelta(hours=9))
 SEVERITY = {'ok': 0, 'warn': 1, 'fail': 2}
-
-#: 재알림 쿨다운(초) — 같은 비정상 상태를 30분마다 한 번만 상기시킨다.
-REALERT_COOLDOWN_S = 1800
 
 SERVICE_LABEL = {'scanner': '알파 스캐너', 'goodrich': 'AI 펀드매니저', 'decision': '판단 조회'}
 
@@ -274,7 +271,7 @@ def prewarm_decision_cache(limit: int = 12) -> dict[str, Any]:
             'warmed': warmed, 'skipped': skipped, 'errors': errors}
 
 
-# ─── 가드 실행 + 상태전이 알림 ──────────────────────────────
+# ─── 가드 실행 + 실패 진입 알림 ─────────────────────────────
 
 def _read_state() -> dict[str, Any]:
     try:
@@ -330,7 +327,6 @@ def _emit_transitions(services: dict[str, dict[str, Any]],
     state = _read_state()
     changed = False
     lines_alert: list[str] = []
-    lines_recover: list[str] = []
     alerted_names: list[str] = []
 
     for name, result in services.items():
@@ -339,21 +335,15 @@ def _emit_transitions(services: dict[str, dict[str, Any]],
         prev_status = prev.get('status', 'ok')
         alerted_at = float(prev.get('alerted_at') or 0)
 
-        if status != 'ok' and (prev_status == 'ok' or now.timestamp() - alerted_at >= REALERT_COOLDOWN_S
-                               or SEVERITY[status] > SEVERITY.get(prev_status, 0)):
+        if status == 'fail' and (prev_status != 'fail' or alerted_at <= 0):
             lines_alert.append(_alert_lines(name, result))
             alerted_names.append(name)
             # alerted_at 은 실제 발송 성공 후에만 찍는다 — 무발송(send_fn=None) 실행이나
             # 발송 실패가 1회성 전이 알림을 소모해 진짜 알림을 억누르면 안 된다.
             state[name] = {'status': status, 'alerted_at': alerted_at}
             changed = True
-        elif status == 'ok' and prev_status != 'ok':
-            if alerted_at > 0:  # 알린 적 없는 장애의 복구는 침묵 (무발송 실행이 남긴 상태)
-                lines_recover.append(f"{SERVICE_LABEL.get(name, name)}: 복구 (OK)")
-            state[name] = {'status': 'ok', 'alerted_at': 0}
-            changed = True
         elif status != prev_status:
-            state[name] = {'status': status, 'alerted_at': alerted_at}
+            state[name] = {'status': status, 'alerted_at': 0}
             changed = True
 
     def _persist() -> None:
@@ -368,14 +358,14 @@ def _emit_transitions(services: dict[str, dict[str, Any]],
     if send_fn is None:
         return
     if lines_alert:
-        send_fn('🛡 AI Brain 서비스 가드\n' + '\n'.join(lines_alert))
+        result = send_fn('🛡 AI Brain 서비스 가드\n' + '\n'.join(lines_alert))
+        if result is False:
+            return
         for name in alerted_names:
             entry = dict(state.get(name) or {})
             entry['alerted_at'] = now.timestamp()
             state[name] = entry
         _persist()
-    if lines_recover:
-        send_fn('🛡 AI Brain 서비스 가드\n' + '\n'.join(lines_recover))
 
 
 def read_latest() -> dict[str, Any] | None:

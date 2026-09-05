@@ -19,6 +19,8 @@ import pytest
 import scheduler
 from scheduler import Scheduler
 
+ORIGINAL_SEND_TELEGRAM = scheduler.send_telegram
+
 
 @pytest.fixture(autouse=True)
 def _silence_side_effects():
@@ -41,6 +43,38 @@ def test_telegram_automation_defaults_are_fail_closed():
     assert scheduler.Config.ALPHA_SCANNER_TELEGRAM_ENABLED is False
     assert scheduler.Config.MIROFISH_WORKFLOW_TELEGRAM_ENABLED is False
     assert scheduler.Config.ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED is False
+
+
+def test_send_telegram_can_skip_failure_queue_for_guard(monkeypatch):
+    """Guard alerts must not accumulate duplicate queued messages during Telegram outages."""
+    scheduler._telegram_queue.clear()
+    monkeypatch.setattr(scheduler, "_flush_telegram_queue", lambda: None)
+    monkeypatch.setattr(scheduler, "_try_send_telegram", lambda *args, **kwargs: False)
+
+    assert ORIGINAL_SEND_TELEGRAM("guard down", channel=False, queue_on_failure=False) is False
+    assert scheduler._telegram_queue == []
+
+
+def test_aibrain_service_guard_uses_nonqueued_telegram(monkeypatch):
+    """The periodic guard should not queue failed sends and then retry a fresh duplicate."""
+    calls = []
+
+    def fake_run_guard(send_fn, *, now=None):
+        assert send_fn("guard fail") is False
+        return {"overall": "fail", "services": {"decision": {"status": "fail"}}}
+
+    monkeypatch.setattr(
+        "app.services.mirofish.service_guard.run_guard",
+        fake_run_guard,
+    )
+    monkeypatch.setattr(
+        scheduler,
+        "send_telegram",
+        lambda message, **kwargs: calls.append((message, kwargs)) or False,
+    )
+
+    assert scheduler.run_aibrain_service_guard() is True
+    assert calls == [("guard fail", {"channel": False, "queue_on_failure": False})]
 
 
 def test_with_record_true_is_success():

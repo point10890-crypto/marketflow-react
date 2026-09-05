@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""AI Brain 서비스 가드 — 체커 판정·상태전이 알림·프리웜·쿼터 계약 (2026-09-01 서비스화)."""
+"""AI Brain 서비스 가드 — 체커 판정·실패 진입 알림·프리웜·쿼터 계약 (2026-09-01 서비스화)."""
 import json
 import os
 import time
@@ -114,9 +114,9 @@ def test_decision_probe_budget_and_slowest_source(tmp_path, monkeypatch):
     assert out['status'] == 'fail' and 'db locked' in out['detail']['probe_error']
 
 
-# ─── 상태전이 알림 ───────────────────────────────────────────
+# ─── 실패 진입 알림 ─────────────────────────────────────────
 
-def test_run_guard_alerts_only_on_transition(guard_paths, monkeypatch):
+def test_run_guard_alerts_only_when_failure_starts(guard_paths, monkeypatch):
     state = {'v': 'fail'}
     monkeypatch.setattr(sg, 'CHECKERS', {
         'scanner': lambda now: {'status': state['v'], 'detail': {'reason': 'x'}},
@@ -127,18 +127,48 @@ def test_run_guard_alerts_only_on_transition(guard_paths, monkeypatch):
     assert out1['overall'] == 'fail' and len(sent) == 1 and '알파 스캐너' in sent[0]
 
     sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=10))
-    assert len(sent) == 1                                    # 쿨다운 안 재알림 없음
+    assert len(sent) == 1                                    # 동일 장애 지속은 침묵
 
     sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=40))
-    assert len(sent) == 2                                    # 쿨다운 경과 후 1회 상기
+    assert len(sent) == 1                                    # 시간이 지나도 반복 발송 없음
 
     state['v'] = 'ok'
     sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=50))
-    assert len(sent) == 3 and '복구' in sent[-1]             # 복구 1회
+    assert len(sent) == 1                                    # 복구 OK 는 상태 기록만
 
     sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=60))
-    assert len(sent) == 3                                    # 정상 지속은 침묵
+    assert len(sent) == 1                                    # 정상 지속은 침묵
+
+    state['v'] = 'fail'
+    sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=70))
+    assert len(sent) == 2                                    # 복구 후 새 장애는 다시 알림
     assert (guard_paths / 'latest.json').exists() and (guard_paths / 'history.jsonl').exists()
+
+
+def test_warn_is_recorded_without_telegram_until_it_becomes_fail(guard_paths, monkeypatch):
+    """warn 과 ok 는 발송하지 않고, 실제 fail 로 승격될 때만 알린다."""
+    state = {'v': 'warn'}
+    monkeypatch.setattr(sg, 'CHECKERS', {
+        'decision': lambda now: {'status': state['v'], 'detail': {'probe_s': 8.1}},
+    })
+    sent: list[str] = []
+
+    out1 = sg.run_guard(send_fn=sent.append, now=MONDAY_1030)
+    assert out1['overall'] == 'warn'
+    assert sent == []
+
+    state['v'] = 'ok'
+    sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=10))
+    assert sent == []
+
+    state['v'] = 'warn'
+    sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=20))
+    assert sent == []
+
+    state['v'] = 'fail'
+    sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=30))
+    assert len(sent) == 1
+    assert '판단 조회: FAIL' in sent[0]
 
 
 def test_silent_run_does_not_consume_transition_alert(guard_paths, monkeypatch):
@@ -149,9 +179,9 @@ def test_silent_run_does_not_consume_transition_alert(guard_paths, monkeypatch):
     sg.run_guard(send_fn=None, now=MONDAY_1030)              # 무발송 실행이 전이를 먼저 관측
     sent: list[str] = []
     sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=10))
-    assert len(sent) == 1                                    # 쿨다운에 눌리지 않고 발송된다
+    assert len(sent) == 1                                    # 무발송 관측에 눌리지 않고 발송된다
     sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=15))
-    assert len(sent) == 1                                    # 발송 후에는 쿨다운 정상 적용
+    assert len(sent) == 1                                    # 발송 후 동일 장애 지속은 침묵
 
 
 def test_silent_run_recovery_stays_silent_later(guard_paths, monkeypatch):
@@ -181,6 +211,18 @@ def test_send_failure_does_not_mark_alerted(guard_paths, monkeypatch):
     sent: list[str] = []
     sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=10))
     assert len(sent) == 1                                    # 실패한 알림은 소모되지 않았다
+
+
+def test_false_send_result_does_not_mark_alerted(guard_paths, monkeypatch):
+    """스케줄러의 텔레그램 발송 실패(False)는 성공 발송으로 기록하지 않는다."""
+    monkeypatch.setattr(sg, 'CHECKERS', {
+        'decision': lambda now: {'status': 'fail', 'detail': {'probe_s': 35.69}},
+    })
+
+    assert sg.run_guard(send_fn=lambda msg: False, now=MONDAY_1030)['overall'] == 'fail'
+    sent: list[str] = []
+    sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=10))
+    assert len(sent) == 1
 
 
 def test_checker_exception_becomes_service_fail(guard_paths, monkeypatch):
