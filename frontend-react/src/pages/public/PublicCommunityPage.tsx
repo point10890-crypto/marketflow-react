@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { publicCommunityAPI, PublicBoard, PublicPostSummary } from '@/lib/api';
-import { AdSlot, PublicShell } from '@/components/public/PublicShell';
+import { PublicShell, getPublicAccountAction } from '@/components/public/PublicShell';
+import { useAuth } from '@/contexts/AuthContext';
 import { useSeo } from '@/lib/seo';
 
 /**
@@ -125,11 +126,8 @@ export default function PublicCommunityPage() {
                     ) : rows.length === 0 ? (
                         <div className="py-20 text-center text-sm text-gray-600">아직 게시글이 없습니다</div>
                     ) : (
-                        rows.map((p, i) => (
+                        rows.map((p) => (
                             <div key={`${p.is_notice}-${p.id}`}>
-                                {i === Math.min(6, Math.max(0, rows.length - 1)) && rows.length > 4 && (
-                                    <AdSlot slot="9524871360" className="border-b border-white/[0.04] px-4 py-2" />
-                                )}
                                 <Link to={`/community/post/${p.id}`}
                                       className="group relative flex min-h-[56px] items-center gap-3 border-b border-white/[0.04] px-4 py-3.5 transition-colors last:border-b-0 hover:bg-white/[0.025] sm:px-5">
                                     <span className={`absolute inset-y-0 left-0 w-[2px] scale-y-0 transition-transform group-hover:scale-y-100 ${accent.bar}`} />
@@ -188,21 +186,23 @@ export default function PublicCommunityPage() {
 
 export function JoinBanner() {
     const navigate = useNavigate();
+    const { user, loading } = useAuth();
+    const action = getPublicAccountAction(user, loading);
     return (
         <div className="pub-rise mt-8 overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.07] via-transparent to-transparent p-5 sm:p-6"
              style={{ animationDelay: '180ms' }}>
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                     <div className="text-[15px] font-black text-white">
-                        매일 아침, AI 시그널을 직접 받아보세요
+                        분석 도구가 필요할 때 대시보드를 이용하세요
                     </div>
                     <p className="mt-1 text-[12.5px] leading-relaxed text-gray-500">
-                        종가베팅 · VCP · AI 차트 분석 전체 기능과 글쓰기·댓글은 회원 전용입니다.
+                        공개 가이드는 가입 없이 읽을 수 있습니다. 계정 생성은 무료이며 전체 대시보드는 유료 플랜 승인 후 이용합니다.
                     </p>
                 </div>
-                <button onClick={() => navigate('/signup')}
+                <button disabled={action.disabled} onClick={() => navigate(action.to)}
                         className="min-h-[44px] shrink-0 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-5 text-[13px] font-black text-black transition-transform hover:scale-[1.03]">
-                    무료로 시작하기 <i className="fas fa-arrow-right ml-1.5" />
+                    {action.label} <i className="fas fa-arrow-right ml-1.5" />
                 </button>
             </div>
         </div>

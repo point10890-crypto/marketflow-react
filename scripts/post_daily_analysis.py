@@ -21,7 +21,10 @@ import sys
 import uuid
 from collections import defaultdict
 from datetime import datetime
+from html import escape
+from math import isfinite
 from typing import Optional
+from urllib.parse import urlsplit
 
 import requests
 
@@ -163,12 +166,11 @@ def _already_posted_today(token: str, date_str: str) -> bool:
 def _build_content(data: dict, images: dict) -> tuple[str, str]:
     """jongga_v2 data → (title, content_html)"""
     signals = data.get('signals') or []
-    by_grade = data.get('by_grade') or {}
     date_str = data.get('date', datetime.now().strftime('%Y-%m-%d'))
     mm_dd = date_str[5:10].replace('-', '/').lstrip('0')  # "4/15"
 
-    s_count = by_grade.get('S', 0)
-    a_count = by_grade.get('A', 0)
+    s_count = sum(s.get('grade') == 'S' for s in signals)
+    a_count = sum(s.get('grade') == 'A' for s in signals)
 
     title = f"[종가베팅] {mm_dd} 오늘의 S급 {s_count}종목 + A급 {a_count}종목"
 
@@ -191,47 +193,76 @@ def _build_content(data: dict, images: dict) -> tuple[str, str]:
         if code and p.get('source') == 'consensus':
             ai_rank_map[code] = p.get('rank')
 
-    # HTML 빌드
+    def text(value):
+        return escape(str(value), quote=True)
+
+    def number(value, pattern):
+        if isinstance(value, bool):
+            return '확인 불가'
+        try:
+            numeric = float(value)
+            return format(numeric, pattern) if isfinite(numeric) else '확인 불가'
+        except (TypeError, ValueError):
+            return '확인 불가'
+
+    def safe_url(value, upload=False):
+        if not isinstance(value, str):
+            return ''
+        if upload and value.startswith('/api/community/uploads/'):
+            return text(value)
+        try:
+            parsed = urlsplit(value)
+            if parsed.scheme in ('http', 'https') and parsed.hostname and not parsed.username:
+                return text(value)
+        except ValueError:
+            pass
+        return ''
+
+    # HTML 빌드 — 외부 제목/문자열은 텍스트로만 삽입한다.
     hero_url = images.get('_hero')
-    hero_html = f'<p><img src="{hero_url}" alt="hero" /></p>' if hero_url else ""
+    hero_url = safe_url(hero_url, upload=True)
+    hero_html = f'<p><img src="{hero_url}" alt="시장 관찰을 표현한 AI 생성 이미지" /></p>' if hero_url else ""
 
     content = f"""{hero_html}
 
-<h1>오늘의 한 줄</h1>
-<p><strong>{date_str}</strong> 종가베팅 V2 결과 — 총 <strong>{s_count + a_count}개 시그널</strong> (S:{s_count} · A:{a_count}).</p>
+<h2>관찰 후보 요약</h2>
+<p><strong>{text(date_str)}</strong> 종가베팅 V2 결과 — 총 <strong>{len(signals)}개 관찰 후보</strong>.</p>
+<p>시장 구분: 한국 주식. 개별 종목의 거래소 구분과 원천 시각은 원본 데이터에서 확인해야 합니다.
+아래 등급은 분석 모델의 관찰 우선순위이며, 매수 지시나 수익 보장이 아닙니다.</p>
 
 <hr />
 """
 
     for theme_label, items in sorted_themes:
         items_sorted = sorted(items, key=lambda x: (x.get('grade') != 'S', -x.get('score', {}).get('total', 0)))
-        theme_img = images.get(theme_label)
-        img_html = f'<p><img src="{theme_img}" alt="{theme_label}" /></p>' if theme_img else ""
+        theme_img = safe_url(images.get(theme_label), upload=True)
+        img_html = f'<p><img src="{theme_img}" alt="{text(theme_label)} — AI 생성 이미지" /></p>' if theme_img else ""
 
-        content += f"\n<h1>{theme_label}</h1>\n{img_html}\n"
+        content += f"\n<h2>{text(theme_label)}</h2>\n{img_html}\n"
 
         for s in items_sorted:
             name = s.get('stock_name', '?')
             code = s.get('stock_code', '')
             grade = s.get('grade', '?')
-            price = s.get('current_price') or s.get('entry_price') or 0
-            pct = s.get('change_pct', 0)
-            score = s.get('score', {}).get('total', 0)
+            price = s.get('current_price') if s.get('current_price') is not None else s.get('entry_price')
+            pct = s.get('change_pct')
+            score = (s.get('score') or {}).get('total')
             ai_rank = ai_rank_map.get(code)
 
-            grade_tag = f"<em>({grade}등급)</em>"
-            ai_tag = f" <em>· AI Consensus #{ai_rank}</em>" if ai_rank else ""
+            grade_tag = f"<em>({text(grade)}등급)</em>"
+            ai_tag = f" <em>· 원본 합의 태그 #{text(ai_rank)}</em>" if ai_rank else ""
 
-            content += f"\n<h2>{name} {grade_tag}{ai_tag}</h2>\n"
-            content += f"<p><strong>{price:,.0f}원 · {pct:+.2f}%</strong> (점수 {score}/17)</p>\n"
+            content += f"\n<h3>{text(name)} · {text(code or '종목 코드 확인 불가')} {grade_tag}{ai_tag}</h3>\n"
+            content += f"<p><strong>기록 가격: {number(price, ',.0f')}원 · 등락률: {number(pct, '+.2f')}%</strong> (점수 {number(score, 'g')}/17)</p>\n"
 
             # 뉴스/재료 한 줄
             news_items = s.get('news_items') or []
             if news_items:
                 first_news = news_items[0]
-                news_text = first_news.get('title') if isinstance(first_news, dict) else str(first_news)
-                if news_text:
-                    content += f"<p>📰 {news_text[:100]}</p>\n"
+                news_text = first_news.get('title') if isinstance(first_news, dict) else None
+                news_url = safe_url(first_news.get('url') or first_news.get('link')) if isinstance(first_news, dict) else ''
+                if news_text and news_url:
+                    content += f'<p>참고 뉴스: <a href="{news_url}" rel="noopener noreferrer">{text(str(news_text)[:100])}</a> — 종목 관련성과 게시 시각을 원문에서 확인하세요.</p>\n'
 
             # 체크리스트 요약
             cl = s.get('checklist', {}) or {}
@@ -240,31 +271,31 @@ def _build_content(data: dict, images: dict) -> tuple[str, str]:
             if cl.get('is_breakout'): tags.append('돌파')
             if cl.get('ma_aligned'): tags.append('이평정배열')
             if cl.get('supply_positive'): tags.append('수급양호')
-            if cl.get('has_disclosure'): tags.append('호재공시')
+            if cl.get('has_disclosure'): tags.append('공시 감지 — 내용 확인 필요')
             if tags:
                 content += f"<p>✔ {' · '.join(tags)}</p>\n"
 
             content += "\n<hr />\n"
 
     content += """
-<h1>💵 매매 규칙</h1>
-<p>손절 : 매수가 <strong>-3%</strong> (시그널의 stop 가격 참고)</p>
-<p>목표 : 매수가 <strong>+5%</strong></p>
-<p>테마당 1종목씩만 — 분산 필수.</p>
-
-<hr />
-
-<h1>⚠️ 주의</h1>
-<p>상한가 근접 종목은 <strong>오버나잇 리스크</strong> 높음.</p>
-<p>손절선 깨지면 즉시 정리 — 반등 기다리지 말 것.</p>
-<p>AI Consensus 태그는 Gemini+GPT-4o 교차검증 통과.</p>
-
-<hr />
-
-<p><em>종가베팅 V2 · 17점 체크리스트 · Gemini + GPT-4o 교차검증</em></p>
+<h2>이 기록을 확인하는 방법</h2>
+<p>기록 가격과 등락률은 원본 분석 자료의 값입니다. 실시간 시세나 실제 체결 가격이 아니며,
+뉴스·공시·수급의 시각과 종목 관련성을 원문에서 다시 확인해야 합니다. 원문 링크가 없는 뉴스는 싣지 않습니다.</p>
+<p>원본의 합의 태그가 있더라도 특정 모델의 실제 호출 성공이나 사람의 검수를 뜻하지 않습니다.
+누락된 수치는 확인 불가로 표시합니다. 데이터가 부족하면 판단을 보류하는 것이 우선입니다.</p>
+<p>실패한 후보와 평가 대기 건까지 포함해
+<a href="https://bit-man.net/guide/signal-verification-worked-example">관찰 후보 검증 예제</a>의 순서로 점검하세요.
+보유기간·진입 가정·비용을 정하지 않은 등락률은 전략의 성과가 아닙니다.</p>
+<h2>위험과 한계</h2>
+<p>가격 급변·거래정지·유동성 부족으로 원하는 가격에 거래하지 못할 수 있습니다.
+특정 손절 폭이나 목표 수익률이 모든 종목과 투자자에게 적합한 것은 아닙니다.
+이 글은 자동 생성된 관찰 기록이며 개별 투자 자문이나 매매 권유가 아닙니다.</p>
+<p><a href="https://bit-man.net/editorial">작성·정정 원칙</a> ·
+<a href="https://bit-man.net/contact">데이터 오류 신고</a></p>
 """
-    content += f'<p><em>데이터: {date_str} 장마감 · 자동 생성</em></p>\n'
-    content += '<p><em>이미지: Gemini 2.5 Flash Image (Nano Banana) 생성</em></p>\n'
+    content += f'<p><em>자료 기준일: {text(date_str)} · 자동 생성. 개별 원천 시각과 장 마감 확정 여부는 이 글에서 검증하지 않았습니다.</em></p>\n'
+    if images:
+        content += '<p><em>이미지: AI 생성 삽화이며 실제 차트·수익 증빙이 아닙니다.</em></p>\n'
 
     return title, content
 

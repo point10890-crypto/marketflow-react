@@ -1,3 +1,4 @@
+import { VERIFICATION_GUIDE } from './verificationExample.mjs';
 /**
  * 인사이트 가이드 — 저장소에 내장된 오리지널 교육 콘텐츠.
  *
@@ -24,6 +25,7 @@ const ORDER_RISK = {
 };
 
 export const GUIDES = [
+    VERIFICATION_GUIDE,
     {
         slug: 'vcp-pattern-basics',
         title: 'VCP(변동성 수축 패턴) 기초 — 개념부터 확인 지표까지',

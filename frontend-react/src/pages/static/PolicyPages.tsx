@@ -1,3 +1,4 @@
+import { AD_PRIVACY_HTML, DATA_SHARING_HTML } from '@/data/publishing.mjs';
 import { ReactNode, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { PublicShell } from '@/components/public/PublicShell';
@@ -33,7 +34,7 @@ function PolicyLayout({ label, title, updated, path, description, jsonLd, childr
 
 export function PrivacyPage() {
     return (
-        <PolicyLayout label="PRIVACY" title="개인정보처리방침" updated="2026-08-17" path="/privacy"
+        <PolicyLayout label="PRIVACY" title="개인정보처리방침" updated="2026-09-15" path="/privacy"
                       description="MarketFlow 개인정보처리방침 — 수집 항목, 이용 목적, 보유·파기 원칙, Google AdSense 광고 쿠키, 이용자의 권리와 문의처를 안내합니다.">
             <p>
                 MarketFlow(이하 "서비스")는 이용자의 개인정보를 소중히 여기며, 「개인정보 보호법」 등 관련 법령을
@@ -62,33 +63,9 @@ export function PrivacyPage() {
             </p>
 
             <h2>4. 광고 및 쿠키 (Google AdSense)</h2>
-            <p>
-                서비스의 공개 페이지에는 Google AdSense 광고가 게재될 수 있습니다. Google 을 포함한 제3자 광고
-                사업자는 쿠키 및 광고 식별자를 사용하여 이용자의 이전 방문 기록에 기반한 맞춤 광고를 표시할 수
-                있습니다.
-            </p>
-            <ul>
-                <li>
-                    Google 의 광고 쿠키 사용에 대한 자세한 내용은{' '}
-                    <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">
-                        Google 광고 정책
-                    </a>
-                    에서 확인할 수 있습니다.
-                </li>
-                <li>
-                    이용자는{' '}
-                    <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">
-                        Google 광고 설정
-                    </a>
-                    에서 맞춤 광고를 비활성화할 수 있으며, 브라우저 설정을 통해 쿠키 저장을 거부할 수 있습니다.
-                </li>
-            </ul>
-
+            <div dangerouslySetInnerHTML={{ __html: AD_PRIVACY_HTML }} />
             <h2>5. 제3자 제공</h2>
-            <p>
-                서비스는 이용자의 개인정보를 외부에 판매하거나 제공하지 않습니다. 다만 법령에 근거한 요청이 있는
-                경우는 예외로 합니다.
-            </p>
+            <div dangerouslySetInnerHTML={{ __html: DATA_SHARING_HTML }} />
 
             <h2>6. 이용자의 권리</h2>
             <p>

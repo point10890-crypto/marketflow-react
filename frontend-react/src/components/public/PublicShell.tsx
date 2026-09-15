@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -195,6 +195,8 @@ export function PublicFooter() {
                         <div className="pub-label">정책 · 문의</div>
                         <ul className="mt-3 space-y-2 text-[12px]">
                             <li><Link className="text-gray-500 transition-colors hover:text-[#ff9b89]" to="/about">서비스 소개</Link></li>
+                            <li><Link className="text-gray-500 transition-colors hover:text-[#ff9b89]" to="/editorial">편집 · 정정 원칙</Link></li>
+                            <li><Link className="text-gray-500 transition-colors hover:text-[#ff9b89]" to="/contact">문의 · 오류 신고</Link></li>
                             <li><Link className="text-gray-500 transition-colors hover:text-[#ff9b89]" to="/privacy">개인정보처리방침</Link></li>
                             <li><Link className="text-gray-500 transition-colors hover:text-[#ff9b89]" to="/terms">이용약관</Link></li>
                             <li>
@@ -216,30 +218,5 @@ export function PublicFooter() {
                 </div>
             </div>
         </footer>
-    );
-}
-
-/**
- * AdSense manual slot for public editorial/community pages. The conversion
- * landing intentionally does not render ads.
- */
-export function AdSlot({ slot, className = '' }: { slot: string; className?: string }) {
-    useEffect(() => {
-        try {
-            ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-        } catch { /* script unavailable or blocked */ }
-    }, []);
-    return (
-        <div className={`pub-ad ${className}`} aria-label="advertisement">
-            <span className="pub-ad-tag">AD</span>
-            <ins
-                className="adsbygoogle"
-                style={{ display: 'block' }}
-                data-ad-client="ca-pub-4268071335236139"
-                data-ad-slot={slot}
-                data-ad-format="auto"
-                data-full-width-responsive="true"
-            />
-        </div>
     );
 }

@@ -1,3 +1,4 @@
+import { AD_PRIVACY_HTML, DATA_SHARING_HTML, PUBLISHING_PAGES } from '../src/data/publishing.mjs';
 // 공개 경로 정적 스냅샷 생성기 — `vite build` 뒤에 실행된다 (package.json build 스크립트).
 //
 // 왜 필요한가: SPA 는 모든 경로가 같은 빈 index.html 을 반환한다. AdSense 심사·검색
@@ -21,7 +22,7 @@ const ORIGIN = 'https://bit-man.net';
 const DIST = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist');
 
 const NAV = `
-<nav><a href="/">홈</a> · <a href="/guide">인사이트 가이드</a> · <a href="/community">커뮤니티</a> · <a href="/pricing">요금제</a> · <a href="/about">서비스 소개</a> · <a href="/privacy">개인정보처리방침</a> · <a href="/terms">이용약관</a></nav>`;
+<nav><a href="/">홈</a> · <a href="/guide">인사이트 가이드</a> · <a href="/community">커뮤니티</a> · <a href="/pricing">요금제</a> · <a href="/about">서비스 소개</a> · <a href="/privacy">개인정보처리방침</a> · <a href="/terms">이용약관</a> · <a href="/editorial">편집 · 정정 원칙</a> · <a href="/contact">문의 · 오류 신고</a></nav>`;
 
 const FOOTER = `
 <footer><p>MarketFlow 는 관찰·분석 정보를 제공하며 자동 주문이나 투자 자문을 수행하지 않습니다.
@@ -37,10 +38,11 @@ const ROUTES = [
         description:
             '잠들지 않는 AI 에이전트가 한국·미국·암호화폐 시장을 시장 일정에 맞춰 자동 분석합니다. 장중 주도주 관찰, 종가베팅 스크리너, 그리고 스스로 학습하는 AI Brain — 근거와 사후 검증까지 한 대시보드에서.',
         body: `
+<p>가입 없이 읽는 시장 분석과 검증 방법: <a href="/guide/signal-verification-worked-example">AI 후보 6건 검증 예제</a> · <a href="/guide">전체 가이드</a></p>
 <h1>사람이 잠든 시간에도, 에이전트는 시장을 분석합니다</h1>
 <p>새벽 미국 시장 갱신부터 장중 주도주 관찰, 마감 종가베팅 스크리닝까지 — MarketFlow의 자동화
 에이전트가 분석 파이프라인 전체를 스스로 돌립니다. 그 위에서 AI Brain이 결과를 다시 학습해
-다음 관찰을 더 정확하게 만듭니다.</p>
+다음 관찰의 참고 자료로 활용합니다.</p>
 <h2>에이전트의 하루 — 분석은 스케줄이 대신합니다</h2>
 <ul>
 <li><strong>04:00 · 미국 시장 전체 갱신</strong> — VIX·공포탐욕·섹터 로테이션 수집, AI 매크로 브리핑과 Smart Money Top Picks 작성</li>
@@ -121,7 +123,7 @@ const ROUTES = [
             'MarketFlow 개인정보처리방침 — 수집 항목, 이용 목적, 보유·파기 원칙, Google AdSense 광고 쿠키, 이용자의 권리와 문의처를 안내합니다.',
         body: `
 <h1>개인정보처리방침</h1>
-<p>시행일 2026-08-17</p>
+<p>시행일 2026-09-15</p>
 <p>MarketFlow(이하 "서비스")는 이용자의 개인정보를 소중히 여기며, 「개인정보 보호법」 등 관련 법령을
 준수합니다. 본 방침은 서비스가 어떤 정보를 수집하고 어떻게 이용·보관·파기하는지를 설명합니다.</p>
 <h2>1. 수집하는 개인정보 항목</h2>
@@ -141,13 +143,9 @@ const ROUTES = [
 <p>개인정보는 회원 탈퇴 시 지체 없이 파기합니다. 단, 관련 법령에 따라 보존이 필요한 정보(결제·정산
 기록 등)는 해당 법령이 정한 기간 동안 분리 보관 후 파기합니다.</p>
 <h2>4. 광고 및 쿠키 (Google AdSense)</h2>
-<p>서비스의 공개 페이지에는 Google AdSense 광고가 게재될 수 있습니다. Google 을 포함한 제3자 광고
-사업자는 쿠키 및 광고 식별자를 사용하여 이용자의 이전 방문 기록에 기반한 맞춤 광고를 표시할 수 있습니다.
-Google 의 광고 쿠키 사용에 대한 자세한 내용은 <a href="https://policies.google.com/technologies/ads">Google 광고 정책</a>에서
-확인할 수 있으며, <a href="https://adssettings.google.com">Google 광고 설정</a>에서 맞춤 광고를 비활성화할 수 있습니다.</p>
+${AD_PRIVACY_HTML}
 <h2>5. 제3자 제공</h2>
-<p>서비스는 이용자의 개인정보를 외부에 판매하거나 제공하지 않습니다. 다만 법령에 근거한 요청이 있는
-경우는 예외로 합니다.</p>
+${DATA_SHARING_HTML}
 <h2>6. 이용자의 권리</h2>
 <p>이용자는 언제든지 자신의 개인정보를 조회·수정하거나 삭제(회원 탈퇴)를 요청할 수 있습니다.</p>
 <h2>7. 문의처</h2>
@@ -238,6 +236,11 @@ Google 의 광고 쿠키 사용에 대한 자세한 내용은 <a href="https://p
     },
 ];
 
+for (const page of PUBLISHING_PAGES) {
+    ROUTES.push({ path: page.path, title: `${page.title} | MarketFlow`, description: page.description,
+        body: `<h1>${page.title}</h1><p>최종 갱신: ${page.updated}</p>${page.html}` });
+}
+
 // ── 인사이트 가이드 — src/data/guides.mjs 단일 소스에서 목록/본문 페이지 생성 ──
 const GUIDE_DISCLAIMER = `
 <p><em>이 글은 투자 교육을 위한 일반 정보이며 특정 종목의 매수·매도 권유나 투자 자문이 아닙니다.
@@ -317,6 +320,8 @@ function esc(s) {
 function renderRoute(template, route) {
     const url = `${ORIGIN}${route.path === '/' ? '/' : route.path}`;
     let html = template
+        .replace(/<noscript>[\s\S]*?<\/noscript>/, '')
+        .replace(/(<meta property="og:type" content=")[^"]*(")/, `$1${route.path.startsWith('/guide/') ? 'article' : 'website'}$2`)
         .replace(/<title>[^<]*<\/title>/, `<title>${route.title.replace(/</g, '&lt;')}</title>`)
         .replace(/(<meta name="description" content=")[^"]*(")/, `$1${esc(route.description)}$2`)
         .replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${url}$2`)
@@ -330,6 +335,17 @@ function renderRoute(template, route) {
         const json = JSON.stringify(route.jsonLd).replace(/</g, '\\u003c');
         html = html.replace('</head>', `    <script type="application/ld+json" data-seo="jsonld">${json}</script>\n</head>`);
     }
+
+    // Keep the public text readable even when external CSS/JS is unavailable.
+    html = html.replace('</head>', `<style>
+body{background:#09090b}
+#seo-content{font-family:system-ui,sans-serif;background:#09090b;overflow-wrap:anywhere}
+#seo-content a{color:#ffad9c;text-decoration:underline;text-underline-offset:3px}
+#seo-content h1,#seo-content h2,#seo-content th{color:#fafafa}
+#seo-content table{width:100%;border-collapse:collapse}
+#seo-content th,#seo-content td{padding:8px;border:1px solid #52525b;text-align:left}
+#seo-content footer{margin-top:40px;border-top:1px solid #52525b;padding-top:16px}
+</style></head>`);
 
     const snapshot = `<div id="seo-content" style="max-width:760px;margin:0 auto;padding:32px 20px;color:#d4d4d8;line-height:1.7">${NAV}${route.body}${FOOTER}</div>\n    `;
     html = html.replace('<div id="root">', `${snapshot}<div id="root">`);

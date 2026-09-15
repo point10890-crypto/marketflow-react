@@ -69,6 +69,7 @@ const PublicCommunityPage = lazy(() => import('@/pages/public/PublicCommunityPag
 const PublicPostPage = lazy(() => import('@/pages/public/PublicPostPage'));
 const GuideListPage = lazy(() => import('@/pages/public/GuidePages').then(m => ({ default: m.GuideListPage })));
 const GuideArticlePage = lazy(() => import('@/pages/public/GuidePages').then(m => ({ default: m.GuideArticlePage })));
+const PublishingPage = lazy(() => import('@/pages/public/PublishingPage'));
 const PrivacyPage = lazy(() => import('@/pages/static/PolicyPages').then(m => ({ default: m.PrivacyPage })));
 const TermsPage = lazy(() => import('@/pages/static/PolicyPages').then(m => ({ default: m.TermsPage })));
 const AboutPage = lazy(() => import('@/pages/static/PolicyPages').then(m => ({ default: m.AboutPage })));
@@ -112,7 +113,7 @@ export function ApprovedGuard({ children }: { children: React.ReactNode }) {
 // 라우트 표기 호환을 위해 별칭으로 유지.
 const ProGuard = ApprovedGuard;
 
-// 공개 라우트용 게이트 — 랜딩/공개 커뮤니티/가이드/프라이싱에 로그인한 "비구독 회원"
+// 구독 전환 게이트 — 랜딩/공개 커뮤니티/프라이싱 (교육 가이드는 항상 공개)에 로그인한 "비구독 회원"
 // (노티어·만료·승인대기)이 들어오면 구독 퍼널로 돌려보낸다. 비로그인 방문자와
 // 활성 구독자·admin 은 그대로 열람 (AdSense 크롤러는 비로그인이므로 영향 없음).
 function FunnelGate({ children }: { children: React.ReactNode }) {
@@ -203,8 +204,10 @@ export default function App() {
                     <Route path="/community" element={<FunnelGate><Suspense fallback={<LoadingFallback />}><PublicCommunityPage /></Suspense></FunnelGate>} />
                     <Route path="/community/post/:postId" element={<FunnelGate><Suspense fallback={<LoadingFallback />}><PublicPostPage /></Suspense></FunnelGate>} />
                     <Route path="/community/:board" element={<FunnelGate><Suspense fallback={<LoadingFallback />}><PublicCommunityPage /></Suspense></FunnelGate>} />
-                    <Route path="/guide" element={<FunnelGate><Suspense fallback={<LoadingFallback />}><GuideListPage /></Suspense></FunnelGate>} />
-                    <Route path="/guide/:slug" element={<FunnelGate><Suspense fallback={<LoadingFallback />}><GuideArticlePage /></Suspense></FunnelGate>} />
+                    <Route path="/guide" element={<Suspense fallback={<LoadingFallback />}><GuideListPage /></Suspense>} />
+                    <Route path="/guide/:slug" element={<Suspense fallback={<LoadingFallback />}><GuideArticlePage /></Suspense>} />
+                    <Route path="/editorial" element={<Suspense fallback={<LoadingFallback />}><PublishingPage /></Suspense>} />
+                    <Route path="/contact" element={<Suspense fallback={<LoadingFallback />}><PublishingPage /></Suspense>} />
                     <Route path="/privacy" element={<Suspense fallback={<LoadingFallback />}><PrivacyPage /></Suspense>} />
                     <Route path="/terms" element={<Suspense fallback={<LoadingFallback />}><TermsPage /></Suspense>} />
                     <Route path="/about" element={<Suspense fallback={<LoadingFallback />}><AboutPage /></Suspense>} />

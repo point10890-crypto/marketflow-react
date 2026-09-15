@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
-import { AdSlot, PublicShell } from '@/components/public/PublicShell';
+import { PublicShell } from '@/components/public/PublicShell';
 import { GUIDES, findGuide, renderGuideNotes } from '@/data/guides.mjs';
 import { CREATOR_PROFILE } from '@/data/creator.mjs';
 import { useSeo, SITE_ORIGIN } from '@/lib/seo';
@@ -63,6 +63,10 @@ export function GuideListPage() {
                         <Link to="/about#creator" className="text-[#ff9b89] underline underline-offset-4">
                             운영자 소개와 채널 보기
                         </Link>
+                    </p>
+                    <p className="mt-3 text-sm text-gray-400">
+                        <Link to="/editorial" className="underline underline-offset-4">출처·AI 활용·정정 원칙</Link>
+                        {' · '}<Link to="/contact" className="underline underline-offset-4">오류 신고</Link>
                     </p>
                 </div>
 
@@ -200,9 +204,6 @@ export function GuideArticlePage() {
                     아닙니다. 언급된 지표와 체크리스트는 분석 도구일 뿐 수익을 보장하지 않으며,
                     투자의 최종 판단과 책임은 투자자 본인에게 있습니다.
                 </p>
-
-                {/* 본문 하단 광고 */}
-                <AdSlot slot="3817264905" className="mt-8" />
 
                 {/* 관련 가이드 */}
                 <section className="mt-10">
