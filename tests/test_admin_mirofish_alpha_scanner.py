@@ -2243,6 +2243,104 @@ def test_alpha_scanner_alert_check_can_allow_stale_core_for_workflow_batches(tmp
     assert result['new_event_count'] == 1
 
 
+def test_realtime_monitor_defers_contended_lock_without_state_or_transport(tmp_path, monkeypatch):
+    alert_path = str(tmp_path / 'alert.json')
+    monitor_path = tmp_path / 'monitor.json'
+    monitor_path.write_text('{"last_status":"sent"}', encoding='utf-8')
+    before = monitor_path.read_bytes()
+    ready, release = threading.Event(), threading.Event()
+    guard = alpha_scanner.scanner_alert_delivery_guard
+
+    def holder():
+        with guard(alert_path):
+            ready.set()
+            release.wait(3)
+
+    # Bound the old implementation's 30-second wait during the regression test.
+    monkeypatch.setattr(alpha_scanner, 'scanner_alert_delivery_guard',
+                        lambda path, **kwargs: guard(path, timeout=0))
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    owner = threading.Thread(target=holder, daemon=True)
+    owner.start()
+    assert ready.wait(1)
+    try:
+        result = alpha_scanner.run_scanner_realtime_monitor_check(
+            monitor_state_path=str(monitor_path), alert_state_path=alert_path,
+            send_fn=lambda _: pytest.fail('contended monitor must not send'),
+        )
+    finally:
+        release.set()
+        owner.join(2)
+    assert result['status'] == 'busy'
+    assert result['telegram_sent'] is False
+    assert result['monitor_state_committed'] is False
+    assert monitor_path.read_bytes() == before
+    assert not (tmp_path / 'alert.json').exists()
+
+
+def test_realtime_monitor_does_not_hide_timeout_inside_scan(tmp_path, monkeypatch):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+
+    def fail_scan(*args, **kwargs):
+        raise alpha_scanner.FileLockTimeout('different-resource.lock')
+
+    monkeypatch.setattr(alpha_scanner, 'run_scanner_alert_check', fail_scan)
+    with pytest.raises(alpha_scanner.FileLockTimeout):
+        alpha_scanner.run_scanner_realtime_monitor_check(
+            monitor_state_path=str(tmp_path / 'monitor.json'),
+            alert_state_path=str(tmp_path / 'alert.json'),
+        )
+
+
+def test_realtime_monitor_defers_independent_file_lock_owner(tmp_path, monkeypatch):
+    """An independent FileLock exercises the OS lock, not the cached thread lock."""
+    alert_path = str(tmp_path / 'alert.json')
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    with alpha_scanner.FileLock(f'{alert_path}.delivery.lock'):
+        result = alpha_scanner.run_scanner_realtime_monitor_check(
+            alert_state_path=alert_path,
+            monitor_state_path=str(tmp_path / 'monitor.json'),
+        )
+    assert result['status'] == 'busy'
+    assert not (tmp_path / 'monitor.json').exists()
+
+
+def test_realtime_monitor_holds_guard_until_monitor_state_is_persisted(tmp_path, monkeypatch):
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'create_scanner_run',
+                        lambda payload: _minimal_corrupt_state_alert_run())
+    alert_path = str(tmp_path / 'alert.json')
+    monitor_path = str(tmp_path / 'monitor.json')
+    write = alpha_scanner.write_json_atomic
+    outcomes = []
+
+    def challenger():
+        try:
+            with alpha_scanner.scanner_alert_delivery_guard(alert_path, timeout=0):
+                outcomes.append('unprotected')
+        except alpha_scanner.FileLockTimeout:
+            outcomes.append('protected')
+
+    def write_with_probe(path, data, **kwargs):
+        if str(path) == monitor_path:
+            contender = threading.Thread(target=challenger, daemon=True)
+            contender.start()
+            contender.join(2)
+            assert not contender.is_alive()
+        return write(path, data, **kwargs)
+
+    monkeypatch.setattr(alpha_scanner, 'write_json_atomic', write_with_probe)
+    result = alpha_scanner.run_scanner_realtime_monitor_check(
+        alert_state_path=alert_path, monitor_state_path=monitor_path, min_alpha=101,
+    )
+    assert result['status'] == 'no_new_events'
+    assert outcomes == ['protected']
+    assert json.loads((tmp_path / 'monitor.json').read_text())['last_status'] == 'no_new_events'
+    # The completed transaction releases the lock for the next poll.
+    challenger()
+    assert outcomes == ['protected', 'unprotected']
+
+
 def test_alpha_scanner_realtime_monitor_sends_after_source_change(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
     monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))

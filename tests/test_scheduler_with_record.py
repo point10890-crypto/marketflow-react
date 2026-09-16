@@ -650,6 +650,24 @@ def test_alpha_scanner_monitor_sends_changed_top5_after_cooldown(monkeypatch, tm
     tg.assert_called_once_with("changed top5", channel=False)
 
 
+def test_alpha_scanner_monitor_contention_does_not_retry_or_notify(monkeypatch):
+    monkeypatch.setattr(scheduler, '_was_run_recently', lambda *args, **kwargs: False)
+    with patch('app.services.mirofish.alpha_scanner.run_scanner_realtime_monitor_check',
+               return_value={'status': 'busy', 'telegram_sent': False}) as monitor, \
+         patch('scheduler.send_telegram') as notify, \
+         patch('scheduler.send_telegram_long') as transport, \
+         patch('scheduler.time.sleep') as sleep:
+        result = Scheduler._with_record(
+            scheduler.run_alpha_scanner_monitor, 'alpha_scanner_monitor',
+            max_retries=1, retry_delay=120,
+        )()
+    assert result is True
+    assert monitor.call_count == 1
+    sleep.assert_not_called()
+    notify.assert_not_called()
+    transport.assert_not_called()
+
+
 def test_alpha_scanner_monitor_skips_scan_when_source_unchanged():
     result = {
         "status": "unchanged",

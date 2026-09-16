@@ -964,6 +964,11 @@ def run_alpha_scanner_monitor() -> bool:
         )
         status = result.get('status')
         run = result.get('run') or {}
+        if status == 'busy':
+            logger.info(
+                "MiroFish alpha scanner deferred: another scanner transaction is in progress"
+            )
+            return True
         if (
             Config.ALPHA_SCANNER_TELEGRAM_ENABLED
             and Config.ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED

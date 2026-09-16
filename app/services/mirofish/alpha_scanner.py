@@ -12,7 +12,7 @@ import re
 import threading
 import time as time_mod
 from collections import Counter
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from datetime import datetime, time as dt_time, timedelta, timezone
 from typing import Any
 
@@ -839,6 +839,40 @@ def run_scanner_realtime_monitor_check(
     """
     if send_fn is not None and not commit_monitor_state:
         raise ValueError('commit_monitor_state must be true when send_fn is provided')
+    # Flask polling and the scheduler share this transaction. A concurrent owner
+    # will finish it; do not wait 30 seconds and turn normal contention into a
+    # failed job/retry notification. Hold the guard through monitor state writes
+    # too, so an older invocation cannot overwrite the owner's completed state.
+    with ExitStack() as stack:
+        try:
+            locked_state_file = stack.enter_context(
+                scanner_alert_delivery_guard(alert_state_path, timeout=0)
+            )
+        except FileLockTimeout:
+            return {
+                'ok': True,
+                'status': 'busy',
+                'reason': 'another_scanner_transaction_in_progress',
+                'new_event_count': 0,
+                'telegram_sent': False,
+                'state_committed': False,
+                'monitor_state_committed': False,
+            }
+        # Only acquisition contention is handled above. Timeouts/errors inside
+        # the scan must still propagate to the caller's failure handling.
+        return _run_scanner_realtime_monitor_locked(
+            payload, monitor_state_path=monitor_state_path,
+            alert_state_path=locked_state_file, min_alpha=min_alpha,
+            max_risk=max_risk, max_events=max_events, retry_seconds=retry_seconds,
+            force=force, commit_monitor_state=commit_monitor_state, send_fn=send_fn,
+        )
+
+
+def _run_scanner_realtime_monitor_locked(
+    payload, *, monitor_state_path, alert_state_path, min_alpha, max_risk,
+    max_events, retry_seconds, force, commit_monitor_state, send_fn,
+) -> dict[str, Any]:
+    """Read, scan and persist while the canonical delivery guard is held."""
     now = datetime.now(timezone.utc)
     now_iso = now.isoformat()
     monitor_file = monitor_state_path or _monitor_state_path()
