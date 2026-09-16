@@ -39,8 +39,29 @@ state preservation while busy, lock coverage through final persistence, no
 retry notification on contention, propagation of a timeout within analysis,
 existing delivery/deduplication checks and signal contracts.
 
-This is locally verified source code. Production deployment and process restart
-have not been performed for this fix. Both the Flask and scheduler processes
-must load the new module for the changed behavior to apply to all callers.
 An indefinitely stalled lock owner remains a separate operational fault; a
 `busy` result does not claim that the owner completed a scan.
+
+## Production deployment
+
+Deployed `4006fbe` to MiniPC with `git pull --ff-only origin main` following the
+user's explicit deployment request on 2026-09-16. Original scheduler/scanner
+source files were backed up and hash-checked in
+`data/deployment_backups/alpha_monitor_20260916` before the update.
+
+The production checkout test run exposed two pre-existing fixture isolation
+problems: the institutional source test picked up live file timestamps, and the
+scheduler test picked up today's completed task record. All 149 tests passed
+when run with the same MiniPC Python environment in an isolated checkout at
+`C:\Temp\marketflow_alpha_verify_20260916`. Production data was not edited to
+make these tests pass.
+
+Restarted `MarketFlow-Scheduler` and the production `MarketFlow-Flask` launcher
+at 21:39 KST. Confirmed new process start times, scheduler PID/heartbeat, and
+HTTP 200 for `/healthz` and `/api/health` on both localhost:5003 and the public
+API domain. The separate legacy 5001 producer was not restarted; the scheduler
+now defers contention with that existing producer rather than treating it as a
+failed job. No transport settings were changed or manual test messages sent.
+
+These checks confirm deployment and startup, not a long-term observation of
+every subsequent scheduled cycle.
