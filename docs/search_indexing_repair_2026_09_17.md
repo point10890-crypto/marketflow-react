@@ -56,3 +56,36 @@ Functions routing: https://developers.cloudflare.com/pages/functions/routing/
 
 Google indexing and AdSense approval are separate decisions. Submissions do not
 guarantee indexing or approval and report counts may lag the deployed changes.
+
+## Production evidence
+
+- Backend deployed first from main at `7a13ea995f593eb09074422a8b4be16415977ebf`.
+  Backed up the previous public route with a matching SHA-256 before pull.
+  Restarted only `MarketFlow-Flask` (production port 5003).
+- MiniPC localhost and public API `/healthz` and `/api/health`: HTTP 200.
+  New anonymous sitemap endpoint: HTTP 200, 155 public post IDs, no next cursor.
+- Official frontend `npm run deploy` succeeded:
+  https://63f2a6a0.bitman-marketflow.pages.dev
+  Custom domain, Pages production domain and deployment URL serve the new
+  `7a13ea995f59` assets.
+- Live post3 and notice board: HTTP 200 with distinct self canonicals and initial
+  article/list content. Static guide canonical matches its trailing-slash URL.
+  Browser-rendered post3 retained exactly one matching canonical and correct title.
+- Slashless public paths redirect 308 to the canonical slash form. Missing
+  post/unknown board return 404 instead of homepage content. Robots still blocks
+  the private dashboard.
+- Live XML sitemap: HTTP 200, application/xml, 176 distinct canonical URLs,
+  including all 155 public post IDs. No slash mismatch.
+- Search Console accepted `/sitemap.xml` on September 17, then showed
+  "사이트맵 처리 완료", 176 discovered pages and 0 videos. The initial pending
+  fetch label cleared when processing completed.
+- Search Console individually accepted indexing requests for these corrected
+  canonical URLs (each showed "색인 생성 요청됨" and priority crawl queue receipt):
+  - https://bit-man.net/community/post/3/
+  - https://bit-man.net/community/notice/
+  - https://bit-man.net/guide/signal-verification-worked-example/
+- These are accepted crawl requests, not proof of completed indexing. Google
+  had discovered the URLs via the sitemap but had not indexed them at inspection.
+- Release implementation was also cherry-picked into the original development
+  branch as `c45d6f7`, preserving unrelated existing work and untracked files.
+- Temporary local Pages verification server on port 4174 was stopped.
