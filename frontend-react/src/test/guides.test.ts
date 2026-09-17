@@ -34,9 +34,9 @@ describe('insight guides content contract', () => {
 
     it('lists every guide URL in sitemap.xml', () => {
         const sitemap = readFileSync(resolve(__dirname, '../../public/sitemap.xml'), 'utf-8');
-        expect(sitemap).toContain('https://bit-man.net/guide</loc>');
+        expect(sitemap).toContain('https://bit-man.net/guide/</loc>');
         for (const g of GUIDES) {
-            expect(sitemap).toContain(`https://bit-man.net/guide/${g.slug}</loc>`);
+            expect(sitemap).toContain(`https://bit-man.net/guide/${g.slug}/</loc>`);
         }
     });
 

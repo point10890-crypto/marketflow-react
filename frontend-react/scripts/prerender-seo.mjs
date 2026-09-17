@@ -1,4 +1,5 @@
 import { AD_PRIVACY_HTML, DATA_SHARING_HTML, PUBLISHING_PAGES } from '../src/data/publishing.mjs';
+import { publicUrl, normalizePublicLinks } from '../src/lib/publicUrls.mjs';
 // 공개 경로 정적 스냅샷 생성기 — `vite build` 뒤에 실행된다 (package.json build 스크립트).
 //
 // 왜 필요한가: SPA 는 모든 경로가 같은 빈 index.html 을 반환한다. AdSense 심사·검색
@@ -318,7 +319,7 @@ function esc(s) {
 }
 
 function renderRoute(template, route) {
-    const url = `${ORIGIN}${route.path === '/' ? '/' : route.path}`;
+    const url = publicUrl(route.path);
     let html = template
         .replace(/<noscript>[\s\S]*?<\/noscript>/, '')
         .replace(/(<meta property="og:type" content=")[^"]*(")/, `$1${route.path.startsWith('/guide/') ? 'article' : 'website'}$2`)
@@ -332,7 +333,7 @@ function renderRoute(template, route) {
         .replace(/(<meta name="twitter:description" content=")[^"]*(")/, `$1${esc(route.description)}$2`);
 
     if (route.jsonLd) {
-        const json = JSON.stringify(route.jsonLd).replace(/</g, '\\u003c');
+        const json = JSON.stringify(normalizePublicLinks(route.jsonLd)).replace(/</g, '\\u003c');
         html = html.replace('</head>', `    <script type="application/ld+json" data-seo="jsonld">${json}</script>\n</head>`);
     }
 

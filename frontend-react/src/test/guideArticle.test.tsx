@@ -35,7 +35,7 @@ describe('guide provenance visible to readers and search engines', () => {
             .find((entry) => entry['@type'] === 'Article');
         expect(schema).toMatchObject({
             datePublished: '2026-08-27', dateModified: '2026-09-05',
-            mainEntityOfPage: `https://bit-man.net/guide/${slug}`,
+            mainEntityOfPage: `https://bit-man.net/guide/${slug}/`,
         });
         expect(schema.citation).toEqual(links.map((link) => link.getAttribute('href')));
     });

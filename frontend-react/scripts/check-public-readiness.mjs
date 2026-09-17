@@ -16,10 +16,11 @@ for (const route of routes) {
     const html = readFileSync(`${dist}/${route === '/' ? '' : route.slice(1) + '/'}index.html`, 'utf8');
     const doc = new JSDOM(html).window.document;
     assert.equal(doc.querySelectorAll('h1').length, 1, `${route}: duplicate/missing main heading`);
-    assert.equal(doc.querySelector('link[rel="canonical"]')?.href, `https://bit-man.net${route}`);
+    const canonical = `https://bit-man.net${route === '/' ? '/' : route + '/'}`;
+    assert.equal(doc.querySelector('link[rel="canonical"]')?.href, canonical);
     assert.equal(doc.querySelector('meta[name="google-adsense-account"]')?.content, 'ca-pub-4268071335236139');
     assert.equal(doc.querySelector('script[src*="adsbygoogle"], .adsbygoogle'), null);
-    assert.ok(sitemap.includes(`<loc>https://bit-man.net${route}</loc>`), `${route}: missing sitemap URL`);
+    assert.ok(sitemap.includes(`<loc>${canonical}</loc>`), `${route}: missing sitemap URL`);
     assert.ok(doc.querySelector('#seo-content a[href="/contact"]'));
     for (const el of doc.querySelectorAll('script[type="application/ld+json"]')) JSON.parse(el.textContent);
     const guide = GUIDES.find(g => route === `/guide/${g.slug}`);

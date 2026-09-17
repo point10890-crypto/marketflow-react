@@ -101,6 +101,31 @@ def public_posts(slug):
     })
 
 
+@public_community_bp.route('/sitemap', methods=['GET'])
+def public_sitemap():
+    """Cursor-paginated public IDs, including notices older than the UI's top 20."""
+    after_id = max(0, request.args.get('after_id', 0, type=int) or 0)
+    per_page = max(1, min(request.args.get('per_page', 500, type=int) or 500, 500))
+    rows = (
+        db_sitemap_query()
+        .filter(Post.id > after_id)
+        .order_by(Post.id.asc())
+        .limit(per_page + 1).all()
+    )
+    ids = [row.id for row in rows[:per_page]]
+    return jsonify({
+        'posts': [{'id': post_id} for post_id in ids],
+        'next_after_id': ids[-1] if len(rows) > per_page else None,
+    })
+
+
+def db_sitemap_query():
+    return Post.query.with_entities(Post.id).join(Board, Post.board_id == Board.id).filter(
+        Post.is_hidden.is_(False), Board.is_active.is_(True),
+        Board.slug.in_(_public_board_slugs()),
+    )
+
+
 @public_community_bp.route('/posts/<int:post_id>', methods=['GET'])
 def public_post_detail(post_id):
     post = (
