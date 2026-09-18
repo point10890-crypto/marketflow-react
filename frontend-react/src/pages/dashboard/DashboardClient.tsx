@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { canAccessAiBain } from '@/lib/auth';
 import { useSmartRefresh } from '@/hooks/useAutoRefresh';
 import MiroFishFearIndexCard from '@/components/mirofish/MiroFishFearIndexCard';
+import './summary-dashboard.css';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -55,32 +56,28 @@ export function DashboardConceptPanel() {
     return (
         <section
             aria-labelledby="dashboard-concept-title"
-            className="hidden md:block overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-r from-[#111722] via-[#11141c] to-[#17131d] px-5 py-4"
+            className="summary-intro hidden md:block"
         >
             <div className="flex items-start justify-between gap-6">
                 <div className="max-w-xl">
-                    <p className="text-[9px] font-black uppercase tracking-[0.24em] text-cyan-300/80">Operations Dashboard</p>
-                    <h1 id="dashboard-concept-title" className="mt-1 text-lg font-black tracking-tight text-white">
+                    <h1 id="dashboard-concept-title" className="summary-intro-title">
                         시장 판단을 기록하는 운영 대시보드
                     </h1>
-                    <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                    <p className="summary-intro-description">
                         시장 데이터를 관찰하고 근거 품질을 검증한 뒤 리스크와 사후 결과를 함께 추적합니다.
                     </p>
                 </div>
-                <span className="shrink-0 rounded-full border border-white/[0.08] bg-black/20 px-3 py-1.5 font-mono text-[9px] font-bold tracking-[0.16em] text-slate-500">
-                    OBSERVE · VERIFY · TRACK
-                </span>
             </div>
 
-            <dl className="mt-3 grid grid-cols-4 gap-2">
+            <dl className="summary-principles">
                 {OPERATIONS_GUIDE.map((item) => (
-                    <div key={item.label} className="flex min-w-0 items-center gap-2.5 rounded-xl border border-white/[0.06] bg-black/20 px-3 py-2.5">
-                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${item.tone}`} aria-hidden="true">
+                    <div key={item.label} className="summary-principle">
+                        <span className="summary-principle-icon" aria-hidden="true">
                             <i className={`fas ${item.icon} text-xs`} />
                         </span>
                         <div className="min-w-0">
-                            <dt className="text-[11px] font-black text-white">{item.label}</dt>
-                            <dd className="mt-0.5 truncate text-[9px] font-medium text-slate-500">{item.description}</dd>
+                            <dt>{item.label}</dt>
+                            <dd>{item.description}</dd>
                         </div>
                     </div>
                 ))}
@@ -160,9 +157,9 @@ function buildVcpSummary(vcpKr: any, vcpUs: any, vcpCrypto: any): VCPSummary {
 function StatPill({ label, value, sub, color }: { label: string; value: string; sub?: string; color: string }) {
     return (
         <div className="flex flex-col items-center min-w-[72px] px-2 py-2">
-            <span className="text-[9px] font-semibold text-gray-500 uppercase tracking-widest">{label}</span>
+            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">{label}</span>
             <span className={`text-base font-bold tabular-nums leading-tight ${color}`}>{value}</span>
-            {sub && <span className="text-[9px] text-gray-500 font-medium">{sub}</span>}
+            {sub && <span className="text-[11px] text-gray-400 font-medium">{sub}</span>}
         </div>
     );
 }
@@ -187,50 +184,39 @@ function CompactCard({ to, icon, label, sublabel, accent, status, statusColor, m
     return (
         <Link
             to={to}
-            className="group relative flex flex-col rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-white/15 hover:shadow-lg"
+            className="summary-market-card group"
         >
-            {/* Gradient accent */}
-            <div
-                className="absolute -top-8 -right-8 w-28 h-28 rounded-full blur-3xl opacity-[0.07] group-hover:opacity-[0.12] transition-opacity"
-                style={{ background: accent }}
-            />
-
             {/* Top: icon + status */}
             <div className="relative flex items-center justify-between mb-3">
                 <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ background: `${accent}18`, border: `1px solid ${accent}25` }}
+                    className="summary-market-icon"
                 >
-                    <i className={`${icon} text-lg`} style={{ color: accent }} />
+                    <i className={`${icon} text-lg`} aria-hidden="true" />
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${statusColor}`}
+                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${statusColor}`}
                         style={{ background: `${accent}12` }}
                     >
-                        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: accent }} />
                         {status}
                     </span>
-                    {badge && <span className="text-[9px] text-gray-600">{badge}</span>}
+                    {badge && <span className="text-[11px] text-gray-400">{badge}</span>}
                 </div>
             </div>
 
             {/* Title */}
-            <h3 className="text-lg font-bold text-white mb-0.5 leading-tight">{label}</h3>
-            <p className="text-[10px] text-gray-500 mb-3">{sublabel}</p>
+            <h3 className="summary-market-title">{label}</h3>
+            <p className="summary-market-description">{sublabel}</p>
 
             {/* Bottom metric */}
             <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
-                <span className="text-[10px] text-gray-600 uppercase tracking-wider font-medium">{metricLabel}</span>
-                <span className="text-sm font-bold tabular-nums" style={{ color: accent }}>
+                <span className="text-[12px] text-gray-400 uppercase tracking-wider font-medium">{metricLabel}</span>
+                <span className="summary-market-value">
                     {metric}
-                    {metricSuffix && <span className="text-[10px] text-gray-500 ml-0.5">{metricSuffix}</span>}
+                    {metricSuffix && <span className="text-[12px] text-gray-400 ml-0.5">{metricSuffix}</span>}
                 </span>
             </div>
 
             {/* Arrow */}
-            <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-60 transition-opacity">
-                <i className="fas fa-chevron-right text-[10px] text-gray-500" />
-            </div>
         </Link>
     );
 }
@@ -242,7 +228,7 @@ function VCPMiniRow({ name, market, score, accent }: { name: string; market: str
     return (
         <div className="flex items-center justify-between py-1.5">
             <div className="flex items-center gap-2">
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${accent}20`, color: accent }}>{market}</span>
+                <span className="text-[11px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${accent}20`, color: accent }}>{market}</span>
                 <span className="text-xs font-semibold text-white truncate max-w-[120px]">{name}</span>
             </div>
             <span className="text-xs font-bold tabular-nums" style={{ color: accent }}>{displayScore}</span>
@@ -267,7 +253,7 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
     const arc = Math.min(score / 100, 1);
     const markets: [string, number][] = [['KR', krScore], ['US', usScore], ['Crypto', cryptoScore]];
     return (
-        <div className="flex flex-col gap-3 rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 sm:p-5">
+        <div className="flex flex-col gap-3 rounded-2xl border border-white/[0.07] bg-[#15191e] p-4 sm:p-5">
             {/* Top: gauge + title */}
             <div className="flex items-center gap-4">
                 <div className="flex flex-col items-center gap-1.5 shrink-0">
@@ -281,17 +267,17 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <span className="text-xl font-extrabold tabular-nums leading-none" style={{ color }}>{Math.round(score)}</span>
-                            <span className="text-[8px] text-gray-600 font-semibold">/100</span>
+                            <span className="text-[10px] text-gray-400 font-semibold">/100</span>
                         </div>
                     </div>
-                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full" style={{ background: `${color}20`, color }}>{current.label}</span>
+                    <span className="text-[12px] font-bold px-2.5 py-0.5 rounded-full" style={{ background: `${color}20`, color }}>{current.label}</span>
                 </div>
                 <div className="flex flex-col gap-1 flex-1 min-w-0">
                     <span className="text-sm font-bold text-white">관찰 강도 지수</span>
-                    <p className="text-[11px] text-gray-500">3개 시장의 데이터·리스크를 합성한 관찰 우선순위</p>
+                    <p className="text-[13px] text-gray-400">3개 시장의 데이터·리스크를 합성한 관찰 우선순위</p>
                     <div className="flex items-center gap-3 mt-0.5">
                         {markets.map(([m, s]) => (
-                            <span key={m} className="text-[11px] font-semibold" style={{ color: getLevel(s).color }}>
+                            <span key={m} className="text-[13px] font-semibold" style={{ color: getLevel(s).color }}>
                                 {m} {Math.round(s)}
                             </span>
                         ))}
@@ -304,12 +290,12 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
                     const lv = getLevel(s);
                     return (
                         <div key={m} className="flex items-center gap-2">
-                            <span className="text-[10px] text-gray-500 w-10 text-right font-medium">{m}</span>
+                            <span className="text-[12px] text-gray-400 w-10 text-right font-medium">{m}</span>
                             <div className="relative flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'linear-gradient(to right, #ef4444, #f97316, #f59e0b, #22c55e, #10b981)' }}>
                                 <div className="absolute top-0 h-full w-1 bg-white rounded-full shadow-[0_0_4px_rgba(255,255,255,0.9)]"
                                     style={{ left: `${Math.min(Math.max(s, 2), 98)}%`, transform: 'translateX(-50%)', transition: 'left 0.6s ease' }} />
                             </div>
-                            <span className="w-20 whitespace-nowrap text-right text-[10px] font-bold" style={{ color: lv.color }}>{lv.label}</span>
+                            <span className="w-20 whitespace-nowrap text-right text-[12px] font-bold" style={{ color: lv.color }}>{lv.label}</span>
                         </div>
                     );
                 })}
@@ -333,7 +319,7 @@ function TopSignalCard({ summary, leadingData }: { summary: any; leadingData: an
     const leadGradeColor = leadTop?.grade === 'S' ? '#f97316' : leadTop?.grade === 'A' ? '#f59e0b' : '#3b82f6';
 
     return (
-        <div className="flex flex-col gap-2 rounded-2xl border border-white/[0.07] bg-[#13151f] p-4">
+        <div className="flex flex-col gap-2 rounded-2xl border border-white/[0.07] bg-[#15191e] p-4">
             {/* 종가베팅 */}
             <Link to="/dashboard/kr/closing-bet" className="group flex flex-col gap-2 active:scale-[0.98] transition-transform">
                 <div className="flex items-center justify-between">
@@ -344,15 +330,15 @@ function TopSignalCard({ summary, leadingData }: { summary: any; leadingData: an
                         <span className="text-xs font-bold text-white">오늘 종가베팅</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                        {sCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400">S×{sCount}</span>}
-                        {aCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">A×{aCount}</span>}
-                        <i className="fas fa-chevron-right text-[9px] text-gray-600 group-hover:text-gray-400" />
+                        {sCount > 0 && <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400">S×{sCount}</span>}
+                        {aCount > 0 && <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">A×{aCount}</span>}
+                        <i className="fas fa-chevron-right text-[11px] text-gray-400 group-hover:text-gray-400" />
                     </div>
                 </div>
                 {top ? (
                     <div className="flex items-center justify-between bg-white/[0.03] rounded-xl px-3 py-2">
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${gradeColor}20`, color: gradeColor }}>{top.grade}</span>
+                            <span className="text-[12px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${gradeColor}20`, color: gradeColor }}>{top.grade}</span>
                             <span className="text-xs font-semibold text-white truncate">{top.stock_name}</span>
                         </div>
                         <span className={`text-xs font-bold tabular-nums ${top.change_pct > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -360,7 +346,7 @@ function TopSignalCard({ summary, leadingData }: { summary: any; leadingData: an
                         </span>
                     </div>
                 ) : (
-                    <p className="text-[10px] text-gray-600 px-1">아직 시그널 없음</p>
+                    <p className="text-[12px] text-gray-400 px-1">아직 시그널 없음</p>
                 )}
             </Link>
 
@@ -377,21 +363,21 @@ function TopSignalCard({ summary, leadingData }: { summary: any; leadingData: an
                                     <i className="fas fa-fire text-xs text-orange-400" />
                                 </div>
                                 <span className="text-xs font-bold text-white">주도주LIVE</span>
-                                <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
                             </div>
                             <div className="flex items-center gap-1.5">
-                                {leadSCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400">S×{leadSCount}</span>}
-                                {leadACount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">A×{leadACount}</span>}
-                                <i className="fas fa-chevron-right text-[9px] text-gray-600 group-hover:text-gray-400" />
+                                {leadSCount > 0 && <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400">S×{leadSCount}</span>}
+                                {leadACount > 0 && <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">A×{leadACount}</span>}
+                                <i className="fas fa-chevron-right text-[11px] text-gray-400 group-hover:text-gray-400" />
                             </div>
                         </div>
                         <div className="flex items-center justify-between bg-white/[0.03] rounded-xl px-3 py-2">
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${leadGradeColor}20`, color: leadGradeColor }}>{leadTop.grade}</span>
+                                <span className="text-[12px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${leadGradeColor}20`, color: leadGradeColor }}>{leadTop.grade}</span>
                                 <span className="text-xs font-semibold text-white truncate">{leadTop.name}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] text-gray-500 font-mono">{leadTop.score?.total}/100</span>
+                                <span className="text-[11px] text-gray-400 font-mono">{leadTop.score?.total}/100</span>
                                 <span className={`text-xs font-bold tabular-nums ${leadTop.change_pct > 0 ? 'text-rose-400' : 'text-blue-400'}`}>
                                     {leadTop.change_pct > 0 ? '+' : ''}{Number(leadTop.change_pct).toFixed(1)}%
                                 </span>
@@ -414,28 +400,28 @@ function LeadingStockCard({ data }: { data: any }) {
     const gradeColor = top.grade === 'S' ? '#f97316' : top.grade === 'A' ? '#f59e0b' : '#3b82f6';
     return (
         <Link to="/dashboard/kr/leading-stocks"
-            className="group flex flex-col gap-2 rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 transition-all active:scale-[0.98] hover:border-white/15">
+            className="group flex flex-col gap-2 rounded-2xl border border-white/[0.07] bg-[#15191e] p-4 transition-all active:scale-[0.98] hover:border-white/15">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-orange-500/10 border border-orange-500/20">
                         <i className="fas fa-fire text-xs text-orange-400" />
                     </div>
                     <span className="text-xs font-bold text-white">주도주LIVE</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
                 </div>
                 <div className="flex items-center gap-1.5">
-                    {sCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400">S×{sCount}</span>}
-                    {aCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">A×{aCount}</span>}
-                    <i className="fas fa-chevron-right text-[9px] text-gray-600 group-hover:text-gray-400" />
+                    {sCount > 0 && <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400">S×{sCount}</span>}
+                    {aCount > 0 && <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">A×{aCount}</span>}
+                    <i className="fas fa-chevron-right text-[11px] text-gray-400 group-hover:text-gray-400" />
                 </div>
             </div>
             <div className="flex items-center justify-between bg-white/[0.03] rounded-xl px-3 py-2">
                 <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${gradeColor}20`, color: gradeColor }}>{top.grade}</span>
+                    <span className="text-[12px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${gradeColor}20`, color: gradeColor }}>{top.grade}</span>
                     <span className="text-xs font-semibold text-white truncate">{top.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="text-[9px] text-gray-500 font-mono">{top.score?.total}/100</span>
+                    <span className="text-[11px] text-gray-400 font-mono">{top.score?.total}/100</span>
                     <span className={`text-xs font-bold tabular-nums ${top.change_pct > 0 ? 'text-rose-400' : 'text-blue-400'}`}>
                         {top.change_pct > 0 ? '+' : ''}{Number(top.change_pct).toFixed(1)}%
                     </span>
@@ -445,23 +431,12 @@ function LeadingStockCard({ data }: { data: any }) {
     );
 }
 
-// ── Live Dot ──────────────────────────────────────────────────────────────────
-
-function LiveDot() {
-    return (
-        <span className="relative flex items-center">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping absolute opacity-75" />
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 relative" />
-        </span>
-    );
-}
-
 // ── Main Client Component ──────────────────────────────────────────────────────
 
 function MobileMetricTile({ label, value, tone }: { label: string; value: string; tone: string }) {
     return (
         <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5">
-            <div className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">{label}</div>
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">{label}</div>
             <div className={`mt-1 text-lg font-black tabular-nums leading-none ${tone}`}>{value}</div>
         </div>
     );
@@ -478,9 +453,9 @@ function MobileQuickLink({ to, icon, label, meta, tone }: { to: string; icon: st
             </span>
             <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-black text-white">{label}</span>
-                <span className="mt-0.5 block truncate text-[10px] font-bold text-slate-500">{meta}</span>
+                <span className="mt-0.5 block truncate text-[12px] font-bold text-slate-400">{meta}</span>
             </span>
-            <i className="fas fa-chevron-right text-[10px] text-slate-600 group-active:text-slate-300" />
+            <i className="fas fa-chevron-right text-[12px] text-slate-600 group-active:text-slate-300" />
         </Link>
     );
 }
@@ -524,19 +499,15 @@ function MobileDashboardConsole({
     const kosdaq = marketIndices.find((item) => /kosdaq|코스닥/i.test(item.name));
 
     return (
-        <section className="md:hidden flex flex-col gap-2.5">
-            <div className="rounded-2xl border border-cyan-400/15 bg-[#0f151d] p-4 shadow-[0_16px_42px_rgba(0,0,0,0.35)]">
+        <section className="summary-mobile md:hidden flex flex-col gap-3">
+            <div className="summary-mobile-overview">
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300">
-                            <LiveDot />
-                            Mobile Console
-                        </div>
                         <h2 className="mt-1 text-2xl font-black leading-tight text-white">오늘의 시장</h2>
                         <p className="mt-1 line-clamp-2 text-xs font-semibold leading-relaxed text-slate-400">{briefingTitle}</p>
                     </div>
                     <div className="shrink-0 rounded-2xl border border-emerald-400/25 bg-emerald-400/10 px-3 py-2 text-right">
-                        <div className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-200/70">관찰 점수</div>
+                        <div className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-200/70">관찰 점수</div>
                         <div className="text-3xl font-black leading-none text-emerald-300">{score}</div>
                     </div>
                 </div>
@@ -547,26 +518,26 @@ function MobileDashboardConsole({
                     <MobileMetricTile label="Crypto" value={String(Math.round(cryptoScore))} tone="text-amber-300" />
                 </div>
 
-                <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] font-bold">
+                <div className="mt-3 grid grid-cols-2 gap-2 text-[13px] font-bold">
                     <div className="rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2">
-                        <div className="text-slate-500">관찰 후보</div>
+                        <div className="text-slate-400">관찰 후보</div>
                         <div className="mt-1 flex items-center gap-2 text-white">
-                            <span className="rounded-md bg-cyan-400/15 px-1.5 py-0.5 text-[9px] text-cyan-200">{topGrade}</span>
+                            <span className="rounded-md bg-cyan-400/15 px-1.5 py-0.5 text-[11px] text-cyan-200">{topGrade}</span>
                             <span className="truncate">{topName}</span>
                         </div>
                     </div>
                     <div className="rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2">
-                        <div className="text-slate-500">Risk Context</div>
+                        <div className="text-slate-400">Risk Context</div>
                         <div className="mt-1 truncate text-white">Gate {gateLabel} · VIX {vixVal}</div>
                     </div>
                 </div>
 
                 {(kospi || kosdaq || fgScore != null) && (
                     <div className="mt-3 flex gap-2 overflow-x-auto pb-0.5">
-                        {kospi && <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] font-black text-slate-300">{kospi.name} {kospi.change_pct >= 0 ? '+' : ''}{kospi.change_pct.toFixed(2)}%</span>}
-                        {kosdaq && <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] font-black text-slate-300">{kosdaq.name} {kosdaq.change_pct >= 0 ? '+' : ''}{kosdaq.change_pct.toFixed(2)}%</span>}
-                        {fgScore != null && <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] font-black text-slate-300">F&G {fgScore}</span>}
-                        <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] font-black text-slate-300">VCP {totalVCP}</span>
+                        {kospi && <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[12px] font-black text-slate-300">{kospi.name} {kospi.change_pct >= 0 ? '+' : ''}{kospi.change_pct.toFixed(2)}%</span>}
+                        {kosdaq && <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[12px] font-black text-slate-300">{kosdaq.name} {kosdaq.change_pct >= 0 ? '+' : ''}{kosdaq.change_pct.toFixed(2)}%</span>}
+                        {fgScore != null && <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[12px] font-black text-slate-300">F&G {fgScore}</span>}
+                        <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[12px] font-black text-slate-300">VCP {totalVCP}</span>
                     </div>
                 )}
             </div>
@@ -696,7 +667,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
     // ── Render ────────────────────────────────────────────────────────────────
 
     return (
-        <div className="flex flex-col gap-2.5 md:gap-4 pb-4">
+        <div className="summary-dashboard">
             <MobileDashboardConsole
                 opportunityScore={opportunityScore}
                 krScore={krScore}
@@ -715,33 +686,22 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             <DashboardConceptPanel />
 
             {/* ── Header + Scrolling Market Ticker ── */}
-            <div className="hidden md:flex items-center gap-2">
-                <LiveDot />
-                <h2 className="text-lg md:text-xl font-extrabold tracking-tight text-white leading-none shrink-0">
-                    Market{' '}
-                    <span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 40%, #f97316 100%)' }}>
-                        Overview
-                    </span>
-                </h2>
-                {/* Scrolling ticker */}
+            <section className="summary-indices hidden md:block" aria-label="주요 시장 지수">
+                <h2 className="summary-section-heading">주요 시장 지수</h2>
                 {marketIndices.length > 0 && (
-                    <div className="flex-1 overflow-hidden relative min-w-0 ml-2">
-                        <div className="absolute left-0 top-0 bottom-0 w-4 z-10 bg-gradient-to-r from-[#0d0f17] to-transparent" />
-                        <div className="absolute right-0 top-0 bottom-0 w-4 z-10 bg-gradient-to-l from-[#0d0f17] to-transparent" />
-                        <div className="flex gap-3 animate-[tickerScroll_60s_linear_infinite] w-max">
-                            {[...marketIndices, ...marketIndices].map((idx, i) => (
-                                <span key={`${idx.name}-${i}`} className="flex items-center gap-1 text-[10px] whitespace-nowrap shrink-0">
-                                    <span className="text-gray-500 font-medium">{idx.name}</span>
-                                    <span className="text-white font-bold tabular-nums">{idx.price}</span>
-                                    <span className={`font-bold tabular-nums ${idx.change_pct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    <div className="summary-index-grid">
+                            {marketIndices.map((idx) => (
+                                <div key={idx.name} className="summary-index">
+                                    <span className="summary-index-label">{idx.name}</span>
+                                    <strong className="summary-index-price">{idx.price}</strong>
+                                    <span className={`text-xs font-semibold tabular-nums ${idx.change_pct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                         {idx.change_pct >= 0 ? '▲' : '▼'} {idx.change_pct >= 0 ? '+' : ''}{idx.change_pct.toFixed(2)}%
                                     </span>
-                                </span>
+                                </div>
                             ))}
-                        </div>
                     </div>
                 )}
-            </div>
+            </section>
 
             {/* ── AI Brain 업그레이드 배너 (활성 Pro/Premium 회원, admin/AI Brain 활성자 제외) ── */}
             {(() => {
@@ -758,7 +718,6 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                         to="/dashboard/ai-bain"
                         className="group block rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-500/[0.08] via-[#13151f] to-[#1c1c1e] p-3.5 sm:p-4 overflow-hidden transition-all duration-200 active:scale-[0.99] hover:border-cyan-500/50 relative"
                     >
-                        <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full blur-3xl opacity-[0.10] group-hover:opacity-[0.16] transition-opacity bg-gradient-to-br from-cyan-400 to-sky-500" />
                         <div className="relative flex items-center gap-3">
                             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0">
                                 <i className="fas fa-robot text-cyan-300 text-lg" />
@@ -766,20 +725,20 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="text-white font-bold text-sm">AI Brain 알파 스캐너 {aibainExpired ? '재구독' : '추가'}</span>
-                                    <span className="text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 animate-pulse" style={{ animationDuration: '2s' }}>
+                                    <span className="text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25">
                                         {aibainExpired ? 'EXPIRED' : 'NEW'}
                                     </span>
                                 </div>
-                                <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 leading-tight">
+                                <p className="text-[13px] sm:text-xs text-gray-400 mt-0.5 leading-tight">
                                     <span className="text-cyan-300/90">{tierLabel} 구독 유지 + AI Brain</span> · MCP TOP 3 / 신규 5종 시그널 · <span className="text-cyan-200 font-semibold">+40,000원/30일</span>
                                 </p>
                             </div>
                             <div className="shrink-0 flex items-center gap-2">
                                 <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/15 text-cyan-200 font-bold text-xs border border-cyan-400/30">
-                                    <i className={`fas ${aibainExpired ? 'fa-redo' : 'fa-paper-plane'} text-[10px]`} />
+                                    <i className={`fas ${aibainExpired ? 'fa-redo' : 'fa-paper-plane'} text-[12px]`} />
                                     {aibainExpired ? '재구독 신청' : '업그레이드 신청'}
                                 </span>
-                                <i className="fas fa-chevron-right text-[11px] text-cyan-400/70 group-hover:text-cyan-300 transition-colors" />
+                                <i className="fas fa-chevron-right text-[13px] text-cyan-400/70 group-hover:text-cyan-300 transition-colors" />
                             </div>
                         </div>
                     </Link>
@@ -788,21 +747,17 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
 
             {/* ── AI Briefing Highlight Widget ── */}
             <Link to={`/dashboard/briefing?tab=${aiBriefing?.type || 'morning'}`}
-                className="group block rounded-2xl border border-amber-500/20 bg-gradient-to-br from-[#1a1520] via-[#161320] to-[#13151f] overflow-hidden hover:border-amber-500/40 transition-all duration-300 active:scale-[0.995] relative"
+                className="summary-briefing group"
             >
-                {/* Glow effect */}
-                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-500 bg-gradient-to-br from-amber-400 to-orange-500" />
-                <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full blur-3xl opacity-[0.05] group-hover:opacity-[0.1] transition-opacity duration-500 bg-gradient-to-tr from-amber-500 to-yellow-400" />
-
                 {/* Top bar: type badge + sentiment + time */}
                 <div className="flex items-center justify-between px-4 pt-3 pb-1 relative z-10">
                     <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/20">
-                            <i className={`fas ${aiBriefing?.type === 'closing' ? 'fa-moon' : 'fa-sun'} text-[8px]`} />
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/20">
+                            <i className={`fas ${aiBriefing?.type === 'closing' ? 'fa-moon' : 'fa-sun'} text-[10px]`} />
                             {aiBriefing?.type === 'closing' ? '마감 브리핑' : '조간 브리핑'}
                         </span>
                         {aiBriefing?.market_sentiment && (
-                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold ${
+                            <span className={`px-1.5 py-0.5 rounded text-[11px] font-extrabold ${
                                 aiBriefing.market_sentiment === 'BULLISH' ? 'bg-emerald-500/15 text-emerald-400' :
                                 aiBriefing.market_sentiment === 'BEARISH' ? 'bg-red-500/15 text-red-400' :
                                 'bg-gray-500/15 text-gray-400'
@@ -813,17 +768,17 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     </div>
                     <div className="flex items-center gap-2">
                         {aiBriefing?.generated_at && (
-                            <span className="text-[9px] text-gray-600">
+                            <span className="text-[11px] text-gray-400">
                                 {new Date(aiBriefing.generated_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                         )}
-                        <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-amber-400 transition-colors" />
+                        <i className="fas fa-chevron-right text-[12px] text-gray-400 group-hover:text-amber-400 transition-colors" />
                     </div>
                 </div>
 
                 {/* Title */}
                 <div className="px-4 pb-2 relative z-10">
-                    <h3 className="text-[13px] sm:text-sm font-bold text-white leading-snug line-clamp-2 group-hover:text-amber-50 transition-colors">
+                    <h3 className="summary-briefing-title">
                         {aiBriefing?.title || 'AI 브리핑을 불러오는 중...'}
                     </h3>
                 </div>
@@ -831,7 +786,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 {/* Summary */}
                 {aiBriefing?.summary && (
                     <div className="px-4 pb-2 relative z-10">
-                        <p className="text-[11px] text-gray-400 leading-relaxed line-clamp-2">
+                        <p className="summary-briefing-description">
                             {aiBriefing.summary}
                         </p>
                     </div>
@@ -841,20 +796,21 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 <div className="px-4 pb-3 flex items-center justify-between gap-2 relative z-10">
                     <div className="flex items-center gap-1.5 overflow-hidden flex-1 min-w-0">
                         {(aiBriefing?.key_events || []).slice(0, 3).map((evt, i) => (
-                            <span key={i} className="inline-block px-1.5 py-0.5 rounded bg-white/[0.04] text-[9px] text-gray-500 truncate max-w-[120px] shrink-0">
+                            <span key={i} className="inline-block px-1.5 py-0.5 rounded bg-white/[0.04] text-[11px] text-gray-400 truncate max-w-[120px] shrink-0">
                                 {evt}
                             </span>
                         ))}
                     </div>
                     {/* Mini market indicators */}
                     <div className="flex items-center gap-2 shrink-0">
-                        <span className={`text-[10px] font-bold tabular-nums ${vixColor}`}>{vixVal !== '—' ? `VIX ${vixVal}` : ''}</span>
-                        <span className={`text-[10px] font-bold tabular-nums ${fgColor}`}>{fgScore != null ? `F&G ${fgScore}` : ''}</span>
+                        <span className={`text-[12px] font-bold tabular-nums ${vixColor}`}>{vixVal !== '—' ? `VIX ${vixVal}` : ''}</span>
+                        <span className={`text-[12px] font-bold tabular-nums ${fgColor}`}>{fgScore != null ? `F&G ${fgScore}` : ''}</span>
                     </div>
                 </div>
             </Link>
 
             {/* ── Opportunity Score + Top Signal ── */}
+            <h2 className="summary-section-heading">시장의 온도와 관찰 신호</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {canAccessAiBain(user) && (
                     <div className="sm:col-span-2">
@@ -873,57 +829,31 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             {/* ── Wave Pattern Section ── */}
             {waveData && (waveData.summary?.active > 0 || waveData.active_signals?.length > 0) && (
                 <div
-                    className="group relative rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 overflow-hidden transition-all duration-200 hover:border-pink-500/20"
+                    className="group relative rounded-2xl border border-white/[0.07] bg-[#15191e] p-4 overflow-hidden transition-all duration-200 hover:border-pink-500/20"
                 >
-                    {/* Animated gradient blobs */}
-                    <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full blur-3xl opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-700 bg-gradient-to-br from-pink-500 to-rose-600 animate-pulse" />
-                    <div className="absolute -bottom-12 -left-12 w-28 h-28 rounded-full blur-3xl opacity-[0.05] group-hover:opacity-[0.1] transition-opacity duration-700 bg-gradient-to-tr from-fuchsia-500 to-pink-400"
-                        style={{ animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite 1.5s' }}
-                    />
-
-                    {/* Animated wave SVG background */}
-                    <div className="absolute inset-0 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-500 overflow-hidden pointer-events-none">
-                        <svg viewBox="0 0 400 80" className="absolute bottom-0 left-0 w-full h-16" preserveAspectRatio="none">
-                            <path d="M0,40 C50,20 100,60 150,40 C200,20 250,60 300,40 C350,20 400,50 400,40 L400,80 L0,80 Z"
-                                fill="url(#waveGrad)" className="animate-[waveShift_4s_ease-in-out_infinite]" />
-                            <path d="M0,50 C60,30 120,65 180,45 C240,25 300,60 400,45 L400,80 L0,80 Z"
-                                fill="url(#waveGrad2)" className="animate-[waveShift_5s_ease-in-out_infinite_reverse]" />
-                            <defs>
-                                <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stopColor="#ec4899" />
-                                    <stop offset="100%" stopColor="#f43f5e" />
-                                </linearGradient>
-                                <linearGradient id="waveGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stopColor="#a855f7" />
-                                    <stop offset="100%" stopColor="#ec4899" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                    </div>
-
                     {/* Header — 클릭 시 Wave Overview 페이지 이동 */}
                     <Link to="/dashboard/wave" className="relative flex items-center justify-between mb-3 active:scale-[0.98] transition-transform">
                         <div className="flex items-center gap-2.5">
                             <div className="relative w-10 h-10 rounded-xl flex items-center justify-center bg-pink-500/10 border border-pink-500/20 group-hover:bg-pink-500/20 transition-colors duration-300">
-                                <div className="absolute inset-0 rounded-xl border border-pink-400/30 animate-ping opacity-0 group-hover:opacity-30" style={{ animationDuration: '2s' }} />
+                                <div className="absolute inset-0 rounded-xl border border-pink-400/30 opacity-0 group-hover:opacity-30" />
                                 <i className="fas fa-wave-square text-lg text-pink-400 group-hover:scale-110 transition-transform duration-300" />
                             </div>
                             <div>
                                 <div className="flex items-center gap-2">
                                     <h3 className="text-base font-bold text-white">W 패턴</h3>
                                     <span className="relative flex items-center">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-ping absolute opacity-75" />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-pink-400 absolute opacity-75" />
                                         <span className="w-1.5 h-1.5 rounded-full bg-pink-400 relative" />
                                     </span>
                                 </div>
-                                <p className="text-[10px] text-gray-500">M&W 차트 패턴 AI 탐지</p>
+                                <p className="text-[12px] text-gray-400">M&W 차트 패턴 AI 탐지</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-pink-500/10 text-pink-400 tabular-nums group-hover:bg-pink-500/20 transition-colors duration-300">
                                 {waveData.summary?.active ?? 0}
                             </span>
-                            <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-pink-400 group-hover:translate-x-0.5 transition-all duration-300" />
+                            <i className="fas fa-chevron-right text-[12px] text-gray-400 group-hover:text-pink-400 group-hover:translate-x-0.5 transition-all duration-300" />
                         </div>
                     </Link>
 
@@ -934,7 +864,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                             { label: '승리', value: waveData.summary?.wins ?? 0, color: 'emerald', dot: 'bg-emerald-400', text: 'text-emerald-400' },
                             { label: '패배', value: waveData.summary?.losses ?? 0, color: 'red', dot: 'bg-red-400', text: 'text-red-400' },
                         ].map((stat, i) => (
-                            <span key={stat.label} className="flex items-center gap-1.5 text-[10px] font-semibold"
+                            <span key={stat.label} className="flex items-center gap-1.5 text-[12px] font-semibold"
                                 style={{ animation: `fadeInUp 0.4s ease-out ${i * 0.1}s both` }}>
                                 <span className={`w-2 h-2 rounded-full ${stat.dot}`} />
                                 <span className="text-gray-400">{stat.label}</span>
@@ -942,7 +872,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                             </span>
                         ))}
                         {waveData.summary?.win_rate > 0 && (
-                            <span className="text-[10px] font-bold text-amber-400 ml-auto animate-pulse" style={{ animationDuration: '2.5s' }}>
+                            <span className="text-[12px] font-bold text-amber-400 ml-auto">
                                 승률 {waveData.summary.win_rate}%
                             </span>
                         )}
@@ -965,11 +895,11 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                         onClick={() => navigate(`/dashboard/wave?ticker=${sig.ticker}&market=KR`)}
                                     >
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${accent}20`, color: accent }}>
+                                            <span className="text-[11px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${accent}20`, color: accent }}>
                                                 {sig.pattern_class}
                                             </span>
                                             <span className="text-xs font-semibold text-white truncate max-w-[120px]">{sig.name || sig.ticker}</span>
-                                            <span className="text-[9px] text-gray-600 hidden sm:inline">{sig.wave_label}</span>
+                                            <span className="text-[11px] text-gray-400 hidden sm:inline">{sig.wave_label}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5">
                                             <div className="w-12 h-1 rounded-full bg-white/[0.06] overflow-hidden hidden sm:block">
@@ -982,7 +912,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                                 />
                                             </div>
                                             <span className="text-xs font-bold tabular-nums" style={{ color: accent }}>{sig.confidence}</span>
-                                            <i className="fas fa-chart-line text-[9px] text-gray-700 hover:text-pink-400 transition-colors" />
+                                            <i className="fas fa-chart-line text-[11px] text-gray-400 hover:text-pink-400 transition-colors" />
                                         </div>
                                     </div>
                                 );
@@ -1010,9 +940,8 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             {/* ── VCP Enhanced Section ── */}
             <Link
                 to="/dashboard/vcp-enhanced"
-                className="group relative rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-cyan-500/20"
+                className="group relative rounded-2xl border border-white/[0.07] bg-[#15191e] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-cyan-500/20"
             >
-                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-[0.06] group-hover:opacity-[0.1] transition-opacity bg-gradient-to-br from-cyan-400 to-teal-500" />
 
                 {/* Header */}
                 <div className="relative flex items-center justify-between mb-3">
@@ -1022,30 +951,30 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                         </div>
                         <div>
                             <h3 className="text-base font-bold text-white">VCP 강화</h3>
-                            <p className="text-[10px] text-gray-500">거래량 수축 패턴 · 전 시장</p>
+                            <p className="text-[12px] text-gray-400">거래량 수축 패턴 · 전 시장</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/10 text-cyan-400 tabular-nums">
                             {totalVCP}
                         </span>
-                        <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-cyan-400 transition-colors" />
+                        <i className="fas fa-chevron-right text-[12px] text-gray-400 group-hover:text-cyan-400 transition-colors" />
                     </div>
                 </div>
 
                 {/* Market breakdown */}
                 <div className="relative flex items-center gap-3 mb-3">
-                    <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                    <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                         <span className="w-2 h-2 rounded-full bg-blue-400" />
                         <span className="text-gray-400">KR</span>
                         <span className="text-blue-400 tabular-nums">{vcpData.kr}</span>
                     </span>
-                    <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                    <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                         <span className="w-2 h-2 rounded-full bg-emerald-400" />
                         <span className="text-gray-400">US</span>
                         <span className="text-emerald-400 tabular-nums">{vcpData.us}</span>
                     </span>
-                    <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                    <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                         <span className="w-2 h-2 rounded-full bg-amber-400" />
                         <span className="text-gray-400">Crypto</span>
                         <span className="text-amber-400 tabular-nums">{vcpData.crypto}</span>
@@ -1067,9 +996,8 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             {aiChart && aiChart.signals.length > 0 && (
                 <Link
                     to="/dashboard/kr/ai-chart"
-                    className="group relative rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-violet-500/20"
+                    className="group relative rounded-2xl border border-white/[0.07] bg-[#15191e] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-violet-500/20"
                 >
-                    <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-[0.06] group-hover:opacity-[0.1] transition-opacity bg-gradient-to-br from-violet-400 to-purple-500" />
 
                     {/* Header */}
                     <div className="relative flex items-center justify-between mb-3">
@@ -1079,35 +1007,35 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                             </div>
                             <div>
                                 <h3 className="text-base font-bold text-white">AI 차트 분석</h3>
-                                <p className="text-[10px] text-gray-500">Gemini Vision · KR 100 종목 기술적 분석</p>
+                                <p className="text-[12px] text-gray-400">Gemini Vision · KR 100 종목 기술적 분석</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-violet-500/10 text-violet-400 tabular-nums">
                                 {aiChart.summary.total}
                             </span>
-                            <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-violet-400 transition-colors" />
+                            <i className="fas fa-chevron-right text-[12px] text-gray-400 group-hover:text-violet-400 transition-colors" />
                         </div>
                     </div>
 
                     {/* Signal breakdown */}
                     <div className="relative flex items-center gap-3 mb-3">
-                        <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                        <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-emerald-400" />
                             <span className="text-gray-400">관찰 강화</span>
                             <span className="text-emerald-400 tabular-nums">{aiChart.summary.by_signal?.BUY ?? 0}</span>
                         </span>
-                        <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                        <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-yellow-400" />
                             <span className="text-gray-400">중립 관찰</span>
                             <span className="text-yellow-400 tabular-nums">{aiChart.summary.by_signal?.HOLD ?? 0}</span>
                         </span>
-                        <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                        <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-red-400" />
                             <span className="text-gray-400">리스크 주의</span>
                             <span className="text-red-400 tabular-nums">{aiChart.summary.by_signal?.SELL ?? 0}</span>
                         </span>
-                        <span className="ml-auto text-[9px] text-gray-600">평균 신뢰도 {aiChart.summary.avg_confidence}%</span>
+                        <span className="ml-auto text-[11px] text-gray-400">평균 신뢰도 {aiChart.summary.avg_confidence}%</span>
                     </div>
 
                     {/* 관찰 강도가 높은 신호 */}
@@ -1122,9 +1050,9 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 {buys.map((s, i) => (
                                     <div key={i} className="flex items-center justify-between py-1.5">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">관찰 강화</span>
+                                            <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">관찰 강화</span>
                                             <span className="text-xs font-semibold text-white truncate max-w-[120px]">{s.stock_name}</span>
-                                            <span className="text-[9px] text-gray-600">{s.ma_status}</span>
+                                            <span className="text-[11px] text-gray-400">{s.ma_status}</span>
                                         </div>
                                         <span className="text-xs font-bold tabular-nums text-emerald-400">{s.confidence}</span>
                                     </div>
@@ -1139,9 +1067,8 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             {usAiChart && usAiChart.signals.length > 0 && (
                 <Link
                     to="/dashboard/us/ai-chart"
-                    className="group relative rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-green-500/20"
+                    className="group relative rounded-2xl border border-white/[0.07] bg-[#15191e] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-green-500/20"
                 >
-                    <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-[0.06] group-hover:opacity-[0.1] transition-opacity bg-gradient-to-br from-green-400 to-emerald-500" />
 
                     <div className="relative flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2.5">
@@ -1150,34 +1077,34 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                             </div>
                             <div>
                                 <h3 className="text-base font-bold text-white">US AI 차트</h3>
-                                <p className="text-[10px] text-gray-500">Gemini Vision · S&P 500 Top 100</p>
+                                <p className="text-[12px] text-gray-400">Gemini Vision · S&P 500 Top 100</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-400 tabular-nums">
                                 {usAiChart.summary.total}
                             </span>
-                            <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-green-400 transition-colors" />
+                            <i className="fas fa-chevron-right text-[12px] text-gray-400 group-hover:text-green-400 transition-colors" />
                         </div>
                     </div>
 
                     <div className="relative flex items-center gap-3 mb-3">
-                        <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                        <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-emerald-400" />
                             <span className="text-gray-400">관찰 강화</span>
                             <span className="text-emerald-400 tabular-nums">{usAiChart.summary.by_signal?.BUY ?? 0}</span>
                         </span>
-                        <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                        <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-yellow-400" />
                             <span className="text-gray-400">중립 관찰</span>
                             <span className="text-yellow-400 tabular-nums">{usAiChart.summary.by_signal?.HOLD ?? 0}</span>
                         </span>
-                        <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                        <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-red-400" />
                             <span className="text-gray-400">리스크 주의</span>
                             <span className="text-red-400 tabular-nums">{usAiChart.summary.by_signal?.SELL ?? 0}</span>
                         </span>
-                        <span className="ml-auto text-[9px] text-gray-600">평균 신뢰도 {usAiChart.summary.avg_confidence}%</span>
+                        <span className="ml-auto text-[11px] text-gray-400">평균 신뢰도 {usAiChart.summary.avg_confidence}%</span>
                     </div>
 
                     {(() => {
@@ -1191,9 +1118,9 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 {buys.map((s, i) => (
                                     <div key={i} className="flex items-center justify-between py-1.5">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">관찰 강화</span>
+                                            <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">관찰 강화</span>
                                             <span className="text-xs font-semibold text-white truncate max-w-[120px]">{s.name}</span>
-                                            <span className="text-[9px] text-gray-600">{s.ticker}</span>
+                                            <span className="text-[11px] text-gray-400">{s.ticker}</span>
                                         </div>
                                         <span className="text-xs font-bold tabular-nums text-emerald-400">{s.confidence}</span>
                                     </div>
@@ -1210,9 +1137,8 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 return (
                     <Link
                         to="/dashboard/ai-bain"
-                        className="group relative rounded-2xl border border-cyan-500/20 bg-[#13151f] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-cyan-500/40"
+                        className="group relative rounded-2xl border border-cyan-500/20 bg-[#15191e] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-cyan-500/40"
                     >
-                        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-[0.08] group-hover:opacity-[0.14] transition-opacity bg-gradient-to-br from-cyan-400 to-sky-500" />
 
                         <div className="relative flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2.5">
@@ -1222,35 +1148,35 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 <div>
                                     <div className="flex items-center gap-1.5">
                                         <h3 className="text-base font-bold text-white">AI Brain 알파 스캐너</h3>
-                                        <span className="text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/25 animate-pulse" style={{ animationDuration: '2s' }}>
+                                        <span className="text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/25">
                                             NEW
                                         </span>
                                     </div>
-                                    <p className="text-[10px] text-gray-500">MCP TOP 3 · 신규 5종 · 실시간 시그널</p>
+                                    <p className="text-[12px] text-gray-400">MCP TOP 3 · 신규 5종 · 실시간 시그널</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/10 text-cyan-300 tabular-nums">
                                     이용 가능
                                 </span>
-                                <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-cyan-400 transition-colors" />
+                                <i className="fas fa-chevron-right text-[12px] text-gray-400 group-hover:text-cyan-400 transition-colors" />
                             </div>
                         </div>
 
                         <div className="relative flex items-center gap-3 mb-3 flex-wrap">
-                            <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                            <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                                 <span className="w-2 h-2 rounded-full bg-cyan-400" />
                                 <span className="text-gray-400">알파 스캐너</span>
                             </span>
-                            <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                            <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                                 <span className="w-2 h-2 rounded-full bg-sky-400" />
                                 <span className="text-gray-400">MCP 워크플로우</span>
                             </span>
-                            <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                            <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                                 <span className="w-2 h-2 rounded-full bg-blue-400" />
                                 <span className="text-gray-400">그래프RAG 분석</span>
                             </span>
-                            <span className="ml-auto text-[9px] text-gray-600">90,000원/30일</span>
+                            <span className="ml-auto text-[11px] text-gray-400">90,000원/30일</span>
                         </div>
 
                         <div className="relative border-t border-white/[0.06] pt-2.5">
@@ -1258,7 +1184,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 <p className="text-xs text-gray-300 leading-relaxed">
                                     실시간 알파 스캐너 결과와 MCP TOP 3 이벤트를 한 곳에서 확인.
                                 </p>
-                                <span className="shrink-0 text-[11px] font-bold text-cyan-300">
+                                <span className="shrink-0 text-[13px] font-bold text-cyan-300">
                                     전체 보기 →
                                 </span>
                             </div>
@@ -1268,7 +1194,8 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             })()}
 
             {/* ── Market Cards Grid ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <h2 className="summary-section-heading">시장별 분석과 도구</h2>
+            <div className="summary-market-grid">
                 <CompactCard
                     to="/dashboard/kr"
                     icon="fas fa-chart-line"
@@ -1344,9 +1271,9 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             {/* ── Bottom utility ── */}
             <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center gap-3">
-                    <span className="text-[11px] text-gray-700">MarketFlow</span>
+                    <span className="text-[13px] text-gray-400">MarketFlow</span>
                 </div>
-                <span className="text-[10px] text-gray-700 font-mono">v2.7.0</span>
+                <span className="text-[12px] text-gray-400 font-mono">v2.7.0</span>
             </div>
         </div>
     );

@@ -1,0 +1,79 @@
+/* Taste-inspired Summary: quiet surfaces, legible data, one brand accent.
+   Status colors retain their existing financial meaning. */
+.summary-dashboard {
+  --summary-surface: #15191e;
+  --summary-line: #30363f;
+  --summary-muted: #a6afbb;
+  --summary-blue: #73b7ff;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: 8px 0 32px;
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.summary-dashboard :is(a, button):focus-visible {
+  outline: 2px solid var(--summary-blue);
+  outline-offset: 4px;
+}
+
+.summary-intro { padding: 12px 0 0; }
+.summary-intro-title {
+  max-width: 28ch;
+  font-size: clamp(24px, 2.5vw, 34px);
+  font-weight: 750;
+  line-height: 1.35;
+  letter-spacing: -.045em;
+  color: #f5f5f7;
+}
+.summary-intro-description { margin-top: 10px; color: var(--summary-muted); font-size: 14px; line-height: 1.7; }
+.summary-principles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  border-bottom: 1px solid var(--summary-line);
+  margin-top: 28px;
+  padding-bottom: 24px;
+}
+.summary-principle { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.summary-principle-icon { color: var(--summary-blue); padding-top: 3px; }
+.summary-principle dt { font-size: 13px; font-weight: 650; color: #f5f5f7; }
+.summary-principle dd { margin-top: 5px; font-size: 12px; line-height: 1.6; color: var(--summary-muted); }
+.summary-section-heading { margin-top: 12px; font-size: 17px; font-weight: 650; letter-spacing: -.025em; color: #f5f5f7; }
+.summary-index-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; margin-top: 16px; border: 1px solid var(--summary-line); border-radius: 12px; overflow: hidden; background: var(--summary-line); }
+.summary-index { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 18px 20px; background: var(--summary-surface); }
+.summary-index-label { color: var(--summary-muted); font-size: 12px; }
+.summary-index-price { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.025em; color: #f5f5f7; }
+.summary-briefing { display: block; position: relative; padding: 12px 8px; background: #151e29; border: 1px solid #354c66; border-left: 3px solid var(--summary-blue); border-radius: 12px; transition: border-color .15s ease; }
+.summary-briefing:hover { border-color: var(--summary-blue); }
+.summary-briefing-title { margin-top: 12px; max-width: 52ch; font-size: clamp(19px, 2vw, 26px); font-weight: 700; line-height: 1.5; letter-spacing: -.03em; color: #f5f5f7; }
+.summary-briefing-description { max-width: 90ch; color: #bec9d7; font-size: 14px; line-height: 1.8; }
+.summary-mobile-overview { padding: 20px 16px; border-radius: 12px; border: 1px solid var(--summary-line); background: var(--summary-surface); }
+.summary-market-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.summary-market-card { position: relative; display: flex; flex-direction: column; min-width: 0; padding: 24px; border: 1px solid var(--summary-line); border-radius: 12px; background: var(--summary-surface); transition: border-color .15s ease, background-color .15s ease; }
+.summary-market-card:hover { border-color: #667a92; background: #1b2129; }
+.summary-market-icon { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; color: var(--summary-blue); background: #223143; border-radius: 10px; }
+.summary-market-title { font-size: 20px; font-weight: 650; letter-spacing: -.025em; color: #f5f5f7; }
+.summary-market-description { flex: 1; margin: 8px 0 22px; font-size: 12px; line-height: 1.7; color: var(--summary-muted); }
+.summary-market-value { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; color: #e9eef5; }
+
+@media (max-width: 1100px) {
+  .summary-market-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .summary-principles { gap: 14px; }
+}
+@media (max-width: 639px) {
+  .summary-dashboard { gap: 16px; padding-top: 4px; }
+  .summary-market-grid { grid-template-columns: 1fr; gap: 12px; }
+  .summary-market-card { padding: 20px; }
+  .summary-briefing { padding: 8px 0; }
+  .summary-section-heading { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .summary-dashboard *, .summary-dashboard *::before, .summary-dashboard *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
