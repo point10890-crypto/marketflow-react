@@ -19,6 +19,7 @@ const pageTitles: Array<[RegExp, string, string]> = [
     [/^\/dashboard$/, 'Summary', '시장 요약'],
     [/^\/dashboard\/briefing/, 'Briefing', 'AI 브리핑'],
     [/^\/dashboard\/ai-bain\/goodrich/, 'Goodrich TOP 3', 'AI 펀드매니저'],
+    [/^\/dashboard\/ai-bain\/decision/, '종목 판단', '근거 비교'],
     [/^\/dashboard\/ai-bain/, 'AI Brain', 'GraphRAG'],
     [/^\/dashboard\/manual-stock-analysis/, 'AI 분석 목록', '루프 스크래퍼'],
     [/^\/dashboard\/vcp-enhanced/, 'VCP Enhanced', '거래량 수축'],

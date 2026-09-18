@@ -151,7 +151,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                         const isExpanded = isActive && item.children;
                         return (
                             <div key={item.name}>
-                            <Link key={item.name} to={item.href} aria-current={pathname === item.href ? "page" : undefined} onClick={onNavigate}
+                            <Link key={item.name} to={item.href} aria-current={pathname === item.href && !item.children ? "page" : undefined} onClick={onNavigate}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-all border ${
                                     isActive
                                         ? `claw-nav-active bg-gradient-to-r ${item.bg} text-white border-white/10`
@@ -219,7 +219,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                         const isExpanded = isActive && item.children;
                         return (
                             <div key={item.name}>
-                                <Link to={item.href} aria-current={pathname === item.href ? "page" : undefined} onClick={onNavigate}
+                                <Link to={item.href} aria-current={pathname === item.href && !item.children ? "page" : undefined} onClick={onNavigate}
                                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-all border ${
                                         isActive
                                             ? `claw-nav-active bg-gradient-to-r ${item.bg} text-white border-white/10`
@@ -265,7 +265,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                     {toolItems.map((item) => {
                         const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'));
                         return (
-                            <Link key={item.name} to={item.href} aria-current={pathname === item.href ? "page" : undefined} onClick={onNavigate}
+                            <Link key={item.name} to={item.href} aria-current={pathname === item.href && !item.children ? "page" : undefined} onClick={onNavigate}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-all border ${
                                     isActive
                                         ? `claw-nav-active bg-gradient-to-r ${item.bg} text-white border-white/10`
