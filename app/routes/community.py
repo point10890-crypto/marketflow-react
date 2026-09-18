@@ -63,7 +63,8 @@ FORMULA_DAISO_BOARD = {
     'description': '모든 수식·조건검색식을 3만원 균일가로 판매',
     'icon': 'fa-tags',
 }
-PUBLIC_MEMBER_BOARD_SLUGS = set(FORMULA_BOARD_SLUGS)
+PUBLIC_MEMBER_BOARD_SLUGS = {'formula-market'}
+AI_BRAIN_BOARD_SLUGS = {'formula-daiso'}
 FORMULA_FILE_EXTENSIONS = {'txt', 'csv', 'xlsx', 'xls', 'pdf', 'zip', 'hwp', 'docx'}
 VIDEO_EXTENSIONS = {'mp4', 'mov', 'webm'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
@@ -119,15 +120,25 @@ def _check_tier(user_tier, required_tier):
 
 def _effective_min_tier(board):
     """Return the member-facing read tier, independent from legacy DB rows."""
+    if board.slug in AI_BRAIN_BOARD_SLUGS:
+        return 'aibain'
     return 'none' if board.slug in PUBLIC_MEMBER_BOARD_SLUGS else board.min_tier
 
 
 def _can_read_board(user, board):
+    if board.slug in AI_BRAIN_BOARD_SLUGS:
+        return user.role == 'admin' or user.is_aibain_active
     return (
         user.role == 'admin'
         or board.slug in PUBLIC_MEMBER_BOARD_SLUGS
         or _check_tier(user.tier, board.min_tier)
     )
+
+
+def _board_access_denied(board):
+    if board.slug in AI_BRAIN_BOARD_SLUGS:
+        return jsonify({'error': 'AI Brain 구독자 전용 게시판입니다.', 'code': 'aibain_required'}), 403
+    return jsonify({'error': 'Tier upgrade required'}), 403
 
 
 def _is_formula_board(board) -> bool:
@@ -355,7 +366,7 @@ def list_posts(slug):
     if not board:
         return jsonify({'error': 'Board not found'}), 404
     if not _can_read_board(user, board):
-        return jsonify({'error': 'Tier upgrade required'}), 403
+        return _board_access_denied(board)
 
     page = max(1, request.args.get('page', 1, type=int) or 1)
     per_page = request.args.get('per_page', 20, type=int) or 20
@@ -395,7 +406,7 @@ def get_post(post_id):
         return jsonify({'error': 'Post not found'}), 404
     board = post.board
     if not _can_read_board(user, board):
-        return jsonify({'error': 'Tier upgrade required'}), 403
+        return _board_access_denied(board)
 
     post.view_count += 1
     db.session.commit()
@@ -428,6 +439,8 @@ def create_post(slug):
     board = Board.query.filter_by(slug=slug, is_active=True).first()
     if not board:
         return jsonify({'error': 'Board not found'}), 404
+    if board.slug in AI_BRAIN_BOARD_SLUGS and not _can_read_board(user, board):
+        return _board_access_denied(board)
     if user.role != 'admin' and not _check_tier(user.tier, board.write_tier):
         return jsonify({'error': 'Tier upgrade required'}), 403
 
@@ -468,6 +481,8 @@ def create_post(slug):
 def update_post(post_id):
     user = _get_current_user()
     post = Post.query.get_or_404(post_id)
+    if post.board.slug in AI_BRAIN_BOARD_SLUGS and not _can_read_board(user, post.board):
+        return _board_access_denied(post.board)
     if user.role != 'admin' and post.author_id != user.id:
         return jsonify({'error': 'Permission denied'}), 403
 
@@ -507,6 +522,8 @@ def update_post(post_id):
 def delete_post(post_id):
     user = _get_current_user()
     post = Post.query.get_or_404(post_id)
+    if post.board.slug in AI_BRAIN_BOARD_SLUGS and not _can_read_board(user, post.board):
+        return _board_access_denied(post.board)
     if user.role != 'admin' and post.author_id != user.id:
         return jsonify({'error': 'Permission denied'}), 403
     post.is_hidden = True
@@ -538,7 +555,7 @@ def create_purchase(post_id):
     if not _is_formula_board(board) or not board.is_active:
         return jsonify({'error': 'Purchase is only available for active formula-board posts'}), 400
     if not _can_read_board(user, board):
-        return jsonify({'error': 'Tier upgrade required'}), 403
+        return _board_access_denied(board)
     data = request.get_json() or {}
     buyer_name = data.get('buyer_name', '').strip()
     if not buyer_name:
@@ -745,7 +762,7 @@ def list_comments(post_id):
         return jsonify({'error': 'Post not found'}), 404
     board = post.board
     if not _can_read_board(user, board):
-        return jsonify({'error': 'Tier upgrade required'}), 403
+        return _board_access_denied(board)
     limit = request.args.get('limit', 200, type=int) or 200
     limit = max(1, min(limit, 500))
     comments = Comment.query.options(joinedload(Comment.author))\
@@ -761,7 +778,7 @@ def create_comment(post_id):
     post = Post.query.get_or_404(post_id)
     board = post.board
     if not _can_read_board(user, board):
-        return jsonify({'error': 'Tier upgrade required'}), 403
+        return _board_access_denied(board)
 
     data = request.get_json() or {}
     content = data.get('content', '').strip()
@@ -795,7 +812,7 @@ def update_comment(comment_id):
         return jsonify({'error': 'Post not found'}), 404
     board = post.board
     if not _can_read_board(user, board):
-        return jsonify({'error': 'Tier upgrade required'}), 403
+        return _board_access_denied(board)
     if user.role != 'admin' and comment.author_id != user.id:
         return jsonify({'error': 'Permission denied'}), 403
 
@@ -822,7 +839,7 @@ def delete_comment(comment_id):
         return jsonify({'error': 'Post not found'}), 404
     board = post.board
     if not _can_read_board(user, board):
-        return jsonify({'error': 'Tier upgrade required'}), 403
+        return _board_access_denied(board)
     if user.role != 'admin' and comment.author_id != user.id:
         return jsonify({'error': 'Permission denied'}), 403
     comment.is_hidden = True
@@ -956,6 +973,8 @@ def download_formula_file(post_id):
     """Download formula file — requires approved purchase or admin"""
     user = _get_current_user()
     post = Post.query.get_or_404(post_id)
+    if post.board.slug in AI_BRAIN_BOARD_SLUGS and not _can_read_board(user, post.board):
+        return _board_access_denied(post.board)
 
     if not post.file_url:
         return jsonify({'error': '파일이 없습니다.'}), 404
@@ -1072,14 +1091,11 @@ def search_posts():
     if board_slug:
         query = query.filter(Board.slug == board_slug)
 
-    # Tier filter: exclude boards user can't access
+    # Reuse the read policy so AI Brain expiry also applies to search results.
     if user.role != 'admin':
-        user_tier_val = TIER_ORDER.get(user.tier or 'none', 0)
-        accessible_tiers = [t for t, v in TIER_ORDER.items() if v <= user_tier_val]
-        query = query.filter(db.or_(
-            Board.slug.in_(PUBLIC_MEMBER_BOARD_SLUGS),
-            Board.min_tier.in_(accessible_tiers),
-        ))
+        accessible_ids = [board.id for board in Board.query.filter_by(is_active=True).all()
+                          if _can_read_board(user, board)]
+        query = query.filter(Board.id.in_(accessible_ids))
 
     query = query.filter(
         db.or_(Post.title.ilike(f'%{q}%'), Post.content.ilike(f'%{q}%'))

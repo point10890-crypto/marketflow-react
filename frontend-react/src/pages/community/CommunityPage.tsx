@@ -62,6 +62,7 @@ function hasBoardSeenBaseline() {
 }
 
 function tierLabel(tier: string) {
+    if (tier === 'aibain') return { text: 'AI Brain', cls: 'bg-orange-500/25 text-orange-300 border-orange-500/30' };
     if (tier === 'pro') return { text: 'Pro', cls: 'bg-indigo-500/25 text-indigo-300 border-indigo-500/30' };
     if (tier === 'premium') return { text: 'Premium', cls: 'bg-purple-500/25 text-purple-300 border-purple-500/30' };
     return null;
@@ -219,6 +220,9 @@ export default function CommunityPage() {
                                 <p className="text-gray-500 text-xs md:text-sm leading-relaxed line-clamp-2 mb-4">
                                     {board.description}
                                 </p>
+                                {locked && board.min_tier === 'aibain' && (
+                                    <p className="text-orange-300 text-xs mb-3">AI Brain 구독자 전용</p>
+                                )}
 
                                 {/* Footer */}
                                 <div className="flex items-center justify-between">

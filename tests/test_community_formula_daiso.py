@@ -4,7 +4,7 @@
 - 부팅 시드: 수식마켓 게시판이 있는 DB 에만 다이소 게시판을 멱등 생성한다.
 - 글 생성/수정: 입력 가격과 무관하게 30,000 으로 고정된다.
 - 구매 요청: 수식마켓과 동일하게 동작하고, 알림 문구는 게시판 이름을 쓴다.
-- 미구독(approved, tier None) 회원도 수식마켓과 같이 읽을 수 있다.
+- 활성 AI Brain 구독자와 관리자만 접근할 수 있다.
 """
 from __future__ import annotations
 
@@ -93,7 +93,7 @@ def daiso_env(monkeypatch):
     monkeypatch.setattr(community_routes.threading, 'Thread', _TrapThread)
     app = _app()
     with app.app_context():
-        member = User(email='m@example.com', password_hash='x', name='회원', status='approved', tier=None, role='user')
+        member = User(email='m@example.com', password_hash='x', name='회원', status='approved', tier=None, role='user', aibain_enabled=True)
         admin = User(email='a@example.com', password_hash='x', name='관리자', status='approved', tier='premium', role='admin')
         daiso = Board(slug='formula-daiso', name='수식 다이소 (3만원 균일가)', min_tier='pro', write_tier='admin')
         db.session.add_all([member, admin, daiso])
@@ -136,7 +136,7 @@ def test_daiso_board_shares_formula_market_purchase_workflow(daiso_env):
     }, headers=admin)
     post_id = created.get_json()['id']
 
-    # 미구독 승인 회원도 수식마켓처럼 읽을 수 있고, 파일 정보는 승인 전 숨겨진다
+    # 활성 AI Brain 회원은 읽을 수 있고, 파일 정보는 구매 승인 전 숨겨진다
     detail = client.get(f'/api/community/posts/{post_id}', headers=member)
     assert detail.status_code == 200
     body = detail.get_json()['post']
@@ -163,6 +163,90 @@ def test_daiso_board_shares_formula_market_purchase_workflow(daiso_env):
     daiso_row = next(b for b in listed.get_json() if b['slug'] == 'formula-daiso')
     assert daiso_row['can_read'] is True
     assert daiso_row['post_count'] == 1
+
+
+@pytest.mark.parametrize('tier,enabled,expired', [
+    (None, False, False), ('pro', False, False), ('premium', False, False),
+    ('pro', True, True), ('premium', False, True),
+])
+def test_daiso_requires_active_aibrain_across_access_paths(daiso_env, tier, enabled, expired):
+    from datetime import datetime, timedelta
+
+    app, tokens = daiso_env
+    with app.app_context():
+        member = User.query.filter_by(email='m@example.com').one()
+        member.tier = tier
+        member.aibain_enabled = enabled
+        member.aibain_expires_at = datetime.utcnow() - timedelta(days=1) if expired else None
+        board = Board.query.filter_by(slug='formula-daiso').one()
+        board.write_tier = 'none'  # legacy/admin tier settings must not bypass membership
+        post = Post(board_id=board.id, author_id=member.id, title='전용 수식', content='비공개 설명',
+                    file_url='/api/community/uploads/' + 'a' * 32 + '.txt', file_name='formula.txt')
+        db.session.add(post)
+        db.session.flush()
+        db.session.add(PurchaseRequest(post_id=post.id, user_id=member.id, buyer_name='회원', status='approved'))
+        db.session.commit()
+        post_id = post.id
+    client = app.test_client()
+    headers = {'Authorization': f"Bearer {tokens['member']}"}
+    row = next(b for b in client.get('/api/community/boards', headers=headers).get_json()
+               if b['slug'] == 'formula-daiso')
+    assert row['min_tier'] == 'aibain'
+    assert row['can_read'] is False
+    assert row['post_count'] == 0 and row['latest_post_title'] is None
+    for path in [f'/posts/{post_id}', '/boards/formula-daiso/posts',
+                 f'/posts/{post_id}/comments', f'/posts/{post_id}/download']:
+        response = client.get('/api/community' + path, headers=headers)
+        assert response.status_code == 403, (path, response.get_json())
+        assert response.get_json()['code'] == 'aibain_required'
+    for path, body in [(f'/posts/{post_id}/purchase', {'buyer_name': '회원'}),
+                       (f'/posts/{post_id}/comments', {'content': '댓글'}),
+                       ('/boards/formula-daiso/posts', {'title': '새 글', 'content': '내용'})]:
+        assert client.post('/api/community' + path, json=body, headers=headers).status_code == 403
+    assert client.put(f'/api/community/posts/{post_id}', json={'title': '변경'}, headers=headers).status_code == 403
+    assert client.delete(f'/api/community/posts/{post_id}', headers=headers).status_code == 403
+    assert client.get('/api/community/search?q=전용', headers=headers).get_json()['total'] == 0
+    summary = client.get('/api/community/summary', headers=headers).get_json()
+    assert summary['total_posts'] == 0 and summary['formula_count'] == 0
+    assert client.get('/api/public/community/boards/formula-daiso/posts').status_code == 404
+
+
+def test_active_aibrain_search_and_approved_download(daiso_env, monkeypatch, tmp_path):
+    from datetime import datetime, timedelta
+    import app.routes.community as routes
+
+    app, tokens = daiso_env
+    filename = 'b' * 32 + '.txt'
+    (tmp_path / filename).write_text('formula', encoding='utf-8')
+    monkeypatch.setattr(routes, 'UPLOAD_DIR', str(tmp_path))
+    with app.app_context():
+        member = User.query.filter_by(email='m@example.com').one()
+        member.aibain_expires_at = datetime.utcnow() + timedelta(days=1)
+        board = Board.query.filter_by(slug='formula-daiso').one()
+        post = Post(board_id=board.id, author_id=member.id, title='전용 수식', content='설명',
+                    file_url='/api/community/uploads/' + filename, file_name='formula.txt')
+        db.session.add(post)
+        db.session.flush()
+        db.session.add(PurchaseRequest(post_id=post.id, user_id=member.id, buyer_name='회원', status='approved'))
+        db.session.commit()
+        post_id = post.id
+    headers = {'Authorization': f"Bearer {tokens['member']}"}
+    client = app.test_client()
+    assert client.get('/api/community/search?q=전용', headers=headers).get_json()['total'] == 1
+    assert client.get(f'/api/community/posts/{post_id}/download', headers=headers).status_code == 200
+
+
+def test_daiso_cannot_be_published_by_public_board_configuration(daiso_env, monkeypatch):
+    app, tokens = daiso_env
+    monkeypatch.setenv('PUBLIC_COMMUNITY_BOARDS', 'notice,formula-daiso')
+    client = app.test_client()
+    created = client.post('/api/community/boards/formula-daiso/posts', json={
+        'title': '전용 수식', 'content': '설명', 'is_public': True,
+    }, headers={'Authorization': f"Bearer {tokens['admin']}"})
+    assert created.status_code == 201
+    assert client.get('/api/public/community/boards').get_json()['boards'] == []
+    assert client.get('/api/public/community/boards/formula-daiso/posts').status_code == 404
+    assert client.get(f"/api/public/community/posts/{created.get_json()['id']}").status_code == 404
 
 
 def test_formula_market_price_stays_free_form(monkeypatch):

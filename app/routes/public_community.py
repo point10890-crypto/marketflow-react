@@ -28,7 +28,8 @@ _PER_PAGE_MAX = 30
 
 def _public_board_slugs() -> set[str]:
     raw = os.getenv('PUBLIC_COMMUNITY_BOARDS', _DEFAULT_PUBLIC_BOARDS)
-    return {s.strip() for s in raw.split(',') if s.strip()}
+    # AI Brain-only board must never be exposed by the public publishing allowlist.
+    return {s.strip() for s in raw.split(',') if s.strip()} - {'formula-daiso'}
 
 
 def _public_post_dict(post: Post) -> dict:
