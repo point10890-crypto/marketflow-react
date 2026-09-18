@@ -1,3 +1,4 @@
+import '@/pages/dashboard/ai-design.css';
 import { useEffect, useState, useCallback, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { usAPI, krAPI, cryptoAPI, briefingAPI, type BriefingData, type BriefingMarketData, type DecisionSignalData, type AIBriefing } from '@/lib/api';
@@ -54,7 +55,7 @@ function IndexCard({ name, ticker, data }: { name: string; ticker: string; data?
     const color = pct >= 0 ? '#10b981' : '#ef4444';
     const barW = Math.min(Math.abs(pct) * 10, 100);
     return (
-        <div className="flex flex-col gap-1.5 rounded-xl border border-white/[0.07] bg-[#13151f] p-3">
+        <div className="ai-panel flex flex-col gap-1.5 rounded-xl border border-[#30363f] bg-[#13151f] p-3">
             <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-gray-400">{ticker}</span>
                 {data.pct_from_high != null && (
@@ -79,7 +80,7 @@ function IndicatorTile({ label, value, change, icon, color }: {
     label: string; value: string; change?: number | null; icon: string; color: string;
 }) {
     return (
-        <div className="flex flex-col items-center gap-1 rounded-xl border border-white/[0.07] bg-[#13151f] p-3 min-w-0">
+        <div className="ai-panel flex flex-col items-center gap-1 rounded-xl border border-[#30363f] bg-[#13151f] p-3 min-w-0">
             <i className={`fas ${icon} text-xs ${color}`} />
             <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">{label}</span>
             <span className="text-sm font-bold text-white tabular-nums">{value}</span>
@@ -97,7 +98,7 @@ function PortalLink({ to, icon, label, desc, accent }: {
 }) {
     return (
         <Link to={to}
-            className="group flex items-center gap-3 rounded-xl border border-white/[0.07] bg-[#13151f] p-3 hover:border-white/15 hover:bg-white/[0.03] transition-all active:scale-[0.98]"
+            className="ai-panel group flex items-center gap-3 rounded-xl border border-[#30363f] bg-[#13151f] p-3 hover:border-white/15 hover:bg-white/[0.03] transition-all active:scale-[0.98]"
         >
             <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                 style={{ background: `${accent}15`, border: `1px solid ${accent}25` }}>
@@ -163,7 +164,7 @@ function SignalPanel({ signal }: { signal: DecisionSignalData | null }) {
     const style = actionColors[signal.action] ?? actionColors.NEUTRAL;
     const components = signal.components;
     return (
-        <div className="rounded-xl border border-white/[0.07] bg-[#13151f] p-4">
+        <div className="ai-panel rounded-xl border border-[#30363f] bg-[#13151f] p-4">
             <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold text-white">Decision Signal</span>
                 <span className={`text-xs font-black px-2 py-1 rounded-lg border ${style}`}>{signal.action}</span>
@@ -367,7 +368,7 @@ function BriefingView({ briefing }: { briefing: AIBriefing }) {
     return (
         <div className="flex flex-col gap-3">
             {/* Header */}
-            <div className="rounded-xl border border-white/[0.07] bg-[#13151f] p-4">
+            <div className="ai-panel rounded-xl border border-[#30363f] bg-[#13151f] p-4">
                 <div className="flex items-start justify-between gap-3 mb-3">
                     <h3 className="text-sm font-extrabold text-white leading-snug flex-1">{briefing.title}</h3>
                     <span className={`text-[9px] font-black px-2 py-1 rounded-lg border shrink-0 ${style}`}>
@@ -387,7 +388,7 @@ function BriefingView({ briefing }: { briefing: AIBriefing }) {
 
             {/* Sections */}
             {briefing.sections?.map((section, i) => (
-                <div key={i} className="rounded-xl border border-white/[0.07] bg-[#13151f] p-4">
+                <div key={i} className="ai-panel rounded-xl border border-[#30363f] bg-[#13151f] p-4">
                     <h4 className="text-xs font-bold text-white mb-2">{section.heading}</h4>
                     <RenderMarkdown content={section.content} />
                 </div>
@@ -395,7 +396,7 @@ function BriefingView({ briefing }: { briefing: AIBriefing }) {
 
             {/* Key Events */}
             {briefing.key_events?.length > 0 && (
-                <div className="rounded-xl border border-white/[0.07] bg-[#13151f] p-4">
+                <div className="ai-panel rounded-xl border border-[#30363f] bg-[#13151f] p-4">
                     <h4 className="text-xs font-bold text-white mb-2">
                         <i className="fas fa-calendar-alt text-amber-400 mr-2" />Key Events
                     </h4>
@@ -552,18 +553,18 @@ export default function BriefingPortalPage() {
     const fgArc = Math.min((fg?.score ?? 0) / 100, 1);
 
     return (
-        <div className="flex flex-col gap-3 md:gap-4 pb-4">
+        <div className="ai-design flex flex-col gap-3 md:gap-4 pb-4">
 
             {/* ── Page Header ── */}
-            <div className="flex items-center justify-between">
+            <div className="ai-page-header flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-white">
+                    <h2 className="ai-page-title text-white">
                         Market{' '}
-                        <span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 40%, #f97316 100%)' }}>
+                        <span className="text-[#73b7ff]">
                             Briefing
                         </span>
                     </h2>
-                    <p className="text-xs text-gray-400 mt-0.5">Yahoo Finance-Style Market Portal</p>
+                    <p className="text-xs text-gray-400 mt-0.5">주요 지수 · 시장 동향 · AI 브리핑</p>
                 </div>
                 <span className="text-xs text-gray-500">
                     {briefing?.timestamp ? new Date(briefing.timestamp).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
@@ -621,14 +622,14 @@ export default function BriefingPortalPage() {
             {activeTab === 'portal' && (<>
 
             {/* ── 1. Ticker Strip ── */}
-            <div className="rounded-xl border border-white/[0.07] bg-[#13151f] px-3">
+            <div className="ai-panel rounded-xl border border-[#30363f] bg-[#13151f] px-3">
                 <TickerStrip items={tickerItems} />
             </div>
 
             {/* ── 2. Hero: Opportunity + VIX + F&G ── */}
             <div className="grid grid-cols-3 gap-3">
                 {/* Opportunity Score */}
-                <div className="flex flex-col items-center gap-1 rounded-xl border border-white/[0.07] bg-[#13151f] p-4">
+                <div className="ai-panel flex flex-col items-center gap-1 rounded-xl border border-[#30363f] bg-[#13151f] p-4">
                     <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-widest">Opportunity</span>
                     <div className="relative" style={{ width: 96, height: 96 }}>
                         <svg width={96} height={96} viewBox="0 0 96 96">
@@ -649,7 +650,7 @@ export default function BriefingPortalPage() {
                 </div>
 
                 {/* VIX */}
-                <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-white/[0.07] bg-[#13151f] p-4">
+                <div className="ai-panel flex flex-col items-center justify-center gap-2 rounded-xl border border-[#30363f] bg-[#13151f] p-4">
                     <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-widest">VIX</span>
                     <span className={`text-3xl font-extrabold tabular-nums ${vixColor}`}>{vix?.value != null ? Number(vix.value).toFixed(1) : '—'}</span>
                     <span className={`text-xs font-semibold tabular-nums ${chgColor(vix?.change)}`}>
@@ -663,7 +664,7 @@ export default function BriefingPortalPage() {
                 </div>
 
                 {/* Fear & Greed */}
-                <div className="flex flex-col items-center gap-1 rounded-xl border border-white/[0.07] bg-[#13151f] p-4">
+                <div className="ai-panel flex flex-col items-center gap-1 rounded-xl border border-[#30363f] bg-[#13151f] p-4">
                     <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-widest">Fear & Greed</span>
                     <div className="relative" style={{ width: 96, height: 96 }}>
                         <svg width={96} height={96} viewBox="0 0 96 96">
@@ -739,7 +740,7 @@ export default function BriefingPortalPage() {
                     </h3>
                     <div className="grid grid-cols-3 gap-2">
                         {Object.entries(futures).slice(0, 3).map(([key, data]) => (
-                            <div key={key} className="flex flex-col items-center gap-1 rounded-xl border border-white/[0.07] bg-[#13151f] p-3">
+                            <div key={key} className="ai-panel flex flex-col items-center gap-1 rounded-xl border border-[#30363f] bg-[#13151f] p-3">
                                 <span className="text-xs font-semibold text-gray-400">{data.name || key}</span>
                                 <span className="text-sm font-bold text-white tabular-nums">{fmt(data.price)}</span>
                                 <span className={`text-xs font-semibold tabular-nums ${chgColor(data.change)}`}>{chgStr(data.change)}</span>
@@ -751,7 +752,7 @@ export default function BriefingPortalPage() {
 
             {/* ── 7. Smart Money Picks ── */}
             {picks.length > 0 && (
-                <div className="rounded-xl border border-white/[0.07] bg-[#13151f] p-4">
+                <div className="ai-panel rounded-xl border border-[#30363f] bg-[#13151f] p-4">
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-sm font-bold text-white">
                             <i className="fas fa-trophy text-amber-400 mr-2" />Smart Money Top Picks

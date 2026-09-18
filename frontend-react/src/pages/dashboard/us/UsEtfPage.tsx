@@ -1,3 +1,4 @@
+import '../kr/market-design.css';
 import { useEffect, useState, useCallback } from 'react';
 import { usAPI } from '@/lib/api';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -105,15 +106,12 @@ export default function UsEtfPage() {
     };
 
     return (
-        <div className="space-y-4 md:space-y-6">
+        <div className="market-workspace space-y-4 md:space-y-6">
             {/* Header */}
-            <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/20 bg-cyan-500/5 text-xs text-cyan-400 font-medium mb-3 md:mb-4">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></span>
-                    Fund Flows
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold tracking-tighter text-white mb-1 md:mb-2">
-                    ETF <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">Flows</span>
+            <div className="dash-page-header market-page-header market-stacked-header">
+                <div className="market-identity mb-2">Fund Flows</div>
+                <h2 className="market-title">
+                    ETF <span className="market-title-accent">Flows</span>
                 </h2>
                 <p className="text-gray-400 text-sm md:text-base">섹터 ETF 자금 유입/유출 분석</p>
             </div>
@@ -121,27 +119,27 @@ export default function UsEtfPage() {
             {/* Sentiment Cards */}
             {sentiment && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-                    <div className="p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
-                        <div className="text-[10px] text-gray-500 mb-1">Overall</div>
+                    <div className="dash-panel market-panel p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
+                        <div className="text-[12px] text-gray-400 mb-1">Overall</div>
                         <div className={`text-lg font-bold ${getSentimentColor(sentiment.sentiment)}`}>
                             {sentiment.overall_score}
                         </div>
-                        <div className={`text-[10px] ${getSentimentColor(sentiment.sentiment)}`}>{sentiment.sentiment}</div>
+                        <div className={`text-[12px] ${getSentimentColor(sentiment.sentiment)}`}>{sentiment.sentiment}</div>
                     </div>
-                    <div className="p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
-                        <div className="text-[10px] text-gray-500 mb-1">Broad Market</div>
+                    <div className="dash-panel market-panel p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
+                        <div className="text-[12px] text-gray-400 mb-1">Broad Market</div>
                         <div className={`text-lg font-bold ${getScoreColor(sentiment.broad_market_score)}`}>
                             {sentiment.broad_market_score}
                         </div>
                     </div>
-                    <div className="p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
-                        <div className="text-[10px] text-gray-500 mb-1">Risk-On</div>
+                    <div className="dash-panel market-panel p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
+                        <div className="text-[12px] text-gray-400 mb-1">Risk-On</div>
                         <div className={`text-lg font-bold ${getScoreColor(sentiment.risk_on_score)}`}>
                             {sentiment.risk_on_score}
                         </div>
                     </div>
-                    <div className="p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
-                        <div className="text-[10px] text-gray-500 mb-1">Risk-Off</div>
+                    <div className="dash-panel market-panel p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
+                        <div className="text-[12px] text-gray-400 mb-1">Risk-Off</div>
                         <div className={`text-lg font-bold ${getScoreColor(sentiment.risk_off_score)}`}>
                             {sentiment.risk_off_score}
                         </div>
@@ -150,7 +148,7 @@ export default function UsEtfPage() {
             )}
 
             {/* Category Filter */}
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <div className="dash-toolbar market-toolbar flex gap-2 overflow-x-auto scrollbar-hide">
                 {categories.map(cat => (
                     <button
                         key={cat}
@@ -170,52 +168,52 @@ export default function UsEtfPage() {
             {loading ? (
                 <div className="space-y-2">
                     {Array.from({ length: 10 }).map((_, i) => (
-                        <div key={i} className="h-14 rounded-xl bg-[#1c1c1e] border border-white/10 animate-pulse"></div>
+                        <div key={i} className="dash-panel market-panel h-14 rounded-xl bg-[#1c1c1e] border border-white/10 animate-pulse"></div>
                     ))}
                 </div>
             ) : sorted.length === 0 ? (
-                <div className="p-12 rounded-2xl bg-[#1c1c1e] border border-white/10 text-center">
+                <div className="dash-panel market-panel p-12 rounded-2xl bg-[#1c1c1e] border border-white/10 text-center">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-cyan-500/10 flex items-center justify-center">
                         <span className="text-2xl">💰</span>
                     </div>
-                    <div className="text-gray-500 text-lg mb-2">No ETF flow data</div>
+                    <div className="text-gray-400 text-lg mb-2">No ETF flow data</div>
                     <div className="text-xs text-gray-600">스케줄러가 04:00에 자동 갱신합니다</div>
                 </div>
             ) : isMobile ? (
                 /* Mobile: Card view */
                 <div className="space-y-2">
                     {sorted.map((flow) => (
-                        <div key={flow.ticker} className="p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
+                        <div key={flow.ticker} className="dash-panel market-panel p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
                             <div className="flex items-center justify-between mb-2">
                                 <div className="min-w-0">
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm font-bold text-white">{flow.ticker}</span>
-                                        <span className={`text-[10px] px-1.5 py-0.5 rounded border ${getStatusBadge(flow.flow_status)}`}>
+                                        <span className={`text-[12px] px-1.5 py-0.5 rounded border ${getStatusBadge(flow.flow_status)}`}>
                                             {flow.flow_status}
                                         </span>
                                     </div>
-                                    <div className="text-[10px] text-gray-500 mt-0.5">{flow.name} · {flow.category}</div>
+                                    <div className="text-[12px] text-gray-400 mt-0.5">{flow.name} · {flow.category}</div>
                                 </div>
                                 <div className="text-right shrink-0">
                                     <div className={`text-sm font-bold ${getScoreColor(flow.flow_score)}`}>{flow.flow_score}</div>
-                                    <div className="text-[10px] text-gray-500">score</div>
+                                    <div className="text-[12px] text-gray-400">score</div>
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2">
                                 <div className="text-center p-1.5 rounded-lg bg-white/[0.03] border border-white/5">
-                                    <div className="text-[9px] text-gray-500 mb-0.5">5D Flow</div>
+                                    <div className="text-[11px] text-gray-400 mb-0.5">5D Flow</div>
                                     <div className={`text-xs font-bold font-mono ${getFlowColor(flow.flow_5d)}`}>
                                         {formatFlow(flow.flow_5d)}
                                     </div>
                                 </div>
                                 <div className="text-center p-1.5 rounded-lg bg-white/[0.03] border border-white/5">
-                                    <div className="text-[9px] text-gray-500 mb-0.5">20D Flow</div>
+                                    <div className="text-[11px] text-gray-400 mb-0.5">20D Flow</div>
                                     <div className={`text-xs font-bold font-mono ${getFlowColor(flow.flow_20d)}`}>
                                         {formatFlow(flow.flow_20d)}
                                     </div>
                                 </div>
                                 <div className="text-center p-1.5 rounded-lg bg-white/[0.03] border border-white/5">
-                                    <div className="text-[9px] text-gray-500 mb-0.5">5D Price</div>
+                                    <div className="text-[11px] text-gray-400 mb-0.5">5D Price</div>
                                     <div className={`text-xs font-bold font-mono ${flow.price_5d >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                         {flow.price_5d >= 0 ? '+' : ''}{flow.price_5d}%
                                     </div>
@@ -226,11 +224,11 @@ export default function UsEtfPage() {
                 </div>
             ) : (
                 /* Desktop: Table view */
-                <div className="rounded-xl bg-[#1c1c1e] border border-white/10 overflow-hidden">
+                <div className="dash-panel market-panel rounded-xl bg-[#1c1c1e] border border-white/10 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="text-[10px] text-gray-500 uppercase tracking-wider border-b border-white/5">
+                                <tr className="text-[12px] text-gray-400 uppercase tracking-wider border-b border-white/5">
                                     <th className="text-left py-3 px-4">ETF</th>
                                     <th className="text-left py-3 px-4">Category</th>
                                     <th className="text-right py-3 px-4 cursor-pointer hover:text-white" onClick={() => handleSort('flow_score')}>
@@ -254,14 +252,14 @@ export default function UsEtfPage() {
                                     <tr key={flow.ticker} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                                         <td className="py-3 px-4">
                                             <div className="font-bold text-white">{flow.ticker}</div>
-                                            <div className="text-[10px] text-gray-500 truncate max-w-[140px]">{flow.name}</div>
+                                            <div className="text-[12px] text-gray-400 truncate max-w-[140px]">{flow.name}</div>
                                         </td>
                                         <td className="py-3 px-4 text-xs text-gray-400">{flow.category}</td>
                                         <td className={`py-3 px-4 text-right font-bold ${getScoreColor(flow.flow_score)}`}>
                                             {flow.flow_score}
                                         </td>
                                         <td className="py-3 px-4 text-center">
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${getStatusBadge(flow.flow_status)}`}>
+                                            <span className={`text-[12px] px-2 py-0.5 rounded-full border ${getStatusBadge(flow.flow_status)}`}>
                                                 {flow.flow_status}
                                             </span>
                                         </td>
@@ -287,8 +285,8 @@ export default function UsEtfPage() {
 
             {/* AI Analysis */}
             {aiAnalysis && (
-                <div className="p-4 md:p-6 rounded-xl bg-[#1c1c1e] border border-white/10">
-                    <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                <div className="dash-panel market-panel p-4 md:p-6 rounded-xl bg-[#1c1c1e] border border-white/10">
+                    <h3 className="dash-section-title text-sm font-bold text-white mb-3 flex items-center gap-2">
                         <span>🤖</span> AI Flow Analysis
                     </h3>
                     <div className="text-sm text-gray-300 leading-relaxed whitespace-pre-line">

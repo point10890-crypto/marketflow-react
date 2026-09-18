@@ -25,8 +25,8 @@ export default function PerformanceCard({ data, learningPattern }: PerformanceCa
     const evaluated = data?.evaluated_count ?? 0;
 
     return (
-        <section className="rounded-2xl border border-cyan-400/15 bg-[#13151f] p-5">
-            <h2 className="text-white font-bold text-base flex items-center gap-2 mb-4">
+        <section className="ai-panel rounded-2xl border border-cyan-400/15 bg-[#13151f] p-5">
+            <h2 className="ai-section-title text-white font-bold text-base flex items-center gap-2 mb-4">
                 <i className="fas fa-chart-line text-cyan-400" />
                 성과 검증
                 <span className="text-[11px] font-medium text-gray-500">최근 {windowDays}일</span>

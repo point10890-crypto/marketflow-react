@@ -37,7 +37,7 @@ export default function CloseLeadersCard() {
 
     if (!data || data.error === 'no_snapshot') {
         return (
-            <section className="rounded-2xl border border-teal-400/15 bg-[#13151f] p-5">
+            <section className="ai-panel rounded-2xl border border-teal-400/15 bg-[#13151f] p-5">
                 <Header day={null} />
                 <p className="text-sm text-gray-500">
                     {failed ? '마감 주도주 데이터가 아직 없습니다 (백엔드 준비 중)'
@@ -52,7 +52,7 @@ export default function CloseLeadersCard() {
     const shown = rows.slice(0, MAX_ROWS);
 
     return (
-        <section className="rounded-2xl border border-teal-400/15 bg-[#13151f] p-5">
+        <section className="ai-panel rounded-2xl border border-teal-400/15 bg-[#13151f] p-5">
             <Header day={data.day} />
 
             <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-gray-400">
@@ -109,7 +109,7 @@ export default function CloseLeadersCard() {
 
 function Header({ day }: { day: string | null }) {
     return (
-        <h2 className="mb-3 flex items-center gap-2.5 text-base font-bold text-white">
+        <h2 className="ai-section-title mb-3 flex items-center gap-2.5 text-base font-bold text-white">
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-teal-400/20 bg-teal-500/10">
                 <i className="fas fa-flag-checkered text-[13px] text-teal-300" />
             </span>

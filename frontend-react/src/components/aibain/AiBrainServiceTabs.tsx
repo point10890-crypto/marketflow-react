@@ -12,7 +12,6 @@ const services = [
         eyebrow: 'MIROFISH',
         title: '알파 스캐너',
         description: 'GraphRAG 검출·검증 대시보드',
-        activeClass: 'border-cyan-300/60 bg-cyan-500/15 text-cyan-100 shadow-[0_0_30px_rgba(34,211,238,0.12)]',
         iconClass: 'bg-cyan-400/15 text-cyan-300',
     },
     {
@@ -22,7 +21,6 @@ const services = [
         eyebrow: 'KIS + OPENAI',
         title: 'Goodrich TOP 3',
         description: 'AI 펀드매니저 실전 리서치',
-        activeClass: 'border-emerald-300/60 bg-emerald-500/15 text-emerald-100 shadow-[0_0_30px_rgba(52,211,153,0.12)]',
         iconClass: 'bg-emerald-400/15 text-emerald-300',
     },
     {
@@ -32,14 +30,13 @@ const services = [
         eyebrow: '근거 대조',
         title: '종목 판단',
         description: '독립 근거 7종 합의·이견 비교',
-        activeClass: 'border-teal-300/60 bg-teal-500/15 text-teal-100 shadow-[0_0_30px_rgba(45,212,191,0.12)]',
         iconClass: 'bg-teal-400/15 text-teal-300',
     },
 ];
 
 export default function AiBrainServiceTabs({ active }: AiBrainServiceTabsProps) {
     return (
-        <nav aria-label="AI Brain 서비스" className="grid w-full grid-cols-1 gap-2.5 sm:gap-3 md:max-w-5xl md:grid-cols-3">
+        <nav aria-label="AI Brain 서비스" className="grid w-full grid-cols-3 gap-2 sm:gap-3 md:max-w-5xl">
             {services.map((service) => {
                 const selected = service.id === active;
                 return (
@@ -47,19 +44,19 @@ export default function AiBrainServiceTabs({ active }: AiBrainServiceTabsProps) 
                         key={service.id}
                         href={service.href}
                         aria-current={selected ? 'page' : undefined}
-                        className={`group flex min-h-20 items-center gap-3.5 rounded-2xl border px-4 py-3.5 transition-all sm:min-h-24 sm:gap-4 sm:px-5 sm:py-4 ${
+                        className={`group flex min-h-[76px] flex-col justify-center items-center gap-1.5 rounded-xl border px-2 py-2.5 transition-colors sm:flex-row sm:justify-start sm:min-h-24 sm:gap-3 sm:px-4 sm:py-4 ${
                             selected
-                                ? service.activeClass
-                                : 'border-white/10 bg-white/[0.035] text-gray-300 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.065]'
+                                ? 'border-[#365372] bg-[#1b2c40] text-[#acd3ff]'
+                                : 'border-[#30363f] bg-[#15191e] text-gray-300 hover:border-[#526a83] hover:bg-[#1d232b]'
                         }`}
                     >
-                        <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl sm:h-12 sm:w-12 ${service.iconClass}`}>
+                        <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-lg sm:h-10 sm:w-10 ${service.iconClass}`}>
                             <i className={`fas ${service.icon} text-base sm:text-lg`} />
                         </span>
-                        <span className="min-w-0 text-left">
-                            <span className="block text-[10px] font-black tracking-[0.18em] text-gray-500">{service.eyebrow}</span>
-                            <span className="mt-0.5 block text-base font-black tracking-tight text-current sm:text-lg">{service.title}</span>
-                            <span className="mt-0.5 block text-[11px] font-medium text-gray-500 sm:mt-1 sm:text-xs">{service.description}</span>
+                        <span className="min-w-0 text-center sm:text-left">
+                            <span className="hidden sm:block text-[11px] font-medium tracking-[0.06em] text-gray-400">{service.eyebrow}</span>
+                            <span className="mt-0.5 block text-xs font-semibold tracking-tight text-current sm:text-base">{service.title}</span>
+                            <span className="mt-0.5 hidden sm:block font-medium text-gray-400 sm:mt-1 sm:text-xs">{service.description}</span>
                         </span>
                     </a>
                 );

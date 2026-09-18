@@ -1,3 +1,4 @@
+import './community-design.css';
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -117,7 +118,7 @@ export default function BoardPage() {
                             </span>
                         )}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="flex items-center gap-2 text-xs text-[#a6afbb]">
                         <span className="flex items-center gap-1">
                             <span className="font-medium text-gray-400">{post.author.name}</span>
                             {badge && (
@@ -130,7 +131,7 @@ export default function BoardPage() {
                 </div>
 
                 {/* Right: Stats */}
-                <div className="hidden sm:flex items-center gap-4 flex-shrink-0 text-xs text-gray-600">
+                <div className="hidden sm:flex items-center gap-4 flex-shrink-0 text-xs text-[#a6afbb]">
                     <span className="flex items-center gap-1">
                         <i className="far fa-eye" />{post.view_count}
                     </span>
@@ -143,12 +144,13 @@ export default function BoardPage() {
     };
 
     return (
-        <div className="p-4 md:p-6 lg:py-8 lg:px-10">
+        <div className="community-workspace p-4 md:p-6 lg:py-6 lg:px-8">
             {/* Header */}
-            <div className="flex items-start md:items-center justify-between gap-4 mb-6">
+            <div className="dash-page-header flex flex-wrap items-start md:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => navigate('/dashboard/community')}
+                        aria-label="커뮤니티로 돌아가기"
                         className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
                     >
                         <i className="fas fa-arrow-left text-sm" />
@@ -156,7 +158,7 @@ export default function BoardPage() {
                     <div>
                         <h1 className="text-xl md:text-2xl font-bold text-white">{board?.name || boardSlug}</h1>
                         {board?.description && (
-                            <p className="text-gray-500 text-xs md:text-sm mt-0.5">{board.description}</p>
+                            <p className="text-[#a6afbb] text-xs md:text-sm mt-0.5">{board.description}</p>
                         )}
                     </div>
                 </div>
@@ -164,7 +166,7 @@ export default function BoardPage() {
                 {canWrite && (
                     <button
                         onClick={() => navigate(`/dashboard/community/${boardSlug}/write`)}
-                        className="bg-[#2997ff] hover:bg-[#2997ff]/85 text-white font-bold text-sm rounded-xl px-5 py-2.5 transition-colors flex items-center gap-2 flex-shrink-0 active:scale-95"
+                        className="bg-[#2997ff] hover:bg-[#2997ff]/85 text-white font-bold text-sm rounded-xl px-5 py-2.5 transition-colors flex items-center gap-2 flex-shrink-0 "
                     >
                         <i className="fas fa-pen text-xs" />
                         <span className="hidden sm:inline">글쓰기</span>
@@ -173,15 +175,15 @@ export default function BoardPage() {
             </div>
 
             {/* Stats bar */}
-            <div className="flex items-center gap-4 mb-4 px-1 text-xs text-gray-500">
+            <div className="flex items-center gap-4 mb-4 px-1 text-xs text-[#a6afbb]">
                 <span>전체 <strong className="text-gray-300">{total + (notices?.length || 0)}</strong></span>
                 {notices.length > 0 && <span>공지 <strong className="text-amber-400">{notices.length}</strong></span>}
             </div>
 
             {/* Post list */}
-            <div className="bg-[#1c1c1e]/80 border border-white/[0.06] rounded-2xl overflow-hidden divide-y divide-white/[0.04]">
+            <div className="dash-panel bg-[#15191e] border border-[#30363f] rounded-xl overflow-hidden divide-y divide-white/[0.04]">
                 {/* Table header - PC only */}
-                <div className="hidden md:flex items-center px-5 py-2.5 text-[11px] text-gray-600 uppercase tracking-wider font-medium bg-white/[0.02]">
+                <div className="hidden md:flex items-center px-5 py-2.5 text-[11px] text-[#a6afbb] uppercase tracking-wider font-medium bg-white/[0.02]">
                     <span className="flex-1 pl-14">제목</span>
                     <div className="flex items-center gap-4 w-32 justify-end">
                         <span>조회</span>
@@ -199,7 +201,7 @@ export default function BoardPage() {
                 {posts.length === 0 && notices.length === 0 && (
                     <div className="text-center py-16">
                         <i className="far fa-comment-dots text-2xl text-gray-700 mb-3 block" />
-                        <p className="text-gray-600 text-sm">아직 게시글이 없습니다.</p>
+                        <p className="text-[#a6afbb] text-sm">아직 게시글이 없습니다.</p>
                         {canWrite && (
                             <button
                                 onClick={() => navigate(`/dashboard/community/${boardSlug}/write`)}
@@ -239,7 +241,7 @@ export default function BoardPage() {
                                     className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
                                         item === page
                                             ? 'bg-[#2997ff] text-white'
-                                            : 'text-gray-500 hover:text-white hover:bg-white/10'
+                                            : 'text-[#a6afbb] hover:text-white hover:bg-white/10'
                                     }`}
                                 >
                                     {item}

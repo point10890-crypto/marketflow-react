@@ -1,3 +1,4 @@
+import '@/pages/dashboard/ai-design.css';
 
 
 import { useEffect, useState, useCallback } from 'react';
@@ -161,9 +162,9 @@ export default function VCPEnhancedPage() {
     const summary = current?.summary;
 
     return (
-        <div className="flex flex-col gap-4 md:gap-5 h-full min-h-0">
+        <div className="ai-design flex flex-col gap-4 md:gap-5 h-full min-h-0">
             {/* ── Header ── */}
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 shrink-0">
+            <div className="ai-page-header flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 shrink-0">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <i className="fas fa-bolt text-yellow-400" />
@@ -171,9 +172,9 @@ export default function VCPEnhancedPage() {
                             VCP Enhanced
                         </span>
                     </div>
-                    <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
+                    <h2 className="ai-page-title text-white">
                         Volatility Contraction{' '}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-500">
+                        <span className="text-[#73b7ff]">
                             Pattern
                         </span>
                     </h2>
@@ -182,7 +183,7 @@ export default function VCPEnhancedPage() {
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                     {meta?.generated_at && (
                         <span className="text-xs text-gray-500">
                             업데이트: {new Date(meta.generated_at).toLocaleString('ko-KR')}
@@ -202,7 +203,7 @@ export default function VCPEnhancedPage() {
             </div>
 
             {/* ── Market Tabs ── */}
-            <div className="flex gap-1 shrink-0">
+            <div className="dash-toolbar flex flex-wrap gap-1 shrink-0">
                 {(Object.keys(MARKET_CONFIG) as MarketTab[]).map(market => (
                     <button
                         key={market}
@@ -227,7 +228,7 @@ export default function VCPEnhancedPage() {
 
             {/* ── Gate + Summary Bar ── */}
             {meta && (
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 rounded-xl bg-[#13151f] border border-white/[0.08] shrink-0">
+                <div className="ai-panel flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 rounded-xl bg-[#13151f] border border-[#30363f] shrink-0">
                     {meta.gate && (
                         <div className="flex items-center gap-2">
                             <span className="text-xs text-gray-400">마켓 게이트</span>
@@ -279,7 +280,7 @@ export default function VCPEnhancedPage() {
                 {!loading && signals.map((signal, i) => (
                     <div
                         key={`${signal.symbol}-${i}`}
-                        className="p-4 md:p-5 rounded-xl bg-[#13151f] border border-white/[0.08] hover:border-white/15 transition-colors"
+                        className="ai-panel p-4 md:p-5 rounded-xl bg-[#13151f] border border-[#30363f] hover:border-white/15 transition-colors"
                     >
                         {/* 상단: 종목명 + 점수 */}
                         <div className="flex items-start justify-between mb-3">

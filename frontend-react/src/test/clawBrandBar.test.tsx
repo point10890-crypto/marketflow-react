@@ -50,6 +50,7 @@ describe('ClawBrandBar', () => {
   it('shows the compact bar only after the banner has scrolled out, with hysteresis', () => {
     const { scrollTo } = setup();
     const compact = screen.getByTestId('claw-brand-compact');
+    const expandedContent = screen.getByTestId('claw-brand-banner').textContent;
 
     scrollTo(100);                       // 배너 아직 보임 → 펼침 유지
     expect(compact.className).not.toContain('is-on');
@@ -57,6 +58,8 @@ describe('ClawBrandBar', () => {
     scrollTo(195);                       // 배너 하단(196) - 8 초과 → 접힘
     expect(compact.className).toContain('is-on');
     expect(compact.getAttribute('tabindex')).toBe('0');
+    // Retaining the banner content preserves its wrapped mobile height.
+    expect(screen.getByTestId('claw-brand-banner').textContent).toBe(expandedContent);
 
     scrollTo(160);                       // 접힘 유지 구간(196-56=140 초과) → 진동 없음
     expect(compact.className).toContain('is-on');

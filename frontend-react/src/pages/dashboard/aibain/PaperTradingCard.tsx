@@ -61,7 +61,7 @@ export default function PaperTradingCard({ data }: { data: PaperOverview }) {
     const perf = data.performance;
 
     return (
-        <div className="rounded-2xl border border-cyan-400/15 bg-[#13151f] overflow-hidden">
+        <div className="ai-panel rounded-2xl border border-cyan-400/15 bg-[#13151f] overflow-hidden">
             {/* 헤더 — 국면 + 성과 요약 스트립 */}
             <div className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-5 py-3.5 border-b border-white/[0.05]">
                 <div className="flex items-center gap-2">

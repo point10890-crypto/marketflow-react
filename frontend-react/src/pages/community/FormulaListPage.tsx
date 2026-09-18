@@ -1,3 +1,4 @@
+import './community-design.css';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,7 +33,7 @@ function FormulaCard({ post, board }: { post: CommunityPost; board: FormulaBoard
     return (
         <Link
             to={`/dashboard/community/post/${post.id}`}
-            className={`group relative bg-[#1c1c1e]/80 border border-white/[0.06] rounded-2xl p-5 md:p-6 transition-all duration-200 ${board.accentBorderHover} hover:shadow-lg ${board.accentShadowHover} hover:-translate-y-0.5 flex flex-col`}
+            className={`group relative dash-panel bg-[#15191e] border border-[#30363f] rounded-xl p-5 md:p-6 transition-all duration-200 ${board.accentBorderHover} flex flex-col`}
         >
             {/* Notice badge */}
             {post.is_notice && (
@@ -53,7 +54,7 @@ function FormulaCard({ post, board }: { post: CommunityPost; board: FormulaBoard
 
             {/* Preview */}
             {preview && (
-                <p className="text-gray-500 text-xs leading-relaxed line-clamp-2 mb-4 flex-1">
+                <p className="text-[#a6afbb] text-xs leading-relaxed line-clamp-2 mb-4 flex-1">
                     {preview}
                 </p>
             )}
@@ -70,7 +71,7 @@ function FormulaCard({ post, board }: { post: CommunityPost; board: FormulaBoard
                             <span className="ml-1.5 rounded-full bg-white/[0.08] px-1.5 py-0.5 text-[9px] font-bold text-gray-300 align-middle">균일가</span>
                         )}
                     </span>
-                    <span className="text-gray-600 text-[11px]">
+                    <span className="text-[#a6afbb] text-[11px]">
                         {formatShortDate(post.created_at)}
                     </span>
                 </div>
@@ -143,12 +144,13 @@ export default function FormulaListPage({ boardSlug = 'formula-market' }: { boar
     }
 
     return (
-        <div className="p-4 md:p-6 lg:py-8 lg:px-10">
+        <div className="community-workspace p-4 md:p-6 lg:py-6 lg:px-8">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="dash-page-header flex flex-wrap items-center justify-between gap-3 mb-6">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => navigate('/dashboard/community')}
+                        aria-label="커뮤니티로 돌아가기"
                         className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
                     >
                         <i className="fas fa-arrow-left text-sm" />
@@ -167,7 +169,7 @@ export default function FormulaListPage({ boardSlug = 'formula-market' }: { boar
                                 </span>
                             )}
                         </div>
-                        <p className="text-gray-500 text-xs mt-0.5 hidden sm:block">{board.subtitle}</p>
+                        <p className="text-[#a6afbb] text-xs mt-0.5 hidden sm:block">{board.subtitle}</p>
                     </div>
                 </div>
 
@@ -182,7 +184,7 @@ export default function FormulaListPage({ boardSlug = 'formula-market' }: { boar
                         </button>
                         <button
                             onClick={() => navigate(`${basePath}/write`)}
-                            className={`${board.accentBg} text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors flex items-center gap-2 flex-shrink-0 active:scale-95`}
+                            className={`${board.accentBg} text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors flex items-center gap-2 flex-shrink-0 `}
                         >
                             <i className="fas fa-pen text-xs" />
                             <span className="hidden sm:inline">{board.writeLabel}</span>
@@ -198,9 +200,9 @@ export default function FormulaListPage({ boardSlug = 'formula-market' }: { boar
             )}
 
             {/* Search */}
-            <div className="bg-[#1c1c1e]/80 border border-white/[0.06] rounded-2xl p-4 md:p-5 mb-5">
+            <div className="dash-toolbar dash-panel bg-[#15191e] border border-[#30363f] rounded-xl p-4 md:p-5 mb-5">
                 <div className="flex items-center gap-3">
-                    <i className="fas fa-search text-gray-600 text-sm" />
+                    <i className="fas fa-search text-[#a6afbb] text-sm" />
                     <input
                         type="text"
                         value={searchQuery}
@@ -226,12 +228,12 @@ export default function FormulaListPage({ boardSlug = 'formula-market' }: { boar
                     ))}
                 </div>
             ) : (
-                <div className="bg-[#1c1c1e]/80 border border-white/[0.06] rounded-2xl text-center py-20">
+                <div className="dash-panel bg-[#15191e] border border-[#30363f] rounded-xl text-center py-20">
                     <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${board.iconGradient} flex items-center justify-center mx-auto mb-4`}>
-                        <i className={`fas ${board.iconClass} text-2xl text-gray-600`} />
+                        <i className={`fas ${board.iconClass} text-2xl text-[#a6afbb]`} />
                     </div>
-                    <p className="text-gray-500 text-sm mb-1">{board.emptyTitle}</p>
-                    <p className="text-gray-600 text-xs">{board.emptyHint}</p>
+                    <p className="text-[#a6afbb] text-sm mb-1">{board.emptyTitle}</p>
+                    <p className="text-[#a6afbb] text-xs">{board.emptyHint}</p>
                     {isAdmin && (
                         <button
                             onClick={() => navigate(`${basePath}/write`)}

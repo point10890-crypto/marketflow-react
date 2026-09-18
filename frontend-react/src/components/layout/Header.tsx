@@ -21,6 +21,15 @@ const PAGE_NAMES: Record<string, string> = {
     '/dashboard/us/vcp': 'US VCP',
     '/dashboard/crypto': 'Crypto',
     '/dashboard/crypto/signals': 'Crypto VCP Signals',
+    '/dashboard/ai-bain/goodrich': 'Goodrich TOP 3',
+    '/dashboard/ai-bain/decision': '종목 판단',
+    '/dashboard/kr/leading-stocks': '주도주 LIVE',
+    '/dashboard/kr/claw': 'Claw LIVE',
+    '/dashboard/kr/ai-chart': 'KR AI Chart',
+    '/dashboard/kr/chatbot': 'AI 시장 상담',
+    '/dashboard/us/ai-chart': 'US AI Chart',
+    '/dashboard/community/formula-market': '수식마켓',
+    '/dashboard/community/formula-daiso': '수식 다이소',
     '/dashboard/ai-bain': 'AI Brain',
     '/dashboard/manual-stock-analysis': 'AI 주식 분석 목록',
     '/dashboard/stock-analyzer': 'ProPicks Analyzer',
@@ -93,10 +102,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
     return (
         <>
-            <header className="mobile-safe-top-header h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-white/10 md:border-white/5 bg-[#111113] md:bg-[#09090b]/80 md:backdrop-blur-md shrink-0 z-40">
+            <header className="dashboard-header mobile-safe-top-header h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-white/10 md:border-white/5 bg-[#111113] md:bg-[#09090b]/80 md:backdrop-blur-md shrink-0 z-40">
                 {/* Left: Hamburger (mobile) + Page Title */}
                 <div className="flex items-center gap-3">
                     <button
+                        aria-label="메뉴 열기"
                         onClick={onMenuClick}
                         className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95"
                     >
@@ -125,12 +135,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 {/* Search - desktop only */}
                 <div className="hidden md:block max-w-md w-full mx-4">
                     <button
+                        aria-label="시장 및 종목 검색"
                         onClick={() => setPaletteOpen(true)}
                         className="relative group w-full"
                     >
                         <i className="fas fa-search absolute left-3.5 top-2.5 text-gray-500"></i>
-                        <div className="block w-full pl-10 pr-12 py-2.5 bg-[#18181b] border border-white/10 rounded-full text-sm text-gray-500 text-left cursor-pointer hover:border-white/20 transition-all">
-                            Search markets, tickers, or commands...
+                        <div className="block w-full pl-10 pr-12 py-2.5 dashboard-search bg-[#18181b] border border-white/10 rounded-xl text-sm text-gray-400 text-left cursor-pointer hover:border-white/20 transition-all">
+                            시장·종목·메뉴 검색
                         </div>
                         <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center">
                             <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-gray-500 bg-white/5 rounded border border-gray-600">
@@ -143,6 +154,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 {/* Actions */}
                 <div className="flex items-center gap-2">
                     <button
+                        aria-label="시장 및 종목 검색"
                         onClick={() => setPaletteOpen(true)}
                         className="md:hidden p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors active:scale-95"
                     >
@@ -161,8 +173,10 @@ export default function Header({ onMenuClick }: HeaderProps) {
                     {/* Bell - Notification Center */}
                     <div ref={bellRef} className="relative">
                         <button
+                            aria-label="알림"
+                            aria-expanded={bellOpen}
                             onClick={handleBellClick}
-                            className={`p-2 hover:text-white hover:bg-white/10 rounded-full transition-colors relative active:scale-95 ${unreadCount > 0 ? 'text-amber-400 animate-[bell-ring_1s_ease-in-out_infinite]' : 'text-gray-400'}`}
+                            className={`p-2 hover:text-white hover:bg-white/10 rounded-full transition-colors relative active:scale-95 ${unreadCount > 0 ? 'text-amber-400' : 'text-gray-400'}`}
                         >
                             <i className="far fa-bell text-sm"></i>
                             {unreadCount > 0 && (

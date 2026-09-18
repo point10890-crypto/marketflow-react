@@ -40,7 +40,7 @@ export default function ClawLiveCard() {
 
     if (!data) {
         return (
-            <section className="rounded-2xl border border-teal-400/15 bg-[#13151f] p-5">
+            <section className="ai-panel rounded-2xl border border-teal-400/15 bg-[#13151f] p-5">
                 <Header state={null} />
                 <p className="text-sm text-gray-500">{failed ? 'Claw LIVE 데이터가 아직 없습니다 (백엔드 준비 중)' : '불러오는 중...'}</p>
             </section>
@@ -144,7 +144,7 @@ export default function ClawLiveCard() {
 function Header({ state }: { state: ClawOverview['loop']['state'] | null }) {
     const label = state === 'running' ? 'LIVE' : state === 'halt' ? 'HOLD' : state === 'dead' ? 'OFFLINE' : 'REST';
     return (
-        <h2 className="mb-3 flex items-center gap-2.5 text-base font-bold text-white">
+        <h2 className="ai-section-title mb-3 flex items-center gap-2.5 text-base font-bold text-white">
             <ClawMascot state={state} size={34} className="-my-1 shrink-0" />
             <span className="claw-title-gradient">Claw LIVE</span>
             <span className="rounded-full border border-teal-400/25 bg-teal-500/10 px-2 py-0.5 text-[10px] font-bold text-teal-300">{label}</span>

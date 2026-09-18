@@ -19,6 +19,7 @@ const pageTitles: Array<[RegExp, string, string]> = [
     [/^\/dashboard$/, 'Summary', '시장 요약'],
     [/^\/dashboard\/briefing/, 'Briefing', 'AI 브리핑'],
     [/^\/dashboard\/ai-bain\/goodrich/, 'Goodrich TOP 3', 'AI 펀드매니저'],
+    [/^\/dashboard\/ai-bain\/decision/, '종목 판단', '근거 비교'],
     [/^\/dashboard\/ai-bain/, 'AI Brain', 'GraphRAG'],
     [/^\/dashboard\/manual-stock-analysis/, 'AI 분석 목록', '루프 스크래퍼'],
     [/^\/dashboard\/vcp-enhanced/, 'VCP Enhanced', '거래량 수축'],
@@ -67,28 +68,28 @@ export default function MobileDashboardRail() {
         <section className="md:hidden shrink-0 border-b border-white/5 bg-[#09090b]/96 px-2.5 py-2">
             <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                    <div className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-600">Mobile Dashboard</div>
                     <div className="mt-0.5 flex items-baseline gap-2">
                         <h1 className="truncate text-base font-black leading-none text-white">{title}</h1>
-                        <span className="shrink-0 text-[10px] font-bold text-slate-500">{subtitle}</span>
+                        <span className="shrink-0 text-xs font-bold text-slate-400">{subtitle}</span>
                     </div>
                 </div>
                 {showAiBain && (
                     <Link
                         to="/dashboard/ai-bain"
-                        className="shrink-0 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-1.5 text-[10px] font-black text-cyan-200"
+                        className="shrink-0 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-1.5 text-xs font-black text-cyan-200"
                     >
                         AI Brain
                     </Link>
                 )}
             </div>
-            <nav className="mobile-dashboard-rail-scroll flex gap-1.5 overflow-x-auto pb-0.5">
+            <nav className="dashboard-rail mobile-dashboard-rail-scroll flex gap-1.5 overflow-x-auto pb-0.5">
                 {visibleItems.map((item) => {
                     const isActive = activeFor(pathname, item.href);
                     return (
                         <Link
                             key={item.href}
                             to={item.href}
+                            aria-current={isActive ? "page" : undefined}
                             className={`inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-black transition-colors ${
                                 isActive
                                     ? 'border-cyan-300/45 bg-cyan-400/15 text-cyan-100'

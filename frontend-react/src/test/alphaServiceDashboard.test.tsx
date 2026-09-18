@@ -88,7 +88,7 @@ it('renders the five source-backed services in server order', async () => {
   render(<AlphaServiceDashboard />);
 
   const region = await screen.findByRole('region', { name: 'Alpha Service Clock' });
-  const headings = within(region).getAllByRole('heading', { level: 3 }).map(node => node.textContent);
+  const headings = (await within(region).findAllByRole('heading', { level: 3 })).map(node => node.textContent);
   expect(headings).toEqual([
     '전일 시장 정리', '알파스코어 상위 종목', '장중 종목 흐름 체크',
     '당일 매매 신호', '최근 성과 브리핑',
@@ -150,7 +150,7 @@ it('keeps global and card warnings scoped and does not present informational not
   expect(within(globalAlert).getAllByText(/전체 소스 점검이 필요합니다\./)).toHaveLength(1);
 
   const marketCard = within(region).getByRole('heading', { name: '전일 시장 정리' }).closest('article')!;
-  const intradayCard = within(region).getByRole('heading', { name: '장중 종목 흐름 체크' }).closest('article')!;
+  const intradayCard = (await within(region).findByRole('heading', { name: '장중 종목 흐름 체크' })).closest('article')!;
   expect(within(marketCard).getByRole('status')).toHaveTextContent('검증된 주도 업종 소스가 없습니다.');
   expect(within(marketCard).queryByRole('alert')).not.toBeInTheDocument();
   expect(within(intradayCard).getByRole('alert')).toHaveTextContent('포지션 데이터를 읽지 못했습니다.');
@@ -167,7 +167,7 @@ it('hides unrealized return and warns when the stored close date is unknown', as
 
   render(<AlphaServiceDashboard />);
   const region = await screen.findByRole('region', { name: 'Alpha Service Clock' });
-  const intradayCard = within(region).getByRole('heading', { name: '장중 종목 흐름 체크' }).closest('article')!;
+  const intradayCard = (await within(region).findByRole('heading', { name: '장중 종목 흐름 체크' })).closest('article')!;
   expect(within(intradayCard).queryByText('+2.14%')).not.toBeInTheDocument();
   expect(within(intradayCard).getByRole('alert')).toHaveTextContent('저장 가격 기준일을 확인할 수 없습니다.');
 });
@@ -192,7 +192,7 @@ it('renders nullable candidate identity and performance windows without placehol
 
   render(<AlphaServiceDashboard />);
   const region = await screen.findByRole('region', { name: 'Alpha Service Clock' });
-  const scoreCard = within(region).getByRole('heading', { name: '알파스코어 상위 종목' }).closest('article')!;
+  const scoreCard = (await within(region).findByRole('heading', { name: '알파스코어 상위 종목' })).closest('article')!;
   const performanceCard = within(region).getByRole('heading', { name: '최근 성과 브리핑' }).closest('article')!;
   expect(within(scoreCard).getByText('—')).toBeInTheDocument();
   expect(scoreCard).toHaveTextContent('005930');
@@ -224,7 +224,7 @@ it('renders malformed-source null counts as unknown instead of bare count units'
 
   render(<AlphaServiceDashboard />);
   const region = await screen.findByRole('region', { name: 'Alpha Service Clock' });
-  const tradeCard = within(region).getByRole('heading', { name: '당일 매매 신호' }).closest('article')!;
+  const tradeCard = (await within(region).findByRole('heading', { name: '당일 매매 신호' })).closest('article')!;
   const performanceCard = within(region).getByRole('heading', { name: '최근 성과 브리핑' }).closest('article')!;
   expect(within(tradeCard).getByText('—')).toBeInTheDocument();
   expect(within(tradeCard).queryByText('건')).not.toBeInTheDocument();

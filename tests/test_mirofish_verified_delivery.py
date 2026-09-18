@@ -2037,8 +2037,14 @@ def test_verified_delivery_and_realtime_monitor_share_one_atomic_send_transactio
     assert all(not worker.is_alive() for worker in workers)
     assert len(sent_by) == 1
     assert event_key in json.loads(state_path.read_text(encoding='utf-8'))['sent_events']
+    # The realtime monitor deliberately uses a nonblocking delivery guard.
+    # When verified delivery owns it first, busy is a safe no-send outcome.
+    if results['monitor']['status'] == 'busy':
+        assert results['monitor']['telegram_sent'] is False
+        assert results['monitor']['state_committed'] is False
+        assert results['monitor']['reason'] == 'another_scanner_transaction_in_progress'
     assert {results['verified']['status'], results['monitor']['status']} <= {
-        'delivered', 'preview_mismatch', 'sent', 'no_new_events'
+        'delivered', 'preview_mismatch', 'sent', 'no_new_events', 'busy'
     }
 
 

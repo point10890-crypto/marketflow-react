@@ -62,8 +62,8 @@ export default function ServiceGuardCard() {
     if (!data) return null;
 
     return (
-        <section className="rounded-2xl border border-white/[0.06] bg-[#13151f] p-5">
-            <h2 className="mb-3 flex items-center gap-2 text-[15px] font-bold text-white">
+        <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151f] p-5">
+            <h2 className="ai-section-title mb-3 flex items-center gap-2 text-[15px] font-bold text-white">
                 <i className="fas fa-shield-halved text-[13px] text-emerald-400" />
                 서비스 가드
                 <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${TONE[data.overall] ?? TONE.warn}`}>{data.overall}</span>

@@ -1,3 +1,4 @@
+import '@/pages/dashboard/ai-design.css';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
@@ -213,17 +214,17 @@ export default function WaveOverviewPage() {
 
     return (
         <div
-            className="space-y-5 h-full overflow-y-auto p-3 md:p-6 pb-36 md:pb-6"
+            className="ai-design space-y-5 h-full overflow-y-auto p-3 md:p-6 pb-36 md:pb-6"
             style={{ touchAction: 'pan-y', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
         >
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="ai-page-header flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/8 flex items-center justify-center">
                         <i className="fas fa-wave-square text-neutral-400" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black text-neutral-100">W Pattern</h1>
+                        <h1 className="ai-page-title text-2xl font-black text-neutral-100">W Pattern</h1>
                         <p className="text-sm text-neutral-500">AI 차트 패턴 자동 인식 · M&W 파동 분석</p>
                     </div>
                 </div>
@@ -235,7 +236,7 @@ export default function WaveOverviewPage() {
             </div>
 
             {/* Search Bar */}
-            <div className="bg-black/60 rounded-2xl border border-white/5 p-3">
+            <div className="ai-panel ai-search-toolbar rounded-xl border border-[#30363f] p-3">
                 <div className="flex items-center gap-2">
                     <div className="flex bg-black/40 rounded-lg p-0.5">
                         {MARKET_TABS.map(tab => (
@@ -262,7 +263,7 @@ export default function WaveOverviewPage() {
                         }}
                         onKeyDown={handleKeyDown}
                         placeholder={MARKET_TABS.find(t => t.key === market)?.placeholder}
-                        className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-amber-400/40"
+                        className="min-w-0 flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-amber-400/40"
                     />
                     <button
                         onClick={handleSearch}

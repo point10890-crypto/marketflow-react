@@ -1,3 +1,4 @@
+import '../market-design.css';
 /**
  * Claw LIVE — 전체 화면 (/dashboard/kr/claw).
  *
@@ -92,11 +93,11 @@ export default function KrClawPage() {
     useEffect(() => { const t = setInterval(() => setTick(v => v + 1), 1000); return () => clearInterval(t); }, []);
 
     return (
-        <div className="min-h-full bg-[#09090b] px-0 py-1 text-white sm:p-2 lg:p-4">
+        <div className="market-workspace min-h-full px-0 py-1 text-white">
             <div className="mx-auto max-w-[1200px] space-y-4">
                 <ClawHero data={data} heartbeatAge={heartbeatAge(data, tick, fetchedAt.current)} />
-                <div className="flex min-h-9 items-center justify-end gap-2 px-1" aria-live="polite">
-                    <span className="text-[11px] text-gray-500">{data ? `화면 갱신 ${fmtAge(Math.max(0, Math.round((Date.now() - fetchedAt.current) / 1000)))} 전` : '데이터 연결 확인 중'}</span>
+                <div className="dash-toolbar market-toolbar flex min-h-9 flex-wrap items-center justify-end gap-2 px-1" aria-live="polite">
+                    <span className="text-[11px] text-gray-400">{data ? `화면 갱신 ${fmtAge(Math.max(0, Math.round((Date.now() - fetchedAt.current) / 1000)))} 전` : '데이터 연결 확인 중'}</span>
                     <button type="button" onClick={() => { void load(); void loadObservation(); }} disabled={refreshing}
                         className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-[11px] font-bold text-gray-300 transition-colors hover:bg-white/[0.08] disabled:cursor-wait disabled:opacity-50">
                         <i className={`fas fa-rotate-right ${refreshing ? 'animate-spin' : ''}`} />새로고침
@@ -148,7 +149,7 @@ function StatusStrip({ data }: { data: ClawOverview }) {
     const counts = Object.entries(data.events.counts);
     const tile = (warn: 'none' | 'warn' | 'bad' = 'none') =>
         `claw-card-in rounded-2xl sm:rounded-3xl border bg-[#13151f] px-3 sm:px-4 py-3 min-h-[86px] sm:min-h-[92px] flex flex-col gap-1.5 ${warn === 'bad' ? 'border-red-500/50' : warn === 'warn' || halted ? 'border-amber-400/45' : 'border-white/[0.06]'}`;
-    const k = 'text-[11px] font-semibold uppercase tracking-wider text-gray-500';
+    const k = 'text-[11px] font-semibold uppercase tracking-wider text-gray-400';
     const v = 'flex flex-wrap items-baseline gap-2 text-[22px] font-extrabold leading-none tracking-tight';
     const d = 'flex flex-wrap items-center gap-1.5 text-[12px] text-gray-400';
     return (
@@ -167,7 +168,7 @@ function StatusStrip({ data }: { data: ClawOverview }) {
             </section>
             <section className={tile()}>
                 <div className={k}>레짐</div>
-                <div className={v}><span className={reg.cls}>{reg.label}</span>{R.gate_score != null ? <small className="text-[12px] font-semibold text-gray-400">gate {R.gate_status} {R.gate_score}</small> : <small className="text-[12px] text-gray-500">입력 없음</small>}</div>
+                <div className={v}><span className={reg.cls}>{reg.label}</span>{R.gate_score != null ? <small className="text-[12px] font-semibold text-gray-400">gate {R.gate_status} {R.gate_score}</small> : <small className="text-[12px] text-gray-400">입력 없음</small>}</div>
                 <div className={d}>{R.breadth_pct != null && `breadth 상승 ${R.breadth_pct}% · `}S/A {R.leader_count ?? 0}종목{!halted && R.reasons[0] ? ` · ${R.reasons[0]}` : ''}</div>
             </section>
             <section className={tile()}>
@@ -178,7 +179,7 @@ function StatusStrip({ data }: { data: ClawOverview }) {
             <section className={tile()}>
                 <div className={k}>발송</div>
                 <div className={v}><span className="text-white">{data.system.briefs_delivered_today}</span><small className="text-[12px] font-semibold text-gray-400">/ {data.system.briefs_today} 브리핑</small></div>
-                <div className={d}>{data.system.delivery.mode === 'direct-dm' ? '@bitman75 DM' : '개인봇'}{!data.system.delivery.enabled && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-300">dry-run</span>}</div>
+                <div className={d}>{data.system.delivery.mode === 'direct-dm' ? '@bitman75 DM' : '개인봇'}{!data.system.delivery.enabled && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[12px] font-bold text-amber-300">dry-run</span>}</div>
             </section>
         </div>
     );
@@ -195,10 +196,10 @@ function SystemCard({ data }: { data: ClawOverview }) {
         ['킬스위치', Object.entries(s.kill_switches).map(([k, v]) => `${k.replace('CLAW_', '').replace('_ENABLED', '')} ${v ? 'on' : 'off'}`).join(' · ')],
     ];
     return (
-        <section className="claw-card-in rounded-2xl border border-white/[0.06] bg-[#13151f] p-4 sm:rounded-3xl sm:p-5 lg:col-span-4">
-            <button type="button" onClick={() => setOpen(v => !v)} aria-expanded={open} className="flex min-h-11 w-full items-center justify-between text-[12px] font-bold text-gray-500 hover:text-gray-300">
-                <span><i className="fas fa-microchip mr-2 text-[10px]" />시스템</span>
-                <i className={`fas fa-chevron-${open ? 'up' : 'down'} text-[10px]`} />
+        <section className="dash-panel market-panel claw-card-in rounded-2xl border border-white/[0.06] bg-[#13151f] p-4 sm:rounded-3xl sm:p-5 lg:col-span-4">
+            <button type="button" onClick={() => setOpen(v => !v)} aria-expanded={open} className="flex min-h-11 w-full items-center justify-between text-[12px] font-bold text-gray-400 hover:text-gray-300">
+                <span><i className="fas fa-microchip mr-2 text-[12px]" />시스템</span>
+                <i className={`fas fa-chevron-${open ? 'up' : 'down'} text-[12px]`} />
             </button>
             {open && (
                 <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[12.5px]">
@@ -211,16 +212,16 @@ function SystemCard({ data }: { data: ClawOverview }) {
 }
 
 function Fragment2({ a, b }: { a: string; b: string }) {
-    return (<><dt className="text-gray-500">{a}</dt><dd className="m-0 text-right font-mono text-[12px] tabular-nums text-gray-300">{b}</dd></>);
+    return (<><dt className="text-gray-400">{a}</dt><dd className="m-0 text-right font-mono text-[12px] tabular-nums text-gray-300">{b}</dd></>);
 }
 
 function Skeleton() {
     return (
         <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">{[0, 1, 2, 3].map(i => <div key={i} className="h-[92px] animate-pulse rounded-2xl border border-white/[0.06] bg-[#13151f]" />)}</div>
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">{[0, 1, 2, 3].map(i => <div key={i} className="dash-panel market-panel h-[92px] animate-pulse rounded-2xl border border-white/[0.06] bg-[#13151f]" />)}</div>
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-                <div className="h-72 animate-pulse rounded-2xl border border-white/[0.06] bg-[#13151f] lg:col-span-7" />
-                <div className="h-72 animate-pulse rounded-2xl border border-white/[0.06] bg-[#13151f] lg:col-span-5" />
+                <div className="dash-panel market-panel h-72 animate-pulse rounded-2xl border border-white/[0.06] bg-[#13151f] lg:col-span-7" />
+                <div className="dash-panel market-panel h-72 animate-pulse rounded-2xl border border-white/[0.06] bg-[#13151f] lg:col-span-5" />
             </div>
         </div>
     );

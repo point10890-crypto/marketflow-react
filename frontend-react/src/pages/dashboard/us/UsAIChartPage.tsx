@@ -1,3 +1,4 @@
+import '../kr/market-design.css';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 import { usAPI, API_BASE, type USAIChartSignal, type USAIChartAnalysisResponse } from '@/lib/api';
@@ -13,7 +14,7 @@ const SIGNAL_STYLE: Record<string, string> = {
 
 function SignalBadge({ signal }: { signal: string }) {
     return (
-        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${SIGNAL_STYLE[signal] ?? SIGNAL_STYLE['HOLD']}`}>
+        <span className={`px-2 py-0.5 rounded text-[12px] font-bold ${SIGNAL_STYLE[signal] ?? SIGNAL_STYLE['HOLD']}`}>
             {signal}
         </span>
     );
@@ -28,7 +29,7 @@ function ConfidenceBar({ value }: { value: number }) {
             <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                 <div className={`h-full rounded-full ${color}`} style={{ width: `${value}%` }} />
             </div>
-            <span className="text-[10px] text-gray-400 tabular-nums w-7 text-right">{value}</span>
+            <span className="text-[12px] text-gray-400 tabular-nums w-7 text-right">{value}</span>
         </div>
     );
 }
@@ -37,10 +38,10 @@ function ConfidenceBar({ value }: { value: number }) {
 
 function StatCard({ label, value, accent, icon }: { label: string; value: string | number; accent: string; icon: string }) {
     return (
-        <div className="flex flex-col gap-1 bg-[#13151f] border border-white/[0.07] rounded-2xl p-4">
+        <div className="dash-panel market-panel flex flex-col gap-1 bg-[#13151f] border border-white/[0.07] rounded-2xl p-4">
             <div className="flex items-center gap-1.5">
-                <i className={`fas ${icon} text-[10px]`} style={{ color: accent }} />
-                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">{label}</span>
+                <i className={`fas ${icon} text-[12px]`} style={{ color: accent }} />
+                <span className="text-[12px] text-gray-400 uppercase tracking-widest font-semibold">{label}</span>
             </div>
             <span className="text-2xl font-bold tabular-nums" style={{ color: accent }}>{value}</span>
         </div>
@@ -51,7 +52,7 @@ function StatCard({ label, value, accent, icon }: { label: string; value: string
 
 function Tag({ label, value, color }: { label: string; value: string; color: string }) {
     return (
-        <span className={`px-1.5 py-0.5 rounded text-[9px] font-semibold ${color}`}>
+        <span className={`px-1.5 py-0.5 rounded text-[11px] font-semibold ${color}`}>
             {label}: {value}
         </span>
     );
@@ -173,14 +174,14 @@ export default function UsAIChartPage() {
     const sellCount = summary.by_signal?.SELL ?? 0;
 
     return (
-        <div className="flex flex-col gap-5 pb-8">
+        <div className="market-workspace flex flex-col gap-5 pb-8">
             {/* Header */}
-            <div className="flex flex-col gap-1 pt-1">
+            <div className="dash-page-header market-page-header flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                     <i className="fas fa-robot text-cyan-400" />
-                    <h1 className="text-xl font-bold text-white">US AI Chart Analysis</h1>
+                    <h1 className="market-title">US AI Chart Analysis</h1>
                 </div>
-                <p className="text-[11px] text-gray-500">
+                <p className="text-[11px] text-gray-400">
                     Gemini Vision · S&P 500 Top 100 Technical Analysis
                     {data.updated_at && <span className="ml-2 text-gray-600">({data.updated_at})</span>}
                 </p>
@@ -195,10 +196,10 @@ export default function UsAIChartPage() {
             </div>
 
             {/* Signal Distribution Bar */}
-            <div className="bg-[#13151f] border border-white/[0.07] rounded-2xl p-4">
+            <div className="dash-panel market-panel bg-[#13151f] border border-white/[0.07] rounded-2xl p-4">
                 <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Signal Distribution</span>
-                    <span className="text-[10px] text-gray-600">Avg Confidence {summary.avg_confidence}%</span>
+                    <span className="text-[12px] text-gray-400 uppercase tracking-widest font-semibold">Signal Distribution</span>
+                    <span className="text-[12px] text-gray-600">Avg Confidence {summary.avg_confidence}%</span>
                 </div>
                 <div className="flex gap-3 mb-3">
                     {(['BUY', 'HOLD', 'SELL'] as const).map(sig => {
@@ -208,7 +209,7 @@ export default function UsAIChartPage() {
                             <div key={sig} className="flex flex-col items-center gap-1 flex-1">
                                 <SignalBadge signal={sig} />
                                 <span className="text-sm font-bold text-white tabular-nums">{cnt}</span>
-                                <span className="text-[9px] text-gray-600">{pct.toFixed(0)}%</span>
+                                <span className="text-[11px] text-gray-600">{pct.toFixed(0)}%</span>
                             </div>
                         );
                     })}
@@ -241,7 +242,7 @@ export default function UsAIChartPage() {
             </div>
 
             {/* Filters & Sort */}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="dash-toolbar market-toolbar flex flex-wrap items-center gap-2">
                 {(['ALL', 'BUY', 'HOLD', 'SELL'] as const).map(f => (
                     <button
                         key={f}
@@ -249,7 +250,7 @@ export default function UsAIChartPage() {
                         className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
                             filterSignal === f
                                 ? 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30'
-                                : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'
+                                : 'text-gray-400 border-transparent hover:text-gray-300 hover:bg-white/5'
                         }`}
                     >
                         {f === 'ALL' ? 'All' : f} {f !== 'ALL' && <span className="text-gray-600 ml-0.5">({summary.by_signal?.[f] ?? 0})</span>}
@@ -257,12 +258,12 @@ export default function UsAIChartPage() {
                 ))}
                 <div className="flex-1" />
                 <div className="flex items-center gap-1">
-                    <span className="text-[10px] text-gray-600">Sort:</span>
+                    <span className="text-[12px] text-gray-600">Sort:</span>
                     {SORT_OPTIONS.map(opt => (
                         <button
                             key={opt.key}
                             onClick={() => setSortKey(opt.key)}
-                            className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
+                            className={`px-2 py-1 rounded text-[12px] font-semibold transition-all ${
                                 sortKey === opt.key
                                     ? 'text-white bg-white/10'
                                     : 'text-gray-600 hover:text-gray-400'
@@ -277,14 +278,14 @@ export default function UsAIChartPage() {
             {/* Signal Cards */}
             <div className="flex flex-col gap-2">
                 {filtered.length === 0 && (
-                    <div className="text-center text-gray-500 text-sm py-12">No signals found</div>
+                    <div className="text-center text-gray-400 text-sm py-12">No signals found</div>
                 )}
                 {filtered.map((s, idx) => {
                     const isExpanded = expandedIdx === idx;
                     return (
                         <div
                             key={`${s.ticker}-${idx}`}
-                            className="bg-[#13151f] border border-white/[0.07] rounded-2xl overflow-hidden transition-all hover:border-white/[0.12]"
+                            className="dash-panel market-panel bg-[#13151f] border border-white/[0.07] rounded-2xl overflow-hidden transition-all hover:border-white/[0.12]"
                         >
                             <button
                                 onClick={() => setExpandedIdx(isExpanded ? null : idx)}
@@ -294,7 +295,7 @@ export default function UsAIChartPage() {
 
                                 <div className="flex flex-col min-w-0 flex-1">
                                     <span className="text-sm font-semibold text-white truncate">{s.name}</span>
-                                    <span className="text-[10px] text-gray-600">{s.ticker} · {s.sector}</span>
+                                    <span className="text-[12px] text-gray-600">{s.ticker} · {s.sector}</span>
                                 </div>
 
                                 {!isMobile && (
@@ -309,7 +310,7 @@ export default function UsAIChartPage() {
                                     <ConfidenceBar value={s.confidence} />
                                 </div>
 
-                                <i className={`fas fa-chevron-down text-[10px] text-gray-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                <i className={`fas fa-chevron-down text-[12px] text-gray-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                             </button>
 
                             {isExpanded && (
@@ -331,7 +332,7 @@ export default function UsAIChartPage() {
                                         />
                                     </div>
                                     <div className="flex flex-col gap-1.5 pt-2">
-                                        <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-widest">Analysis Reasons</span>
+                                        <span className="text-[12px] text-gray-400 font-semibold uppercase tracking-widest">Analysis Reasons</span>
                                         {s.reasons.map((r, i) => (
                                             <div key={i} className="flex gap-2 text-xs text-gray-300">
                                                 <span className="text-gray-600 shrink-0">{i + 1}.</span>
@@ -346,7 +347,7 @@ export default function UsAIChartPage() {
                 })}
             </div>
 
-            <div className="text-center text-[10px] text-gray-600">
+            <div className="text-center text-[12px] text-gray-600">
                 Showing {filtered.length} of {summary.total} stocks
             </div>
         </div>

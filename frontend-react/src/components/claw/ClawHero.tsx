@@ -169,9 +169,8 @@ export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
                 aria-label="Claw LIVE 열기"
                 data-testid="claw-brand-banner"
             >
-                <div className="claw-brand-inner relative flex flex-col items-center justify-center gap-3 px-4 text-center">
-                    {!compact && (
-                        <>
+                <div className={`claw-brand-inner relative flex flex-col items-center justify-center gap-3 px-4 text-center ${compact ? "invisible" : ""}`}>
+                    <>
                             <ClawAsciiBackdrop live={state === 'running'} tone={toneOf(state)} />
                             <div className="claw-brand-aura pointer-events-none absolute inset-0 bg-[radial-gradient(45%_90%_at_50%_40%,rgba(255,90,60,.26),rgba(255,90,60,0)_72%)]" />
                             <ClawMascot state={state} size={84} className="claw-brand-mascot relative shrink-0 drop-shadow-[0_10px_28px_rgba(255,90,60,.38)]" />
@@ -183,8 +182,7 @@ export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
                                     <span className="truncate text-[11px] text-gray-400">{data ? mood.line : '불러오는 중이에요…'}</span>
                                 </div>
                             </div>
-                        </>
-                    )}
+                    </>
                 </div>
             </Link>
         </>

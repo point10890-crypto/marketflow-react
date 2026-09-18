@@ -143,15 +143,15 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 {/* ── Global Tools ── */}
                 <div className="claw-section-label px-2 mb-2.5 text-[10px] font-semibold uppercase tracking-[0.2em]">
                     <span className="bg-gradient-to-r from-[#ff8a6b]/80 to-[#ff5a3c]/50 bg-clip-text text-transparent">Market</span>
-                    <span className="text-gray-500 ml-0.5">Flow</span>
+                    <span className="text-gray-400 ml-0.5">Flow</span>
                 </div>
                 <div className="space-y-1 mb-1">
                     {visibleGlobalTools.map((item) => {
-                        const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                        const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'));
                         const isExpanded = isActive && item.children;
                         return (
                             <div key={item.name}>
-                            <Link key={item.name} to={item.href} onClick={onNavigate}
+                            <Link key={item.name} to={item.href} aria-current={pathname === item.href && !item.children ? "page" : undefined} onClick={onNavigate}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-all border ${
                                     isActive
                                         ? `claw-nav-active bg-gradient-to-r ${item.bg} text-white border-white/10`
@@ -170,7 +170,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                                 <span>{item.name}</span>
                                 {item.badge && (
                                     <span
-                                        className={`ml-auto text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full border animate-pulse ${
+                                        className={`ml-auto text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded-full border ${
                                             item.badge === 'NEW'
                                                 ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/25'
                                                 : 'bg-pink-500/15 text-pink-400 border-pink-500/20'
@@ -184,15 +184,15 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                                     <i className={`fas fa-chevron-down text-[10px] ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                 )}
                                 {isLocked && item.href !== '/dashboard' && !item.glow && (
-                                    <i className="fas fa-lock text-[10px] text-gray-600 ml-auto" />
+                                    <i className="fas fa-lock text-[10px] text-gray-400 ml-auto" />
                                 )}
                             </Link>
                             {isExpanded && item.children && (
                                 <div className="ml-11 mt-1 space-y-0.5 rounded-xl border border-white/[0.04] bg-white/[0.02] p-1.5">
                                     {item.children.map((child) => (
-                                        <Link key={child.href} to={child.href} onClick={onNavigate}
+                                        <Link key={child.href} to={child.href} aria-current={pathname === child.href ? "page" : undefined} onClick={onNavigate}
                                             className={`block rounded-lg px-3 py-2 text-[12px] transition-colors ${
-                                                pathname === child.href ? 'bg-white/10 text-white' : 'text-gray-500 hover:bg-white/5 hover:text-white'
+                                                pathname === child.href ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'
                                             }`}
                                         >
                                             <span className={`mr-2 inline-block h-1.5 w-1.5 rounded-full ${child.color}`} />
@@ -209,7 +209,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 {/* ── Markets Section ── */}
                 <div className="flex items-center gap-2 px-2 pt-4 pb-2">
                     <div className="flex-1 h-px bg-white/[0.06]" />
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-600">Markets</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-400">Markets</span>
                     <div className="flex-1 h-px bg-white/[0.06]" />
                 </div>
 
@@ -219,7 +219,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                         const isExpanded = isActive && item.children;
                         return (
                             <div key={item.name}>
-                                <Link to={item.href} onClick={onNavigate}
+                                <Link to={item.href} aria-current={pathname === item.href && !item.children ? "page" : undefined} onClick={onNavigate}
                                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-all border ${
                                         isActive
                                             ? `claw-nav-active bg-gradient-to-r ${item.bg} text-white border-white/10`
@@ -237,7 +237,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                                 {isExpanded && item.children && (
                                     <div className="space-y-0.5 mt-1 ml-2 p-2 rounded-xl bg-white/[0.02] border border-white/[0.04]">
                                         {item.children.map((child) => (
-                                            <Link key={child.href} to={child.href} onClick={onNavigate}
+                                            <Link key={child.href} to={child.href} aria-current={pathname === child.href ? "page" : undefined} onClick={onNavigate}
                                                 className={`block px-3 py-2 text-[13px] rounded-lg transition-colors ${
                                                     pathname === child.href
                                                         ? 'text-white bg-white/10'
@@ -258,14 +258,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 {/* ── Tools Section ── */}
                 <div className="flex items-center gap-2 px-2 pt-3 pb-2">
                     <div className="flex-1 h-px bg-white/[0.06]" />
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-600">Tools</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-400">Tools</span>
                     <div className="flex-1 h-px bg-white/[0.06]" />
                 </div>
                 <div className="space-y-1 mb-1">
                     {toolItems.map((item) => {
-                        const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                        const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'));
                         return (
-                            <Link key={item.name} to={item.href} onClick={onNavigate}
+                            <Link key={item.name} to={item.href} aria-current={pathname === item.href && !item.children ? "page" : undefined} onClick={onNavigate}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-all border ${
                                     isActive
                                         ? `claw-nav-active bg-gradient-to-r ${item.bg} text-white border-white/10`
@@ -289,7 +289,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                     <>
                         <div className="flex items-center gap-2 px-2 pt-3 pb-2">
                             <div className="flex-1 h-px bg-white/[0.06]" />
-                            <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-600">Account</span>
+                            <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-400">Account</span>
                             <div className="flex-1 h-px bg-white/[0.06]" />
                         </div>
                         <Link
@@ -326,17 +326,17 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                             className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all border ${
                                 pathname === '/admin/data-status'
                                     ? 'text-white bg-white/5 border-white/5'
-                                    : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border-transparent'
+                                    : 'text-gray-400 hover:text-gray-300 hover:bg-white/5 border-transparent'
                             }`}
                         >
-                            <i className="fas fa-database w-5 text-center text-sm text-gray-500"></i>
+                            <i className="fas fa-database w-5 text-center text-sm text-gray-400"></i>
                             <span>Data Status</span>
                         </Link>
                         <Link to="/admin" onClick={onNavigate}
                             className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all border ${
                                 pathname.startsWith('/admin') && pathname !== '/admin/data-status'
                                     ? 'text-red-400 bg-red-500/10 border-red-500/20'
-                                    : 'text-gray-500 hover:text-red-400 hover:bg-red-500/5 border-transparent'
+                                    : 'text-gray-400 hover:text-red-400 hover:bg-red-500/5 border-transparent'
                             }`}
                         >
                             <i className="fas fa-shield-alt w-5 text-center text-sm text-red-400/60"></i>
@@ -380,7 +380,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                         </div>
                         <div className="flex flex-col flex-1 min-w-0">
                             <span className="text-sm font-bold text-white truncate">{userName}</span>
-                            <span className={`text-[11px] ${userTier === 'pro' || userTier === 'premium' ? 'text-purple-400' : 'text-gray-500'}`}>
+                            <span className={`text-[11px] ${userTier === 'pro' || userTier === 'premium' ? 'text-purple-400' : 'text-gray-400'}`}>
                                 {userTier === 'pro' ? 'Pro Plan' : userTier === 'premium' ? 'Ultra Pro' : 'Admin'}
                             </span>
                         </div>
@@ -392,7 +392,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                             )}
                             <button
                                 onClick={() => logout()}
-                                className="text-[11px] px-2.5 py-1.5 rounded-md bg-white/5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                className="text-[11px] px-2.5 py-1.5 rounded-md bg-white/5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                                 title="Sign Out"
                             >
                                 <i className="fas fa-sign-out-alt"></i>
@@ -427,7 +427,7 @@ export default function Sidebar({ mobile = false, isOpen = false, onClose }: Sid
     // Desktop sidebar
     if (!mobile) {
         return (
-            <aside className="w-72 apple-glass flex flex-col shrink-0 z-50">
+            <aside className="dashboard-sidebar w-64 apple-glass flex flex-col shrink-0 z-50">
                 <SidebarContent />
             </aside>
         );
@@ -445,12 +445,13 @@ export default function Sidebar({ mobile = false, isOpen = false, onClose }: Sid
             />
             {/* Sidebar panel */}
             <aside
-                className={`mobile-safe-top-sidebar absolute top-0 left-0 h-full w-80 apple-glass flex flex-col shadow-2xl shadow-black/50 transition-transform duration-300 ease-out ${
+                className={`mobile-safe-top-sidebar absolute top-0 left-0 h-full dashboard-sidebar w-80 apple-glass flex flex-col shadow-2xl shadow-black/50 transition-transform duration-300 ease-out ${
                     isOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
             >
                 {/* Close button */}
                 <button
+                    aria-label="메뉴 닫기"
                     onClick={onClose}
                     className="mobile-safe-top-sidebar-close absolute top-5 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors z-10"
                 >

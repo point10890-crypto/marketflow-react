@@ -1,0 +1,89 @@
+/* Shared operational UI. Status colors remain owned by each data component. */
+.dashboard-theme {
+  --accent: #73b7ff;
+  --bg-page: #0d1014;
+  --bg-surface: #15191e;
+  --bg-surface-hover: #1d232b;
+  --border-color: #30363f;
+  --text-secondary: #a6afbb;
+  --text-tertiary: #929dab;
+  color: #f5f5f7;
+  font-variant-numeric: tabular-nums;
+}
+.dashboard-theme .claw-shell-bg { background: var(--bg-page); }
+.dashboard-theme .dashboard-sidebar {
+  background: #11151a;
+  border-right: 1px solid #29313b;
+  backdrop-filter: none;
+}
+.dashboard-theme .dashboard-header { background: #101419; border-color: #29313b; }
+.dashboard-theme .dashboard-search { background: #1a2028; border-color: #303b47; }
+.dashboard-theme .claw-section-label { color: #a6afbb; }
+.dashboard-theme .claw-nav-active {
+  background: #1b2c40;
+  border-color: #365372;
+  box-shadow: inset 3px 0 #73b7ff;
+}
+.dashboard-theme .claw-tab-active,
+.dashboard-theme .dashboard-rail a[aria-current="page"] { color: #acd3ff; background: #1b2c40; border-color: #365372; }
+.dashboard-theme :where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid #73b7ff;
+  outline-offset: 3px;
+}
+.dashboard-theme .dashboard-standard-scroll { scrollbar-gutter: stable; }
+.dashboard-theme .dashboard-standard-scroll > div { max-width: 1680px; margin-inline: auto; }
+.dashboard-theme .dash-page-header {
+  position: relative;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #30363f;
+  min-width: 0;
+}
+.dashboard-theme .dash-page-header h1 {
+  font-size: clamp(24px, 2.25vw, 34px);
+  line-height: 1.25;
+  letter-spacing: -.035em;
+  font-weight: 700;
+}
+.dashboard-theme .dash-panel { background-color: #15191e; border-color: #30363f; border-radius: 16px; box-shadow: none; }
+.dashboard-theme .dash-section-title { font-size: 18px; line-height: 1.45; letter-spacing: -.025em; font-weight: 650; }
+.dashboard-theme .dash-toolbar { gap: 10px; flex-wrap: wrap; }
+.dashboard-theme .dash-toolbar :where(button, select, input) { min-height: 40px; }
+.dashboard-theme .glass-card { box-shadow: none; border-color: #30363f; }
+.dashboard-theme .glass-card:hover { transform: none; }
+/* Keep the live service entry compact so analysis is visible above the fold. */
+.dashboard-theme .claw-brand-bar { margin-bottom: 24px; background: #15191e; border-color: #30363f; }
+.dashboard-theme .claw-brand-inner { min-height: 100px; padding: 16px 20px; flex-direction: row; justify-content: flex-start; text-align: left; gap: 18px; }
+.dashboard-theme .claw-brand-mascot { width: 52px; height: 52px; filter: none; }
+.dashboard-theme .claw-brand-bar canvas,
+.dashboard-theme .claw-brand-aura { display: none; }
+.dashboard-theme .claw-brand-cap { font-size: 11px; letter-spacing: .04em; }
+.dashboard-theme .claw-brand-headline { margin-top: 6px; }
+.dashboard-theme .claw-brand-mood { justify-content: flex-start; }
+.dashboard-theme .claw-brand-sticky { height: 0; position: sticky; top: 0; z-index: 30; pointer-events: none; }
+.dashboard-theme .claw-brand-compact {
+  position: absolute; inset: 0 0 auto; height: 56px; display: flex; align-items: center; gap: 10px;
+  padding: 0 14px; border: 1px solid #30363f; border-radius: 12px; background: #15191e;
+  opacity: 0; pointer-events: none; transform: translateY(-8px); transition: opacity .15s, transform .15s;
+}
+.dashboard-theme .claw-brand-compact.is-on { opacity: 1; pointer-events: auto; transform: none; }
+.dashboard-theme .claw-brand-bar .claw-mascot *,
+.dashboard-theme .claw-brand-compact .claw-mascot * { animation: none; }
+@media (max-width: 767px) {
+  .dashboard-theme .dash-page-header { padding-bottom: 16px; margin-bottom: 20px; }
+  .dashboard-theme .dash-section-title { font-size: 17px; }
+  .dashboard-theme .dash-toolbar :where(button, select, input) { min-height: 44px; }
+  .dashboard-theme .claw-brand-bar { margin-bottom: 18px; }
+  .dashboard-theme .claw-brand-inner { min-height: 96px; padding: 14px 12px; gap: 10px; }
+  .dashboard-theme .claw-brand-mascot { width: 36px; height: 36px; }
+  .dashboard-theme .claw-brand-headline { white-space: normal; }
+  .dashboard-theme .claw-brand-headline > span { font-size: 15px; line-height: 1.4; }
+  .dashboard-theme .claw-brand-cap { font-size: 10px; }
+  .dashboard-theme .claw-brand-mood > span:last-child { white-space: normal; }
+  .dashboard-theme .claw-brand-compact .claw-brand-headline { font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-theme *, .dashboard-theme *::before, .dashboard-theme *::after {
+    animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important;
+  }
+}

@@ -25,7 +25,7 @@ export default function ClawLeadersCard({ data }: Props) {
                 <span className={`grid h-6 w-[30px] place-items-center rounded-md border text-[12px] font-black ${GRADE_CHIP[r.grade] ?? GRADE_CHIP.B}`}>{r.grade}</span>
                 <span className="flex min-w-0 flex-col">
                     <b className="truncate font-bold text-white">{r.name}</b>
-                    <span className="font-mono text-[11px] text-gray-500">{r.code}</span>
+                    <span className="font-mono text-[11px] text-gray-400">{r.code}</span>
                 </span>
                 <span className="flex items-center gap-2 max-sm:hidden">
                     <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.07]"><span className={`block h-full rounded-full ${GRADE_BAR[r.grade] ?? GRADE_BAR.B}`} style={{ width: `${Math.min(100, Math.max(0, r.score))}%` }} /></span>
@@ -33,8 +33,8 @@ export default function ClawLeadersCard({ data }: Props) {
                 </span>
                 <span className={`text-right font-mono text-[13px] font-bold tabular-nums ${chgClass(r.chg)}`}>{fmtPct(r.chg)}</span>
                 <span className="text-right font-mono text-[12px] tabular-nums text-gray-400">{fmtEok(r.trval_eok)}</span>
-                <span className="flex flex-wrap justify-end gap-1.5 text-[11px] text-gray-500 max-sm:hidden">
-                    {ev && <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${ev.cls}`}>{ev.label} {hhmm(r.today_event!.ts)}</span>}
+                <span className="flex flex-wrap justify-end gap-1.5 text-[11px] text-gray-400 max-sm:hidden">
+                    {ev && <span className={`rounded px-1.5 py-0.5 text-[12px] font-bold ${ev.cls}`}>{ev.label} {hhmm(r.today_event!.ts)}</span>}
                     {held && <span>유지 {held}</span>}
                 </span>
             </Link>
@@ -42,27 +42,27 @@ export default function ClawLeadersCard({ data }: Props) {
     };
 
     return (
-        <section className="claw-card-in relative rounded-2xl border border-white/[0.06] bg-[#13151f] p-4 sm:rounded-3xl sm:p-5 lg:col-span-7">
-            <h2 className="mb-3 flex items-center gap-2 text-[15px] font-bold text-white">
+        <section className="dash-panel market-panel claw-card-in relative rounded-2xl border border-white/[0.06] bg-[#13151f] p-4 sm:rounded-3xl sm:p-5 lg:col-span-7">
+            <h2 className="dash-section-title mb-3 flex items-center gap-2 text-[15px] font-bold text-white">
                 <i className="fas fa-crown text-[13px] text-teal-400" />
                 주도주
-                <span className="ml-auto text-[11px] font-medium text-gray-500">
-                    {!data.loop.market_open && <span className="mr-2 rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] font-bold text-gray-300">전 세션 기준</span>}
+                <span className="ml-auto text-[11px] font-medium text-gray-400">
+                    {!data.loop.market_open && <span className="mr-2 rounded-full bg-white/[0.06] px-2 py-0.5 text-[12px] font-bold text-gray-300">전 세션 기준</span>}
                     스냅샷 {hhmm(data.leaders.snapshot_ts)} · S{bg.S ?? 0} A{bg.A ?? 0} B{bg.B ?? 0}
                 </span>
             </h2>
-            <div className="mb-1 grid grid-cols-[34px_minmax(0,1.3fr)_minmax(120px,1fr)_72px_72px_minmax(0,1fr)] gap-2.5 border-b border-white/[0.06] px-2 pb-1.5 text-[10.5px] uppercase tracking-wider text-gray-500 max-sm:grid-cols-[30px_minmax(0,1fr)_64px_60px]">
+            <div className="mb-1 grid grid-cols-[34px_minmax(0,1.3fr)_minmax(120px,1fr)_72px_72px_minmax(0,1fr)] gap-2.5 border-b border-white/[0.06] px-2 pb-1.5 text-[10.5px] uppercase tracking-wider text-gray-400 max-sm:grid-cols-[30px_minmax(0,1fr)_64px_60px]">
                 <span /><span>종목</span><span className="max-sm:hidden">점수</span><span className="text-right">등락</span><span className="text-right">거래대금</span><span className="text-right max-sm:hidden">오늘</span>
             </div>
             <div className={halted ? 'opacity-40' : ''}>
                 {lead.length === 0 ? (
-                    <p className="py-5 text-center text-[13px] text-gray-500">{rows.length ? `현재 S/A 주도주 없음 — 마지막 스냅샷 ${hhmm(data.leaders.snapshot_ts)}` : '아직 첫 틱을 기다리는 중이에요 — 루프가 돌기 시작하면 여기에 주도주가 나타납니다'}</p>
+                    <p className="py-5 text-center text-[13px] text-gray-400">{rows.length ? `현재 S/A 주도주 없음 — 마지막 스냅샷 ${hhmm(data.leaders.snapshot_ts)}` : '아직 첫 틱을 기다리는 중이에요 — 루프가 돌기 시작하면 여기에 주도주가 나타납니다'}</p>
                 ) : lead.map(r => <Row key={r.code} r={r} />)}
                 {bs.length > 0 && (
                     <div className="mt-2 border-t border-white/[0.06] pt-2">
                         <button type="button" onClick={() => setShowB(v => !v)} aria-expanded={showB}
-                                className="min-h-11 rounded-lg px-2 py-1 text-[12px] font-bold text-gray-500 transition-colors hover:bg-white/[0.04] hover:text-gray-200">
-                            <i className={`fas fa-chevron-${showB ? 'up' : 'down'} mr-1.5 text-[10px]`} />B등급 {bs.length}종목 {showB ? '접기' : '보기'}
+                                className="min-h-11 rounded-lg px-2 py-1 text-[12px] font-bold text-gray-400 transition-colors hover:bg-white/[0.04] hover:text-gray-200">
+                            <i className={`fas fa-chevron-${showB ? 'up' : 'down'} mr-1.5 text-[12px]`} />B등급 {bs.length}종목 {showB ? '접기' : '보기'}
                         </button>
                         {showB && bs.map(r => <Row key={r.code} r={r} />)}
                     </div>

@@ -1,3 +1,4 @@
+import './community/community-design.css';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -233,24 +234,24 @@ export default function AccountPage() {
     }
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
-            <h1 className="text-2xl font-black text-white">내 계정</h1>
+        <div className="account-workspace community-workspace max-w-4xl mx-auto space-y-4">
+            <header className="dash-page-header"><h1 className="text-2xl font-bold text-[#f5f5f7]">내 계정</h1><p className="text-sm text-[#a6afbb] mt-2">프로필, 구독 상태와 연결된 서비스를 관리하세요.</p></header>
 
             {/* Profile Card */}
-            <div className="p-6 rounded-2xl border border-white/[0.07] bg-[#13151f]">
+            <div className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-white/[0.07] bg-[#15191e]">
                 <div className="flex items-center gap-4 mb-6">
                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-black text-xl font-black">
                         {user.name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                     <div>
                         <h2 className="text-lg font-bold text-white">{user.name}</h2>
-                        <p className="text-gray-500 text-sm">{user.email}</p>
+                        <p className="text-[#a6afbb] text-sm">{user.email}</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider">플랜</span>
+                        <span className="text-[10px] text-[#a6afbb] uppercase tracking-wider">플랜</span>
                         <div className="flex items-center gap-2 mt-1">
                             {user.tier === 'premium' ? (
                                 <span className="text-purple-400 font-bold flex items-center gap-1.5">
@@ -266,7 +267,7 @@ export default function AccountPage() {
                         </div>
                     </div>
                     <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider">상태</span>
+                        <span className="text-[10px] text-[#a6afbb] uppercase tracking-wider">상태</span>
                         <p className="text-green-400 font-bold mt-1 flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-green-400" />
                             {user.status === 'approved' ? '활성' : user.status}
@@ -278,15 +279,15 @@ export default function AccountPage() {
             <KakaoSupportLink />
 
             {/* Password Change */}
-            <div className="p-6 rounded-2xl border border-white/[0.07] bg-[#13151f]">
+            <div className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-white/[0.07] bg-[#15191e]">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                             <i className="fas fa-lock text-gray-400" />
                         </div>
                         <div>
-                            <h3 className="text-white font-bold">비밀번호 변경</h3>
-                            <p className="text-gray-500 text-xs">계정 보안을 위해 주기적으로 변경하세요</p>
+                            <h3 className="dash-section-title text-white font-bold">비밀번호 변경</h3>
+                            <p className="text-[#a6afbb] text-xs">계정 보안을 위해 주기적으로 변경하세요</p>
                         </div>
                     </div>
                     <button
@@ -342,15 +343,15 @@ export default function AccountPage() {
             </div>
 
             {/* Telegram notifications (승인/만료 안내를 본인에게) */}
-            <div className="p-6 rounded-2xl border border-sky-500/20 bg-[#13151f]" data-testid="telegram-link-card">
+            <div className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-sky-500/20 bg-[#15191e]" data-testid="telegram-link-card">
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center shrink-0">
                             <i className="fas fa-paper-plane text-sky-400" />
                         </div>
                         <div className="min-w-0">
-                            <h3 className="text-white font-bold">텔레그램 알림 연결</h3>
-                            <p className="text-gray-500 text-xs">
+                            <h3 className="dash-section-title text-white font-bold">텔레그램 알림 연결</h3>
+                            <p className="text-[#a6afbb] text-xs">
                                 {tgLinked
                                     ? '구독 승인 · 만료 D-3/D-1 안내를 텔레그램으로 받고 있습니다'
                                     : '구독 승인 · 만료 D-3/D-1 안내를 텔레그램으로 바로 받으세요'}
@@ -366,7 +367,7 @@ export default function AccountPage() {
                     {tgLinked ? (
                         <>
                             {user.telegram_linked_at && (
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-[#a6afbb]">
                                     연결일: {new Date(user.telegram_linked_at).toLocaleDateString('ko-KR')}
                                 </p>
                             )}
@@ -390,11 +391,11 @@ export default function AccountPage() {
                     ) : (
                         <>
                             <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                                <div className="text-[11px] text-gray-500 mb-1">연결 코드 (30분 유효)</div>
+                                <div className="text-[11px] text-[#a6afbb] mb-1">연결 코드 (30분 유효)</div>
                                 <div className="text-2xl font-mono font-bold tracking-[0.3em] text-white select-all" data-testid="telegram-link-code">
                                     {tgLink.code}
                                 </div>
-                                <p className="text-xs text-gray-500 mt-2">
+                                <p className="text-xs text-[#a6afbb] mt-2">
                                     {tgLink.deep_link
                                         ? '아래 버튼으로 텔레그램을 열고 "시작"을 누르면 자동으로 연결됩니다.'
                                         : `텔레그램 봇에게 "/start ${tgLink.code}" 를 보내면 연결됩니다.`}
@@ -447,14 +448,14 @@ export default function AccountPage() {
 
             {/* Subscription Period (Pro users) */}
             {isPro && (
-                <div className="p-6 rounded-2xl border border-white/[0.07] bg-[#13151f]">
+                <div className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-white/[0.07] bg-[#15191e]">
                     <div className="flex items-center gap-3 mb-4">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${user.tier === 'premium' ? 'bg-purple-500/10' : 'bg-amber-500/10'}`}>
                             <i className={`fas fa-calendar-alt ${user.tier === 'premium' ? 'text-purple-400' : 'text-amber-400'}`} />
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="text-white font-bold">구독 기간</h3>
+                                <h3 className="dash-section-title text-white font-bold">구독 기간</h3>
                                 {user.is_pro_paused && (
                                     <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 uppercase">
                                         <i className="fas fa-pause text-[8px]" />
@@ -497,14 +498,14 @@ export default function AccountPage() {
 
             {/* AI Brain 알파 스캐너 (애드온) 상태 — 활성 Pro/Premium 회원에게만 노출 */}
             {isPro && (
-                <div className="p-6 rounded-2xl border border-cyan-500/20 bg-[#13151f]">
+                <div className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-cyan-500/20 bg-[#15191e]">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
                             <i className="fas fa-robot text-cyan-300" />
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="text-white font-bold">AI Brain 알파 스캐너</h3>
+                                <h3 className="dash-section-title text-white font-bold">AI Brain 알파 스캐너</h3>
                                 {pendingAibain ? (
                                     <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-300 border border-yellow-500/25 uppercase">
                                         <i className="fas fa-hourglass-half text-[9px] mr-0.5" /> 승인 대기
@@ -552,7 +553,7 @@ export default function AccountPage() {
                                 </p>
                             )}
                             {!user.is_aibain_active && !isAibainExpired && (
-                                <p className="text-gray-500 text-xs mt-1">MCP TOP 3 · 신규 5종 스캐너 · 그래프RAG 분석</p>
+                                <p className="text-[#a6afbb] text-xs mt-1">MCP TOP 3 · 신규 5종 스캐너 · 그래프RAG 분석</p>
                             )}
                         </div>
                     </div>
@@ -587,14 +588,14 @@ export default function AccountPage() {
 
             {/* Subscription Action */}
             {!isPro && (
-                <div className="p-6 rounded-2xl border border-amber-500/20 bg-[#13151f]">
+                <div className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-amber-500/20 bg-[#15191e]">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
                             <i className="fas fa-crown text-amber-400" />
                         </div>
                         <div>
-                            <h3 className="text-white font-bold">Pro 플랜으로 업그레이드</h3>
-                            <p className="text-gray-500 text-xs">월 50,000원 · 계좌이체</p>
+                            <h3 className="dash-section-title text-white font-bold">Pro 플랜으로 업그레이드</h3>
+                            <p className="text-[#a6afbb] text-xs">월 50,000원 · 계좌이체</p>
                         </div>
                     </div>
 
@@ -625,38 +626,38 @@ export default function AccountPage() {
 
             {/* Bank Transfer Info */}
             {!isPro && (showBank || hasPending) && (
-                <div className="p-6 rounded-2xl border border-white/[0.07] bg-[#13151f]">
+                <div className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-white/[0.07] bg-[#15191e]">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
                             <i className="fas fa-university text-blue-400" />
                         </div>
                         <div>
-                            <h3 className="text-white font-bold">계좌이체 안내</h3>
-                            <p className="text-gray-500 text-xs">아래 계좌로 입금해 주세요</p>
+                            <h3 className="dash-section-title text-white font-bold">계좌이체 안내</h3>
+                            <p className="text-[#a6afbb] text-xs">아래 계좌로 입금해 주세요</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">은행</span>
+                            <span className="text-[10px] text-[#a6afbb] uppercase tracking-wider">은행</span>
                             <p className="text-white font-bold mt-1 text-sm">국민은행</p>
                         </div>
                         <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">계좌번호</span>
+                            <span className="text-[10px] text-[#a6afbb] uppercase tracking-wider">계좌번호</span>
                             <p className="text-white font-bold mt-1 text-sm font-mono">2259-02-04-057670</p>
                         </div>
                         <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">예금주</span>
+                            <span className="text-[10px] text-[#a6afbb] uppercase tracking-wider">예금주</span>
                             <p className="text-white font-bold mt-1 text-sm">이종민</p>
                         </div>
                         <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">금액</span>
+                            <span className="text-[10px] text-[#a6afbb] uppercase tracking-wider">금액</span>
                             <p className="text-amber-400 font-bold mt-1 text-sm">50,000원 / 30일</p>
                         </div>
                     </div>
 
                     {/* 입금자명 입력 */}
                     <div className="mt-3">
-                        <label className="text-[10px] text-gray-500 uppercase tracking-wider block mb-1.5">입금자명</label>
+                        <label className="text-[10px] text-[#a6afbb] uppercase tracking-wider block mb-1.5">입금자명</label>
                         <input
                             type="text"
                             value={depositorName}
@@ -677,7 +678,7 @@ export default function AccountPage() {
                         </div>
                     </div>
 
-                    <p className="text-gray-500 text-xs mt-3">
+                    <p className="text-[#a6afbb] text-xs mt-3">
                         <i className="fas fa-info-circle mr-1" />
                         입금자명을 가입 시 이름과 동일하게 입력해 주세요. 확인 후 24시간 내 Pro 플랜이 활성화됩니다.
                     </p>
@@ -687,8 +688,8 @@ export default function AccountPage() {
 
             {/* Request History */}
             {!loading && requests.length > 0 && (
-                <div className="p-6 rounded-2xl border border-white/[0.07] bg-[#13151f]">
-                    <h3 className="text-white font-bold mb-4">구독 신청 이력</h3>
+                <div className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-white/[0.07] bg-[#15191e]">
+                    <h3 className="dash-section-title text-white font-bold mb-4">구독 신청 이력</h3>
                     <div className="space-y-3">
                         {requests.map(r => (
                             <div key={r.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
@@ -698,7 +699,7 @@ export default function AccountPage() {
                                         {r.from_tier} → {r.to_tier}
                                     </span>
                                 </div>
-                                <span className="text-gray-600 text-xs">
+                                <span className="text-[#a6afbb] text-xs">
                                     {new Date(r.created_at).toLocaleDateString('ko-KR')}
                                 </span>
                             </div>
@@ -709,14 +710,14 @@ export default function AccountPage() {
 
             {/* Pro Status */}
             {isPro && (
-                <div className={`p-6 rounded-2xl border bg-[#13151f] ${user.tier === 'premium' ? 'border-purple-500/20' : 'border-green-500/20'}`}>
+                <div className={`account-panel dash-panel p-5 md:p-6 rounded-xl border bg-[#15191e] ${user.tier === 'premium' ? 'border-purple-500/20' : 'border-green-500/20'}`}>
                     <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${user.tier === 'premium' ? 'bg-purple-500/10' : 'bg-green-500/10'}`}>
                             <i className={`fas ${user.tier === 'premium' ? 'fa-gem text-purple-400' : 'fa-check-circle text-green-400'}`} />
                         </div>
                         <div>
-                            <h3 className="text-white font-bold">{user.tier === 'premium' ? 'Ultra Pro 플랜 이용 중' : 'Pro 플랜 이용 중'}</h3>
-                            <p className="text-gray-500 text-xs">
+                            <h3 className="dash-section-title text-white font-bold">{user.tier === 'premium' ? 'Ultra Pro 플랜 이용 중' : 'Pro 플랜 이용 중'}</h3>
+                            <p className="text-[#a6afbb] text-xs">
                                 {user.tier === 'premium' ? '평생 무기한 이용 · 모든 기능 + 우선 지원' : '모든 대시보드 기능을 이용하실 수 있습니다'}
                             </p>
                         </div>
@@ -727,14 +728,14 @@ export default function AccountPage() {
 
             {/* App Install */}
             {!isInstalled && (
-                <div className="p-6 rounded-2xl border border-blue-500/20 bg-[#13151f]">
+                <div className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-blue-500/20 bg-[#15191e]">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
                             <i className="fas fa-mobile-screen-button text-blue-400" />
                         </div>
                         <div>
-                            <h3 className="text-white font-bold">앱 다운로드</h3>
-                            <p className="text-gray-500 text-xs">홈 화면에 추가하고 앱처럼 사용하세요</p>
+                            <h3 className="dash-section-title text-white font-bold">앱 다운로드</h3>
+                            <p className="text-[#a6afbb] text-xs">홈 화면에 추가하고 앱처럼 사용하세요</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4 mb-4 text-xs text-gray-400">
@@ -755,10 +756,10 @@ export default function AccountPage() {
 
             {/* Links */}
             <div className="flex items-center gap-4 pt-2">
-                <Link to="/dashboard" className="text-gray-500 hover:text-white transition-colors text-sm">
+                <Link to="/dashboard" className="text-[#a6afbb] hover:text-white transition-colors text-sm">
                     <i className="fas fa-arrow-left mr-2" />대시보드
                 </Link>
-                <Link to="/pricing" className="text-gray-500 hover:text-white transition-colors text-sm">
+                <Link to="/pricing" className="text-[#a6afbb] hover:text-white transition-colors text-sm">
                     <i className="fas fa-tag mr-2" />요금 안내
                 </Link>
             </div>

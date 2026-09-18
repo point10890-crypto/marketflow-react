@@ -1,3 +1,4 @@
+import '@/pages/dashboard/ai-design.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { API_BASE, authHeaders, fetchWithTimeout } from '@/lib/api';
 import { getRunFreshness, type FreshnessLevel } from '@/lib/dataFreshness';
@@ -539,11 +540,11 @@ export default function ManualStockAnalysisPage() {
     };
 
     return (
-        <div className="space-y-4 md:space-y-5">
+        <div className="ai-design space-y-4 md:space-y-5">
             {/* ===== HERO + LIVE COMMAND BAR ===== */}
-            <section className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0e0e11] p-4 shadow-2xl shadow-black/30 md:p-6">
+            <section className="ai-panel ai-page-header relative overflow-hidden rounded-2xl border border-[#30363f] bg-[#0e0e11] p-4 shadow-2xl shadow-black/30 md:p-6">
                 <div
-                    className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full opacity-[0.12] blur-3xl"
+                    className="hidden"
                     style={{ background: 'radial-gradient(circle, #CC785C 0%, transparent 70%)' }}
                 />
                 <div className="relative flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
@@ -552,7 +553,7 @@ export default function ManualStockAnalysisPage() {
                             <i className="fas fa-robot text-[11px]" />
                             Manual Scraper Service
                         </div>
-                        <h1 className="mt-2 text-[1.7rem] font-black leading-tight tracking-tight text-white md:text-[2.4rem]">
+                        <h1 className="ai-page-title mt-2 text-[1.7rem] font-black leading-tight tracking-tight text-white md:text-[2.4rem]">
                             AI 주식 분석
                         </h1>
                         <p className="mt-2 max-w-2xl text-[13px] font-medium leading-6 text-slate-400 md:text-sm">
@@ -582,7 +583,7 @@ export default function ManualStockAnalysisPage() {
                 </div>
 
                 {/* Live loop strip */}
-                <div className="relative mt-5 rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
+                <div className="dash-toolbar relative mt-5 rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                         <div className="flex items-center gap-3">
                             <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl text-base ${
@@ -592,7 +593,7 @@ export default function ManualStockAnalysisPage() {
                             </div>
                             <div className="min-w-0">
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <h2 className="text-base font-bold text-white">실시간 스크래퍼 루프</h2>
+                                    <h2 className="ai-section-title text-base font-bold text-white">실시간 스크래퍼 루프</h2>
                                     <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${
                                         isLoopRunning
                                             ? 'border-cyan-400/30 bg-cyan-500/12 text-cyan-200'
@@ -673,13 +674,13 @@ export default function ManualStockAnalysisPage() {
             </section>
 
             {/* ===== SMART SIGNAL DISTRIBUTION ===== */}
-            <section className="rounded-2xl border border-white/[0.07] bg-[#0e0e11] p-4 shadow-2xl shadow-black/20 md:p-5">
+            <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#0e0e11] p-4 shadow-2xl shadow-black/20 md:p-5">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                         <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-400/90 md:text-[11px]">
                             Signal Distribution
                         </div>
-                        <h2 className="mt-1 text-lg font-bold text-white md:text-xl">분석 신호 분포</h2>
+                        <h2 className="ai-section-title mt-1 text-lg font-bold text-white md:text-xl">분석 신호 분포</h2>
                     </div>
                     <div className="text-right">
                         <div className="text-[11px] font-semibold text-slate-500">
@@ -860,13 +861,13 @@ export default function ManualStockAnalysisPage() {
             </section>
 
             {/* ===== ROUND HISTORY (mobile) ===== */}
-            <section className="rounded-2xl border border-white/[0.07] bg-[#0e0e11] p-4 md:hidden">
+            <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#0e0e11] p-4 md:hidden">
                 <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                         <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-400/90">
                             Round History
                         </div>
-                        <h2 className="mt-1 text-base font-bold text-white">분석회차 히스토리</h2>
+                        <h2 className="ai-section-title mt-1 text-base font-bold text-white">분석회차 히스토리</h2>
                     </div>
                     <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-bold text-slate-300">
                         {runs.length.toLocaleString('ko-KR')}회차
@@ -907,13 +908,13 @@ export default function ManualStockAnalysisPage() {
             </section>
 
             {/* ===== ROUND HISTORY (desktop) ===== */}
-            <section className="hidden rounded-2xl border border-white/[0.07] bg-[#0e0e11] p-4 md:block md:p-5">
+            <section className="ai-panel hidden rounded-2xl border border-[#30363f] bg-[#0e0e11] p-4 md:block md:p-5">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                     <div>
                         <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-400/90 md:text-[11px]">
                             Analysis Round History
                         </div>
-                        <h2 className="mt-1 text-lg font-bold text-white md:text-xl">분석회차 히스토리</h2>
+                        <h2 className="ai-section-title mt-1 text-lg font-bold text-white md:text-xl">분석회차 히스토리</h2>
                         <p className="mt-1 text-xs font-medium text-slate-500">
                             저장된 회차를 클릭하면 해당 결과로 즉시 전환합니다. 실시간 루프 회차는 완료 전까지 계속 갱신됩니다.
                         </p>
@@ -994,11 +995,11 @@ export default function ManualStockAnalysisPage() {
 
             {/* ===== STOCK SEARCH HISTORY ===== */}
             {showStockHistory && (
-                <section className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0e0e11] shadow-2xl shadow-black/20">
+                <section className="ai-panel overflow-hidden rounded-2xl border border-[#30363f] bg-[#0e0e11] shadow-2xl shadow-black/20">
                     <div className="flex flex-col gap-2 border-b border-white/[0.06] px-4 py-4 md:flex-row md:items-center md:justify-between md:px-5">
                         <div>
                             <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-400/90">Search History</div>
-                            <h2 className="mt-1 text-lg font-bold text-white">{stockHistoryTitle} 분석 이력</h2>
+                            <h2 className="ai-section-title mt-1 text-lg font-bold text-white">{stockHistoryTitle} 분석 이력</h2>
                         </div>
                         <div className="text-left text-xs font-medium leading-5 text-slate-400 md:text-right">
                             {historyLoading
@@ -1096,11 +1097,11 @@ export default function ManualStockAnalysisPage() {
             )}
 
             {/* ===== MAIN ANALYSIS TABLE ===== */}
-            <section className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0e0e11] shadow-2xl shadow-black/20">
+            <section className="ai-panel overflow-hidden rounded-2xl border border-[#30363f] bg-[#0e0e11] shadow-2xl shadow-black/20">
                 <div className="flex flex-col gap-2 border-b border-white/[0.06] px-4 py-4 md:flex-row md:items-center md:justify-between md:px-5">
                     <div>
                         <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-400/90">Analysis Table</div>
-                        <h2 className="mt-1 text-lg font-bold text-white">AI 주식 분석 결과</h2>
+                        <h2 className="ai-section-title mt-1 text-lg font-bold text-white">AI 주식 분석 결과</h2>
                     </div>
                     <div className="flex items-center gap-2 text-left text-xs font-medium leading-5 text-slate-400 md:text-right">
                         {isLiveRunSelected && (

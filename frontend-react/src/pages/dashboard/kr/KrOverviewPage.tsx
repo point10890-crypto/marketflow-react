@@ -1,3 +1,4 @@
+import './market-design.css';
 
 
 import { useEffect, useState, useCallback } from 'react';
@@ -264,29 +265,28 @@ export default function KRMarketOverview() {
     const cbAccumulating = !cbAvailable;
 
     return (
-        <div className="flex flex-col gap-3 md:gap-4 animate-fade-in font-sans text-zinc-200 h-full">
+        <div className="market-workspace flex flex-col gap-3 md:gap-4 animate-fade-in font-sans text-zinc-200 h-full">
 
             {/* ── Header ─────────────────────────────────────────────────────── */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-rose-500/30 bg-rose-500/10 text-[10px] text-rose-400 font-bold tracking-widest">
-                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]"></span>
+            <div className="dash-page-header market-page-header flex flex-wrap items-center justify-between gap-4">
+                <div className="market-heading-stack">
+                    <div className="market-identity">
                         KR ALPHA
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
-                        Market <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-fuchsia-400">Overview</span>
+                    <h2 className="market-title">
+                        Market <span className="market-title-accent">Overview</span>
                     </h2>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-zinc-500 font-mono hidden sm:block">{lastUpdated || '--:--'}</span>
+                <div className="market-header-actions flex flex-wrap items-center gap-3">
+                    <span className="text-[12px] text-zinc-400 font-mono hidden sm:block">{lastUpdated || '--:--'}</span>
                     <button
                         onClick={loadData}
                         disabled={isRefreshing}
                         title="Refresh"
                         className="w-8 h-8 rounded-lg bg-zinc-900 border border-white/10 flex items-center justify-center hover:border-white/20 hover:bg-white/5 transition-all"
                     >
-                        <i className={`fas fa-sync-alt text-[11px] ${isRefreshing ? 'animate-spin text-rose-400' : 'text-zinc-500'}`}></i>
+                        <i className={`fas fa-sync-alt text-[11px] ${isRefreshing ? 'animate-spin text-rose-400' : 'text-zinc-400'}`}></i>
                     </button>
                 </div>
             </div>
@@ -295,10 +295,10 @@ export default function KRMarketOverview() {
             <div className="grid grid-cols-12 gap-3">
 
                 {/* Sentiment Gauge — 4 cols */}
-                <div className="col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col items-center justify-between gap-2">
+                <div className="dash-panel market-panel col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col items-center justify-between gap-2">
                     <div className="flex items-center justify-between w-full">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Market Sentiment</span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getSentimentBg(score)}`}>
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Market Sentiment</span>
+                        <span className={`text-[12px] font-bold px-2 py-0.5 rounded-full border ${getSentimentBg(score)}`}>
                             {loading ? '…' : getSentimentLabel(gateData?.label)}
                         </span>
                     </div>
@@ -306,7 +306,7 @@ export default function KRMarketOverview() {
                     <ArcGauge score={score} loading={loading} />
 
                     {/* Legend */}
-                    <div className="flex items-center justify-between w-full text-[9px] font-bold text-zinc-600 uppercase tracking-wider px-1">
+                    <div className="flex items-center justify-between w-full text-[11px] font-bold text-zinc-600 uppercase tracking-wider px-1">
                         <span className="text-blue-500">BEAR</span>
                         <span className="text-amber-500">NEUTRAL</span>
                         <span className="text-rose-500">BULL</span>
@@ -314,8 +314,8 @@ export default function KRMarketOverview() {
                 </div>
 
                 {/* KOSPI / KOSDAQ — 4 cols */}
-                <div className="col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col justify-between gap-3">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Market Indices</span>
+                <div className="dash-panel market-panel col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col justify-between gap-3">
+                    <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Market Indices</span>
 
                     {/* KOSPI */}
                     <div className="flex flex-col gap-0.5">
@@ -336,7 +336,7 @@ export default function KRMarketOverview() {
                             changePct={gateData?.kospi_change_pct ?? 0}
                             isPositive={(gateData?.kospi_change_pct ?? 0) >= 0}
                         />
-                        <span className="text-[9px] text-zinc-600">
+                        <span className="text-[11px] text-zinc-600">
                             일변동폭 기준 {Math.abs(gateData?.kospi_change_pct ?? 0).toFixed(2)}% / 3.0%
                         </span>
                     </div>
@@ -362,15 +362,15 @@ export default function KRMarketOverview() {
                             changePct={gateData?.kosdaq_change_pct ?? 0}
                             isPositive={(gateData?.kosdaq_change_pct ?? 0) >= 0}
                         />
-                        <span className="text-[9px] text-zinc-600">
+                        <span className="text-[11px] text-zinc-600">
                             일변동폭 기준 {Math.abs(gateData?.kosdaq_change_pct ?? 0).toFixed(2)}% / 3.0%
                         </span>
                     </div>
                 </div>
 
                 {/* Quick Nav — 4 cols */}
-                <div className="col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col gap-2">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Quick Access</span>
+                <div className="dash-panel market-panel col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col gap-2">
+                    <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Quick Access</span>
 
                     <Link
                         to="/dashboard/kr/closing-bet"
@@ -382,16 +382,16 @@ export default function KRMarketOverview() {
                             </div>
                             <div>
                                 <div className="text-xs font-bold text-white">종가베팅</div>
-                                <div className="text-[10px] text-zinc-500">Closing Bet V2</div>
+                                <div className="text-[12px] text-zinc-400">Closing Bet V2</div>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             {totalSignals > 0 && (
-                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                                <span className="text-[12px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30">
                                     {totalSignals}
                                 </span>
                             )}
-                            <i className="fas fa-chevron-right text-[10px] text-zinc-600 group-hover:text-rose-400 transition-colors"></i>
+                            <i className="fas fa-chevron-right text-[12px] text-zinc-600 group-hover:text-rose-400 transition-colors"></i>
                         </div>
                     </Link>
 
@@ -405,10 +405,10 @@ export default function KRMarketOverview() {
                             </div>
                             <div>
                                 <div className="text-xs font-bold text-white">VCP 전략</div>
-                                <div className="text-[10px] text-zinc-500">Volume Contraction</div>
+                                <div className="text-[12px] text-zinc-400">Volume Contraction</div>
                             </div>
                         </div>
-                        <i className="fas fa-chevron-right text-[10px] text-zinc-600 group-hover:text-amber-400 transition-colors"></i>
+                        <i className="fas fa-chevron-right text-[12px] text-zinc-600 group-hover:text-amber-400 transition-colors"></i>
                     </Link>
 
                     <Link
@@ -421,20 +421,20 @@ export default function KRMarketOverview() {
                             </div>
                             <div>
                                 <div className="text-xs font-bold text-white flex items-center gap-1.5">주도주LIVE <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span></div>
-                                <div className="text-[10px] text-zinc-500">Leading Stocks</div>
+                                <div className="text-[12px] text-zinc-400">Leading Stocks</div>
                             </div>
                         </div>
-                        <i className="fas fa-chevron-right text-[10px] text-zinc-600 group-hover:text-orange-400 transition-colors"></i>
+                        <i className="fas fa-chevron-right text-[12px] text-zinc-600 group-hover:text-orange-400 transition-colors"></i>
                     </Link>
 
                     {/* Mini stats */}
                     <div className="mt-auto grid grid-cols-2 gap-2 pt-2">
                         <div className="rounded-lg bg-zinc-900/60 border border-white/5 p-2 text-center">
-                            <div className="text-[9px] text-zinc-500 uppercase tracking-wider">오늘 시그널</div>
+                            <div className="text-[11px] text-zinc-400 uppercase tracking-wider">오늘 시그널</div>
                             <div className="text-base font-bold text-white mt-0.5">{loading ? '--' : totalSignals}</div>
                         </div>
                         <div className="rounded-lg bg-zinc-900/60 border border-white/5 p-2 text-center">
-                            <div className="text-[9px] text-zinc-500 uppercase tracking-wider">시장 점수</div>
+                            <div className="text-[11px] text-zinc-400 uppercase tracking-wider">시장 점수</div>
                             <div className={`text-base font-bold mt-0.5 ${getSentimentColor(score)}`}>{loading ? '--' : score}</div>
                         </div>
                     </div>
@@ -442,13 +442,13 @@ export default function KRMarketOverview() {
             </div>
 
             {/* ── Row 2: Sector Grid ──────────────────────────────────────────── */}
-            <div className="rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
+            <div className="dash-panel market-panel rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
                 <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Sector Performance</span>
-                    <div className="flex gap-3 text-[9px] font-bold uppercase tracking-wider">
-                        <span className="flex items-center gap-1 text-zinc-500"><span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Bullish</span>
-                        <span className="flex items-center gap-1 text-zinc-500"><span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Neutral</span>
-                        <span className="flex items-center gap-1 text-zinc-500"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Bearish</span>
+                    <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Sector Performance</span>
+                    <div className="flex gap-3 text-[11px] font-bold uppercase tracking-wider">
+                        <span className="flex items-center gap-1 text-zinc-400"><span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Bullish</span>
+                        <span className="flex items-center gap-1 text-zinc-400"><span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Neutral</span>
+                        <span className="flex items-center gap-1 text-zinc-400"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Bearish</span>
                     </div>
                 </div>
 
@@ -464,7 +464,7 @@ export default function KRMarketOverview() {
                             <i className="fas fa-moon text-zinc-600 text-base"></i>
                         </div>
                         <span className="text-xs text-zinc-600 font-medium">Market Closed</span>
-                        <span className="text-[10px] text-zinc-700">섹터 데이터는 장 마감 후 업데이트됩니다</span>
+                        <span className="text-[12px] text-zinc-700">섹터 데이터는 장 마감 후 업데이트됩니다</span>
                     </div>
                 ) : (
                     <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
@@ -475,10 +475,10 @@ export default function KRMarketOverview() {
                                     key={sector.name}
                                     className={`relative p-2.5 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg cursor-default ${style.border}`}
                                 >
-                                    <div className="text-[10px] font-medium text-zinc-400 truncate leading-tight mb-1">{sector.name}</div>
+                                    <div className="text-[12px] font-medium text-zinc-400 truncate leading-tight mb-1">{sector.name}</div>
                                     <div className={`text-sm font-bold ${style.text} leading-none`}>
                                         {sector.change_pct != null ? `${sector.change_pct >= 0 ? '+' : ''}${sector.change_pct.toFixed(2)}` : '--'}
-                                        <span className="text-[9px] opacity-70">%</span>
+                                        <span className="text-[11px] opacity-70">%</span>
                                     </div>
                                     <div className="w-full h-0.5 bg-zinc-800 rounded-full mt-1.5 overflow-hidden">
                                         <div
@@ -497,11 +497,11 @@ export default function KRMarketOverview() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
 
                 {/* A. Today's Signals */}
-                <div className="group rounded-2xl bg-[#13151f] border border-white/5 hover:border-rose-500/20 transition-all p-3 md:p-4 relative overflow-hidden">
+                <div className="dash-panel market-panel group rounded-2xl bg-[#13151f] border border-white/5 hover:border-rose-500/20 transition-all p-3 md:p-4 relative overflow-hidden">
                     <div className="absolute inset-0 bg-rose-500/0 group-hover:bg-rose-500/3 transition-all rounded-2xl"></div>
                     <div className="relative">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">오늘 시그널</span>
+                            <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">오늘 시그널</span>
                             <i className="fas fa-bolt text-zinc-700 group-hover:text-rose-500 transition-colors text-xs"></i>
                         </div>
                         <div className="flex items-baseline gap-1">
@@ -510,17 +510,17 @@ export default function KRMarketOverview() {
                             </span>
                             <span className="text-xs text-zinc-600">개</span>
                         </div>
-                        <div className="mt-2 text-[10px] text-zinc-600">VCP + 종가베팅 합산</div>
+                        <div className="mt-2 text-[12px] text-zinc-600">VCP + 종가베팅 합산</div>
                     </div>
                 </div>
 
                 {/* B. VCP Win Rate */}
-                <div className="group rounded-2xl bg-[#13151f] border border-white/5 hover:border-amber-500/20 transition-all p-3 md:p-4 relative overflow-hidden">
+                <div className="dash-panel market-panel group rounded-2xl bg-[#13151f] border border-white/5 hover:border-amber-500/20 transition-all p-3 md:p-4 relative overflow-hidden">
                     <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/3 transition-all rounded-2xl"></div>
                     <div className="relative">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">VCP 전략</span>
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">WIN %</span>
+                            <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">VCP 전략</span>
+                            <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">WIN %</span>
                         </div>
                         <div className="flex items-baseline gap-1.5">
                             <span className="text-3xl font-bold text-white group-hover:text-amber-400 transition-colors">
@@ -528,30 +528,30 @@ export default function KRMarketOverview() {
                             </span>
                             {vcpAvailable && <span className="text-sm text-zinc-600">%</span>}
                             {!loading && vcpAvailable && vcpAvgReturn != null && vcpAvgReturn !== 0 && (
-                                <span className={`text-[10px] font-bold px-1 py-0.5 rounded ${vcpAvgReturn >= 0 ? 'bg-rose-500/10 text-rose-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                                <span className={`text-[12px] font-bold px-1 py-0.5 rounded ${vcpAvgReturn >= 0 ? 'bg-rose-500/10 text-rose-400' : 'bg-blue-500/10 text-blue-400'}`}>
                                     {vcpAvgReturn >= 0 ? '+' : ''}{vcpAvgReturn}%
                                 </span>
                             )}
                         </div>
                         <div className="mt-2 flex items-center gap-1.5">
-                            <span className="text-[10px] text-zinc-600">{vcpAvailable ? `${vcpCount}건 거래` : '검증 데이터 없음'}</span>
+                            <span className="text-[12px] text-zinc-600">{vcpAvailable ? `${vcpCount}건 거래` : '검증 데이터 없음'}</span>
                             {vcpAvailable && (
-                                <i className="fas fa-circle-check text-[9px] text-emerald-600"></i>
+                                <i className="fas fa-circle-check text-[11px] text-emerald-600"></i>
                             )}
                         </div>
                     </div>
                 </div>
 
                 {/* C. Closing Bet Win Rate */}
-                <div className="group rounded-2xl bg-[#13151f] border border-white/5 hover:border-emerald-500/20 transition-all p-3 md:p-4 relative overflow-hidden">
+                <div className="dash-panel market-panel group rounded-2xl bg-[#13151f] border border-white/5 hover:border-emerald-500/20 transition-all p-3 md:p-4 relative overflow-hidden">
                     <div className="absolute inset-0 bg-emerald-500/0 group-hover:bg-emerald-500/3 transition-all rounded-2xl"></div>
                     <div className="relative">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">종가베팅</span>
+                            <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">종가베팅</span>
                             {cbAccumulating ? (
-                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse">ACCUM</span>
+                                <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse">ACCUM</span>
                             ) : (
-                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">WIN %</span>
+                                <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">WIN %</span>
                             )}
                         </div>
                         {cbAccumulating ? (
@@ -560,7 +560,7 @@ export default function KRMarketOverview() {
                                     <i className="fas fa-database animate-pulse"></i>
                                     <span>검증 대기</span>
                                 </div>
-                                <div className="mt-2 text-[10px] text-zinc-600">미래 OHLCV 성과 데이터 필요</div>
+                                <div className="mt-2 text-[12px] text-zinc-600">미래 OHLCV 성과 데이터 필요</div>
                             </div>
                         ) : (
                             <>
@@ -570,23 +570,23 @@ export default function KRMarketOverview() {
                                     </span>
                                     <span className="text-sm text-zinc-600">%</span>
                                     {!loading && cbAvgReturn != null && cbAvgReturn !== 0 && (
-                                        <span className={`text-[10px] font-bold px-1 py-0.5 rounded ${cbAvgReturn >= 0 ? 'bg-rose-500/10 text-rose-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                                        <span className={`text-[12px] font-bold px-1 py-0.5 rounded ${cbAvgReturn >= 0 ? 'bg-rose-500/10 text-rose-400' : 'bg-blue-500/10 text-blue-400'}`}>
                                             {cbAvgReturn >= 0 ? '+' : ''}{cbAvgReturn}%
                                         </span>
                                     )}
                                 </div>
-                                <div className="mt-2 text-[10px] text-zinc-600">{cbCount}건 거래</div>
+                                <div className="mt-2 text-[12px] text-zinc-600">{cbCount}건 거래</div>
                             </>
                         )}
                     </div>
                 </div>
 
                 {/* D. Regime Status */}
-                <div className="group rounded-2xl bg-[#13151f] border border-white/5 hover:border-fuchsia-500/20 transition-all p-3 md:p-4 relative overflow-hidden">
+                <div className="dash-panel market-panel group rounded-2xl bg-[#13151f] border border-white/5 hover:border-fuchsia-500/20 transition-all p-3 md:p-4 relative overflow-hidden">
                     <div className="absolute inset-0 bg-fuchsia-500/0 group-hover:bg-fuchsia-500/3 transition-all rounded-2xl"></div>
                     <div className="relative">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">레짐 상태</span>
+                            <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">레짐 상태</span>
                             <i className="fas fa-shield-halved text-zinc-700 group-hover:text-fuchsia-500 transition-colors text-xs"></i>
                         </div>
                         {loading ? (
@@ -598,7 +598,7 @@ export default function KRMarketOverview() {
                                 </div>
                                 <div className="mt-2 flex items-center gap-1.5">
                                     <div className={`w-1.5 h-1.5 rounded-full ${score >= 60 ? 'bg-rose-500 animate-pulse' : score >= 40 ? 'bg-amber-500' : 'bg-blue-500'}`}></div>
-                                    <span className="text-[10px] text-zinc-600">
+                                    <span className="text-[12px] text-zinc-600">
                                         {score >= 60 ? '매수 우호적 환경' : score >= 40 ? '관망 구간' : '리스크 관리 우선'}
                                     </span>
                                 </div>
@@ -706,12 +706,12 @@ export default function KRMarketOverview() {
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <div className="w-1 h-4 bg-rose-500 rounded-full" />
-                            <h3 className="text-sm font-bold text-white">섹션별 Best Pick</h3>
+                            <h3 className="dash-section-title text-sm font-bold text-white">섹션별 Best Pick</h3>
                             <span className="px-1.5 py-0.5 bg-rose-500/15 text-rose-400 text-xs font-bold rounded-full border border-rose-500/20">
                                 {bestPicks.length}
                             </span>
                         </div>
-                        <div className="rounded-xl bg-[#13151f] border border-white/[0.06] overflow-hidden">
+                        <div className="dash-panel market-panel rounded-xl bg-[#13151f] border border-white/[0.06] overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
@@ -738,7 +738,7 @@ export default function KRMarketOverview() {
                                                     <td className="px-3 py-2.5">
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-white font-bold text-sm">{p.name}</span>
-                                                            <span className="text-xs text-zinc-500 font-mono">{p.code}</span>
+                                                            <span className="text-xs text-zinc-400 font-mono">{p.code}</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-3 py-2.5 text-center">
@@ -754,7 +754,7 @@ export default function KRMarketOverview() {
                                                             <span className={`font-mono text-sm font-bold ${p.changePct >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
                                                                 {p.changePct >= 0 ? '+' : ''}{p.changePct.toFixed(1)}%
                                                             </span>
-                                                        ) : <span className="text-zinc-500">-</span>}
+                                                        ) : <span className="text-zinc-400">-</span>}
                                                     </td>
                                                     <td className="px-3 py-2.5 text-right text-zinc-300 font-mono text-sm hidden sm:table-cell">
                                                         {p.score}

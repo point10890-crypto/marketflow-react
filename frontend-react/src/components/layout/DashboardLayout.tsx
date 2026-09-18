@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useLayoutEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import './dashboard-design.css';
 import Header from './Header';
 import BottomTabBar from './BottomTabBar';
 import MobileSubNav from './MobileSubNav';
@@ -72,7 +73,7 @@ export default function DashboardLayout() {
 
     return (
         <PullToRefreshProvider onRefreshRef={refreshFnRef}>
-            <div className={`claw-theme flex h-[100dvh] min-h-0 w-full bg-black overflow-hidden ${installPromptVisible ? 'dashboard-install-prompt-visible' : ''}`}>
+            <div className={`${pathname.startsWith('/dashboard') ? 'dashboard-theme' : 'claw-theme'} flex h-[100dvh] min-h-0 w-full bg-black overflow-hidden ${installPromptVisible ? 'dashboard-install-prompt-visible' : ''}`}>
                 {/* Desktop Sidebar */}
                 <div className="hidden md:flex">
                     <Sidebar />
