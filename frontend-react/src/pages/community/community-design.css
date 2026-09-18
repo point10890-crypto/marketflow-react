@@ -21,9 +21,33 @@
   outline-offset: 3px;
 }
 
+.community-board { --board-color: 96, 165, 250; }
+.community-board[data-board="notice"] { --board-color: 251, 191, 36; }
+.community-board[data-board="analysis"] { --board-color: 52, 211, 153; }
+.community-board[data-board="trade-journal"] { --board-color: 167, 139, 250; }
+.community-board[data-board="pro-lounge"] { --board-color: 129, 140, 248; }
+.community-board[data-board="formula-market"] { --board-color: 250, 204, 21; }
+.community-board[data-board="formula-daiso"] { --board-color: 251, 146, 60; }
+.community-board[data-board="lotto-ai"] { --board-color: 244, 114, 182; }
+
+.community-board .community-board-body {
+  background: linear-gradient(120deg, rgba(var(--board-color), .19), rgba(var(--board-color), .035)), #15191e;
+  border-color: rgba(var(--board-color), .28);
+}
+
 .community-board:not(:disabled):hover .community-board-body {
-  background: #1c222a;
-  border-color: #526a83;
+  background: linear-gradient(120deg, rgba(var(--board-color), .27), rgba(var(--board-color), .07)), #15191e;
+  border-color: rgba(var(--board-color), .55);
+}
+
+.community-board .community-board-meta i {
+  color: rgb(var(--board-color));
+}
+
+.community-board .community-new-badge {
+  color: rgb(var(--board-color));
+  border-color: rgba(var(--board-color), .35);
+  background: rgba(var(--board-color), .12);
 }
 
 .community-board:disabled .community-board-body {
@@ -42,14 +66,14 @@
 
 .community-board-body > div:last-child {
   padding-top: 12px;
-  border-top: 1px solid #30363f;
+  border-top: 1px solid rgba(var(--board-color), .2);
 }
 
 .community-board-meta > div:first-child {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: #202a36;
+  background: rgba(var(--board-color), .13);
 }
 
 .community-workspace article {

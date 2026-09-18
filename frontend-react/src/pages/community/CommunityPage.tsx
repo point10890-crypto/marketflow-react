@@ -167,6 +167,7 @@ export default function CommunityPage() {
                                 navigate(`/dashboard/community/${board.slug}`);
                             }}
                             disabled={locked}
+                            data-board={board.slug}
                             className={`community-board group text-left w-full rounded-xl transition-colors duration-150 overflow-hidden ${
                                 locked
                                     ? 'cursor-not-allowed'
