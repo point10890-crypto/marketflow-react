@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { ADMIN_TABS, type AdminTab as AdminTabKey } from '../adminTabs';
 import { adminAPI, AdminDashboard, AdminNotification, FunnelSummary } from '@/lib/api';
 
 /**
  * 관리자 대시보드 탭 — "오늘 처리할 일" 중심의 간소화 레이아웃.
  *
  * 구성 (위 → 아래):
+ *  0. 전환 퍼널과 일곱 관리 바로가기.
  *  1. 처리 대기 큐 — 액션이 필요한 항목만. 전부 0이면 "모두 처리 완료" 한 줄.
  *  2. 회원 현황 스트립 — 숫자 5개 한 줄 요약.
- *  3. 바로가기 — 사용자/구독/구매/시스템.
  *  4. 최근 알림.
  */
 
-type AdminTabKey = 'dashboard' | 'users' | 'subscriptions' | 'pro' | 'system';
 
 function notiIcon(type: string) {
     if (type === 'purchase_request') return 'fa-receipt text-yellow-400';
@@ -36,7 +35,6 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
     onNavigate: (tab: AdminTabKey) => void;
     apiToken?: string;
 }) {
-    const navigate = useNavigate();
     const [notifications, setNotifications] = useState<AdminNotification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [notiLoading, setNotiLoading] = useState(true);
@@ -162,16 +160,44 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
         },
     ];
 
-    // ── 3. 바로가기 ──────────────────────────────────────────────────
-    const shortcuts = [
-        { label: '사용자 관리', icon: 'fa-users-cog', onClick: () => onNavigate('users') },
-        { label: '구독 관리', icon: 'fa-credit-card', onClick: () => onNavigate('subscriptions') },
-        { label: '구매 관리', icon: 'fa-receipt', onClick: () => navigate('/dashboard/community/formula-market/purchases') },
-        { label: '시스템', icon: 'fa-server', onClick: () => onNavigate('system') },
-    ];
-
     return (
         <>
+            {/* 2c. 전환 퍼널 (30일) */}
+            <div className="apple-glass rounded-xl overflow-hidden" data-testid="funnel-card">
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06]">
+                    <i className="fas fa-filter text-blue-400 text-xs" />
+                    <span className="text-xs font-semibold text-white">전환 퍼널 (30일)</span>
+                    <span className="text-[9px] text-gray-600">가입 → 구독 신청 → 승인 · 고유 회원 기준</span>
+                    {!funnel && <span className="ml-auto text-[9px] text-gray-600">집계 대기</span>}
+                </div>
+                <div className="grid grid-cols-4 divide-x divide-white/[0.06]">
+                    {funnelStats.map(s => (
+                        <div key={s.label} className="px-3 py-3 text-center">
+                            <div className={`text-sm sm:text-base font-bold tabular-nums ${s.color}`}>
+                                <i className={`fas ${s.icon} text-[10px] mr-1.5 opacity-70`} />
+                                {s.value}
+                            </div>
+                            <div className="text-[10px] text-gray-500 mt-0.5">{s.label}</div>
+                            <div className="text-[9px] text-gray-600 mt-0.5">{s.sub}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* 3. 바로가기 */}
+            <nav aria-label="관리 바로가기" className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                {ADMIN_TABS.map(s => (
+                    <button
+                        key={s.key}
+                        onClick={() => onNavigate(s.key)}
+                        className="apple-glass rounded-xl py-3 px-2 hover:bg-white/5 hover:border-white/10 transition-colors text-center"
+                    >
+                        <i className={`fas ${s.icon} text-gray-400 text-sm mb-1.5 block`} />
+                        <span className="text-[11px] text-gray-300 font-medium">{s.label}</span>
+                    </button>
+                ))}
+            </nav>
+
             {/* 1. 처리 대기 큐 */}
             <div className="apple-glass rounded-xl overflow-hidden">
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06]">
@@ -278,42 +304,6 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
                         </button>
                     ))}
                 </div>
-            </div>
-
-            {/* 2c. 전환 퍼널 (30일) */}
-            <div className="apple-glass rounded-xl overflow-hidden" data-testid="funnel-card">
-                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06]">
-                    <i className="fas fa-filter text-blue-400 text-xs" />
-                    <span className="text-xs font-semibold text-white">전환 퍼널 (30일)</span>
-                    <span className="text-[9px] text-gray-600">가입 → 구독 신청 → 승인 · 고유 회원 기준</span>
-                    {!funnel && <span className="ml-auto text-[9px] text-gray-600">집계 대기</span>}
-                </div>
-                <div className="grid grid-cols-4 divide-x divide-white/[0.06]">
-                    {funnelStats.map(s => (
-                        <div key={s.label} className="px-3 py-3 text-center">
-                            <div className={`text-sm sm:text-base font-bold tabular-nums ${s.color}`}>
-                                <i className={`fas ${s.icon} text-[10px] mr-1.5 opacity-70`} />
-                                {s.value}
-                            </div>
-                            <div className="text-[10px] text-gray-500 mt-0.5">{s.label}</div>
-                            <div className="text-[9px] text-gray-600 mt-0.5">{s.sub}</div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* 3. 바로가기 */}
-            <div className="grid grid-cols-4 gap-2">
-                {shortcuts.map(s => (
-                    <button
-                        key={s.label}
-                        onClick={s.onClick}
-                        className="apple-glass rounded-xl py-3 px-2 hover:bg-white/5 hover:border-white/10 transition-colors text-center"
-                    >
-                        <i className={`fas ${s.icon} text-gray-400 text-sm mb-1.5 block`} />
-                        <span className="text-[11px] text-gray-300 font-medium">{s.label}</span>
-                    </button>
-                ))}
             </div>
 
             {/* 4. 최근 알림 */}

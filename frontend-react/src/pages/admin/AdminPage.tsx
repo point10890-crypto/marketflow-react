@@ -7,22 +7,13 @@ import SubscriptionsTab from './tabs/SubscriptionsTab';
 import SystemTab from './tabs/SystemTab';
 import JobsTab from './tabs/JobsTab';
 import ProExpiryTab from './ProExpiryTab';
+import PurchaseAdminPage from '../community/PurchaseAdminPage';
+import { ADMIN_TABS, type AdminTab } from './adminTabs';
 
 /**
  * 관리자 페이지 셸 — 탭 네비게이션만 담당한다.
  * 각 탭의 구현은 ./tabs/ 아래 파일로 분리 (2026-08-11 간소화 리팩터링).
  */
-
-type AdminTab = 'dashboard' | 'users' | 'subscriptions' | 'pro' | 'system' | 'jobs';
-
-const TABS: { key: AdminTab; label: string; icon: string }[] = [
-    { key: 'dashboard', label: '대시보드', icon: 'fa-shield-alt' },
-    { key: 'users', label: '사용자', icon: 'fa-users-cog' },
-    { key: 'subscriptions', label: '구독', icon: 'fa-credit-card' },
-    { key: 'pro', label: 'Pro 관리', icon: 'fa-hourglass-half' },
-    { key: 'system', label: '시스템', icon: 'fa-server' },
-    { key: 'jobs', label: '잡 상태', icon: 'fa-clock' },
-];
 
 export default function AdminPage() {
     const { token, user: authUser } = useAuth();
@@ -66,10 +57,11 @@ export default function AdminPage() {
             </div>
 
             {/* Tab Navigation */}
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/[0.06]">
-                {TABS.map(tab => (
+            <div className="grid grid-cols-3 lg:grid-cols-7 gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/[0.06]">
+                {ADMIN_TABS.map(tab => (
                     <button
                         key={tab.key}
+                        aria-pressed={activeTab === tab.key}
                         onClick={() => setActiveTab(tab.key)}
                         className={`flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                             activeTab === tab.key
@@ -98,6 +90,7 @@ export default function AdminPage() {
             {activeTab === 'dashboard' && <DashboardTab data={dashData} onNavigate={setActiveTab} apiToken={apiToken} />}
             {activeTab === 'users' && <UsersTab apiToken={apiToken} currentUserId={authUser?.id} />}
             {activeTab === 'subscriptions' && <SubscriptionsTab apiToken={apiToken} onCountChange={setPendingCount} />}
+            {activeTab === 'purchases' && <PurchaseAdminPage onBack={() => setActiveTab('dashboard')} />}
             {activeTab === 'pro' && <ProExpiryTab apiToken={apiToken} />}
             {activeTab === 'system' && <SystemTab token={token} />}
             {activeTab === 'jobs' && <JobsTab token={token} />}

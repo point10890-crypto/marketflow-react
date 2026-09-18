@@ -56,7 +56,7 @@ function statusLabel(status: string) {
     return { text: '대기', cls: 'text-yellow-400' };
 }
 
-export default function PurchaseAdminPage() {
+export default function PurchaseAdminPage({ onBack }: { onBack?: () => void } = {}) {
     const navigate = useNavigate();
     const [purchases, setPurchases] = useState<PurchaseItem[]>([]);
     const [page, setPage] = useState(1);
@@ -138,7 +138,7 @@ export default function PurchaseAdminPage() {
             {/* Header */}
             <div className="dash-page-header flex items-center gap-3 mb-6">
                 <button
-                    onClick={() => navigate('/admin')}
+                    onClick={() => onBack ? onBack() : navigate('/admin')}
                     className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
                 >
                     <i className="fas fa-arrow-left text-sm" />
