@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ClawOverview, GRADE_BAR, GRADE_CHIP, chgClass, eventChip, fmtEok, fmtHeld, fmtPct, hhmm } from '@/lib/claw';
+import { stockHubPath } from '@/components/stock/StockLink';
 
 interface Props { data: ClawOverview; }
 
-/** 주도주 카드 (7col) — S/A 펼침, B 접힘. 행 클릭 → 주도주LIVE 상세. */
+/** 주도주 카드 (7col) — S/A 펼침, B 접힘. 행 클릭 → 종목 허브(주도주·종가베팅·VCP·이력 집계). */
 export default function ClawLeadersCard({ data }: Props) {
     const [showB, setShowB] = useState(false);
     const halted = data.loop.state === 'halt';
@@ -18,7 +19,7 @@ export default function ClawLeadersCard({ data }: Props) {
         const ev = r.today_event ? eventChip(r.today_event.type) : null;
         return (
             <Link
-                to={`/dashboard/kr/leading-stocks#${r.code}`}
+                to={stockHubPath(r.code, 'KR')}
                 className="grid grid-cols-[34px_minmax(0,1.3fr)_minmax(120px,1fr)_72px_72px_minmax(0,1fr)] items-center gap-2.5 rounded-xl border border-transparent px-2 py-2 transition-colors hover:border-white/[0.06] hover:bg-white/[0.03] max-sm:grid-cols-[30px_minmax(0,1fr)_64px_60px]"
             >
                 <span className={`grid h-6 w-[30px] place-items-center rounded-md border text-[12px] font-black ${GRADE_CHIP[r.grade] ?? GRADE_CHIP.B}`}>{r.grade}</span>

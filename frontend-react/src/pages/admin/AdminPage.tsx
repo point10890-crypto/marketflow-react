@@ -5,6 +5,7 @@ import DashboardTab from './tabs/DashboardTab';
 import { UsersTab } from './tabs/UsersTab';
 import SubscriptionsTab from './tabs/SubscriptionsTab';
 import SystemTab from './tabs/SystemTab';
+import JobsTab from './tabs/JobsTab';
 import ProExpiryTab from './ProExpiryTab';
 
 /**
@@ -12,7 +13,7 @@ import ProExpiryTab from './ProExpiryTab';
  * 각 탭의 구현은 ./tabs/ 아래 파일로 분리 (2026-08-11 간소화 리팩터링).
  */
 
-type AdminTab = 'dashboard' | 'users' | 'subscriptions' | 'pro' | 'system';
+type AdminTab = 'dashboard' | 'users' | 'subscriptions' | 'pro' | 'system' | 'jobs';
 
 const TABS: { key: AdminTab; label: string; icon: string }[] = [
     { key: 'dashboard', label: '대시보드', icon: 'fa-shield-alt' },
@@ -20,6 +21,7 @@ const TABS: { key: AdminTab; label: string; icon: string }[] = [
     { key: 'subscriptions', label: '구독', icon: 'fa-credit-card' },
     { key: 'pro', label: 'Pro 관리', icon: 'fa-hourglass-half' },
     { key: 'system', label: '시스템', icon: 'fa-server' },
+    { key: 'jobs', label: '잡 상태', icon: 'fa-clock' },
 ];
 
 export default function AdminPage() {
@@ -64,7 +66,7 @@ export default function AdminPage() {
             </div>
 
             {/* Tab Navigation */}
-            <div className="grid grid-cols-5 gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/[0.06]">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/[0.06]">
                 {TABS.map(tab => (
                     <button
                         key={tab.key}
@@ -98,6 +100,7 @@ export default function AdminPage() {
             {activeTab === 'subscriptions' && <SubscriptionsTab apiToken={apiToken} onCountChange={setPendingCount} />}
             {activeTab === 'pro' && <ProExpiryTab apiToken={apiToken} />}
             {activeTab === 'system' && <SystemTab token={token} />}
+            {activeTab === 'jobs' && <JobsTab token={token} />}
         </div>
     );
 }

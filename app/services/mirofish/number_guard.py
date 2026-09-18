@@ -15,6 +15,7 @@ daily_prices·스냅샷)가 가져온 번들 값만 대조 기준이 된다.
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
@@ -137,8 +138,11 @@ def extract_claims(text: Any) -> list[dict[str, Any]]:
     return claims
 
 
-def _close_enough(a: float, b: float) -> bool:
+def _close_enough(a: float, b: float, abs_tolerance: float | None = None) -> bool:
     if a == b:
+        return True
+    if abs_tolerance is not None and abs(a - b) <= abs_tolerance:
+        # 표기 반올림(1.23% → "1.2%")을 흡수하는 절대 허용치. 호출부가 명시할 때만.
         return True
     scale = max(abs(a), abs(b))
     if scale == 0:
@@ -173,7 +177,7 @@ def _lookahead_violation(as_of: Any, watermark: Any) -> bool:
 
 
 def verify_claims(claims: list[dict[str, Any]], bundle: Any,
-                  *, as_of: Any = None) -> dict[str, Any]:
+                  *, as_of: Any = None, abs_tolerance: float | None = None) -> dict[str, Any]:
     """각 수치를 번들과 대조한다. 대조 불가는 미검증이지 모순이 아니다."""
     verified: list[dict[str, Any]] = []
     unverified: list[dict[str, Any]] = []
@@ -206,7 +210,8 @@ def verify_claims(claims: list[dict[str, Any]], bundle: Any,
             return field.split('.')[-1] in expected or _context_points_to(field, context)
 
         match = next((k for k, v in candidates
-                      if _verifiable(k) and any(_close_enough(x, v) for x in variants)), None)
+                      if _verifiable(k)
+                      and any(_close_enough(x, v, abs_tolerance) for x in variants)), None)
         if match is not None:
             item['matched_field'] = match
             item['status'] = 'verified'
@@ -230,10 +235,11 @@ def verify_claims(claims: list[dict[str, Any]], bundle: Any,
     return {'verified': verified, 'unverified': unverified, 'contradicted': contradicted}
 
 
-def guard_output(text: Any, bundle: Any, *, as_of: Any = None) -> tuple[bool, dict[str, Any]]:
+def guard_output(text: Any, bundle: Any, *, as_of: Any = None,
+                 abs_tolerance: float | None = None) -> tuple[bool, dict[str, Any]]:
     """산출 채택 여부와 검증 리포트를 반환한다."""
     claims = extract_claims(text)
-    detail = verify_claims(claims, bundle, as_of=as_of)
+    detail = verify_claims(claims, bundle, as_of=as_of, abs_tolerance=abs_tolerance)
     accepted = not detail['contradicted']
     verdict = {
         'schema_version': SCHEMA_VERSION,
@@ -298,3 +304,91 @@ def aggregate_verification(reports: Any) -> dict[str, int] | None:
             except (TypeError, ValueError):
                 continue
     return total if found else None
+
+
+# ── 구독자 노출 텍스트용 enforce/shadow 헬퍼 (v3.6) ─────────────────────
+
+POLICIES = ('enforce', 'shadow')
+DEFAULT_POLICY_ENV = 'NUMBER_GUARD_POLICY'
+#: 소수 첫째 자리 반올림 표기("1.23%" → "1.2%")를 모순으로 몰지 않는 절대 허용치.
+DISPLAY_ROUNDING_TOLERANCE = 0.06
+#: 모순으로 폐기된 본문을 대신하는 정직한 짧은 문구.
+CONTRADICTION_NOTE = '제공 데이터와 불일치해 생략'
+
+
+def resolve_policy(value: Any = None, *, default: str = 'enforce') -> str:
+    """env/인자 값을 'enforce' | 'shadow' 로 정규화한다. 모르는 값은 default."""
+    import os
+
+    raw = value if value is not None else os.environ.get(DEFAULT_POLICY_ENV)
+    text = str(raw or '').strip().lower()
+    if text in POLICIES:
+        return text
+    return default if default in POLICIES else 'enforce'
+
+
+@dataclass
+class GuardResult:
+    """`guard_text_against` 결과 — 채택 여부와 정책, 집계, 상위 claim."""
+    accepted: bool
+    policy: str
+    verified: int = 0
+    unverified: int = 0
+    contradicted: int = 0
+    claims: list = field(default_factory=list)
+    error: str | None = None
+
+    @property
+    def should_drop(self) -> bool:
+        """enforce 정책에서 모순이 있을 때만 본문을 버린다."""
+        return self.policy == 'enforce' and self.contradicted > 0
+
+    def to_dict(self) -> dict[str, Any]:
+        out = {
+            'accepted': self.accepted,
+            'policy': self.policy,
+            'verified': self.verified,
+            'unverified': self.unverified,
+            'contradicted': self.contradicted,
+        }
+        if self.error:
+            out['error'] = self.error
+        return out
+
+
+def guard_text_against(text: Any, truth: Any, *, policy: str = 'enforce',
+                       as_of: Any = None,
+                       abs_tolerance: float | None = DISPLAY_ROUNDING_TOLERANCE) -> GuardResult:
+    """구독자에게 보이는 LLM 텍스트를 수집 원천(`truth`)과 대조한다.
+
+    - `truth` 는 중첩 dict 여도 된다 (`flatten_numeric` 으로 편다).
+    - `policy='enforce'` 이면 모순 ≥1 에서 `accepted=False` (호출부가 본문 교체).
+    - `policy='shadow'` 이면 항상 `accepted=True` — 집계만 남긴다.
+    - 검증 자체가 실패해도 raise 하지 않는다 (`error` 에 기록, 텍스트 유지).
+    """
+    pol = resolve_policy(policy)
+    try:
+        bundle = truth if _is_flat_numeric(truth) else flatten_numeric(truth)
+        _, verdict = guard_output(text, bundle, as_of=as_of, abs_tolerance=abs_tolerance)
+    except Exception as exc:  # noqa: BLE001 — 검증 실패가 생성 경로를 막지 않는다
+        return GuardResult(accepted=True, policy=pol, error=f'{type(exc).__name__}: {exc}')
+    contradicted = int(verdict.get('contradicted') or 0)
+    accepted = True if pol == 'shadow' else contradicted == 0
+    return GuardResult(
+        accepted=accepted,
+        policy=pol,
+        verified=int(verdict.get('verified') or 0),
+        unverified=int(verdict.get('unverified') or 0),
+        contradicted=contradicted,
+        claims=list(verdict.get('claims') or [])[:20],
+    )
+
+
+def _is_flat_numeric(bundle: Any) -> bool:
+    if not isinstance(bundle, dict):
+        return False
+    return all(
+        isinstance(v, (int, float)) and not isinstance(v, bool)
+        or (k == 'source_watermark')
+        for k, v in bundle.items()
+    )

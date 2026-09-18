@@ -40,8 +40,22 @@ def build_expiry_alert_message(*, name: str, email: str, user_id: int,
     return "\n".join(lines)
 
 
+def _notify_member_expiry(user, stage: str, when: str) -> None:
+    """회원 본인 텔레그램 알림 (연결된 회원만, best-effort — 스윕을 절대 깨지 않는다)."""
+    try:
+        from app.services import member_telegram
+        member_telegram.notify_member(
+            user, member_telegram.build_member_expiry_message(stage, when),
+        )
+    except Exception as e:  # noqa: BLE001
+        print(f"[Expiry member alert] {type(e).__name__}: {e}")
+
+
 def run_expiry_sweep(notify: Notify | None = None) -> dict:
     """만료/D-1/D-3 3단계 스윕. Flask app context 안에서 호출해야 한다.
+
+    notify 는 관리자용 콜백(기존 동작 유지). 회원 본인 알림은 각 단계에서
+    _notify_member_expiry 로 별도 발송된다 (텔레그램 연결된 회원만).
 
     반환: {'expired': n, 'd1': n, 'd3': n}
     """
@@ -68,6 +82,7 @@ def run_expiry_sweep(notify: Notify | None = None) -> dict:
         print(f"[Expiry] {user.email}: pro → expired (재구독 대기, {user.pro_expires_at})")
         if user.pro_expiry_alert_stage != 'expired':
             notify(user, 'expired', when)
+            _notify_member_expiry(user, 'expired', when)
         # '정지'가 아니라 '만료' — tier/만료일 보존. 재구독 플로우가 이 정보를 쓴다.
         user.status = 'expired'
         user.pro_expiry_alert_stage = 'expired'
@@ -85,6 +100,7 @@ def run_expiry_sweep(notify: Notify | None = None) -> dict:
         if user.pro_expiry_alert_stage in ('d1', 'expired'):
             continue
         notify(user, 'd1', user.pro_expires_at.isoformat())
+        _notify_member_expiry(user, 'd1', user.pro_expires_at.isoformat())
         user.pro_expiry_alert_stage = 'd1'
         d1_notified.append(user)
 
@@ -101,6 +117,7 @@ def run_expiry_sweep(notify: Notify | None = None) -> dict:
         if user.pro_expiry_alert_stage in ('d3', 'd1', 'expired'):
             continue
         notify(user, 'd3', user.pro_expires_at.isoformat())
+        _notify_member_expiry(user, 'd3', user.pro_expires_at.isoformat())
         user.pro_expiry_alert_stage = 'd3'
         d3_notified.append(user)
 

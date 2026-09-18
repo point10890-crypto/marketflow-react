@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { communityAPI, type CommunityPost, type PostListResponse } from '@/lib/api';
+import { FORMULA_BOARDS, type FormulaBoardConfig } from '@/lib/formulaBoards';
 
 function formatPrice(price?: string) {
     if (!price) return '-';
@@ -24,13 +25,14 @@ function stripHtml(html?: string) {
     return text.length > 60 ? text.slice(0, 60) + '...' : text;
 }
 
-function FormulaCard({ post }: { post: CommunityPost }) {
+function FormulaCard({ post, board }: { post: CommunityPost; board: FormulaBoardConfig }) {
     const preview = stripHtml(post.content);
+    const priceText = board.fixedPrice != null ? board.fixedPrice.toLocaleString() : formatPrice(post.price);
 
     return (
         <Link
             to={`/dashboard/community/post/${post.id}`}
-            className="group relative bg-[#1c1c1e]/80 border border-white/[0.06] rounded-2xl p-5 md:p-6 transition-all duration-200 hover:border-yellow-500/30 hover:shadow-lg hover:shadow-yellow-500/5 hover:-translate-y-0.5 flex flex-col"
+            className={`group relative bg-[#1c1c1e]/80 border border-white/[0.06] rounded-2xl p-5 md:p-6 transition-all duration-200 ${board.accentBorderHover} hover:shadow-lg ${board.accentShadowHover} hover:-translate-y-0.5 flex flex-col`}
         >
             {/* Notice badge */}
             {post.is_notice && (
@@ -40,12 +42,12 @@ function FormulaCard({ post }: { post: CommunityPost }) {
             )}
 
             {/* Icon badge */}
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-600/10 flex items-center justify-center mb-4">
-                <i className="fas fa-square-root-variable text-yellow-400 text-base" />
+            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${board.iconGradient} flex items-center justify-center mb-4`}>
+                <i className={`fas ${board.iconClass} ${board.accentText} text-base`} />
             </div>
 
             {/* Title */}
-            <h3 className="text-white font-semibold text-[15px] leading-snug line-clamp-2 mb-2 group-hover:text-yellow-300 transition-colors">
+            <h3 className="text-white font-semibold text-[15px] leading-snug line-clamp-2 mb-2 group-hover:opacity-90 transition-opacity">
                 {post.title}
             </h3>
 
@@ -61,9 +63,12 @@ function FormulaCard({ post }: { post: CommunityPost }) {
             <div className="border-t border-white/[0.05] pt-3 mt-auto">
                 {/* Price + Date */}
                 <div className="flex items-center justify-between mb-3">
-                    <span className="text-yellow-400 font-bold text-base">
-                        {formatPrice(post.price)}
-                        <span className="text-yellow-400/60 text-xs font-normal ml-0.5">원</span>
+                    <span className={`${board.accentText} font-bold text-base`}>
+                        {priceText}
+                        <span className="opacity-60 text-xs font-normal ml-0.5">원</span>
+                        {board.fixedPrice != null && (
+                            <span className="ml-1.5 rounded-full bg-white/[0.08] px-1.5 py-0.5 text-[9px] font-bold text-gray-300 align-middle">균일가</span>
+                        )}
                     </span>
                     <span className="text-gray-600 text-[11px]">
                         {formatShortDate(post.created_at)}
@@ -80,9 +85,11 @@ function FormulaCard({ post }: { post: CommunityPost }) {
     );
 }
 
-export default function FormulaListPage() {
+export default function FormulaListPage({ boardSlug = 'formula-market' }: { boardSlug?: string }) {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const board = FORMULA_BOARDS[boardSlug] ?? FORMULA_BOARDS['formula-market'];
+    const basePath = `/dashboard/community/${board.slug}`;
 
     const [posts, setPosts] = useState<CommunityPost[]>([]);
     const [total, setTotal] = useState(0);
@@ -98,7 +105,7 @@ export default function FormulaListPage() {
         setLoading(true);
         setError('');
         try {
-            const data: PostListResponse = await communityAPI.getPosts('formula-market', p);
+            const data: PostListResponse = await communityAPI.getPosts(board.slug, p);
             setPosts([...(data.notices || []), ...data.posts]);
             setTotal(data.total);
             setTotalPages(data.total_pages);
@@ -108,7 +115,7 @@ export default function FormulaListPage() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [board.slug]);
 
     useEffect(() => { fetchPosts(1); }, [fetchPosts]);
 
@@ -117,7 +124,7 @@ export default function FormulaListPage() {
             fetchPosts(1);
             return;
         }
-        communityAPI.search(searchQuery, 'formula-market', 1)
+        communityAPI.search(searchQuery, board.slug, 1)
             .then(data => {
                 setPosts(data.posts);
                 setTotal(data.total);
@@ -130,7 +137,7 @@ export default function FormulaListPage() {
     if (loading && posts.length === 0) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="w-8 h-8 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-current border-t-transparent rounded-full animate-spin opacity-70" />
             </div>
         );
     }
@@ -148,14 +155,19 @@ export default function FormulaListPage() {
                     </button>
                     <div>
                         <div className="flex items-center gap-2.5">
-                            <h1 className="text-xl md:text-2xl font-bold text-yellow-400">수식 마켓</h1>
+                            <h1 className={`text-xl md:text-2xl font-bold ${board.accentText}`}>{board.title}</h1>
+                            {board.fixedPrice != null && (
+                                <span className={`bg-white/[0.06] ${board.accentText} text-[11px] font-black px-2 py-0.5 rounded-full`}>
+                                    {board.fixedPrice.toLocaleString()}원 균일가
+                                </span>
+                            )}
                             {total > 0 && (
-                                <span className="bg-yellow-500/10 text-yellow-400 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                                <span className={`bg-white/[0.06] ${board.accentText} text-[11px] font-bold px-2 py-0.5 rounded-full`}>
                                     {total}개
                                 </span>
                             )}
                         </div>
-                        <p className="text-gray-500 text-xs mt-0.5 hidden sm:block">검증된 트레이딩 수식을 만나보세요</p>
+                        <p className="text-gray-500 text-xs mt-0.5 hidden sm:block">{board.subtitle}</p>
                     </div>
                 </div>
 
@@ -169,11 +181,11 @@ export default function FormulaListPage() {
                             <span className="hidden sm:inline">구매 내역</span>
                         </button>
                         <button
-                            onClick={() => navigate('/dashboard/community/formula-market/write')}
-                            className="bg-yellow-500 hover:bg-yellow-500/85 text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors flex items-center gap-2 flex-shrink-0 active:scale-95"
+                            onClick={() => navigate(`${basePath}/write`)}
+                            className={`${board.accentBg} text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors flex items-center gap-2 flex-shrink-0 active:scale-95`}
                         >
                             <i className="fas fa-pen text-xs" />
-                            <span className="hidden sm:inline">수식 등록</span>
+                            <span className="hidden sm:inline">{board.writeLabel}</span>
                         </button>
                     </div>
                 )}
@@ -199,7 +211,7 @@ export default function FormulaListPage() {
                     />
                     <button
                         onClick={handleSearch}
-                        className="text-gray-400 hover:text-yellow-400 transition-colors text-sm"
+                        className="text-gray-400 hover:text-white transition-colors text-sm"
                     >
                         검색
                     </button>
@@ -210,20 +222,20 @@ export default function FormulaListPage() {
             {posts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {posts.map(post => (
-                        <FormulaCard key={post.id} post={post} />
+                        <FormulaCard key={post.id} post={post} board={board} />
                     ))}
                 </div>
             ) : (
                 <div className="bg-[#1c1c1e]/80 border border-white/[0.06] rounded-2xl text-center py-20">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-500/10 to-amber-600/5 flex items-center justify-center mx-auto mb-4">
-                        <i className="fas fa-calculator text-2xl text-gray-600" />
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${board.iconGradient} flex items-center justify-center mx-auto mb-4`}>
+                        <i className={`fas ${board.iconClass} text-2xl text-gray-600`} />
                     </div>
-                    <p className="text-gray-500 text-sm mb-1">아직 등록된 수식이 없습니다</p>
-                    <p className="text-gray-600 text-xs">새로운 수식이 등록되면 여기에 표시됩니다</p>
+                    <p className="text-gray-500 text-sm mb-1">{board.emptyTitle}</p>
+                    <p className="text-gray-600 text-xs">{board.emptyHint}</p>
                     {isAdmin && (
                         <button
-                            onClick={() => navigate('/dashboard/community/formula-market/write')}
-                            className="mt-5 text-yellow-400 text-sm font-medium hover:underline"
+                            onClick={() => navigate(`${basePath}/write`)}
+                            className={`mt-5 ${board.accentText} text-sm font-medium hover:underline`}
                         >
                             첫 수식을 등록해 보세요
                         </button>

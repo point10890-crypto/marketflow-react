@@ -70,6 +70,9 @@ export interface AuthUserData {
     // Pro 만료 일시정지 (AI Brain 활성 중)
     pro_paused_at?: string | null;
     is_pro_paused?: boolean;
+    // 회원 본인 텔레그램 알림 연결 여부 (chat_id 는 서버가 절대 내려주지 않음)
+    telegram_linked?: boolean;
+    telegram_linked_at?: string | null;
 }
 
 export function saveUser(user: AuthUserData): void {

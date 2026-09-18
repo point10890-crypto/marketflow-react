@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { fetchAPI } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
+import StockLink from '@/components/stock/StockLink';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
 interface PricePoint {
@@ -357,7 +358,7 @@ export default function ClosingBetHistoryPage() {
                                         <span className="text-[10px] text-gray-600 font-mono w-5 shrink-0">{pageOffset + idx + 1}</span>
                                         <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${gradeStyle(s.grade)}`}>{s.grade}</span>
                                         <div className="min-w-0">
-                                            <span className="text-sm font-bold text-white truncate block">{s.stock_name}</span>
+                                            <StockLink code={s.stock_code} market={s.market} className="text-sm font-bold text-white truncate block">{s.stock_name}</StockLink>
                                             <span className="text-[10px] text-gray-500 font-mono">{s.stock_code} <span className={s.market === 'KOSPI' ? 'text-blue-400' : 'text-rose-400'}>{s.market}</span></span>
                                         </div>
                                     </div>
@@ -443,7 +444,7 @@ export default function ClosingBetHistoryPage() {
                                             <td className="px-3 py-2.5 text-xs text-gray-300 font-mono whitespace-nowrap">{s.signal_date}</td>
                                             <td className="px-3 py-2.5 text-center"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${gradeStyle(s.grade)}`}>{s.grade}</span></td>
                                             <td className="px-3 py-2.5">
-                                                <div className="text-sm font-bold text-white truncate max-w-[120px]">{s.stock_name}</div>
+                                                <div className="text-sm font-bold text-white truncate max-w-[120px]"><StockLink code={s.stock_code} market={s.market}>{s.stock_name}</StockLink></div>
                                                 <div className="text-[10px] text-gray-500 font-mono">{s.stock_code} <span className={s.market === 'KOSPI' ? 'text-blue-400' : 'text-rose-400'}>{s.market}</span></div>
                                             </td>
                                             <td className="px-3 py-2.5 text-xs text-gray-400 text-right font-mono">{s.entry_price.toLocaleString()}</td>

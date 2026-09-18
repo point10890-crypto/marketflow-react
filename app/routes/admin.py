@@ -15,11 +15,16 @@ import time
 import threading
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from sqlalchemy import or_
 from app.models import db
 from app.models.user import User, SubscriptionRequest, AdminAuditLog, AdminNotification
+from app.models.funnel import (
+    FunnelEvent, record_funnel_event,
+    EVENT_REGISTER, EVENT_SUBSCRIPTION_REQUEST, EVENT_APPROVE, EVENT_REJECT, EVENT_TIER_GRANT,
+)
 from app.auth.decorators import admin_required
+from app.services import member_telegram
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -102,6 +107,23 @@ def _notify_admin(action: str, target_user: User, detail: str = ''):
             print(f"[AdminNotify] {type(e).__name__}: {e}")
 
     threading.Thread(target=_send, daemon=True).start()
+
+
+def _notify_member(user: User | None, text: str) -> bool:
+    """회원 본인 텔레그램 알림 (best-effort, 요청 흐름을 절대 깨지 않는다).
+
+    텔레그램 미연결 회원이면 no-op. 운영에선 백그라운드 스레드로 보내 승인 버튼이
+    텔레그램 지연에 묶이지 않게 하고, TESTING 앱에서는 동기 호출(테스트 검증용).
+    실패는 로그만 — 감사로그(AdminAuditLog) 에 남기지 않는다.
+    """
+    if user is None:
+        return False
+    try:
+        background = not bool(current_app.config.get('TESTING'))
+        return member_telegram.notify_member(user, text, background=background)
+    except Exception as e:  # noqa: BLE001
+        print(f"[MemberNotify] {type(e).__name__}: {e}")
+        return False
 
 
 def _is_reserved_admin_notify_target(target_user: User | None) -> bool:
@@ -504,6 +526,13 @@ def set_tier(user_id):
     }
     _record_audit('set_tier', user, before, after)
     _notify_admin('구독 등급 변경', user, f"{before['tier'] or 'none'} → {tier}")
+    record_funnel_event(EVENT_TIER_GRANT, user.id, {
+        'from_tier': before['tier'], 'to_tier': tier, 'was_status': before['status'],
+    })
+    # 회원 본인 알림 — tier 직접 부여도 사실상 '승인'이다
+    _notify_member(user, member_telegram.build_approval_message(
+        user, summary=f"{before['tier'] or 'none'} → {tier} (관리자 직접 부여)",
+    ))
 
     return jsonify({
         'message': f"{user.email}: {before['tier'] or 'none'} → {tier}",
@@ -1298,6 +1327,13 @@ def approve_subscription(req_id):
     if user:
         _record_audit(audit_action, user, before, after)
         _notify_admin('구독 요청 승인', user, summary_text)
+        record_funnel_event(EVENT_APPROVE, user.id, {
+            'request_id': sub_req.id,
+            'request_type': sub_req.request_type,
+            'to_tier': sub_req.to_tier,
+        })
+        # 회원 본인 알림 (텔레그램 연결된 회원만, best-effort)
+        _notify_member(user, member_telegram.build_approval_message(user, summary=summary_text))
 
     return jsonify({
         'message': f'Subscription approved: {summary_text}',
@@ -1329,10 +1365,115 @@ def reject_subscription(req_id):
     user = db.session.get(User, sub_req.user_id)
     if user:
         _record_audit('reject_subscription', user, None, None, note=sub_req.admin_note or 'rejected')
+        record_funnel_event(EVENT_REJECT, user.id, {
+            'request_id': sub_req.id,
+            'request_type': sub_req.request_type,
+            'to_tier': sub_req.to_tier,
+        })
+        # 회원 본인 알림 (텔레그램 연결된 회원만, best-effort)
+        _notify_member(user, member_telegram.build_reject_message(user, note=sub_req.admin_note or ''))
 
     return jsonify({
         'message': 'Subscription request rejected',
         'request': sub_req.to_dict(),
+    })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 전환 퍼널 요약 — 가입 → 구독 신청 → 승인
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _to_naive_utc(dt):
+    if dt is None:
+        return None
+    if dt.tzinfo is not None:
+        return dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
+
+
+def _median(values: list[float]) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    n = len(ordered)
+    mid = n // 2
+    if n % 2:
+        return ordered[mid]
+    return (ordered[mid - 1] + ordered[mid]) / 2
+
+
+@admin_bp.route('/funnel/summary')
+@admin_required
+def funnel_summary():
+    """최근 N일 퍼널 이벤트 집계 + 전환율 + 신청→승인 소요시간 중앙값.
+
+    - counts: 이벤트별 건수
+    - users: 단계별 고유 회원 수 (registered / requested / approved)
+      approved 는 approve + tier_grant (관리자 직접 부여도 승인으로 본다)
+    - conversion: 고유 회원 기준 비율 (0~1, 분모 0이면 null)
+    - median_request_to_approve_hours: 창 안에서 승인 처리된 구독요청의
+      (processed_at - created_at) 중앙값 (시간)
+    """
+    try:
+        days = int(request.args.get('days', 30))
+    except (TypeError, ValueError):
+        days = 30
+    days = max(1, min(days, 365))
+    now = datetime.now(timezone.utc)
+    since = now - timedelta(days=days)
+    since_naive = _to_naive_utc(since)
+
+    rows = FunnelEvent.query.filter(FunnelEvent.created_at >= since_naive).all()
+    counts = {name: 0 for name in (
+        EVENT_REGISTER, EVENT_SUBSCRIPTION_REQUEST, EVENT_APPROVE, EVENT_REJECT, EVENT_TIER_GRANT,
+    )}
+    registered: set[int] = set()
+    requested: set[int] = set()
+    approved: set[int] = set()
+    for row in rows:
+        counts[row.event] = counts.get(row.event, 0) + 1
+        if row.user_id is None:
+            continue
+        if row.event == EVENT_REGISTER:
+            registered.add(row.user_id)
+        elif row.event == EVENT_SUBSCRIPTION_REQUEST:
+            requested.add(row.user_id)
+        elif row.event in (EVENT_APPROVE, EVENT_TIER_GRANT):
+            approved.add(row.user_id)
+
+    def _ratio(num: int, den: int) -> float | None:
+        return round(num / den, 4) if den else None
+
+    # 신청→승인 소요시간: 구독요청 원장 기준 (이벤트 meta 조인보다 정확)
+    durations: list[float] = []
+    for req in SubscriptionRequest.query.filter(
+        SubscriptionRequest.status == 'approved',
+        SubscriptionRequest.processed_at.isnot(None),
+        SubscriptionRequest.processed_at >= since_naive,
+    ).all():
+        created = _to_naive_utc(req.created_at)
+        processed = _to_naive_utc(req.processed_at)
+        if created is None or processed is None or processed < created:
+            continue
+        durations.append((processed - created).total_seconds() / 3600)
+    median_hours = _median(durations)
+
+    return jsonify({
+        'days': days,
+        'since': since.isoformat(),
+        'counts': counts,
+        'users': {
+            'registered': len(registered),
+            'requested': len(requested),
+            'approved': len(approved),
+        },
+        'conversion': {
+            'register_to_request': _ratio(len(requested), len(registered)),
+            'request_to_approve': _ratio(len(approved), len(requested)),
+            'register_to_approve': _ratio(len(approved), len(registered)),
+        },
+        'median_request_to_approve_hours': round(median_hours, 2) if median_hours is not None else None,
+        'approved_requests_sampled': len(durations),
     })
 
 

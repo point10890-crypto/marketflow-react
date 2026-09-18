@@ -317,8 +317,9 @@ def test_goodrich_research_keeps_uptrend_leaders_and_excludes_crashers(monkeypat
 
 
 def test_goodrich_research_preserves_multi_mcp_top3_order_and_recovery_metadata(
-    monkeypatch,
+    monkeypatch, tmp_path,
 ):
+    monkeypatch.setattr(goodrich_client, 'RESEARCH_LATEST_PATH', str(tmp_path / 'latest.json'))
     captured = {}
     observed_at = goodrich_client.datetime.now(
         goodrich_client.timezone.utc
@@ -433,6 +434,12 @@ def test_goodrich_research_preserves_multi_mcp_top3_order_and_recovery_metadata(
         'deterministic_kis_fallback',
     ]
     assert [row['score'] for row in result['picks']] == [88.125, 70.5, 60.25]
+    assert result['integration']['gates']['cio_approved'] == 1
+    persisted = goodrich_client.read_research_latest()
+    assert persisted['status'] == 'published'
+    assert persisted['picks'] == result['picks']
+    assert persisted['watchlist'] == result['integration']['watchlist']
+    assert persisted['multi_mcp']['deterministic_fallback_count'] == 2
 
     class TamperedScoreResponse(CandidateResponse):
         def json(self):
@@ -449,6 +456,7 @@ def test_goodrich_research_preserves_multi_mcp_top3_order_and_recovery_metadata(
     )
     with pytest.raises(goodrich_client.GoodrichServiceError, match='점수'):
         goodrich_client.run_research()
+    assert goodrich_client.read_research_latest() == persisted
 
 
 def test_goodrich_research_stands_aside_when_profit_trend_gate_fails(monkeypatch):
@@ -762,3 +770,95 @@ def test_goodrich_route_maps_upstream_failure(admin_client, monkeypatch):
         'service': 'goodrich-tradingos',
         'upstream_available': False,
     }
+
+
+# ── 2026-09-04: 검출 0 재발 방지 — stand-aside 여도 관찰 후보·게이트 카운트는 항상 실린다 ──
+
+def test_goodrich_research_stand_aside_still_carries_watchlist_and_gates(monkeypatch, tmp_path):
+    monkeypatch.setattr(goodrich_client, 'RESEARCH_LATEST_PATH', str(tmp_path / 'research_latest.json'))
+    monkeypatch.setattr(
+        'app.services.kis_screener.run_screening',
+        lambda force=True: {
+            # timestamp 누락: 이전에는 신선도 게이트가 전 후보를 조용히 탈락시켰다
+            'market_status': 'open',
+            'candidate_pool': [
+                {'code': '005380', 'name': '현대차', 'price': 353500, 'change_pct': -2.88,
+                 'volume': 1000, 'score': {'total': 90}},
+                {'code': '005935', 'name': '삼성전자우', 'price': 60000, 'change_pct': -1.0,
+                 'volume': 1000, 'score': {'total': 95}},
+                {'code': '000660', 'name': 'SK하이닉스', 'price': 250000, 'change_pct': -0.3,
+                 'volume': 5000, 'score': {'total': 80}},
+            ],
+        },
+    )
+    monkeypatch.setattr(
+        'app.services.mirofish.alpha_scanner.get_price_trend_metrics',
+        lambda *args, **kwargs: {'sample_days': 120, 'trend_5d_pct': -1, 'trend_20d_pct': 2,
+                                 'over_ma20_pct': 1, 'trend_score': 9, 'drawdown_20d_pct': 5},
+    )
+    captured = {}
+
+    def fake_request(method, url, **kwargs):
+        captured['url'] = url
+        captured['json'] = kwargs['json']
+        return FakeResponse()
+
+    monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
+    result = goodrich_client.run_research()
+
+    assert captured['url'].endswith('/v1/fund-manager/stand-aside')
+    integration = result['integration']
+    assert integration['stand_aside_reason'] == 'profit_quality_gate_below_minimum'
+    assert integration['gates']['scanned'] == 3
+    assert integration['gates']['positive_session'] == 0
+    watch = integration['watchlist']
+    # 우선주 제외, 점수순, 사유 표기
+    assert [row['symbol'] for row in watch] == ['005380', '000660']
+    assert watch[0]['rank'] == 1 and watch[0]['tier'] == 'watch'
+    assert 'negative_session' in watch[0]['risk_flags'] and 'positive_5d' in watch[0]['risk_flags']
+
+    persisted = goodrich_client.read_research_latest()
+    assert persisted['status'] == 'stand_aside'
+    assert persisted['watchlist'][0]['symbol'] == '005380'
+
+
+def test_goodrich_research_defaults_observed_at_when_scanner_timestamp_missing(monkeypatch, tmp_path):
+    monkeypatch.setattr(goodrich_client, 'RESEARCH_LATEST_PATH', str(tmp_path / 'research_latest.json'))
+    monkeypatch.setattr(
+        'app.services.kis_screener.run_screening',
+        lambda force=True: {
+            'market_status': 'open',
+            'candidate_pool': [
+                {'code': '005930', 'name': '삼성전자', 'price': 70000, 'change_pct': 1.5,
+                 'volume': 1000, 'score': {'total': 90}},
+            ],
+        },
+    )
+    monkeypatch.setattr(
+        'app.services.mirofish.alpha_scanner.get_price_trend_metrics',
+        lambda *args, **kwargs: {'sample_days': 120, 'trend_5d_pct': 1, 'trend_20d_pct': 2,
+                                 'over_ma20_pct': 1, 'trend_score': 9, 'drawdown_20d_pct': 5},
+    )
+    seen = {}
+
+    def fake_multi_mcp(rows, **kwargs):
+        seen['observed_at'] = rows[0]['observed_at']
+        assert rows[0]['source_packets'][0]['fetched_at'] == rows[0]['observed_at']
+        return {'id': 'run', 'status': 'cash_wait', 'candidate_count': 1,
+                'profit_gate_passed_count': 1, 'selected': [],
+                'agent_analyses': [{'symbol': '005930', 'name': '삼성전자', 'approved': False,
+                                    'action': 'HOLD', 'confidence': 40, 'portfolio_score': 47.0}],
+                'cash_wait_reason': 'x', 'publishable_top3': True}
+
+    monkeypatch.setattr('app.services.mirofish.multi_mcp_orchestrator.run_multi_mcp_analysis', fake_multi_mcp)
+    monkeypatch.setattr(goodrich_client.requests, 'request', lambda *a, **k: FakeResponse())
+
+    result = goodrich_client.run_research()
+
+    assert seen['observed_at'], 'observed_at must never be empty after a forced live screening'
+    integration = result['integration']
+    assert integration['gates'] == {'scanned': 1, 'positive_session': 1, 'trend_gate_passed': 1,
+                                    'profit_gate_passed': 1, 'cio_approved': 0}
+    assert integration['multi_mcp']['ranked'][0]['symbol'] == '005930'
+    assert integration['multi_mcp']['ranked'][0]['approved'] is False
+    assert integration['watchlist'][0]['symbol'] == '005930'

@@ -16,10 +16,15 @@ from typing import Any
 
 import requests
 
+from app.services.mirofish import llm_response_cache
+
 
 DEFAULT_BASE_URL = 'https://api.deepseek.com'
 DEFAULT_MODEL = 'deepseek-v4-pro'
 DEFAULT_TIMEOUT_SECONDS = 45
+# rerank 는 temperature 0 + 같은 evidence → 같은 판정. 스캐너가 30분 안에 같은 후보 집합으로
+# 재실행되면(수동 재실행, 워치독 재기동) 재과금 없이 이전 overlay 를 쓴다.
+RERANK_CACHE_TTL_SECONDS = 1800
 
 DOCS = {
     'chat_completions': 'https://api-docs.deepseek.com/api/create-chat-completion',
@@ -154,20 +159,43 @@ def rerank_scanner_candidates(
     limit: int = 30,
     model: str | None = None,
     max_adjustment: float = 8.0,
+    cache_ttl: int | None = RERANK_CACHE_TTL_SECONDS,
 ) -> dict[str, Any]:
     """Return a bounded DeepSeek V4 quality overlay for scanner candidates.
 
     The model is never allowed to invent new candidates or raw market values.
     Alpha/risk remain deterministic; this function only asks for a small
     confidence adjustment and qualitative risk flags using supplied evidence.
+
+    cache_ttl: 같은 후보 집합(압축된 evidence JSON)·모델·max_adjustment 에 대한 응답을
+    ``data/llm_response_cache.db`` 에 보관한다(기본 30분, temperature 0 이라 결정적).
+    run_context(generated_at 등)는 키에 넣지 않는다 — 후보 evidence 가 같으면 같은 판정.
+    None/0 이면 캐시를 쓰지 않는다.
     """
     compact_candidates = _compact_rerank_candidates(candidates[:_clean_limit(limit, max_value=60)])
     if not compact_candidates:
         raise DeepSeekError('scanner candidate pool is empty')
 
     clean_max_adjustment = max(0.0, min(float(max_adjustment or 0), 12.0))
+    resolved_model = model or _default_model()
+    max_tokens = _deepseek_int_env('MIROFISH_DEEPSEEK_RERANK_MAX_TOKENS', 9000, minimum=2000, maximum=16000)
+
+    cache_key = ''
+    if cache_ttl is not None and int(cache_ttl) > 0 and not llm_response_cache.is_disabled():
+        cache_key = llm_response_cache.make_key(
+            'deepseek_rerank_v1', resolved_model, clean_max_adjustment, max_tokens, compact_candidates,
+        )
+        hit = llm_response_cache.get(cache_key)
+        if hit and hit.get('text'):
+            try:
+                cached = json.loads(hit['text'])
+            except ValueError:
+                cached = None
+            if isinstance(cached, dict) and isinstance(cached.get('overlay'), dict):
+                return {**cached, 'cache_hit': True, 'usage': None}
+
     payload = {
-        'model': model or _default_model(),
+        'model': resolved_model,
         'messages': [
             {
                 'role': 'system',
@@ -211,7 +239,7 @@ def rerank_scanner_candidates(
             },
         ],
         'temperature': 0.0,
-        'max_tokens': _deepseek_int_env('MIROFISH_DEEPSEEK_RERANK_MAX_TOKENS', 9000, minimum=2000, maximum=16000),
+        'max_tokens': max_tokens,
         'response_format': {'type': 'json_object'},
         'thinking': {'type': 'enabled'},
         'reasoning_effort': 'max',
@@ -222,7 +250,7 @@ def rerank_scanner_candidates(
     content = _message_content(raw)
     parsed = _parse_json_content(content)
     items = parsed.get('items') if isinstance(parsed.get('items'), list) else []
-    return {
+    result = {
         'provider': 'deepseek',
         'model': raw.get('model') or payload['model'],
         'candidate_count': len(compact_candidates),
@@ -236,7 +264,16 @@ def rerank_scanner_candidates(
         'usage': raw.get('usage'),
         'finish_reason': _finish_reason(raw),
         'created_at': datetime.now(timezone.utc).isoformat(),
+        'cache_hit': False,
     }
+    if cache_key and items:
+        usage = raw.get('usage') if isinstance(raw.get('usage'), dict) else None
+        llm_response_cache.put(
+            cache_key, provider='deepseek', model=str(result['model']),
+            text=json.dumps(result, ensure_ascii=False, default=str),
+            usage=usage, ttl=int(cache_ttl or 0),
+        )
+    return result
 
 
 def build_summary_telegram_message(summary_result: dict[str, Any]) -> str:

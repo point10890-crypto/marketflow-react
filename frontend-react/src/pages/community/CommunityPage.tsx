@@ -10,6 +10,7 @@ const BOARD_COLORS: Record<string, { bg: string; icon: string; glow: string }> =
     'trade-journal': { bg: 'from-violet-500/20 to-violet-600/5', icon: 'text-violet-400', glow: 'shadow-violet-500/10' },
     'pro-lounge':    { bg: 'from-indigo-500/20 to-indigo-600/5', icon: 'text-indigo-400', glow: 'shadow-indigo-500/10' },
     'formula-market': { bg: 'from-yellow-500/20 to-yellow-600/5', icon: 'text-yellow-400', glow: 'shadow-yellow-500/10' },
+    'formula-daiso':  { bg: 'from-orange-500/20 to-rose-600/5',  icon: 'text-orange-400', glow: 'shadow-orange-500/10' },
     'lotto-ai':      { bg: 'from-pink-500/20 to-pink-600/5',   icon: 'text-pink-400',   glow: 'shadow-pink-500/10' },
 };
 
@@ -20,6 +21,7 @@ const BOARD_ICONS: Record<string, string> = {
     'trade-journal': 'fa-book-open',
     'pro-lounge': 'fa-crown',
     'formula-market': 'fa-calculator',
+    'formula-daiso': 'fa-tags',
     'lotto-ai': 'fa-dice',
 };
 
@@ -211,7 +213,8 @@ export default function CommunityPage() {
 
                                 {/* Title */}
                                 <h3 className={`font-bold text-[15px] md:text-base mb-1 ${
-                                    board.slug === 'formula-market' ? 'text-yellow-400' : 'text-white'
+                                    board.slug === 'formula-market' ? 'text-yellow-400'
+                                        : board.slug === 'formula-daiso' ? 'text-orange-400' : 'text-white'
                                 }`}>{board.name}</h3>
                                 <p className="text-gray-500 text-xs md:text-sm leading-relaxed line-clamp-2 mb-4">
                                     {board.description}

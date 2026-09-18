@@ -101,6 +101,20 @@ def create_app(config=None):
             'SECRET_KEY is not configured; using a process-local random key. '
             'Existing auth tokens will be invalid after restart.'
         )
+    # 부팅 시 런타임 설정 검증 — 문제마다 WARNING(값은 로그하지 않음),
+    # MARKETFLOW_STRICT_CONFIG=1 이면 기동을 중단한다 (config.validate_runtime_config).
+    _config_log = logging.getLogger(__name__)
+    try:
+        from config import RuntimeConfigError, validate_runtime_config
+        _config_problems = validate_runtime_config(strict=False)
+    except ImportError:  # pragma: no cover — 루트 config.py 가 sys.path 에 없는 임베딩 환경
+        RuntimeConfigError = RuntimeError
+        _config_problems = []
+    for _problem in _config_problems:
+        _config_log.warning('[config] %s', _problem)
+    if _config_problems and os.getenv('MARKETFLOW_STRICT_CONFIG', '').strip().lower() in ('1', 'true', 'yes', 'on'):
+        raise RuntimeConfigError('MARKETFLOW_STRICT_CONFIG=1: ' + '; '.join(_config_problems))
+
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(
         os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'data', 'users.db'
     ).replace('\\', '/')
@@ -132,6 +146,7 @@ def create_app(config=None):
     db.init_app(app)
     with app.app_context():
         from app.models.user import User, AdminAuditLog  # noqa: F401
+        from app.models.funnel import FunnelEvent  # noqa: F401
         from app.models.wave import WaveSignal, WaveTracking, WavePatternStats  # noqa: F401
         from app.models.community import Board, Post, PostImage, Comment  # noqa: F401
         db.create_all()
@@ -171,6 +186,16 @@ def create_app(config=None):
                 # 비밀번호 변경 시각 — 이전 발급 토큰 무효화 근거 (2026-08-11)
                 if 'password_changed_at' not in user_cols:
                     conn.execute(text('ALTER TABLE users ADD COLUMN password_changed_at DATETIME'))
+                # 회원 본인 텔레그램 알림 연결 (2026-09-03) — 승인/만료 안내를 본인에게 발송
+                if 'telegram_chat_id' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN telegram_chat_id VARCHAR(64)'))
+                    conn.execute(text('CREATE INDEX IF NOT EXISTS ix_users_telegram_chat_id ON users (telegram_chat_id)'))
+                if 'telegram_link_code' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN telegram_link_code VARCHAR(32)'))
+                if 'telegram_link_code_expires_at' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN telegram_link_code_expires_at DATETIME'))
+                if 'telegram_linked_at' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN telegram_linked_at DATETIME'))
         except Exception:
             pass  # table may not exist yet (create_all handles it)
 
@@ -178,6 +203,14 @@ def create_app(config=None):
         # model's partial unique index must also be installed explicitly.  It
         # protects the check-then-insert purchase route across processes while
         # preserving rejected re-purchase and historical approved rows.
+        # 수식 다이소 게시판 — 수식마켓이 있는 DB 에만 멱등 생성 (2026-09-18)
+        try:
+            from app.routes.community import ensure_formula_daiso_board
+            if ensure_formula_daiso_board():
+                logging.getLogger(__name__).info('community: formula-daiso board created')
+        except Exception as _exc:  # noqa: BLE001 — 게시판 시드 실패가 부팅을 막지 않는다
+            logging.getLogger(__name__).warning('community: formula-daiso seed skipped: %s', type(_exc).__name__)
+
         if db.engine.dialect.name == 'sqlite':
             from sqlalchemy import text as sql_text
 
@@ -310,6 +343,10 @@ def create_app(config=None):
     _GATE_EXEMPT_PREFIXES = (
         '/api/kr/ai-chart-image/',
         '/api/us/ai-chart-image/',
+        # 공개(비로그인) 읽기 API — 커뮤니티 공개 보드, 지연·마스킹 Track Record.
+        # 프리픽스 자체는 _GATED_PREFIXES 밖이지만, 게이트 목록이 넓어져도 공개 영역이
+        # 우연히 잠기지 않도록 명시적으로 예외에 둔다 (tests/test_public_track_record.py).
+        '/api/public/',
     )
 
     @app.before_request
@@ -419,17 +456,33 @@ def create_app(config=None):
         return _jsonify(get_scheduler_status())
 
     # ── 스케줄러 수동 트리거 API ──
+    # C2(2026-09-03): 데몬이 기록한 data/scheduler_jobs.json 의 잡 키를 검증하고
+    # data/scheduler_trigger_requests.json 큐에 넣는다 → 데몬(scheduler.py)이 30초 내 소비.
+    # 잡 파일이 없으면(데몬 미기동/구버전) 기존 Flask 내부 5개 태스크 맵으로 폴백 — 회귀 없음.
     from app.auth.decorators import admin_required as _admin_required
-    @app.route('/api/scheduler/trigger/<task>', methods=['POST'])
+    @app.route('/api/scheduler/trigger/<job_key>', methods=['POST'])
     @_admin_required
-    def scheduler_trigger(task):
-        from flask import jsonify as _jsonify
+    def scheduler_trigger(job_key):
+        from flask import jsonify as _jsonify, request as _request
         import threading
+        from app.utils.scheduler import read_daemon_jobs, enqueue_trigger_request
+
+        daemon_keys = [j['key'] for j in read_daemon_jobs()]
+        if daemon_keys:
+            if job_key not in daemon_keys:
+                return _jsonify({'error': f'Unknown job_key: {job_key}', 'available': daemon_keys}), 400
+            user = getattr(_request, 'current_user', None)
+            try:
+                req = enqueue_trigger_request(job_key, requested_by=getattr(user, 'email', None))
+            except Exception as e:  # noqa: BLE001 — 큐 파일 잠금/디스크 오류
+                return _jsonify({'error': f'enqueue failed: {e}', 'job_key': job_key}), 500
+            return _jsonify({'status': 'queued', 'id': req['id'], 'job_key': job_key})
+
+        # 폴백: 기존 5개 Flask 내부 태스크
         from app.utils.scheduler import (
             _run_jongga_v2, _run_round2, _run_us_update, _run_crypto_pipeline,
             _run_all_update
         )
-
         tasks_map = {
             'jongga-v2': _run_jongga_v2,
             'round2': _run_round2,
@@ -437,13 +490,13 @@ def create_app(config=None):
             'crypto': _run_crypto_pipeline,
             'all-update': _run_all_update,
         }
-        func = tasks_map.get(task)
+        func = tasks_map.get(job_key)
         if not func:
-            return _jsonify({'error': f'Unknown task: {task}', 'available': list(tasks_map.keys())}), 400
+            return _jsonify({'error': f'Unknown task: {job_key}', 'available': list(tasks_map.keys())}), 400
 
         # 백그라운드 스레드에서 실행
-        threading.Thread(target=func, daemon=True, name=f'trigger-{task}').start()
-        return _jsonify({'status': 'triggered', 'task': task})
+        threading.Thread(target=func, daemon=True, name=f'trigger-{job_key}').start()
+        return _jsonify({'status': 'triggered', 'task': job_key})
 
     # ── 데이터 freshness 확인 (GitHub Actions용) ──
     @app.route('/api/system/last-update')
@@ -505,6 +558,8 @@ def create_app(config=None):
     if expiry_workers_enabled:
         _start_expiry_checker(app)
         _start_aibain_expiry_checker(app)
+        # 회원 텔레그램 연결 폴러 — 만료 알림과 같은 게이트로 on/off (봇 토큰 없으면 자체 skip)
+        _start_member_telegram_link_worker(app)
     else:
         print("[INFO] Subscription expiry workers disabled for this app instance")
 
@@ -520,6 +575,21 @@ def create_app(config=None):
                 print("[OK] Manual stock analysis scraper loop scheduled at boot")
         except Exception as e:
             print(f"[WARN] Manual scraper boot autostart failed: {e}")
+
+    # ── GraphRAG 엔티티 DB 부트스트랩 (초성/별칭/퍼지 검색의 전제) ──
+    # entities.db 가 없으면 decision_brief._graphrag_matches 가 조용히 [] 를 돌려
+    # 리졸버 코드가 죽은 코드가 된다. 부팅을 막지 않도록 데몬 스레드에서 1회 보장.
+    # GRAPHRAG_BOOTSTRAP_ENABLED=0 으로 끌 수 있다 (기본 on, TESTING 에서는 off).
+    if not app.config.get('TESTING'):
+        if os.getenv('GRAPHRAG_BOOTSTRAP_ENABLED', '1').strip().lower() not in {'0', 'false', 'no', 'off'}:
+            try:
+                from app.services.mirofish.graphrag.bootstrap import start_background_bootstrap
+                start_background_bootstrap()
+                print("[OK] GraphRAG entities.db bootstrap scheduled (background)")
+            except Exception as e:
+                print(f"[WARN] GraphRAG entities bootstrap failed to start: {e}")
+        else:
+            print("[OFF] GraphRAG entities bootstrap disabled via GRAPHRAG_BOOTSTRAP_ENABLED=0")
 
     if not background_workers_enabled:
         print("[INFO] Background workers disabled for this app instance")
@@ -630,6 +700,41 @@ def _apply_aibain_expiry_state(user, now):
     user.pro_paused_at = None
     user.pro_expiry_alert_stage = None
     return elapsed
+
+
+def _start_member_telegram_link_worker(app):
+    """회원 텔레그램 연결 폴러 (60초 간격) — /start <code> 를 읽어 User.telegram_chat_id 에 매칭.
+
+    MEMBER_TELEGRAM_LINK_ENABLED=0 이거나 봇 토큰(TELEGRAM_MEMBER_BOT_TOKEN →
+    TELEGRAM_BOT_TOKEN 폴백)이 없으면 시작하지 않는다. 폴러 내부 예외는 로그만.
+    """
+    import threading
+    import time
+
+    try:
+        from app.services import member_telegram
+    except Exception as e:
+        print(f"[WARN] Member telegram service import failed: {e}")
+        return
+    if not member_telegram.link_enabled():
+        print("[INFO] Member telegram link poller disabled (no bot token or MEMBER_TELEGRAM_LINK_ENABLED=0)")
+        return
+
+    def _loop():
+        time.sleep(20)  # Flask 초기화 대기
+        while True:
+            try:
+                with app.app_context():
+                    result = member_telegram.poll_link_updates()
+                    if result.get('linked'):
+                        print(f"[MemberTelegram] linked={result['linked']} updates={result['updates']}")
+            except Exception as e:
+                print(f"[MemberTelegram] poll error: {type(e).__name__}: {e}")
+            time.sleep(60)
+
+    thread = threading.Thread(target=_loop, daemon=True, name='MemberTelegramLink')
+    thread.start()
+    print("[OK] Member telegram link poller started (60s interval)")
 
 
 def _start_aibain_expiry_checker(app):

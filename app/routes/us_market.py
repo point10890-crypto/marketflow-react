@@ -91,8 +91,9 @@ def get_us_portfolio_data():
             import time as _time
             age = _time.time() - os.path.getmtime(snap_path)
             if age < 300:  # 5분 TTL
-                with open(snap_path, 'r', encoding='utf-8') as f:
-                    return jsonify(json.load(f))
+                _snap = load_json_cached(snap_path, ttl=60)
+                if _snap is not None:
+                    return jsonify(_snap)
 
         # 2) 실시간 수집 (스냅샷 없거나 만료)
         return jsonify(_fetch_portfolio_live())
@@ -114,9 +115,8 @@ def get_us_smart_money():
         if os.path.exists(snap_path):
             age = _time.time() - os.path.getmtime(snap_path)
             if age < 300:
-                with open(snap_path, 'r', encoding='utf-8') as f:
-                    cached = json.load(f)
-                if cached.get('sort_by') == sort_by:
+                cached = load_json_cached(snap_path, ttl=60)
+                if isinstance(cached, dict) and cached.get('sort_by') == sort_by:
                     return jsonify(cached)
     except Exception as e:
         logger.warning(f"Failed to load smart money snapshot: {e}")
@@ -134,9 +134,8 @@ def _compute_smart_money_live(sort_by='composite', lang='ko'):
         if not os.path.exists(csv_path):
             # Fallback: smart_money_current.json
             json_path = os.path.join(_OUTPUT_DIR, 'smart_money_current.json')
-            if os.path.exists(json_path):
-                with open(json_path, 'r', encoding='utf-8') as f:
-                    sm_data = json.load(f)
+            sm_data = load_json_cached(json_path, ttl=300)
+            if isinstance(sm_data, dict):
                 picks = sm_data.get('picks', [])
                 return jsonify({'picks': picks, 'count': len(picks),
                                 'updated_at': sm_data.get('analysis_timestamp', sm_data.get('analysis_date', ''))})
@@ -155,11 +154,10 @@ def _compute_smart_money_live(sort_by='composite', lang='ko'):
         top_picks_df = df.head(15)
         
         # Load AI Summaries
-        ai_summaries = {}
         summary_path = os.path.join(_OUTPUT_DIR, 'ai_summaries.json')
-        if os.path.exists(summary_path):
-            with open(summary_path, 'r', encoding='utf-8') as f:
-                ai_summaries = json.load(f)
+        ai_summaries = load_json_cached(summary_path, ttl=600)
+        if not isinstance(ai_summaries, dict):
+            ai_summaries = {}
         
         # Fetch Realtime Prices
         tickers = top_picks_df['ticker'].tolist()
@@ -234,9 +232,9 @@ def get_us_etf_flows():
     try:
         # 1차: API JSON (analyze_etf_flows.py가 생성)
         json_path = os.path.join(_OUTPUT_DIR, 'etf_flows.json')
-        if os.path.exists(json_path):
-            with open(json_path, 'r', encoding='utf-8') as f:
-                return jsonify(json.load(f))
+        flows_data = load_json_cached(json_path, ttl=300)
+        if flows_data is not None:
+            return jsonify(flows_data)
 
         # 2차: CSV 폴백 → JSON 변환
         csv_path = os.path.join(_OUTPUT_DIR, 'us_etf_flows.csv')
@@ -262,11 +260,8 @@ def get_us_etf_flows():
                     })
             # AI 분석 병합
             ai_path = os.path.join(_OUTPUT_DIR, 'etf_flow_analysis.json')
-            ai_text = ''
-            if os.path.exists(ai_path):
-                with open(ai_path, 'r', encoding='utf-8') as f:
-                    ai_data = json.load(f)
-                ai_text = ai_data.get('ai_analysis', '')
+            ai_data = load_json_cached(ai_path, ttl=300)
+            ai_text = ai_data.get('ai_analysis', '') if isinstance(ai_data, dict) else ''
             return jsonify({'flows': flows, 'ai_analysis': ai_text})
 
         return jsonify({'flows': []})
@@ -345,9 +340,8 @@ def get_us_history_by_date(date):
             return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD.'}), 400
         # Support both formats: picks_YYYY-MM-DD.json
         history_file = os.path.join(_HISTORY_DIR, f'picks_{date}.json')
-        if os.path.exists(history_file):
-            with open(history_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(history_file, ttl=300)
+        if data is not None:
             return jsonify(data)
         return jsonify({'error': 'Date not found'}), 404
     except Exception as e:
@@ -365,8 +359,9 @@ def get_us_history_performance(date):
         if not os.path.exists(history_file):
             return jsonify({'error': 'Date not found'}), 404
 
-        with open(history_file, 'r', encoding='utf-8') as f:
-            snapshot = json.load(f)
+        snapshot = load_json_cached(history_file, ttl=3600)
+        if not isinstance(snapshot, dict):
+            return jsonify({'error': 'Snapshot unreadable'}), 500
 
         # Get current prices from CSV
         csv_path = os.path.join(_DATA_DIR, 'us_daily_prices.csv')
@@ -445,10 +440,15 @@ def get_us_history_performance(date):
 
 @us_bp.route('/history-summary')
 def get_us_history_summary():
-    """전체 히스토리 성과 요약"""
+    """전체 히스토리 성과 요약 — picks_summary.json 사전계산 파일 우선 (self-healing).
+
+    집계는 app.services.us_picks_summary.build_picks_summary 가 담당한다. 파일이 없거나
+    입력(picks_*.json, 가격 CSV)보다 오래됐으면 즉시 재계산해 원자적으로 저장한 뒤 서빙한다.
+    """
     try:
-        import pandas as pd
-        import numpy as np
+        from app.services.us_picks_summary import (
+            SUMMARY_FILENAME, load_or_build_picks_summary, to_route_payload,
+        )
 
         history_path = os.path.join(_HISTORY_DIR)
         csv_path = os.path.join(_DATA_DIR, 'us_daily_prices.csv')
@@ -456,69 +456,9 @@ def get_us_history_summary():
         if not os.path.exists(history_path) or not os.path.exists(csv_path):
             return jsonify({'error': 'Data not found'}), 404
 
-        # Load price data
-        df = pd.read_csv(csv_path, encoding='utf-8-sig')
-        latest_date = df['Date'].max()
-        latest_df = df[df['Date'] == latest_date]
-
-        # Process each history file
-        summaries = []
-        for f in os.listdir(history_path):
-            if f.startswith('picks_') and f.endswith('.json'):
-                date_str = f[6:-5]
-                history_file = os.path.join(history_path, f)
-
-                with open(history_file, 'r', encoding='utf-8') as hf:
-                    snapshot = json.load(hf)
-
-                # Calculate returns for this date's picks
-                changes = []
-                for pick in snapshot['picks']:
-                    ticker = pick['ticker']
-                    price_at_rec = pick.get('price_at_analysis', 0)
-                    row = latest_df[latest_df['Ticker'] == ticker]
-                    if not row.empty and price_at_rec > 0:
-                        current = float(row['Close'].iloc[0])
-                        change = ((current / price_at_rec) - 1) * 100
-                        changes.append(change)
-
-                if changes:
-                    # SPY benchmark
-                    spy_df = df[df['Ticker'] == 'SPY'].copy()
-                    spy_df = spy_df[spy_df['Date'] >= date_str].sort_values('Date')
-                    spy_return = 0.0
-                    if len(spy_df) >= 2:
-                        spy_return = ((spy_df['Close'].iloc[-1] / spy_df['Close'].iloc[0]) - 1) * 100
-
-                    avg_return = float(np.mean(changes))
-                    summaries.append({
-                        'date': date_str,
-                        'avg_return': round(avg_return, 2),
-                        'spy_return': round(spy_return, 2),
-                        'alpha': round(avg_return - spy_return, 2),
-                        'win_rate': round(len([c for c in changes if c > 0]) / len(changes) * 100, 1),
-                        'num_picks': len(changes)
-                    })
-
-        # Sort by date
-        summaries = sorted(summaries, key=lambda x: x['date'], reverse=True)
-
-        # Calculate overall stats
-        if summaries:
-            overall = {
-                'total_recommendations': sum(s['num_picks'] for s in summaries),
-                'avg_return_all': round(np.mean([s['avg_return'] for s in summaries]), 2),
-                'avg_alpha': round(np.mean([s['alpha'] for s in summaries]), 2),
-                'avg_win_rate': round(np.mean([s['win_rate'] for s in summaries]), 1),
-                'num_dates': len(summaries)
-            }
-        else:
-            overall = {}
-
-        return jsonify({
-            'overall': overall,
-            'by_date': summaries
-        })
+        summary_path = os.path.join(_OUTPUT_DIR, SUMMARY_FILENAME)
+        summary = load_or_build_picks_summary(history_path, csv_path, summary_path)
+        return jsonify(to_route_payload(summary))
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -532,8 +472,9 @@ def get_us_cumulative_performance():
         if os.path.exists(snap_path):
             age = _time.time() - os.path.getmtime(snap_path)
             if age < 300:  # 5분 TTL
-                with open(snap_path, 'r', encoding='utf-8') as f:
-                    return jsonify(json.load(f))
+                _snap = load_json_cached(snap_path, ttl=60)
+                if _snap is not None:
+                    return jsonify(_snap)
     except Exception as e:
         logger.warning(f"Failed to load cumulative perf snapshot: {e}")
     return _compute_cumulative_performance_live()
@@ -579,8 +520,9 @@ def _compute_cumulative_performance_live():
 
         for f in snap_files:
             date_str = f[6:-5]
-            with open(os.path.join(history_path, f), 'r', encoding='utf-8') as hf:
-                snapshot = json.load(hf)
+            snapshot = load_json_cached(os.path.join(history_path, f), ttl=3600)
+            if not isinstance(snapshot, dict):
+                continue
 
             date_picks = []
             for pick in snapshot.get('picks', []):
@@ -686,9 +628,8 @@ def get_us_macro_analysis():
         else:
             analysis_path = os.path.join(_OUTPUT_DIR, 'macro_analysis.json')
         
-        if os.path.exists(analysis_path):
-            with open(analysis_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(analysis_path, ttl=300)
+        if data is not None:
             return jsonify(data)
         return jsonify({'analysis': None})
     except Exception as e:
@@ -734,9 +675,8 @@ def get_us_options_flow():
     """옵션 플로우"""
     try:
         flow_path = os.path.join(_OUTPUT_DIR, 'options_flow.json')
-        if os.path.exists(flow_path):
-            with open(flow_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(flow_path, ttl=300)
+        if data is not None:
             return jsonify(data)
         return jsonify({'flows': []})
     except Exception as e:
@@ -748,9 +688,8 @@ def get_us_sec_filings():
     """SEC 파일링"""
     try:
         filings_path = os.path.join(_OUTPUT_DIR, 'sec_filings.json')
-        if os.path.exists(filings_path):
-            with open(filings_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(filings_path, ttl=300)
+        if data is not None:
             return jsonify(data)
         return jsonify({'filings': []})
     except Exception as e:
@@ -762,9 +701,8 @@ def get_us_earnings_transcripts():
     """어닝 트랜스크립트"""
     try:
         transcripts_path = os.path.join(_OUTPUT_DIR, 'earnings_transcripts.json')
-        if os.path.exists(transcripts_path):
-            with open(transcripts_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(transcripts_path, ttl=300)
+        if data is not None:
             return jsonify(data)
         return jsonify({'transcripts': []})
     except Exception as e:
@@ -804,8 +742,9 @@ def get_us_calendar():
         if not os.path.exists(calendar_path):
             return jsonify({'events': []})
 
-        with open(calendar_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+        data = load_json_cached(calendar_path, ttl=300)
+        if not isinstance(data, dict):
+            data = {}
 
         return jsonify({'events': data.get('events', [])})
     except Exception as e:
@@ -881,9 +820,8 @@ def us_super_performance():
 
         # 2) JSON 폴백 — final_top10_report.json (Smart Money Top Picks)
         json_path = os.path.join(_OUTPUT_DIR, 'final_top10_report.json')
-        if os.path.exists(json_path):
-            with open(json_path, 'r', encoding='utf-8') as f:
-                report = json.load(f)
+        report = load_json_cached(json_path, ttl=300)
+        if isinstance(report, dict):
             picks = report.get('top_picks', [])
             stocks = []
             for p in picks:
@@ -928,9 +866,8 @@ def us_portfolio_performance():
     """포트폴리오 성과"""
     try:
         perf_path = os.path.join(_DATA_DIR, 'portfolio_performance.json')
-        if os.path.exists(perf_path):
-            with open(perf_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(perf_path, ttl=300)
+        if data is not None:
             return jsonify(data)
         return jsonify({'performance': []})
     except Exception as e:
@@ -1095,15 +1032,14 @@ def get_us_news_analysis():
         news_path = os.path.join(_OUTPUT_DIR, 'news_analysis.json')
         data = []
         if os.path.exists(news_path):
+            # 원본 로드 유지 — 아래에서 item 을 제자리 수정하므로 load_json_cached 의 공유 객체를 쓰면 안 된다
             with open(news_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
 
         # ai_summaries.json에서 뉴스 데이터 보강
         summaries_path = os.path.join(_OUTPUT_DIR, 'ai_summaries.json')
-        if os.path.exists(summaries_path):
-            with open(summaries_path, 'r', encoding='utf-8') as f:
-                summaries = json.load(f)
-
+        summaries = load_json_cached(summaries_path, ttl=600)
+        if isinstance(summaries, dict):
             for ticker, summary in summaries.items():
                 if not isinstance(summary, dict):
                     continue
@@ -1142,9 +1078,8 @@ def get_us_insider_trading():
     """내부자 거래 현황"""
     try:
         json_path = os.path.join(_OUTPUT_DIR, 'insider_trading.json')
-        if os.path.exists(json_path):
-            with open(json_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(json_path, ttl=300)
+        if isinstance(data, dict):
             return jsonify({'transactions': data.get('transactions', [])})
         return jsonify({'transactions': []})
     except Exception as e:
@@ -1156,9 +1091,8 @@ def get_us_sector_rotation():
     """섹터 로테이션 분석"""
     try:
         rotation_path = os.path.join(_OUTPUT_DIR, 'sector_rotation.json')
-        if os.path.exists(rotation_path):
-            with open(rotation_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(rotation_path, ttl=300)
+        if data is not None:
             return jsonify(data)
         return jsonify({'rotation_signals': {}, 'performance_matrix': {}})
     except Exception as e:
@@ -1170,9 +1104,8 @@ def get_us_risk_alerts():
     """리스크 알림"""
     try:
         alerts_path = os.path.join(_OUTPUT_DIR, 'risk_alerts.json')
-        if os.path.exists(alerts_path):
-            with open(alerts_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(alerts_path, ttl=300)
+        if data is not None:
             return jsonify(data)
         return jsonify({'alerts': [], 'portfolio_summary': {}})
     except Exception as e:
@@ -1266,9 +1199,8 @@ def get_us_market_regime():
     """마켓 레짐 감지 결과 + adaptive config"""
     try:
         config_path = os.path.join(_OUTPUT_DIR, 'regime_config.json')
-        if os.path.exists(config_path):
-            with open(config_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(config_path, ttl=300)
+        if data is not None:
             return jsonify(data)
         return jsonify({'regime': 'neutral', 'confidence': 0, 'signals': {}})
     except Exception as e:
@@ -1280,9 +1212,8 @@ def get_us_index_prediction():
     """지수 방향 예측"""
     try:
         prediction_path = os.path.join(_OUTPUT_DIR, 'index_prediction.json')
-        if os.path.exists(prediction_path):
-            with open(prediction_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(prediction_path, ttl=300)
+        if data is not None:
             return jsonify(data)
         return jsonify({'predictions': {}, 'model_info': {}})
     except Exception as e:
@@ -1353,9 +1284,8 @@ def get_us_backtest():
     """백테스트 결과"""
     try:
         backtest_path = os.path.join(_OUTPUT_DIR, 'backtest_results.json')
-        if os.path.exists(backtest_path):
-            with open(backtest_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(backtest_path, ttl=300)
+        if data is not None:
             return jsonify(data)
         return jsonify({'returns': {}, 'benchmarks': {}})
     except Exception as e:
@@ -1367,9 +1297,8 @@ def get_us_top_picks_report():
     """최종 Top 10 AI 리포트"""
     try:
         report_path = os.path.join(_OUTPUT_DIR, 'final_top10_report.json')
-        if os.path.exists(report_path):
-            with open(report_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(report_path, ttl=300)
+        if data is not None:
             return jsonify(data)
         return jsonify({'top_picks': [], 'generated_at': '', 'total_analyzed': 0})
     except Exception as e:
@@ -1381,9 +1310,8 @@ def get_us_track_record():
     """Smart Money Top Picks 트랙 레코드"""
     try:
         report_path = os.path.join(_OUTPUT_DIR, 'performance_report.json')
-        if os.path.exists(report_path):
-            with open(report_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(report_path, ttl=300)
+        if data is not None:
             return jsonify(data)
         return jsonify({'summary': {}, 'snapshots': [], 'picks': [], 'by_grade': {}, 'by_sector': {}})
     except Exception as e:
@@ -1400,8 +1328,9 @@ def get_us_decision_signal():
             import time as _time
             age = _time.time() - os.path.getmtime(snap_path)
             if age < 300:  # 5분 TTL
-                with open(snap_path, 'r', encoding='utf-8') as f:
-                    return jsonify(json.load(f))
+                _snap = load_json_cached(snap_path, ttl=60)
+                if _snap is not None:
+                    return jsonify(_snap)
     except Exception as e:
         logger.warning(f"Failed to load decision signal snapshot: {e}")
 
@@ -1430,9 +1359,8 @@ def _compute_decision_signal_live():
         regime_contribution = 0
         regime_path = os.path.join(_OUTPUT_DIR, 'regime_config.json')
         try:
-            if os.path.exists(regime_path):
-                with open(regime_path, 'r', encoding='utf-8') as f:
-                    regime_data = json.load(f)
+            regime_data = load_json_cached(regime_path, ttl=300)
+            if isinstance(regime_data, dict):
                 regime_str = regime_data.get('regime', 'neutral')
                 regime_map = {'risk_on': 15, 'neutral': 0, 'risk_off': -15, 'crisis': -25}
                 regime_contribution = regime_map.get(regime_str, 0)
@@ -1446,9 +1374,8 @@ def _compute_decision_signal_live():
         pred_contribution = 0
         pred_path = os.path.join(_OUTPUT_DIR, 'index_prediction.json')
         try:
-            if os.path.exists(pred_path):
-                with open(pred_path, 'r', encoding='utf-8') as f:
-                    pred_data = json.load(f)
+            pred_data = load_json_cached(pred_path, ttl=300)
+            if isinstance(pred_data, dict):
                 spy_pred = pred_data.get('predictions', {}).get('SPY', {})
                 spy_bullish = spy_pred.get('bullish_probability', 50)
                 if spy_bullish >= 60:
@@ -1466,9 +1393,8 @@ def _compute_decision_signal_live():
         risk_path = os.path.join(_OUTPUT_DIR, 'risk_alerts.json')
         warnings = []
         try:
-            if os.path.exists(risk_path):
-                with open(risk_path, 'r', encoding='utf-8') as f:
-                    risk_data = json.load(f)
+            risk_data = load_json_cached(risk_path, ttl=300)
+            if isinstance(risk_data, dict):
                 risk_level = risk_data.get('portfolio_summary', {}).get('risk_level', 'Moderate')
                 risk_map = {'Low': 5, 'Moderate': 0, 'High': -10, 'Critical': -20}
                 risk_contribution = risk_map.get(risk_level, 0)
@@ -1485,9 +1411,8 @@ def _compute_decision_signal_live():
         phase_contribution = 0
         rotation_path = os.path.join(_OUTPUT_DIR, 'sector_rotation.json')
         try:
-            if os.path.exists(rotation_path):
-                with open(rotation_path, 'r', encoding='utf-8') as f:
-                    rotation_data = json.load(f)
+            rotation_data = load_json_cached(rotation_path, ttl=300)
+            if isinstance(rotation_data, dict):
                 phase = rotation_data.get('rotation_signals', {}).get('current_phase', 'Unknown')
                 phase_map = {'Early Cycle': 10, 'Mid Cycle': 5, 'Late Cycle': -5, 'Recession': -15}
                 phase_contribution = phase_map.get(phase, 0)
@@ -1518,9 +1443,8 @@ def _compute_decision_signal_live():
         top_picks = []
         report_path = os.path.join(_OUTPUT_DIR, 'final_top10_report.json')
         try:
-            if os.path.exists(report_path):
-                with open(report_path, 'r', encoding='utf-8') as f:
-                    report = json.load(f)
+            report = load_json_cached(report_path, ttl=300)
+            if isinstance(report, dict):
                 for pick in report.get('top_picks', [])[:5]:
                     top_picks.append({
                         'ticker': pick.get('ticker', ''),
@@ -1734,9 +1658,8 @@ def get_smart_money_detail(ticker):
 
         # 3. AI Summary
         summary_path = os.path.join(_OUTPUT_DIR, 'ai_summaries.json')
-        if os.path.exists(summary_path):
-            with open(summary_path, 'r', encoding='utf-8') as f:
-                summaries = json.load(f)
+        summaries = load_json_cached(summary_path, ttl=300)
+        if isinstance(summaries, dict):
             if ticker.upper() in summaries:
                 ai_data = summaries[ticker.upper()]
                 result['ai_analysis'] = {
@@ -1920,8 +1843,9 @@ def get_us_vcp_report(date):
         path = os.path.join(BASE_DIR, 'data', f'vcp_us_{date_str}.json')
         if not os.path.exists(path):
             return jsonify({"error": f"No report for {date}"}), 404
-        with open(path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+        data = load_json_cached(path, ttl=3600)
+        if data is None:
+            return jsonify({"error": f"Unreadable report for {date}"}), 500
         resp = jsonify(data)
         resp.headers['Cache-Control'] = 'public, max-age=3600'
         return resp
@@ -1934,9 +1858,8 @@ def get_us_vcp_enhanced():
     """US VCP 통합 분석 — 캐시 파일 기반 반환."""
     try:
         cached_path = os.path.join(BASE_DIR, 'data', 'vcp_us_latest.json')
-        if os.path.exists(cached_path):
-            with open(cached_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(cached_path, ttl=300)
+        if isinstance(data, dict):
             data = attach_freshness(data, cached_path, max_age_hours=96)
             resp = jsonify(data)
             freshness = data.get('metadata', {}).get('freshness', {})

@@ -1,3 +1,4 @@
+import pytest
 import asyncio
 import openai
 from datetime import datetime, timezone
@@ -709,3 +710,9 @@ def test_specialized_grounding_keeps_parent_run_identity_and_usage():
     assert result['routing']['run_id'] == 'jongga-run'
     assert result['routing']['request_id'] == 'jongga-run:005930:news'
     assert result['routing']['usage']['total_tokens'] == 40
+
+
+@pytest.fixture(autouse=True)
+def isolated_routing_store(monkeypatch, tmp_path):
+    from app.services.ai_routing import store
+    monkeypatch.setattr(store, 'DEFAULT_DB_PATH', tmp_path / 'routing.sqlite3')

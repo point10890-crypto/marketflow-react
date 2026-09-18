@@ -35,6 +35,8 @@ from app.services.ai_routing.providers import (
     normalize_openai_usage,
 )
 from app.services.ai_routing.router import AIRouter
+from app.services.ai_routing.policy import policy_for
+from app.services.mirofish import llm_response_cache
 
 logger = logging.getLogger(__name__)
 
@@ -492,11 +494,21 @@ def _usage_metadata(usage: TokenUsage) -> dict[str, Any]:
     }
 
 
+def purge_expired_cache() -> int:
+    """Remove expired cached responses."""
+    return llm_response_cache.purge_expired()
+
+
+purge_expired = purge_expired_cache
+
+
 def generate_text_with_metadata(prompt: str, *, system: str | None = None,
                                 model_env: str | None = None,
                                 temperature: float = 0.3,
                                 max_tokens: int = 4096,
                                 json_mode: bool = False,
+                                cache_ttl: int | None = None,
+                                cache_scope: str = "",
                                 operation: Operation | str | None = None,
                                 run_id: str | None = None,
                                 request_id: str | None = None,
@@ -521,6 +533,38 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
     all_providers_disabled = not adapters
     router = AIRouter(adapters=adapters)
     effective_run_id = run_id or _generation_run_id.get()
+    # Cache only unconstrained text requests. Validated/reserved calls must execute
+    # the current router checks, and cached responses never incur a paid attempt.
+    cache_key = ''
+    if (cache_ttl is not None and int(cache_ttl) > 0
+            and not llm_response_cache.is_disabled() and adapters
+            and selected_operation is not Operation.VISION
+            and not expected_identity and not expected_numbers
+            and domain_validator is None and reservation_id is None
+            and permit_abort_event is None):
+        policy = policy_for(selected_operation)
+        cache_key = llm_response_cache.make_key(
+            'central-router-v1', selected_operation.value, policy.providers,
+            policy.models, sorted(disabled_providers()), model_env,
+            system, prompt, temperature, max_tokens, json_mode, cache_scope,
+        )
+        hit = llm_response_cache.get(cache_key)
+        if hit and hit.get('text'):
+            provider = hit.get('provider')
+            fallback = provider != policy.providers[0]
+            metadata = {
+                'provider': provider, 'model': hit.get('model'), 'success': True,
+                'json_mode': json_mode, 'fallback_used': fallback,
+                'failure_reason': None, 'fallback_reason': None, 'retry_reason': None,
+                'attempts': [], 'latency_ms': round((time.perf_counter() - started) * 1000, 2),
+                'usage': hit.get('usage'), 'est_cost_usd': 0.0,
+                'estimated_cost_usd': '0', 'cache_hit': True, 'cache_scope': cache_scope or None,
+                'analysis_status': 'SUCCESS_FALLBACK' if fallback else 'SUCCESS_PRIMARY',
+                'primary_provider': policy.providers[0], 'actual_provider': provider,
+                'run_id': effective_run_id,
+            }
+            _publish_metadata(metadata)
+            return str(hit['text']), metadata
     request = RoutingRequest(
         operation=selected_operation,
         prompt=prompt,
@@ -557,6 +601,7 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
             'estimated_cost_usd': (
                 str(attempt.estimated_cost_usd) if attempt.estimated_cost_usd is not None else None
             ),
+            'est_cost_usd': float(attempt.estimated_cost_usd) if attempt.estimated_cost_usd is not None else None,
             'pricing_version': attempt.pricing_version,
             'breaker_state': attempt.breaker_state,
             'status': attempt.status,
@@ -601,11 +646,22 @@ def generate_text_with_metadata(prompt: str, *, system: str | None = None,
         'estimated_cost_usd': (
             str(result.estimated_cost_usd) if result.estimated_cost_usd is not None else None
         ),
+        'cache_hit': False,
+        'est_cost_usd': (
+            sum(attempt['est_cost_usd'] for attempt in attempts)
+            if attempts and all(attempt['est_cost_usd'] is not None for attempt in attempts)
+            else None
+        ),
         'breaker_state': breaker_state,
         'numeric_validation': result.numeric_validation,
         'evidence_validated': result.evidence_validated,
         'run_id': effective_run_id,
     }
+    if cache_key and result.text is not None and metadata['analysis_status'] in {'SUCCESS_PRIMARY', 'SUCCESS_FALLBACK'}:
+        llm_response_cache.put(
+            cache_key, provider=metadata['provider'], model=result.model,
+            text=result.text, usage=metadata['usage'], ttl=int(cache_ttl),
+        )
     _publish_metadata(metadata)
     return result.text, metadata
 
@@ -615,6 +671,8 @@ def generate_text_with_provider(prompt: str, *, system: str | None = None,
                                 temperature: float = 0.3,
                                 max_tokens: int = 4096,
                                 json_mode: bool = False,
+                                cache_ttl: int | None = None,
+                                cache_scope: str = "",
                                 operation: Operation | str | None = None,
                                 run_id: str | None = None,
                                 request_id: str | None = None,
@@ -629,6 +687,7 @@ def generate_text_with_provider(prompt: str, *, system: str | None = None,
     text, metadata = generate_text_with_metadata(
         prompt, system=system, model_env=model_env, temperature=temperature,
         max_tokens=max_tokens, json_mode=json_mode, operation=operation,
+        cache_ttl=cache_ttl, cache_scope=cache_scope,
         run_id=run_id, request_id=request_id, caller_endpoint=caller_endpoint,
         symbol=symbol, market=market, expected_identity=expected_identity,
         expected_numbers=expected_numbers,
@@ -640,6 +699,7 @@ def generate_text_with_provider(prompt: str, *, system: str | None = None,
 
 def generate_text(prompt: str, *, system: str | None = None, model_env: str | None = None,
                   temperature: float = 0.3, max_tokens: int = 4096,
+                  cache_ttl: int | None = None, cache_scope: str = "",
                   json_mode: bool = False, operation: Operation | str | None = None,
                   run_id: str | None = None, request_id: str | None = None,
                   caller_endpoint: str | None = None,
@@ -657,6 +717,7 @@ def generate_text(prompt: str, *, system: str | None = None, model_env: str | No
         temperature=temperature,
         max_tokens=max_tokens,
         json_mode=json_mode,
+        cache_ttl=cache_ttl, cache_scope=cache_scope,
         operation=operation,
         run_id=run_id,
         request_id=request_id,

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE, authHeaders } from '@/lib/api';
+import { stockHubPath } from '@/components/stock/StockLink';
 
 interface Stock {
     name: string;
@@ -71,7 +72,13 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         debounceRef.current = setTimeout(() => searchStocks(val), 300);
     };
 
+    // KR 결과는 종목 허브(근거 집계)로, US 는 기존 ProPicks 분석 페이지로.
     const goToAnalyzer = (stock: Stock) => {
+        if (stock.type === 'KR' && stock.code) {
+            onClose();
+            navigate(stockHubPath(stock.code, 'KR'));
+            return;
+        }
         const params = new URLSearchParams({
             name: stock.name,
             ticker: stock.ticker,
@@ -148,7 +155,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
                 {results.length === 0 && query === '' && (
                     <div className="px-4 py-6 text-center">
-                        <p className="text-gray-600 text-xs">종목을 검색하면 ProPicks 분석 페이지로 이동합니다</p>
+                        <p className="text-gray-600 text-xs">국내 종목은 종목 허브로, 미국 종목은 ProPicks 분석 페이지로 이동합니다</p>
                     </div>
                 )}
 

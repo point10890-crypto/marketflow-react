@@ -53,6 +53,7 @@ def generate_notice(client, topic: str, board: str) -> dict:
         'trade-journal': '매매일지',
         'pro-lounge': 'Pro 라운지',
         'formula-market': '수식/조건검색식 마켓',
+        'formula-daiso': '수식 다이소 (3만원 균일가)',
         'lotto-ai': 'AI 로또 분석',
     }
     board_name = board_names.get(board, board)

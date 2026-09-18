@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { adminAPI, AdminDashboard, AdminNotification } from '@/lib/api';
+import { adminAPI, AdminDashboard, AdminNotification, FunnelSummary } from '@/lib/api';
 
 /**
  * 관리자 대시보드 탭 — "오늘 처리할 일" 중심의 간소화 레이아웃.
@@ -40,6 +40,18 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
     const [notifications, setNotifications] = useState<AdminNotification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [notiLoading, setNotiLoading] = useState(true);
+    const [funnel, setFunnel] = useState<FunnelSummary | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await adminAPI.getFunnelSummary(30, apiToken);
+                if (!cancelled && res && res.counts) setFunnel(res);
+            } catch { /* 퍼널 집계 실패는 대시보드를 막지 않는다 */ }
+        })();
+        return () => { cancelled = true; };
+    }, [apiToken]);
 
     useEffect(() => {
         let cancelled = false;
@@ -134,6 +146,20 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
         { label: 'Ultra Pro', value: data?.premium_users || 0, color: 'text-purple-400' },
         { label: 'AI Brain', value: data?.aibain_active_users || 0, color: 'text-cyan-300' },
         { label: 'No Tier', value: data?.no_tier_users || 0, color: 'text-gray-400' },
+    ];
+
+    // ── 2c. 전환 퍼널 (30일) — 가입 → 구독 신청 → 승인 (고유 회원 기준) ──
+    const pct = (v: number | null | undefined) => (v == null ? '-' : `${Math.round(v * 100)}%`);
+    const funnelStats = [
+        { label: '가입', value: funnel?.users.registered ?? 0, sub: '30일 신규', color: 'text-blue-300', icon: 'fa-user-plus' },
+        { label: '구독 신청', value: funnel?.users.requested ?? 0, sub: `가입→신청 ${pct(funnel?.conversion.register_to_request)}`, color: 'text-amber-300', icon: 'fa-credit-card' },
+        { label: '승인', value: funnel?.users.approved ?? 0, sub: `신청→승인 ${pct(funnel?.conversion.request_to_approve)}`, color: 'text-emerald-300', icon: 'fa-check' },
+        {
+            label: '신청→승인 소요',
+            value: funnel?.median_request_to_approve_hours == null ? '-' : `${funnel.median_request_to_approve_hours}h`,
+            sub: `중앙값 · 표본 ${funnel?.approved_requests_sampled ?? 0}`,
+            color: 'text-purple-300', icon: 'fa-stopwatch',
+        },
     ];
 
     // ── 3. 바로가기 ──────────────────────────────────────────────────
@@ -250,6 +276,28 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
                             </div>
                             <div className="text-[10px] text-gray-500 mt-0.5">{s.label}</div>
                         </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* 2c. 전환 퍼널 (30일) */}
+            <div className="apple-glass rounded-xl overflow-hidden" data-testid="funnel-card">
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06]">
+                    <i className="fas fa-filter text-blue-400 text-xs" />
+                    <span className="text-xs font-semibold text-white">전환 퍼널 (30일)</span>
+                    <span className="text-[9px] text-gray-600">가입 → 구독 신청 → 승인 · 고유 회원 기준</span>
+                    {!funnel && <span className="ml-auto text-[9px] text-gray-600">집계 대기</span>}
+                </div>
+                <div className="grid grid-cols-4 divide-x divide-white/[0.06]">
+                    {funnelStats.map(s => (
+                        <div key={s.label} className="px-3 py-3 text-center">
+                            <div className={`text-sm sm:text-base font-bold tabular-nums ${s.color}`}>
+                                <i className={`fas ${s.icon} text-[10px] mr-1.5 opacity-70`} />
+                                {s.value}
+                            </div>
+                            <div className="text-[10px] text-gray-500 mt-0.5">{s.label}</div>
+                            <div className="text-[9px] text-gray-600 mt-0.5">{s.sub}</div>
+                        </div>
                     ))}
                 </div>
             </div>

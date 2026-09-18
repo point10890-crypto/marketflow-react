@@ -826,6 +826,9 @@ export interface AdminUser {
     is_aibain_active?: boolean;
     is_aibain_expired?: boolean;
     aibain_days_remaining?: number | null;
+    // 회원 본인 텔레그램 알림 연결 여부
+    telegram_linked?: boolean;
+    telegram_linked_at?: string | null;
 }
 
 export interface AdminAuditLogEntry {
@@ -1008,8 +1011,24 @@ export async function putAPI<T>(endpoint: string, body?: any): Promise<T> {
 }
 
 // ── Admin API (Bearer token 기반) ──
+// ── 전환 퍼널 요약 (GET /api/admin/funnel/summary) ──
+export interface FunnelSummary {
+    days: number;
+    since: string;
+    counts: Record<string, number>;   // register / subscription_request / approve / reject / tier_grant
+    users: { registered: number; requested: number; approved: number };
+    conversion: {
+        register_to_request: number | null;
+        request_to_approve: number | null;
+        register_to_approve: number | null;
+    };
+    median_request_to_approve_hours: number | null;
+    approved_requests_sampled: number;
+}
+
 export const adminAPI = {
     getDashboard: (token?: string) => fetchAuthAPI<AdminDashboard>('/api/admin/dashboard', token),
+    getFunnelSummary: (days = 30, token?: string) => fetchAuthAPI<FunnelSummary>(`/api/admin/funnel/summary?days=${days}`, token),
     getUsers: (token?: string, params?: { status?: string; tier?: string; q?: string; page?: number; per_page?: number }) => {
         const qs = new URLSearchParams();
         if (params?.status) qs.set('status', params.status);
@@ -1115,6 +1134,23 @@ export const subscriptionAPI = {
     }>('/api/auth/subscription/status', token),
     updateProfile: (name: string, token?: string) => putAuthAPI<{ user: AdminUser }>('/api/auth/profile', { name }, token),
     changePassword: (currentPassword: string, newPassword: string, token?: string) => putAuthAPI<{ message: string; token?: string }>('/api/auth/change-password', { current_password: currentPassword, new_password: newPassword }, token),
+};
+
+// ── 회원 텔레그램 알림 연결 (승인/만료 안내를 본인에게) ──
+export interface TelegramLinkInfo {
+    code: string;
+    deep_link: string | null;       // https://t.me/<bot>?start=<code> (봇 username 미설정 시 null)
+    bot_username: string | null;
+    expires_at: string;
+    ttl_minutes: number;
+    telegram_linked: boolean;
+    instructions?: string;
+    error?: string;
+}
+
+export const telegramAPI = {
+    getLinkCode: (token?: string) => postAuthAPI<TelegramLinkInfo>('/api/auth/telegram/link-code', undefined, token),
+    unlink: (token?: string) => postAuthAPI<{ message: string; user: AdminUser; error?: string }>('/api/auth/telegram/unlink', undefined, token),
 };
 
 // ── AI Briefing API (조간/마감 브리핑) ──
@@ -1397,4 +1433,98 @@ export const publicCommunityAPI = {
         }>(`/api/public/community/boards/${slug}/posts?page=${page}`),
     getPost: (id: number) =>
         fetchAPI<{ post: PublicPostDetail; comments: PublicComment[] }>(`/api/public/community/posts/${id}`),
+};
+
+// ── Public Track Record (지연·마스킹, 비로그인) ───────────────────────────────
+export interface PublicTrackForward {
+    outcome: 'TARGET_HIT' | 'STOP_HIT' | 'OPEN' | string;
+    outcome_date: string | null;
+    roi_pct: number | null;
+    hold_roi_pct: number | null;
+    max_high_pct: number | null;
+    days_held: number;
+}
+
+export interface PublicTrackSignal {
+    date: string;
+    grade: string;
+    market: string | null;
+    masked: boolean;
+    stock_name: string;
+    stock_code: string | null;
+    change_pct: number | null;
+    score_total: number | null;
+    forward_return: number | null;
+    verification: 'pending' | 'open' | 'closed' | string;
+    forward: PublicTrackForward | null;
+}
+
+export interface PublicTrackRecord {
+    schema_version: string;
+    generated_at: string;
+    as_of: string | null;
+    date_range: { from: string | null; to: string | null };
+    days_count: number;
+    window_trading_days: number;
+    sample_size: number;
+    masked_count: number;
+    by_grade: Record<string, number>;
+    verification: {
+        evaluated: number; pending: number; closed: number; open: number;
+        wins: number; losses: number;
+        win_rate: number | null; avg_roi_pct: number | null; avg_hold_roi_pct: number | null;
+    };
+    grade_stats: Record<string, { count: number; closed: number; wins: number; win_rate: number | null; avg_roi_pct: number | null }>;
+    days: { date: string; count: number; by_grade: Record<string, number>; masked: boolean }[];
+    signals: PublicTrackSignal[];
+    methodology: Record<string, string>;
+    disclaimer: string;
+}
+
+export const publicTrackRecordAPI = {
+    get: () => fetchAPI<PublicTrackRecord>('/api/public/track-record'),
+};
+
+// ── Stock Hub (Pro) ─────────────────────────────────────────────────────────
+export interface StockHubPrice {
+    close: number; prev_close: number | null; change_pct: number | null;
+    date: string; bars: number; source: string;
+}
+
+export interface StockHubHistoryEntry {
+    date: string; grade: string | null; score_total: number | null; change_pct: number | null;
+    entry_price: number | null; stop_price: number | null; target_price: number | null;
+    outcome: string | null; roi_pct: number | null; hold_roi_pct: number | null; days_held: number | null;
+}
+
+export interface StockHubNews {
+    title: string | null; link: string | null; source: string | null; grade: string | null;
+    score: number | null; published_ts: string | null; summary: string | null;
+}
+
+export interface StockHub {
+    schema_version: string;
+    generated_at: string;
+    code: string;
+    name: string | null;
+    market: string | null;
+    sector: string | null;
+    price: StockHubPrice | null;
+    chart: { date: string; close: number; high: number | null; low: number | null; volume: number | null }[];
+    sources: {
+        jongga: Record<string, any> | null;
+        leading: Record<string, any> | null;
+        vcp: Record<string, any> | null;
+        wave: Record<string, any> | null;
+        claw: Record<string, any> | null;
+    };
+    present: string[];
+    history: StockHubHistoryEntry[];
+    news: StockHubNews[];
+    errors: Record<string, string>;
+    disclaimer: string;
+}
+
+export const stockHubAPI = {
+    get: (code: string) => fetchAPI<StockHub>(`/api/kr/stock/${encodeURIComponent(code)}/hub`, 20000),
 };
