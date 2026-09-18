@@ -57,6 +57,11 @@ describe('Goodrich history and performance endpoints', () => {
         render(<MemoryRouter><GoodrichFundManagerPage /></MemoryRouter>);
 
         await waitFor(() => expect(mockApi.fetchAuthAPI).toHaveBeenCalledTimes(3));
+        expect(mockApi.fetchAuthAPI).toHaveBeenCalledWith(
+            '/api/admin/mirofish/goodrich/fund-manager/history?scope=today', 'test-token', 20000,
+        );
+        expect(await screen.findByText(/오늘 전체 1회 · 한국시간/)).toBeInTheDocument();
+        expect(screen.getByText('2026. 7. 28. 10시 0분 0초')).toBeInTheDocument();
 
         expect(screen.getByRole('link', { name: /검출 이력/ })).toHaveAttribute('href', '#goodrich-history');
         expect(screen.getByRole('link', { name: /성과 검증/ })).toHaveAttribute('href', '#goodrich-performance');
@@ -64,6 +69,25 @@ describe('Goodrich history and performance endpoints', () => {
         expect(screen.getByText('목표 달성').nextElementSibling?.textContent).toBe('1');
         expect(screen.getByText('손절 도달').nextElementSibling?.textContent).toBe('1');
         expect(screen.getByText('적중률').nextElementSibling?.textContent).toBe('50%');
+    });
+
+    it('renders every daily detection including entries beyond the old ten-row cutoff', async () => {
+        mockApi.fetchAuthAPI.mockReset();
+        mockApi.fetchAuthAPI.mockImplementation((url: string) => {
+            if (url.includes('/history?')) return Promise.resolve({
+                date: '2026-09-18',
+                items: Array.from({ length: 17 }, (_, index) => ({
+                    cycle_id: `cycle-${index}`, detected_at: '2026-09-18T09:01:43+09:00',
+                    picks: [{ rank: 1, symbol: String(index), name: `검출종목${index}` }],
+                })),
+            });
+            if (url.includes('/performance?')) return Promise.resolve({ window_days: 30, total_picks: 0 });
+            return Promise.resolve({ picks: [] });
+        });
+        render(<MemoryRouter><GoodrichFundManagerPage /></MemoryRouter>);
+        expect(await screen.findByText('2026-09-18 · 오늘 전체 17회 · 한국시간')).toBeInTheDocument();
+        expect(screen.getByText('TOP 1 · 검출종목16')).toBeInTheDocument();
+        expect(screen.getAllByText('2026. 9. 18. 9시 1분 43초')).toHaveLength(17);
     });
 
     it('shows the responsive cash-wait state without rendering empty charts', async () => {
