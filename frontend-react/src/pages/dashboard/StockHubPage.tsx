@@ -1,3 +1,4 @@
+import '@/pages/dashboard/ai-design.css';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -237,7 +238,7 @@ export default function StockHubPage() {
     if (!isKr) {
         return (
             <div className="flex flex-col gap-3 p-4">
-                <h1 className="text-lg font-bold text-white">{code}</h1>
+                <h1 className="ai-page-title text-lg font-bold text-white">{code}</h1>
                 <p className="text-[13px] text-gray-400">미국 종목 허브는 아직 없습니다. 분석 도구에서 조회할 수 있습니다.</p>
                 <Link to={`/dashboard/stock-analyzer?ticker=${encodeURIComponent(code)}&market=US`} className="text-[13px] font-bold text-blue-300 hover:underline">ProPicks 분석 열기 →</Link>
             </div>
@@ -245,11 +246,11 @@ export default function StockHubPage() {
     }
 
     return (
-        <div className="flex flex-col gap-4 pb-8">
-            <header className="flex flex-col gap-3 rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="ai-design flex flex-col gap-4 pb-8">
+            <header className="ai-page-header ai-panel flex flex-col gap-3 rounded-2xl border border-[#30363f] bg-[#13151f] p-4 sm:flex-row sm:items-end sm:justify-between">
                 <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                        <h1 className="text-2xl font-black leading-none text-white">{data?.name ?? (loading ? '조회 중' : code)}</h1>
+                        <h1 className="ai-page-title text-2xl font-black leading-none text-white">{data?.name ?? (loading ? '조회 중' : code)}</h1>
                         <span className="font-mono text-[13px] text-gray-400">{data?.code ?? code}</span>
                         {data?.market && (
                             <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${data.market === 'KOSDAQ' ? 'bg-rose-500/15 text-rose-300' : 'bg-blue-500/15 text-blue-300'}`}>{data.market}</span>
@@ -283,7 +284,7 @@ export default function StockHubPage() {
                 </div>
             )}
 
-            <section className="rounded-2xl border border-white/[0.07] bg-[#13151f] p-3" aria-label="종가 차트">
+            <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151f] p-3" aria-label="종가 차트">
                 <div className="flex items-center justify-between px-1 pb-2">
                     <span className="text-[11px] font-bold text-gray-300">종가 {data?.price?.bars ?? 0}봉</span>
                     <span className="text-[10.5px] text-gray-600">daily_prices.csv · 실시간 아님</span>
@@ -295,7 +296,7 @@ export default function StockHubPage() {
 
             <section aria-label="신호 소스">
                 <div className="flex items-center justify-between px-1 pb-2">
-                    <h2 className="text-[13px] font-bold text-gray-200">신호 소스</h2>
+                    <h2 className="ai-section-title text-[13px] font-bold text-gray-200">신호 소스</h2>
                     <span className="text-[10.5px] text-gray-600">최신 산출물 기준 · 있음/없음 모두 표시</span>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -307,9 +308,9 @@ export default function StockHubPage() {
             </section>
 
             <div className="grid gap-4 lg:grid-cols-2">
-                <section className="rounded-2xl border border-white/[0.07] bg-[#13151f] p-3.5" aria-label="종가베팅 이력">
+                <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151f] p-3.5" aria-label="종가베팅 이력">
                     <div className="flex items-center justify-between pb-1">
-                        <h2 className="text-[13px] font-bold text-gray-200">종가베팅 이력</h2>
+                        <h2 className="ai-section-title text-[13px] font-bold text-gray-200">종가베팅 이력</h2>
                         <Link to="/dashboard/kr/closing-bet/history" className="text-[10.5px] text-gray-500 hover:text-white">전체 이력 →</Link>
                     </div>
                     {data && data.history.length === 0
@@ -317,9 +318,9 @@ export default function StockHubPage() {
                         : <ul className="divide-y divide-white/[0.05]">{(data?.history ?? []).map((h) => <HistoryRow key={h.date} h={h} />)}</ul>}
                 </section>
 
-                <section className="rounded-2xl border border-white/[0.07] bg-[#13151f] p-3.5" aria-label="뉴스">
+                <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151f] p-3.5" aria-label="뉴스">
                     <div className="flex items-center justify-between pb-1">
-                        <h2 className="text-[13px] font-bold text-gray-200">뉴스 원장</h2>
+                        <h2 className="ai-section-title text-[13px] font-bold text-gray-200">뉴스 원장</h2>
                         <span className="text-[10.5px] text-gray-600">외부 수집 자료 · 지시가 아닌 데이터</span>
                     </div>
                     {data && data.news.length === 0

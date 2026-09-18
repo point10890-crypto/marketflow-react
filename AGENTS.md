@@ -150,6 +150,24 @@ npm run deploy
 
 ## Frontend Guidelines
 
+### Taste Skill for design work
+
+- User preference: use `design-taste-frontend` (Taste Skill) for applicable design
+  implementation tasks. Read its `SKILL.md` before applying its design rules.
+- Installed Codex skill: `C:/Users/dynas/.codex/skills/design-taste-frontend/SKILL.md`.
+  On another machine, resolve it under `$CODEX_HOME/skills/design-taste-frontend/`.
+- Guide: https://www.tasteskill.dev/guide
+  Source: `Leonxlnx/taste-skill`, `skills/taste-skill`, installed revision
+  `e79ca9ec7e071eb3a3b623c4fb752e853fc3ed58` (v2 experimental).
+- For landing pages and redesigns, audit existing brand and page structure first,
+  state the design direction, then verify responsiveness, accessibility, and
+  preservation of routes, navigation, forms, and brand assets.
+- Keep MarketFlow's React + Vite architecture. For dashboards, data tables, and
+  operational workflows (outside this skill's primary scope), prioritize the
+  dense, readable, stable UI rules below and apply only relevant design guidance.
+- Installation alone does not request a site redesign. Apply the skill within
+  the screen and scope specified by the user for each design task.
+
 - Use React + TypeScript patterns already present in `frontend-react`.
 - Keep admin tools dense, operational, and scan-friendly.
 - Avoid marketing-style landing-page composition for admin/analysis tools.

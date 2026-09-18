@@ -1,3 +1,4 @@
+import './market-design.css';
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -152,31 +153,28 @@ export default function ClosingBetHistoryPage() {
     };
 
     const ThBtn = ({ column, label, align = 'left' }: { column: SortKey; label: string; align?: string }) => (
-        <th className={`px-3 py-3 text-[10px] uppercase tracking-wider font-bold cursor-pointer hover:text-indigo-400 transition-colors whitespace-nowrap ${align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left'} ${sortBy === column ? 'text-indigo-400' : 'text-gray-500'}`} onClick={() => handleSort(column)}>
+        <th className={`px-3 py-3 text-[12px] uppercase tracking-wider font-bold cursor-pointer hover:text-indigo-400 transition-colors whitespace-nowrap ${align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left'} ${sortBy === column ? 'text-indigo-400' : 'text-gray-400'}`} onClick={() => handleSort(column)}>
             {label}<SortIcon column={column} />
         </th>
     );
 
     return (
-        <div className="space-y-4 md:space-y-6">
+        <div className="market-workspace space-y-4 md:space-y-6">
             {/* ─── Header ─── */}
-            <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-indigo-500/20 bg-indigo-500/5 text-xs text-indigo-400 font-medium mb-3">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></span>
-                    Performance Tracker
-                </div>
+            <div className="dash-page-header market-page-header market-stacked-header">
+                <div className="market-identity mb-2">Performance Tracker</div>
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-2xl md:text-4xl font-bold tracking-tighter text-white leading-tight mb-1">
-                            Cumulative <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Results</span>
+                        <h2 className="market-title">
+                            Cumulative <span className="market-title-accent">Results</span>
                         </h2>
                         <p className="text-gray-400 text-xs md:text-sm flex flex-wrap items-center gap-1">
                             <span>2026.01~ V2 누적 성과</span>
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">+{targetPct}%</span>
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 font-bold">-{stopPct}%</span>
+                            <span className="text-[12px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">+{targetPct}%</span>
+                            <span className="text-[12px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 font-bold">-{stopPct}%</span>
                         </p>
                     </div>
-                    <button onClick={loadData} disabled={loading} className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white hover:bg-white/10 transition-all disabled:opacity-50 shrink-0">
+                    <button onClick={loadData} disabled={loading} aria-label="Refresh results" className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white hover:bg-white/10 transition-all disabled:opacity-50 shrink-0">
                         {loading ? '...' : '↻'}
                     </button>
                 </div>
@@ -206,24 +204,24 @@ export default function ClosingBetHistoryPage() {
                             <div key={grade} className={`p-3 rounded-xl bg-gradient-to-br ${colors[grade]} border`}>
                                 <div className="flex items-center justify-between mb-2">
                                     <span className={`text-sm md:text-lg font-black ${textCol[grade]}`}>{grade}</span>
-                                    <span className="text-[10px] text-gray-500">{gr.count}</span>
+                                    <span className="text-[12px] text-gray-400">{gr.count}</span>
                                 </div>
                                 <div className="space-y-1 text-center">
-                                    <div className="flex justify-between text-[10px]">
-                                        <span className="text-gray-500">WR</span>
+                                    <div className="flex justify-between text-[12px]">
+                                        <span className="text-gray-400">WR</span>
                                         <span className={`font-bold ${gr.win_rate >= 50 ? 'text-emerald-400' : gr.win_rate >= 35 ? 'text-yellow-400' : 'text-red-400'}`}>{gr.win_rate}%</span>
                                     </div>
-                                    <div className="flex justify-between text-[10px]">
-                                        <span className="text-gray-500">ROI</span>
+                                    <div className="flex justify-between text-[12px]">
+                                        <span className="text-gray-400">ROI</span>
                                         <span className={`font-bold ${gr.avg_roi >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{gr.avg_roi > 0 ? '+' : ''}{gr.avg_roi}%</span>
                                     </div>
-                                    <div className="flex justify-between text-[10px]">
-                                        <span className="text-gray-500">W/L</span>
+                                    <div className="flex justify-between text-[12px]">
+                                        <span className="text-gray-400">W/L</span>
                                         <span className="font-bold text-white">{gr.wins}/{gr.losses}</span>
                                     </div>
                                     {gr.hold_avg_roi !== undefined && (
-                                        <div className="flex justify-between text-[10px] pt-1 border-t border-white/10">
-                                            <span className="text-gray-500">Hold</span>
+                                        <div className="flex justify-between text-[12px] pt-1 border-t border-white/10">
+                                            <span className="text-gray-400">Hold</span>
                                             <span className={`font-bold ${(gr.hold_avg_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(gr.hold_avg_roi ?? 0) > 0 ? '+' : ''}{gr.hold_avg_roi}%</span>
                                         </div>
                                     )}
@@ -239,37 +237,37 @@ export default function ClosingBetHistoryPage() {
                 <div className="rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 p-3 md:p-5">
                     <div className="flex items-center gap-2 mb-3">
                         <span className="text-amber-400 font-black text-sm">Buy & Hold</span>
-                        <span className="text-[9px] text-gray-500 px-1.5 py-0.5 rounded bg-white/5 border border-white/10">보유 시</span>
+                        <span className="text-[11px] text-gray-400 px-1.5 py-0.5 rounded bg-white/5 border border-white/10">보유 시</span>
                     </div>
                     <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-3">
                         <div className="text-center">
-                            <div className="text-[9px] text-gray-500 uppercase font-bold">Avg</div>
+                            <div className="text-[11px] text-gray-400 uppercase font-bold">Avg</div>
                             <div className={`text-base md:text-xl font-black font-mono ${(stats.hold_avg_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(stats.hold_avg_roi ?? 0) > 0 ? '+' : ''}{stats.hold_avg_roi}%</div>
                         </div>
                         <div className="text-center">
-                            <div className="text-[9px] text-gray-500 uppercase font-bold">Median</div>
+                            <div className="text-[11px] text-gray-400 uppercase font-bold">Median</div>
                             <div className={`text-base md:text-xl font-black font-mono ${(stats.hold_median_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(stats.hold_median_roi ?? 0) > 0 ? '+' : ''}{stats.hold_median_roi}%</div>
                         </div>
                         <div className="text-center">
-                            <div className="text-[9px] text-gray-500 uppercase font-bold">WR</div>
+                            <div className="text-[11px] text-gray-400 uppercase font-bold">WR</div>
                             <div className={`text-base md:text-xl font-black font-mono ${(stats.hold_win_rate ?? 0) >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{stats.hold_win_rate}%</div>
                         </div>
                         {!isMobile && <>
                             <div className="text-center">
-                                <div className="text-[9px] text-gray-500 uppercase font-bold">Total</div>
+                                <div className="text-[11px] text-gray-400 uppercase font-bold">Total</div>
                                 <div className={`text-xl font-black font-mono ${(stats.hold_total_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(stats.hold_total_roi ?? 0) > 0 ? '+' : ''}{stats.hold_total_roi}%</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-[9px] text-gray-500 uppercase font-bold">Wins</div>
+                                <div className="text-[11px] text-gray-400 uppercase font-bold">Wins</div>
                                 <div className="text-xl font-black font-mono text-emerald-400">{stats.hold_wins}</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-[9px] text-gray-500 uppercase font-bold">Losses</div>
+                                <div className="text-[11px] text-gray-400 uppercase font-bold">Losses</div>
                                 <div className="text-xl font-black font-mono text-red-400">{stats.hold_losses}</div>
                             </div>
                         </>}
                     </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-gray-500">
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px] text-gray-400">
                         <span>Strategy {stats.avg_roi > 0 ? '+' : ''}{stats.avg_roi}%</span>
                         <span className="text-gray-600">vs</span>
                         <span className="text-amber-400">Hold {(stats.hold_avg_roi ?? 0) > 0 ? '+' : ''}{stats.hold_avg_roi}%</span>
@@ -282,12 +280,12 @@ export default function ClosingBetHistoryPage() {
 
             {/* ─── Win/Loss Bar ─── */}
             {stats && stats.total > 0 && !loading && (
-                <div className="rounded-xl bg-[#1c1c1e] border border-white/10 p-3">
-                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Win/Loss</span>
+                <div className="dash-panel market-panel rounded-xl bg-[#1c1c1e] border border-white/10 p-3">
+                    <span className="text-[12px] text-gray-400 font-bold uppercase tracking-widest">Win/Loss</span>
                     <div className="flex h-5 rounded-full overflow-hidden bg-white/5 mt-2">
-                        {stats.wins > 0 && <div className="bg-emerald-500 flex items-center justify-center text-[9px] font-bold text-white" style={{ width: `${(stats.wins / stats.total) * 100}%` }}>{stats.wins}W</div>}
-                        {stats.open > 0 && <div className="bg-gray-600 flex items-center justify-center text-[9px] font-bold text-white" style={{ width: `${(stats.open / stats.total) * 100}%` }}>{stats.open}</div>}
-                        {stats.losses > 0 && <div className="bg-red-500 flex items-center justify-center text-[9px] font-bold text-white" style={{ width: `${(stats.losses / stats.total) * 100}%` }}>{stats.losses}L</div>}
+                        {stats.wins > 0 && <div className="bg-emerald-500 flex items-center justify-center text-[11px] font-bold text-white" style={{ width: `${(stats.wins / stats.total) * 100}%` }}>{stats.wins}W</div>}
+                        {stats.open > 0 && <div className="bg-gray-600 flex items-center justify-center text-[11px] font-bold text-white" style={{ width: `${(stats.open / stats.total) * 100}%` }}>{stats.open}</div>}
+                        {stats.losses > 0 && <div className="bg-red-500 flex items-center justify-center text-[11px] font-bold text-white" style={{ width: `${(stats.losses / stats.total) * 100}%` }}>{stats.losses}L</div>}
                     </div>
                 </div>
             )}
@@ -295,14 +293,14 @@ export default function ClosingBetHistoryPage() {
             {/* ─── Filters + Search ─── */}
             <div className="flex flex-wrap items-center gap-1.5 md:gap-3">
                 {(['ALL', 'TARGET_HIT', 'STOP_HIT', 'OPEN'] as OutcomeFilter[]).map(f => (
-                    <button key={f} onClick={() => setFilter(f)} className={`px-2.5 py-1 rounded-lg text-[10px] md:text-xs font-bold transition-all ${filter === f ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-white/5 text-gray-400 border border-white/10'}`}>
+                    <button key={f} onClick={() => setFilter(f)} className={`px-2.5 py-1 rounded-lg text-[12px] md:text-xs font-bold transition-all ${filter === f ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-white/5 text-gray-400 border border-white/10'}`}>
                         {f === 'ALL' ? `All ${signals.length}` : f === 'TARGET_HIT' ? `W ${signals.filter(s => s.outcome === f).length}` : f === 'STOP_HIT' ? `L ${signals.filter(s => s.outcome === f).length}` : `O ${signals.filter(s => s.outcome === f).length}`}
                     </button>
                 ))}
                 <span className="text-gray-600">|</span>
-                <button onClick={() => setGradeFilter('ALL')} className={`px-2.5 py-1 rounded-lg text-[10px] md:text-xs font-bold transition-all ${gradeFilter === 'ALL' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-white/5 text-gray-400 border border-white/10'}`}>All</button>
+                <button onClick={() => setGradeFilter('ALL')} className={`px-2.5 py-1 rounded-lg text-[12px] md:text-xs font-bold transition-all ${gradeFilter === 'ALL' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-white/5 text-gray-400 border border-white/10'}`}>All</button>
                 {grades.map(g => gradeCounts[g] > 0 && (
-                    <button key={g} onClick={() => setGradeFilter(g)} className={`px-2.5 py-1 rounded-lg text-[10px] md:text-xs font-bold transition-all ${gradeFilter === g ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-white/5 text-gray-400 border border-white/10'}`}>{g}</button>
+                    <button key={g} onClick={() => setGradeFilter(g)} className={`px-2.5 py-1 rounded-lg text-[12px] md:text-xs font-bold transition-all ${gradeFilter === g ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-white/5 text-gray-400 border border-white/10'}`}>{g}</button>
                 ))}
                 <div className="ml-auto flex items-center gap-1.5">
                     <div className="relative">
@@ -313,21 +311,21 @@ export default function ClosingBetHistoryPage() {
                             placeholder="종목명 / 코드 검색"
                             className="w-36 md:w-48 pl-7 pr-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500/40 focus:bg-white/[0.07] transition-all"
                         />
-                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]">🔍</span>
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[12px]">🔍</span>
                         {search && (
-                            <button onClick={() => setSearch('')} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white text-[10px] transition-colors">✕</button>
+                            <button onClick={() => setSearch('')} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-[12px] transition-colors">✕</button>
                         )}
                     </div>
-                    {searchTrim && <span className="text-[10px] text-indigo-400 font-bold">{filtered.length}건</span>}
+                    {searchTrim && <span className="text-[12px] text-indigo-400 font-bold">{filtered.length}건</span>}
                 </div>
             </div>
 
             {/* ─── Mobile Sort Selector ─── */}
             {isMobile && !loading && sorted.length > 0 && (
-                <div className="flex items-center gap-2 text-[10px]">
-                    <span className="text-gray-500 font-bold">Sort:</span>
+                <div className="flex items-center gap-2 text-[12px]">
+                    <span className="text-gray-400 font-bold">Sort:</span>
                     {([['signal_date', 'Date'], ['roi_pct', 'ROI'], ['hold_roi_pct', 'Hold'], ['grade', 'Grade'], ['score_total', 'Score']] as [SortKey, string][]).map(([key, label]) => (
-                        <button key={key} onClick={() => handleSort(key)} className={`px-2 py-0.5 rounded ${sortBy === key ? 'bg-indigo-500/20 text-indigo-400' : 'text-gray-500 bg-white/5'} font-bold`}>
+                        <button key={key} onClick={() => handleSort(key)} className={`px-2 py-0.5 rounded ${sortBy === key ? 'bg-indigo-500/20 text-indigo-400' : 'text-gray-400 bg-white/5'} font-bold`}>
                             {label}{sortBy === key && (sortAsc ? '↑' : '↓')}
                         </button>
                     ))}
@@ -338,8 +336,8 @@ export default function ClosingBetHistoryPage() {
             {loading ? (
                 <div className="space-y-3">{Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-20 rounded-xl bg-white/5 animate-pulse" />)}</div>
             ) : sorted.length === 0 ? (
-                <div className="p-12 rounded-2xl bg-[#1c1c1e] border border-white/10 text-center">
-                    <div className="text-gray-500 text-lg">No signals found</div>
+                <div className="dash-panel market-panel p-12 rounded-2xl bg-[#1c1c1e] border border-white/10 text-center">
+                    <div className="text-gray-400 text-lg">No signals found</div>
                 </div>
             ) : isMobile ? (
                 /* ═══ Mobile Card Layout ═══ */
@@ -355,36 +353,36 @@ export default function ClosingBetHistoryPage() {
                                 {/* Row 1: Header */}
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2 min-w-0">
-                                        <span className="text-[10px] text-gray-600 font-mono w-5 shrink-0">{pageOffset + idx + 1}</span>
-                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${gradeStyle(s.grade)}`}>{s.grade}</span>
+                                        <span className="text-[12px] text-gray-600 font-mono w-5 shrink-0">{pageOffset + idx + 1}</span>
+                                        <span className={`px-1.5 py-0.5 rounded text-[12px] font-bold shrink-0 ${gradeStyle(s.grade)}`}>{s.grade}</span>
                                         <div className="min-w-0">
                                             <StockLink code={s.stock_code} market={s.market} className="text-sm font-bold text-white truncate block">{s.stock_name}</StockLink>
-                                            <span className="text-[10px] text-gray-500 font-mono">{s.stock_code} <span className={s.market === 'KOSPI' ? 'text-blue-400' : 'text-rose-400'}>{s.market}</span></span>
+                                            <span className="text-[12px] text-gray-400 font-mono">{s.stock_code} <span className={s.market === 'KOSPI' ? 'text-blue-400' : 'text-rose-400'}>{s.market}</span></span>
                                         </div>
                                     </div>
-                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${outcomeStyle(s.outcome)}`}>{outcomeLabel(s.outcome)}</span>
+                                    <span className={`px-2 py-0.5 rounded text-[12px] font-bold border shrink-0 ${outcomeStyle(s.outcome)}`}>{outcomeLabel(s.outcome)}</span>
                                 </div>
                                 {/* Row 2: Key Metrics */}
                                 <div className="grid grid-cols-4 gap-1 text-center">
                                     <div>
-                                        <div className="text-[9px] text-gray-600 uppercase">ROI</div>
+                                        <div className="text-[11px] text-gray-600 uppercase">ROI</div>
                                         <div className={`text-xs font-bold font-mono ${s.roi_pct > 0 ? 'text-emerald-400' : s.roi_pct < 0 ? 'text-red-400' : 'text-gray-400'}`}>{s.roi_pct > 0 ? '+' : ''}{s.roi_pct}%</div>
                                     </div>
                                     <div>
-                                        <div className="text-[9px] text-gray-600 uppercase">Hold</div>
-                                        <div className={`text-xs font-bold font-mono ${s.hold_roi_pct > 0 ? 'text-amber-400' : s.hold_roi_pct < 0 ? 'text-red-400' : 'text-gray-500'}`}>{s.hold_roi_pct > 0 ? '+' : ''}{s.hold_roi_pct}%</div>
+                                        <div className="text-[11px] text-gray-600 uppercase">Hold</div>
+                                        <div className={`text-xs font-bold font-mono ${s.hold_roi_pct > 0 ? 'text-amber-400' : s.hold_roi_pct < 0 ? 'text-red-400' : 'text-gray-400'}`}>{s.hold_roi_pct > 0 ? '+' : ''}{s.hold_roi_pct}%</div>
                                     </div>
                                     <div>
-                                        <div className="text-[9px] text-gray-600 uppercase">Max</div>
-                                        <div className={`text-xs font-bold font-mono ${s.max_high_pct >= targetPct ? 'text-emerald-400' : s.max_high_pct > 0 ? 'text-yellow-400' : 'text-gray-500'}`}>{s.max_high_pct > 0 ? `+${s.max_high_pct.toFixed(1)}%` : '-'}</div>
+                                        <div className="text-[11px] text-gray-600 uppercase">Max</div>
+                                        <div className={`text-xs font-bold font-mono ${s.max_high_pct >= targetPct ? 'text-emerald-400' : s.max_high_pct > 0 ? 'text-yellow-400' : 'text-gray-400'}`}>{s.max_high_pct > 0 ? `+${s.max_high_pct.toFixed(1)}%` : '-'}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[9px] text-gray-600 uppercase">Score</div>
+                                        <div className="text-[11px] text-gray-600 uppercase">Score</div>
                                         <div className="text-xs font-bold font-mono text-indigo-400">{s.score_total}</div>
                                     </div>
                                 </div>
                                 {/* Row 3: Sub info */}
-                                <div className="flex items-center justify-between mt-2 text-[10px] text-gray-500">
+                                <div className="flex items-center justify-between mt-2 text-[12px] text-gray-400">
                                     <span className="font-mono">{s.signal_date.slice(5)}</span>
                                     <span className="font-mono">{s.entry_price.toLocaleString()} → {s.current_price.toLocaleString()}</span>
                                     <span>{s.days_held}d</span>
@@ -395,11 +393,11 @@ export default function ClosingBetHistoryPage() {
                                     <div className="mt-2 pt-2 border-t border-white/5 space-y-1.5">
                                         {s.themes.length > 0 && (
                                             <div className="flex flex-wrap gap-1">
-                                                {s.themes.map((t, i) => <span key={i} className="px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-400 text-[9px]">{t}</span>)}
+                                                {s.themes.map((t, i) => <span key={i} className="px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-400 text-[11px]">{t}</span>)}
                                             </div>
                                         )}
-                                        {s.llm_reason && <p className="text-[10px] text-gray-400 leading-relaxed">{s.llm_reason}</p>}
-                                        <div className="grid grid-cols-3 gap-2 text-[10px] text-gray-500">
+                                        {s.llm_reason && <p className="text-[12px] text-gray-400 leading-relaxed">{s.llm_reason}</p>}
+                                        <div className="grid grid-cols-3 gap-2 text-[12px] text-gray-400">
                                             <div>Target: <span className="text-emerald-400">{s.target_price.toLocaleString()}</span></div>
                                             <div>Stop: <span className="text-red-400">{s.stop_price.toLocaleString()}</span></div>
                                             {s.outcome_date && <div>Hit: <span className="text-white">{s.outcome_date.slice(5)}</span></div>}
@@ -413,24 +411,24 @@ export default function ClosingBetHistoryPage() {
                 </div>
             ) : (
                 /* ═══ Desktop Table Layout ═══ */
-                <div className="rounded-2xl bg-[#1c1c1e] border border-white/10 overflow-hidden">
+                <div className="dash-panel market-panel rounded-2xl bg-[#1c1c1e] border border-white/10 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-white/10 bg-white/[0.02]">
-                                    <th className="px-3 py-3 text-[10px] text-gray-500 uppercase tracking-wider font-bold text-center w-10">#</th>
+                                    <th className="px-3 py-3 text-[12px] text-gray-400 uppercase tracking-wider font-bold text-center w-10">#</th>
                                     <ThBtn column="signal_date" label="Date" />
                                     <ThBtn column="grade" label="Grade" align="center" />
                                     <ThBtn column="stock_name" label="Name" />
-                                    <th className="px-3 py-3 text-[10px] text-gray-500 uppercase tracking-wider font-bold text-right">Entry</th>
-                                    <th className="px-3 py-3 text-[10px] text-gray-500 uppercase tracking-wider font-bold text-center">Outcome</th>
+                                    <th className="px-3 py-3 text-[12px] text-gray-400 uppercase tracking-wider font-bold text-right">Entry</th>
+                                    <th className="px-3 py-3 text-[12px] text-gray-400 uppercase tracking-wider font-bold text-center">Outcome</th>
                                     <ThBtn column="roi_pct" label="ROI" align="right" />
                                     <ThBtn column="hold_roi_pct" label="Hold" align="right" />
                                     <ThBtn column="max_high_pct" label="Max High" align="right" />
-                                    <th className="px-3 py-3 text-[10px] text-gray-500 uppercase tracking-wider font-bold text-left whitespace-nowrap">Price Trail</th>
+                                    <th className="px-3 py-3 text-[12px] text-gray-400 uppercase tracking-wider font-bold text-left whitespace-nowrap">Price Trail</th>
                                     <ThBtn column="days_held" label="Days" align="right" />
                                     <ThBtn column="score_total" label="Score" align="right" />
-                                    <th className="px-3 py-3 text-[10px] text-gray-500 uppercase tracking-wider font-bold text-left">Themes</th>
+                                    <th className="px-3 py-3 text-[12px] text-gray-400 uppercase tracking-wider font-bold text-left">Themes</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -440,25 +438,25 @@ export default function ClosingBetHistoryPage() {
                                     return (
                                         <tr key={rowKey} onClick={() => s.price_trail.length > 0 && setExpandedRow(isExpanded ? null : rowKey)}
                                             className={`border-b border-white/5 transition-colors ${s.price_trail.length > 0 ? 'cursor-pointer' : ''} ${isExpanded ? 'bg-indigo-500/10' : s.outcome === 'TARGET_HIT' ? 'bg-emerald-500/[0.02] hover:bg-emerald-500/[0.05]' : s.outcome === 'STOP_HIT' ? 'bg-red-500/[0.02] hover:bg-red-500/[0.05]' : 'hover:bg-indigo-500/5'}`}>
-                                            <td className="px-3 py-2.5 text-xs text-gray-500 font-mono text-center">{pageOffset + idx + 1}</td>
+                                            <td className="px-3 py-2.5 text-xs text-gray-400 font-mono text-center">{pageOffset + idx + 1}</td>
                                             <td className="px-3 py-2.5 text-xs text-gray-300 font-mono whitespace-nowrap">{s.signal_date}</td>
-                                            <td className="px-3 py-2.5 text-center"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${gradeStyle(s.grade)}`}>{s.grade}</span></td>
+                                            <td className="px-3 py-2.5 text-center"><span className={`px-2 py-0.5 rounded text-[12px] font-bold ${gradeStyle(s.grade)}`}>{s.grade}</span></td>
                                             <td className="px-3 py-2.5">
                                                 <div className="text-sm font-bold text-white truncate max-w-[120px]"><StockLink code={s.stock_code} market={s.market}>{s.stock_name}</StockLink></div>
-                                                <div className="text-[10px] text-gray-500 font-mono">{s.stock_code} <span className={s.market === 'KOSPI' ? 'text-blue-400' : 'text-rose-400'}>{s.market}</span></div>
+                                                <div className="text-[12px] text-gray-400 font-mono">{s.stock_code} <span className={s.market === 'KOSPI' ? 'text-blue-400' : 'text-rose-400'}>{s.market}</span></div>
                                             </td>
                                             <td className="px-3 py-2.5 text-xs text-gray-400 text-right font-mono">{s.entry_price.toLocaleString()}</td>
-                                            <td className="px-3 py-2.5 text-center"><span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${outcomeStyle(s.outcome)}`}>{outcomeLabel(s.outcome)}</span></td>
+                                            <td className="px-3 py-2.5 text-center"><span className={`px-2 py-0.5 rounded text-[12px] font-bold border ${outcomeStyle(s.outcome)}`}>{outcomeLabel(s.outcome)}</span></td>
                                             <td className={`px-3 py-2.5 text-sm font-bold text-right font-mono ${s.roi_pct > 0 ? 'text-emerald-400' : s.roi_pct < 0 ? 'text-red-400' : 'text-gray-400'}`}>{s.roi_pct > 0 ? '+' : ''}{s.roi_pct}%</td>
-                                            <td className={`px-3 py-2.5 text-xs font-bold text-right font-mono ${s.hold_roi_pct > 0 ? 'text-amber-400' : s.hold_roi_pct < 0 ? 'text-red-400' : 'text-gray-500'}`}>{s.hold_roi_pct > 0 ? '+' : ''}{s.hold_roi_pct}%</td>
-                                            <td className={`px-3 py-2.5 text-xs font-bold text-right font-mono ${s.max_high_pct >= targetPct ? 'text-emerald-400' : s.max_high_pct > 0 ? 'text-yellow-400' : 'text-gray-500'}`}>{s.max_high_pct > 0 ? `+${s.max_high_pct.toFixed(1)}%` : '-'}</td>
+                                            <td className={`px-3 py-2.5 text-xs font-bold text-right font-mono ${s.hold_roi_pct > 0 ? 'text-amber-400' : s.hold_roi_pct < 0 ? 'text-red-400' : 'text-gray-400'}`}>{s.hold_roi_pct > 0 ? '+' : ''}{s.hold_roi_pct}%</td>
+                                            <td className={`px-3 py-2.5 text-xs font-bold text-right font-mono ${s.max_high_pct >= targetPct ? 'text-emerald-400' : s.max_high_pct > 0 ? 'text-yellow-400' : 'text-gray-400'}`}>{s.max_high_pct > 0 ? `+${s.max_high_pct.toFixed(1)}%` : '-'}</td>
                                             <td className="px-3 py-2.5"><MiniTrail trail={s.price_trail} targetPct={targetPct} stopPct={stopPct} /></td>
                                             <td className="px-3 py-2.5 text-xs text-gray-400 text-right font-mono">{s.days_held}d</td>
                                             <td className="px-3 py-2.5 text-sm font-bold text-indigo-400 text-right">{s.score_total}</td>
                                             <td className="px-3 py-2.5">
                                                 <div className="flex flex-wrap gap-1 max-w-[120px]">
-                                                    {s.themes.slice(0, 2).map((t, i) => <span key={i} className="px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-400 text-[9px] whitespace-nowrap">{t}</span>)}
-                                                    {s.themes.length > 2 && <span className="text-[9px] text-gray-500">+{s.themes.length - 2}</span>}
+                                                    {s.themes.slice(0, 2).map((t, i) => <span key={i} className="px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-400 text-[11px] whitespace-nowrap">{t}</span>)}
+                                                    {s.themes.length > 2 && <span className="text-[11px] text-gray-400">+{s.themes.length - 2}</span>}
                                                 </div>
                                             </td>
                                         </tr>
@@ -475,7 +473,7 @@ export default function ClosingBetHistoryPage() {
 }
 
 function MiniTrail({ trail, targetPct, stopPct }: { trail: PricePoint[]; targetPct: number; stopPct: number }) {
-    if (!trail || trail.length === 0) return <span className="text-[10px] text-gray-600">-</span>;
+    if (!trail || trail.length === 0) return <span className="text-[12px] text-gray-600">-</span>;
     const pts = trail.slice(0, 7);
     return (
         <div className="flex items-center gap-0.5">
@@ -484,13 +482,13 @@ function MiniTrail({ trail, targetPct, stopPct }: { trail: PricePoint[]; targetP
                 const color = pt.hp >= targetPct ? 'bg-emerald-400' : pt.hp >= targetPct * 0.6 ? 'bg-yellow-400' : pt.hp > 0 ? 'bg-yellow-600' : pt.hp <= -stopPct ? 'bg-red-400' : 'bg-red-600/50';
                 return <div key={i} className={`w-1.5 rounded-full ${color}`} style={{ height: `${Math.max(4, Math.min(16, 4 + Math.abs(ratio) * 12))}px` }} />;
             })}
-            {trail.length > 7 && <span className="text-[9px] text-gray-600 ml-0.5">+{trail.length - 7}</span>}
+            {trail.length > 7 && <span className="text-[11px] text-gray-600 ml-0.5">+{trail.length - 7}</span>}
         </div>
     );
 }
 
 function Pagination({ currentPage, totalPages, onPageChange, totalItems }: { currentPage: number; totalPages: number; onPageChange: (p: number) => void; totalItems: number }) {
-    if (totalPages <= 1) return <div className="px-4 py-3 border-t border-white/5 text-center text-[10px] text-gray-600">{totalItems} signals</div>;
+    if (totalPages <= 1) return <div className="px-4 py-3 border-t border-white/5 text-center text-[12px] text-gray-600">{totalItems} signals</div>;
 
     // 보이는 페이지 번호: 현재 기준 앞뒤 2개 + 첫/끝
     const pages: (number | '...')[] = [];
@@ -504,7 +502,7 @@ function Pagination({ currentPage, totalPages, onPageChange, totalItems }: { cur
 
     return (
         <div className="px-4 py-3 border-t border-white/5 flex items-center justify-between gap-2">
-            <span className="text-[10px] text-gray-600 shrink-0">{totalItems}건</span>
+            <span className="text-[12px] text-gray-600 shrink-0">{totalItems}건</span>
             <div className="flex items-center gap-1">
                 <button onClick={() => onPageChange(Math.max(1, currentPage - 1))} disabled={currentPage <= 1}
                     className="w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center bg-white/5 text-gray-400 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
@@ -512,7 +510,7 @@ function Pagination({ currentPage, totalPages, onPageChange, totalItems }: { cur
                 </button>
                 {pages.map((p, i) =>
                     p === '...' ? (
-                        <span key={`dots-${i}`} className="text-[10px] text-gray-600 px-1">…</span>
+                        <span key={`dots-${i}`} className="text-[12px] text-gray-600 px-1">…</span>
                     ) : (
                         <button key={p} onClick={() => onPageChange(p)}
                             className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-all ${
@@ -529,15 +527,15 @@ function Pagination({ currentPage, totalPages, onPageChange, totalItems }: { cur
                     ›
                 </button>
             </div>
-            <span className="text-[10px] text-gray-600 shrink-0">{currentPage}/{totalPages}</span>
+            <span className="text-[12px] text-gray-600 shrink-0">{currentPage}/{totalPages}</span>
         </div>
     );
 }
 
 function StatCard({ label, value, color = 'text-white' }: { label: string; value: string | number; color?: string }) {
     return (
-        <div className="p-2.5 md:p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
-            <div className="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-widest mb-0.5 font-bold truncate">{label}</div>
+        <div className="dash-panel market-panel p-2.5 md:p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
+            <div className="text-[11px] md:text-[12px] text-gray-400 uppercase tracking-widest mb-0.5 font-bold truncate">{label}</div>
             <div className={`text-base md:text-xl font-black ${color} font-mono`}>{value}</div>
         </div>
     );

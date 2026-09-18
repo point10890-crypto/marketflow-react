@@ -1,3 +1,4 @@
+import '@/pages/dashboard/ai-design.css';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -149,7 +150,7 @@ export default function GoodrichFundManagerPage() {
     };
 
     return (
-        <div className="min-h-full bg-[#09090b] p-4 text-white sm:p-6 lg:p-8">
+        <div className="ai-design min-h-full bg-[#101318] p-4 text-white sm:p-6 lg:p-8">
             <div className="mx-auto max-w-6xl space-y-5">
                 <AiBrainServiceTabs active="goodrich" />
                 <nav className="grid grid-cols-2 gap-3" aria-label="Goodrich 분석 엔드포인트">
@@ -178,7 +179,7 @@ export default function GoodrichFundManagerPage() {
                         </span>
                     </a>
                 </nav>
-                <header className="rounded-2xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/[0.08] via-[#12171a] to-[#111318] p-5 sm:p-7">
+                <header className="ai-panel ai-page-header rounded-2xl border border-[#30363f] p-5 sm:p-6">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <Link to="/dashboard/ai-bain" className="text-xs font-bold text-cyan-300 hover:text-cyan-200">
@@ -189,7 +190,7 @@ export default function GoodrichFundManagerPage() {
                                     <i className="fas fa-ranking-star text-xl" />
                                 </span>
                                 <div>
-                                    <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Goodrich AI 펀드매니저</h1>
+                                    <h1 className="ai-page-title text-2xl font-black tracking-tight sm:text-3xl">Goodrich AI 펀드매니저</h1>
                                     <p className="mt-1 text-sm text-slate-400">KIS 실데이터 · 결정론적 TOP 3 · OpenAI 검증 설명</p>
                                 </div>
                             </div>
@@ -219,18 +220,18 @@ export default function GoodrichFundManagerPage() {
                 )}
 
                 {loading && (
-                    <div className="grid min-h-64 place-items-center rounded-2xl border border-white/[0.07] bg-[#13151b] text-slate-400">
+                    <div className="ai-panel grid min-h-64 place-items-center rounded-2xl border border-[#30363f] bg-[#13151b] text-slate-400">
                         <span><i className="fas fa-spinner fa-spin mr-2 text-emerald-300" />현재 TOP 3를 확인하는 중입니다</span>
                     </div>
                 )}
 
                 {!loading && data && (
                     <>
-                        <section className="rounded-2xl border border-white/[0.07] bg-[#13151b] p-5">
+                        <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151b] p-5">
                             <div className="flex flex-wrap items-center justify-between gap-3">
                                 <div>
                                     <div className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">Market brief</div>
-                                    <h2 className="mt-1 text-lg font-black">{data.headline || '오늘의 TOP 3'}</h2>
+                                    <h2 className="ai-section-title mt-1 text-lg font-black">{data.headline || '오늘의 TOP 3'}</h2>
                                 </div>
                                 <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] text-slate-400">
                                     {formatTime(data.integration?.fetched_at)}
@@ -256,7 +257,7 @@ export default function GoodrichFundManagerPage() {
                                     </div>
                                     <div>
                                         <div className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">AI Fund Manager</div>
-                                        <h2 className="mt-1 text-xl font-black text-amber-100 sm:text-2xl">현재는 현금 대기 구간입니다.</h2>
+                                        <h2 className="ai-section-title mt-1 text-xl font-black text-amber-100 sm:text-2xl">현재는 현금 대기 구간입니다.</h2>
                                         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
                                             승인된 주도주가 3개 미만입니다. AI 펀드매니저는 종목을 임의로 채우지 않고
                                             백그라운드에서 다음 검출을 계속합니다.
@@ -281,7 +282,7 @@ export default function GoodrichFundManagerPage() {
                         {data.picks.length === 0 && (data.watchlist?.length ?? 0) > 0 && (
                             <section className="rounded-2xl border border-white/[0.08] bg-black/20 p-5" aria-label="관찰 후보">
                                 <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Watchlist</div>
-                                <h2 className="mt-1 text-xl font-black">관찰 후보 <span className="text-sm font-bold text-slate-500">스캐너 순위 · 선정 아님</span></h2>
+                                <h2 className="ai-section-title mt-1 text-xl font-black">관찰 후보 <span className="text-sm font-bold text-slate-500">스캐너 순위 · 선정 아님</span></h2>
                                 <p className="mt-2 text-sm text-slate-400">KIS 스캐너가 검출한 상위 종목입니다. 선정 기준(등락&gt;0 · 신선도 · CIO BUY·신뢰도≥60)을 통과하지 못한 사유를 함께 표시합니다.</p>
                                 <div className="mt-4 overflow-x-auto">
                                     <table className="min-w-[560px] w-full text-left text-sm">
@@ -308,7 +309,7 @@ export default function GoodrichFundManagerPage() {
                         {(data.multi_mcp?.analysis_candidates?.length ?? 0) > 0 && (
                             <section className="rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.04] p-5">
                                 <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">Agent analysis</div>
-                                <h2 className="mt-1 text-xl font-black">분석 후보와 판단</h2>
+                                <h2 className="ai-section-title mt-1 text-xl font-black">분석 후보와 판단</h2>
                                 <p className="mt-2 text-sm text-slate-400">추천으로 채택되지 않은 종목도 에이전트 판단과 함께 표시합니다.</p>
                                 <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                                     {data.multi_mcp?.analysis_candidates?.map((candidate) => (
@@ -330,7 +331,7 @@ export default function GoodrichFundManagerPage() {
                             <div className="flex flex-wrap items-end justify-between gap-2">
                                 <div>
                                     <div className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">Performance endpoint</div>
-                                    <h2 className="mt-1 text-xl font-black">성과 검증</h2>
+                                    <h2 className="ai-section-title mt-1 text-xl font-black">성과 검증</h2>
                                 </div>
                                 <span className="text-xs text-slate-500">최근 {performance?.window_days ?? 30}일</span>
                             </div>
@@ -355,7 +356,7 @@ export default function GoodrichFundManagerPage() {
                             <div className="flex flex-wrap items-end justify-between gap-2">
                                 <div>
                                     <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">Detection history endpoint</div>
-                                    <h2 className="mt-1 text-xl font-black">검출 이력</h2>
+                                    <h2 className="ai-section-title mt-1 text-xl font-black">검출 이력</h2>
                                 </div>
                                 <span className="text-xs text-slate-500">{history?.date} · 오늘 전체 {history?.items?.length ?? 0}회 · 한국시간</span>
                             </div>
@@ -412,7 +413,7 @@ function Metric({ label, value, tone = 'text-white' }: { label: string; value: s
 function PickCard({ pick, fallbackRank }: { pick: GoodrichPick; fallbackRank: number }) {
     const current = pick.current_price ?? pick.entry_price;
     return (
-        <article className="rounded-2xl border border-white/[0.08] bg-[#13151b] p-5">
+        <article className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151b] p-5">
             <div className="flex items-start justify-between gap-3">
                 <div>
                     <span className="text-xs font-black text-emerald-300">TOP {pick.rank ?? fallbackRank}</span>

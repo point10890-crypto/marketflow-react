@@ -1,3 +1,4 @@
+import './market-design.css';
 
 import { useEffect, useState, useCallback } from 'react';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
@@ -35,7 +36,7 @@ const GRADE_STYLE: Record<string, string> = {
 
 function GradeBadge({ grade }: { grade: string }) {
     return (
-        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${GRADE_STYLE[grade] ?? GRADE_STYLE['C']}`}>
+        <span className={`px-1.5 py-0.5 rounded text-[12px] font-bold ${GRADE_STYLE[grade] ?? GRADE_STYLE['C']}`}>
             {grade}
         </span>
     );
@@ -45,10 +46,10 @@ function GradeBadge({ grade }: { grade: string }) {
 
 function StatCard({ label, value, sub, accent }: { label: string; value: string | number; sub?: string; accent: string }) {
     return (
-        <div className="flex flex-col gap-1 bg-[#13151f] border border-white/[0.07] rounded-2xl p-4">
-            <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">{label}</span>
+        <div className="dash-panel market-panel flex flex-col gap-1 bg-[#13151f] border border-white/[0.07] rounded-2xl p-4">
+            <span className="text-[12px] text-gray-400 uppercase tracking-widest font-semibold">{label}</span>
             <span className="text-2xl font-bold tabular-nums" style={{ color: accent }}>{value}</span>
-            {sub && <span className="text-[10px] text-gray-600">{sub}</span>}
+            {sub && <span className="text-[12px] text-gray-600">{sub}</span>}
         </div>
     );
 }
@@ -56,7 +57,7 @@ function StatCard({ label, value, sub, accent }: { label: string; value: string 
 // ── Change Pct Display ────────────────────────────────────────────────────────
 
 function ChangePct({ v }: { v: number }) {
-    const color = v > 0 ? 'text-emerald-400' : v < 0 ? 'text-red-400' : 'text-gray-500';
+    const color = v > 0 ? 'text-emerald-400' : v < 0 ? 'text-red-400' : 'text-gray-400';
     return <span className={`text-xs font-bold tabular-nums ${color}`}>{v > 0 ? '+' : ''}{v.toFixed(1)}%</span>;
 }
 
@@ -109,14 +110,14 @@ export default function TrackRecordPage() {
     const history = [...(data.history ?? [])].sort((a, b) => b.date.localeCompare(a.date));
 
     return (
-        <div className="flex flex-col gap-5 pb-8">
+        <div className="market-workspace flex flex-col gap-5 pb-8">
             {/* Header */}
-            <div className="flex flex-col gap-1 pt-1">
+            <div className="dash-page-header market-page-header flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                     <i className="fas fa-trophy text-yellow-400" />
-                    <h1 className="text-xl font-bold text-white">Track Record</h1>
+                    <h1 className="market-title">Track Record</h1>
                 </div>
-                <p className="text-[11px] text-gray-500">종가베팅 V2 · 누적 성과 기록</p>
+                <p className="text-[11px] text-gray-400">종가베팅 V2 · 누적 성과 기록</p>
             </div>
 
             {/* Summary Stats */}
@@ -128,8 +129,8 @@ export default function TrackRecordPage() {
             </div>
 
             {/* Grade Distribution Bar */}
-            <div className="bg-[#13151f] border border-white/[0.07] rounded-2xl p-4">
-                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold block mb-3">등급 분포</span>
+            <div className="dash-panel market-panel bg-[#13151f] border border-white/[0.07] rounded-2xl p-4">
+                <span className="text-[12px] text-gray-400 uppercase tracking-widest font-semibold block mb-3">등급 분포</span>
                 <div className="flex gap-3 mb-3">
                     {(['S', 'A', 'B', 'C'] as const).map(g => {
                         const cnt = gt[g] ?? 0;
@@ -138,7 +139,7 @@ export default function TrackRecordPage() {
                             <div key={g} className="flex flex-col items-center gap-1 flex-1">
                                 <GradeBadge grade={g} />
                                 <span className="text-sm font-bold text-white tabular-nums">{cnt}</span>
-                                <span className="text-[9px] text-gray-600">{pct.toFixed(0)}%</span>
+                                <span className="text-[11px] text-gray-600">{pct.toFixed(0)}%</span>
                             </div>
                         );
                     })}
@@ -157,10 +158,10 @@ export default function TrackRecordPage() {
             </div>
 
             {/* Daily History */}
-            <div className="bg-[#13151f] border border-white/[0.07] rounded-2xl overflow-hidden">
+            <div className="dash-panel market-panel bg-[#13151f] border border-white/[0.07] rounded-2xl overflow-hidden">
                 <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
                     <span className="text-[11px] font-semibold text-gray-300">일별 기록</span>
-                    <span className="text-[10px] text-gray-600">{history.length}일</span>
+                    <span className="text-[12px] text-gray-600">{history.length}일</span>
                 </div>
                 <div className="divide-y divide-white/[0.04]">
                     {history.map((day) => {
@@ -174,16 +175,16 @@ export default function TrackRecordPage() {
                                     <span className="text-xs font-semibold text-white">{day.date}</span>
                                     <div className="flex items-center gap-1.5">
                                         {sCount > 0 && (
-                                            <span className="flex items-center gap-0.5 text-[10px] font-bold text-yellow-400">
+                                            <span className="flex items-center gap-0.5 text-[12px] font-bold text-yellow-400">
                                                 <GradeBadge grade="S" /> ×{sCount}
                                             </span>
                                         )}
                                         {aCount > 0 && (
-                                            <span className="flex items-center gap-0.5 text-[10px] font-bold text-blue-400">
+                                            <span className="flex items-center gap-0.5 text-[12px] font-bold text-blue-400">
                                                 <GradeBadge grade="A" /> ×{aCount}
                                             </span>
                                         )}
-                                        <span className="text-[10px] text-gray-600 ml-1">총 {day.total_signals}개</span>
+                                        <span className="text-[12px] text-gray-600 ml-1">총 {day.total_signals}개</span>
                                     </div>
                                 </div>
                                 {/* Top signal */}
@@ -195,7 +196,7 @@ export default function TrackRecordPage() {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <ChangePct v={day.top_signal.change_pct} />
-                                            <span className="text-[10px] text-gray-600">{day.top_signal.score}점</span>
+                                            <span className="text-[12px] text-gray-600">{day.top_signal.score}점</span>
                                         </div>
                                     </div>
                                 )}

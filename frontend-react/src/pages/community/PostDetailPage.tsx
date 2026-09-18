@@ -1,3 +1,4 @@
+import './community-design.css';
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -79,7 +80,7 @@ function CommentSection({ postId }: { postId: number }) {
         <div className="mt-6 md:mt-8">
             {/* Comment header */}
             <div className="flex items-center gap-2 mb-4 px-1">
-                <i className="far fa-comment text-gray-500 text-sm" />
+                <i className="far fa-comment text-[#a6afbb] text-sm" />
                 <span className="text-white font-bold text-sm">댓글</span>
                 {comments.length > 0 && (
                     <span className="text-[#2997ff] text-sm font-medium">{comments.length}</span>
@@ -104,7 +105,7 @@ function CommentSection({ postId }: { postId: number }) {
                         <button
                             onClick={handleSubmit}
                             disabled={!content.trim() || submitting}
-                            className="bg-[#2997ff] hover:bg-[#2997ff]/85 text-white font-bold text-xs rounded-lg px-4 py-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+                            className="bg-[#2997ff] hover:bg-[#2997ff]/85 text-white font-bold text-xs rounded-lg px-4 py-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed "
                         >
                             등록
                         </button>
@@ -128,7 +129,7 @@ function CommentSection({ postId }: { postId: number }) {
                                 {badge && (
                                     <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${badge.cls}`}>{badge.text}</span>
                                 )}
-                                <span className="text-gray-600 text-xs ml-auto">{formatDate(c.created_at)}</span>
+                                <span className="text-[#a6afbb] text-xs ml-auto">{formatDate(c.created_at)}</span>
                             </div>
 
                             {isEditing ? (
@@ -156,9 +157,9 @@ function CommentSection({ postId }: { postId: number }) {
                                     {user && (user.id === c.author.id || user.role === 'admin') && (
                                         <div className="flex gap-3 mt-2">
                                             <button onClick={() => { setEditingId(c.id); setEditContent(c.content); }}
-                                                className="text-xs text-gray-600 hover:text-gray-300 transition-colors">수정</button>
+                                                className="text-xs text-[#a6afbb] hover:text-gray-300 transition-colors">수정</button>
                                             <button onClick={() => handleDelete(c.id)}
-                                                className="text-xs text-gray-600 hover:text-red-400 transition-colors">삭제</button>
+                                                className="text-xs text-[#a6afbb] hover:text-red-400 transition-colors">삭제</button>
                                         </div>
                                     )}
                                 </div>
@@ -234,27 +235,28 @@ export default function PostDetailPage() {
     const isFormulaPost = isFormulaBoardSlug(post.board?.slug);
 
     return (
-        <div className="p-4 md:p-6 lg:py-8 lg:px-10">
+        <div className="community-workspace p-4 md:p-6 lg:py-6 lg:px-8">
             {/* Back nav */}
             <div className="mb-5">
                 {post.board ? (
                     <Link
                         to={`/dashboard/community/${post.board.slug}`}
-                        className="inline-flex items-center gap-2 text-gray-500 hover:text-white transition-colors text-sm group"
+                        className="inline-flex items-center gap-2 text-[#a6afbb] hover:text-white transition-colors text-sm group"
                     >
                         <i className="fas fa-arrow-left text-xs group-hover:-translate-x-0.5 transition-transform" />
                         {post.board.name}
                     </Link>
                 ) : (
                     <button onClick={() => navigate(-1)}
-                        className="text-gray-500 hover:text-white transition-colors text-sm flex items-center gap-2">
+                        aria-label="뒤로 가기"
+                        className="text-[#a6afbb] hover:text-white transition-colors text-sm flex items-center gap-2">
                         <i className="fas fa-arrow-left text-xs" />뒤로
                     </button>
                 )}
             </div>
 
             {/* Post card */}
-            <article className="bg-[#1c1c1e]/80 border border-white/[0.06] rounded-2xl overflow-hidden">
+            <article className="dash-panel bg-[#15191e] border border-[#30363f] rounded-xl overflow-hidden">
                 {/* Header */}
                 <div className="px-5 md:px-7 pt-5 md:pt-7 pb-5 border-b border-white/[0.04]">
                     {/* Notice + top-right edit */}
@@ -270,7 +272,7 @@ export default function PostDetailPage() {
                                 onClick={() => navigate(`/dashboard/community/post/${post.id}/edit`)}
                                 title="글 수정"
                                 aria-label="글 수정"
-                                className="bg-yellow-500 hover:bg-yellow-500/85 text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors flex items-center gap-2 flex-shrink-0 active:scale-95"
+                                className="bg-yellow-500 hover:bg-yellow-500/85 text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors flex items-center gap-2 flex-shrink-0 "
                             >
                                 <i className="fas fa-pen text-xs" />글 수정
                             </button>
@@ -292,7 +294,7 @@ export default function PostDetailPage() {
                                     <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${badge.cls}`}>{badge.text}</span>
                                 )}
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-600 mt-0.5">
+                            <div className="flex items-center gap-2 text-xs text-[#a6afbb] mt-0.5">
                                 <span>{formatDate(post.created_at)}</span>
                                 <span className="text-gray-700">·</span>
                                 <span>조회 {post.view_count}</span>
@@ -344,18 +346,18 @@ export default function PostDetailPage() {
                         {canEdit && (
                             <>
                                 <button onClick={() => navigate(`/dashboard/community/post/${post.id}/edit`)}
-                                    className="text-xs text-gray-500 hover:text-white transition-colors flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-white/[0.05]">
+                                    className="text-xs text-[#a6afbb] hover:text-white transition-colors flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-white/[0.05]">
                                     <i className="fas fa-pen text-[10px]" />수정
                                 </button>
                                 <button onClick={handleDelete}
-                                    className="text-xs text-gray-500 hover:text-red-400 transition-colors flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-white/[0.05]">
+                                    className="text-xs text-[#a6afbb] hover:text-red-400 transition-colors flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-white/[0.05]">
                                     <i className="fas fa-trash text-[10px]" />삭제
                                 </button>
                             </>
                         )}
                         {isAdmin && (
                             <button onClick={handleToggleNotice}
-                                className="text-xs text-gray-500 hover:text-amber-400 transition-colors flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-white/[0.05] ml-auto">
+                                className="text-xs text-[#a6afbb] hover:text-amber-400 transition-colors flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-white/[0.05] ml-auto">
                                 <i className="fas fa-thumbtack text-[10px]" />
                                 {post.is_notice ? '공지 해제' : '공지 고정'}
                             </button>

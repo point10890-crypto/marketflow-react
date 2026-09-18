@@ -52,8 +52,8 @@ export default function DetectionsCard({ data }: DetectionsCardProps) {
     const items = data?.items ?? [];
 
     return (
-        <section className="rounded-2xl border border-cyan-400/15 bg-[#13151f] p-5">
-            <h2 className="text-white font-bold text-base flex items-center gap-2 mb-4">
+        <section className="ai-panel rounded-2xl border border-cyan-400/15 bg-[#13151f] p-5">
+            <h2 className="ai-section-title text-white font-bold text-base flex items-center gap-2 mb-4">
                 <i className="fas fa-bullseye text-cyan-400" />
                 오늘의 검출
                 <span className="text-[11px] font-medium text-gray-500">Top 3</span>

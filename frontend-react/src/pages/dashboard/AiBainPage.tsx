@@ -1,3 +1,4 @@
+import '@/pages/dashboard/ai-design.css';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -60,18 +61,18 @@ export default function AiBainPage() {
 
 function PageShell({ children }: { children: React.ReactNode }) {
     return (
-        <div className="min-h-full bg-[#09090b] text-white p-4 sm:p-6 lg:p-8">
+        <div className="ai-design min-h-full bg-[#101318] text-white p-4 sm:p-6 lg:p-8">
             <div className="max-w-6xl mx-auto space-y-6">
                 {/* 공통 헤더 (admin 모드일 때는 admin 페이지 자체 헤더가 표시되므로 여기는 사용 X) */}
-                <div className="rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-cyan-500/[0.06] via-[#13151f] to-[#1c1c1e] p-6 sm:p-8 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-cyan-500/10 to-transparent rounded-bl-full pointer-events-none" />
+                <div className="ai-panel ai-page-header rounded-2xl border border-[#30363f] p-5 sm:p-6 relative overflow-hidden">
+                    <div className="hidden" />
                     <div className="relative flex items-start gap-4">
                         <div className="grid h-14 w-14 sm:h-16 sm:w-16 shrink-0 place-items-center rounded-2xl bg-cyan-500/15 text-cyan-300 text-3xl">
                             <i className="fas fa-robot" />
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                                <h1 className="text-2xl sm:text-3xl font-black tracking-tight">AI Brain 알파 스캐너</h1>
+                                <h1 className="ai-page-title text-2xl sm:text-3xl font-black tracking-tight">AI Brain 알파 스캐너</h1>
                                 <span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-black text-cyan-300 uppercase tracking-wider">
                                     <i className="fas fa-bolt text-[10px]" />
                                     ALPHA SCAN
@@ -100,7 +101,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
 
 function FeatureCard({ icon, title, desc }: { icon: string; title: string; desc: string }) {
     return (
-        <div className="rounded-2xl border border-cyan-400/15 bg-[#13151f] p-5">
+        <div className="ai-panel rounded-2xl border border-cyan-400/15 bg-[#13151f] p-5">
             <div className="flex items-center gap-2 mb-2">
                 <i className={`fas ${icon} text-cyan-400`} />
                 <h3 className="text-white font-bold text-sm">{title}</h3>
@@ -168,7 +169,7 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
     if (checkingStatus) {
         return (
             <PageShell>
-                <div className="rounded-2xl border border-cyan-500/25 bg-[#13151f] p-10 text-center text-cyan-300">
+                <div className="ai-panel rounded-2xl border border-cyan-500/25 bg-[#13151f] p-10 text-center text-cyan-300">
                     <i className="fas fa-spinner fa-spin mr-2" />구독 상태를 확인하고 있습니다
                 </div>
             </PageShell>

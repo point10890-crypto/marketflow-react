@@ -1,3 +1,4 @@
+import '../kr/market-design.css';
 
 
 import { useEffect, useState, useCallback } from 'react';
@@ -154,27 +155,26 @@ export default function CryptoOverviewPage() {
     const ethAsset = cryptos.find(c => c.ticker === 'ETH') ?? cryptos[1] ?? null;
 
     return (
-        <div className="flex flex-col gap-3 md:gap-4 animate-fade-in font-sans text-zinc-200 h-full">
+        <div className="market-workspace flex flex-col gap-3 md:gap-4 animate-fade-in font-sans text-zinc-200 h-full">
 
             {/* ── Header ─────────────────────────────────────────────── */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-[10px] text-yellow-400 font-bold tracking-widest">
-                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse shadow-[0_0_8px_rgba(234,179,8,0.8)]" />
+            <div className="dash-page-header market-page-header flex flex-wrap items-center justify-between gap-4">
+                <div className="market-heading-stack">
+                    <div className="market-identity">
                         CRYPTO
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
-                        Market <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-400">Overview</span>
+                    <h2 className="market-title">
+                        Market <span className="market-title-accent">Overview</span>
                     </h2>
                 </div>
-                <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-zinc-500 font-mono hidden sm:block">{lastUpdated || '--:--'}</span>
+                <div className="market-header-actions flex flex-wrap items-center gap-3">
+                    <span className="text-[12px] text-zinc-400 font-mono hidden sm:block">{lastUpdated || '--:--'}</span>
                     <button
                         onClick={loadData}
                         disabled={isRefreshing}
                         className="w-8 h-8 rounded-lg bg-zinc-900 border border-white/10 flex items-center justify-center hover:border-white/20 hover:bg-white/5 transition-all"
                     >
-                        <svg className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-yellow-400' : 'text-zinc-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <svg className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-yellow-400' : 'text-zinc-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                     </button>
@@ -185,15 +185,15 @@ export default function CryptoOverviewPage() {
             <div className="grid grid-cols-12 gap-3">
 
                 {/* Gate Gauge — 4 cols */}
-                <div className="col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col items-center justify-between gap-2">
+                <div className="dash-panel market-panel col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col items-center justify-between gap-2">
                     <div className="flex items-center justify-between w-full">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Market Gate</span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getGateBg(gateScore)}`}>
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Market Gate</span>
+                        <span className={`text-[12px] font-bold px-2 py-0.5 rounded-full border ${getGateBg(gateScore)}`}>
                             {loading ? '...' : getGateLabel(gate?.gate)}
                         </span>
                     </div>
                     <ArcGauge score={gateScore} loading={loading} />
-                    <div className="flex items-center justify-between w-full text-[9px] font-bold text-zinc-600 uppercase tracking-wider px-1">
+                    <div className="flex items-center justify-between w-full text-[11px] font-bold text-zinc-600 uppercase tracking-wider px-1">
                         <span className="text-red-500">FEAR</span>
                         <span className="text-amber-500">NEUTRAL</span>
                         <span className="text-emerald-500">GREED</span>
@@ -201,8 +201,8 @@ export default function CryptoOverviewPage() {
                 </div>
 
                 {/* BTC / ETH — 4 cols */}
-                <div className="col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col justify-between gap-3">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Market Indices</span>
+                <div className="dash-panel market-panel col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col justify-between gap-3">
+                    <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Market Indices</span>
 
                     {/* BTC */}
                     <div className="flex flex-col gap-0.5">
@@ -218,7 +218,7 @@ export default function CryptoOverviewPage() {
                             ) : btcAsset ? formatPrice(btcAsset.price) : '--'}
                         </div>
                         <IndexBar changePct={btcAsset?.change_pct ?? 0} />
-                        <span className="text-[9px] text-zinc-600">
+                        <span className="text-[11px] text-zinc-600">
                             24h변동 {Math.abs(btcAsset?.change_pct ?? 0).toFixed(2)}% / 10.0%
                         </span>
                     </div>
@@ -239,15 +239,15 @@ export default function CryptoOverviewPage() {
                             ) : ethAsset ? formatPrice(ethAsset.price) : '--'}
                         </div>
                         <IndexBar changePct={ethAsset?.change_pct ?? 0} />
-                        <span className="text-[9px] text-zinc-600">
+                        <span className="text-[11px] text-zinc-600">
                             24h변동 {Math.abs(ethAsset?.change_pct ?? 0).toFixed(2)}% / 10.0%
                         </span>
                     </div>
                 </div>
 
                 {/* Quick Nav — 4 cols */}
-                <div className="col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col gap-2">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Quick Access</span>
+                <div className="dash-panel market-panel col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col gap-2">
+                    <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Quick Access</span>
 
                     <Link
                         to="/dashboard/crypto/signals"
@@ -259,7 +259,7 @@ export default function CryptoOverviewPage() {
                             </div>
                             <div>
                                 <div className="text-xs font-bold text-white">VCP Signals</div>
-                                <div className="text-[10px] text-zinc-500">패턴 시그널</div>
+                                <div className="text-[12px] text-zinc-400">패턴 시그널</div>
                             </div>
                         </div>
                         <svg className="w-3 h-3 text-zinc-600 group-hover:text-orange-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
@@ -268,13 +268,13 @@ export default function CryptoOverviewPage() {
                     {/* Mini stats */}
                     <div className="mt-auto grid grid-cols-2 gap-2 pt-2">
                         <div className="rounded-lg bg-zinc-900/60 border border-white/5 p-2 text-center">
-                            <div className="text-[9px] text-zinc-500 uppercase tracking-wider">Fear & Greed</div>
+                            <div className="text-[11px] text-zinc-400 uppercase tracking-wider">Fear & Greed</div>
                             <div className={`text-base font-bold mt-0.5 ${fearGreedValue >= 60 ? 'text-emerald-400' : fearGreedValue >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
                                 {loading ? '--' : fearGreedValue || '--'}
                             </div>
                         </div>
                         <div className="rounded-lg bg-zinc-900/60 border border-white/5 p-2 text-center">
-                            <div className="text-[9px] text-zinc-500 uppercase tracking-wider">BTC Dom</div>
+                            <div className="text-[11px] text-zinc-400 uppercase tracking-wider">BTC Dom</div>
                             <div className="text-base font-bold mt-0.5 text-orange-400">
                                 {briefing?.market_summary?.btc_dominance != null ? `${briefing.market_summary.btc_dominance.toFixed(1)}%` : '--'}
                             </div>
@@ -285,10 +285,10 @@ export default function CryptoOverviewPage() {
 
             {/* ── Row 2: Gate History Timeline ──────────────────────── */}
             {gateHistory.length > 0 && (
-                <div className="rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
+                <div className="dash-panel market-panel rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
                     <div className="flex items-center justify-between mb-3">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Gate History</span>
-                        <span className="text-[10px] text-zinc-600">Last {Math.min(gateHistory.length, 10)} entries</span>
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Gate History</span>
+                        <span className="text-[12px] text-zinc-600">Last {Math.min(gateHistory.length, 10)} entries</span>
                     </div>
                     <div className="flex items-center gap-3 overflow-x-auto pb-1">
                         {gateHistory.slice(-10).map((h, i) => {
@@ -297,8 +297,8 @@ export default function CryptoOverviewPage() {
                             return (
                                 <div key={i} className="flex flex-col items-center min-w-[48px] p-1.5 rounded-lg hover:bg-white/[0.03] transition-colors">
                                     <div className={`w-2.5 h-2.5 rounded-full ${color} shadow-lg`} />
-                                    <div className={`text-[10px] font-bold mt-1 ${textColor}`}>{h.score}</div>
-                                    <div className="text-[9px] text-zinc-600">{h.date.split(' ')[0].slice(5)}</div>
+                                    <div className={`text-[12px] font-bold mt-1 ${textColor}`}>{h.score}</div>
+                                    <div className="text-[11px] text-zinc-600">{h.date.split(' ')[0].slice(5)}</div>
                                 </div>
                             );
                         })}
@@ -309,58 +309,58 @@ export default function CryptoOverviewPage() {
             {/* ── Row 3: KPI Cards (4개) ───────────────────────────── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {/* BTC Dominance */}
-                <div className="rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
+                <div className="dash-panel market-panel rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">BTC Dominance</span>
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">BTC Dominance</span>
                     </div>
                     <div className="text-xl font-bold text-orange-400">
                         {loading ? '--' : briefing?.market_summary?.btc_dominance ? `${briefing.market_summary.btc_dominance.toFixed(1)}%` : 'N/A'}
                     </div>
-                    <div className="mt-1 text-[10px] text-zinc-600">
+                    <div className="mt-1 text-[12px] text-zinc-600">
                         Sentiment: {dominance?.sentiment ?? '--'}
                     </div>
                 </div>
 
                 {/* Fear & Greed */}
-                <div className="rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
+                <div className="dash-panel market-panel rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Fear & Greed</span>
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Fear & Greed</span>
                     </div>
                     <div className={`text-3xl font-bold ${fearGreedValue >= 60 ? 'text-emerald-400' : fearGreedValue >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
                         {loading ? '--' : fearGreedValue || '--'}
                     </div>
-                    <div className="mt-1 text-[10px] text-zinc-600">
+                    <div className="mt-1 text-[12px] text-zinc-600">
                         {fearGreedValue <= 25 ? 'Extreme Fear' : fearGreedValue <= 45 ? 'Fear' : fearGreedValue <= 55 ? 'Neutral' : fearGreedValue <= 75 ? 'Greed' : 'Extreme Greed'}
                     </div>
                 </div>
 
                 {/* BTC RSI */}
-                <div className="rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
+                <div className="dash-panel market-panel rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">BTC RSI</span>
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">BTC RSI</span>
                     </div>
                     <div className={`text-xl font-bold ${(dominance?.btc_rsi ?? 50) > 70 ? 'text-red-400' : (dominance?.btc_rsi ?? 50) > 50 ? 'text-emerald-400' : 'text-amber-400'}`}>
                         {loading ? '--' : dominance?.btc_rsi?.toFixed(1) ?? 'N/A'}
                     </div>
                     <div className="mt-1 flex items-center gap-1.5">
                         <div className={`w-1.5 h-1.5 rounded-full ${(dominance?.btc_rsi ?? 50) > 70 ? 'bg-red-500' : (dominance?.btc_rsi ?? 50) > 50 ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-                        <span className="text-[10px] text-zinc-600">
+                        <span className="text-[12px] text-zinc-600">
                             {(dominance?.btc_rsi ?? 50) > 70 ? 'Overbought' : (dominance?.btc_rsi ?? 50) > 50 ? 'Bullish' : (dominance?.btc_rsi ?? 50) > 30 ? 'Neutral' : 'Oversold'}
                         </span>
                     </div>
                 </div>
 
                 {/* 30D Performance */}
-                <div className="rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
+                <div className="dash-panel market-panel rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">BTC 30D</span>
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">BTC 30D</span>
                     </div>
                     <div className={`text-xl font-bold ${(dominance?.btc_30d_change ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                         {loading ? '--' : dominance?.btc_30d_change !== undefined ? `${dominance.btc_30d_change >= 0 ? '+' : ''}${dominance.btc_30d_change.toFixed(1)}%` : 'N/A'}
                     </div>
                     <div className="mt-1 flex items-center gap-1.5">
                         <div className={`w-1.5 h-1.5 rounded-full ${(dominance?.btc_30d_change ?? 0) >= 0 ? 'bg-emerald-500' : 'bg-red-500 animate-pulse'}`} />
-                        <span className="text-[10px] text-zinc-600">Monthly trend</span>
+                        <span className="text-[12px] text-zinc-600">Monthly trend</span>
                     </div>
                 </div>
             </div>
@@ -370,7 +370,7 @@ export default function CryptoOverviewPage() {
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <div className="w-1 h-4 bg-yellow-500 rounded-full" />
-                        <h3 className="text-base font-bold text-white">Top Coins</h3>
+                        <h3 className="dash-section-title text-base font-bold text-white">Top Coins</h3>
                         <span className="px-1.5 py-0.5 bg-yellow-500/15 text-yellow-400 text-xs font-bold rounded-full border border-yellow-500/20">
                             {cryptos.length}
                         </span>
@@ -380,14 +380,14 @@ export default function CryptoOverviewPage() {
                     {isMobile ? (
                         <div className="flex flex-col gap-2">
                             {cryptos.slice(0, 10).map((c, idx) => (
-                                <div key={c.ticker} className="rounded-xl bg-[#13151f] border border-white/[0.06] p-3 flex items-center gap-3">
-                                    <div className="text-xs text-zinc-500 font-mono w-5 text-center flex-shrink-0">{idx + 1}</div>
+                                <div key={c.ticker} className="dash-panel market-panel rounded-xl bg-[#13151f] border border-white/[0.06] p-3 flex items-center gap-3">
+                                    <div className="text-xs text-zinc-400 font-mono w-5 text-center flex-shrink-0">{idx + 1}</div>
                                     <div className="w-8 h-8 rounded-md bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border border-white/[0.08] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                                         {c.ticker.slice(0, 3)}
                                     </div>
                                     <div className="flex flex-col min-w-0 flex-1">
                                         <span className="text-white font-bold text-sm truncate">{c.name}</span>
-                                        <span className="text-xs text-zinc-500 font-mono">{c.ticker}</span>
+                                        <span className="text-xs text-zinc-400 font-mono">{c.ticker}</span>
                                     </div>
                                     <div className="flex flex-col items-end flex-shrink-0">
                                         <span className="text-sm text-white font-mono font-bold">{formatPrice(c.price)}</span>
@@ -398,7 +398,7 @@ export default function CryptoOverviewPage() {
                         </div>
                     ) : (
                         /* Desktop: Table View */
-                        <div className="rounded-xl bg-[#13151f] border border-white/[0.06] overflow-hidden">
+                        <div className="dash-panel market-panel rounded-xl bg-[#13151f] border border-white/[0.06] overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
@@ -413,7 +413,7 @@ export default function CryptoOverviewPage() {
                                     <tbody className="divide-y divide-white/[0.04] text-sm">
                                         {cryptos.slice(0, 10).map((c, idx) => (
                                             <tr key={c.ticker} className="hover:bg-white/[0.03] transition-colors">
-                                                <td className="px-3 py-3 text-center text-xs text-zinc-500 font-mono">{idx + 1}</td>
+                                                <td className="px-3 py-3 text-center text-xs text-zinc-400 font-mono">{idx + 1}</td>
                                                 <td className="px-3 py-3">
                                                     <div className="flex items-center gap-2.5">
                                                         <div className="w-8 h-8 rounded-md bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border border-white/[0.08] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
@@ -421,7 +421,7 @@ export default function CryptoOverviewPage() {
                                                         </div>
                                                         <div className="flex flex-col min-w-0">
                                                             <span className="text-white font-bold text-sm">{c.name}</span>
-                                                            <span className="text-xs text-zinc-500 font-mono">{c.ticker}</span>
+                                                            <span className="text-xs text-zinc-400 font-mono">{c.ticker}</span>
                                                         </div>
                                                     </div>
                                                 </td>

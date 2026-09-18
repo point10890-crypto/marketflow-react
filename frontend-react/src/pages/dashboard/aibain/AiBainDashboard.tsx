@@ -1,3 +1,4 @@
+import '@/pages/dashboard/ai-design.css';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI } from '@/lib/api';
@@ -84,7 +85,7 @@ export default function AiBainDashboard() {
     const learningPattern = overview?.learning?.top_positive?.[0]?.combo ?? null;
 
     return (
-        <div className="min-h-full bg-[#09090b] text-white p-4 sm:p-6 lg:p-8">
+        <div className="ai-design min-h-full bg-[#101318] text-white p-4 sm:p-6 lg:p-8">
             <div className="max-w-3xl mx-auto space-y-5">
                 {/* AI Brain 서비스 고정 네비게이션 — 3개 페이지 공통 */}
                 <AiBrainServiceTabs active="scanner" />
@@ -155,13 +156,13 @@ function Header({
     live: boolean;
 }) {
     return (
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="ai-page-header flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2.5 min-w-0">
                 <span className="relative grid place-items-center h-2.5 w-2.5">
                     <span className={`absolute inline-flex h-2.5 w-2.5 rounded-full ${live ? 'bg-cyan-400/60 animate-ping' : ''}`} />
                     <span className={`relative inline-flex h-2 w-2 rounded-full ${live ? 'bg-cyan-400' : 'bg-gray-600'}`} />
                 </span>
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight">AI Brain</h1>
+                <h1 className="ai-page-title text-xl sm:text-2xl font-black tracking-tight">AI Brain</h1>
                 {asOf && <span className="text-[11px] text-gray-500">{`마지막 검출 ${fmtDate(asOf)}`}</span>}
             </div>
             {hitRatePct != null && (
@@ -189,7 +190,7 @@ function fmtDate(iso: string): string {
 
 function LoadingState() {
     return (
-        <div className="rounded-2xl border border-cyan-400/15 bg-[#13151f] p-10 flex items-center justify-center">
+        <div className="ai-panel rounded-2xl border border-cyan-400/15 bg-[#13151f] p-10 flex items-center justify-center">
             <div className="text-center">
                 <i className="fas fa-spinner fa-spin text-cyan-400 text-2xl mb-3" />
                 <p className="text-sm text-gray-400">데이터를 불러오는 중...</p>

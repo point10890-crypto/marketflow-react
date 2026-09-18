@@ -1,3 +1,4 @@
+import '@/pages/dashboard/ai-design.css';
 /**
  * 종목 판단 — AI Brain 전용 페이지.
  *
@@ -369,19 +370,19 @@ export default function DecisionBriefPage() {
     };
 
     return (
-        <div className="min-h-full bg-[#09090b] p-4 text-white sm:p-6 lg:p-8">
+        <div className="ai-design min-h-full bg-[#101318] p-4 text-white sm:p-6 lg:p-8">
             <div className="mx-auto max-w-4xl space-y-5">
                 <AiBrainServiceTabs active="decision" />
 
-                <header>
-                    <h1 className="text-2xl font-black tracking-tight sm:text-3xl">종목 판단</h1>
+                <header className="ai-page-header">
+                    <h1 className="ai-page-title text-2xl font-black tracking-tight sm:text-3xl">종목 판단</h1>
                     <p className="mt-2 max-w-2xl text-sm text-gray-400">
                         시스템이 가진 독립 근거 7종을 한 종목 기준으로 나란히 놓고, 어디서 일치하고
                         어디서 갈리는지 보여줍니다. 매수·매도를 지시하지 않습니다.
                     </p>
                 </header>
 
-                <form onSubmit={onSubmit} className="relative flex gap-2">
+                <form onSubmit={onSubmit} className="ai-search-toolbar relative flex flex-wrap sm:flex-nowrap gap-2">
                     <div className="relative min-w-0 flex-1">
                         <input
                             value={input}
@@ -436,7 +437,7 @@ export default function DecisionBriefPage() {
                 )}
 
                 {!brief && !error && !loading && (
-                    <div className="rounded-2xl border border-white/[0.06] bg-[#13151f] p-8 text-center">
+                    <div className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151f] p-8 text-center">
                         <i className="fas fa-scale-balanced mb-3 text-2xl text-gray-600" />
                         <p className="text-sm text-gray-500">
                             종목 코드 또는 종목명을 입력하면 근거 대조 결과를 보여줍니다.
@@ -451,7 +452,7 @@ export default function DecisionBriefPage() {
                     refreshing={loading} />}
 
                 {brief && (
-                    <div className="rounded-2xl border border-teal-400/20 bg-[#13151f] p-5">
+                    <div className="ai-panel rounded-2xl border border-teal-400/20 bg-[#13151f] p-5">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                             <div className="min-w-0">
                                 <h3 className="text-sm font-bold text-white">심층 분석</h3>
@@ -489,9 +490,9 @@ function BriefBody({ brief, onRefresh, refreshing }: {
     return (
         <div className="space-y-4">
             {/* 요약 */}
-            <section className="rounded-2xl border border-white/[0.07] bg-[#13151f] p-5">
+            <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151f] p-5">
                 <div className="flex flex-wrap items-center gap-3">
-                    <h2 className="text-xl font-bold">
+                    <h2 className="ai-section-title text-xl font-bold">
                         {brief.name || '종목'}
                         <span className="ml-2 font-mono text-sm text-gray-500">{brief.symbol}</span>
                     </h2>
@@ -544,7 +545,7 @@ function BriefBody({ brief, onRefresh, refreshing }: {
             </section>
 
             {/* 근거 대조 */}
-            <section className="rounded-2xl border border-white/[0.07] bg-[#13151f] p-5">
+            <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151f] p-5">
                 <h3 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-gray-500">근거 대조</h3>
                 {brief.signals.length === 0 ? (
                     <p className="py-3 text-sm text-gray-500">이 종목에 대한 근거가 하나도 없습니다.</p>
@@ -589,7 +590,7 @@ function BriefBody({ brief, onRefresh, refreshing }: {
 
             {/* 뉴스 맥락 — 방향 판정이 아니라 맥락 */}
             {brief.news && brief.news.count > 0 && (
-                <section className="rounded-2xl border border-white/[0.07] bg-[#13151f] p-5">
+                <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151f] p-5">
                     <h3 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-gray-500">
                         뉴스 맥락 <span className="ml-1 font-medium normal-case tracking-normal text-gray-600">— 방향 판정 아님, 근거 보강용</span>
                     </h3>
@@ -626,7 +627,7 @@ function BriefBody({ brief, onRefresh, refreshing }: {
 
             {/* 무효화 조건 */}
             {brief.invalidators.length > 0 && (
-                <section className="rounded-2xl border border-white/[0.07] bg-[#13151f] p-5">
+                <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151f] p-5">
                     <h3 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-gray-500">
                         무효화 조건 <span className="ml-1 font-medium normal-case tracking-normal text-gray-600">— 관측 전용, 자동 청산 아님</span>
                     </h3>

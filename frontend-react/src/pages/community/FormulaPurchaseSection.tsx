@@ -1,3 +1,4 @@
+import './community-design.css';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { communityAPI, type CommunityPost, API_BASE } from '@/lib/api';
@@ -13,7 +14,7 @@ export default function FormulaPurchaseSection({ post }: { post: CommunityPost }
     // Admin always sees info section
     if (isAdmin) {
         return (
-            <div className="border-t border-white/[0.06]">
+            <div className="formula-purchase border-t border-[#30363f]">
                 <FormulaInfoTable price={formattedPrice} fileName={post.file_name} />
                 {post.file_url && (
                     <div className="px-5 md:px-7 py-5">
@@ -27,7 +28,7 @@ export default function FormulaPurchaseSection({ post }: { post: CommunityPost }
     // Approved: show formula info + download
     if (purchaseStatus === 'approved') {
         return (
-            <div className="border-t border-white/[0.06]">
+            <div className="formula-purchase border-t border-[#30363f]">
                 <FormulaInfoTable price={formattedPrice} fileName={post.file_name} />
                 <div className="px-5 md:px-7 py-5 space-y-3">
                     <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-green-400 text-sm flex items-center gap-2">
@@ -42,7 +43,7 @@ export default function FormulaPurchaseSection({ post }: { post: CommunityPost }
     // Pending: show waiting message
     if (purchaseStatus === 'pending') {
         return (
-            <div className="border-t border-white/[0.06]">
+            <div className="formula-purchase border-t border-[#30363f]">
                 <FormulaInfoTable price={formattedPrice} />
                 <div className="px-5 md:px-7 py-5">
                     <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-yellow-400 text-sm flex items-center gap-2">
@@ -56,7 +57,7 @@ export default function FormulaPurchaseSection({ post }: { post: CommunityPost }
     // Rejected: show rejected + allow re-purchase
     if (purchaseStatus === 'rejected') {
         return (
-            <div className="border-t border-white/[0.06]">
+            <div className="formula-purchase border-t border-[#30363f]">
                 <FormulaInfoTable price={formattedPrice} />
                 <div className="px-5 md:px-7 py-5 space-y-3">
                     <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm flex items-center gap-2">
@@ -70,7 +71,7 @@ export default function FormulaPurchaseSection({ post }: { post: CommunityPost }
 
     // No purchase: show purchase form
     return (
-        <div className="border-t border-white/[0.06]">
+        <div className="formula-purchase border-t border-[#30363f]">
             <FormulaInfoTable price={formattedPrice} />
             <PurchaseForm postId={post.id} formattedPrice={formattedPrice} />
         </div>
@@ -173,7 +174,7 @@ function PurchaseForm({ postId, formattedPrice }: { postId: number; formattedPri
     if (!user) return null;
 
     return (
-        <div className="px-5 md:px-7 py-5 md:py-6 space-y-3">
+        <div className="formula-purchase-form px-5 md:px-7 py-5 md:py-6 space-y-3">
             <p className="text-red-400 text-xs md:text-sm">
                 *입력하신 입금자명과 다르게 입금하시면 승인이 늦어질 수 있습니다.
             </p>
@@ -192,6 +193,7 @@ function PurchaseForm({ postId, formattedPrice }: { postId: number; formattedPri
             <div className="mt-4 space-y-3">
                 <input
                     type="text"
+                    aria-label="입금자명"
                     value={buyerName}
                     onChange={e => setBuyerName(e.target.value)}
                     placeholder="입금자명을 입력하세요."

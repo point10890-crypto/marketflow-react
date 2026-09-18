@@ -72,10 +72,11 @@ export default function MobileSubNav() {
                             key={item.href}
                             to={item.href}
                             data-active={isActive}
-                            className={`inline-flex min-h-9 shrink-0 items-center rounded-full border px-3 py-1.5 text-xs font-bold transition-all ${
+                            aria-current={isActive ? "page" : undefined}
+                            className={`inline-flex min-h-10 shrink-0 items-center rounded-full border px-3 py-1.5 text-xs font-bold transition-all ${
                                 isActive
                                     ? `${activeColor} bg-white/10 border-current`
-                                    : 'text-slate-500 border-transparent hover:text-slate-300 hover:bg-white/5'
+                                    : 'text-slate-400 border-transparent hover:text-slate-300 hover:bg-white/5'
                             }`}
                         >
                             <span className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${item.color} ${item.name.includes('LIVE') ? 'animate-pulse' : ''}`} />

@@ -75,7 +75,7 @@ export default function RagStatusCard() {
 
     if (!data) {
         return (
-            <section className="rounded-2xl border border-white/[0.06] bg-[#13151f] p-5">
+            <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151f] p-5">
                 <Header />
                 <p className="text-sm text-gray-500">
                     {failed ? '지식베이스 현황을 불러오지 못했습니다' : '불러오는 중...'}
@@ -91,7 +91,7 @@ export default function RagStatusCard() {
     const sources = Object.entries(news.by_source).sort((a, b) => b[1] - a[1]).slice(0, 4);
 
     return (
-        <section className="rounded-2xl border border-white/[0.06] bg-[#13151f] p-5">
+        <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151f] p-5">
             <Header />
 
             <div className="grid gap-3 sm:grid-cols-3">
@@ -197,7 +197,7 @@ export default function RagStatusCard() {
 
 function Header() {
     return (
-        <h2 className="mb-3 flex items-center gap-2.5 text-base font-bold text-white">
+        <h2 className="ai-section-title mb-3 flex items-center gap-2.5 text-base font-bold text-white">
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-teal-400/20 bg-teal-500/10">
                 <i className="fas fa-diagram-project text-[13px] text-teal-300" />
             </span>

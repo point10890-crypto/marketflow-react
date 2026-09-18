@@ -59,6 +59,12 @@ describe('AI Brain navigation gating', () => {
     expect(screen.getByText('Summary')).toBeInTheDocument();
   });
 
+  it('does not mark Summary as the current page inside another dashboard section', () => {
+    renderAt('/dashboard/briefing', <Sidebar />);
+    expect(screen.getByRole('link', { name: 'Summary' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: 'Briefing' })).toHaveAttribute('aria-current', 'page');
+  });
+
   it('Sidebar shows AI Brain for an active add-on subscriber and for admin', () => {
     authState.user = proWithAiBain;
     const { unmount } = renderAt('/dashboard', <Sidebar />);

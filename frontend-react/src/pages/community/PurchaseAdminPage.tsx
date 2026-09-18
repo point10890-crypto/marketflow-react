@@ -1,3 +1,4 @@
+import './community-design.css';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchAuthAPI, putAuthAPI, deleteAuthAPI } from '@/lib/api';
@@ -133,9 +134,9 @@ export default function PurchaseAdminPage() {
     const formatKRW = (n: number) => `${n.toLocaleString()}원`;
 
     return (
-        <div className="p-4 md:p-6 lg:py-8 lg:px-10">
+        <div className="community-workspace p-4 md:p-6 lg:py-6 lg:px-8">
             {/* Header */}
-            <div className="flex items-center gap-3 mb-6">
+            <div className="dash-page-header flex items-center gap-3 mb-6">
                 <button
                     onClick={() => navigate('/admin')}
                     className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
@@ -143,7 +144,7 @@ export default function PurchaseAdminPage() {
                     <i className="fas fa-arrow-left text-sm" />
                 </button>
                 <h1 className="text-xl md:text-2xl font-bold text-yellow-400">구매 신청 내역</h1>
-                <span className="text-gray-500 text-sm ml-2">총 {total}건</span>
+                <span className="text-[#a6afbb] text-sm ml-2">총 {total}건</span>
             </div>
 
             {/* 매출 합산 카드 */}
@@ -155,7 +156,7 @@ export default function PurchaseAdminPage() {
                             <span className="text-[11px] text-gray-400 uppercase tracking-wider font-bold">오늘 매출</span>
                         </div>
                         <div className="text-lg md:text-xl font-bold text-white">{formatKRW(summary.today.total)}</div>
-                        <div className="text-[11px] text-gray-500 mt-1">승인 {summary.today.count}건</div>
+                        <div className="text-[11px] text-[#a6afbb] mt-1">승인 {summary.today.count}건</div>
                     </div>
                     <div className="bg-[#1c1c1e]/80 border border-blue-500/20 rounded-xl p-4">
                         <div className="flex items-center gap-2 mb-2">
@@ -163,7 +164,7 @@ export default function PurchaseAdminPage() {
                             <span className="text-[11px] text-gray-400 uppercase tracking-wider font-bold">이번 달 매출</span>
                         </div>
                         <div className="text-lg md:text-xl font-bold text-white">{formatKRW(summary.month.total)}</div>
-                        <div className="text-[11px] text-gray-500 mt-1">승인 {summary.month.count}건</div>
+                        <div className="text-[11px] text-[#a6afbb] mt-1">승인 {summary.month.count}건</div>
                     </div>
                     <div className="bg-[#1c1c1e]/80 border border-yellow-500/20 rounded-xl p-4">
                         <div className="flex items-center gap-2 mb-2">
@@ -171,7 +172,7 @@ export default function PurchaseAdminPage() {
                             <span className="text-[11px] text-gray-400 uppercase tracking-wider font-bold">누적 매출</span>
                         </div>
                         <div className="text-lg md:text-xl font-bold text-white">{formatKRW(summary.all.total)}</div>
-                        <div className="text-[11px] text-gray-500 mt-1">승인 {summary.all.count}건</div>
+                        <div className="text-[11px] text-[#a6afbb] mt-1">승인 {summary.all.count}건</div>
                     </div>
                     <button
                         type="button"
@@ -189,13 +190,13 @@ export default function PurchaseAdminPage() {
                             <i className="fas fa-arrow-right text-orange-400/60 text-[10px] ml-auto" />
                         </div>
                         <div className="text-lg md:text-xl font-bold text-white">{summary.pending_count}건</div>
-                        <div className="text-[11px] text-gray-500 mt-1">클릭하여 미처리 보기</div>
+                        <div className="text-[11px] text-[#a6afbb] mt-1">클릭하여 미처리 보기</div>
                     </button>
                 </div>
             )}
 
             {/* Filters */}
-            <div className="bg-[#1c1c1e]/80 border border-white/[0.06] rounded-2xl p-4 md:p-5 mb-5 flex flex-col sm:flex-row gap-3">
+            <div className="dash-toolbar dash-panel bg-[#15191e] border border-[#30363f] rounded-xl p-4 md:p-5 mb-5 flex flex-col sm:flex-row gap-3">
                 <select
                     value={statusFilter}
                     onChange={e => setStatusFilter(e.target.value)}
@@ -222,7 +223,7 @@ export default function PurchaseAdminPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-[#1c1c1e]/80 border border-white/[0.06] rounded-2xl overflow-hidden">
+            <div className="dash-panel bg-[#15191e] border border-[#30363f] rounded-xl overflow-hidden">
                 {loading ? (
                     <div className="flex items-center justify-center py-20">
                         <div className="w-8 h-8 border-2 border-[#2997ff] border-t-transparent rounded-full animate-spin" />
@@ -305,13 +306,13 @@ export default function PurchaseAdminPage() {
                                             <h3 className="text-white text-sm font-medium flex-1 mr-3">{p.post_title || '-'}</h3>
                                             <span className={`text-xs font-bold ${st.cls}`}>{st.text}</span>
                                         </div>
-                                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#a6afbb]">
                                             <span>입금자: <strong className="text-gray-300">{p.buyer_name}</strong></span>
                                             <span>ID: <strong className="text-gray-300">{p.user_name}</strong></span>
                                             <span>금액: <strong className="text-yellow-400">{formatPrice(p.post_price)}</strong></span>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-gray-600 text-[11px]">{formatKoreanDate(p.created_at)}</span>
+                                            <span className="text-[#a6afbb] text-[11px]">{formatKoreanDate(p.created_at)}</span>
                                             <div className="flex items-center gap-2">
                                                 {p.status === 'pending' ? (
                                                     <button
@@ -352,7 +353,7 @@ export default function PurchaseAdminPage() {
                         {purchases.length === 0 && (
                             <div className="text-center py-16">
                                 <i className="fas fa-inbox text-2xl text-gray-700 mb-3 block" />
-                                <p className="text-gray-600 text-sm">구매 신청 내역이 없습니다.</p>
+                                <p className="text-[#a6afbb] text-sm">구매 신청 내역이 없습니다.</p>
                             </div>
                         )}
                     </>

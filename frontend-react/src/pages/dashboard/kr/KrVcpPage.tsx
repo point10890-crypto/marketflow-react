@@ -1,3 +1,4 @@
+import './market-design.css';
 
 
 import { useEffect, useState, useCallback } from 'react';
@@ -30,11 +31,11 @@ interface VCPData {
 function ScoreBar({ score, label, color }: { score: number; label: string; color: string }) {
     return (
         <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-500 w-8 text-right">{label}</span>
+            <span className="text-[12px] text-gray-400 w-8 text-right">{label}</span>
             <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
                 <div className={`h-full rounded-full ${color}`} style={{ width: `${Math.min(score, 100)}%` }} />
             </div>
-            <span className="text-[10px] text-gray-400 w-6">{score}</span>
+            <span className="text-[12px] text-gray-400 w-6">{score}</span>
         </div>
     );
 }
@@ -101,22 +102,22 @@ export default function KRVCPPage() {
     const summary = data?.summary;
 
     return (
-        <div className="flex flex-col gap-4 h-full min-h-0">
-            <div className="flex items-end justify-between shrink-0">
+        <div className="market-workspace flex flex-col gap-4 h-full min-h-0">
+            <div className="dash-page-header market-page-header flex flex-wrap items-end justify-between gap-4 shrink-0">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <i className="fas fa-bolt text-blue-400 text-sm" />
-                        <span className="text-[10px] font-semibold text-blue-400 uppercase tracking-widest">KR VCP SIGNALS</span>
+                        <span className="market-identity">KR VCP SIGNALS</span>
                     </div>
-                    <h2 className="text-2xl font-extrabold tracking-tight text-white">
+                    <h2 className="market-title">
                         KR Market{' '}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-blue-500">VCP</span>
+                        <span className="market-title-accent">VCP</span>
                     </h2>
-                    <p className="text-xs text-gray-500 mt-1">Minervini SEPA — KR Market Screening</p>
+                    <p className="text-xs text-gray-400 mt-1">Minervini SEPA · KR Market Screening</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="market-header-actions flex flex-wrap items-center gap-3">
                     {meta?.generated_at && (
-                        <span className="text-[10px] text-gray-600">Updated: {new Date(meta.generated_at).toLocaleString()}</span>
+                        <span className="text-[12px] text-gray-600">Updated: {new Date(meta.generated_at).toLocaleString()}</span>
                     )}
                     <select
                         value={selectedDate}
@@ -132,10 +133,10 @@ export default function KRVCPPage() {
             </div>
 
             {meta && (
-                <div className="flex items-center gap-4 px-4 py-3 rounded-xl bg-[#13151f] border border-white/[0.06] shrink-0">
+                <div className="dash-panel market-panel flex items-center gap-4 px-4 py-3 rounded-xl bg-[#13151f] border border-white/[0.06] shrink-0">
                     {meta.gate && (
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-gray-500 uppercase">Gate</span>
+                            <span className="text-[12px] text-gray-400 uppercase">Gate</span>
                             <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
                                 meta.gate === 'GREEN' ? 'bg-emerald-500/20 text-emerald-400' :
                                 meta.gate === 'YELLOW' ? 'bg-yellow-500/20 text-yellow-400' :
@@ -147,9 +148,9 @@ export default function KRVCPPage() {
                         <span className="text-xs text-gray-400">Score: <b className="text-white">{meta.gate_score}</b></span>
                     )}
                     <div className="h-4 w-px bg-white/10" />
-                    {summary?.total_screened != null && <span className="text-[11px] text-gray-500">Screened: <b className="text-gray-300">{summary.total_screened}</b></span>}
-                    {summary?.vcp_found != null && <span className="text-[11px] text-gray-500">VCP Found: <b className="text-yellow-400">{summary.vcp_found}</b></span>}
-                    {summary?.entry_ready != null && <span className="text-[11px] text-gray-500">Entry Ready: <b className="text-emerald-400">{summary.entry_ready}</b></span>}
+                    {summary?.total_screened != null && <span className="text-[11px] text-gray-400">Screened: <b className="text-gray-300">{summary.total_screened}</b></span>}
+                    {summary?.vcp_found != null && <span className="text-[11px] text-gray-400">VCP Found: <b className="text-yellow-400">{summary.vcp_found}</b></span>}
+                    {summary?.entry_ready != null && <span className="text-[11px] text-gray-400">Entry Ready: <b className="text-emerald-400">{summary.entry_ready}</b></span>}
                 </div>
             )}
 
@@ -161,23 +162,23 @@ export default function KRVCPPage() {
                 )}
                 {error && <div className="text-center py-12 text-red-400 text-sm">{error}</div>}
                 {!loading && !error && signals.length === 0 && (
-                    <div className="text-center py-20 text-gray-500">
+                    <div className="text-center py-20 text-gray-400">
                         <i className="fas fa-search text-3xl mb-3 block opacity-30" />
                         <p className="text-sm">No VCP signals detected for KR Market</p>
                     </div>
                 )}
                 {!loading && signals.map((signal, i) => (
-                    <div key={`${signal.symbol}-${i}`} className="p-4 rounded-xl bg-[#13151f] border border-white/[0.06] hover:border-white/10 transition-colors">
+                    <div key={`${signal.symbol}-${i}`} className="dash-panel market-panel p-4 rounded-xl bg-[#13151f] border border-white/[0.06] hover:border-white/10 transition-colors">
                         <div className="flex items-start justify-between mb-3">
                             <div>
                                 <div className="flex items-center gap-2">
                                     <StockLink code={signal.symbol} market="KR" className="text-white font-bold">{signal.symbol}</StockLink>
-                                    <StockLink code={signal.symbol} market="KR" className="text-gray-500 text-sm">{signal.name}</StockLink>
+                                    <StockLink code={signal.symbol} market="KR" className="text-gray-400 text-sm">{signal.name}</StockLink>
                                     {signal.composite?.entry_ready && (
-                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400">ENTRY READY</span>
+                                        <span className="px-1.5 py-0.5 rounded text-[11px] font-bold bg-emerald-500/20 text-emerald-400">ENTRY READY</span>
                                     )}
                                 </div>
-                                {signal.stage?.stage_label && <span className="text-[10px] text-gray-600 mt-0.5 block">{signal.stage.stage_label}</span>}
+                                {signal.stage?.stage_label && <span className="text-[12px] text-gray-600 mt-0.5 block">{signal.stage.stage_label}</span>}
                             </div>
                             <div className="flex items-center gap-3">
                                 {signal.price != null && <span className="text-sm text-gray-300 font-mono">{signal.price.toLocaleString()}</span>}

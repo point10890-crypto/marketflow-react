@@ -1,0 +1,146 @@
+.community-workspace {
+  width: 100%;
+  min-width: 0;
+  color: #f5f5f7;
+}
+
+.community-workspace .dash-page-header {
+  padding-bottom: 20px;
+  border-bottom: 1px solid #30363f;
+}
+
+.community-workspace .dash-page-header h1 {
+  color: #f5f5f7;
+  font-size: clamp(1.3rem, 2vw, 1.65rem);
+  line-height: 1.35;
+  letter-spacing: -.035em;
+}
+
+.community-workspace :is(button, a, input, textarea, select):focus-visible {
+  outline: 2px solid #73b7ff;
+  outline-offset: 3px;
+}
+
+.community-board:not(:disabled):hover .community-board-body {
+  background: #1c222a;
+  border-color: #526a83;
+}
+
+.community-board:disabled .community-board-body {
+  background: #12161b;
+  border-style: dashed;
+}
+
+.community-board-body {
+  transition: background-color 150ms, border-color 150ms;
+}
+
+.community-board-body > p {
+  max-width: 58ch;
+  min-height: 2.5rem;
+}
+
+.community-board-body > div:last-child {
+  padding-top: 12px;
+  border-top: 1px solid #30363f;
+}
+
+.community-board-meta > div:first-child {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #202a36;
+}
+
+.community-workspace article {
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.community-workspace table {
+  font-variant-numeric: tabular-nums;
+}
+
+.community-workspace thead {
+  background: #1c222a;
+}
+
+.community-workspace tbody tr:hover {
+  background: #1c222a;
+}
+
+.formula-editor-row > div {
+  min-width: 0;
+}
+
+.formula-editor-row input:not([type="radio"]):not([type="file"]) {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid #30363f;
+  border-radius: 8px;
+  background: #101419;
+}
+
+.formula-purchase {
+  background: #12171d;
+}
+
+.formula-purchase-form {
+  max-width: 780px;
+}
+
+.formula-purchase-form > div:last-child {
+  padding-top: 12px;
+  border-top: 1px solid #30363f;
+}
+
+.formula-purchase :is(button, span) {
+  overflow-wrap: anywhere;
+}
+
+.account-workspace .account-panel {
+  border-color: #30363f;
+  box-shadow: none;
+}
+
+.account-workspace .account-panel :is(button, a)[class*="bg-gradient-to-"] {
+  background: #73b7ff;
+  color: #101419;
+}
+
+.account-workspace .account-panel :is(button, a)[class*="bg-gradient-to-"]:hover {
+  background: #99caff;
+}
+
+.account-workspace .account-panel p {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 639px) {
+  .formula-editor-row {
+    display: block;
+  }
+
+  .formula-editor-row > label {
+    display: block;
+    width: 100%;
+    padding: 12px 16px 4px;
+    background: transparent;
+  }
+
+  .formula-editor-row > div {
+    width: 100%;
+    padding: 8px 16px 16px;
+    flex-wrap: wrap;
+  }
+
+  .account-workspace .account-panel .grid-cols-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .community-board-body {
+    transition: none;
+  }
+}

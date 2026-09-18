@@ -61,10 +61,11 @@ export default function BottomTabBar() {
                             <Link
                                 key={tab.href}
                                 to={tab.href}
+                                aria-current={selected ? "page" : undefined}
                                 className={`relative flex min-h-[58px] min-w-[64px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl px-2 transition-all active:scale-95 ${
                                     selected
                                         ? `claw-tab-active ${activeColors[tab.color]} bg-white/[0.06]`
-                                        : 'text-zinc-600'
+                                        : 'text-zinc-400'
                                 }`}
                             >
                                 <span className="relative">
@@ -73,7 +74,7 @@ export default function BottomTabBar() {
                                         <i className="fas fa-lock absolute -right-2 -top-1 text-[7px] text-slate-600" />
                                     )}
                                 </span>
-                                <span className="max-w-[58px] truncate text-[9px] font-black tracking-wide">{tab.name}</span>
+                                <span className="max-w-[58px] truncate text-[11px] font-semibold tracking-wide">{tab.name}</span>
                                 {selected && (
                                     <span className={`mt-0.5 h-1 w-1 rounded-full ${activeDots[tab.color]}`} />
                                 )}

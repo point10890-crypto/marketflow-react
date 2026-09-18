@@ -1,3 +1,4 @@
+import '@/pages/dashboard/ai-design.css';
 
 
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
@@ -410,19 +411,19 @@ function StockAnalyzerContent() {
     const currency = analyzeResult?.key_stats?.currency || (analyzeResult?.ticker?.includes('.K') ? 'KRW' : 'USD');
 
     return (
-        <div className="space-y-4 md:space-y-6">
+        <div className="ai-design space-y-4 md:space-y-6">
             {/* Header */}
-            <div>
+            <div className="ai-page-header">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-orange-500/20 bg-orange-500/5 text-xs text-orange-400 font-medium mb-3 md:mb-4">
-                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
                     Analyst Consensus
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
-                        <h2 className="text-2xl md:text-5xl font-bold tracking-tighter text-white leading-tight mb-1 md:mb-2">
-                            Stock <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">Analyzer</span>
+                        <h2 className="ai-page-title text-white mb-1">
+                            Stock <span className="text-[#73b7ff]">Analyzer</span>
                         </h2>
-                        <p className="text-gray-400 text-sm md:text-lg">애널리스트 컨센서스 기반 종목 분석 (KR + US)</p>
+                        <p className="text-[#a6afbb] text-sm">애널리스트 컨센서스 기반 종목 분석 (KR + US)</p>
                     </div>
                     {history.length > 0 && (
                         <button onClick={exportExcel}
@@ -434,7 +435,7 @@ function StockAnalyzerContent() {
             </div>
 
             {/* Search Card */}
-            <div className="p-4 md:p-6 rounded-2xl bg-[#1c1c1e] border border-white/10">
+            <div className="ai-panel p-4 md:p-6 rounded-2xl bg-[#1c1c1e] border border-[#30363f]">
                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">종목 검색</h3>
                 <div className="relative">
                     <div className="flex items-center">
@@ -486,7 +487,7 @@ function StockAnalyzerContent() {
 
                 {/* Selected Stock Bar */}
                 {selectedStock && !loading && (
-                    <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-white/5 rounded-xl border border-white/5">
+                    <div className="dash-toolbar mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-white/5 rounded-xl border border-white/5">
                         <div className="min-w-0 flex-1 flex items-center gap-3">
                             <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
                                 selectedStock.type === 'KR' ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400'
@@ -517,7 +518,7 @@ function StockAnalyzerContent() {
 
             {/* Loading */}
             {loading && (
-                <div className="p-6 md:p-8 rounded-2xl bg-[#1c1c1e] border border-white/10 text-center">
+                <div className="ai-panel p-6 md:p-8 rounded-2xl bg-[#1c1c1e] border border-[#30363f] text-center">
                     <div className="w-10 h-10 border-[3px] border-orange-500/30 border-t-orange-500 rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-gray-400 text-sm">애널리스트 컨센서스 분석 중...</p>
                     <p className="text-gray-600 text-xs mt-2">{selectedStock?.name} ({selectedStock?.ticker})</p>
@@ -528,7 +529,7 @@ function StockAnalyzerContent() {
             {analyzeResult && !loading && (
                 <div className="space-y-4">
                     {/* Main Result Card */}
-                    <div className="p-4 md:p-6 rounded-2xl bg-[#1c1c1e] border border-white/10">
+                    <div className="ai-panel p-4 md:p-6 rounded-2xl bg-[#1c1c1e] border border-[#30363f]">
                         <div className="flex items-center justify-between mb-4">
                             <div>
                                 <h3 className="text-lg md:text-xl font-bold text-white">
@@ -580,7 +581,7 @@ function StockAnalyzerContent() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                         {/* Analyst Recommendations Bar */}
                         {analyzeResult.recommendation_detail && (
-                            <div className="p-4 md:p-5 rounded-2xl bg-[#1c1c1e] border border-white/10">
+                            <div className="ai-panel p-4 md:p-5 rounded-2xl bg-[#1c1c1e] border border-[#30363f]">
                                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
                                     <i className="fas fa-users mr-2 text-orange-400"></i>애널리스트 의견
                                 </h4>
@@ -590,7 +591,7 @@ function StockAnalyzerContent() {
 
                         {/* Price Target Gauge */}
                         {analyzeResult.price_targets && (
-                            <div className="p-4 md:p-5 rounded-2xl bg-[#1c1c1e] border border-white/10">
+                            <div className="ai-panel p-4 md:p-5 rounded-2xl bg-[#1c1c1e] border border-[#30363f]">
                                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
                                     <i className="fas fa-bullseye mr-2 text-orange-400"></i>목표가 범위
                                 </h4>
@@ -618,7 +619,7 @@ function StockAnalyzerContent() {
 
                         {/* Key Stats */}
                         {analyzeResult.key_stats && (
-                            <div className="p-4 md:p-5 rounded-2xl bg-[#1c1c1e] border border-white/10 md:col-span-2">
+                            <div className="ai-panel p-4 md:p-5 rounded-2xl bg-[#1c1c1e] border border-[#30363f] md:col-span-2">
                                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
                                     <i className="fas fa-chart-bar mr-2 text-orange-400"></i>주요 지표
                                 </h4>
@@ -645,7 +646,7 @@ function StockAnalyzerContent() {
 
                         {/* Financial Health (DART) */}
                         {analyzeResult.financial_health?.has_data && (
-                            <div className="p-4 md:p-5 rounded-2xl bg-[#1c1c1e] border border-white/10 md:col-span-2">
+                            <div className="ai-panel p-4 md:p-5 rounded-2xl bg-[#1c1c1e] border border-[#30363f] md:col-span-2">
                                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
                                     <i className="fas fa-shield-alt mr-2 text-cyan-400"></i>재무건전성
                                     <span className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${
@@ -699,7 +700,7 @@ function StockAnalyzerContent() {
 
             {/* History Table */}
             {history.length > 0 && (
-                <div className="p-4 md:p-6 rounded-2xl bg-[#1c1c1e] border border-white/10">
+                <div className="ai-panel p-4 md:p-6 rounded-2xl bg-[#1c1c1e] border border-[#30363f]">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-xs md:text-sm font-bold text-gray-400 uppercase tracking-wider">
                             조회 기록 ({history.length}건)

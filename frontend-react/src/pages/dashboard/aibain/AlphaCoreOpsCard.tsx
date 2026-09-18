@@ -229,17 +229,17 @@ export default function AlphaCoreOpsCard({ loadSnapshot = fetchAlphaCoreSnapshot
     }, [snapshot]);
 
     if (loading) {
-        return <section aria-label="Alpha Core 운영 현황 불러오는 중" className="h-[190px] animate-pulse rounded-2xl border border-white/[0.06] bg-[#13151f]" />;
+        return <section aria-label="Alpha Core 운영 현황 불러오는 중" className="ai-panel h-[190px] animate-pulse rounded-2xl border border-[#30363f] bg-[#13151f]" />;
     }
 
     return (
-        <section aria-label="Alpha Core 읽기 전용 운영 현황" className="overflow-hidden rounded-2xl border border-cyan-400/15 bg-[#13151f]">
+        <section aria-label="Alpha Core 읽기 전용 운영 현황" className="ai-panel overflow-hidden rounded-2xl border border-cyan-400/15 bg-[#13151f]">
             <div className="flex flex-wrap items-center gap-2 border-b border-white/[0.06] px-4 py-3.5 sm:px-5">
                 <span className="grid h-8 w-8 place-items-center rounded-lg bg-cyan-500/10 text-cyan-300">
                     <i className="fas fa-shield-halved text-[13px]" />
                 </span>
                 <div className="min-w-0">
-                    <h2 className="text-[14px] font-black text-white">AlphaClaw Core</h2>
+                    <h2 className="ai-section-title text-[14px] font-black text-white">AlphaClaw Core</h2>
                     <p className="text-[11px] text-gray-500">읽기 전용 운영 원장 · 주문 기능 없음</p>
                 </div>
                 <span className={`rounded-full border px-2 py-1 font-mono text-[11px] font-black ${modeTone(view.mode)}`}>{view.mode}</span>

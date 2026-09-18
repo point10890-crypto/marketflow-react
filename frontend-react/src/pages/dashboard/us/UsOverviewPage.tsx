@@ -1,3 +1,4 @@
+import '../kr/market-design.css';
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -177,28 +178,27 @@ export default function UsOverviewPage() {
     const spyPred = predictionData?.predictions?.spy ?? predictionData?.predictions?.SPY;
 
     return (
-        <div className="flex flex-col gap-3 md:gap-4 animate-fade-in font-sans text-zinc-200 h-full">
+        <div className="market-workspace flex flex-col gap-3 md:gap-4 animate-fade-in font-sans text-zinc-200 h-full">
 
             {/* ── Header ─────────────────────────────────────────────────── */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 text-[10px] text-blue-400 font-bold tracking-widest">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+            <div className="dash-page-header market-page-header flex flex-wrap items-center justify-between gap-4">
+                <div className="market-heading-stack">
+                    <div className="market-identity">
                         US ALPHA
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
-                        Market <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Overview</span>
+                    <h2 className="market-title">
+                        Market <span className="market-title-accent">Overview</span>
                     </h2>
                 </div>
-                <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-zinc-500 font-mono hidden sm:block">{lastUpdated || '--:--'}</span>
+                <div className="market-header-actions flex flex-wrap items-center gap-3">
+                    <span className="text-[12px] text-zinc-400 font-mono hidden sm:block">{lastUpdated || '--:--'}</span>
                     <button
                         onClick={loadData}
                         disabled={isRefreshing}
                         title="Refresh"
                         className="w-8 h-8 rounded-lg bg-zinc-900 border border-white/10 flex items-center justify-center hover:border-white/20 hover:bg-white/5 transition-all"
                     >
-                        <svg className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-blue-400' : 'text-zinc-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <svg className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-blue-400' : 'text-zinc-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                     </button>
@@ -213,13 +213,13 @@ export default function UsOverviewPage() {
                         <div className="text-xs font-bold text-amber-400">
                             일부 데이터 로드 실패 ({failedEndpoints.length}/9)
                         </div>
-                        <div className="text-[10px] text-amber-300/70 mt-0.5 break-all">
+                        <div className="text-[12px] text-amber-300/70 mt-0.5 break-all">
                             {failedEndpoints.join(', ')} — 잠시 후 새로고침해 주세요
                         </div>
                     </div>
                     <button
                         onClick={loadData}
-                        className="px-2 py-1 rounded text-[10px] font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 transition-colors"
+                        className="px-2 py-1 rounded text-[12px] font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 transition-colors"
                     >
                         재시도
                     </button>
@@ -230,15 +230,15 @@ export default function UsOverviewPage() {
             <div className="grid grid-cols-12 gap-3">
 
                 {/* Sentiment Gauge — 4 cols */}
-                <div className="col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col items-center justify-between gap-2">
+                <div className="dash-panel market-panel col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col items-center justify-between gap-2">
                     <div className="flex items-center justify-between w-full">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Market Gate</span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getGateBg(gateScore)}`}>
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Market Gate</span>
+                        <span className={`text-[12px] font-bold px-2 py-0.5 rounded-full border ${getGateBg(gateScore)}`}>
                             {loading ? '...' : getGateLabel(gateData?.gate ?? gateData?.label)}
                         </span>
                     </div>
                     <ArcGauge score={gateScore} loading={loading} />
-                    <div className="flex items-center justify-between w-full text-[9px] font-bold text-zinc-600 uppercase tracking-wider px-1">
+                    <div className="flex items-center justify-between w-full text-[11px] font-bold text-zinc-600 uppercase tracking-wider px-1">
                         <span className="text-red-500">RISK OFF</span>
                         <span className="text-amber-500">NEUTRAL</span>
                         <span className="text-emerald-500">RISK ON</span>
@@ -246,8 +246,8 @@ export default function UsOverviewPage() {
                 </div>
 
                 {/* Major Indices — 4 cols */}
-                <div className="col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col justify-between gap-3">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Market Indices</span>
+                <div className="dash-panel market-panel col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col justify-between gap-3">
+                    <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Market Indices</span>
 
                     {/* S&P 500 */}
                     <div className="flex flex-col gap-0.5">
@@ -268,7 +268,7 @@ export default function UsOverviewPage() {
                             changePct={indices[0]?.change_pct ?? 0}
                             isPositive={(indices[0]?.change_pct ?? 0) >= 0}
                         />
-                        <span className="text-[9px] text-zinc-600">
+                        <span className="text-[11px] text-zinc-600">
                             일변동폭 기준 {Math.abs(indices[0]?.change_pct ?? 0).toFixed(2)}% / 3.0%
                         </span>
                     </div>
@@ -294,15 +294,15 @@ export default function UsOverviewPage() {
                             changePct={indices[1]?.change_pct ?? 0}
                             isPositive={(indices[1]?.change_pct ?? 0) >= 0}
                         />
-                        <span className="text-[9px] text-zinc-600">
+                        <span className="text-[11px] text-zinc-600">
                             일변동폭 기준 {Math.abs(indices[1]?.change_pct ?? 0).toFixed(2)}% / 3.0%
                         </span>
                     </div>
                 </div>
 
                 {/* Quick Nav — 4 cols */}
-                <div className="col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col gap-2">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Quick Access</span>
+                <div className="dash-panel market-panel col-span-12 sm:col-span-4 rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4 flex flex-col gap-2">
+                    <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Quick Access</span>
 
                     <Link
                         to="/dashboard/us/etf"
@@ -314,7 +314,7 @@ export default function UsOverviewPage() {
                             </div>
                             <div>
                                 <div className="text-xs font-bold text-white">ETF Flows</div>
-                                <div className="text-[10px] text-zinc-500">자금 흐름 추적</div>
+                                <div className="text-[12px] text-zinc-400">자금 흐름 추적</div>
                             </div>
                         </div>
                         <svg className="w-3 h-3 text-zinc-600 group-hover:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
@@ -330,7 +330,7 @@ export default function UsOverviewPage() {
                             </div>
                             <div>
                                 <div className="text-xs font-bold text-white">VCP 전략</div>
-                                <div className="text-[10px] text-zinc-500">Volume Contraction</div>
+                                <div className="text-[12px] text-zinc-400">Volume Contraction</div>
                             </div>
                         </div>
                         <svg className="w-3 h-3 text-zinc-600 group-hover:text-amber-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
@@ -339,13 +339,13 @@ export default function UsOverviewPage() {
                     {/* Mini stats */}
                     <div className="mt-auto grid grid-cols-2 gap-2 pt-2">
                         <div className="rounded-lg bg-zinc-900/60 border border-white/5 p-2 text-center">
-                            <div className="text-[9px] text-zinc-500 uppercase tracking-wider">Gate Score</div>
+                            <div className="text-[11px] text-zinc-400 uppercase tracking-wider">Gate Score</div>
                             <div className={`text-base font-bold mt-0.5 ${gateScore >= 70 ? 'text-emerald-400' : gateScore >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
                                 {loading ? '--' : gateScore}
                             </div>
                         </div>
                         <div className="rounded-lg bg-zinc-900/60 border border-white/5 p-2 text-center">
-                            <div className="text-[9px] text-zinc-500 uppercase tracking-wider">Win Rate</div>
+                            <div className="text-[11px] text-zinc-400 uppercase tracking-wider">Win Rate</div>
                             <div className={`text-base font-bold mt-0.5 ${(perfData?.win_rate ?? 0) >= 50 ? 'text-emerald-400' : 'text-red-400'}`}>
                                 {perfData?.win_rate ?? '--'}%
                             </div>
@@ -355,11 +355,11 @@ export default function UsOverviewPage() {
             </div>
 
             {/* ── Row 2: Decision Signal Strip ────────────────────────── */}
-            <div className="rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
+            <div className="dash-panel market-panel rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
                 <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Decision Signal Components</span>
+                    <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Decision Signal Components</span>
                     {decisionSignal && (
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        <span className={`text-[12px] font-bold px-2 py-0.5 rounded-full border ${
                             decisionSignal.score >= 60 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' :
                             decisionSignal.score >= 40 ? 'border-amber-500/30 bg-amber-500/10 text-amber-400' :
                             'border-red-500/30 bg-red-500/10 text-red-400'
@@ -379,7 +379,7 @@ export default function UsOverviewPage() {
                             <svg className="w-4 h-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                         <span className="text-xs text-zinc-600 font-medium">Market Closed</span>
-                        <span className="text-[10px] text-zinc-700">데이터는 장 마감 후 업데이트됩니다</span>
+                        <span className="text-[12px] text-zinc-700">데이터는 장 마감 후 업데이트됩니다</span>
                     </div>
                 ) : (
                     <div className="grid grid-cols-5 gap-2">
@@ -391,9 +391,9 @@ export default function UsOverviewPage() {
                             { label: 'Sector', val: decisionSignal.components?.sector_phase?.phase ?? '--', c: decisionSignal.components?.sector_phase?.contribution ?? 0 },
                         ].map(comp => (
                             <div key={comp.label} className="relative p-2.5 rounded-xl border border-white/5 bg-white/[0.02] hover:-translate-y-0.5 hover:shadow-lg transition-all cursor-default">
-                                <div className="text-[10px] font-medium text-zinc-500 mb-1">{comp.label}</div>
+                                <div className="text-[12px] font-medium text-zinc-400 mb-1">{comp.label}</div>
                                 <div className="text-sm font-bold text-white leading-none">{comp.val}</div>
-                                <div className={`text-[10px] font-bold mt-1 ${comp.c > 0 ? 'text-emerald-400' : comp.c < 0 ? 'text-red-400' : 'text-zinc-600'}`}>
+                                <div className={`text-[12px] font-bold mt-1 ${comp.c > 0 ? 'text-emerald-400' : comp.c < 0 ? 'text-red-400' : 'text-zinc-600'}`}>
                                     {comp.c > 0 ? '+' : ''}{comp.c != null ? comp.c.toFixed(1) : '0.0'}
                                 </div>
                                 <div className="w-full h-0.5 bg-zinc-800 rounded-full mt-1.5 overflow-hidden">
@@ -412,24 +412,24 @@ export default function UsOverviewPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
 
                 {/* A. Regime */}
-                <div className="rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
+                <div className="dash-panel market-panel rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Regime</span>
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Regime</span>
                     </div>
                     <div className={`text-xl font-bold ${regimeData?.regime === 'risk_on' ? 'text-emerald-400' : regimeData?.regime === 'risk_off' ? 'text-red-400' : regimeData?.regime === 'crisis' ? 'text-red-500' : 'text-amber-400'}`}>
                         {loading ? '--' : regimeData?.regime?.replace('_', ' ').toUpperCase() ?? 'N/A'}
                     </div>
                     <div className="mt-1 flex items-center gap-1.5">
                         <div className={`w-1.5 h-1.5 rounded-full ${regimeData?.regime === 'risk_on' ? 'bg-emerald-500 animate-pulse' : regimeData?.regime === 'risk_off' || regimeData?.regime === 'crisis' ? 'bg-red-500' : 'bg-amber-500'}`} />
-                        <span className="text-[10px] text-zinc-600">Confidence: {regimeData?.confidence?.toFixed(0) ?? '--'}%</span>
+                        <span className="text-[12px] text-zinc-600">Confidence: {regimeData?.confidence?.toFixed(0) ?? '--'}%</span>
                     </div>
                 </div>
 
                 {/* B. SPY Prediction */}
-                <div className="rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
+                <div className="dash-panel market-panel rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">SPY Prediction</span>
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-500 border border-violet-500/20">ML</span>
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">SPY Prediction</span>
+                        <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-500 border border-violet-500/20">ML</span>
                     </div>
                     <div className="flex items-baseline gap-1.5">
                         <span className={`text-3xl font-bold ${(spyPred?.bullish_probability ?? 50) >= 60 ? 'text-emerald-400' : (spyPred?.bullish_probability ?? 50) <= 40 ? 'text-red-400' : 'text-amber-400'}`}>
@@ -437,35 +437,35 @@ export default function UsOverviewPage() {
                         </span>
                         <span className="text-sm text-zinc-600">%</span>
                     </div>
-                    <div className="mt-1 text-[10px] text-zinc-600">
+                    <div className="mt-1 text-[12px] text-zinc-600">
                         Expected: {spyPred?.predicted_return_pct ? `${spyPred.predicted_return_pct > 0 ? '+' : ''}${spyPred.predicted_return_pct.toFixed(2)}%` : '--'}
                     </div>
                 </div>
 
                 {/* C. Business Cycle */}
-                <div className="rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
+                <div className="dash-panel market-panel rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Cycle</span>
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Cycle</span>
                     </div>
                     <div className="text-xl font-bold text-teal-400">
                         {loading ? '--' : sectorData?.rotation_signals?.current_phase ?? 'N/A'}
                     </div>
-                    <div className="mt-1 text-[10px] text-zinc-600">
+                    <div className="mt-1 text-[12px] text-zinc-600">
                         Lead: {sectorData?.rotation_signals?.leading_sectors?.slice(0, 2).join(', ') ?? '--'}
                     </div>
                 </div>
 
                 {/* D. Risk */}
-                <div className="rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
+                <div className="dash-panel market-panel rounded-2xl bg-[#13151f] border border-white/5 p-3 md:p-4">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Risk</span>
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest">Risk</span>
                     </div>
                     <div className={`text-xl font-bold ${riskData?.portfolio_summary?.risk_level === 'Low' ? 'text-emerald-400' : riskData?.portfolio_summary?.risk_level === 'High' ? 'text-red-400' : 'text-amber-400'}`}>
                         {loading ? '--' : riskData?.portfolio_summary?.risk_level ?? 'N/A'}
                     </div>
                     <div className="mt-1 flex items-center gap-1.5">
                         <div className={`w-1.5 h-1.5 rounded-full ${riskData?.portfolio_summary?.risk_level === 'Low' ? 'bg-emerald-500' : riskData?.portfolio_summary?.risk_level === 'High' ? 'bg-red-500 animate-pulse' : 'bg-amber-500'}`} />
-                        <span className="text-[10px] text-zinc-600">
+                        <span className="text-[12px] text-zinc-600">
                             VaR: ${Math.abs(riskData?.portfolio_summary?.portfolio_var_95_5d ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                         </span>
                     </div>
@@ -477,12 +477,12 @@ export default function UsOverviewPage() {
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <div className="w-1 h-4 bg-blue-500 rounded-full" />
-                        <h3 className="text-sm font-bold text-white">Smart Money Top Picks</h3>
+                        <h3 className="dash-section-title text-sm font-bold text-white">Smart Money Top Picks</h3>
                         <span className="px-1.5 py-0.5 bg-blue-500/15 text-blue-400 text-xs font-bold rounded-full border border-blue-500/20">
                             {Math.min(smartPicks.length, 10)}
                         </span>
                     </div>
-                    <div className="rounded-xl bg-[#13151f] border border-white/[0.06] overflow-hidden">
+                    <div className="dash-panel market-panel rounded-xl bg-[#13151f] border border-white/[0.06] overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
@@ -502,11 +502,11 @@ export default function UsOverviewPage() {
                                             className="hover:bg-white/[0.03] transition-colors cursor-pointer"
                                             onClick={() => setSelectedTicker(pick.ticker)}
                                         >
-                                            <td className="px-3 py-2.5 text-center text-xs text-zinc-500 font-mono">{idx + 1}</td>
+                                            <td className="px-3 py-2.5 text-center text-xs text-zinc-400 font-mono">{idx + 1}</td>
                                             <td className="px-3 py-2.5">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-white font-bold text-sm">{pick.ticker}</span>
-                                                    <span className="text-xs text-zinc-500 truncate max-w-[120px]">{pick.name}</span>
+                                                    <span className="text-xs text-zinc-400 truncate max-w-[120px]">{pick.name}</span>
                                                 </div>
                                             </td>
                                             <td className="px-3 py-2.5 text-center">

@@ -1,3 +1,4 @@
+import './market-design.css';
 import StockLink from '@/components/stock/StockLink';
 
 
@@ -180,7 +181,7 @@ function ChartModal({ symbol, name, onClose }: { symbol: string, name: string, o
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-white/5 bg-[#1c1c1e]">
                     <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-bold text-white">{name}</h3>
+                        <h3 className="dash-section-title text-xl font-bold text-white">{name}</h3>
                         <span className="text-sm font-mono text-gray-400">{symbol}</span>
                     </div>
                     <button
@@ -236,17 +237,17 @@ function ThemeCloudWidget({ signals }: { signals: Signal[] }) {
     ];
 
     return (
-        <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl p-5 backdrop-blur-md relative overflow-hidden group w-full h-full min-h-[140px] flex flex-col justify-center">
+        <div className="dash-panel market-panel bg-[#1c1c1e] border border-white/5 rounded-2xl p-5 backdrop-blur-md relative overflow-hidden group w-full h-full min-h-[140px] flex flex-col justify-center">
             {/* Background Decor */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
-            <div className="text-[10px] uppercase tracking-wider text-rose-500 font-bold mb-3 flex items-center gap-2 relative z-10">
+            <div className="text-[12px] uppercase tracking-wider text-rose-500 font-bold mb-3 flex items-center gap-2 relative z-10">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span> TRENDING THEMES
             </div>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 relative z-10">
                 {entries.length === 0 ? (
-                    <span className="text-sm text-gray-500 italic">No themes available</span>
+                    <span className="text-sm text-gray-400 italic">No themes available</span>
                 ) : (
                     sortedThemes.map(([theme, count], idx) => {
                         const weight = maxCount === minCount ? 0 : (count - minCount) / (maxCount - minCount);
@@ -396,7 +397,7 @@ export default function JonggaV2Page() {
 
     if (loading) {
         return (
-            <div className="flex h-96 items-center justify-center text-gray-500">
+            <div className="flex h-96 items-center justify-center text-gray-400">
                 <div className="relative w-16 h-16">
                     <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-500/30 rounded-full animate-ping"></div>
                     <div className="absolute top-0 left-0 w-full h-full border-4 border-t-blue-500 rounded-full animate-spin"></div>
@@ -406,16 +407,13 @@ export default function JonggaV2Page() {
     }
 
     return (
-        <div className="space-y-4 md:space-y-8 pb-12">
+        <div className="market-workspace space-y-4 pb-8">
             {/* 1. Header Section (Robust Flex Layout) */}
-            <div className="flex flex-col lg:flex-row items-end justify-between gap-4 md:gap-8 mb-4 md:mb-8">
+            <div className="dash-page-header market-page-header flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="w-full lg:w-2/3">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-indigo-500/20 bg-indigo-500/5 text-xs text-indigo-400 font-medium mb-4">
-                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></span>
-                        AI Powered Strategy
-                    </div>
-                    <h2 className="text-2xl md:text-5xl font-bold tracking-tighter text-white leading-tight mb-2">
-                        Closing <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Bet V2</span>
+                    <div className="market-identity mb-2">AI Powered Strategy</div>
+                    <h2 className="market-title">
+                        Closing <span className="market-title-accent">Bet V2</span>
                     </h2>
                     <p className="text-gray-400 text-sm md:text-lg">
                         Multi-AI Consensus (Gemini + GPT-4o) + DART Disclosure + Supply Trend
@@ -429,7 +427,7 @@ export default function JonggaV2Page() {
             </div>
 
             {/* 2. Controls & Stats */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 md:gap-6 pb-4 md:pb-6 border-b border-white/5">
+            <div className="dash-toolbar market-toolbar flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="flex gap-6">
                     <StatBox label="Candidates" value={data?.total_candidates || 0} />
                     <StatBox label="Signals" value={data?.filtered_count || 0} highlight />
@@ -471,12 +469,12 @@ export default function JonggaV2Page() {
             {/* 4. Signal Grid */}
             <div className="grid grid-cols-1 gap-3 md:gap-6">
                 {!data || !data.signals || data.signals.length === 0 ? (
-                    <div className="bg-[#1c1c1e] rounded-2xl p-16 text-center border border-white/5 flex flex-col items-center">
+                    <div className="dash-panel market-panel bg-[#1c1c1e] rounded-2xl p-16 text-center border border-white/5 flex flex-col items-center">
                         <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
                             <span className="text-3xl opacity-30">💤</span>
                         </div>
-                        <h3 className="text-xl font-bold text-gray-300">No Signals Found</h3>
-                        <p className="text-gray-500 mt-2 max-w-md">
+                        <h3 className="dash-section-title text-xl font-bold text-gray-300">No Signals Found</h3>
+                        <p className="text-gray-400 mt-2 max-w-md">
                             Today&apos;s market conditions did not meet the strict AI & Supply criteria.
                         </p>
                     </div>
@@ -546,15 +544,15 @@ function DataStatusBox({ updatedAt }: { updatedAt?: string }) {
 
     return (
         <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1 flex items-center gap-2">
+            <span className="text-[12px] uppercase tracking-wider text-gray-400 font-bold mb-1 flex items-center gap-2">
                 Data Status
                 <button
                     onClick={handleUpdate}
                     disabled={updating}
-                    className={`p-1 rounded bg-white/5 hover:bg-white/10 transition-all ${updating ? 'animate-spin text-indigo-400' : 'text-gray-500 hover:text-white'}`}
+                    className={`p-1 rounded bg-white/5 hover:bg-white/10 transition-all ${updating ? 'animate-spin text-indigo-400' : 'text-gray-400 hover:text-white'}`}
                     title="Run Engine V2 (Full Update)"
                 >
-                    <i className="fas fa-sync-alt text-[10px]"></i>
+                    <i className="fas fa-sync-alt text-[12px]"></i>
                 </button>
             </span>
             <div className="flex items-center gap-2">
@@ -563,7 +561,7 @@ function DataStatusBox({ updatedAt }: { updatedAt?: string }) {
                     {updating ? 'RUNNING...' : (isToday ? 'UPDATED' : 'OLD DATA')}
                 </span>
             </div>
-            <span className="text-[10px] text-gray-600 font-mono mt-0.5">{updating ? 'Please wait...' : timeStr}</span>
+            <span className="text-[12px] text-gray-600 font-mono mt-0.5">{updating ? 'Please wait...' : timeStr}</span>
         </div>
     )
 }
@@ -571,7 +569,7 @@ function DataStatusBox({ updatedAt }: { updatedAt?: string }) {
 function StatBox({ label, value, highlight = false, customValue }: { label: string, value: number, highlight?: boolean, customValue?: string }) {
     return (
         <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1">{label}</span>
+            <span className="text-[12px] uppercase tracking-wider text-gray-400 font-bold mb-1">{label}</span>
             <span className={`text-2xl font-mono font-bold ${highlight ? 'text-indigo-400' : 'text-white'}`}>
                 {customValue || value}
             </span>
@@ -648,15 +646,15 @@ function SignalCard({ signal, index, onOpenChart }: { signal: Signal, index: num
                 <div className="p-4 md:p-6 lg:w-1/3 border-b lg:border-b-0 lg:border-r border-white/5 flex flex-col justify-between">
                     <div>
                         <div className="flex items-center justify-between mb-4">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${style.border} ${style.bg} ${style.text}`}>
+                            <span className={`px-2 py-0.5 rounded text-[12px] font-bold border ${style.border} ${style.bg} ${style.text}`}>
                                 {signal.grade} GRADE
                             </span>
-                            <span className="text-xs text-gray-500 font-mono">#{index + 1}</span>
+                            <span className="text-xs text-gray-400 font-mono">#{index + 1}</span>
                         </div>
 
                         <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="text-2xl font-bold text-white leading-none mb-1">
+                                <h3 className="dash-section-title text-2xl font-bold text-white leading-none mb-1">
                                     <StockLink code={signal.stock_code} market={signal.market}>{signal.stock_name}</StockLink>
                                 </h3>
                                 <div className="text-sm text-gray-400 font-mono">{signal.stock_code}</div>
@@ -669,22 +667,22 @@ function SignalCard({ signal, index, onOpenChart }: { signal: Signal, index: num
                             {signal.themes && signal.themes.length > 0 && signal.themes.map((theme, i) => (
                                 <span
                                     key={i}
-                                    className="px-2 py-1 rounded bg-violet-500/10 border border-violet-500/20 text-violet-400 text-[10px] font-bold"
+                                    className="px-2 py-1 rounded bg-violet-500/10 border border-violet-500/20 text-violet-400 text-[12px] font-bold"
                                 >
                                     {theme}
                                 </span>
                             ))}
                             {signal.checklist.is_new_high && (
-                                <span className="px-2 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-bold">NEW HIGH</span>
+                                <span className="px-2 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[12px] font-bold">NEW HIGH</span>
                             )}
                             {signal.checklist.supply_positive && (
-                                <span className="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold">INST BUY</span>
+                                <span className="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[12px] font-bold">INST BUY</span>
                             )}
                             {signal.checklist.has_news && (
-                                <span className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold">NEWS</span>
+                                <span className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[12px] font-bold">NEWS</span>
                             )}
                             {signal.checklist.has_disclosure && signal.checklist.disclosure_types && signal.checklist.disclosure_types.map((dtype, i) => (
-                                <span key={`disc-${i}`} className="px-2 py-1 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-bold">
+                                <span key={`disc-${i}`} className="px-2 py-1 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[12px] font-bold">
                                     📋 {dtype}
                                 </span>
                             ))}
@@ -702,11 +700,11 @@ function SignalCard({ signal, index, onOpenChart }: { signal: Signal, index: num
                                 </span>
                             </div>
                             <div className="flex justify-between items-center text-xs">
-                                <span className="text-gray-500">Target</span>
+                                <span className="text-gray-400">Target</span>
                                 <span className="font-mono text-rose-400">{(signal.target_price || 0).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between items-center text-xs">
-                                <span className="text-gray-500">Stop</span>
+                                <span className="text-gray-400">Stop</span>
                                 <span className="font-mono text-blue-400">{(signal.stop_price || 0).toLocaleString()}</span>
                             </div>
                         </div>
@@ -714,19 +712,19 @@ function SignalCard({ signal, index, onOpenChart }: { signal: Signal, index: num
                         {/* 거래대금 / 외인 / 기관 데이터 */}
                         <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                             <div className="bg-black/20 rounded-lg px-2 py-1.5 border border-white/5">
-                                <div className="text-gray-500 text-[10px] mb-0.5">거래대금</div>
+                                <div className="text-gray-400 text-[12px] mb-0.5">거래대금</div>
                                 <div className="text-white font-mono font-bold">
                                     {(signal.trading_value / 100_000_000).toFixed(0)}억
                                 </div>
                             </div>
                             <div className="bg-black/20 rounded-lg px-2 py-1.5 border border-white/5">
-                                <div className="text-gray-500 text-[10px] mb-0.5">외인 5일</div>
+                                <div className="text-gray-400 text-[12px] mb-0.5">외인 5일</div>
                                 <div className={`font-mono font-bold ${signal.foreign_5d >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
                                     {signal.foreign_5d >= 0 ? '+' : ''}{(signal.foreign_5d / 1000).toFixed(0)}K
                                 </div>
                             </div>
                             <div className="bg-black/20 rounded-lg px-2 py-1.5 border border-white/5">
-                                <div className="text-gray-500 text-[10px] mb-0.5">기관 5일</div>
+                                <div className="text-gray-400 text-[12px] mb-0.5">기관 5일</div>
                                 <div className={`font-mono font-bold ${signal.inst_5d >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
                                     {signal.inst_5d >= 0 ? '+' : ''}{(signal.inst_5d / 1000).toFixed(0)}K
                                 </div>
@@ -779,7 +777,7 @@ function SignalCard({ signal, index, onOpenChart }: { signal: Signal, index: num
                     {/* News References */}
                     {signal.news_items && signal.news_items.length > 0 && (
                         <div className="mt-auto">
-                            <div className="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-2 flex items-center gap-1">
+                            <div className="text-[12px] uppercase tracking-wider text-gray-400 font-bold mb-2 flex items-center gap-1">
                                 <i className="fas fa-quote-left"></i> References
                             </div>
                             <div className="space-y-1.5">
@@ -791,9 +789,9 @@ function SignalCard({ signal, index, onOpenChart }: { signal: Signal, index: num
                                         rel="noreferrer"
                                         className="block text-xs text-gray-400 hover:text-indigo-400 hover:bg-white/5 p-1.5 rounded transition-colors truncate"
                                     >
-                                        <span className="text-gray-500 font-mono mr-2">[{news.source || 'News'}]</span>
+                                        <span className="text-gray-400 font-mono mr-2">[{news.source || 'News'}]</span>
                                         <span className="mr-2">{news.title}</span>
-                                        <span className="text-gray-600 text-[10px] ml-auto">({formatDate(news.published_at)})</span>
+                                        <span className="text-gray-600 text-[12px] ml-auto">({formatDate(news.published_at)})</span>
                                     </a>
                                 ))}
                             </div>
@@ -806,9 +804,9 @@ function SignalCard({ signal, index, onOpenChart }: { signal: Signal, index: num
                     <div className="text-center mb-3 md:mb-6">
                         <div className="inline-flex items-baseline gap-1">
                             <span className="text-3xl md:text-4xl font-mono font-bold text-white">{signal.score.total}</span>
-                            <span className="text-sm text-gray-500">/ 20</span>
+                            <span className="text-sm text-gray-400">/ 20</span>
                         </div>
-                        <div className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">Total Score</div>
+                        <div className="text-[12px] text-gray-400 mt-1 uppercase tracking-wider">Total Score</div>
                     </div>
 
                     {/* Mobile compact score grid */}
@@ -826,7 +824,7 @@ function SignalCard({ signal, index, onOpenChart }: { signal: Signal, index: num
                                 { label: 'Finance', score: signal.score.financial || 0, max: 3 },
                             ].map((item) => (
                                 <div key={item.label} className="text-center p-1.5 rounded-lg bg-white/[0.03] border border-white/5">
-                                    <div className="text-[9px] text-gray-500 leading-none mb-1">{item.label}</div>
+                                    <div className="text-[11px] text-gray-400 leading-none mb-1">{item.label}</div>
                                     <div className="text-xs font-mono font-bold">
                                         <span className={item.score >= item.max ? 'text-emerald-400' : item.score > 0 ? 'text-white' : 'text-gray-600'}>{item.score}</span>
                                         <span className="text-gray-600">/{item.max}</span>
@@ -884,22 +882,22 @@ function AIConsensusSection({ aiPicks }: { aiPicks: AIPicks }) {
                             Multi-AI Consensus Picks
                         </div>
                         {(aiPicks.strong_count !== undefined && aiPicks.strong_count > 0) && (
-                            <span className="text-[10px] text-yellow-400 font-mono font-bold">
+                            <span className="text-[12px] text-yellow-400 font-mono font-bold">
                                 {aiPicks.strong_count} strong
                             </span>
                         )}
                         {aiPicks.consensus_count !== undefined && (
-                            <span className="text-[10px] text-violet-400 font-mono font-bold">
+                            <span className="text-[12px] text-violet-400 font-mono font-bold">
                                 {Math.max(0, aiPicks.consensus_count - (aiPicks.strong_count ?? 0))} consensus
                             </span>
                         )}
                     </div>
                     <div className="flex items-center gap-2">
                         {aiPicks.models && aiPicks.models.map((m, i) => (
-                            <span key={i} className="text-[10px] text-gray-600 font-mono bg-white/5 px-1.5 py-0.5 rounded">{m}</span>
+                            <span key={i} className="text-[12px] text-gray-600 font-mono bg-white/5 px-1.5 py-0.5 rounded">{m}</span>
                         ))}
                         {aiPicks.generated_at && (
-                            <span className="text-[10px] text-gray-600 font-mono">
+                            <span className="text-[12px] text-gray-600 font-mono">
                                 {new Date(aiPicks.generated_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                         )}
@@ -915,7 +913,7 @@ function AIConsensusSection({ aiPicks }: { aiPicks: AIPicks }) {
                 {aiPicks.top_themes && aiPicks.top_themes.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-4">
                         {aiPicks.top_themes.map((theme, i) => (
-                            <span key={i} className="px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/15 text-violet-400 text-[10px] font-bold">
+                            <span key={i} className="px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/15 text-violet-400 text-[12px] font-bold">
                                 {theme}
                             </span>
                         ))}
@@ -937,10 +935,10 @@ function AIConsensusSection({ aiPicks }: { aiPicks: AIPicks }) {
                                         <span className="text-white font-bold text-sm">{pick.stock_name}</span>
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${sb.bg} ${sb.text} ${sb.border}`}>
+                                        <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold border ${sb.bg} ${sb.text} ${sb.border}`}>
                                             {sb.label}
                                         </span>
-                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${cs.bg} ${cs.text} ${cs.border}`}>
+                                        <span className={`px-1.5 py-0.5 rounded text-[12px] font-bold border ${cs.bg} ${cs.text} ${cs.border}`}>
                                             {pick.confidence}
                                         </span>
                                     </div>
@@ -949,7 +947,7 @@ function AIConsensusSection({ aiPicks }: { aiPicks: AIPicks }) {
                                 {pick.devil_advocate_flags && pick.devil_advocate_flags.length > 0 && (
                                     <div className={`mt-2 mb-2 p-2 rounded border ${pick.review_verdict === 'BLOCK' ? 'bg-red-500/10 border-red-500/30' : 'bg-amber-500/10 border-amber-500/30'}`}>
                                         <div className="flex items-center gap-1 mb-1">
-                                            <span className={`text-[10px] font-bold ${pick.review_verdict === 'BLOCK' ? 'text-red-400' : 'text-amber-400'}`}>
+                                            <span className={`text-[12px] font-bold ${pick.review_verdict === 'BLOCK' ? 'text-red-400' : 'text-amber-400'}`}>
                                                 ⚠ Devil's Advocate
                                             </span>
                                             <span className={`px-1 py-0.5 rounded text-[8px] font-bold ${pick.review_verdict === 'BLOCK' ? 'bg-red-500/30 text-red-300' : 'bg-amber-500/30 text-amber-300'}`}>
@@ -958,7 +956,7 @@ function AIConsensusSection({ aiPicks }: { aiPicks: AIPicks }) {
                                         </div>
                                         <ul className="space-y-0.5">
                                             {pick.devil_advocate_flags.slice(0, 3).map((f, i) => (
-                                                <li key={i} className="text-[10px] text-gray-300 leading-snug">
+                                                <li key={i} className="text-[12px] text-gray-300 leading-snug">
                                                     <span className={`font-mono font-bold mr-1 ${f.severity === 'HIGH' ? 'text-red-400' : f.severity === 'MEDIUM' ? 'text-amber-400' : 'text-gray-400'}`}>
                                                         [{f.severity}]
                                                     </span>
@@ -968,9 +966,9 @@ function AIConsensusSection({ aiPicks }: { aiPicks: AIPicks }) {
                                         </ul>
                                     </div>
                                 )}
-                                <div className="flex items-center justify-between text-[10px]">
-                                    <span className="text-gray-500">Risk: <span className="text-amber-400">{pick.risk}</span></span>
-                                    <span className="text-gray-500">Return: <span className="text-emerald-400">{pick.expected_return}</span></span>
+                                <div className="flex items-center justify-between text-[12px]">
+                                    <span className="text-gray-400">Risk: <span className="text-amber-400">{pick.risk}</span></span>
+                                    <span className="text-gray-400">Return: <span className="text-emerald-400">{pick.expected_return}</span></span>
                                 </div>
                             </div>
                         );

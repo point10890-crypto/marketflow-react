@@ -1,3 +1,4 @@
+import './community-design.css';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getFormulaBoard } from '@/lib/formulaBoards';
@@ -97,12 +98,13 @@ export default function PostWritePage() {
     }
 
     return (
-        <div className="p-4 md:p-6 lg:py-8 lg:px-10">
+        <div className="community-workspace p-4 md:p-6 lg:py-6 lg:px-8">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="dash-page-header flex flex-wrap items-center justify-between gap-3 mb-6">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => navigate(-1)}
+                        aria-label="뒤로 가기"
                         className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
                     >
                         <i className="fas fa-arrow-left text-sm" />
@@ -112,7 +114,7 @@ export default function PostWritePage() {
                             {isEdit ? '글 수정' : '글쓰기'}
                         </h1>
                         {boardName && (
-                            <p className="text-gray-600 text-xs mt-0.5">{boardName}</p>
+                            <p className="text-[#a6afbb] text-xs mt-0.5">{boardName}</p>
                         )}
                     </div>
                 </div>
@@ -120,7 +122,7 @@ export default function PostWritePage() {
                 <button
                     onClick={handleSubmit}
                     disabled={submitting}
-                    className="bg-[#2997ff] hover:bg-[#2997ff]/85 text-white font-bold text-sm rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2"
+                    className="bg-[#2997ff] hover:bg-[#2997ff]/85 text-white font-bold text-sm rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed  flex items-center gap-2"
                 >
                     {submitting ? (
                         <>
@@ -152,10 +154,10 @@ export default function PostWritePage() {
             {isFormulaMarket && (
                 <>
                     <div className="mb-5">
-                        <label className="block text-xs text-gray-500 mb-1.5">포인트 금액</label>
+                        <label className="block text-xs text-[#a6afbb] mb-1.5">포인트 금액</label>
                         {isFixedPrice ? (
                             <div className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-gray-300">
-                                {formulaBoard!.fixedPrice!.toLocaleString()}원 <span className="text-xs text-gray-500">균일가 · 변경 불가</span>
+                                {formulaBoard!.fixedPrice!.toLocaleString()}원 <span className="text-xs text-[#a6afbb]">균일가 · 변경 불가</span>
                             </div>
                         ) : (
                             <div className="relative">
@@ -167,13 +169,13 @@ export default function PostWritePage() {
                                     placeholder="0 (무료)"
                                     className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-gray-600 px-4 py-2.5 pr-14 focus:border-[#2997ff] focus:outline-none text-sm transition-colors"
                                 />
-                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-500">P</span>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[#a6afbb]">P</span>
                             </div>
                         )}
                     </div>
 
                     <div className="mb-5">
-                        <label className="block text-xs text-gray-500 mb-1.5">식파일</label>
+                        <label className="block text-xs text-[#a6afbb] mb-1.5">식파일</label>
                         <div className="flex items-center gap-3 flex-wrap bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5">
                             <label className="cursor-pointer bg-white/[0.08] hover:bg-white/[0.12] text-gray-300 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors border border-white/10">
                                 파일 선택

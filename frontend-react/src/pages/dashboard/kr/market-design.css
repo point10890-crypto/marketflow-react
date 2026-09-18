@@ -1,0 +1,72 @@
+/* Market workspaces keep signal palettes and chart geometry independent of chrome. */
+.market-workspace {
+    min-width: 0;
+    color: #f5f5f7;
+    font-variant-numeric: tabular-nums;
+}
+
+.market-workspace .market-page-header {
+    margin-bottom: 0;
+    padding: 4px 0 18px;
+    border-bottom: 1px solid #30363f;
+    background: transparent;
+    border-radius: 0;
+}
+
+.market-heading-stack { display: grid; gap: 6px; min-width: 0; }
+.market-workspace .market-stacked-header { display: block; }
+.market-identity { color: #a6afbb; font-size: 11px; font-weight: 600; letter-spacing: .09em; }
+.market-workspace .market-title {
+    margin: 0;
+    color: #f5f5f7;
+    font-size: clamp(22px, 2.2vw, 28px);
+    font-weight: 650;
+    line-height: 1.25;
+    letter-spacing: -.035em;
+}
+.market-title-accent { color: #73b7ff; }
+.market-page-header p { margin-top: 6px; color: #a6afbb; font-size: 12px; line-height: 1.6; }
+.market-page-header > div { min-width: 0; }
+.market-page-header .market-header-actions { margin-left: auto; }
+.market-workspace .market-panel {
+    background-color: #15191e;
+    border-color: #30363f;
+    border-radius: 12px;
+    box-shadow: none;
+}
+.market-workspace .market-toolbar {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #30363f;
+    border-radius: 10px;
+    background: #15191e;
+}
+.market-toolbar button, .market-toolbar select { flex-shrink: 0; }
+.market-workspace :is(button, a, select, input):focus-visible {
+    outline: 2px solid #73b7ff;
+    outline-offset: 3px;
+}
+.market-workspace table { font-variant-numeric: tabular-nums; }
+.market-workspace thead { background-color: #191e25; }
+.market-workspace .market-empty-state {
+    min-height: 260px;
+    display: grid;
+    place-content: center;
+    gap: 12px;
+    text-align: center;
+    padding: 32px 20px;
+}
+.market-empty-state p { color: #a6afbb; line-height: 1.7; }
+
+@media (max-width: 640px) {
+    .market-workspace .market-page-header { padding-bottom: 14px; }
+    .market-page-header .market-header-actions { margin-left: 0; }
+    .market-workspace .market-toolbar { padding: 10px; }
+    .market-page-header select { max-width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .market-workspace :is(.animate-ping, .animate-pulse, .animate-fade-in, .claw-card-in) {
+        animation: none;
+    }
+}

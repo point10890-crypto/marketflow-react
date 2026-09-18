@@ -1,3 +1,4 @@
+import './community-design.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { communityAPI } from '@/lib/api';
@@ -53,12 +54,13 @@ export default function FormulaWritePage({ boardSlug = 'formula-market' }: { boa
     };
 
     return (
-        <div className="p-4 md:p-6 lg:py-8 lg:px-10">
+        <div className="community-workspace p-4 md:p-6 lg:py-6 lg:px-8">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="dash-page-header flex flex-wrap items-center justify-between gap-3 mb-6">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => navigate(-1)}
+                        aria-label="뒤로 가기"
                         className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
                     >
                         <i className="fas fa-arrow-left text-sm" />
@@ -69,7 +71,7 @@ export default function FormulaWritePage({ boardSlug = 'formula-market' }: { boa
                 <button
                     onClick={handleSubmit}
                     disabled={submitting}
-                    className={`${board.accentBg} text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2`}
+                    className={`${board.accentBg} text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed  flex items-center gap-2`}
                 >
                     {submitting ? (
                         <>
@@ -87,9 +89,9 @@ export default function FormulaWritePage({ boardSlug = 'formula-market' }: { boa
             )}
 
             {/* Form */}
-            <div className="bg-[#1c1c1e]/80 border border-white/[0.06] rounded-2xl overflow-hidden">
+            <div className="formula-editor dash-panel bg-[#15191e] border border-[#30363f] rounded-xl overflow-hidden">
                 {/* 공개여부 */}
-                <div className="flex items-center border-b border-white/[0.06]">
+                <div className="formula-editor-row flex items-center border-b border-white/[0.06]">
                     <label className="w-32 md:w-40 px-5 py-4 text-sm font-bold text-gray-300 bg-white/[0.02] flex-shrink-0">
                         공개여부
                     </label>
@@ -118,7 +120,7 @@ export default function FormulaWritePage({ boardSlug = 'formula-market' }: { boa
                 </div>
 
                 {/* 이름 */}
-                <div className="flex items-center border-b border-white/[0.06]">
+                <div className="formula-editor-row flex items-center border-b border-white/[0.06]">
                     <label className="w-32 md:w-40 px-5 py-4 text-sm font-bold text-gray-300 bg-white/[0.02] flex-shrink-0">
                         이름
                     </label>
@@ -134,7 +136,7 @@ export default function FormulaWritePage({ boardSlug = 'formula-market' }: { boa
                 </div>
 
                 {/* 내용 */}
-                <div className="flex border-b border-white/[0.06]">
+                <div className="formula-editor-row flex border-b border-white/[0.06]">
                     <label className="w-32 md:w-40 px-5 py-4 text-sm font-bold text-gray-300 bg-white/[0.02] flex-shrink-0">
                         내용
                     </label>
@@ -148,7 +150,7 @@ export default function FormulaWritePage({ boardSlug = 'formula-market' }: { boa
                 </div>
 
                 {/* 가격 */}
-                <div className="flex items-center border-b border-white/[0.06]">
+                <div className="formula-editor-row flex items-center border-b border-white/[0.06]">
                     <label className="w-32 md:w-40 px-5 py-4 text-sm font-bold text-gray-300 bg-white/[0.02] flex-shrink-0">
                         가격
                     </label>
@@ -171,7 +173,7 @@ export default function FormulaWritePage({ boardSlug = 'formula-market' }: { boa
                 </div>
 
                 {/* 식파일 */}
-                <div className="flex items-center">
+                <div className="formula-editor-row flex items-center">
                     <label className="w-32 md:w-40 px-5 py-4 text-sm font-bold text-gray-300 bg-white/[0.02] flex-shrink-0">
                         식파일
                     </label>
@@ -185,7 +187,7 @@ export default function FormulaWritePage({ boardSlug = 'formula-market' }: { boa
                                 className="hidden"
                             />
                         </label>
-                        <span className="text-gray-500 text-xs">
+                        <span className="text-[#a6afbb] text-xs">
                             {file ? file.name : '선택된 파일 없음'}
                         </span>
                     </div>
@@ -195,7 +197,7 @@ export default function FormulaWritePage({ boardSlug = 'formula-market' }: { boa
                     <button
                         onClick={handleSubmit}
                         disabled={submitting}
-                        className={`${board.accentBg} text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2`}
+                        className={`${board.accentBg} text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed  flex items-center gap-2`}
                     >
                         {submitting ? (
                             <>
