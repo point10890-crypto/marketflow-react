@@ -42,8 +42,8 @@
 .summary-principle dt { font-size: 13px; font-weight: 650; color: #f5f5f7; }
 .summary-principle dd { margin-top: 5px; font-size: 12px; line-height: 1.6; color: var(--summary-muted); }
 .summary-section-heading { margin-top: 12px; font-size: 17px; font-weight: 650; letter-spacing: -.025em; color: #f5f5f7; }
-.summary-index-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; margin-top: 16px; border: 1px solid var(--summary-line); border-radius: 12px; overflow: hidden; background: var(--summary-line); }
-.summary-index { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 18px 20px; background: var(--summary-surface); }
+.summary-index-grid { display: flex; flex-wrap: wrap; gap: 1px; margin-top: 16px; border: 1px solid var(--summary-line); border-radius: 12px; overflow: hidden; background: var(--summary-line); }
+.summary-index { flex: 1 1 140px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 18px 20px; background: var(--summary-surface); }
 .summary-index-label { color: var(--summary-muted); font-size: 12px; }
 .summary-index-price { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.025em; color: #f5f5f7; }
 .summary-briefing { display: block; position: relative; padding: 12px 8px; background: #151e29; border: 1px solid #354c66; border-left: 3px solid var(--summary-blue); border-radius: 12px; transition: border-color .15s ease; }
