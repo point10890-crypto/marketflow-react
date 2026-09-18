@@ -52,7 +52,18 @@ community_bp = Blueprint('community', __name__)
 TIER_ORDER = {'pro': 1, 'premium': 2}  # 'free' 플랜 폐지 — 미구독자(None)는 TIER_ORDER.get() 기본값 0으로 접근 불가
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
 TIER_ORDER['none'] = 0
-PUBLIC_MEMBER_BOARD_SLUGS = {'formula-market'}
+# 수식 계열 게시판 — 구매 요청·식파일·가격 필드를 공유한다.
+#   formula-market : 수식/조건검색식 마켓 (자유 가격)
+#   formula-daiso  : 수식 다이소 (3만원 균일가 — 가격 필드 입력과 무관하게 30,000 고정)
+FORMULA_BOARD_SLUGS = {'formula-market', 'formula-daiso'}
+FORMULA_BOARD_FIXED_PRICE = {'formula-daiso': '30000'}
+FORMULA_DAISO_BOARD = {
+    'slug': 'formula-daiso',
+    'name': '수식 다이소 (3만원 균일가)',
+    'description': '모든 수식·조건검색식을 3만원 균일가로 판매',
+    'icon': 'fa-tags',
+}
+PUBLIC_MEMBER_BOARD_SLUGS = set(FORMULA_BOARD_SLUGS)
 FORMULA_FILE_EXTENSIONS = {'txt', 'csv', 'xlsx', 'xls', 'pdf', 'zip', 'hwp', 'docx'}
 VIDEO_EXTENSIONS = {'mp4', 'mov', 'webm'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
@@ -117,6 +128,45 @@ def _can_read_board(user, board):
         or board.slug in PUBLIC_MEMBER_BOARD_SLUGS
         or _check_tier(user.tier, board.min_tier)
     )
+
+
+def _is_formula_board(board) -> bool:
+    return bool(board) and board.slug in FORMULA_BOARD_SLUGS
+
+
+def _normalize_formula_price(board, raw) -> str | None:
+    """균일가 게시판은 입력값과 무관하게 고정가, 그 외는 입력값 그대로."""
+    fixed = FORMULA_BOARD_FIXED_PRICE.get(board.slug)
+    if fixed:
+        return fixed
+    if isinstance(raw, str):
+        return raw.strip() or None
+    return str(raw) if raw is not None else None
+
+
+def ensure_formula_daiso_board() -> bool:
+    """수식 다이소 게시판을 부팅 시 멱등 생성한다 (2026-09-18).
+
+    기존 운영 DB 는 관리자 API 로 게시판을 만들어 왔고 시드 코드가 없다. 수식마켓
+    게시판이 이미 있는 DB(= 운영 DB)에만 같은 티어 설정으로 다이소 게시판을 추가해,
+    빈 테스트 DB 의 게시판 목록은 바꾸지 않는다. 생성했으면 True.
+    """
+    market = Board.query.filter_by(slug='formula-market').first()
+    if market is None or Board.query.filter_by(slug=FORMULA_DAISO_BOARD['slug']).first():
+        return False
+    board = Board(
+        slug=FORMULA_DAISO_BOARD['slug'],
+        name=FORMULA_DAISO_BOARD['name'],
+        description=FORMULA_DAISO_BOARD['description'],
+        icon=FORMULA_DAISO_BOARD['icon'],
+        sort_order=(market.sort_order or 0) + 1,
+        min_tier=market.min_tier,
+        write_tier=market.write_tier,
+        is_active=True,
+    )
+    db.session.add(board)
+    db.session.commit()
+    return True
 
 
 def _allowed_file(filename):
@@ -352,8 +402,8 @@ def get_post(post_id):
 
     post_data = post.to_dict(include_content=True, user_id=user.id)
 
-    # Include purchase status for formula-market posts
-    if board.slug == 'formula-market' and user.role != 'admin':
+    # Include purchase status for formula-board posts (수식마켓·수식 다이소)
+    if _is_formula_board(board) and user.role != 'admin':
         pr = PurchaseRequest.query.filter_by(post_id=post.id, user_id=user.id)\
             .order_by(PurchaseRequest.created_at.desc()).first()
         if pr:
@@ -365,7 +415,7 @@ def get_post(post_id):
         if not pr or pr.status != 'approved':
             post_data.pop('file_url', None)
             post_data.pop('file_name', None)
-    elif board.slug == 'formula-market' and user.role == 'admin':
+    elif _is_formula_board(board) and user.role == 'admin':
         post_data['purchase_status'] = 'approved'
 
     return jsonify({'post': post_data})
@@ -393,9 +443,9 @@ def create_post(slug):
 
     post = Post(board_id=board.id, author_id=user.id, title=title, content=content)
 
-    # Formula market fields
-    if board.slug == 'formula-market':
-        post.price = data.get('price', '').strip() or None
+    # Formula board fields (수식마켓: 자유 가격 / 수식 다이소: 3만원 고정)
+    if _is_formula_board(board):
+        post.price = _normalize_formula_price(board, data.get('price', ''))
         post.is_public = data.get('is_public', False)
         post.file_url = data.get('file_url') or None
         post.file_name = data.get('file_name') or None
@@ -438,10 +488,9 @@ def update_post(post_id):
         post.content = content
 
     # Formula market: allow editing price (포인트 금액) + 식파일
-    if post.board and post.board.slug == 'formula-market':
-        if 'price' in data:
-            raw = data.get('price')
-            post.price = (raw.strip() or None) if isinstance(raw, str) else (str(raw) if raw is not None else None)
+    if _is_formula_board(post.board):
+        if 'price' in data or post.board.slug in FORMULA_BOARD_FIXED_PRICE:
+            post.price = _normalize_formula_price(post.board, data.get('price'))
         if 'file_url' in data:
             post.file_url = data.get('file_url') or None
         if 'file_name' in data:
@@ -486,8 +535,8 @@ def create_purchase(post_id):
     user = _get_current_user()
     post = Post.query.get_or_404(post_id)
     board = post.board
-    if not board or board.slug != 'formula-market' or not board.is_active:
-        return jsonify({'error': 'Purchase is only available for active formula-market posts'}), 400
+    if not _is_formula_board(board) or not board.is_active:
+        return jsonify({'error': 'Purchase is only available for active formula-board posts'}), 400
     if not _can_read_board(user, board):
         return jsonify({'error': 'Tier upgrade required'}), 403
     data = request.get_json() or {}
@@ -529,8 +578,9 @@ def create_purchase(post_id):
 
     # 관리자 텔레그램 알림
     price = post.price or '가격 미정'
+    board_label = board.name or '수식마켓'
     _notify_admin_telegram(
-        f"🔔 <b>수식마켓 구매 요청</b>\n\n"
+        f"🔔 <b>{board_label} 구매 요청</b>\n\n"
         f"📌 수식: {post.title}\n"
         f"👤 구매자: {user.name} ({buyer_name})\n"
         f"💰 금액: {price}\n\n"
@@ -541,7 +591,7 @@ def create_purchase(post_id):
     from app.routes.admin import create_admin_notification
     create_admin_notification(
         'purchase_request',
-        '수식마켓 구매 요청',
+        f'{board_label} 구매 요청',
         f'{user.name} ({buyer_name}) — {post.title} ({price})',
         related_id=pr.id,
     )
@@ -560,7 +610,7 @@ def list_my_purchases():
 
     query = PurchaseRequest.query.join(Post).join(Board).filter(
         PurchaseRequest.user_id == user.id,
-        Board.slug == 'formula-market',
+        Board.slug.in_(FORMULA_BOARD_SLUGS),
     )
     if status_filter:
         query = query.filter(PurchaseRequest.status == status_filter)
@@ -984,7 +1034,7 @@ def community_summary():
     # Formula market stats
     formula_count = Post.query.join(Board).filter(
         Board.id.in_(accessible_board_ids),
-        Board.slug == 'formula-market',
+        Board.slug.in_(FORMULA_BOARD_SLUGS),
         Post.is_hidden.is_(False),
     ).count()
     pending_purchases = (

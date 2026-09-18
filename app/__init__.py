@@ -203,6 +203,14 @@ def create_app(config=None):
         # model's partial unique index must also be installed explicitly.  It
         # protects the check-then-insert purchase route across processes while
         # preserving rejected re-purchase and historical approved rows.
+        # 수식 다이소 게시판 — 수식마켓이 있는 DB 에만 멱등 생성 (2026-09-18)
+        try:
+            from app.routes.community import ensure_formula_daiso_board
+            if ensure_formula_daiso_board():
+                logging.getLogger(__name__).info('community: formula-daiso board created')
+        except Exception as _exc:  # noqa: BLE001 — 게시판 시드 실패가 부팅을 막지 않는다
+            logging.getLogger(__name__).warning('community: formula-daiso seed skipped: %s', type(_exc).__name__)
+
         if db.engine.dialect.name == 'sqlite':
             from sqlalchemy import text as sql_text
 

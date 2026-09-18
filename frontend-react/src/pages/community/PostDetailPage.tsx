@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { communityAPI, API_BASE, type CommunityPost, type CommunityComment } from '@/lib/api';
 import FormulaPurchaseSection from './FormulaPurchaseSection';
+import { isFormulaBoardSlug } from '@/lib/formulaBoards';
 import { sanitizeCommunityHtml } from '@/lib/sanitizeCommunityHtml';
 
 function tierBadge(tier: string) {
@@ -230,7 +231,7 @@ export default function PostDetailPage() {
     const badge = tierBadge(post.author.tier);
     const canEdit = post.is_mine || user?.role === 'admin';
     const isAdmin = user?.role === 'admin';
-    const isFormulaPost = post.board?.slug === 'formula-market';
+    const isFormulaPost = isFormulaBoardSlug(post.board?.slug);
 
     return (
         <div className="p-4 md:p-6 lg:py-8 lg:px-10">

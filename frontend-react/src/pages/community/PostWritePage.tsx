@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { getFormulaBoard } from '@/lib/formulaBoards';
 import { communityAPI } from '@/lib/api';
 import TipTapEditor from '@/components/community/TipTapEditor';
 
@@ -20,7 +21,9 @@ export default function PostWritePage() {
     const [resolvedSlug, setResolvedSlug] = useState(boardSlug || '');
     const [boardName, setBoardName] = useState('');
 
-    const isFormulaMarket = resolvedSlug === 'formula-market';
+    const formulaBoard = getFormulaBoard(resolvedSlug);
+    const isFormulaMarket = formulaBoard !== null;
+    const isFixedPrice = formulaBoard?.fixedPrice != null;
 
     // Load board name
     useEffect(() => {
@@ -150,17 +153,23 @@ export default function PostWritePage() {
                 <>
                     <div className="mb-5">
                         <label className="block text-xs text-gray-500 mb-1.5">포인트 금액</label>
-                        <div className="relative">
-                            <input
-                                type="number"
-                                min="0"
-                                value={price}
-                                onChange={e => setPrice(e.target.value)}
-                                placeholder="0 (무료)"
-                                className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-gray-600 px-4 py-2.5 pr-14 focus:border-[#2997ff] focus:outline-none text-sm transition-colors"
-                            />
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-500">P</span>
-                        </div>
+                        {isFixedPrice ? (
+                            <div className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-gray-300">
+                                {formulaBoard!.fixedPrice!.toLocaleString()}원 <span className="text-xs text-gray-500">균일가 · 변경 불가</span>
+                            </div>
+                        ) : (
+                            <div className="relative">
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={price}
+                                    onChange={e => setPrice(e.target.value)}
+                                    placeholder="0 (무료)"
+                                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-gray-600 px-4 py-2.5 pr-14 focus:border-[#2997ff] focus:outline-none text-sm transition-colors"
+                                />
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-500">P</span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="mb-5">

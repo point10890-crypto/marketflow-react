@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { communityAPI } from '@/lib/api';
 import TipTapEditor from '@/components/community/TipTapEditor';
+import { FORMULA_BOARDS } from '@/lib/formulaBoards';
 
-export default function FormulaWritePage() {
+export default function FormulaWritePage({ boardSlug = 'formula-market' }: { boardSlug?: string }) {
     const navigate = useNavigate();
+    const board = FORMULA_BOARDS[boardSlug] ?? FORMULA_BOARDS['formula-market'];
+    const isFixedPrice = board.fixedPrice != null;
 
     const [name, setName] = useState('');
     const [content, setContent] = useState('');
@@ -32,10 +35,10 @@ export default function FormulaWritePage() {
                 fileName = uploaded.original_name;
             }
 
-            const created = await communityAPI.createPost('formula-market', {
+            const created = await communityAPI.createPost(board.slug, {
                 title: name.trim(),
                 content,
-                price: price.trim() || undefined,
+                price: isFixedPrice ? String(board.fixedPrice) : (price.trim() || undefined),
                 is_public: isPublic,
                 file_url: fileUrl,
                 file_name: fileName,
@@ -60,13 +63,13 @@ export default function FormulaWritePage() {
                     >
                         <i className="fas fa-arrow-left text-sm" />
                     </button>
-                    <h1 className="text-lg md:text-xl font-bold text-yellow-400">수식 등록</h1>
+                    <h1 className={`text-lg md:text-xl font-bold ${board.accentText}`}>{board.writeLabel}</h1>
                 </div>
 
                 <button
                     onClick={handleSubmit}
                     disabled={submitting}
-                    className="bg-yellow-500 hover:bg-yellow-500/85 text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2"
+                    className={`${board.accentBg} text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2`}
                 >
                     {submitting ? (
                         <>
@@ -150,13 +153,20 @@ export default function FormulaWritePage() {
                         가격
                     </label>
                     <div className="flex-1 px-5 py-3">
-                        <input
-                            type="text"
-                            value={price}
-                            onChange={e => setPrice(e.target.value)}
-                            placeholder="가격을 입력하세요."
-                            className="w-full bg-transparent text-white placeholder-gray-600 focus:outline-none focus:border-[#2997ff]/50 text-sm"
-                        />
+                        {isFixedPrice ? (
+                            <div className="flex items-center gap-2 text-sm" data-testid="fixed-price">
+                                <span className={`font-black ${board.accentText}`}>{board.fixedPrice!.toLocaleString()}원</span>
+                                <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] font-bold text-gray-300">균일가 · 변경 불가</span>
+                            </div>
+                        ) : (
+                            <input
+                                type="text"
+                                value={price}
+                                onChange={e => setPrice(e.target.value)}
+                                placeholder="가격을 입력하세요."
+                                className="w-full bg-transparent text-white placeholder-gray-600 focus:outline-none focus:border-[#2997ff]/50 text-sm"
+                            />
+                        )}
                     </div>
                 </div>
 
@@ -185,7 +195,7 @@ export default function FormulaWritePage() {
                     <button
                         onClick={handleSubmit}
                         disabled={submitting}
-                        className="bg-yellow-500 hover:bg-yellow-500/85 text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2"
+                        className={`${board.accentBg} text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2`}
                     >
                         {submitting ? (
                             <>
