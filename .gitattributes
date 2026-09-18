@@ -3,3 +3,4 @@
 *.service    text eol=lf
 preflight_check.sh text eol=lf
 deploy/systemd/** text eol=lf
+deploy/goodrich_tradingos_overlay/** text eol=lf

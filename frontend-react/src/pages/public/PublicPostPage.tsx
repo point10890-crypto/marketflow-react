@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import DOMPurify from 'dompurify';
+import { sanitizeCommunityHtml } from '@/lib/sanitizeCommunityHtml';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { publicCommunityAPI, PublicComment, PublicPostDetail } from '@/lib/api';
-import { AdSlot, PublicShell } from '@/components/public/PublicShell';
+import { API_BASE, publicCommunityAPI, PublicComment, PublicPostDetail } from '@/lib/api';
+import { PublicShell } from '@/components/public/PublicShell';
 import { applySeo, summarizeHtml, SITE_ORIGIN } from '@/lib/seo';
 import { accentFor, formatDate, JoinBanner } from './PublicCommunityPage';
 
@@ -100,10 +100,7 @@ export default function PublicPostPage() {
 
                 {/* 본문 — 서버 생성 HTML (자체 콘텐츠) */}
                 <div className="pub-prose pub-rise mt-6" style={{ animationDelay: '100ms' }}
-                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
-
-                {/* 본문 하단 광고 */}
-                <AdSlot slot="3817264905" className="mt-10" />
+                     dangerouslySetInnerHTML={{ __html: sanitizeCommunityHtml(post.content, API_BASE) }} />
 
                 {/* 댓글 (읽기 전용) */}
                 <section className="mt-10">

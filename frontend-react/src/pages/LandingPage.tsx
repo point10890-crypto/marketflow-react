@@ -348,6 +348,13 @@ export default function LandingPage() {
 
     return (
         <PublicShell section="claw">
+            <section aria-label="무료 공개 가이드" className="border-b border-white/10 bg-white/[0.025]">
+                <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-4 text-sm sm:px-6">
+                    <span className="text-gray-300">가입 없이 읽는 시장 분석과 검증 방법</span>
+                    <Link to="/guide/signal-verification-worked-example" className="font-bold text-[#ff9b89] underline underline-offset-4">AI 후보 6건 검증 예제</Link>
+                    <Link to="/guide" className="text-gray-300 underline underline-offset-4">전체 가이드</Link>
+                </div>
+            </section>
             {/* ── HERO — 따뜻한 그라디언트 위 에이전트 스토리 ─────────── */}
             <section className="relative overflow-hidden border-b border-white/[0.05]">
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_55%_at_18%_10%,rgba(255,138,100,.14),transparent_70%),radial-gradient(45%_45%_at_88%_20%,rgba(56,189,248,.08),transparent_70%)]" aria-hidden />
@@ -367,7 +374,7 @@ export default function LandingPage() {
                             복잡한 시장 관찰은 에이전트에게 맡기세요. 새벽 미국 시장 갱신부터 장중 주도주
                             관찰, 마감 종가베팅 스크리닝까지 알아서 돌아갑니다. 그 위에서{' '}
                             <a href="#ai-brain" className="font-bold text-cyan-300 underline decoration-cyan-400/40 underline-offset-4 hover:text-cyan-200">AI Brain</a>이
-                            결과를 다시 학습해 다음 관찰을 더 정확하게 만들어요.
+                            과거 결과를 기록하고 다음 관찰의 참고 자료로 활용합니다.
                         </p>
 
                         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">

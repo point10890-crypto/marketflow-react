@@ -7,10 +7,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build && node scripts/prerender-seo.mjs",
     "preview": "vite preview",
+    "check:public": "node scripts/check-public-readiness.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "deploy": "npm run build && npx wrangler pages deploy dist --project-name=bitman-marketflow --branch=main --commit-dirty=true"
+    "deploy": "npm run build && npx wrangler pages deploy dist --project-name=bitman-marketflow --branch=main --commit-dirty=true",
+    "test:edge": "node --test edge/*.test.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.0",
@@ -25,6 +27,7 @@
     "@types/dompurify": "^3.0.5",
     "clsx": "^2.1.1",
     "dompurify": "^3.4.12",
+    "entities": "^8.1.0",
     "lightweight-charts": "^5.1.0",
     "lucide-react": "^0.460.0",
     "react": "^18.3.1",
@@ -32,11 +35,11 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^6.30.4",
     "rehype-sanitize": "^6.0.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "sanitize-html": "^2.17.7"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
-    "playwright": "^1.60.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -50,6 +53,7 @@
     "eslint": "^9.15.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "jsdom": "^29.0.2",
+    "playwright": "^1.60.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
     "typescript": "^5.6.3",

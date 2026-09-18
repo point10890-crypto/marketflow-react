@@ -15,13 +15,16 @@ import os
 import re
 import threading
 import time
+import inspect
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from app.services.mirofish import alpha_scanner, outcome_tracker, store
+from app.services.mirofish import evidence_packet as evidence_packet_mod
 import app.services.mirofish.dual_kalman as dual_kalman
 from app.services.mirofish.tradingagents import engine as ta_engine
 from app.services.mirofish.tradingagents import learning as ta_learning
+from app.services.mirofish.tradingagents import run_cache as ta_run_cache
 from app.utils.atomic_json import write_json_atomic
 
 
@@ -763,7 +766,18 @@ def _verdict_is_buy(run: dict[str, Any]) -> bool:
     """True when the CIO verdict action for this analysis run is BUY."""
     verdict = (run or {}).get('verdict') or {}
     action = verdict.get('action') or verdict.get('label')
-    return str(action or '').strip().upper() == 'BUY'
+    return _analysis_is_complete(run) and str(action or '').strip().upper() == 'BUY'
+
+
+def _analysis_is_complete(run: dict[str, Any]) -> bool:
+    operational_status = str((run or {}).get('status') or '').strip().lower()
+    status = str((run or {}).get('analysis_status') or ((run or {}).get('verdict') or {}).get('analysis_status') or '').upper()
+    action = str((((run or {}).get('verdict') or {}).get('action') or ((run or {}).get('verdict') or {}).get('verdict') or '')).upper()
+    return (
+        operational_status not in {'failed', 'running', 'cancelled'}
+        and status in {'SUCCESS_PRIMARY', 'SUCCESS_FALLBACK'}
+        and action != 'HOLD_REVIEW'
+    )
 
 
 def _require_buy(workflow: dict[str, Any] | None = None) -> bool:
@@ -833,7 +847,13 @@ def _apply_tradingagents_layer(
         verdict_weight = _ta_verdict_weight(verdict, learning)
         adjustment = 0.0
         hard_exclusion = False
-        if verdict == 'SELL':
+        if str(run.get('analysis_status') or v.get('analysis_status')) == 'HOLD_REVIEW' or verdict == 'HOLD_REVIEW':
+            hard_exclusion = True
+            item['ta_excluded'] = True
+            item['analysis_status'] = 'HOLD_REVIEW'
+            item['ta_exclusion_reason'] = 'TradingAgents decisive analysis requires review'
+            excluded.append(cand.get('symbol'))
+        elif verdict == 'SELL':
             if confidence >= sell_exclude_min_confidence:
                 hard_exclusion = True
                 item['ta_excluded'] = True
@@ -1016,9 +1036,9 @@ def _select_top3(ranked: list[dict[str, Any]], *, top_n: int, require_buy: bool)
     TradingAgents 딥 검증이 SELL 로 배제한 종목(`ta_excluded`)은 두 분기 모두에서 제외된다.
     """
     if require_buy:
-        eligible = [r for r in ranked if _verdict_is_buy(r) and not r.get('ta_excluded')]
+        eligible = [r for r in ranked if _analysis_is_complete(r) and _verdict_is_buy(r) and not r.get('ta_excluded')]
     else:
-        eligible = [r for r in ranked if not r.get('ta_excluded')]
+        eligible = [r for r in ranked if _analysis_is_complete(r) and not r.get('ta_excluded')]
     return eligible[:top_n]
 
 
@@ -1036,56 +1056,263 @@ def _complete_workflow(
         raise ValueError('workflow not found')
     workflow['status'] = 'running'
     workflow['started_at'] = workflow.get('started_at') or datetime.now(timezone.utc).isoformat()
+    admission = ta_run_cache.AdmissionManager(
+        os.path.join(WORKFLOW_STATE_ROOT, 'candidate_admission.sqlite3')
+    )
+    admission_limit = min(len(candidates), int(ta_engine.get_status()['config'].get('max_candidates') or 5))
+    admitted_candidates, admission_summary = admission.admit(
+        workflow_id, candidates, limit=admission_limit,
+    )
+    create_parameters = inspect.signature(_create_analysis_run).parameters
+    compact_contract = 'evidence_packet' in create_parameters
+    work_items: list[dict[str, Any]] = [{'candidate': candidate} for candidate in admitted_candidates]
+    if compact_contract:
+        if ta_engine.is_disabled():
+            admission_summary['provider_permits'] = []
+            admission_summary['deferred'] += len(work_items)
+            admission_summary['admitted'] = 0
+            admission_summary['reason'] = 'tradingagents_disabled'
+            for record in admission_summary.get('records') or []:
+                if record.get('status') == 'admitted':
+                    record.update(status='deferred', reason='tradingagents_disabled')
+            workflow.update({
+                'status': 'disabled',
+                'analysis_status': 'DISABLED',
+                'disabled_at': datetime.now(timezone.utc).isoformat(),
+                'elapsed_ms': int((time.perf_counter() - started) * 1000),
+                'budget_summary': admission_summary,
+                'analysis_runs': [],
+                'top3': [],
+                'progress': {
+                    'phase': 'disabled', 'completed': 0,
+                    'total': len(work_items), 'percent': 0,
+                },
+                'summary': {
+                    'status': 'disabled', 'reason': 'tradingagents_disabled',
+                    'analyzed_count': 0, 'selected_count': 0,
+                },
+                'tradingagents_summary': {
+                    'status': 'disabled', 'analyzed': 0,
+                    'legacy_duplicate_removed': True,
+                },
+            })
+            _write_workflow(workflow)
+            return workflow
+        else:
+            compact_use_llm = _mode(mode) not in {'rule', 'local', 'no-llm'}
+            valid_items: list[dict[str, Any]] = []
+            for item in work_items:
+                try:
+                    item['evidence_packet'] = _build_candidate_packet(
+                        item['candidate'], use_llm=compact_use_llm,
+                    )
+                    valid_items.append(item)
+                except ValueError as exc:
+                    symbol = str(item['candidate'].get('symbol') or '')
+                    admission_record = next((
+                        record for record in admission_summary.get('records') or []
+                        if str(record.get('symbol') or '') == symbol
+                    ), None)
+                    if admission_record is not None:
+                        admission_record.update(
+                            status='rejected', reason=f'evidence_invalid:{exc}',
+                        )
+                    admission_summary['rejected'] += 1
+                    admission_summary['admitted'] = max(
+                        0, int(admission_summary.get('admitted') or 0) - 1,
+                    )
+            work_items = valid_items
+            if _mode(mode) not in {'rule', 'local', 'no-llm'}:
+                prepared, permit_records = ta_engine.reserve_compact_batch(
+                    workflow_id, [item['evidence_packet'] for item in work_items],
+                )
+                prepared_by_symbol = {item['packet']['symbol']: item for item in prepared}
+                permitted_items = []
+                for item in work_items:
+                    prepared_item = prepared_by_symbol.get(item['candidate'].get('symbol'))
+                    if prepared_item:
+                        item.update(prepared_item)
+                        permitted_items.append(item)
+                admission_summary['provider_permits'] = permit_records
+                admission_summary['deferred'] += len(work_items) - len(permitted_items)
+                admission_summary['admitted'] = len(permitted_items)
+                work_items = permitted_items
+    workflow['budget_summary'] = admission_summary
     workflow['progress'] = {
         'phase': 'graphrag_batch',
         'completed': 0,
-        'total': len(candidates),
+        'total': len(work_items),
         'percent': 5,
     }
-    _write_workflow(workflow)
+    def release_item_permits(pending: dict[str, Any]) -> bool:
+        permits = pending.get('reservation_ids')
+        owners = pending.get('reservation_owner_tokens')
+        if not permits:
+            return True
+        try:
+            ta_engine.release_compact_permits(permits, owners)
+        except Exception:
+            return False
+        return True
+
+    def release_pending_permits() -> None:
+        for pending in work_items:
+            release_item_permits(pending)
+
+    try:
+        _write_workflow(workflow)
+        executor_context = concurrent.futures.ThreadPoolExecutor(max_workers=max_parallel)
+    except BaseException:
+        release_pending_permits()
+        raise
 
     results: list[dict[str, Any]] = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max_parallel) as executor:
-        future_map = {
-            executor.submit(_create_analysis_run, candidate, agent_count, mode): candidate
-            for candidate in candidates
-        }
-        for future in concurrent.futures.as_completed(future_map):
-            candidate = future_map[future]
-            try:
-                run = future.result()
-                item = _analysis_result(candidate, run)
-            except Exception as exc:
-                item = {
-                    'candidate': _candidate_summary(candidate),
-                    'status': 'failed',
-                    'error': f'{type(exc).__name__}: {exc}',
-                    'final_score': -999.0,
-                }
-            results.append(item)
-            workflow['analysis_runs'] = sorted(results, key=lambda item: item.get('final_score', -999), reverse=True)
-            workflow['progress'] = {
-                'phase': 'graphrag_batch',
-                'completed': len(results),
-                'total': len(candidates),
-                'percent': min(95, int((len(results) / max(1, len(candidates))) * 90) + 5),
-            }
-            _write_workflow(workflow)
+    permit_renewal_failed = False
+    permit_abort_event = threading.Event()
+    future_map: dict[concurrent.futures.Future, dict[str, Any]] = {}
+    with executor_context as executor:
+        try:
+            for item in work_items:
+                future = executor.submit(
+                    _invoke_analysis_run, item['candidate'], agent_count, mode, workflow_id,
+                    bool(workflow.get('force')), evidence_packet=item.get('evidence_packet'),
+                    request_ids=item.get('request_ids'), reservation_ids=item.get('reservation_ids'),
+                    reservation_owner_tokens=item.get('reservation_owner_tokens'),
+                    permits_preflighted=bool(item.get('reservation_ids')),
+                    permit_abort_event=permit_abort_event,
+                )
+                future_map[future] = item
+            pending = set(future_map)
+            lease_failures: set[concurrent.futures.Future] = set()
+            heartbeat_seconds = ta_engine.compact_permit_heartbeat_seconds()
+            while pending:
+                renewable = pending - lease_failures
+                done, not_done = concurrent.futures.wait(
+                    pending,
+                    timeout=heartbeat_seconds if renewable else None,
+                    return_when=concurrent.futures.FIRST_COMPLETED,
+                )
+                if permit_abort_event.is_set():
+                    permit_renewal_failed = True
+                    lease_failures.update(pending)
+                    for future in not_done:
+                        future.cancel()
+                        pending_item = future_map[future]
+                        release_item_permits(pending_item)
+                still_renewable = not_done & renewable
+                if still_renewable and not permit_abort_event.is_set():
+                    permits: dict[str, str] = {}
+                    owners: dict[str, str] = {}
+                    for future in still_renewable:
+                        pending_item = future_map[future]
+                        for operation, reservation_id in dict(
+                            pending_item.get('reservation_ids') or {}
+                        ).items():
+                            key = f'{id(future)}:{operation}'
+                            permits[key] = reservation_id
+                            owners[key] = str(
+                                (pending_item.get('reservation_owner_tokens') or {}).get(operation) or ''
+                            )
+                    try:
+                        renewed = ta_engine.renew_compact_permits(permits, owners)
+                    except Exception:
+                        renewed = False
+                    if not renewed:
+                        permit_renewal_failed = True
+                        permit_abort_event.set()
+                        lease_failures.update(still_renewable)
+                        for future in still_renewable:
+                            future.cancel()
+                            pending_item = future_map[future]
+                            release_item_permits(pending_item)
+                if not done:
+                    continue
+                pending = not_done
+                for future in done:
+                    pending_item = future_map[future]
+                    candidate = pending_item['candidate']
+                    try:
+                        if future in lease_failures or permit_abort_event.is_set():
+                            permit_renewal_failed = True
+                            lease_failures.add(future)
+                            raise RuntimeError('permit_lease_renewal_failed')
+                        run = future.result()
+                        if permit_abort_event.is_set():
+                            permit_renewal_failed = True
+                            lease_failures.add(future)
+                            raise RuntimeError('permit_lease_renewal_failed')
+                        item = _analysis_result(candidate, run)
+                    except Exception as exc:
+                        if (
+                            permit_abort_event.is_set()
+                            or str(exc) == 'permit_lease_renewal_failed'
+                        ):
+                            permit_renewal_failed = True
+                            lease_failures.add(future)
+                        item = {
+                            'candidate': _candidate_summary(candidate),
+                            'status': 'failed',
+                            'error': (
+                                'PermitLeaseError: permit_lease_renewal_failed'
+                                if future in lease_failures
+                                else f'{type(exc).__name__}: {exc}'
+                            ),
+                            'final_score': -999.0,
+                        }
+                    release_item_permits(pending_item)
+                    results.append(item)
+                    workflow['analysis_runs'] = sorted(
+                        results, key=lambda result: result.get('final_score', -999), reverse=True,
+                    )
+                    workflow['progress'] = {
+                        'phase': 'graphrag_batch',
+                        'completed': len(results),
+                        'total': len(work_items),
+                        'percent': min(95, int((len(results) / max(1, len(work_items))) * 90) + 5),
+                    }
+                    _write_workflow(workflow)
+        except BaseException:
+            permit_abort_event.set()
+            for future in future_map:
+                future.cancel()
+            release_pending_permits()
+            raise
 
     ranked = sorted(results, key=lambda item: item.get('final_score', -999), reverse=True)
+    if permit_renewal_failed:
+        workflow.update({
+            'status': 'failed',
+            'analysis_status': 'FAILED_TECHNICAL',
+            'failure_reason': 'permit_lease_renewal_failed',
+            'completed_at': datetime.now(timezone.utc).isoformat(),
+            'elapsed_ms': int((time.perf_counter() - started) * 1000),
+            'analysis_runs': ranked,
+            'top3': [],
+            'tradingagents_summary': {
+                'status': 'failed', 'analyzed': 0,
+                'legacy_duplicate_removed': True,
+            },
+            'progress': {
+                'phase': 'failed', 'completed': len(results),
+                'total': len(work_items), 'percent': 100,
+            },
+            'summary': {
+                'status': 'failed', 'reason': 'permit_lease_renewal_failed',
+                'analyzed_count': 0, 'selected_count': 0,
+            },
+        })
+        _write_workflow(workflow)
+        return workflow
     pre_intervention_items = copy.deepcopy(ranked)
     workflow['pre_intervention_ranking'] = _ranking_snapshot(ranked)
     pre_ranks = {
         str((item.get('candidate') or {}).get('symbol')): rank
         for rank, item in enumerate(ranked, start=1)
     }
-    try:
-        ranked, ta_summary = _apply_tradingagents_layer(
-            ranked, top_n=top_n, require_buy=_require_buy(workflow),
-        )
-    except Exception as exc:
-        ta_summary = {'status': 'error', 'error': f'{type(exc).__name__}: {exc}'}
-    workflow['tradingagents_summary'] = ta_summary
+    workflow['tradingagents_summary'] = {
+        'status': 'compact_single_pass', 'analyzed': len(ranked),
+        'legacy_duplicate_removed': True,
+    }
     workflow['post_intervention_ranking'] = _ranking_snapshot(ranked, before=pre_ranks)
     top3 = _select_top3(ranked, top_n=top_n, require_buy=_require_buy(workflow))
     summary = _workflow_decision_summary(top3, ranked)
@@ -1163,7 +1390,7 @@ def _complete_workflow(
         'progress': {
             'phase': 'completed',
             'completed': len(results),
-            'total': len(candidates),
+            'total': len(work_items),
             'percent': 100,
         },
         'summary': summary,
@@ -1183,16 +1410,91 @@ def _complete_workflow(
     return workflow
 
 
-def _create_analysis_run(candidate: dict[str, Any], agent_count: int, mode: str) -> dict[str, Any]:
+def _invoke_analysis_run(
+    candidate: dict[str, Any], agent_count: int, mode: str,
+    workflow_id: str, force: bool, *, evidence_packet: dict[str, Any] | None = None,
+    request_ids: dict[str, str] | None = None,
+    reservation_ids: dict[str, str] | None = None,
+    reservation_owner_tokens: dict[str, str] | None = None,
+    permits_preflighted: bool = False,
+    permit_abort_event: threading.Event | None = None,
+) -> dict[str, Any]:
+    if permit_abort_event is not None and permit_abort_event.is_set():
+        raise RuntimeError('permit_lease_renewal_failed')
+    parameters = inspect.signature(_create_analysis_run).parameters
+    if 'workflow_id' in parameters:
+        optional = {
+            'workflow_id': workflow_id, 'force': force,
+            'evidence_packet': evidence_packet, 'request_ids': request_ids,
+            'reservation_ids': reservation_ids,
+            'reservation_owner_tokens': reservation_owner_tokens,
+            'permits_preflighted': permits_preflighted,
+            'permit_abort_event': permit_abort_event,
+        }
+        accepts_kwargs = any(
+            parameter.kind is inspect.Parameter.VAR_KEYWORD
+            for parameter in parameters.values()
+        )
+        kwargs = {
+            name: value for name, value in optional.items()
+            if accepts_kwargs or name in parameters
+        }
+        return _create_analysis_run(candidate, agent_count, mode, **kwargs)
+    return _create_analysis_run(candidate, agent_count, mode)
+
+
+def _create_analysis_run(
+    candidate: dict[str, Any], agent_count: int, mode: str, *,
+    workflow_id: str | None = None, force: bool = False,
+    evidence_packet: dict[str, Any] | None = None,
+    request_ids: dict[str, str] | None = None,
+    reservation_ids: dict[str, str] | None = None,
+    reservation_owner_tokens: dict[str, str] | None = None,
+    permits_preflighted: bool = False,
+    permit_abort_event: threading.Event | None = None,
+) -> dict[str, Any]:
+    """Automatic-only compact seam; standalone ``store.create_run`` is unchanged."""
+    if ta_engine.is_disabled():
+        raise RuntimeError('TradingAgents automatic analysis is disabled')
     target = candidate.get('display_name') or candidate.get('name') or candidate.get('symbol')
-    if candidate.get('symbol') and target != candidate.get('symbol'):
-        target = f"{target} {candidate.get('symbol')}"
-    return store.create_run({
-        'target': target,
-        'agent_count': agent_count,
-        'mode': mode,
-        'async': False,
-    })
+    compact_use_llm = _mode(mode) not in {'rule', 'local', 'no-llm'}
+    packet = evidence_packet or _build_candidate_packet(candidate, use_llm=compact_use_llm)
+    ta = ta_engine.run_deep_analysis(
+        str(target), symbol=candidate.get('symbol'), use_llm=compact_use_llm,
+        profile='compact', evidence_packet=packet, force=force,
+        routing_run_id=workflow_id, request_ids=request_ids,
+        reservation_ids=reservation_ids,
+        reservation_owner_tokens=reservation_owner_tokens,
+        permits_preflighted=permits_preflighted,
+        permit_abort_event=permit_abort_event,
+    )
+    return store.create_compact_run(candidate, ta, agent_count=agent_count)
+
+
+def _build_candidate_packet(
+    candidate: dict[str, Any], *, use_llm: bool, brain: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    provenance_missing = [
+        str(value) for value in (candidate.get('provenance_missing') or []) if value
+    ]
+    if provenance_missing:
+        raise ValueError(
+            'required provenance missing: ' + ','.join(sorted(set(provenance_missing)))
+        )
+    enriched = {
+        **candidate,
+        'as_of': candidate.get('source_cutoff')
+                 or (candidate.get('replay_context') or {}).get('source_cutoff'),
+    }
+    return evidence_packet_mod.build_evidence_packet(
+        enriched, profile='compact', models=ta_engine.routing_model_ids(),
+        deterministic_scores={
+            'alpha': candidate.get('alpha_score'), 'risk': candidate.get('risk_score'),
+            'relative_strength': _extract_rs_rating(candidate),
+            'profitability': ((candidate.get('analysis_profile') or {}).get('profitability_scorecard') or {}).get('goal_fit_score'),
+        }, execution_inputs={'use_llm': bool(use_llm), 'brain': brain},
+        risk_gates=((candidate.get('analysis_profile') or {}).get('profitability_scorecard') or {}),
+    )
 
 
 def _analysis_result(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str, Any]:
@@ -1236,12 +1538,20 @@ def _analysis_result(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
         'market': run.get('market') or candidate.get('market'),
         'verdict': {
             'action': verdict.get('action') or verdict.get('label'),
+            'analysis_status': (
+                verdict.get('analysis_status') or run.get('analysis_status') or 'SUCCESS_PRIMARY'
+            ),
+            'rule_candidate_verdict': (
+                verdict.get('rule_candidate_verdict') or run.get('rule_candidate_verdict')
+            ),
             'confidence_pct': verdict.get('confidence_pct'),
             'bullish': verdict.get('bullish'),
             'neutral': verdict.get('neutral'),
             'bearish': verdict.get('bearish'),
             'target': verdict_target_label,
             'summary': verdict.get('summary'),
+            'reasoning': verdict.get('reasoning'),
+            'opposing_scenario': verdict.get('opposing_scenario'),
             # ── P0 #4: 종목 식별 + 분석 기준일 (UI/Telegram 직접 사용) ──
             'symbol': verdict_symbol,
             'market': verdict_market,
@@ -1265,6 +1575,15 @@ def _analysis_result(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
         'score_breakdown': score_breakdown,
         'reason': _ranking_reason(candidate, run, final_score),
         'artifacts': run.get('artifacts') or {},
+        'source_run_id': run.get('source_run_id'),
+        'analysis_status': run.get('analysis_status') or verdict.get('analysis_status') or 'SUCCESS_PRIMARY',
+        'rule_candidate_verdict': (
+            run.get('rule_candidate_verdict') or verdict.get('rule_candidate_verdict')
+        ),
+        'provider_usage': run.get('provider_usage') or {},
+        'profile': run.get('profile'),
+        'evidence_fingerprint': run.get('evidence_fingerprint'),
+        'tradingagents': run.get('tradingagents'),
     }
 
 
@@ -1448,6 +1767,8 @@ def should_send_workflow_top3(workflow: dict[str, Any], *, min_top_score: float 
     top3 = [item for item in (workflow.get('top3') or []) if isinstance(item, dict)]
     if not top3:
         return False, 'top3_empty'
+    if any(not _analysis_is_complete(item) for item in top3):
+        return False, 'hold_review'
     summary = workflow.get('summary') if isinstance(workflow.get('summary'), dict) else {}
     quality = summary.get('quality') if isinstance(summary.get('quality'), dict) else {}
     if quality.get('recommendation') == 'hold':
@@ -1795,6 +2116,14 @@ def _extract_rs_rating(candidate: dict[str, Any]) -> int | None:
 
 
 def _candidate_summary(candidate: dict[str, Any]) -> dict[str, Any]:
+    source_packets = list(candidate.get('source_packets') or [])
+    source_cutoff = candidate.get('source_cutoff') or (candidate.get('replay_context') or {}).get('source_cutoff')
+    if not source_cutoff and source_packets:
+        observed = tuple(
+            row.get('fetched_at') or row.get('observed_at')
+            for row in source_packets if isinstance(row, dict)
+        )
+        source_cutoff = evidence_packet_mod.latest_source_cutoff(observed)
     return {
         'rank': candidate.get('rank'),
         'symbol': candidate.get('symbol'),
@@ -1812,6 +2141,12 @@ def _candidate_summary(candidate: dict[str, Any]) -> dict[str, Any]:
         'entry_plan': candidate.get('entry_plan') or {},
         'replay_context': candidate.get('replay_context') or {},
         'price': candidate.get('price') or {},
+        'generated_at': candidate.get('generated_at'),
+        'source_cutoff': source_cutoff,
+        'source': candidate.get('source'),
+        'freshness': candidate.get('freshness') or {},
+        'source_packets': source_packets,
+        'provenance_missing': list(candidate.get('provenance_missing') or []),
     }
 
 
@@ -1846,6 +2181,7 @@ def _workflow_summary(workflow: dict[str, Any] | None) -> dict[str, Any] | None:
         'progress': workflow.get('progress') or {},
         'filters': workflow.get('filters') or {},
         'links': workflow.get('links') or {},
+        'budget_summary': workflow.get('budget_summary') or {},
         # ── Phase C: workflow summary 에도 GraphRAG/freshness 노출 ─────
         'graphrag': workflow.get('graphrag'),
         'source_freshness': workflow.get('source_freshness'),

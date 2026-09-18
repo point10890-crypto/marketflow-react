@@ -123,3 +123,38 @@ def test_hidden_comments_not_exposed(app, client):
     body = client.get(f'/api/public/community/posts/{pid}').get_json()
     contents = [c['content'] for c in body['comments']]
     assert '숨긴 댓글' not in contents
+
+
+def test_sitemap_enumerates_all_notices_and_excludes_hidden_private_inactive(app, client):
+    author = User.query.filter_by(email='writer@example.com').first()
+    notice = Board.query.filter_by(slug='notice').first()
+    inactive = Board(slug='analysis', name='비활성', is_active=False)
+    db.session.add(inactive)
+    db.session.flush()
+    for i in range(25):
+        db.session.add(Post(board_id=notice.id, author_id=author.id, title=f'공지 {i}', content='본문', is_notice=True))
+    db.session.add(Post(board_id=notice.id, author_id=author.id, title='숨김', content='숨김', is_hidden=True))
+    db.session.add(Post(board_id=inactive.id, author_id=author.id, title='비활성', content='비활성'))
+    db.session.commit()
+    cursor = 0
+    found = []
+    while True:
+        response = client.get(f'/api/public/community/sitemap?after_id={cursor}&per_page=10')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert all(set(row) == {'id'} for row in data['posts'])
+        found.extend(row['id'] for row in data['posts'])
+        cursor = data['next_after_id']
+        if cursor is None:
+            break
+    assert len(found) == len(set(found)) == 26
+    assert app.config['_test_ids']['secret'] not in found
+    assert found == sorted(found)
+    assert client.post('/api/public/community/sitemap').status_code == 405
+
+
+def test_sitemap_respects_configured_board_allowlist(app, client, monkeypatch):
+    monkeypatch.setenv('PUBLIC_COMMUNITY_BOARDS', '')
+    response = client.get('/api/public/community/sitemap')
+    assert response.status_code == 200
+    assert response.get_json() == {'posts': [], 'next_after_id': None}

@@ -11,6 +11,7 @@ flask>=3.0.0
 flask-compress>=1.15
 flask-cors>=4.0.0
 flask-sqlalchemy>=3.1.0
+greenlet>=3.5.5
 bcrypt>=4.0.0
 
 # 데이터 수집
@@ -18,6 +19,8 @@ pykrx>=1.0.45
 requests>=2.31.0
 beautifulsoup4>=4.12.0
 finance-datareader>=0.9.50
+mplfinance>=0.12.10b0
+pandas-datareader>=0.10.0
 finnhub-python>=2.4.0
 fredapi>=0.5.0
 selenium>=4.22.0

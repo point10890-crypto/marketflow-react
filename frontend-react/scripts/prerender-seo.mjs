@@ -1,3 +1,5 @@
+import { AD_PRIVACY_HTML, DATA_SHARING_HTML, PUBLISHING_PAGES } from '../src/data/publishing.mjs';
+import { publicUrl, normalizePublicLinks } from '../src/lib/publicUrls.mjs';
 // 공개 경로 정적 스냅샷 생성기 — `vite build` 뒤에 실행된다 (package.json build 스크립트).
 //
 // 왜 필요한가: SPA 는 모든 경로가 같은 빈 index.html 을 반환한다. AdSense 심사·검색
@@ -14,13 +16,14 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { GUIDES } from '../src/data/guides.mjs';
+import { GUIDES, renderGuideNotes } from '../src/data/guides.mjs';
+import { CREATOR_ABOUT_JSON_LD, CREATOR_PROFILE } from '../src/data/creator.mjs';
 
 const ORIGIN = 'https://bit-man.net';
 const DIST = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist');
 
 const NAV = `
-<nav><a href="/">홈</a> · <a href="/guide">인사이트 가이드</a> · <a href="/community">커뮤니티</a> · <a href="/pricing">요금제</a> · <a href="/about">서비스 소개</a> · <a href="/privacy">개인정보처리방침</a> · <a href="/terms">이용약관</a></nav>`;
+<nav><a href="/">홈</a> · <a href="/guide">인사이트 가이드</a> · <a href="/community">커뮤니티</a> · <a href="/pricing">요금제</a> · <a href="/about">서비스 소개</a> · <a href="/privacy">개인정보처리방침</a> · <a href="/terms">이용약관</a> · <a href="/editorial">편집 · 정정 원칙</a> · <a href="/contact">문의 · 오류 신고</a></nav>`;
 
 const FOOTER = `
 <footer><p>MarketFlow 는 관찰·분석 정보를 제공하며 자동 주문이나 투자 자문을 수행하지 않습니다.
@@ -28,7 +31,7 @@ const FOOTER = `
 과거의 결과는 미래 수익을 보장하지 않습니다.</p>
 <p>문의: point10890@gmail.com · © MarketFlow</p></footer>`;
 
-/** @type {Array<{path: string, title: string, description: string, body: string}>} */
+/** @type {Array<{path: string, title: string, description: string, body: string, jsonLd?: object | object[]}>} */
 const ROUTES = [
     {
         path: '/',
@@ -36,10 +39,11 @@ const ROUTES = [
         description:
             '잠들지 않는 AI 에이전트가 한국·미국·암호화폐 시장을 시장 일정에 맞춰 자동 분석합니다. 장중 주도주 관찰, 종가베팅 스크리너, 그리고 스스로 학습하는 AI Brain — 근거와 사후 검증까지 한 대시보드에서.',
         body: `
+<p>가입 없이 읽는 시장 분석과 검증 방법: <a href="/guide/signal-verification-worked-example">AI 후보 6건 검증 예제</a> · <a href="/guide">전체 가이드</a></p>
 <h1>사람이 잠든 시간에도, 에이전트는 시장을 분석합니다</h1>
 <p>새벽 미국 시장 갱신부터 장중 주도주 관찰, 마감 종가베팅 스크리닝까지 — MarketFlow의 자동화
 에이전트가 분석 파이프라인 전체를 스스로 돌립니다. 그 위에서 AI Brain이 결과를 다시 학습해
-다음 관찰을 더 정확하게 만듭니다.</p>
+다음 관찰의 참고 자료로 활용합니다.</p>
 <h2>에이전트의 하루 — 분석은 스케줄이 대신합니다</h2>
 <ul>
 <li><strong>04:00 · 미국 시장 전체 갱신</strong> — VIX·공포탐욕·섹터 로테이션 수집, AI 매크로 브리핑과 Smart Money Top Picks 작성</li>
@@ -76,11 +80,18 @@ const ROUTES = [
         title: '서비스 소개 | MarketFlow',
         description:
             'MarketFlow 는 시장 데이터를 반복 관찰하고 데이터 품질을 확인한 뒤 의미 있는 변화만 기록하는 AI 시장 관찰 서비스입니다. 핵심 에이전트 Claw 의 작동 방식과 운영 원칙을 소개합니다.',
+        jsonLd: CREATOR_ABOUT_JSON_LD,
         body: `
 <h1>서비스 소개</h1>
 <p><strong>MarketFlow</strong> 는 시장 데이터를 반복 관찰하고, 원천 시각과 데이터 품질을 확인한 뒤
 의미 있는 변화만 기록하는 시장 관찰 서비스입니다. 핵심 에이전트 <strong>Claw</strong> 와 함께
 한국·미국·암호화폐 분석 도구를 한 대시보드에서 제공합니다.</p>
+<section id="creator">
+<h2>운영자 소개</h2>
+<p>${esc(CREATOR_PROFILE.introduction)}</p>
+<p><a href="${esc(CREATOR_PROFILE.channelUrl)}" target="_blank" rel="noopener noreferrer">${esc(CREATOR_PROFILE.channelName)}</a> 유튜브 채널에서 공개 영상과 채널 활동을 확인할 수 있습니다.</p>
+<p>구독자 수 기준: ${esc(CREATOR_PROFILE.subscriberAsOf)}</p>
+</section>
 <h2>Claw는 어떻게 작동하나요</h2>
 <ul>
 <li><strong>관찰</strong> — 정해진 주기로 시장 원천과 후보군을 수집합니다.</li>
@@ -113,7 +124,7 @@ const ROUTES = [
             'MarketFlow 개인정보처리방침 — 수집 항목, 이용 목적, 보유·파기 원칙, Google AdSense 광고 쿠키, 이용자의 권리와 문의처를 안내합니다.',
         body: `
 <h1>개인정보처리방침</h1>
-<p>시행일 2026-08-17</p>
+<p>시행일 2026-09-15</p>
 <p>MarketFlow(이하 "서비스")는 이용자의 개인정보를 소중히 여기며, 「개인정보 보호법」 등 관련 법령을
 준수합니다. 본 방침은 서비스가 어떤 정보를 수집하고 어떻게 이용·보관·파기하는지를 설명합니다.</p>
 <h2>1. 수집하는 개인정보 항목</h2>
@@ -133,13 +144,9 @@ const ROUTES = [
 <p>개인정보는 회원 탈퇴 시 지체 없이 파기합니다. 단, 관련 법령에 따라 보존이 필요한 정보(결제·정산
 기록 등)는 해당 법령이 정한 기간 동안 분리 보관 후 파기합니다.</p>
 <h2>4. 광고 및 쿠키 (Google AdSense)</h2>
-<p>서비스의 공개 페이지에는 Google AdSense 광고가 게재될 수 있습니다. Google 을 포함한 제3자 광고
-사업자는 쿠키 및 광고 식별자를 사용하여 이용자의 이전 방문 기록에 기반한 맞춤 광고를 표시할 수 있습니다.
-Google 의 광고 쿠키 사용에 대한 자세한 내용은 <a href="https://policies.google.com/technologies/ads">Google 광고 정책</a>에서
-확인할 수 있으며, <a href="https://adssettings.google.com">Google 광고 설정</a>에서 맞춤 광고를 비활성화할 수 있습니다.</p>
+${AD_PRIVACY_HTML}
 <h2>5. 제3자 제공</h2>
-<p>서비스는 이용자의 개인정보를 외부에 판매하거나 제공하지 않습니다. 다만 법령에 근거한 요청이 있는
-경우는 예외로 합니다.</p>
+${DATA_SHARING_HTML}
 <h2>6. 이용자의 권리</h2>
 <p>이용자는 언제든지 자신의 개인정보를 조회·수정하거나 삭제(회원 탈퇴)를 요청할 수 있습니다.</p>
 <h2>7. 문의처</h2>
@@ -230,6 +237,11 @@ Google 의 광고 쿠키 사용에 대한 자세한 내용은 <a href="https://p
     },
 ];
 
+for (const page of PUBLISHING_PAGES) {
+    ROUTES.push({ path: page.path, title: `${page.title} | MarketFlow`, description: page.description,
+        body: `<h1>${page.title}</h1><p>최종 갱신: ${page.updated}</p>${page.html}` });
+}
+
 // ── 인사이트 가이드 — src/data/guides.mjs 단일 소스에서 목록/본문 페이지 생성 ──
 const GUIDE_DISCLAIMER = `
 <p><em>이 글은 투자 교육을 위한 일반 정보이며 특정 종목의 매수·매도 권유나 투자 자문이 아닙니다.
@@ -262,12 +274,25 @@ ROUTES.push({
     path: '/guide',
     title: '인사이트 가이드 — 시장 분석 교육 콘텐츠 | MarketFlow',
     description: 'VCP 패턴, 수급 분석, 시장 레짐, 종가베팅 체크리스트, 포지션 사이징, 공시 읽기, AI 신호 활용까지 — MarketFlow 팀이 쓴 시장 분석 교육 가이드 모음입니다.',
+    jsonLd: {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: 'MarketFlow 인사이트 가이드',
+        url: `${ORIGIN}/guide`,
+        inLanguage: 'ko',
+        hasPart: GUIDES.map((g) => ({
+            '@type': 'Article',
+            headline: g.title,
+            url: `${ORIGIN}/guide/${g.slug}`,
+        })),
+    },
     body: `
 <h1>인사이트 가이드</h1>
 <p>차트·수급·공시·리스크 관리까지, MarketFlow 팀이 서비스에 녹인 분석 원리를 누구나 읽을 수 있게
 정리했습니다. 모든 글은 교육 목적이며 투자 권유가 아닙니다.</p>
+<p>${esc(CREATOR_PROFILE.introduction)} <a href="/about#creator">운영자 소개와 채널 보기</a></p>
 <ul>
-${GUIDES.map((g) => `<li><a href="/guide/${g.slug}">${g.title}</a> — ${g.description}</li>`).join('\n')}
+${GUIDES.map((g) => `<li><a href="/guide/${g.slug}">${g.title}</a> — ${g.description} · 보강 ${g.updatedDate}</li>`).join('\n')}
 </ul>`,
 });
 
@@ -276,11 +301,37 @@ for (const g of GUIDES) {
         path: `/guide/${g.slug}`,
         title: `${g.title} | MarketFlow 가이드`,
         description: g.description,
+        jsonLd: [
+            {
+                '@context': 'https://schema.org',
+                '@type': 'Article',
+                headline: g.title,
+                description: g.description,
+                datePublished: g.date,
+                dateModified: g.updatedDate,
+                citation: g.sources.map((source) => source.url),
+                author: { '@type': 'Organization', name: 'MarketFlow 리서치', url: `${ORIGIN}/about#creator` },
+                publisher: { '@type': 'Organization', name: 'MarketFlow', url: ORIGIN },
+                mainEntityOfPage: `${ORIGIN}/guide/${g.slug}`,
+                inLanguage: 'ko',
+            },
+            {
+                '@context': 'https://schema.org',
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                    { '@type': 'ListItem', position: 1, name: '홈', item: ORIGIN },
+                    { '@type': 'ListItem', position: 2, name: '인사이트 가이드', item: `${ORIGIN}/guide` },
+                    { '@type': 'ListItem', position: 3, name: g.title, item: `${ORIGIN}/guide/${g.slug}` },
+                ],
+            },
+        ],
         body: `
 <p><a href="/guide">← 인사이트 가이드</a></p>
 <h1>${g.title}</h1>
-<p>MarketFlow 리서치 · ${g.date} · ${g.readMinutes}분 읽기 · ${g.category}</p>
+<p><a href="/about#creator">MarketFlow 리서치</a> · 최초 게시: ${g.date} · 내용 보강: ${g.updatedDate} · ${g.readMinutes}분 읽기 · ${g.category}</p>
+<p><a href="/about#creator">운영자: ${esc(CREATOR_PROFILE.name)} · ${esc(CREATOR_PROFILE.channelName)}</a></p>
 ${g.html}
+${renderGuideNotes(g)}
 ${GUIDE_DISCLAIMER}`,
     });
 }
@@ -290,8 +341,10 @@ function esc(s) {
 }
 
 function renderRoute(template, route) {
-    const url = `${ORIGIN}${route.path === '/' ? '/' : route.path}`;
+    const url = publicUrl(route.path);
     let html = template
+        .replace(/<noscript>[\s\S]*?<\/noscript>/, '')
+        .replace(/(<meta property="og:type" content=")[^"]*(")/, `$1${route.path.startsWith('/guide/') ? 'article' : 'website'}$2`)
         .replace(/<title>[^<]*<\/title>/, `<title>${route.title.replace(/</g, '&lt;')}</title>`)
         .replace(/(<meta name="description" content=")[^"]*(")/, `$1${esc(route.description)}$2`)
         .replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${url}$2`)
@@ -300,6 +353,22 @@ function renderRoute(template, route) {
         .replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${url}$2`)
         .replace(/(<meta name="twitter:title" content=")[^"]*(")/, `$1${esc(route.title)}$2`)
         .replace(/(<meta name="twitter:description" content=")[^"]*(")/, `$1${esc(route.description)}$2`);
+
+    if (route.jsonLd) {
+        const json = JSON.stringify(normalizePublicLinks(route.jsonLd)).replace(/</g, '\\u003c');
+        html = html.replace('</head>', `    <script type="application/ld+json" data-seo="jsonld">${json}</script>\n</head>`);
+    }
+
+    // Keep the public text readable even when external CSS/JS is unavailable.
+    html = html.replace('</head>', `<style>
+body{background:#09090b}
+#seo-content{font-family:system-ui,sans-serif;background:#09090b;overflow-wrap:anywhere}
+#seo-content a{color:#ffad9c;text-decoration:underline;text-underline-offset:3px}
+#seo-content h1,#seo-content h2,#seo-content th{color:#fafafa}
+#seo-content table{width:100%;border-collapse:collapse}
+#seo-content th,#seo-content td{padding:8px;border:1px solid #52525b;text-align:left}
+#seo-content footer{margin-top:40px;border-top:1px solid #52525b;padding-top:16px}
+</style></head>`);
 
     const snapshot = `<div id="seo-content" style="max-width:760px;margin:0 auto;padding:32px 20px;color:#d4d4d8;line-height:1.7">${NAV}${route.body}${FOOTER}</div>\n    `;
     html = html.replace('<div id="root">', `${snapshot}<div id="root">`);

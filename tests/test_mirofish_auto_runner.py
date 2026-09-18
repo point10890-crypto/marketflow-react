@@ -108,7 +108,9 @@ def test_auto_runner_quality_hold_commits_events_without_telegram(monkeypatch):
         lambda **kwargs: {
             'id': 'mcp_low_quality',
             'status': 'completed',
-            'top3': [{'symbol': '000001', 'final_score': 40.0}],
+            'top3': [{'symbol': '000001', 'final_score': 40.0,
+                      'analysis_status': 'SUCCESS_PRIMARY',
+                      'verdict': {'action': 'BUY', 'analysis_status': 'SUCCESS_PRIMARY'}}],
             'summary': {
                 'quality': {
                     'recommendation': 'hold',
@@ -358,3 +360,8 @@ def test_tunables_default_to_dry_run_without_explicit_operator_opt_in(monkeypatc
     monkeypatch.delenv('MIROFISH_AUTO_RUNNER_DRY_RUN', raising=False)
 
     assert auto_runner._tunables()['dry_run'] is True
+
+
+def test_local_cost_counter_is_explicitly_advisory():
+    bucket = auto_runner._empty_daily_bucket()
+    assert bucket['cost_accounting'] == 'estimated_advisory'

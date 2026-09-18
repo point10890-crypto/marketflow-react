@@ -13,17 +13,20 @@ from app.services.mirofish import workflow
 def _ranked():
     return [
         {'candidate': {'symbol': f'00{i}', 'display_name': f'종목{i}'}, 'run_id': f'r{i}',
-         'final_score': 90 - i * 10, 'verdict': {'action': 'BUY'}} for i in range(4)  # 90,80,70,60
+         'final_score': 90 - i * 10, 'analysis_status': 'SUCCESS_PRIMARY',
+         'verdict': {'action': 'BUY', 'analysis_status': 'SUCCESS_PRIMARY'}}
+        for i in range(4)  # 90,80,70,60
     ]
 
 
 def _fake_engine(verdict_map):
     def fake(target, **kw):
         v = verdict_map.get(target, ('HOLD', 50))
-        return {'id': f'ta_{target}', 'method': 'rule',
+        return {'id': f'ta_{target}', 'method': 'rule', 'analysis_status': 'SUCCESS_PRIMARY',
                 'provider_usage': {'providers': {'deepseek': {'calls': 1, 'successes': 1}}},
                 'verdict': {'verdict': v[0], 'confidence': v[1], 'strong_buy': v[0] == 'STRONG_BUY',
-                            'bull_case': 'b', 'bear_case': 'r', 'risk_summary': 's', 'reasoning': 'x'}}
+                            'bull_case': 'b', 'bear_case': 'r', 'risk_summary': 's', 'reasoning': 'x',
+                            'analysis_status': 'SUCCESS_PRIMARY'}}
     return fake
 
 
@@ -172,9 +175,12 @@ def test_learning_aggregate_converts_only_mature_verdicts_to_bounded_policy():
 
 def test_select_top3_never_returns_ta_excluded_item():
     ranked = [
-        {'candidate': {'symbol': '000'}, 'verdict': {'action': 'BUY'}, 'final_score': 95, 'ta_excluded': True},
-        {'candidate': {'symbol': '001'}, 'verdict': {'action': 'BUY'}, 'final_score': 80},
-        {'candidate': {'symbol': '002'}, 'verdict': {'action': 'BUY'}, 'final_score': 70},
+        {'candidate': {'symbol': '000'}, 'verdict': {'action': 'BUY'}, 'final_score': 95,
+         'analysis_status': 'SUCCESS_PRIMARY', 'ta_excluded': True},
+        {'candidate': {'symbol': '001'}, 'verdict': {'action': 'BUY'}, 'final_score': 80,
+         'analysis_status': 'SUCCESS_PRIMARY'},
+        {'candidate': {'symbol': '002'}, 'verdict': {'action': 'BUY'}, 'final_score': 70,
+         'analysis_status': 'SUCCESS_PRIMARY'},
     ]
     # require_buy True
     top = workflow._select_top3(ranked, top_n=3, require_buy=True)

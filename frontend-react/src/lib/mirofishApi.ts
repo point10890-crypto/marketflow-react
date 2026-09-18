@@ -1,6 +1,6 @@
 import { fetchAuthAPI, postAuthAPI } from './api';
 
-export type MiroFishVerdict = 'BUY' | 'SELL' | 'HOLD' | 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+export type MiroFishVerdict = 'BUY' | 'SELL' | 'HOLD' | 'HOLD_REVIEW' | 'STRONG_BUY' | 'BULLISH' | 'BEARISH' | 'NEUTRAL';
 
 export interface MiroFishLayer {
     label: string;
@@ -137,6 +137,12 @@ export interface MiroFishRun {
     change_pct?: number;
     mode?: string;
     status?: string;
+    analysis_status?: string;
+    source_run_id?: string;
+    provider_usage?: Record<string, any>;
+    profile?: string;
+    evidence_fingerprint?: string | null;
+    rule_candidate_verdict?: Record<string, any> | null;
     layers?: MiroFishLayer[];
     logs?: MiroFishLog[];
     analysts?: MiroFishAnalyst[];
@@ -144,8 +150,18 @@ export interface MiroFishRun {
     prediction_nodes?: MiroFishNode[];
     verdict?: {
         label?: MiroFishVerdict | string;
+        action?: MiroFishVerdict | string;
+        analysis_status?: string;
+        rule_candidate_verdict?: Record<string, any> | null;
         target?: string;
+        symbol?: string | null;
+        market?: string | null;
+        reference_date?: string | null;
+        target_display?: string;
         confidence?: number;
+        confidence_pct?: number;
+        reasoning?: string;
+        opposing_scenario?: string | null;
         bullish?: number;
         bearish?: number;
         neutral?: number;
@@ -161,6 +177,8 @@ export interface MiroFishRun {
         graph_links?: number;
         similar_events?: number;
         agent_count?: number;
+        compact_role_count?: number;
+        compatibility_schema?: string;
         status?: string;
         graph_method?: string;
         debate_method?: string;
@@ -187,6 +205,7 @@ export interface MiroFishRun {
     artifacts?: Record<string, string>;
     data_context?: {
         source_files?: string[];
+        source_packets?: Array<Record<string, any>>;
         signals?: Record<string, any>;
         briefing_count?: number;
         dart_available?: boolean;
@@ -222,6 +241,8 @@ export interface MiroFishStatus {
         graph_links?: number;
         similar_events?: number;
         agent_count?: number;
+        compact_role_count?: number;
+        compatibility_schema?: string;
         status?: string;
     };
     updated_at?: string;
@@ -665,6 +686,139 @@ export interface MiroFishDeepSeekStatus {
     checked_at?: string;
 }
 
+export type MiroFishLlmFreshnessStatus = 'fresh' | 'stale' | 'unknown';
+export type MiroFishLlmHealthStatus =
+    | 'healthy'
+    | 'authentication'
+    | 'billing'
+    | 'insufficient_balance'
+    | 'rate_limit'
+    | 'timeout'
+    | 'connection'
+    | 'server_error'
+    | 'model_unavailable'
+    | 'unavailable'
+    | 'unknown';
+
+export interface MiroFishLlmFreshness {
+    status: MiroFishLlmFreshnessStatus;
+    checked_at?: string | null;
+    last_event_at?: string | null;
+    age_seconds: number | null;
+    ttl_seconds: number | null;
+}
+
+export interface MiroFishLlmProviderStatus {
+    provider: string;
+    operation: string;
+    configured: boolean;
+    available: boolean | null;
+    model: string;
+    status: MiroFishLlmHealthStatus;
+    checked_at: string | null;
+    ttl_seconds: number | null;
+}
+
+export interface MiroFishLlmBreakerStatus {
+    provider: string;
+    modality: string;
+    model_tier: string;
+    state: 'closed' | 'open' | 'half_open' | 'unknown';
+    failure_count: number;
+    last_error_class: string | null;
+}
+
+export interface MiroFishLlmBudgetStatus {
+    scope: 'utc_calendar_day';
+    day_utc: string;
+    pool: string;
+    provider: string;
+    daily_cap_usd_configured: boolean;
+    daily_cap_usd: string | null;
+    used_usd: string | null;
+    remaining_usd: string | null;
+    usage_percent: number | null;
+    status: 'configured' | 'unavailable' | 'incomplete' | 'invalid_configuration';
+}
+
+export interface MiroFishLlmHoldReviewStatus {
+    available: boolean;
+    count: number | null;
+    rate: number | null;
+    reason: string;
+}
+
+export interface MiroFishLlmRoutingStatus {
+    schema_version: 'ai-routing-status-v1';
+    service: 'ai-routing';
+    checked_at: string;
+    freshness: MiroFishLlmFreshness;
+    provider_order: Record<string, string[]>;
+    providers: MiroFishLlmProviderStatus[];
+    breakers: MiroFishLlmBreakerStatus[];
+    budget: MiroFishLlmBudgetStatus;
+    hold_review: MiroFishLlmHoldReviewStatus;
+}
+
+export interface MiroFishLlmLatencyPercentiles {
+    p50: number | null;
+    p95: number | null;
+}
+
+export interface MiroFishLlmUsageMetrics {
+    attempts: number;
+    live_attempts: number;
+    breaker_skipped_attempts?: number;
+    successes: number;
+    fallbacks: number;
+    input_tokens?: number | null;
+    cached_input_tokens?: number | null;
+    output_tokens?: number | null;
+    reasoning_tokens?: number | null;
+    total_tokens: number | null;
+    known_input_tokens?: number;
+    known_output_tokens?: number;
+    known_total_tokens: number;
+    estimated_cost_usd: string | null;
+    known_estimated_cost_usd: string;
+    unknown_usage_attempts: number;
+    quarantined_usage_attempts?: number;
+    unknown_cost_attempts: number;
+    usage_completeness: number | null;
+    cost_completeness: number | null;
+    latency_ms: MiroFishLlmLatencyPercentiles;
+}
+
+export interface MiroFishLlmUsageGroup extends MiroFishLlmUsageMetrics {
+    day?: string;
+    provider?: string;
+    model?: string;
+    endpoint?: string;
+    operation?: string;
+}
+
+export interface MiroFishLlmUsageResponse {
+    schema_version: 'ai-routing-usage-v1';
+    days: number;
+    limit: number;
+    window: { start_utc: string; end_utc: string; timezone: 'UTC' };
+    groups: MiroFishLlmUsageGroup[];
+    top_cost_endpoints: Array<MiroFishLlmUsageGroup & { endpoint: string }>;
+    top_operations: Array<MiroFishLlmUsageGroup & { operation: string }>;
+    totals: MiroFishLlmUsageMetrics;
+    openai_shares: { attempts: number | null; tokens: number | null; cost: number | null };
+    fallback_count: number;
+    fallback_attempt_share: number | null;
+    hold_review: MiroFishLlmHoldReviewStatus;
+    freshness: MiroFishLlmFreshness;
+    generated_at: string;
+}
+
+export interface MiroFishLlmUsageParams {
+    days: number;
+    limit: number;
+}
+
 export interface MiroFishTradingViewStatus {
     provider?: string;
     mode?: string;
@@ -728,18 +882,30 @@ export interface MiroFishDeepSeekTelegramResponse {
 export interface MiroFishWorkflowAnalysisResult {
     candidate?: Partial<MiroFishAlphaCandidate>;
     status?: string;
+    analysis_status?: string;
+    source_run_id?: string;
+    provider_usage?: Record<string, any>;
+    profile?: string;
+    evidence_fingerprint?: string | null;
+    rule_candidate_verdict?: Record<string, any> | null;
     run_id?: string;
     target?: string;
     symbol?: string;
     market?: string;
     verdict?: {
         action?: string;
+        label?: string;
+        analysis_status?: string;
+        rule_candidate_verdict?: Record<string, any> | null;
         confidence_pct?: number;
+        confidence?: number;
         bullish?: number;
         neutral?: number;
         bearish?: number;
         target?: string;
         summary?: string;
+        reasoning?: string;
+        opposing_scenario?: string | null;
         // ── Phase C (P0 #4): 종목 식별 + 분석 기준일 ──
         symbol?: string;
         market?: string;
@@ -1487,6 +1653,8 @@ function normalizePipeline(rawValue: unknown, statusValue?: unknown): MiroFishSt
         graph_links: asNumber(raw.graph_links ?? raw.links, 0),
         similar_events: asNumber(raw.similar_events ?? raw.events, 0),
         agent_count: asNumber(raw.agent_count ?? raw.max_agent_count, 0),
+        compact_role_count: raw.compact_role_count === undefined ? undefined : asNumber(raw.compact_role_count, 0),
+        compatibility_schema: raw.compatibility_schema === undefined ? undefined : String(raw.compatibility_schema),
         status: String(raw.status ?? statusValue ?? 'ready'),
     };
 }
@@ -1556,8 +1724,20 @@ function normalizeVerdict(rawValue: unknown, analysts: MiroFishAnalyst[]): MiroF
 
     return {
         label,
+        action: raw.action === undefined ? label : String(raw.action).toUpperCase(),
+        analysis_status: raw.analysis_status === undefined ? undefined : String(raw.analysis_status),
+        rule_candidate_verdict: Object.keys(asObject(raw.rule_candidate_verdict)).length
+            ? asObject(raw.rule_candidate_verdict)
+            : undefined,
         target: raw.target === undefined ? undefined : String(raw.target),
+        symbol: raw.symbol === undefined ? undefined : String(raw.symbol),
+        market: raw.market === undefined ? undefined : String(raw.market),
+        reference_date: raw.reference_date === undefined ? undefined : String(raw.reference_date),
+        target_display: raw.target_display === undefined ? undefined : String(raw.target_display),
         confidence: asPercent(raw.confidence ?? raw.confidence_pct, 50),
+        confidence_pct: asNumber(raw.confidence_pct ?? raw.confidence, 50),
+        reasoning: raw.reasoning === undefined ? undefined : String(raw.reasoning),
+        opposing_scenario: raw.opposing_scenario === undefined ? undefined : String(raw.opposing_scenario),
         bullish: asNumber(bullish, 3),
         bearish: asNumber(bearish, 0),
         neutral: asNumber(neutral, 4),
@@ -1872,6 +2052,19 @@ function normalizeScannerCandidates(payload: any): MiroFishScannerCandidatesResp
 
 export const mirofishApi = {
     getStatus: async () => normalizeStatus(await fetchAuthAPI<any>('/api/admin/mirofish/status')),
+    getLlmRoutingStatus: async () => fetchAuthAPI<MiroFishLlmRoutingStatus>(
+        '/api/admin/mirofish/llm-routing/status',
+        undefined,
+        30000,
+    ),
+    getLlmUsage: async ({ days, limit }: MiroFishLlmUsageParams) => {
+        const search = new URLSearchParams({ days: String(days), limit: String(limit) });
+        return fetchAuthAPI<MiroFishLlmUsageResponse>(
+            `/api/admin/mirofish/llm-usage?${search.toString()}`,
+            undefined,
+            30000,
+        );
+    },
     getDataSources: async () => fetchAuthAPI<any>('/api/admin/mirofish/data-sources'),
     getAlphaServiceDashboard: async (params: MiroFishAlphaServiceDashboardParams = {}) => {
         return fetchAuthAPI<MiroFishAlphaServiceDashboardResponse>(

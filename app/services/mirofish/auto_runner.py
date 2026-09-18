@@ -177,6 +177,7 @@ def _empty_daily_bucket() -> dict[str, Any]:
         'failures': 0,
         'telegram_sent': 0,
         'est_cost_usd': 0.0,
+        'cost_accounting': 'estimated_advisory',
         'skip_reasons': {},
     }
 
@@ -494,6 +495,7 @@ def _fire_workflow_transaction(tuning: dict[str, Any], gates: dict[str, Any], cy
         workflow_id = result.get('id')
         cycle_record['workflow_id'] = workflow_id
         cycle_record['top3_count'] = len(top3)
+        cycle_record['budget_summary'] = result.get('budget_summary') or {}
 
         should_notify, notify_reason = workflow_svc.should_send_workflow_top3(
             result,
@@ -658,7 +660,7 @@ def _account_trigger_cost(llm_calls: list[dict[str, Any]] | None, tuning: dict[s
 
 
 def _apply_cost_to_state(state: dict[str, Any], cost: dict[str, Any] | None) -> None:
-    """오늘 버킷에 비용/호출 수를 더한다 (est_cost_usd 는 캡 게이트가 읽는 기존 키)."""
+    """오늘 버킷에 참고용 비용/호출 수를 더한다. 실제 예산 제한은 중앙 라우터가 담당한다."""
     if not cost:
         return
     today = state['today']
@@ -920,11 +922,10 @@ def _evaluate_gates(*, force: bool, tuning: dict[str, Any]) -> dict[str, Any]:
     # G7 cost cap
     today_cost = float((state.get('today') or {}).get('est_cost_usd') or 0.0)
     daily_cap = float(tuning['daily_cap_usd'])
-    projected, projection_source = _projected_trigger_cost(tuning)
-    if today_cost + projected > daily_cap:
-        add('cost_cap', False, f'daily ${today_cost:.2f} + ${projected:.2f} ({projection_source}) > cap ${daily_cap:.2f}')
-        return _gate_result(results)
-    add('cost_cap', True, f'today ${today_cost:.2f} / cap ${daily_cap:.2f} (next ~${projected:.2f}, {projection_source})')
+    add(
+        'cost_cap', True,
+        f'advisory estimate ${today_cost:.2f} / legacy cap ${daily_cap:.2f}; central router is authoritative',
+    )
 
     # G4 + G5 new events + quality (single scanner_alert_check call serves both)
     # 중요: workflow의 자체 event_state 와 동일한 경로 사용 — 아니면 게이트가 새 이벤트를 본다고

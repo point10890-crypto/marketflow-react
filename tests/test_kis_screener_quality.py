@@ -567,6 +567,19 @@ def test_amount_rank_baseline_survives_blank_surge_row(monkeypatch):
     }
 
 
+def test_candidate_pool_carries_verified_market_identity(monkeypatch):
+    amount = _ranking_row(prdy_vol="50000")
+    amount.update({"mksc_shrn_iscd": "005930", "stck_shrn_iscd": "005930"})
+    _patch_complete_enrichment(monkeypatch)
+    monkeypatch.setattr(
+        kis_screener, "fetch_volume_rank",
+        lambda token, blng_code="3": [amount],
+    )
+    monkeypatch.setattr(kis_screener, "fetch_fluctuation_rank", lambda token: [amount])
+    result = kis_screener.run_screening(force=True)
+    assert result["candidate_pool"][0]["market"] == "KOSPI"
+
+
 def test_surge_only_row_is_included_in_candidate_union(monkeypatch):
     amount = _ranking_row()
     surge = dict(_ranking_row(prdy_vol="25000"))

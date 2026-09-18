@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { publicUrl, normalizePublicLinks } from './publicUrls.mjs';
 
 /**
  * 공개 페이지 SEO 헤드 관리 — react-helmet 없이 document head 를 직접 갱신한다.
@@ -68,12 +69,12 @@ function upsertJsonLd(data: object | object[] | null) {
         el.dataset.seo = 'jsonld';
         document.head.appendChild(el);
     }
-    el.textContent = JSON.stringify(data);
+    el.textContent = JSON.stringify(normalizePublicLinks(data));
 }
 
 export function applySeo(opts: SeoOptions) {
     const path = opts.path ?? window.location.pathname;
-    const url = `${SITE_ORIGIN}${path === '/' ? '/' : path.replace(/\/+$/, '')}`;
+    const url = publicUrl(path);
 
     document.title = opts.title;
     if (opts.description) upsertMeta('name', 'description', opts.description);

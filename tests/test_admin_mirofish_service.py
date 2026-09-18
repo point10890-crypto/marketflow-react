@@ -24,7 +24,11 @@ def test_mirofish_run_writes_readable_artifacts(tmp_path, monkeypatch):
     assert run['symbol'] == '005930'
     assert run['status'] == 'completed'
     assert run['source'] == 'live_file_artifacts'
-    assert run['verdict']['action'] in ('BUY', 'HOLD', 'SELL')
+    assert run['verdict']['action'] in ('BUY', 'HOLD', 'SELL', 'HOLD_REVIEW')
+    if run['verdict']['action'] == 'HOLD_REVIEW':
+        assert run['verdict']['analysis_status'] == 'HOLD_REVIEW'
+        assert run['cio']['final_answer']['allocation_pct'] == 0.0
+        assert run['cio']['rule_candidate_verdict'] is not None
     assert run['verdict']['target'] == run['display_name']
     assert run['display_name'] in run['verdict']['summary']
     assert len(run['analysts']) == 7

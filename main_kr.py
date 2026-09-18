@@ -7,10 +7,13 @@ import os
 import sys
 import re
 import json
+import ast
 import asyncio
-import base64
 import logging
 from concurrent.futures import ThreadPoolExecutor
+from decimal import Decimal, ROUND_HALF_UP
+from io import BytesIO
+from uuid import uuid4
 
 import matplotlib
 matplotlib.use('Agg')
@@ -21,7 +24,18 @@ import pandas as pd
 import yfinance as yf
 from dotenv import load_dotenv
 from google import genai
-from google.genai import types
+from PIL import Image
+
+from app.services.ai_routing.contracts import (
+    AnalysisStatus,
+    Operation,
+    ProviderErrorClass,
+    RoutingRequest,
+    RoutingResult,
+    TokenUsage,
+    VisionImage,
+)
+from app.services.ai_routing.router import route_vision
 
 # ── 로깅 ──
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -31,11 +45,16 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 API_KEY = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY', '')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
-MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
+MODEL = os.getenv('AI_GEMINI_VISION_MODEL') or os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
 # Vision 폴백 모델. 하드코딩된 gpt-4o-mini 는 이 계정에 접근 권한이 없어
 # (403 model_not_found) 폴백이 항상 실패했다. 계정에서 쓸 수 있는 모델로 두고
 # 환경변수로 교체 가능하게 한다.
 OPENAI_VISION_MODEL = os.getenv('KR_CHART_OPENAI_MODEL') or os.getenv('OPENAI_MODEL') or 'gpt-5.5'
+try:
+    _configured_vision_limit = int(os.getenv('KR_CHART_VISION_MAX_CANDIDATES', '20'))
+except (TypeError, ValueError):
+    _configured_vision_limit = 20
+VISION_MAX_CANDIDATES = max(1, min(20, _configured_vision_limit))
 
 if not API_KEY and not OPENAI_API_KEY:
     logger.error("GEMINI_API_KEY, OPENAI_API_KEY 둘 다 .env에 없습니다.")
@@ -129,6 +148,26 @@ ANALYSIS_PROMPT = """당신은 25년 경력의 기술적 분석 전문가입니�
   "volume_trend": "증가 또는 감소 또는 보합"
 }}"""
 
+CHART_RESPONSE_SCHEMA = {
+    "type": "OBJECT",
+    "properties": {
+        "signal": {"type": "STRING", "enum": ["BUY", "HOLD", "SELL"]},
+        "confidence": {"type": "INTEGER", "minimum": 0, "maximum": 100},
+        "reasons": {"type": "ARRAY", "items": {"type": "STRING"}},
+        "ma_status": {"type": "STRING"},
+        "rsi_zone": {"type": "STRING"},
+        "volume_trend": {"type": "STRING"},
+    },
+    "required": [
+        "signal",
+        "confidence",
+        "reasons",
+        "ma_status",
+        "rsi_zone",
+        "volume_trend",
+    ],
+}
+
 
 # ════════════════════════════════════════════════
 # Step 1: 차트 생성
@@ -220,8 +259,46 @@ def generate_chart(ticker: str, name: str) -> str | None:
 _executor = ThreadPoolExecutor(max_workers=10)
 
 
+def _balanced_json_segment(text: str) -> str | None:
+    """Extract one balanced object/array while respecting quoted braces."""
+    starts = [index for index in (text.find('{'), text.find('[')) if index >= 0]
+    if not starts:
+        return None
+    start = min(starts)
+    stack: list[str] = []
+    quote: str | None = None
+    escaped = False
+    pairs = {'}': '{', ']': '['}
+    for index, char in enumerate(text[start:], start=start):
+        if quote is not None:
+            if escaped:
+                escaped = False
+            elif char == '\\':
+                escaped = True
+            elif char == quote:
+                quote = None
+            continue
+        if char in {'"', "'"}:
+            quote = char
+        elif char in {'{', '['}:
+            stack.append(char)
+        elif char in pairs:
+            if not stack or stack[-1] != pairs[char]:
+                return text[start:index]
+            stack.pop()
+            if not stack:
+                return text[start:index + 1]
+    return text[start:]
+
+
+def _json_container(value: object) -> dict | None:
+    if isinstance(value, list):
+        value = value[0] if value else None
+    return value if isinstance(value, dict) else None
+
+
 def _extract_json(text: str) -> dict | None:
-    """Gemini 응답에서 JSON 추출 (마크다운 펜스, 잘림 대응)"""
+    """Gemini 응답에서 JSON 추출 (펜스·부가 문장·잘림·Python 리터럴 대응)."""
     text = text.strip()
 
     # 마크다운 코드 펜스 제거
@@ -229,16 +306,37 @@ def _extract_json(text: str) -> dict | None:
     text = re.sub(r'\s*```$', '', text)
     text = text.strip()
 
-    # 1차: 직접 파싱
-    try:
-        data = json.loads(text)
-        return data[0] if isinstance(data, list) and data else data
-    except json.JSONDecodeError:
-        pass
+    # 1차: 직접 파싱. strict=False는 문자열 안의 제어문자만 허용한다.
+    for strict in (True, False):
+        try:
+            data = _json_container(json.loads(text, strict=strict))
+            if data is not None:
+                return data
+        except (json.JSONDecodeError, TypeError):
+            pass
 
-    # 2차: 잘린 JSON 복구 — 미닫힌 문자열/배열/객체 닫기
-    if '{' in text:
-        candidate = text[text.index('{'):]
+    # 2차: JSON 앞뒤에 설명이 붙은 경우 균형 잡힌 첫 컨테이너만 파싱한다.
+    segment = _balanced_json_segment(text)
+    if segment:
+        for strict in (True, False):
+            try:
+                data = _json_container(json.loads(segment, strict=strict))
+                if data is not None:
+                    return data
+            except (json.JSONDecodeError, TypeError):
+                pass
+        # 일부 모델은 JSON 모드에서도 작은따옴표 Python dict를 반환한다.
+        # literal_eval은 코드 실행 없이 리터럴 컨테이너만 해석한다.
+        try:
+            data = _json_container(ast.literal_eval(segment))
+            if data is not None:
+                return data
+        except (SyntaxError, ValueError, TypeError):
+            pass
+
+    # 3차: 잘린 JSON 복구 — 미닫힌 문자열/배열/객체 닫기
+    if segment and '{' in segment:
+        candidate = segment[segment.index('{'):]
 
         # 미닫힌 문자열 닫기 (홀수 개의 이스케이프 안 된 따옴표)
         in_string = False
@@ -273,166 +371,310 @@ def _extract_json(text: str) -> dict | None:
     return None
 
 
-def _call_gemini(client: genai.Client, ticker: str, name: str, image_path: str) -> dict | None:
-    """동기 Gemini API 호출"""
-    try:
-        with open(image_path, 'rb') as f:
-            image_data = f.read()
-
-        prompt = ANALYSIS_PROMPT.format(name=name, ticker=ticker)
-
-        response = client.models.generate_content(
-            model=MODEL,
-            contents=[
-                types.Part.from_bytes(data=image_data, mime_type='image/png'),
-                prompt,
-            ],
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=0.3,
-                max_output_tokens=4096,
-            ),
-        )
-
-        text = response.text.strip()
-        data = _extract_json(text)
-
-        if data is None:
-            logger.error(f"[PARSE FAIL] {name}({ticker}): 응답 파싱 실패 — {text[:200]}")
-
-        return data
-    except Exception as e:
-        logger.error(f"[GEMINI ERROR] {name}({ticker}): {e}")
-        return None
-
-
-def _openai_chat_with_token_limit(client, *, model: str, messages: list,
-                                  max_output_tokens: int, **kwargs):
-    """토큰 한도 파라미터명을 모델에 맞춰 협상하는 chat 호출.
-
-    구형 모델은 `max_tokens`, 신형(gpt-5 계열)은 `max_completion_tokens` 만
-    받는다. 모델명으로 분기하면 모델을 바꿀 때마다 다시 깨지므로 거부 응답을
-    보고 재시도한다 (engine/llm_analyzer.py 의 동일 패턴).
-    """
-    try:
-        return client.chat.completions.create(
-            model=model, messages=messages, max_tokens=max_output_tokens, **kwargs
-        )
-    except Exception as exc:
-        text = str(exc)
-        if 'max_completion_tokens' not in text:
-            raise
-        return client.chat.completions.create(
-            model=model, messages=messages,
-            max_completion_tokens=max_output_tokens, **kwargs
-        )
-
-
-def _call_openai_vision(ticker: str, name: str, image_path: str) -> dict | None:
-    """OpenAI Vision 폴백 — Gemini 실패 시 차트 분석"""
-    try:
-        from openai import OpenAI
-        client = OpenAI(api_key=OPENAI_API_KEY)
-
-        with open(image_path, 'rb') as f:
-            image_data = f.read()
-        b64_image = base64.b64encode(image_data).decode('utf-8')
-
-        prompt = ANALYSIS_PROMPT.format(name=name, ticker=ticker)
-
-        response = _openai_chat_with_token_limit(
-            client,
-            model=OPENAI_VISION_MODEL,
-            messages=[
-                {"role": "system", "content": "You are a professional technical chart analyst. Respond only in valid JSON."},
-                {"role": "user", "content": [
-                    {"type": "text", "text": prompt},
-                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64_image}", "detail": "high"}},
-                ]},
-            ],
-            max_output_tokens=4096,
-        )
-
-        text = response.choices[0].message.content.strip()
-        data = _extract_json(text)
-
-        if data is None:
-            logger.error(f"[OPENAI PARSE FAIL] {name}({ticker}): 응답 파싱 실패 — {text[:200]}")
-
-        return data
-    except Exception as e:
-        logger.error(f"[OPENAI ERROR] {name}({ticker}): {e}")
-        return None
-
-
-# ── Gemini 세션 내 가용 상태 추적 ──
-# 2026-08-15: 예전에는 단 1건이라도 실패하면 곧바로 Gemini 를 껐다. 삼성전기
-# 한 종목의 JSON 파싱 실패가 래치를 트립시켜 나머지 62종목이 전부 (권한 없는)
-# OpenAI 폴백으로 넘어가 통째로 드롭됐다 — 100종목 중 37종목만 분석된 원인.
-# 이제는 "연속" 실패가 임계치를 넘을 때만(=키 소진·인증 실패 같은 지속적 장애)
-# 끈다. 간헐적 실패는 종목 단위 재시도로 흡수한다.
-GEMINI_FAILURE_THRESHOLD = max(1, int(os.getenv('KR_CHART_GEMINI_FAILURE_THRESHOLD', '8')))
-GEMINI_ITEM_RETRIES = max(0, int(os.getenv('KR_CHART_GEMINI_RETRIES', '1')))
-
-_gemini_consecutive_failures = 0
-_gemini_disabled = False
-
-
 def reset_vision_health() -> None:
-    """세션 상태 초기화 (테스트/재실행용)."""
-    global _gemini_consecutive_failures, _gemini_disabled
-    _gemini_consecutive_failures = 0
-    _gemini_disabled = False
+    """Legacy no-op: central modality-specific breakers now own health state."""
 
 
 def gemini_is_available() -> bool:
-    return not _gemini_disabled
+    """Compatibility helper; the central vision breaker decides per request."""
+    return True
 
 
-def _record_gemini_outcome(success: bool, ticker: str, name: str) -> None:
-    global _gemini_consecutive_failures, _gemini_disabled
-    if success:
-        _gemini_consecutive_failures = 0
-        return
-    _gemini_consecutive_failures += 1
-    if _gemini_consecutive_failures >= GEMINI_FAILURE_THRESHOLD and not _gemini_disabled:
-        _gemini_disabled = True
-        logger.warning(
-            f"[FALLBACK] Gemini 연속 {_gemini_consecutive_failures}종목 실패 "
-            f"→ 남은 종목은 OpenAI Vision 으로 전환 (마지막: {name}({ticker}))"
-        )
+def _ranked_vision_candidates(chart_map: dict[str, str]) -> list[tuple[str, str]]:
+    """Bound paid image analysis to the deterministic market-cap input order."""
+    return list(chart_map.items())[:VISION_MAX_CANDIDATES]
+
+
+def _chart_domain_validator(payload: object) -> ProviderErrorClass | None:
+    if not isinstance(payload, dict):
+        return ProviderErrorClass.INVALID_JSON
+    if payload.get('signal') not in {'BUY', 'HOLD', 'SELL'}:
+        return ProviderErrorClass.INVALID_JSON
+    confidence = payload.get('confidence')
+    if isinstance(confidence, bool) or not isinstance(confidence, int):
+        return ProviderErrorClass.INVALID_JSON
+    if not 0 <= confidence <= 100:
+        return ProviderErrorClass.INVALID_JSON
+    return None
+
+
+def _normalize_chart_json(text: str) -> str | None:
+    """Return locally repaired chart JSON for central schema validation.
+
+    This is deterministic normalization only; it never triggers another model
+    call.  The original provider text is retained by the routing result and is
+    parsed through the same helper at the business boundary.
+    """
+    parsed = _extract_json(text)
+    if not isinstance(parsed, dict):
+        return None
+    signal = str(parsed.get('signal') or '').strip().upper()
+    signal = {
+        '매수': 'BUY',
+        '보유': 'HOLD',
+        '관망': 'HOLD',
+        '매도': 'SELL',
+    }.get(signal, signal)
+    parsed['signal'] = signal
+    confidence = parsed.get('confidence')
+    numeric_text: str | None = None
+    if isinstance(confidence, str):
+        match = re.fullmatch(r'\s*(\d+(?:\.\d+)?)\s*%?\s*', confidence)
+        if match:
+            numeric_text = match.group(1)
+    elif isinstance(confidence, (int, float)) and not isinstance(confidence, bool):
+        numeric_text = str(confidence)
+    if numeric_text is not None:
+        numeric = Decimal(numeric_text)
+        if numeric.is_finite() and Decimal('0') <= numeric <= Decimal('100'):
+            parsed['confidence'] = int(
+                numeric.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+            )
+    if isinstance(parsed.get('reasons'), str):
+        parsed['reasons'] = [parsed['reasons']]
+    return json.dumps(parsed, ensure_ascii=False, separators=(',', ':'))
+
+
+def _enum_value(value: object) -> object:
+    return getattr(value, 'value', value)
+
+
+def _usage_metadata(result: RoutingResult) -> dict[str, object]:
+    usage = result.usage
+    complete = (
+        usage.input_tokens is not None
+        and usage.output_tokens is not None
+        and not usage.usage_estimated
+        and usage.mapping_status != 'quarantined'
+    )
+    return {
+        'input_tokens': usage.input_tokens,
+        'cached_input_tokens': usage.cached_input_tokens,
+        'output_tokens': usage.output_tokens,
+        'reasoning_tokens': usage.reasoning_tokens,
+        'total_tokens': usage.total_tokens,
+        'usage_estimated': usage.usage_estimated,
+        'raw_total_tokens': usage.raw_total_tokens,
+        'mapping_version': usage.mapping_version,
+        'mapping_status': usage.mapping_status,
+        'complete': complete,
+    }
+
+
+def _routing_metadata(
+    result: RoutingResult,
+    *,
+    run_id: str | None = None,
+    request_id: str | None = None,
+) -> dict[str, object]:
+    first_attempt = result.attempts[0] if result.attempts else None
+    return {
+        'run_id': run_id or (first_attempt.run_id if first_attempt else None),
+        'request_id': request_id or (
+            first_attempt.request_id if first_attempt else None
+        ),
+        'analysis_status': result.analysis_status.value,
+        'primary_provider': result.primary_provider,
+        'actual_provider': result.actual_provider,
+        'model': result.model,
+        'fallback_used': result.fallback_used,
+        'fallback_reason': _enum_value(result.fallback_reason),
+        'retry_reason': _enum_value(result.retry_reason),
+        'usage': _usage_metadata(result),
+        'estimated_cost_usd': (
+            str(result.estimated_cost_usd)
+            if isinstance(result.estimated_cost_usd, Decimal)
+            else result.estimated_cost_usd
+        ),
+        'attempt_count': len(result.attempts),
+        'attempts': [
+            {
+                'provider': attempt.provider,
+                'model': attempt.model,
+                'status': attempt.status,
+                'error_class': _enum_value(attempt.error_class),
+                'fallback_from': attempt.fallback_from,
+                'fallback_reason': _enum_value(attempt.fallback_reason),
+            }
+            for attempt in result.attempts
+        ],
+    }
+
+
+def _chart_image_error_class(image_data: bytes) -> str | None:
+    """Return one bounded local-input error code without exposing decoder detail."""
+    if not image_data:
+        return 'input_empty'
+    try:
+        with Image.open(BytesIO(image_data)) as image:
+            if image.format != 'PNG':
+                return 'input_corrupt'
+            image.verify()
+    except Exception:
+        return 'input_corrupt'
+    return None
+
+
+def _unavailable_chart_artifact(
+    ticker: str,
+    name: str,
+    routed: RoutingResult,
+    *,
+    run_id: str,
+    request_id: str,
+    error_class: str | None = None,
+) -> dict[str, object]:
+    routing = _routing_metadata(
+        routed,
+        run_id=run_id,
+        request_id=request_id,
+    )
+    if error_class is not None:
+        routing['error_class'] = error_class
+        routing['failure_reason'] = error_class
+    return {
+        '종목코드': ticker.split('.')[0],
+        '종목명': name,
+        '시장': '코스피' if ticker.endswith('.KS') else '코스닥',
+        'image_analysis_status': 'unavailable',
+        'routing': routing,
+    }
+
+
+def _chart_input_failure_artifact(
+    ticker: str,
+    name: str,
+    *,
+    run_id: str,
+    request_id: str,
+    error_class: str,
+) -> dict[str, object]:
+    routed = RoutingResult(
+        text=None,
+        analysis_status=AnalysisStatus.FAILED_TECHNICAL,
+        primary_provider=None,
+        usage=TokenUsage(
+            input_tokens=0,
+            cached_input_tokens=0,
+            output_tokens=0,
+            reasoning_tokens=0,
+            raw_total_tokens=0,
+        ),
+        estimated_cost_usd=Decimal('0'),
+    )
+    return _unavailable_chart_artifact(
+        ticker,
+        name,
+        routed,
+        run_id=run_id,
+        request_id=request_id,
+        error_class=error_class,
+    )
 
 
 async def analyze_chart(client: genai.Client, ticker: str, name: str,
-                        image_path: str, semaphore: asyncio.Semaphore) -> dict | None:
-    """비동기 래핑: Gemini Vision → OpenAI Vision 폴백"""
+                        image_path: str, semaphore: asyncio.Semaphore, *,
+                        run_id: str | None = None,
+                        candidate_rank: int | None = None,
+                        max_primary_attempts: int | None = None) -> dict | None:
+    """Analyze one chart through the budgeted central vision route."""
     async with semaphore:
         loop = asyncio.get_event_loop()
-        result = None
+        effective_run_id = run_id or f'kr-chart:{uuid4()}'
+        request_id = f'{effective_run_id}:{ticker}'
+        try:
+            with open(image_path, 'rb') as image_file:
+                image_data = image_file.read()
+        except OSError:
+            error_class = 'input_unreadable'
+            logger.error(
+                '[VISION INPUT ERROR] %s(%s): class=%s',
+                name,
+                ticker,
+                error_class,
+            )
+            return _chart_input_failure_artifact(
+                ticker,
+                name,
+                run_id=effective_run_id,
+                request_id=request_id,
+                error_class=error_class,
+            )
 
-        # Gemini 시도 (지속적 장애로 꺼진 경우에만 스킵)
-        if gemini_is_available() and API_KEY:
-            for attempt in range(GEMINI_ITEM_RETRIES + 1):
-                result = await loop.run_in_executor(
-                    _executor, _call_gemini, client, ticker, name, image_path)
-                if result is not None:
-                    break
-                if attempt < GEMINI_ITEM_RETRIES:
-                    logger.info(f"  ↻ Gemini 재시도 {attempt + 1}/{GEMINI_ITEM_RETRIES}: {name}({ticker})")
-            _record_gemini_outcome(result is not None, ticker, name)
+        input_error_class = _chart_image_error_class(image_data)
+        if input_error_class is not None:
+            logger.error(
+                '[VISION INPUT ERROR] %s(%s): class=%s',
+                name,
+                ticker,
+                input_error_class,
+            )
+            return _chart_input_failure_artifact(
+                ticker,
+                name,
+                run_id=effective_run_id,
+                request_id=request_id,
+                error_class=input_error_class,
+            )
 
-        # OpenAI Vision 폴백
-        if result is None and OPENAI_API_KEY:
-            result = await loop.run_in_executor(_executor, _call_openai_vision, ticker, name, image_path)
+        request = RoutingRequest(
+            operation=Operation.VISION,
+            prompt=ANALYSIS_PROMPT.format(name=name, ticker=ticker),
+            system='You are a professional technical chart analyst. Respond only in valid JSON.',
+            run_id=effective_run_id,
+            request_id=request_id,
+            symbol=ticker.split('.')[0],
+            market='KOSPI' if ticker.endswith('.KS') else 'KOSDAQ',
+            json_mode=True,
+            response_schema=CHART_RESPONSE_SCHEMA,
+            # Chart classification is a bounded structured extraction task.
+            # Disabling Gemini thinking avoids consuming the output budget before
+            # the final JSON and materially lowers truncation/cost.
+            thinking_budget=0,
+            max_output_tokens=768,
+            images=(VisionImage(data=image_data, mime_type='image/png', detail='high'),),
+            caller_endpoint='main_kr.analyze_chart',
+            domain_validator=_chart_domain_validator,
+            response_normalizer=_normalize_chart_json,
+            max_primary_attempts=max_primary_attempts,
+            # An unranked legacy caller cannot prove top-five eligibility and
+            # therefore must not consume the bounded OpenAI fallback pool.
+            openai_fallback_allowed=(
+                candidate_rank is not None and 1 <= candidate_rank <= 5
+            ),
+        )
+        routed = await loop.run_in_executor(_executor, route_vision, request)
+        normalized = _normalize_chart_json(routed.text) if routed.text else None
+        result = _extract_json(normalized) if normalized else None
 
-        if result:
+        if isinstance(result, dict):
             market = '코스피' if ticker.endswith('.KS') else '코스닥'
             code = ticker.split('.')[0]
             result['종목코드'] = code
             result['종목명'] = name
             result['시장'] = market
+            result['image_analysis_status'] = 'available'
+            result['routing'] = _routing_metadata(
+                routed,
+                run_id=effective_run_id,
+                request_id=request.request_id,
+            )
             logger.info(f"  ✓ {name} → {result.get('signal', '?')} (confidence: {result.get('confidence', '?')})")
-        return result
+            return result
+        logger.warning(
+            '[VISION UNAVAILABLE] %s(%s): status=%s reason=%s',
+            name,
+            ticker,
+            routed.analysis_status.value,
+            _enum_value(routed.fallback_reason),
+        )
+        return _unavailable_chart_artifact(
+            ticker,
+            name,
+            routed,
+            run_id=effective_run_id,
+            request_id=request.request_id,
+        )
 
 
 # ════════════════════════════════════════════════
@@ -445,6 +687,8 @@ def summarize_results(results: list[dict]) -> pd.DataFrame:
     for r in results:
         if not r:
             continue
+        routing = r.get('routing') if isinstance(r.get('routing'), dict) else {}
+        usage = routing.get('usage') if isinstance(routing.get('usage'), dict) else {}
         records.append({
             '종목코드': r.get('종목코드', ''),
             '종목명': r.get('종목명', ''),
@@ -455,6 +699,20 @@ def summarize_results(results: list[dict]) -> pd.DataFrame:
             'rsi_zone': r.get('rsi_zone', ''),
             'volume_trend': r.get('volume_trend', ''),
             'reasons': ' | '.join(r.get('reasons', [])) if isinstance(r.get('reasons'), list) else str(r.get('reasons', '')),
+            'image_analysis_status': r.get('image_analysis_status', 'available'),
+            'ai_run_id': routing.get('run_id'),
+            'ai_request_id': routing.get('request_id'),
+            'ai_analysis_status': routing.get('analysis_status'),
+            'ai_primary_provider': routing.get('primary_provider'),
+            'ai_actual_provider': routing.get('actual_provider'),
+            'ai_model': routing.get('model'),
+            'ai_fallback_used': routing.get('fallback_used', False),
+            'ai_fallback_reason': routing.get('fallback_reason'),
+            'ai_error_class': routing.get('error_class'),
+            'ai_failure_reason': routing.get('failure_reason'),
+            'ai_total_tokens': usage.get('total_tokens'),
+            'ai_usage_complete': usage.get('complete'),
+            'ai_estimated_cost_usd': routing.get('estimated_cost_usd'),
         })
 
     df = pd.DataFrame(records)
@@ -524,14 +782,28 @@ async def main():
         return
 
     # ── Step 2: Gemini Vision 분석 ──
-    print(f"\n🤖 Step 2: Gemini Vision 분석 중... ({len(chart_map)}개)")
-    client = genai.Client(api_key=API_KEY)
+    ranked_charts = _ranked_vision_candidates(chart_map)
+    print(f"\n🤖 Step 2: Gemini Vision 분석 중... ({len(ranked_charts)}개)")
+    # Provider clients are lazy-built by the central router.  Keep the legacy
+    # positional argument as None so external callers retain the same signature.
+    client = None
     semaphore = asyncio.Semaphore(10)
+    run_id = f'kr-chart:{uuid4()}'
 
     tasks = []
-    for ticker, filepath in chart_map.items():
+    for candidate_rank, (ticker, filepath) in enumerate(ranked_charts, 1):
         name = STOCKS[ticker]
-        tasks.append(analyze_chart(client, ticker, name, filepath, semaphore))
+        tasks.append(
+            analyze_chart(
+                client,
+                ticker,
+                name,
+                filepath,
+                semaphore,
+                run_id=run_id,
+                candidate_rank=candidate_rank,
+            )
+        )
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -543,7 +815,7 @@ async def main():
         elif r is not None:
             valid_results.append(r)
 
-    print(f"\n  → 분석 완료: {len(valid_results)}/{len(chart_map)}개")
+    print(f"\n  → 분석 완료: {len(valid_results)}/{len(ranked_charts)}개")
 
     # ── Step 3: 결과 종합 ──
     print("\n📋 Step 3: 결과 종합...")

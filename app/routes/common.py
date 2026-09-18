@@ -21,6 +21,69 @@ logger = logging.getLogger(__name__)
 
 common_bp = Blueprint('common', __name__)
 
+_CRYPTO_SSE_HEARTBEAT_SECONDS = 15
+_ISOLATED_CRYPTO_UPDATE_TYPES = {
+    'crypto_all',
+    'crypto_gate',
+    'crypto_scan',
+    'crypto_briefing',
+    'crypto_prediction',
+    'crypto_risk',
+    'crypto_leadlag',
+}
+
+
+def _stream_crypto_bridge(script_path, args, name, timeout):
+    """Run a silent Crypto bridge while keeping SSE alive and owning cleanup."""
+    from app.routes.crypto import _start_python_process, _terminate_subprocess_tree
+
+    try:
+        process = _start_python_process(
+            script_path,
+            args=args,
+            cwd=BASE_DIR,
+            suppress_telegram=True,
+            capture_output=False,
+        )
+    except Exception:
+        yield f"data: [SYSTEM] {name} update failed to execute.\n\n"
+        return
+
+    elapsed = 0
+    process_running = True
+    try:
+        while elapsed < timeout:
+            wait_seconds = min(_CRYPTO_SSE_HEARTBEAT_SECONDS, timeout - elapsed)
+            try:
+                returncode = process.wait(timeout=wait_seconds)
+            except subprocess.TimeoutExpired:
+                elapsed += wait_seconds
+                if elapsed >= timeout:
+                    _terminate_subprocess_tree(process)
+                    process_running = False
+                    yield f"data: [SYSTEM] {name} update timed out.\n\n"
+                    return
+                yield ": keepalive\n\n"
+                continue
+
+            process_running = False
+            if returncode == 0:
+                yield f"data: [SYSTEM] {name} update completed successfully.\n\n"
+            else:
+                yield (
+                    f"data: [SYSTEM] {name} update failed "
+                    f"(exit code: {returncode})\n\n"
+                )
+            return
+    except GeneratorExit:
+        if process_running:
+            _terminate_subprocess_tree(process)
+        raise
+    except BaseException:
+        if process_running:
+            _terminate_subprocess_tree(process)
+        yield f"data: [SYSTEM] {name} update failed to execute.\n\n"
+
 # Ticker 맵 로드
 try:
     # Load ticker map (절대경로 사용)
@@ -856,38 +919,38 @@ def update_single_data():
         # ── Crypto Analytics ──
         'crypto_all': {
             'name': 'Crypto (Full)',
-            'script': 'scheduler.py',
-            'args': ['--crypto']
+            'script': os.path.join(BASE_DIR, 'scripts', 'run_crypto_pipeline_parent.py'),
+            'args': []
         },
         'crypto_gate': {
             'name': 'Crypto Market Gate',
-            'script': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'market_gate.py'),
-            'args': []
+            'script': os.path.join(BASE_DIR, 'scripts', 'run_crypto_single_step.py'),
+            'args': ['gate']
         },
         'crypto_scan': {
             'name': 'Crypto VCP Scan',
-            'script': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'run_scan.py'),
-            'args': []
+            'script': os.path.join(BASE_DIR, 'scripts', 'run_crypto_single_step.py'),
+            'args': ['vcp']
         },
         'crypto_briefing': {
             'name': 'Crypto Briefing',
-            'script': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'crypto_briefing.py'),
-            'args': []
+            'script': os.path.join(BASE_DIR, 'scripts', 'run_crypto_single_step.py'),
+            'args': ['briefing']
         },
         'crypto_prediction': {
             'name': 'Crypto Prediction',
-            'script': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'crypto_prediction.py'),
-            'args': []
+            'script': os.path.join(BASE_DIR, 'scripts', 'run_crypto_single_step.py'),
+            'args': ['prediction']
         },
         'crypto_risk': {
             'name': 'Crypto Risk',
-            'script': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'crypto_risk.py'),
-            'args': []
+            'script': os.path.join(BASE_DIR, 'scripts', 'run_crypto_single_step.py'),
+            'args': ['risk']
         },
         'crypto_leadlag': {
             'name': 'Crypto Lead-Lag',
-            'script': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'lead_lag', 'lead_lag_analysis.py'),
-            'args': []
+            'script': os.path.join(BASE_DIR, 'scripts', 'run_crypto_single_step.py'),
+            'args': ['lead_lag']
         },
         # ── Wave Pattern ──
         'wave_scan': {
@@ -1038,6 +1101,38 @@ from {mod} import {func}
             env['PYTHONPATH'] = os.pathsep.join(site_packages)
             env['PYTHONUNBUFFERED'] = '1'  # Force unbuffered output
             env['KR_MARKET_DIR'] = os.getcwd()  # Set scheduler base directory
+
+            if data_type in _ISOLATED_CRYPTO_UPDATE_TYPES:
+                if data_type == 'crypto_all':
+                    try:
+                        bridge_timeout = int(
+                            os.environ.get('CRYPTO_PIPELINE_TIMEOUT_SECONDS', '3600')
+                        ) + 60
+                    except (TypeError, ValueError):
+                        bridge_timeout = 3660
+                    bridge_timeout = min(7500, max(120, bridge_timeout))
+                else:
+                    try:
+                        bridge_timeout = int(
+                            os.environ.get('CRYPTO_ADMIN_SINGLE_STEP_TIMEOUT_SECONDS', '900')
+                        )
+                    except (TypeError, ValueError):
+                        bridge_timeout = 900
+                    bridge_timeout = min(3600, max(60, bridge_timeout))
+                    from app.routes.crypto import _single_step_bridge_timeout
+                    bridge_timeout = _single_step_bridge_timeout(
+                        config.get('args', [''])[0],
+                        requested=bridge_timeout,
+                    )
+
+                yield from _stream_crypto_bridge(
+                    script_path,
+                    config.get('args', []),
+                    config['name'],
+                    bridge_timeout,
+                )
+                yield "event: end\ndata: close\n\n"
+                return
             
             process = subprocess.Popen(
                 cmd,
@@ -1129,12 +1224,19 @@ def stream_update_data():
                 env=env,
                 bufsize=1
             )
-            
+
+            scheduler_lock_conflict = False
             for line in process.stdout:
                 # Manual decode to safely handle any encoding
                 try:
                     clean_line = line.decode('utf-8', errors='replace').strip()
                     if clean_line:
+                        normalized_line = clean_line.casefold()
+                        if (
+                            '스케줄러 이미 실행 중' in clean_line
+                            or 'scheduler already running' in normalized_line
+                        ):
+                            scheduler_lock_conflict = True
                         yield f"data: {clean_line}\n\n"
                 except Exception as decode_err:
                     yield f"data: [WARN] Decode error: {str(decode_err)}\n\n"
@@ -1142,7 +1244,7 @@ def stream_update_data():
             process.wait()
             yield f"data: [SYSTEM] Process finished with exit code {process.returncode}\n\n"
             
-            if process.returncode == 0:
+            if process.returncode == 0 and not scheduler_lock_conflict:
                 yield "data: [SYSTEM] Update completed successfully.\n\n"
             else:
                 yield "data: [SYSTEM] Update failed. Check logs.\n\n"

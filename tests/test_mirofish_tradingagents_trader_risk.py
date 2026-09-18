@@ -78,10 +78,9 @@ def _fake_by_system(mapping, default=None):
     return fake
 
 
-def test_llm_pm_invalid_verdict_falls_back_to_rule(monkeypatch):
+def test_llm_pm_invalid_verdict_fails_closed_with_rule_diagnostic(monkeypatch):
     # Trader + risk succeed via LLM; PM returns an out-of-set verdict → the PM
-    # piece falls back to the rule verdict, so method='mixed' and verdict is the
-    # rule band for mean=40 (STRONG_BUY).
+    # piece must not publish the rule STRONG_BUY after decisive validation fails.
     fake = _fake_by_system({
         '트레이더': '{"action_hint": "매수", "entry_note": "분할 진입", "risk_note": "손절"}',
         '포트폴리오 매니저': '{"verdict": "MODERATE_BUY", "confidence": 80, "reasoning": "x"}',
@@ -95,14 +94,114 @@ def test_llm_pm_invalid_verdict_falls_back_to_rule(monkeypatch):
         }),
     )
     out = trader_risk.run_trader_and_risk('삼성전자', BUNDLE, _debate(40), use_llm=True)
-    assert out['pm_decision']['verdict'] == 'STRONG_BUY'  # rule fallback
-    assert out['pm_decision']['strong_buy'] is True
+    assert out['pm_decision']['verdict'] == 'HOLD_REVIEW'
+    assert out['pm_decision']['strong_buy'] is False
+    assert out['analysis_status'] == 'HOLD_REVIEW'
+    assert out['rule_candidate_verdict']['verdict'] == 'STRONG_BUY'
     assert out['method'] == 'mixed'  # trader+risk LLM ok, PM fell back
     assert out['trader_plan']['llm']['provider'] == 'openai'
     assert all(entry['llm']['provider'] == 'openai' for entry in out['risk_debate'])
-    assert 'llm' not in out['pm_decision']
+    assert out['pm_decision']['llm']['success'] is True
     # trader plan came from the LLM stub
     assert out['trader_plan']['action_hint'] == '매수'
+
+
+def test_pm_requests_decisive_operation_cap_and_identity(monkeypatch):
+    calls = []
+
+    def fake(prompt, **kwargs):
+        calls.append(kwargs)
+        system = kwargs.get('system') or ''
+        if '포트폴리오 매니저' in system:
+            return ('{"symbol":"005930","name":"삼성전자","market":"KOSPI",'
+                    '"analyst_mean":40,"verdict":"BUY","confidence":80,"reasoning":"ok"}',
+                    {'success': True, 'analysis_status': 'SUCCESS_PRIMARY', 'provider': 'deepseek'})
+        if '트레이더' in system:
+            return ('{"action_hint":"매수","entry_note":"분할","risk_note":"손절"}', {'success': True})
+        return ('{"message":"검토","vote":"approve"}', {'success': True})
+
+    monkeypatch.setattr(trader_risk.llm_client, 'generate_text_with_metadata', fake)
+    bundle = {**BUNDLE, 'symbol': '005930', 'market': 'KOSPI', 'display_name': '삼성전자'}
+    out = trader_risk.run_trader_and_risk(
+        '삼성전자', bundle, _debate(40), use_llm=True, run_id='wf_1',
+    )
+
+    pm_call = next(call for call in calls if call.get('operation') == 'decisive_text')
+    assert pm_call['max_tokens'] == 1200
+    assert pm_call['run_id'] == 'wf_1'
+    assert pm_call['symbol'] == '005930' and pm_call['market'] == 'KOSPI'
+    assert pm_call['domain_validator']({
+        'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+        'analyst_mean': 40, 'verdict': 'NOT_ALLOWED', 'confidence': 80,
+        'reasoning': 'x',
+    }) is not None
+    assert pm_call['domain_validator']({
+        'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+        'analyst_mean': 40, 'verdict': 'BUY', 'confidence': 80,
+        'reasoning': 'x',
+    }) is None
+    assert out['analysis_status'] == 'SUCCESS_PRIMARY'
+
+
+def test_full_profile_preserves_oversized_portfolio_manager_prompt(monkeypatch):
+    prompts = {}
+    marker = 'FULL_PROFILE_MIDDLE_EVIDENCE'
+    debate = _debate(40)
+    debate['bull_case'] = ('상승 근거 ' * 900) + marker + (' 추가 근거' * 900)
+
+    def fake(prompt, **kwargs):
+        operation = kwargs.get('operation')
+        if operation:
+            prompts[operation] = prompt
+        system = kwargs.get('system') or ''
+        if '포트폴리오 매니저' in system:
+            return ('{"verdict":"BUY","confidence":80,"reasoning":"ok"}',
+                    {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'})
+        if '트레이더' in system:
+            return ('{"action_hint":"매수","entry_note":"분할","risk_note":"손절"}',
+                    {'success': True})
+        return ('{"message":"검토","vote":"approve"}', {'success': True})
+
+    monkeypatch.setattr(trader_risk.llm_client, 'generate_text_with_metadata', fake)
+    trader_risk.run_trader_and_risk(
+        '삼성전자', BUNDLE, debate, use_llm=True, profile='full',
+    )
+
+    decisive_prompt = prompts['decisive_text']
+    assert len(decisive_prompt.encode('utf-8')) > 5_500
+    assert marker in decisive_prompt
+    assert '...[bounded]...' not in decisive_prompt
+
+
+def test_full_profile_with_evidence_packet_does_not_apply_compact_pm_cap(monkeypatch):
+    prompts = {}
+    marker = 'FULL_PACKET_PROFILE_MIDDLE_EVIDENCE'
+    debate = _debate(40)
+    debate['bull_case'] = ('상승 근거 ' * 900) + marker + (' 추가 근거' * 900)
+
+    def fake(prompt, **kwargs):
+        operation = kwargs.get('operation')
+        if operation:
+            prompts[operation] = prompt
+        system = kwargs.get('system') or ''
+        if '포트폴리오 매니저' in system:
+            return ('{"verdict":"BUY","confidence":80,"reasoning":"ok"}',
+                    {'success': True, 'analysis_status': 'SUCCESS_PRIMARY'})
+        if '트레이더' in system:
+            return ('{"action_hint":"매수","entry_note":"분할","risk_note":"손절"}',
+                    {'success': True})
+        return ('{"message":"검토","vote":"approve"}', {'success': True})
+
+    monkeypatch.setattr(trader_risk.llm_client, 'generate_text_with_metadata', fake)
+    trader_risk.run_trader_and_risk(
+        '삼성전자', BUNDLE, debate, use_llm=True, profile='full',
+        evidence_packet={'symbol': '005930', 'evidence_ids': ['ev1']},
+    )
+
+    decisive_prompt = prompts['decisive_text']
+    assert len(decisive_prompt.encode('utf-8')) > 5_500
+    assert marker in decisive_prompt
+    assert '...[bounded]...' not in decisive_prompt
 
 
 def test_strong_buy_confidence_floor():

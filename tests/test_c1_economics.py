@@ -23,17 +23,18 @@ from app.services.mirofish import (
 
 # ─────────────────────────── C1-a: llm_client response cache ───────────────────────────
 
-def _single_provider(monkeypatch, calls, *, provider='openai', model='gpt-4o', text='{"ok": true}',
-                     prompt_tokens=1_000_000, completion_tokens=0):
+def _single_provider(monkeypatch, calls, *, provider='openai', model='gpt-5.5', text='{"ok": true}',
+                     prompt_tokens=1, completion_tokens=0):
     monkeypatch.setenv('MIROFISH_LLM_PROVIDER_ORDER', provider)
     monkeypatch.setenv('MIROFISH_LLM_DISABLED', ','.join(p for p in llm_client.SUPPORTED_PROVIDERS if p != provider))
     monkeypatch.delenv('MIROFISH_LLM_CACHE_DISABLED', raising=False)
-    monkeypatch.setenv('OPENAI_MODEL', model)
+    monkeypatch.setenv('AI_OPENAI_FALLBACK_MODEL', model)
     monkeypatch.delenv('OPENAI_FALLBACK_MODEL', raising=False)
 
     def fake(*_args, **_kwargs):
         calls.append(provider)
-        llm_client._record_usage(provider, prompt_tokens, completion_tokens)
+        from app.services.ai_routing.contracts import TokenUsage
+        llm_client._provider_usage.set({provider: TokenUsage(input_tokens=prompt_tokens, output_tokens=completion_tokens)})
         return text
 
     monkeypatch.setattr(llm_client, f'_generate_{provider}', fake)
@@ -49,11 +50,11 @@ def test_llm_cache_hit_skips_provider_and_costs_nothing(monkeypatch):
 
     assert calls == ['openai']
     assert text1 == text2 == '{"ok": true}'
-    assert meta1['cache_hit'] is False and meta1['est_cost_usd'] == pytest.approx(2.5)
+    assert meta1['cache_hit'] is False and meta1['est_cost_usd'] == pytest.approx(0.000005)
     assert meta2['cache_hit'] is True
     assert meta2['est_cost_usd'] == 0.0
-    assert meta2['provider'] == 'openai' and meta2['model'] == 'gpt-4o'
-    assert meta2['usage']['prompt_tokens'] == 1_000_000
+    assert meta2['provider'] == 'openai' and meta2['model'] == 'gpt-5.5'
+    assert meta2['usage']['input_tokens'] == 1
     # 적중도 collector 에 게시된다 (원장이 cache_hits 를 셀 수 있게)
     assert len(collected) == 1 and collected[0]['cache_hit'] is True
     assert llm_client.get_last_generation_metadata()['cache_hit'] is True
@@ -187,7 +188,7 @@ def test_leading_enricher_news_reason_is_cached_across_calls(monkeypatch):
 
 # ─────────────────────────── C1-b: measured cost ledger + guard ───────────────────────────
 
-def _meta(model='gpt-4o', cost=0.5, cache_hit=False):
+def _meta(model='gpt-5.5', cost=0.5, cache_hit=False):
     return {
         'provider': 'openai', 'model': model, 'success': True, 'cache_hit': cache_hit,
         'est_cost_usd': cost,
@@ -199,7 +200,7 @@ def test_cost_ledger_records_measured_and_estimated_triggers():
     measured = llm_cost_ledger.record_trigger_cost([_meta(cost=0.5), _meta(model='deepseek-chat', cost=0.25)],
                                                    fallback_usd=0.07)
     assert measured['estimated'] is False and measured['usd'] == pytest.approx(0.75)
-    assert measured['by_model']['gpt-4o']['calls'] == 1
+    assert measured['by_model']['gpt-5.5']['calls'] == 1
 
     estimated = llm_cost_ledger.record_trigger_cost([], fallback_usd=0.07)
     assert estimated['estimated'] is True and estimated['usd'] == pytest.approx(0.07)
@@ -211,7 +212,7 @@ def test_cost_ledger_records_measured_and_estimated_triggers():
     assert summary['total_usd'] == pytest.approx(0.82)
     assert summary['total_triggers'] == 3 and summary['estimated_calls'] == 1
     assert summary['total_cache_hits'] == 1
-    assert summary['by_model']['gpt-4o']['usd'] == pytest.approx(0.5)
+    assert summary['by_model']['gpt-5.5']['usd'] == pytest.approx(0.5)
     assert summary['avg_usd_per_trigger'] == pytest.approx(0.82 / 3, abs=1e-6)
     assert os.path.isfile(llm_cost_ledger.LEDGER_PATH)
     with open(llm_cost_ledger.LEDGER_PATH, encoding='utf-8') as fh:
@@ -261,7 +262,7 @@ def test_cost_gate_projects_next_trigger_from_measured_average(isolated_runner):
 def test_fire_workflow_measures_llm_cost_through_collector(isolated_runner, monkeypatch):
     monkeypatch.setenv('MIROFISH_AUTO_RUNNER_DRY_RUN', '0')
     calls: list[str] = []
-    _single_provider(monkeypatch, calls)      # gpt-4o, 1M prompt tokens → $2.50 per call
+    _single_provider(monkeypatch, calls)      # central gpt-5.5, 1 input token → $0.000005 per call
 
     def fake_workflow(**_kwargs):
         llm_client.generate_text('analyse')
@@ -276,11 +277,11 @@ def test_fire_workflow_measures_llm_cost_through_collector(isolated_runner, monk
 
     assert result['fired'] is True and result['success'] is False
     assert cycle['llm_cost']['calls'] == 2 and cycle['llm_cost']['estimated'] is False
-    assert cycle['llm_cost']['usd'] == pytest.approx(5.0)
+    assert cycle['llm_cost']['usd'] == pytest.approx(0.00001)
     today = auto_runner._read_state()['today']
-    assert today['est_cost_usd'] == pytest.approx(5.0) and today['llm_calls'] == 2
-    assert llm_cost_ledger.get_llm_cost_summary(days=1)['total_usd'] == pytest.approx(5.0)
-    assert auto_runner.get_llm_cost_summary(days=1)['by_model']['gpt-4o']['calls'] == 2
+    assert today['est_cost_usd'] == pytest.approx(0.0) and today['llm_calls'] == 2
+    assert llm_cost_ledger.get_llm_cost_summary(days=1)['total_usd'] == pytest.approx(0.00001)
+    assert auto_runner.get_llm_cost_summary(days=1)['by_model']['gpt-5.5']['calls'] == 2
 
 
 def test_agent_status_route_exposes_llm_cost(monkeypatch):
@@ -472,3 +473,37 @@ def test_create_app_is_lenient_by_default_and_strict_on_flag(bare_env, monkeypat
         create_app({'TESTING': True, 'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
                     'SQLALCHEMY_ENGINE_OPTIONS': {}})
     assert 'MARKETFLOW_STRICT_CONFIG=1' in str(excinfo.value)
+
+
+@pytest.fixture(autouse=True)
+def isolated_routing_store(monkeypatch, tmp_path):
+    from app.services.ai_routing import store
+    monkeypatch.setattr(store, 'DEFAULT_DB_PATH', tmp_path / 'routing.sqlite3')
+
+
+def test_cached_text_does_not_bypass_current_identity_validation(monkeypatch):
+    calls = []
+    _single_provider(monkeypatch, calls, text='{"symbol": "AAA"}')
+    text, _ = llm_client.generate_text_with_metadata('identity', cache_ttl=60, json_mode=True)
+    assert text is not None
+    text, metadata = llm_client.generate_text_with_metadata(
+        'identity', cache_ttl=60, json_mode=True, expected_identity={'symbol': 'BBB'},
+    )
+    assert text is None
+    assert metadata['cache_hit'] is False
+    assert len(calls) == 2
+
+
+def test_cache_key_uses_central_operation_and_model_policy(monkeypatch):
+    calls = []
+    _single_provider(monkeypatch, calls)
+    llm_client.generate_text('policy', cache_ttl=60)
+    llm_client.generate_text('policy', cache_ttl=60, operation='compact_debate')
+    assert len(calls) == 2
+    # Legacy provider order cannot change the central routing policy/cache identity.
+    monkeypatch.setenv('MIROFISH_LLM_PROVIDER_ORDER', 'gemini,openai')
+    llm_client.generate_text('policy', cache_ttl=60)
+    assert len(calls) == 2
+    monkeypatch.setenv('AI_OPENAI_FALLBACK_MODEL', 'gpt-5.5-new')
+    _, metadata = llm_client.generate_text_with_metadata('policy', cache_ttl=60)
+    assert metadata['cache_hit'] is False

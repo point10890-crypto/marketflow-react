@@ -49,6 +49,7 @@ data/backtest/
 data/ai/
 data/institutional/
 data/admin_mirofish/
+data/ai_routing/
 data/manual_stock_analysis/
 data/briefing/*.json
 !data/briefing/.gitkeep
@@ -163,6 +164,8 @@ schtask_result.txt
 data/claw/
 # AlphaClaw shadow/paper runtime (isolated ledger and receipts)
 data/alphaclaw/
+# BUY screen cross-process daily provider budget (runtime state, never source).
+data/runtime/buy_screen_vision_budget.json
 # .env backups written by scripts/apply_claw_env.ps1 (contain secrets)
 .env.bak*
 

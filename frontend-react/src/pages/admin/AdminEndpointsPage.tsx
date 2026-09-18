@@ -3,6 +3,7 @@ import { MiroFishAlphaCandidate, MiroFishAlphaEndpointBlueprint, MiroFishAnalyst
 import { shareToKakao } from '@/lib/kakaoShare';
 import MirofishChatPanel from '@/components/admin/MirofishChatPanel';
 import AlphaServiceDashboard from '@/components/admin/AlphaServiceDashboard';
+import LlmRoutingCostCard from '@/components/admin/LlmRoutingCostCard';
 import TodaysPipelineCard from '@/components/admin/TodaysPipelineCard';
 import MiroFishFearIndexCard from '@/components/mirofish/MiroFishFearIndexCard';
 import RecentOutcomesBoard from '@/components/admin/RecentOutcomesBoard';
@@ -3263,6 +3264,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                     </div>
                                 </div>
                                 <div key={`ops-lane-${opsLaneRefreshKey}`} className="flex flex-col gap-3">
+                                    {!subscriberMode && <LlmRoutingCostCard />}
                                     <AlphaServiceDashboard />
                                     <TodaysPipelineCard />
                                     <ScanPerformanceCard />
