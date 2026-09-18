@@ -88,7 +88,7 @@ it('renders the five source-backed services in server order', async () => {
   render(<AlphaServiceDashboard />);
 
   const region = await screen.findByRole('region', { name: 'Alpha Service Clock' });
-  const headings = within(region).getAllByRole('heading', { level: 3 }).map(node => node.textContent);
+  const headings = (await within(region).findAllByRole('heading', { level: 3 })).map(node => node.textContent);
   expect(headings).toEqual([
     '전일 시장 정리', '알파스코어 상위 종목', '장중 종목 흐름 체크',
     '당일 매매 신호', '최근 성과 브리핑',
