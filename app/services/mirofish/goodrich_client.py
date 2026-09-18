@@ -684,6 +684,49 @@ def get_detection_history(*, limit: int = 20, offset: int = 0) -> dict:
     )
 
 
+def get_today_detection_history(*, now: datetime | None = None) -> dict:
+    """Read every cycle for the KST day from the newest-first upstream history.
+
+    TradingOS stores UTC in SQLite, which serializes without a timezone suffix.
+    Normalize that boundary before comparing dates or returning browser values.
+    """
+    kst = timezone(timedelta(hours=9))
+    today = (now or datetime.now(timezone.utc)).astimezone(kst).date()
+    items = []
+    seen = set()
+    offset = 0
+    while True:
+        page = get_detection_history(limit=100, offset=offset).get('items')
+        if not isinstance(page, list):
+            raise GoodrichServiceError('검출 이력 응답 형식이 올바르지 않습니다.')
+        older = False
+        new_cycles = 0
+        for item in page:
+            try:
+                detected = datetime.fromisoformat(item['detected_at'].replace('Z', '+00:00'))
+                if detected.tzinfo is None:
+                    detected = detected.replace(tzinfo=timezone.utc)
+                detected = detected.astimezone(kst)
+                cycle_id = item['cycle_id']
+            except (KeyError, TypeError, ValueError, AttributeError) as exc:
+                raise GoodrichServiceError('검출 이력 시각을 확인할 수 없습니다.') from exc
+            if cycle_id in seen:
+                continue
+            seen.add(cycle_id)
+            new_cycles += 1
+            if detected.date() < today:
+                older = True
+            elif detected.date() == today:
+                items.append({**item, 'detected_at': detected.isoformat()})
+        if older or len(page) < 100:
+            break
+        if not new_cycles:
+            raise GoodrichServiceError('검출 이력의 다음 페이지를 확인할 수 없습니다.')
+        offset += len(page)
+    items.sort(key=lambda item: item['detected_at'], reverse=True)
+    return {'items': items, 'date': today.isoformat(), 'timezone': 'Asia/Seoul', 'total': len(items)}
+
+
 def get_performance(*, window_days: int = 30) -> dict:
     safe_window = max(1, min(int(window_days), 365))
     return _request(

@@ -35,6 +35,8 @@ def run_fund_manager_research():
 @admin_mirofish_goodrich_bp.route('/goodrich/fund-manager/history', methods=['GET'])
 @admin_or_aibain_required
 def get_fund_manager_history():
+    if request.args.get('scope') == 'today':
+        return _call(goodrich_client.get_today_detection_history)
     return _call(lambda: goodrich_client.get_detection_history(
         limit=request.args.get('limit', default=20, type=int),
         offset=request.args.get('offset', default=0, type=int),

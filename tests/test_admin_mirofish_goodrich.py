@@ -755,6 +755,14 @@ def test_goodrich_routes_forward_safe_payload(admin_client, monkeypatch):
     ).get_json() == {'window_days': 90, 'total_picks': 0}
 
 
+def test_goodrich_today_history_route(admin_client, monkeypatch):
+    payload = {'items': [], 'date': '2026-09-18', 'timezone': 'Asia/Seoul', 'total': 0}
+    monkeypatch.setattr(goodrich_client, 'get_today_detection_history', lambda: payload)
+    response = admin_client.get('/api/admin/mirofish/goodrich/fund-manager/history?scope=today')
+    assert response.status_code == 200
+    assert response.get_json() == payload
+
+
 def test_goodrich_route_maps_upstream_failure(admin_client, monkeypatch):
     import app.routes.admin_mirofish_goodrich as route
 

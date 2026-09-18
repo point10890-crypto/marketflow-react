@@ -86,6 +86,7 @@ interface GoodrichHistoryItem {
 
 interface GoodrichHistory {
     items: GoodrichHistoryItem[];
+    date?: string;
     limit?: number;
     offset?: number;
 }
@@ -119,7 +120,7 @@ export default function GoodrichFundManagerPage() {
         try {
             const [snapshot, historyResult, performanceResult] = await Promise.all([
                 fetchAuthAPI<GoodrichSnapshot>(ENDPOINT, token ?? undefined, 20000),
-                fetchAuthAPI<GoodrichHistory>(`${ENDPOINT}/history?limit=10&offset=0`, token ?? undefined, 20000),
+                fetchAuthAPI<GoodrichHistory>(`${ENDPOINT}/history?scope=today`, token ?? undefined, 20000),
                 fetchAuthAPI<GoodrichPerformance>(`${ENDPOINT}/performance?window_days=30`, token ?? undefined, 20000),
             ]);
             setData(snapshot);
@@ -356,7 +357,7 @@ export default function GoodrichFundManagerPage() {
                                     <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">Detection history endpoint</div>
                                     <h2 className="mt-1 text-xl font-black">검출 이력</h2>
                                 </div>
-                                <span className="text-xs text-slate-500">최근 {history?.items?.length ?? 0}회</span>
+                                <span className="text-xs text-slate-500">{history?.date} · 오늘 전체 {history?.items?.length ?? 0}회 · 한국시간</span>
                             </div>
                             <div className="mt-5 space-y-3">
                                 {(history?.items ?? []).map((item) => (
@@ -377,7 +378,7 @@ export default function GoodrichFundManagerPage() {
                                 ))}
                                 {(history?.items?.length ?? 0) === 0 && (
                                     <div className="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-slate-500">
-                                        아직 저장된 검출 이력이 없습니다.
+                                        오늘 저장된 검출 이력이 없습니다. (한국시간 기준)
                                     </div>
                                 )}
                             </div>
