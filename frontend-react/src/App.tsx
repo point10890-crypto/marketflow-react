@@ -251,8 +251,8 @@ export default function App() {
                         <Route path="community/formula-market/purchases" element={<AdminGuard><Suspense fallback={<LoadingFallback />}><PurchaseAdminPage /></Suspense></AdminGuard>} />
                         <Route path="community/formula-market/write" element={<Suspense fallback={<LoadingFallback />}><FormulaWritePage /></Suspense>} />
                         {/* 수식 다이소 (3만원 균일가) — 수식마켓과 동일한 목록/등록/구매 기능, 가격만 고정 */}
-                        <Route path="community/formula-daiso" element={<Suspense fallback={<LoadingFallback />}><FormulaListPage boardSlug="formula-daiso" /></Suspense>} />
-                        <Route path="community/formula-daiso/write" element={<Suspense fallback={<LoadingFallback />}><FormulaWritePage boardSlug="formula-daiso" /></Suspense>} />
+                        <Route path="community/formula-daiso" element={<AiBainGuard><Suspense fallback={<LoadingFallback />}><FormulaListPage boardSlug="formula-daiso" /></Suspense></AiBainGuard>} />
+                        <Route path="community/formula-daiso/write" element={<AiBainGuard><Suspense fallback={<LoadingFallback />}><FormulaWritePage boardSlug="formula-daiso" /></Suspense></AiBainGuard>} />
                         <Route path="community/post/:postId" element={<Suspense fallback={<LoadingFallback />}><PostDetailPage /></Suspense>} />
                         <Route path="community/post/:postId/edit" element={<Suspense fallback={<LoadingFallback />}><PostWritePage /></Suspense>} />
                         <Route path="community/:boardSlug" element={<Suspense fallback={<LoadingFallback />}><BoardPage /></Suspense>} />
