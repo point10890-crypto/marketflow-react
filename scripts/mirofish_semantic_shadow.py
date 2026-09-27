@@ -1,6 +1,7 @@
 """Operational CLI for snapshots, explicit Jev evaluation and offline research."""
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -10,7 +11,8 @@ sys.path.insert(0, str(ROOT))
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['status', 'snapshot', 'evaluate', 'export', 'train-evaluate'])
+    parser.add_argument('command', choices=['status', 'snapshot', 'enrich', 'evaluate', 'export', 'train-evaluate'])
+    parser.add_argument('--provider', choices=['jev', 'deepseek'])
     parser.add_argument('--input', help='JSON scanner run or labeled research rows')
     parser.add_argument('--snapshot-id')
     parser.add_argument('--output')
@@ -20,6 +22,8 @@ def main():
     args = parser.parse_args()
     from dotenv import load_dotenv
     load_dotenv(ROOT / '.env')
+    if args.provider:
+        os.environ['MIROFISH_SEMANTIC_PROVIDER'] = args.provider
     from app.services.mirofish import semantic_decisions as service
     from app.utils.atomic_json import write_json_atomic
     if args.command == 'status':
@@ -30,6 +34,11 @@ def main():
         run = json.loads(Path(args.input).read_text(encoding='utf-8-sig'))
         result = service.record_snapshot(run['candidates'], workflow_id='import:' + str(run['id']),
                                          decision_at=run.get('generated_at') or run.get('created_at'))
+    elif args.command == 'enrich':
+        if not args.snapshot_id:
+            parser.error('--snapshot-id is required')
+        from app.services.mirofish.semantic_sources import enrich_snapshot
+        result = enrich_snapshot(args.snapshot_id)
     elif args.command == 'evaluate':
         if not args.snapshot_id:
             parser.error('--snapshot-id is required')

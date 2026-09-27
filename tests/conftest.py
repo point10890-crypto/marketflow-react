@@ -19,6 +19,8 @@ def _isolate_semantic_shadow(tmp_path, monkeypatch):
     from app.services.mirofish import semantic_decisions
     monkeypatch.setattr(semantic_decisions, 'ROOT', tmp_path / 'semantic_shadow')
     monkeypatch.delenv('MIROFISH_JEV_LIVE_ENABLED', raising=False)
+    monkeypatch.delenv('MIROFISH_SEMANTIC_PROVIDER', raising=False)
+    monkeypatch.delenv('MIROFISH_SEMANTIC_LIVE_ENABLED', raising=False)
 # scripts/ 도 import 가능하도록 (lotto_analysis 등)
 SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:

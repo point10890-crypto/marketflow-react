@@ -45,4 +45,5 @@ def test_env_overrides(monkeypatch):
     importlib.reload(regime)
     assert regime.regime_context({'regime': 'constructive_bullish', 'alignment_score': 0.55})['adjustment'] == 8.0
     assert regime.regime_context({'regime': 'defensive_caution', 'alignment_score': 0.1})['adjustment'] == -9.0
-    importlib.reload(regime)  # restore defaults for other tests
+    monkeypatch.undo()
+    importlib.reload(regime)  # Reload only after restoring environment values.

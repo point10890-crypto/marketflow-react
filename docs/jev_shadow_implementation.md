@@ -75,3 +75,56 @@ were corrected with regression coverage before release.
 Verification: 840 MiroFish/signal-contract tests passed (exit 0); focused suite
 82 passed; compileall and git diff --check passed. CLI status verified disabled,
 no key configured, no provider calls. Live provider inference remains unverified.
+
+## DeepSeek alternative (2026-09-28)
+
+Approved extension: use the existing DeepSeek account while Jev access is pending.
+No new plugin/dependency or frontend change is required. Adapter decisions remain
+shadow features until real performance is evaluated. No orders or alerts are sent.
+
+Configuration (server .env; keys never in source):
+- MIROFISH_SEMANTIC_PROVIDER=deepseek
+- MIROFISH_SEMANTIC_LIVE_ENABLED=true
+- DEEPSEEK_API_KEY=<existing server key>
+- MIROFISH_SEMANTIC_DEEPSEEK_MODEL=deepseek-flash
+- MIROFISH_SEMANTIC_BATCH_CALL_LIMIT=1 (maximum 3)
+- MIROFISH_SEMANTIC_DAILY_CALL_LIMIT=20 (maximum 100)
+
+The official models endpoint returned deepseek-flash and deepseek-v4-pro during
+verification. The previous v4-flash alias resolved to deepseek-flash; use the
+reported model explicitly. Official requests go only to api.deepseek.com.
+No third-party base URL, implicit provider fallback, or automatic paid retry.
+The fixed JSON prompt disables thinking, caps output at 1800 tokens, and caps
+request bytes at 12000. Every claimed fact must quote an exact source substring.
+unknown and not_stated are explicit categories, not assumed safe/no-risk.
+Features are categorical indicators, NOT calibrated probabilities. Store provider,
+resolved model, input/output tokens and raw response; monetary estimate is null
+until current account pricing is verified. Request count limits bound spend exposure.
+
+Operational steps:
+1. Capture the scanner run with snapshot, or use a workflow snapshot.
+2. `python scripts/mirofish_semantic_shadow.py enrich --snapshot-id js_<id>`
+   attaches up to three recent raw news headlines per candidate from the existing
+   local omni ledger. No inferred AI summaries are used. A NEW snapshot uses the
+   current observation time; the old snapshot is never backdated or overwritten.
+3. Evaluate the returned ID with `evaluate --snapshot-id js_<new_id> --provider deepseek`.
+   Repeat the SAME ID to resume deferred candidates without repeating paid successes.
+4. Export and label verified subsequent returns for offline comparison as before.
+
+Admin API also offers POST /semantic-shadow/snapshots/{id}/enrich. Inference stays
+explicit POST/CLI; reading status never spends tokens. Existing candidate capture
+is automatic in workflow creation, but recurring paid evaluation is not scheduled
+by this release. Existing candidate snapshot storage remains backward compatible;
+DeepSeek evaluation files use a .deepseek.json suffix, separate from Jev files.
+
+Headlines provide limited evidence; sufficient means sufficient for the stated
+classification, not sufficient to invest. Lack of eligible news remains ineligible.
+The actual synthetic Korean contract-cancellation probe produced cancelled/yes with
+an exact quote, 1033 input + 236 output tokens. This validates API integration only,
+not real-market accuracy, probability calibration, or improved returns.
+
+Alternative-provider release verification: 848 MiroFish/signal-contract tests
+passed; compileall and diff whitespace checks passed. Fresh review corrected
+legacy Jev cache compatibility. Regression tests also cover no paid retry of an
+old uncertain Jev claim. A pre-existing regime test was leaking its environment
+constant into later tests; its teardown now restores the environment before reload.

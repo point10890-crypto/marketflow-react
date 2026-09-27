@@ -71,6 +71,18 @@ def semantic_shadow_evaluate(snapshot_id):
         return jsonify({'error': 'snapshot_not_found'}), 404
 
 
+@admin_mirofish_bp.route('/semantic-shadow/snapshots/<snapshot_id>/enrich', methods=['POST'])
+@admin_required
+def semantic_shadow_enrich(snapshot_id):
+    from app.services.mirofish.semantic_sources import enrich_snapshot
+    try:
+        return _llm_report_response(enrich_snapshot(snapshot_id))
+    except ValueError:
+        return jsonify({'error': 'invalid_snapshot'}), 400
+    except FileNotFoundError:
+        return jsonify({'error': 'snapshot_not_found'}), 404
+
+
 def _telegram_config_status() -> dict:
     personal_token = os.getenv('TELEGRAM_BOT_TOKEN')
     personal_chat = os.getenv('TELEGRAM_CHAT_ID')

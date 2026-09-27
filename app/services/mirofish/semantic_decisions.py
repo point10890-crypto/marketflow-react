@@ -66,7 +66,15 @@ def _root(root=None) -> Path:
 
 
 def _enabled() -> bool:
-    return os.getenv('MIROFISH_JEV_LIVE_ENABLED', '').lower() in {'true', '1'}
+    name = 'MIROFISH_SEMANTIC_LIVE_ENABLED' if provider() == 'deepseek' else 'MIROFISH_JEV_LIVE_ENABLED'
+    return os.getenv(name, '').lower() in {'true', '1'}
+
+
+def provider() -> str:
+    value = os.getenv('MIROFISH_SEMANTIC_PROVIDER', 'jev').strip().lower()
+    if value not in {'jev', 'deepseek'}:
+        raise ValueError('invalid_semantic_provider')
+    return value
 
 
 def _limit(name: str, default: int, ceiling: int) -> int:
@@ -77,7 +85,15 @@ def _limit(name: str, default: int, ceiling: int) -> int:
 
 
 def _key() -> str:
-    return (os.getenv('TYPESAFE_API_KEY') or '').strip()
+    return (os.getenv('DEEPSEEK_API_KEY' if provider() == 'deepseek' else 'TYPESAFE_API_KEY') or '').strip()
+
+
+def _batch_limit():
+    return _limit('MIROFISH_SEMANTIC_BATCH_CALL_LIMIT', 1, 3) if provider() == 'deepseek' else _limit('MIROFISH_JEV_BATCH_CALL_LIMIT', 5, 20)
+
+
+def _daily_limit():
+    return _limit('MIROFISH_SEMANTIC_DAILY_CALL_LIMIT', 20, 100) if provider() == 'deepseek' else _limit('MIROFISH_JEV_DAILY_CALL_LIMIT', 100, 1000)
 
 
 def _clean_candidate(candidate: dict) -> dict:
@@ -253,7 +269,7 @@ def _database(root) -> sqlite3.Connection:
     return db
 
 
-def _claim(key, root):
+def _claim(key, root, *, allow_new=True):
     db = _database(root)
     try:
         db.execute('BEGIN IMMEDIATE')
@@ -263,9 +279,11 @@ def _claim(key, root):
                 return json.loads(row[1])
             return {'status': 'in_progress' if time.time() - row[0] < 120 else 'uncertain',
                     'error_class': 'existing_claim', 'features': None}
+        if not allow_new:
+            return {'status': 'deferred', 'features': None}
         day = datetime.now(timezone.utc).date().isoformat()
         count = db.execute('SELECT count(*) FROM claims WHERE day=?', (day,)).fetchone()[0]
-        if count >= _limit('MIROFISH_JEV_DAILY_CALL_LIMIT', 100, 1000):
+        if count >= _daily_limit():
             return {'status': 'budget_exhausted', 'features': None}
         db.execute('INSERT INTO claims VALUES (?, ?, ?, NULL)', (key, day, time.time()))
         db.commit()
@@ -284,65 +302,75 @@ def _finish(key, root, result):
 
 
 def evaluate_snapshot(snapshot_id: str, *, root=None, transport=None) -> dict:
+    from app.services.mirofish import semantic_deepseek
+    selected = provider()
     snapshot = read_snapshot(snapshot_id, root=root)
     result = {'snapshot_id': snapshot_id, 'version': VERSION, 'ranking_effect': 'none',
-              'status': 'disabled', 'validated_count': 0, 'results': []}
+              'status': 'disabled', 'validated_count': 0, 'results': [], 'provider': selected}
     if not _enabled():
         return result
     key = _key()
     if not key:
         result['status'] = 'unconfigured'
         return result
-    call = transport or official_transport
+    call = transport or (semantic_deepseek.transport if selected == 'deepseek' else official_transport)
     calls = 0
     for candidate in snapshot['candidates']:
         identity = {k: candidate.get(k) for k in ('symbol', 'market')}
         try:
             payload = build_request(candidate, decision_at=snapshot['decision_at'])
+            cache_request = semantic_deepseek.request(payload) if selected == 'deepseek' else payload
         except (ValueError, TypeError) as exc:
             result['results'].append({**identity, 'status': 'ineligible', 'error_class': 'invalid_evidence',
                                       'features': None})
             continue
-        fingerprint = _hash({'version': VERSION, 'request': payload})
-        if calls >= _limit('MIROFISH_JEV_BATCH_CALL_LIMIT', 5, 20):
-            item = {'status': 'deferred', 'features': None}
-        else:
-            item = _claim(fingerprint, root)
-            if item is None:
-                calls += 1
-                started = time.perf_counter()
-                try:
-                    raw = call(payload, key)
-                    # Exact raw response, redacted defensively before any persistence.
-                    raw = json.loads(json.dumps(raw, ensure_ascii=False).replace(key, '[REDACTED]'))
-                    write_json_atomic(str(_root(root) / 'responses' / (fingerprint + '.json')),
-                                      {'request': payload, 'response': raw, 'validation_status': 'received'})
+        fingerprint = (_hash({'version': semantic_deepseek.VERSION, 'provider': selected,
+                              'request': cache_request}) if selected == 'deepseek' else
+                       _hash({'version': VERSION, 'request': payload}))
+        item = _claim(fingerprint, root, allow_new=calls < _batch_limit())
+        if item is None:
+            calls += 1
+            started = time.perf_counter()
+            try:
+                raw = call(payload, key)
+                # Exact raw response, redacted defensively before any persistence.
+                raw = json.loads(json.dumps(raw, ensure_ascii=False).replace(key, '[REDACTED]'))
+                write_json_atomic(str(_root(root) / 'responses' / (fingerprint + '.json')),
+                                  {'request': cache_request, 'response': raw, 'validation_status': 'received'})
+                if selected == 'deepseek':
+                    item = {'status': 'validated', **semantic_deepseek.check_response(raw, payload)}
+                else:
                     checked = validate_response(raw)
                     item = {'status': 'validated', 'features': features(checked),
-                            'resolved_model': checked['model'], 'usage': checked['usage'],
-                            'estimated_cost_usd': checked['usage']['input_tokens'] * .042 / 1_000_000}
-                except ProviderFailure as exc:
-                    item = {'status': 'uncertain' if exc.uncertain else 'failed',
-                            'error_class': exc.code, 'features': None}
-                except (TimeoutError, requests.Timeout):
-                    item = {'status': 'uncertain', 'error_class': 'transport_uncertain', 'features': None}
-                except Exception:
-                    item = {'status': 'failed', 'error_class': 'evaluation_failed', 'features': None}
-                item['latency_ms'] = round((time.perf_counter() - started) * 1000)
-                _finish(fingerprint, root, item)
+                        'resolved_model': checked['model'], 'usage': checked['usage'],
+                        'estimated_cost_usd': checked['usage']['input_tokens'] * .042 / 1_000_000}
+            except ProviderFailure as exc:
+                item = {'status': 'uncertain' if exc.uncertain else 'failed',
+                        'error_class': exc.code, 'features': None}
+            except (TimeoutError, requests.Timeout):
+                item = {'status': 'uncertain', 'error_class': 'transport_uncertain', 'features': None}
+            except Exception:
+                item = {'status': 'failed', 'error_class': 'evaluation_failed', 'features': None}
+            item['latency_ms'] = round((time.perf_counter() - started) * 1000)
+            _finish(fingerprint, root, item)
         result['results'].append({**identity, **item, 'fingerprint': fingerprint})
     result['validated_count'] = sum(r['status'] == 'validated' for r in result['results'])
     result['status'] = 'completed' if result['validated_count'] == len(result['results']) and result['results'] else 'partial'
     if not any(r['status'] == 'in_progress' for r in result['results']):
-        write_json_atomic(str(_root(root) / 'evaluations' / (snapshot_id + '.json')), result)
+        write_json_atomic(str(_evaluation_path(snapshot_id, root)), result)
     return result
 
 
 def read_evaluation(snapshot_id: str, *, root=None) -> dict:
     read_snapshot(snapshot_id, root=root)
-    path = _root(root) / 'evaluations' / (snapshot_id + '.json')
+    path = _evaluation_path(snapshot_id, root)
     return json.loads(path.read_text(encoding='utf-8')) if path.exists() else {
         'snapshot_id': snapshot_id, 'status': 'not_evaluated', 'ranking_effect': 'none'}
+
+
+def _evaluation_path(snapshot_id, root):
+    suffix = '.deepseek' if provider() == 'deepseek' else ''
+    return _root(root) / 'evaluations' / (snapshot_id + suffix + '.json')
 
 
 def status(*, root=None) -> dict:
@@ -355,8 +383,10 @@ def status(*, root=None) -> dict:
             recent.append({k: snapshot[k] for k in ('id', 'workflow_id', 'decision_at', 'candidate_count')})
         except (OSError, ValueError, KeyError):
             continue
+    from app.services.mirofish import semantic_deepseek
     return {'version': VERSION, 'mode': 'shadow', 'ranking_effect': 'none',
-            'provider': 'typesafe', 'model': MODEL, 'live_enabled': _enabled(),
+            'provider': 'deepseek' if provider() == 'deepseek' else 'typesafe',
+            'model': semantic_deepseek.model() if provider() == 'deepseek' else MODEL, 'live_enabled': _enabled(),
             'key_configured': bool(_key()), 'recent_snapshots': recent,
-            'batch_call_limit': _limit('MIROFISH_JEV_BATCH_CALL_LIMIT', 5, 20),
-            'daily_call_limit': _limit('MIROFISH_JEV_DAILY_CALL_LIMIT', 100, 1000)}
+            'batch_call_limit': _batch_limit(),
+            'daily_call_limit': _daily_limit()}
