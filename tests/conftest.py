@@ -12,6 +12,13 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
+
+@pytest.fixture(autouse=True)
+def _isolate_semantic_shadow(tmp_path, monkeypatch):
+    from app.services.mirofish import semantic_decisions
+    monkeypatch.setattr(semantic_decisions, 'ROOT', tmp_path / 'semantic_shadow')
+    monkeypatch.delenv('MIROFISH_JEV_LIVE_ENABLED', raising=False)
 # scripts/ 도 import 가능하도록 (lotto_analysis 등)
 SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:

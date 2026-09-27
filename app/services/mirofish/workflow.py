@@ -213,6 +213,7 @@ def start_workflow_from_scanner_events(
     if kalman_gate_result:
         workflow['kalman_gate'] = _workflow_kalman_gate_summary(kalman_gate_result)
     workflow['event_state_commit_requested'] = bool(commit_event_state and not force)
+    _record_semantic_snapshot(workflow, scanner_result)
     _write_workflow(workflow)
 
     if async_mode:
@@ -2160,6 +2161,20 @@ def _scanner_payload(payload: dict[str, Any]) -> dict[str, Any]:
     return scanner_payload
 
 
+def _record_semantic_snapshot(workflow: dict[str, Any], scanner_result: dict[str, Any]) -> None:
+    """Record the scanner pool before admission, with no external inference."""
+    from app.services.mirofish import semantic_decisions
+    try:
+        workflow['semantic_shadow'] = semantic_decisions.record_snapshot(
+            (scanner_result.get('run') or {}).get('candidates') or [],
+            workflow_id=workflow['id'], decision_at=workflow['created_at'],
+        )
+    except Exception:
+        workflow['semantic_shadow'] = {
+            'status': 'snapshot_failed', 'ranking_effect': 'none',
+        }
+
+
 def _workflow_summary(workflow: dict[str, Any] | None) -> dict[str, Any] | None:
     if not workflow:
         return None
@@ -2182,6 +2197,7 @@ def _workflow_summary(workflow: dict[str, Any] | None) -> dict[str, Any] | None:
         'filters': workflow.get('filters') or {},
         'links': workflow.get('links') or {},
         'budget_summary': workflow.get('budget_summary') or {},
+        'semantic_shadow': workflow.get('semantic_shadow'),
         # ── Phase C: workflow summary 에도 GraphRAG/freshness 노출 ─────
         'graphrag': workflow.get('graphrag'),
         'source_freshness': workflow.get('source_freshness'),

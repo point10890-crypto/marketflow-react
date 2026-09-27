@@ -25,6 +25,7 @@ Last updated: 2026-08-21
 | 프로젝트 루트 | `C:\bitman_marketfloww` | `/c/bitman_marketfloww` |
 | Python venv | `C:\bitman_marketfloww\.venv\Scripts\python.exe` | `/c/bitman_marketfloww/.venv/Scripts/python.exe` |
 | 데이터 디렉토리 | `C:\bitman_marketfloww\data` | `/c/bitman_marketfloww/data` |
+| JEV shadow 연구 기록 | `C:\bitman_marketfloww\data\admin_mirofish\semantic_decisions` | `/c/bitman_marketfloww/data/admin_mirofish/semantic_decisions` |
 | AlphaClaw 페이퍼 원장 | `C:\bitman_marketfloww\data\alphaclaw\paper.db` | `/c/bitman_marketfloww/data/alphaclaw/paper.db` |
 | 로그 디렉토리 | `C:\bitman_marketfloww\logs` | `/c/bitman_marketfloww/logs` |
 | 프론트엔드 | `C:\bitman_marketfloww\frontend-react` | `/c/bitman_marketfloww/frontend-react` |

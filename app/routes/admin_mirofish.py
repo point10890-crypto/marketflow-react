@@ -17,6 +17,60 @@ from app.services.mirofish import events as mf_events
 admin_mirofish_bp = Blueprint('admin_mirofish', __name__)
 
 
+@admin_mirofish_bp.route('/semantic-shadow/status', methods=['GET'])
+@admin_required
+def semantic_shadow_status():
+    from app.services.mirofish import semantic_decisions
+    return _llm_report_response(semantic_decisions.status())
+
+
+@admin_mirofish_bp.route('/semantic-shadow/snapshots', methods=['POST'])
+@admin_required
+def semantic_shadow_snapshot():
+    from app.services.mirofish import semantic_decisions
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict) or not isinstance(payload.get('scanner_run_id'), str):
+        return jsonify({'error': 'scanner_run_id_required'}), 400
+    try:
+        run = alpha_scanner_service.read_scanner_run(payload['scanner_run_id'])
+        if not run:
+            return jsonify({'error': 'scanner_run_not_found'}), 404
+        result = semantic_decisions.record_snapshot(
+            run.get('candidates') or [], workflow_id='scanner:' + payload['scanner_run_id'],
+            decision_at=run.get('generated_at') or run.get('created_at'),
+        )
+        return jsonify(result), 201
+    except (ValueError, TypeError):
+        return jsonify({'error': 'invalid_scanner_snapshot'}), 400
+
+
+@admin_mirofish_bp.route('/semantic-shadow/snapshots/<snapshot_id>', methods=['GET'])
+@admin_required
+def semantic_shadow_read(snapshot_id):
+    from app.services.mirofish import semantic_decisions
+    try:
+        return _llm_report_response({
+            'snapshot': semantic_decisions.read_snapshot(snapshot_id),
+            'evaluation': semantic_decisions.read_evaluation(snapshot_id),
+        })
+    except ValueError:
+        return jsonify({'error': 'invalid_snapshot_id'}), 400
+    except FileNotFoundError:
+        return jsonify({'error': 'snapshot_not_found'}), 404
+
+
+@admin_mirofish_bp.route('/semantic-shadow/snapshots/<snapshot_id>/evaluate', methods=['POST'])
+@admin_required
+def semantic_shadow_evaluate(snapshot_id):
+    from app.services.mirofish import semantic_decisions
+    try:
+        return _llm_report_response(semantic_decisions.evaluate_snapshot(snapshot_id))
+    except ValueError:
+        return jsonify({'error': 'invalid_snapshot_id'}), 400
+    except FileNotFoundError:
+        return jsonify({'error': 'snapshot_not_found'}), 404
+
+
 def _telegram_config_status() -> dict:
     personal_token = os.getenv('TELEGRAM_BOT_TOKEN')
     personal_chat = os.getenv('TELEGRAM_CHAT_ID')
