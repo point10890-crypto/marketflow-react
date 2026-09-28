@@ -411,7 +411,9 @@ def status(*, root=None) -> dict:
         except (OSError, ValueError, KeyError):
             continue
     from app.services.mirofish import semantic_deepseek
-    return {'version': VERSION, 'mode': 'shadow', 'ranking_effect': 'none',
+    from app.services.mirofish.semantic_ranking import enabled as ranking_enabled
+    return {'version': VERSION, 'mode': 'risk_overlay' if ranking_enabled() else 'shadow',
+            'ranking_effect': 'risk_penalty_and_audit_exclusion' if ranking_enabled() else 'none',
             'provider': 'deepseek' if provider() == 'deepseek' else 'typesafe',
             'model': semantic_deepseek.model() if provider() == 'deepseek' else MODEL, 'live_enabled': _enabled(),
             'key_configured': bool(_key()), 'recent_snapshots': recent,

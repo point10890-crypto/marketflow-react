@@ -334,6 +334,10 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         validated_at=rerank_validated_at,
     )
     generated_at = rerank_validated_at
+    from app.services.mirofish import semantic_ranking
+    candidate_pool, semantic_overlay = semantic_ranking.apply(
+        candidate_pool, now=datetime.fromisoformat(generated_at),
+    )
     for candidate in candidate_pool:
         candidate['generated_at'] = generated_at
     candidates = _select_candidates(candidate_pool, limit)
@@ -358,6 +362,7 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         'scoring_schema': SCORING_SCHEMA,
         'goal_harness': goal_harness,
         'performance_advisory': performance_advisory,
+        'semantic_ranking': semantic_overlay,
         'providers': {
             'tradingview': artifacts.get('tradingview', {}).get('status') or tradingview_provider.get_status(include_live=False),
             'deepseek_rerank': _deepseek_rerank_provider_status(deepseek_rerank),

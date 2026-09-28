@@ -1060,6 +1060,11 @@ def _complete_workflow(
     admission = ta_run_cache.AdmissionManager(
         os.path.join(WORKFLOW_STATE_ROOT, 'candidate_admission.sqlite3')
     )
+    from app.services.mirofish import semantic_ranking
+    candidates, semantic_overlay = semantic_ranking.apply(candidates)
+    workflow['semantic_ranking'] = semantic_overlay
+    candidates = [c for c in candidates if 'audit_concern' not in
+                  (c.get('semantic_ranking') or {}).get('reasons', [])]
     admission_limit = min(len(candidates), int(ta_engine.get_status()['config'].get('max_candidates') or 5))
     admitted_candidates, admission_summary = admission.admit(
         workflow_id, candidates, limit=admission_limit,
@@ -1637,6 +1642,10 @@ def _score_breakdown(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
         'source_penalty': round(source_penalty, 4),
         'hard_blocker_penalty': round(hard_blocker_penalty, 4),
     }
+    from app.services.mirofish import semantic_ranking
+    semantic = candidate.get('semantic_ranking') or {}
+    if semantic_ranking.enabled() and semantic.get('status') == 'applied' and semantic.get('policy') == semantic_ranking.POLICY:
+        components['semantic_risk'] = -max(0.0, min(12.0, _number(semantic.get('penalty'))))
     score = round(sum(components.values()), 2)
     return {
         'version': 'alpha_top3_v3_quality_weighted',
@@ -2136,6 +2145,7 @@ def _candidate_summary(candidate: dict[str, Any]) -> dict[str, Any]:
         'risk_score': candidate.get('risk_score'),
         'rs_rating': _extract_rs_rating(candidate),
         'ranking_score': candidate.get('ranking_score'),
+        'semantic_ranking': candidate.get('semantic_ranking') or {},
         'signal_quality': candidate.get('signal_quality'),
         'strategy_tags': candidate.get('strategy_tags') or [],
         'analysis_profile': candidate.get('analysis_profile') or {},

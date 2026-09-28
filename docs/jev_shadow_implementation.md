@@ -173,3 +173,11 @@ classification of identical headlines. Adapter v2 now classifies document statem
 + model. Source availability still passes cutoff validation before any cache lookup.
 Transient observation times are excluded from the provider request so unchanged news
 is reused across new scanner runs. Changed text, model or prompt invalidates reuse.
+
+## Live detection integration (2026-09-28)
+
+`MIROFISH_SEMANTIC_RANKING_ENABLED=true` connects previously validated DeepSeek evidence to the actual scanner before its candidate limit, workflow admission, and final Top3 score. It performs no inference in the scan path. Missing, unrelated, insufficient, stale (>24h publication/observation), malformed, and future evidence preserve the numeric baseline. Exact symbol+market and grounded quotes are required. Default remains disabled outside configured production.
+
+Policy `semantic-risk-v1`: audit concern -12 and exclusion from workflow admission, confirmed contract termination -8, equity dilution -4; total deduction capped at12. These are explicit risk-policy weights, not learned returns. No positive boost from news alone. Each candidate preserves its baseline, evidence references, exact quotes, availability time and adjustment. Scanner/workflow artifacts record before/after Top3. The final workflow score preserves the same bounded deduction without modifying alpha/price data. Reapplication is idempotent.
+
+Validation covers real scanner truncation, final workflow score, source quote revalidation, exact market identity, stale/future exclusion, missing data neutrality and repeated application. This improves the ability to filter known risky candidates; forward-return uplift still requires prospectively collected outcomes. Existing notification/order behavior is not manually triggered during acceptance.
