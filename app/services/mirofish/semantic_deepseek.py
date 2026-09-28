@@ -1,5 +1,6 @@
 """Bounded DeepSeek classification; categorical features, never claimed probabilities."""
 import json
+import copy
 import os
 import time
 import requests
@@ -40,11 +41,13 @@ def request(payload):
 
 
 def validate(raw, payload):
+    raw = copy.deepcopy(raw)
     answers = raw.get('answers') if isinstance(raw, dict) else None
     if not isinstance(answers, dict) or set(answers) != set(LABELS):
         raise ValueError('answer_keys_mismatch')
     texts = [e['text'] for e in payload['state']['evidence']]
     features = {}
+    normalized = []
     for key, options in LABELS.items():
         item = answers[key]
         if not isinstance(item, dict) or set(item) != {'label', 'quote'} or item['label'] not in options:
@@ -55,9 +58,14 @@ def validate(raw, payload):
         if item['label'] not in {'unknown', 'not_stated'} and not quote.strip():
             raise ValueError('quote_required')
         if quote and not any(quote in text for text in texts):
-            raise ValueError('ungrounded_quote')
+            trimmed = quote.strip(' \t\n\r\"\u201c\u201d\u2018\u2019')
+            if len(trimmed) < 8 or not any(trimmed in text for text in texts):
+                raise ValueError('ungrounded_quote')
+            item['quote'] = trimmed
+            normalized.append(key)
         features.update({key+'_'+option: int(item['label'] == option) for option in options})
-    return {'features': features, 'answers': answers, 'probability_semantics': 'categorical_not_calibrated'}
+    return {'features': features, 'answers': answers, 'normalized_quotes': normalized,
+            'probability_semantics': 'categorical_not_calibrated'}
 
 
 def transport(payload, key):

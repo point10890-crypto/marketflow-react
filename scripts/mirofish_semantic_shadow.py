@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT))
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['status', 'worker', 'snapshot', 'enrich', 'evaluate', 'export', 'train-evaluate'])
+    parser.add_argument('command', choices=['status', 'worker', 'snapshot', 'enrich', 'evaluate', 'revalidate', 'export', 'train-evaluate'])
     parser.add_argument('--provider', choices=['jev', 'deepseek'])
     parser.add_argument('--input', help='JSON scanner run or labeled research rows')
     parser.add_argument('--snapshot-id')
@@ -42,10 +42,11 @@ def main():
             parser.error('--snapshot-id is required')
         from app.services.mirofish.semantic_sources import enrich_snapshot
         result = enrich_snapshot(args.snapshot_id)
-    elif args.command == 'evaluate':
+    elif args.command in {'evaluate', 'revalidate'}:
         if not args.snapshot_id:
             parser.error('--snapshot-id is required')
-        result = service.evaluate_snapshot(args.snapshot_id)
+        result = (service.revalidate_snapshot(args.snapshot_id) if args.command == 'revalidate'
+                  else service.evaluate_snapshot(args.snapshot_id))
     elif args.command == 'export':
         if not args.snapshot_id or not args.output:
             parser.error('--snapshot-id and --output are required')

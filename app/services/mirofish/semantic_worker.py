@@ -40,6 +40,11 @@ def _run(directory,scanner_reader):
         run=scanner_reader()
         if not run: return {'status':'no_scanner_run'}
         if job.get('scanner_run_id')==run['id']:
+            # Offline revalidation may have repaired a saved response since completion.
+            result=s.read_evaluation(job['snapshot_id'],root=directory)
+            if result.get('results'):
+                job=_summary(job,result)
+                write_json_atomic(str(jobpath),job)
             return {'status':'idle','last_job':job}
         at=run.get('generated_at') or run.get('created_at')
         age=datetime.now(timezone.utc)-s._instant(at)
@@ -52,6 +57,12 @@ def _run(directory,scanner_reader):
         # Persist the selected immutable input before making a paid call.
         write_json_atomic(str(jobpath),job)
     result=s.evaluate_snapshot(job['snapshot_id'],root=directory)
+    job=_summary(job,result)
+    write_json_atomic(str(jobpath),job)
+    return job
+
+
+def _summary(job,result):
     counts={}
     for item in result.get('results',[]): counts[item['status']]=counts.get(item['status'],0)+1
     pending=any(counts.get(k) for k in ('deferred','budget_exhausted','in_progress'))
@@ -60,5 +71,4 @@ def _run(directory,scanner_reader):
                 'completed_with_exclusions' if counts.get('ineligible') else 'completed',
                 'counts':counts,'validated_count':result.get('validated_count',0)})
     if result.get('status') in {'disabled','unconfigured'}: job['status']='pending'
-    write_json_atomic(str(jobpath),job)
     return job

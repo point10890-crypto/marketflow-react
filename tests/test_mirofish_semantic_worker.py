@@ -46,3 +46,17 @@ def test_worker_lock_and_stale_scanner(monkeypatch,tmp_path):
     old={'id':'old','generated_at':'2020-01-01T00:00:00Z','candidates':[]}
     assert w.run_once(root=tmp_path,scanner_reader=lambda:old)['status']=='stale_scanner'
     assert not (tmp_path/'snapshots').exists()
+
+
+def test_idle_worker_refreshes_repaired_result_without_inference(monkeypatch,tmp_path):
+    from app.services.mirofish import semantic_decisions as s
+    from app.utils.atomic_json import write_json_atomic
+    w=importlib.import_module('app.services.mirofish.semantic_worker')
+    monkeypatch.setenv('MIROFISH_SEMANTIC_PROVIDER','deepseek')
+    monkeypatch.setenv('MIROFISH_SEMANTIC_LIVE_ENABLED','true')
+    monkeypatch.setenv('DEEPSEEK_API_KEY','test')
+    write_json_atomic(str(tmp_path/'worker_job.deepseek.json'),{'scanner_run_id':'same','snapshot_id':'test','status':'completed_with_errors'})
+    monkeypatch.setattr(s,'read_evaluation',lambda *a,**k:{'validated_count':1,'results':[{'status':'validated'}]})
+    monkeypatch.setattr(s,'evaluate_snapshot',lambda *a,**k:(_ for _ in ()).throw(AssertionError('must not infer')))
+    r=w.run_once(root=tmp_path,scanner_reader=lambda:{'id':'same'})
+    assert r['last_job']['status']=='completed' and r['last_job']['validated_count']==1

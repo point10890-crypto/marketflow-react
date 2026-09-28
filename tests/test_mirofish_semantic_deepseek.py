@@ -124,3 +124,47 @@ def test_legacy_jev_uncertain_claim_is_not_retried(monkeypatch, tmp_path):
         pytest.fail('legacy uncertain claim must not call provider again')
     r = s.evaluate_snapshot(snap['id'], root=tmp_path, transport=no_call)
     assert r['results'][0]['status'] == 'uncertain'
+
+
+def test_wrapper_quote_repair_preserves_raw_and_rejects_changed_words():
+    m=adapter()
+    from app.services.mirofish.semantic_decisions import build_request
+    p=build_request(candidate())
+    raw=answer(m)
+    raw['answers']['relevance']={'label':'direct','quote':p['state']['evidence'][0]['text']+'"'}
+    checked=m.validate(raw,p)
+    assert checked['answers']['relevance']['quote']==p['state']['evidence'][0]['text']
+    assert checked['normalized_quotes']==['relevance']
+    assert raw['answers']['relevance']['quote'].endswith('"')
+    raw['answers']['relevance']['quote']='"완전히 다른 주장"'
+    with pytest.raises(ValueError): m.validate(raw,p)
+
+
+def test_revalidate_saved_response_makes_no_provider_call(monkeypatch,tmp_path):
+    from app.services.mirofish import semantic_decisions as s
+    from app.utils.atomic_json import write_json_atomic
+    m=adapter()
+    monkeypatch.setenv('MIROFISH_SEMANTIC_PROVIDER','deepseek')
+    monkeypatch.setenv('MIROFISH_SEMANTIC_LIVE_ENABLED','true')
+    monkeypatch.setenv('DEEPSEEK_API_KEY','test')
+    c=candidate(); snap=s.record_snapshot([c],workflow_id='repair',decision_at=c['source_cutoff'],root=tmp_path)
+    r=s.evaluate_snapshot(snap['id'],root=tmp_path,transport=lambda *_: {'model':m.model(),'decision':{},'usage':{'input_tokens':2,'output_tokens':1}})
+    fp=r['results'][0]['fingerprint']
+    raw={'model':m.model(),'decision':answer(m),'usage':{'input_tokens':2,'output_tokens':1}}
+    write_json_atomic(str(tmp_path/'responses'/(fp+'.json')),{'response':raw})
+    monkeypatch.setattr(m,'transport',lambda *_:pytest.fail('offline revalidation must not call API'))
+    repaired=s.revalidate_snapshot(snap['id'],root=tmp_path)
+    assert repaired['validated_count']==1
+    assert repaired['results'][0]['revalidated_from_saved_response'] is True
+
+
+def test_revalidate_empty_choices_retains_failure(monkeypatch,tmp_path):
+    from app.services.mirofish import semantic_decisions as s
+    m=adapter()
+    monkeypatch.setenv('MIROFISH_SEMANTIC_PROVIDER','deepseek')
+    monkeypatch.setenv('MIROFISH_SEMANTIC_LIVE_ENABLED','true')
+    monkeypatch.setenv('DEEPSEEK_API_KEY','test')
+    c=candidate(); snap=s.record_snapshot([c],workflow_id='malformed',decision_at=c['source_cutoff'],root=tmp_path)
+    s.evaluate_snapshot(snap['id'],root=tmp_path,transport=lambda *_:{'model':m.model(),'provider_response':{'choices':[]}})
+    r=s.revalidate_snapshot(snap['id'],root=tmp_path)
+    assert r['results'][0]['status']=='failed'

@@ -159,3 +159,10 @@ candidate acceptance covered 4 eligible of 20 candidates; 16 lacked eligible tex
 Pending state, process exclusion, stale input rejection and cached completion are
 covered in worker regressions. Scheduled-task execution is verified on the target
 account after deployment, rather than inferred from successful registration.
+
+Operational acceptance uncovered a real quote-format defect: the provider appended
+one wrapping quote to an otherwise verbatim headline. The validator now permits
+only removal of outer quote/whitespace characters when the remaining >=8-character
+text is an exact source substring. Changed words still fail. Original raw responses
+are preserved, normalization is explicitly recorded, and the `revalidate` CLI
+rechecks failed saved responses without any provider request or new charge.

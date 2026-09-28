@@ -368,6 +368,32 @@ def read_evaluation(snapshot_id: str, *, root=None) -> dict:
         'snapshot_id': snapshot_id, 'status': 'not_evaluated', 'ranking_effect': 'none'}
 
 
+def revalidate_snapshot(snapshot_id: str, *, root=None) -> dict:
+    """Recheck saved DeepSeek responses only; never perform inference or retry transport."""
+    from app.services.mirofish import semantic_deepseek
+    if provider() != 'deepseek':
+        raise ValueError('deepseek_required')
+    snapshot = read_snapshot(snapshot_id, root=root)
+    result = read_evaluation(snapshot_id, root=root)
+    candidates = {(c['market'], c['symbol']): c for c in snapshot['candidates']}
+    for item in result.get('results', []):
+        if item['status'] != 'failed' or not re.fullmatch(r'[0-9a-f]{64}', item.get('fingerprint', '')):
+            continue
+        try:
+            raw = json.loads((_root(root)/'responses'/(item['fingerprint']+'.json')).read_text(encoding='utf-8'))
+            payload = build_request(candidates[(item['market'], item['symbol'])], decision_at=snapshot['decision_at'])
+            checked = semantic_deepseek.check_response(raw['response'], payload)
+        except (OSError, ValueError, KeyError, TypeError, IndexError, AttributeError):
+            continue
+        item.pop('error_class', None)
+        item.update({'status': 'validated', **checked, 'revalidated_from_saved_response': True})
+        _finish(item['fingerprint'], root, {k: v for k, v in item.items() if k not in {'symbol', 'market', 'fingerprint'}})
+    result['validated_count'] = sum(i['status'] == 'validated' for i in result.get('results', []))
+    result['status'] = 'completed' if result.get('results') and result['validated_count'] == len(result['results']) else 'partial'
+    write_json_atomic(str(_evaluation_path(snapshot_id, root)), result)
+    return result
+
+
 def _evaluation_path(snapshot_id, root):
     suffix = '.deepseek' if provider() == 'deepseek' else ''
     return _root(root) / 'evaluations' / (snapshot_id + suffix + '.json')
