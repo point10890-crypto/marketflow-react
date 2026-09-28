@@ -166,3 +166,10 @@ only removal of outer quote/whitespace characters when the remaining >=8-charact
 text is an exact source substring. Changed words still fail. Original raw responses
 are preserved, normalization is explicitly recorded, and the `revalidate` CLI
 rechecks failed saved responses without any provider request or new charge.
+
+Cross-scan token acceptance found that source retrieval timestamps caused repeated
+classification of identical headlines. Adapter v2 now classifies document statements
+(not current real-world truth) using target + source identity + exact text + prompt
++ model. Source availability still passes cutoff validation before any cache lookup.
+Transient observation times are excluded from the provider request so unchanged news
+is reused across new scanner runs. Changed text, model or prompt invalidates reuse.

@@ -168,3 +168,15 @@ def test_revalidate_empty_choices_retains_failure(monkeypatch,tmp_path):
     s.evaluate_snapshot(snap['id'],root=tmp_path,transport=lambda *_:{'model':m.model(),'provider_response':{'choices':[]}})
     r=s.revalidate_snapshot(snap['id'],root=tmp_path)
     assert r['results'][0]['status']=='failed'
+
+
+def test_identical_evidence_reuses_request_across_scan_times():
+    m=adapter()
+    from app.services.mirofish.semantic_decisions import build_request
+    p=build_request(candidate())
+    later=copy.deepcopy(p)
+    later['state']['decision_at']='2026-09-29T00:00:00Z'
+    later['state']['evidence'][0]['available_at']='2026-09-29T00:00:00Z'
+    assert m.request(p)==m.request(later)
+    later['state']['evidence'][0]['text']='내용이 바뀐 뉴스'
+    assert m.request(p)!=m.request(later)
