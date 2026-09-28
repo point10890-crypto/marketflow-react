@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT))
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['status', 'snapshot', 'enrich', 'evaluate', 'export', 'train-evaluate'])
+    parser.add_argument('command', choices=['status', 'worker', 'snapshot', 'enrich', 'evaluate', 'export', 'train-evaluate'])
     parser.add_argument('--provider', choices=['jev', 'deepseek'])
     parser.add_argument('--input', help='JSON scanner run or labeled research rows')
     parser.add_argument('--snapshot-id')
@@ -28,6 +28,9 @@ def main():
     from app.utils.atomic_json import write_json_atomic
     if args.command == 'status':
         result = service.status()
+    elif args.command == 'worker':
+        from app.services.mirofish.semantic_worker import run_once
+        result = run_once()
     elif args.command == 'snapshot':
         if not args.input:
             parser.error('--input is required')

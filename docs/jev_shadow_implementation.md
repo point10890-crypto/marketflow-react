@@ -128,3 +128,34 @@ passed; compileall and diff whitespace checks passed. Fresh review corrected
 legacy Jev cache compatibility. Regression tests also cover no paid retry of an
 old uncertain Jev claim. A pre-existing regime test was leaking its environment
 constant into later tests; its teardown now restores the environment before reload.
+
+## Automatic worker and final operational acceptance
+
+The earlier manual-only limitation is removed by `worker`: it reads the newest
+scanner run (maximum age 36 hours), snapshots and enriches once, and drains one
+bounded batch each invocation. A durable provider-specific job receipt preserves
+the immutable enriched snapshot across restarts. SQLite prevents concurrent workers.
+A completed scanner run is not re-enriched/recharged. Deferred/budget-limited work
+remains pending; failures/uncertainty remain visible without paid blind retries.
+Status includes worker state and counts. No trading/ranking promotion is implied.
+
+The production Windows task MarketFlow-Semantic-Shadow invokes this CLI every
+30 minutes, separately from Flask and the existing scanner scheduler. Disabling
+MIROFISH_SEMANTIC_LIVE_ENABLED stops inference. Daily UTC quota remains 20 calls.
+
+`python scripts/validate_semantic_provider.py --env-file <env> --output-dir <path>`
+runs six synthetic Korean gold cases against the actual provider. All six passed
+(contract cancellation, dilution, audit concern, conditional guidance, unrelated
+news, correction), covering 12 predeclared label assertions and quoted-evidence
+validation. These are small synthetic acceptance tests, not a broad accuracy claim.
+
+Historical workflow returns cannot validate newly observed semantic features:
+backdating current headlines or joining them to already-known returns introduces
+look-ahead bias. Prospective performance labels must mature after the new snapshot.
+
+Fresh worker review found no critical repeat-charge or credential-routing defects.
+Six live gold cases used 6119 input and 1379 output tokens in total. Existing real
+candidate acceptance covered 4 eligible of 20 candidates; 16 lacked eligible text.
+Pending state, process exclusion, stale input rejection and cached completion are
+covered in worker regressions. Scheduled-task execution is verified on the target
+account after deployment, rather than inferred from successful registration.

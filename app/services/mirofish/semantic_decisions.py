@@ -374,6 +374,7 @@ def _evaluation_path(snapshot_id, root):
 
 
 def status(*, root=None) -> dict:
+    from app.services.mirofish.semantic_worker import read_status
     directory = _root(root) / 'snapshots'
     paths = sorted(directory.glob('*.json'), key=lambda p: p.stat().st_mtime, reverse=True)[:10] if directory.exists() else []
     recent = []
@@ -388,5 +389,6 @@ def status(*, root=None) -> dict:
             'provider': 'deepseek' if provider() == 'deepseek' else 'typesafe',
             'model': semantic_deepseek.model() if provider() == 'deepseek' else MODEL, 'live_enabled': _enabled(),
             'key_configured': bool(_key()), 'recent_snapshots': recent,
+            'worker': read_status(root=root),
             'batch_call_limit': _batch_limit(),
             'daily_call_limit': _daily_limit()}
