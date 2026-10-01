@@ -1,4 +1,4 @@
-type AiBrainService = 'scanner' | 'goodrich' | 'decision';
+type AiBrainService = 'scanner' | 'goodrich' | 'decision' | 'chart-predict';
 
 interface AiBrainServiceTabsProps {
     active: AiBrainService;
@@ -32,11 +32,20 @@ const services = [
         description: '독립 근거 7종 합의·이견 비교',
         iconClass: 'bg-teal-400/15 text-teal-300',
     },
+    {
+        id: 'chart-predict' as const,
+        href: '/dashboard/ai-bain/chart-predict?code=003690',
+        icon: 'fa-chart-line',
+        eyebrow: '과거 사례 · SHADOW',
+        title: '차트 유사 사례',
+        description: '닮은 과거 구간의 이후 결과',
+        iconClass: 'bg-sky-400/15 text-sky-300',
+    },
 ];
 
 export default function AiBrainServiceTabs({ active }: AiBrainServiceTabsProps) {
     return (
-        <nav aria-label="AI Brain 서비스" className="grid w-full grid-cols-3 gap-2 sm:gap-3 md:max-w-5xl">
+        <nav aria-label="AI Brain 서비스" className="grid w-full grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4 md:max-w-5xl">
             {services.map((service) => {
                 const selected = service.id === active;
                 return (

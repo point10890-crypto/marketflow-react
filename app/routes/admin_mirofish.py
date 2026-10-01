@@ -1,6 +1,7 @@
-"""Admin-only MiroFish live endpoints."""
+"""MiroFish endpoints with admin and explicit AI Brain member access gates."""
 
 import os
+import re
 
 from flask import Blueprint, Response, jsonify, request
 
@@ -15,6 +16,38 @@ from app.services.mirofish import events as mf_events
 
 
 admin_mirofish_bp = Blueprint('admin_mirofish', __name__)
+
+
+def _chart_analogue_service():
+    from app.services.mirofish import chart_analogue
+    return chart_analogue
+
+
+@admin_mirofish_bp.route('/chart-analogue/status', methods=['GET'])
+@admin_or_aibain_required
+def chart_analogue_status():
+    try:
+        response = jsonify(_chart_analogue_service().status())
+    except (OSError, RuntimeError, KeyError):
+        response = jsonify({'error': 'chart_analogue_unavailable'})
+        response.status_code = 503
+    response.headers['Cache-Control'] = 'private, max-age=60'
+    return response
+
+
+@admin_mirofish_bp.route('/chart-analogue/<symbol>', methods=['GET'])
+@admin_or_aibain_required
+def chart_analogue_prediction(symbol):
+    if not re.fullmatch(r'[0-9]{6}', symbol):
+        return jsonify({'error': 'invalid_symbol'}), 400
+    try:
+        response = jsonify(_chart_analogue_service().predict(symbol))
+        response.headers['Cache-Control'] = 'private, max-age=60'
+        return response
+    except ValueError:
+        return jsonify({'error': 'invalid_prediction_request'}), 400
+    except (OSError, RuntimeError, KeyError):
+        return jsonify({'error': 'chart_analogue_unavailable'}), 503
 
 
 @admin_mirofish_bp.route('/semantic-shadow/status', methods=['GET'])

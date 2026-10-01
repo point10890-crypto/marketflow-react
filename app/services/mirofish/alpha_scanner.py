@@ -40,6 +40,7 @@ DATA_ROOT = os.path.join(REPO_ROOT, 'data')
 SCANNER_RUNS_ROOT = os.path.join(DATA_ROOT, 'admin_mirofish', 'scanner_runs')
 
 MAX_CANDIDATES = 100
+CHART_ANALOGUE_SHADOW_LIMIT = 30
 DEFAULT_LIMIT = 30
 DEFAULT_ALERT_LIMIT = 20
 DEFAULT_ALERT_MIN_ALPHA = 70.0
@@ -262,6 +263,7 @@ SCANNER_ARTIFACT_FILENAMES = {
     'evidence_ledger.json',
     'rejected_candidates.json',
     'deepseek_rerank.json',
+    'chart_analogue.json',
 }
 
 SCORING_SCHEMA = {
@@ -340,6 +342,13 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
     )
     for candidate in candidate_pool:
         candidate['generated_at'] = generated_at
+    chart_analogue_artifact = _attach_chart_analogue_shadow(
+        candidate_pool,
+        generated_at=generated_at,
+    )
+    chart_analogue_summary = {
+        key: value for key, value in chart_analogue_artifact.items() if key != 'items'
+    }
     candidates = _select_candidates(candidate_pool, limit)
     rejected_candidates = _rejected_candidates(candidate_pool, selected_count=len(candidates), limit=limit)
     feature_vectors = _feature_vectors(candidates)
@@ -363,6 +372,7 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         'goal_harness': goal_harness,
         'performance_advisory': performance_advisory,
         'semantic_ranking': semantic_overlay,
+        'chart_analogue': chart_analogue_summary,
         'providers': {
             'tradingview': artifacts.get('tradingview', {}).get('status') or tradingview_provider.get_status(include_live=False),
             'deepseek_rerank': _deepseek_rerank_provider_status(deepseek_rerank),
@@ -375,6 +385,7 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
             'evidence_ledger': f'/api/admin/mirofish/scanner/runs/{run_id}/evidence',
             'rejected_candidates': f'/api/admin/mirofish/scanner/runs/{run_id}/rejects',
             'deepseek_rerank': f'/api/admin/mirofish/scanner/runs/{run_id}/artifacts/deepseek_rerank.json',
+            'chart_analogue': f'/api/admin/mirofish/scanner/runs/{run_id}/artifacts/chart_analogue.json',
         },
         'links': {
             'self': f'/api/admin/mirofish/scanner/runs/{run_id}',
@@ -412,7 +423,127 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         **deepseek_rerank,
         'lookahead_safe': True,
     }, sort_keys=False)
+    write_json_atomic(_run_artifact_path(run_id, 'chart_analogue.json'), {
+        'run_id': run_id,
+        **chart_analogue_artifact,
+    }, sort_keys=False)
     return run
+
+
+def _attach_chart_analogue_shadow(
+    rows: list[dict[str, Any]], *, generated_at: str,
+) -> dict[str, Any]:
+    """Read a prepared index for a bounded pool without changing any score/order.
+
+    This runs only for new snapshots at their final decision cutoff. Persisted
+    run readers never refresh predictions or build an index retroactively.
+    """
+    index_state: dict[str, Any]
+    try:
+        from app.services.mirofish import chart_analogue
+        index_state = chart_analogue.status()
+        if (
+            not isinstance(index_state, dict)
+            or not isinstance(index_state.get('status'), str)
+            or not index_state['status']
+        ):
+            raise ValueError('invalid chart analogue status')
+    except Exception as exc:
+        index_state = {
+            'status': 'error',
+            'warnings': [f'chart_analogue_status_failed:{type(exc).__name__}'],
+        }
+
+    items: list[dict[str, Any]] = []
+    attempted_count = 0
+    for candidate in rows[:CHART_ANALOGUE_SHADOW_LIMIT]:
+        fallback = {
+            'symbol': candidate.get('symbol'),
+            'target': candidate.get('name') or candidate.get('display_name') or candidate.get('symbol'),
+            'status': index_state['status'],
+            'mode': 'shadow',
+            'as_of': generated_at,
+            'model_version': index_state.get('model_version'),
+            'source': index_state.get('source') or {},
+            'diagnostics': index_state.get('diagnostics') or {},
+            'sample_count': 0,
+            'horizons': [],
+            'warnings': list(index_state.get('warnings') or []),
+        }
+        prediction = fallback
+        if index_state['status'] == 'ready':
+            attempted_count += 1
+            try:
+                prediction = chart_analogue.predict(candidate.get('symbol'), as_of=generated_at)
+                if (
+                    not isinstance(prediction, dict)
+                    or not isinstance(prediction.get('status'), str)
+                    or not prediction['status']
+                    or prediction.get('symbol') != candidate.get('symbol')
+                    or _parse_dt(prediction.get('as_of')) != _parse_dt(generated_at)
+                ):
+                    raise ValueError('invalid chart analogue prediction identity or cutoff')
+                prediction = {**prediction, 'mode': 'shadow'}
+            except Exception as exc:
+                prediction = {
+                    **fallback,
+                    'status': 'error',
+                    'warnings': [f'chart_analogue_prediction_failed:{type(exc).__name__}'],
+                }
+
+        compact = _compact_chart_analogue(prediction)
+        candidate['chart_analogue'] = compact
+        candidate['evidence'] = list(candidate.get('evidence') or []) + [{
+            'source': 'chart_analogue',
+            'field': 'historical_analogue_shadow',
+            'score': 0.0,
+            'mode': 'shadow',
+            'applied_to_scoring': False,
+            'value': compact,
+        }]
+        items.append(prediction)
+
+    status_counts = dict(Counter(item['status'] for item in items))
+    ready_count = status_counts.get('ready', 0)
+    result_status = index_state['status']
+    if result_status == 'ready' and items:
+        if ready_count == len(items):
+            result_status = 'ready'
+        elif ready_count:
+            result_status = 'partial'
+        else:
+            result_status = items[0]['status']
+    return {
+        'schema_version': 'mirofish.chart_analogue_shadow.v1',
+        'status': result_status,
+        'index_status': index_state['status'],
+        'mode': 'shadow',
+        'ranking_effect': 'none',
+        'applied_to_scoring': False,
+        'generated_at': generated_at,
+        'as_of': generated_at,
+        'model_version': index_state.get('model_version'),
+        'source': index_state.get('source') or {},
+        'diagnostics': index_state.get('diagnostics') or {},
+        'warnings': list(index_state.get('warnings') or []),
+        'limit': CHART_ANALOGUE_SHADOW_LIMIT,
+        'candidate_pool_count': len(rows),
+        'evidence_count': len(items),
+        'attempted_count': attempted_count,
+        'ready_count': ready_count,
+        'skipped_count': len(rows) - attempted_count,
+        'status_counts': status_counts,
+        'items': items,
+    }
+
+
+def _compact_chart_analogue(prediction: dict[str, Any]) -> dict[str, Any]:
+    """Keep distribution/provenance fields; full history/fan stays in its artifact."""
+    keys = (
+        'symbol', 'target', 'status', 'mode', 'model_version', 'as_of',
+        'lookback_sessions', 'source', 'diagnostics', 'sample_count', 'horizons', 'warnings',
+    )
+    return {key: prediction[key] for key in keys if key in prediction}
 
 
 def read_scanner_run(run_id: str) -> dict[str, Any] | None:
@@ -497,6 +628,8 @@ def read_latest_scanner_candidates(limit: int = 5) -> dict[str, Any] | None:
                 'action': candidate.get('action') or candidate.get('verdict'),
                 'horizon': candidate.get('horizon') or candidate.get('expected_horizon'),
                 'price': price if price is not None else candidate.get('current_price'),
+                **({'chart_analogue': _compact_chart_analogue(candidate['chart_analogue'])}
+                   if isinstance(candidate.get('chart_analogue'), dict) else {}),
             })
         return {
             'run_id': run.get('id') or run.get('run_id'),
@@ -507,6 +640,8 @@ def read_latest_scanner_candidates(limit: int = 5) -> dict[str, Any] | None:
             'source_files': run.get('source_files') or [],
             'candidate_count': len(candidates),
             'candidates': compact_candidates,
+            **({'chart_analogue': run['chart_analogue']}
+               if isinstance(run.get('chart_analogue'), dict) else {}),
         }
     return None
 
@@ -2164,6 +2299,8 @@ def _rejected_candidates(
             'freshness': candidate.get('freshness'),
             'price': candidate.get('price'),
             'replay_context': candidate.get('replay_context'),
+            **({'chart_analogue': candidate['chart_analogue']}
+               if isinstance(candidate.get('chart_analogue'), dict) else {}),
         })
     return rejected
 

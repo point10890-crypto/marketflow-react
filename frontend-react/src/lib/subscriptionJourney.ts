@@ -1,5 +1,4 @@
-import type { AuthUserData } from './auth';
-import { subscriptionFunnelTarget } from './auth';
+import { subscriptionFunnelTarget, type AuthUserData } from './auth';
 import { planToQuery, type BillingPlan } from './billingInfo';
 
 export const SUBSCRIPTION_REMINDER_MS = 30 * 60 * 1000;
