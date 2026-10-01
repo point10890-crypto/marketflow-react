@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { fetchChartAnalogue, type ChartAnaloguePrediction, type ChartAnalogueStatus } from '@/lib/chartAnalogueApi';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 import ChartAnalogueChart, { formatAnaloguePrice, formatAnalogueReturn } from '@/components/aibain/ChartAnalogueChart';
+import ChartAnalogueEvaluationPanel from '@/components/aibain/ChartAnalogueEvaluationPanel';
 
 const stateLabels: Record<Exclude<ChartAnalogueStatus, 'ready'>, { title: string; detail: string }> = {
     missing_index: { title: '과거 사례 색인이 준비되지 않았습니다', detail: '가격 자료의 색인이 준비되면 유사 사례를 조회할 수 있습니다.' },
@@ -123,6 +124,7 @@ export default function ChartAnaloguePage() {
                     </>}
                     {data.warnings.length > 0 && <aside className="rounded-xl border border-amber-400/20 bg-amber-400/[0.04] p-4 text-xs leading-relaxed text-amber-200/90" aria-label="데이터 주의사항"><p className="mb-2 font-semibold">데이터 주의사항</p><ul className="list-disc space-y-1 pl-4">{data.warnings.map((warning, index) => <li key={index}>{warningText(warning)}</li>)}</ul></aside>}
                 </>}
+                <ChartAnalogueEvaluationPanel token={token ?? undefined} />
                 <footer className="border-t border-[#30363f] pt-4 text-xs leading-relaxed text-gray-400">Shadow 관측 단계입니다. 실제 후보 순위에는 반영하지 않습니다. 과거 유사 사례는 미래 수익이나 매매 성과를 보장하지 않으며, 다른 가격·수급·리스크 근거와 함께 확인해야 합니다.</footer>
             </div>
         </div>

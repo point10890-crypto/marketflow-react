@@ -113,3 +113,95 @@ export async function fetchChartAnalogue(symbol: string, token?: string): Promis
     if (!isPrediction(result, symbol)) throw new Error('응답 형식이 올바르지 않습니다. 다시 조회해 주세요.');
     return result;
 }
+
+export interface ChartAnalogueEvaluationReturns {
+    baseline_net_return_pct: number | null;
+    challenger_net_return_pct: number | null;
+    excess_return_pct: number | null;
+}
+
+export interface ChartAnalogueEvaluationHorizon extends ChartAnalogueEvaluationReturns {
+    sessions: 5 | 20 | 40;
+    paired_days: number;
+    pending_days: number;
+    blocked_days: number;
+}
+
+export interface ChartAnalogueEvaluationRecord {
+    workflow_id: string;
+    decision_at: string;
+    status: string;
+    reason: string | null;
+    baseline: Array<{ symbol: string; target: string }>;
+    challenger: Array<{ symbol: string; target: string }>;
+    horizons: Array<ChartAnalogueEvaluationReturns & {
+        sessions: 5 | 20 | 40;
+        status: 'pending' | 'matured' | 'blocked';
+        observed_sessions: number;
+    }>;
+}
+
+export interface ChartAnalogueEvaluationReport {
+    schema_version: 1;
+    status: 'collecting' | 'ready' | 'unavailable';
+    evaluated_at: string | null;
+    protocol: 'chart_median20_v1';
+    ranking_effect: 'none';
+    cost_bps: 23;
+    slippage_bps: 10;
+    counts: { recorded: number; eligible_days: number; pending: number; blocked: number; intraday_excluded: number };
+    horizons: ChartAnalogueEvaluationHorizon[];
+    recent: ChartAnalogueEvaluationRecord[];
+    warnings: string[];
+}
+
+const isCount = (value: unknown): value is number => isNumber(value) && Number.isInteger(value) && value >= 0;
+const isExplicitTimestamp = (value: unknown): value is string => typeof value === 'string'
+    && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value)
+    && Number.isFinite(Date.parse(value));
+const isEvaluationSession = (value: unknown) => value === 5 || value === 20 || value === 40;
+const returnKeys = ['baseline_net_return_pct', 'challenger_net_return_pct', 'excess_return_pct'] as const;
+
+/** Pending outcomes are explicitly null; a zero is accepted only for an evaluated comparison. */
+function validEvaluationReturns(row: Record<string, unknown>, measured: boolean) {
+    return returnKeys.every(key => measured ? isNumber(row[key]) : row[key] === null);
+}
+
+function isEvaluationReport(value: unknown): value is ChartAnalogueEvaluationReport {
+    if (!isRecord(value) || value.schema_version !== 1
+        || typeof value.status !== 'string' || !['collecting', 'ready', 'unavailable'].includes(value.status)
+        || (value.evaluated_at !== null && !isExplicitTimestamp(value.evaluated_at))
+        || value.protocol !== 'chart_median20_v1' || value.ranking_effect !== 'none'
+        || value.cost_bps !== 23 || value.slippage_bps !== 10 || !isRecord(value.counts)
+        || !Array.isArray(value.horizons) || !Array.isArray(value.recent) || !Array.isArray(value.warnings)
+        || !value.warnings.every(warning => typeof warning === 'string')) return false;
+    const counts = value.counts;
+    if (!['recorded', 'eligible_days', 'pending', 'blocked', 'intraday_excluded'].every(key => isCount(counts[key]))) return false;
+    const horizons = value.horizons;
+    if (horizons.length !== 3 || new Set(horizons.map(row => isRecord(row) ? row.sessions : null)).size !== 3
+        || !horizons.every(row => isRecord(row) && isEvaluationSession(row.sessions)
+            && isCount(row.paired_days) && isCount(row.pending_days) && isCount(row.blocked_days)
+            && validEvaluationReturns(row, row.paired_days > 0))) return false;
+    const validPicks = (picks: unknown) => Array.isArray(picks) && picks.length <= 3
+        && picks.every(pick => isRecord(pick) && typeof pick.symbol === 'string' && /^\d{6}$/.test(pick.symbol)
+            && typeof pick.target === 'string');
+    return value.recent.every(row => {
+        if (!isRecord(row) || typeof row.workflow_id !== 'string' || !row.workflow_id.trim()
+            || !isExplicitTimestamp(row.decision_at) || typeof row.status !== 'string' || !row.status.trim()
+            || (row.reason !== null && typeof row.reason !== 'string')
+            || !validPicks(row.baseline) || !validPicks(row.challenger) || !Array.isArray(row.horizons)
+            || row.horizons.length > 3) return false;
+        const rows = row.horizons;
+        return new Set(rows.map(item => isRecord(item) ? item.sessions : null)).size === rows.length
+            && rows.every(item => isRecord(item) && isEvaluationSession(item.sessions)
+                && typeof item.status === 'string' && ['pending', 'matured', 'blocked'].includes(item.status) && isCount(item.observed_sessions)
+                && (item.status !== 'matured' || item.observed_sessions >= (item.sessions as number))
+                && validEvaluationReturns(item, item.status === 'matured'));
+    });
+}
+
+export async function fetchChartAnalogueEvaluation(token?: string): Promise<ChartAnalogueEvaluationReport> {
+    const result = await fetchAuthAPI<unknown>('/api/admin/mirofish/chart-analogue/evaluation', token);
+    if (!isEvaluationReport(result)) throw new Error('비교 관측 응답 형식이 올바르지 않습니다.');
+    return result;
+}

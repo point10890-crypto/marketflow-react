@@ -23,6 +23,23 @@ def _chart_analogue_service():
     return chart_analogue
 
 
+def _chart_analogue_evaluation_service():
+    from app.services.mirofish import chart_analogue_evaluation
+    return chart_analogue_evaluation
+
+
+@admin_mirofish_bp.route('/chart-analogue/evaluation', methods=['GET'])
+@admin_or_aibain_required
+def chart_analogue_evaluation_report():
+    try:
+        response = jsonify(_chart_analogue_evaluation_service().read_report())
+    except (OSError, ValueError, RuntimeError, KeyError):
+        response = jsonify({'error': 'chart_analogue_evaluation_unavailable'})
+        response.status_code = 503
+    response.headers['Cache-Control'] = 'private, no-store, max-age=0'
+    return response
+
+
 @admin_mirofish_bp.route('/chart-analogue/status', methods=['GET'])
 @admin_or_aibain_required
 def chart_analogue_status():

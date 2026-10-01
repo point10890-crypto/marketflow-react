@@ -16,6 +16,7 @@ import threading
 import zipfile
 from collections import Counter, deque
 from datetime import date, datetime, time, timedelta, timezone
+from itertools import islice
 from pathlib import Path
 
 import numpy as np
@@ -300,8 +301,8 @@ def build_index(csv_path=None, index_root=None, price_basis='unadjusted', source
     return {'status': 'built', **metadata, 'warnings': _warnings(price_basis)}
 
 
-def _load(full=False):
-    path = Path(INDEX_ROOT) / INDEX_NAME
+def _load(full=False, index_root=None):
+    path = Path(index_root if index_root is not None else INDEX_ROOT) / INDEX_NAME
     try:
         stat = path.stat()
     except FileNotFoundError:
@@ -518,4 +519,178 @@ def predict(symbol, as_of=None, lookback=252, horizons=(5, 20, 40), k=20):
     result['source']['captured_at'] = _iso_us(max(int(query_actual_captures.max()),
                                                max(int(data['captures_actual_us'][int(ends[candidate]) - LOOKBACK + 1:int(ends[candidate]) + MAX_HORIZON + 1].max()) for candidate, _ in selected)))
     result['status'] = 'ready'
+    return result
+
+
+def observed_outcomes(symbol, *, decision_at, reference_session, frozen_reference_close,
+                      as_of=None, horizons=(5, 20, 40), expected_source_id=None,
+                      expected_price_basis=None, index_root=None, _loaded_index=None):
+    """Read realised labels from one saved price vintage without filtering rows.
+
+    Forecast labels start at the exact frozen reference session, using its
+    evaluated close from this index. Trade labels start at the first observation
+    strictly after the Korean decision date and then count H more observations.
+    Neither sequence substitutes a later row for an invalid/unavailable row.
+    Top-level ``ready`` means the index can be read; each horizon independently
+    reports maturity. Work after the cached index load is bounded by 40 rows per
+    requested horizon, and this operation performs no network access or writes.
+    """
+    if not isinstance(symbol, str) or not re.fullmatch(r'\d{6}', symbol, flags=re.ASCII):
+        raise ValueError('symbol must be a six-digit KR equity code')
+    if decision_at is None:
+        raise ValueError('decision_at must be an explicit timezone-aware timestamp')
+    decision = _cutoff(decision_at)
+    evaluation = _cutoff(as_of)
+    if evaluation < decision:
+        raise ValueError('as_of cannot be before decision_at')
+    try:
+        if not isinstance(reference_session, str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}', reference_session):
+            raise ValueError('reference_session must be a YYYY-MM-DD date')
+        reference_day = date.fromisoformat(reference_session)
+    except (ValueError, TypeError) as error:
+        raise ValueError('reference_session must be a YYYY-MM-DD date') from error
+    if isinstance(frozen_reference_close, bool) or not isinstance(frozen_reference_close, (int, float)):
+        raise ValueError('frozen_reference_close must be a finite positive number')
+    try:
+        frozen_reference_close = float(frozen_reference_close)
+    except (OverflowError, ValueError) as error:
+        raise ValueError('frozen_reference_close must be a finite positive number') from error
+    if not math.isfinite(frozen_reference_close) or frozen_reference_close <= 0:
+        raise ValueError('frozen_reference_close must be a finite positive number')
+    if expected_source_id is not None and (not isinstance(expected_source_id, str)
+            or not re.fullmatch(r'[a-z][a-z0-9_]{0,63}', expected_source_id)):
+        raise ValueError('expected_source_id must be a bounded source identifier')
+    if expected_price_basis is not None and (not isinstance(expected_price_basis, str)
+            or expected_price_basis not in {'unadjusted', 'provider_adjusted'}):
+        raise ValueError('expected_price_basis is unsupported')
+    try:
+        horizons = tuple(islice(iter(horizons), MAX_HORIZON + 1))
+    except TypeError as error:
+        raise ValueError('horizons must contain 1..40 session integers') from error
+    if (not horizons or len(horizons) > MAX_HORIZON
+            or any(isinstance(value, bool) or not isinstance(value, int)
+                   or not 1 <= value <= MAX_HORIZON for value in horizons)):
+        raise ValueError('horizons must contain 1..40 session integers')
+    horizons = tuple(sorted(set(horizons)))
+
+    def blank(horizon, status='blocked', reason=None):
+        return {'sessions': horizon, 'status': status, 'reason': reason, 'observed_sessions': 0,
+                'entry_date': None, 'entry_close': None, 'exit_date': None, 'exit_close': None,
+                'captured_at': None, 'gross_return_pct': None}
+
+    result = {'symbol': symbol, 'as_of': evaluation.isoformat().replace('+00:00', 'Z'),
+              'status': 'ready', 'source': {},
+              'reference': {'session': reference_session, 'frozen_close': float(frozen_reference_close),
+                            'evaluated_close': None, 'rebased': False},
+              'forecast_horizons': [blank(horizon) for horizon in horizons],
+              'trade_horizons': [blank(horizon) for horizon in horizons]}
+
+    def unavailable(reason, status='blocked'):
+        for row in result['forecast_horizons'] + result['trade_horizons']:
+            row.update(status=status, reason=reason)
+        return result
+
+    # The offline evaluator holds this private (data, error) tuple for its
+    # entire run, so a concurrent atomic publisher cannot mix price vintages.
+    data, error = _loaded_index if _loaded_index is not None else _load(full=True, index_root=index_root)
+    if error:
+        result['status'] = error
+        return unavailable(error)
+    result['source'] = dict(data['metadata']['source'])
+    if expected_source_id is not None and result['source'].get('source_id') != expected_source_id:
+        return unavailable('source_mismatch')
+    if expected_price_basis is not None and result['source'].get('price_basis') != expected_price_basis:
+        return unavailable('price_basis_mismatch')
+    match = int(np.searchsorted(data['symbols'], symbol))
+    if match >= len(data['symbols']) or data['symbols'][match] != symbol:
+        return unavailable('symbol_missing')
+    result['source']['query_collection_status'] = str(data['collection_statuses'][match])
+    begin, finish = (int(value) for value in data['offsets'][match:match + 2])
+    dates = data['dates'][begin:finish]
+    closes = data['closes'][begin:finish]
+    captures = data['captures_actual_us'][begin:finish]
+    reference_ordinal = (reference_day - EPOCH).days
+    reference_position = int(np.searchsorted(dates, reference_ordinal))
+    if reference_position >= len(dates) or int(dates[reference_position]) != reference_ordinal:
+        return unavailable('reference_missing')
+    elapsed = evaluation - datetime(1970, 1, 1, tzinfo=timezone.utc)
+    cutoff_us = ((elapsed.days * 86400 + elapsed.seconds) * 1_000_000 + elapsed.microseconds)
+
+    def observation(position):
+        day = EPOCH + timedelta(days=int(dates[position]))
+        close = float(closes[position])
+        capture = int(captures[position])
+        if day.weekday() >= 5 or capture <= 0:
+            return 'blocked', 'invalid_span'
+        market_close = datetime.combine(day, time(15, 30), KST)
+        if market_close > evaluation:
+            return 'pending', 'close_not_completed'
+        if capture > cutoff_us:
+            return 'pending', 'capture_after_as_of'
+        market_elapsed = market_close.astimezone(timezone.utc) - datetime(1970, 1, 1, tzinfo=timezone.utc)
+        market_close_us = (market_elapsed.days * 86400 + market_elapsed.seconds) * 1_000_000
+        if capture < market_close_us or not math.isfinite(close) or close <= 0:
+            return 'blocked', 'invalid_span'
+        return None, None
+
+    anchor_status, anchor_reason = observation(reference_position)
+    if anchor_status:
+        return unavailable(anchor_reason, anchor_status)
+    evaluated_reference = round(float(closes[reference_position]), 6)
+    result['reference'].update(evaluated_close=evaluated_reference,
+                               rebased=evaluated_reference != round(float(frozen_reference_close), 6))
+    result['source']['query_captured_at'] = _iso_us(captures[reference_position])
+
+    def label(anchor, horizon):
+        row = blank(horizon, 'pending', 'incomplete_sessions')
+        if anchor >= len(dates):
+            row['reason'] = 'entry_not_observed'
+            return row
+        anchor_status, anchor_reason = observation(anchor)
+        if anchor_status:
+            row.update(status=anchor_status, reason=anchor_reason)
+            return row
+        entry_close = float(closes[anchor])
+        maximum_capture = int(captures[anchor])
+        row.update(entry_date=_date(dates[anchor]), entry_close=round(entry_close, 6),
+                   captured_at=_iso_us(maximum_capture))
+        for position in range(anchor + 1, min(anchor + horizon + 1, len(dates))):
+            row_status, row_reason = observation(position)
+            if row_status:
+                row.update(status=row_status, reason=row_reason)
+                return row
+            difference = int(dates[position]) - int(dates[position - 1])
+            if (not 0 < difference <= MAX_GAP_DAYS
+                    or abs(float(closes[position]) / float(closes[position - 1]) - 1) > 0.35):
+                row.update(status='blocked', reason='invalid_span')
+                return row
+            maximum_capture = max(maximum_capture, int(captures[position]))
+            row['captured_at'] = _iso_us(maximum_capture)
+            row['observed_sessions'] += 1
+        if row['observed_sessions'] == horizon:
+            exit_position = anchor + horizon
+            exit_close = float(closes[exit_position])
+            row.update(status='matured', reason=None, exit_date=_date(dates[exit_position]),
+                       exit_close=round(exit_close, 6),
+                       gross_return_pct=round((exit_close / entry_close - 1) * 100, 6))
+        return row
+
+    decision_ordinal = (decision.astimezone(KST).date() - EPOCH).days
+    trade_position = int(np.searchsorted(dates, decision_ordinal, side='right'))
+    result['forecast_horizons'] = [label(reference_position, horizon) for horizon in horizons]
+    # A delayed resumption or discontinuity must not replace the intended
+    # first post-decision entry with a seemingly normal later price path.
+    entry_issue = None
+    if trade_position < len(dates) and observation(trade_position)[0] is None:
+        if int(dates[trade_position]) - decision_ordinal > MAX_GAP_DAYS or trade_position == 0:
+            entry_issue = ('blocked', 'invalid_entry_span')
+        else:
+            previous_status, previous_reason = observation(trade_position - 1)
+            if previous_status:
+                entry_issue = (previous_status, previous_reason)
+            elif not _valid_span(closes[trade_position - 1:trade_position + 1],
+                                 dates[trade_position - 1:trade_position + 1]):
+                entry_issue = ('blocked', 'invalid_entry_span')
+    result['trade_horizons'] = ([blank(horizon, *entry_issue) for horizon in horizons]
+                              if entry_issue else [label(trade_position, horizon) for horizon in horizons])
     return result

@@ -21,6 +21,14 @@ def _isolate_semantic_shadow(tmp_path, monkeypatch):
     monkeypatch.delenv('MIROFISH_JEV_LIVE_ENABLED', raising=False)
     monkeypatch.delenv('MIROFISH_SEMANTIC_PROVIDER', raising=False)
     monkeypatch.delenv('MIROFISH_SEMANTIC_LIVE_ENABLED', raising=False)
+
+
+@pytest.fixture(autouse=True)
+def _isolate_chart_evaluation(tmp_path, monkeypatch):
+    """Workflow completion tests must not write production comparison records."""
+    from app.services.mirofish import chart_analogue_evaluation
+    monkeypatch.setattr(chart_analogue_evaluation, 'ROOT', tmp_path / 'chart_evaluation')
+
 # scripts/ 도 import 가능하도록 (lotto_analysis 등)
 SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:

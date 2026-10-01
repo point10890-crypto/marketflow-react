@@ -51,3 +51,24 @@ npm run build
 ```
 
 Deployment follows the existing Windows5003 Flask task and `frontend-react/npm run deploy`. Verify the index task exit status, Flask health, unauthorized access rejection and the member page with actual numerical results before claiming installation complete. `scripts/verify_chart_analogue_installation.py` independently recalculates neighbour returns and checks finite JSON, capture cutoffs and repeatability.
+
+## Prospective comparison of final TOP3
+
+Workflow completion preserves the actual final TOP3 and the existing eligible pool. The comparison selector takes three covered eligible stocks with the highest frozen 20-observed-session chart median, with deterministic final-score/symbol tie breaks. It never changes production ranking, CIO eligibility, orders or alerts. A partial TOP3 or missing forecast is recorded as insufficient data rather than filled with invented picks.
+
+Each cohort stores its actual recording time, final workflow decision time, original scanner forecast, source captures/basis and selected stocks in a write-once snapshot under `data/chart_analogue/evaluation/`. New captures are accepted only on the decision's Korean calendar day. An offline ingestion reads the original scanner artifact; it does not recompute old predictions against a newly refreshed corpus. The first eligible complete cohort per Korean decision day is fixed before checking future outcomes. Repeated intraday cohorts do not inflate paired-day counts, and missing outcome legs do not cause substitution with a later cohort or survivor stocks.
+
+The comparison uses the first completed observed close on a date strictly after the decision's Korean date, then 5/20/40 further observed sessions. This is a paper close-to-close research convention, not an executed fill or a verified exchange-calendar sequence. Each basket has three equally weighted stocks. The cost assumptions are 23 basis points round trip plus 10 basis points of total round-trip slippage: 0.33 percentage points deducted from each basket's gross return. These are research assumptions, not measured personal fees. The existing TOP3 basket is the strategy benchmark; market-index outperformance is unavailable without a matching verified market series.
+
+The evaluator pins one saved price index for the entire evaluation run. Entry and exit prices therefore share one supplier-adjusted snapshot. The frozen forecast is never rewritten. A revised same-date reference is identified as rebased, so new adjusted exits are not divided by an old unadjusted-vintage anchor. Complete spans and actual microsecond capture cutoffs are checked. A long gap or discontinuity immediately before entry cannot be substituted with a later resumed price path. Pending/blocked results have null returns, not zero. Only pairs whose six stock legs have matured contribute to descriptive average returns. Overlapping horizons and common market regimes still create dependence; day counts do not prove statistical independence or forward efficacy.
+
+`GET /api/admin/mirofish/chart-analogue/evaluation` has the existing admin/AI Brain gate and reads a small cached report only. The member page shows comparison counts and waiting/blocked states independently of the currently queried stock. It starts no collection, inference or evaluation from an HTTP read.
+
+The existing 18:10 price-refresh task now also evaluates retained cohorts after successfully publishing its new index. After updating tested source, initialize only this new stage:
+
+```powershell
+Set-Location C:\bitman_marketfloww
+.\.venv\Scripts\python.exe scripts\evaluate_chart_analogue_shadow.py --ingest-latest
+```
+
+Evaluation updates cached results atomically; a failed evaluation retains the already prepared price index. Results cannot mature until the required later closes have actually arrived. The report's collecting state is an honest completed evaluation run with pending outcomes, not evidence of increased detection profit. Live ranking remains unchanged until a separate assessment of matured evidence justifies a policy change.

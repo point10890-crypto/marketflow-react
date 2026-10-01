@@ -342,8 +342,9 @@ describe('DecisionBriefPage — 일간 캐시 표시', () => {
     await show({ cached: true, cached_at: '2026-08-29T05:00:00' });
     mockApi.fetchAuthAPI.mockClear();
     await userEvent.click(screen.getByRole('button', { name: /다시 조회/ }));
-    await waitFor(() => expect(mockApi.fetchAuthAPI).toHaveBeenCalled());
-    expect(String(mockApi.fetchAuthAPI.mock.calls[0][0])).toContain('force=1');
+    // Debounced symbol suggestions can finish before the refreshed brief.
+    await waitFor(() => expect(mockApi.fetchAuthAPI.mock.calls.some(([path]) =>
+      path === '/api/kr/decision/009150?force=1')).toBe(true));
   });
 
   it('일반 조회는 force 를 붙이지 않는다', async () => {

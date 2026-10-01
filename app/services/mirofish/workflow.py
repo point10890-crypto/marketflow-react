@@ -1404,6 +1404,19 @@ def _complete_workflow(
         'graphrag': graphrag_summary,
         'source_freshness': source_freshness,
     })
+    try:
+        from app.services.mirofish import chart_analogue_evaluation
+        eligible = _select_top3(ranked, top_n=len(ranked), require_buy=_require_buy(workflow))
+        chart_snapshot = chart_analogue_evaluation.record_workflow(workflow, eligible=eligible)
+        workflow['chart_analogue_evaluation'] = {
+            key: chart_snapshot.get(key) for key in (
+                'snapshot_id', 'protocol', 'status', 'reason', 'recorded_at', 'aggregate_eligible',
+            )
+        }
+    except Exception as exc:
+        workflow['chart_analogue_evaluation'] = {
+            'status': 'unavailable', 'reason': f'record_failed:{type(exc).__name__}',
+        }
     if workflow.get('event_state_commit_requested') and not workflow.get('event_state_committed'):
         try:
             # Analysis completion alone is not delivery. Update only the

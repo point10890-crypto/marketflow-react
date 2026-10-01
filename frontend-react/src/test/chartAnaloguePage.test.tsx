@@ -5,8 +5,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ChartAnaloguePage from '@/pages/dashboard/aibain/ChartAnaloguePage';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 
-const api = vi.hoisted(() => ({ fetchAuthAPI: vi.fn() }));
-vi.mock('@/lib/api', () => ({ fetchAuthAPI: api.fetchAuthAPI }));
+const api = vi.hoisted(() => ({ fetchAuthAPI: vi.fn(), fetchEvaluation: vi.fn() }));
+// Stock-flow tests keep the independent comparison request explicit and separate.
+vi.mock('@/lib/api', () => ({ fetchAuthAPI: (path: string, token?: string) => path.endsWith('/evaluation')
+    ? api.fetchEvaluation(path, token) : api.fetchAuthAPI(path, token) }));
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ token: 'member-token' }) }));
 
 const ready = {
@@ -43,7 +45,16 @@ function renderPage(path = '/dashboard/ai-bain/chart-predict') {
 }
 
 describe('historical chart analogue member page', () => {
-    beforeEach(() => { api.fetchAuthAPI.mockReset(); });
+    beforeEach(() => {
+        api.fetchAuthAPI.mockReset();
+        api.fetchEvaluation.mockReset();
+        api.fetchEvaluation.mockResolvedValue({ schema_version: 1, status: 'collecting', evaluated_at: null,
+            protocol: 'chart_median20_v1', ranking_effect: 'none', cost_bps: 23, slippage_bps: 10,
+            counts: { recorded: 0, eligible_days: 0, pending: 0, blocked: 0, intraday_excluded: 0 },
+            horizons: [5, 20, 40].map(sessions => ({ sessions, paired_days: 0, pending_days: 0, blocked_days: 0,
+                baseline_net_return_pct: null, challenger_net_return_pct: null, excess_return_pct: null })),
+            recent: [], warnings: [] });
+    });
 
     it('renders real history, empirical horizons and dated neighbors with provenance', async () => {
         api.fetchAuthAPI.mockResolvedValue(ready);
@@ -117,10 +128,11 @@ describe('historical chart analogue member page', () => {
         expect(api.fetchAuthAPI).toHaveBeenCalledTimes(1);
     });
 
-    it('shows loading without inventing a chart', () => {
+    it('shows loading without inventing a chart', async () => {
         api.fetchAuthAPI.mockReturnValue(new Promise(() => {}));
         renderPage();
-        expect(screen.getByRole('status')).toHaveTextContent('조회 중');
+        await screen.findByRole('table', { name: 'TOP3 기간별 비교 관측' });
+        expect(screen.getByRole('status')).toHaveTextContent('과거 유사 사례 조회 중');
         expect(screen.queryByRole('img', { name: /과거 종가/ })).toBeNull();
     });
 
