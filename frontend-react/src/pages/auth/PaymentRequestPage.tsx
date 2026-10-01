@@ -34,6 +34,22 @@ export default function PaymentRequestPage() {
     const [depositorName, setDepositorName] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [requestCheck, setRequestCheck] = useState<'loading' | 'ready' | 'error'>('loading');
+    const [checkAttempt, setCheckAttempt] = useState(0);
+    useEffect(() => {
+        if (!token || loading) return;
+        let current = true;
+        setRequestCheck('loading');
+        subscriptionAPI.getStatus(token).then(data => {
+            if (!current) return;
+            if (data.requests.some(request => request.status === 'pending')) {
+                navigate('/pending-approval', { replace: true });
+                return;
+            }
+            setRequestCheck('ready');
+        }).catch(() => { if (current) setRequestCheck('error'); });
+        return () => { current = false; };
+    }, [token, loading, navigate, checkAttempt]);
 
     // 이 페이지에 머무는 동안 관리자가 tier 를 직접 부여하면 (CLAUDE.md §12-A) stale user 로
     // 400 루프에 빠진다 → 마운트 + 창 포커스 시 /api/auth/me 재조회, 아래 가드가 대시보드로 보낸다.
@@ -87,6 +103,14 @@ export default function PaymentRequestPage() {
         return null;
     }
 
+    if (requestCheck !== 'ready') {
+        return <main className="min-h-[100dvh] bg-[#09090b] text-white grid place-items-center px-6">
+            <div role="status" className="text-center space-y-4">
+                <p>{requestCheck === 'error' ? '신청 내역을 확인하지 못했습니다. 중복 입금을 막기 위해 다시 확인해 주세요.' : '기존 구독 신청을 확인하고 있습니다…'}</p>
+                {requestCheck === 'error' && <button className="rounded-xl bg-amber-400 px-5 py-3 font-bold text-black" onClick={() => setCheckAttempt(v => v + 1)}>다시 확인</button>}
+            </div>
+        </main>;
+    }
     const meta = selectedMeta;
     const isAiBrainAddonOnly = user.status === 'approved'
         && !user.is_pro_expired

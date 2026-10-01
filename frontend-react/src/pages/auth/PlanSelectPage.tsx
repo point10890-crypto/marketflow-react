@@ -11,7 +11,7 @@ import {
     type BillingPlan,
 } from '@/lib/billingInfo';
 
-const FLOW_STEPS = ['계정 생성', '플랜 선택', '입금 정보', '승인 대기'];
+const FLOW_STEPS = ['플랜 선택', '입금 후 신청', '승인 후 이용'];
 
 export default function PlanSelectPage() {
     useSeo({ title: '플랜 선택 | MarketFlow', noindex: true });
@@ -101,14 +101,14 @@ export default function PlanSelectPage() {
                     </div>
                 )}
 
-                <div className="mb-5 grid grid-cols-4 gap-2">
+                <div className="mb-5 grid grid-cols-3 gap-2">
                     {FLOW_STEPS.map((step, index) => (
                         <div
                             key={step}
                             className={`rounded-xl border px-2 py-2 text-center text-[10px] font-bold ${
-                                index === 1
+                                index === 0
                                     ? 'border-amber-400/40 bg-amber-500/15 text-amber-200'
-                                    : index < 1
+                                    : index < 0
                                     ? 'border-emerald-400/30 bg-emerald-500/10 text-emerald-200'
                                     : 'border-white/10 bg-white/[0.03] text-gray-500'
                             }`}

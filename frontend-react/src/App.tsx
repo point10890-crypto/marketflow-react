@@ -1,3 +1,4 @@
+import SubscriptionEntry from '@/components/subscription/SubscriptionEntry';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { canAccessAiBain, subscriptionFunnelTarget } from '@/lib/auth';
@@ -189,6 +190,7 @@ export default function App() {
             <DocumentScrollReset />
             <AuthProvider>
             <NotificationProvider>
+                <SubscriptionEntry />
                 <Routes>
                     {/* Public routes — FunnelGate: 로그인한 비구독 회원(노티어·만료·승인대기)은
                         공개 페이지에 머물지 않고 구독 퍼널로 리다이렉트 (비로그인·활성 구독자·admin 은 그대로) */}

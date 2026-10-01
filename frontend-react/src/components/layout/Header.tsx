@@ -1,3 +1,4 @@
+import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CommandPalette from './CommandPalette';
@@ -57,6 +58,7 @@ function timeAgo(ts: number): string {
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
+    const { user } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
     const pathname = location.pathname ?? '';
@@ -153,6 +155,10 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
+                    {user && user.role !== 'admin' && <button onClick={() => navigate('/plan-select?change=1')}
+                        className="min-h-10 shrink-0 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 text-xs font-bold text-amber-200">
+                        구독·업그레이드
+                    </button>}
                     <button
                         aria-label="시장 및 종목 검색"
                         onClick={() => setPaletteOpen(true)}

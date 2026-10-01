@@ -64,6 +64,16 @@ describe('subscription acquisition funnel', () => {
         vi.stubGlobal('fetch', mocks.fetch);
     });
 
+    it('routes an expired member with an existing request away from bank details', async () => {
+        mocks.auth.user = {id: 55, name: '재구독', role: 'user', tier: 'pro', status: 'expired', is_pro_expired: true};
+        mocks.auth.token = 'test-token';
+        mocks.getStatus.mockResolvedValue({requests: [{status: 'pending'}]});
+        renderAt('/payment-request?plan=pro&resubscribe=1', <PaymentRequestPage />, '/payment-request');
+        expect(await screen.findByTestId('location')).toHaveTextContent('/pending-approval');
+        expect(screen.queryByText('국민은행')).not.toBeInTheDocument();
+        expect(mocks.requestUpgrade).not.toHaveBeenCalled();
+    });
+
     it('renders four promotional plans and sends a guest to signup with the canonical plan query', async () => {
         renderAt('/pricing', <PricingPage />, '/pricing');
 
@@ -278,11 +288,11 @@ describe('subscription acquisition funnel', () => {
         renderAt('/payment-request?plan=pro&renew=1', <PaymentRequestPage />, '/payment-request');
 
         // 가드에 튕기지 않고 갱신 라벨이 보인다
-        expect(screen.getAllByText(/Pro 갱신 \(만료 전\)/).length).toBeGreaterThan(0);
+        expect((await screen.findAllByText(/Pro 갱신 \(만료 전\)/)).length).toBeGreaterThan(0);
         expect(screen.getAllByText(/승인 시 기존 만료일부터 \+30일/).length).toBeGreaterThan(0);
         expect(screen.queryByTestId('location')).toBeNull();
 
-        fireEvent.click(screen.getByRole('button', { name: /승인 신청/ }));
+        fireEvent.click(await screen.findByRole('button', { name: /승인 신청/ }));
         expect(await screen.findByTestId('location')).toHaveTextContent('/pending-approval');
         expect(mocks.requestUpgrade).toHaveBeenCalledWith('pro', 'active-token', '활성회원', false);
     });
@@ -306,7 +316,7 @@ describe('subscription acquisition funnel', () => {
         mocks.requestUpgrade.mockRejectedValue(new Error('Already on pro tier'));
 
         renderAt('/payment-request?plan=pro', <PaymentRequestPage />, '/payment-request');
-        fireEvent.click(screen.getByRole('button', { name: /승인 신청/ }));
+        fireEvent.click(await screen.findByRole('button', { name: /승인 신청/ }));
 
         expect(await screen.findByTestId('location')).toHaveTextContent('/dashboard');
         expect(mocks.auth.refreshUser).toHaveBeenCalled();
