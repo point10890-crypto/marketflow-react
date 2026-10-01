@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
+import { hasPendingSubscription } from '@/lib/subscriptionStatus';
 import { BANK_ACCOUNT, PLAN_PAYMENT_META, planFromQuery, type BillingPlan } from '@/lib/billingInfo';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { useSeo } from '@/lib/seo';
@@ -42,7 +43,7 @@ export default function PaymentRequestPage() {
         setRequestCheck('loading');
         subscriptionAPI.getStatus(token).then(data => {
             if (!current) return;
-            if (data.requests.some(request => request.status === 'pending')) {
+            if (hasPendingSubscription(data)) {
                 navigate('/pending-approval', { replace: true });
                 return;
             }

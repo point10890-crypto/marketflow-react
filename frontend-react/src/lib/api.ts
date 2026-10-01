@@ -1128,8 +1128,9 @@ export const subscriptionAPI = {
             includes_aibain: true,
         }, token),
     getStatus: (token?: string) => fetchAuthAPI<{
-        user: AdminUser;
+        user: AdminUser & { has_pending_subscription?: boolean };
         requests: SubscriptionRequest[];
+        pending_request?: SubscriptionRequest | null;
         aibain_subscription?: AibainSubscriptionStatus;
     }>('/api/auth/subscription/status', token),
     updateProfile: (name: string, token?: string) => putAuthAPI<{ user: AdminUser }>('/api/auth/profile', { name }, token),

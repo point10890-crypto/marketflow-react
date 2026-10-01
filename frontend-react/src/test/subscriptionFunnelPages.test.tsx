@@ -74,6 +74,25 @@ describe('subscription acquisition funnel', () => {
         expect(mocks.requestUpgrade).not.toHaveBeenCalled();
     });
 
+    it('returns a cancelled Ultra applicant from approval to their plan automatically', async () => {
+        mocks.auth.user={id:294,name:'취소회원',email:'cancel@example.test',role:'user',status:'pending',tier:null,requested_tier:'premium',has_pending_subscription:false};
+        mocks.auth.token='cancel-token';
+        mocks.getStatus.mockResolvedValue({requests:[{id:301,status:'rejected',to_tier:'premium'}]});
+        renderAt('/pending-approval',<PendingApprovalPage />,'/pending-approval');
+        expect(await screen.findByTestId('location')).toHaveTextContent('/plan-select?plan=premium');
+        expect(nextPathForUser(mocks.auth.user,null)).toBe('/plan-select');
+    });
+
+    it('keeps a pending request outside recent history in approval and blocks another deposit', async () => {
+        mocks.auth.user={id:1,name:'회원',role:'user',tier:'pro',status:'expired',is_pro_expired:true};mocks.auth.token='token';
+        mocks.getStatus.mockResolvedValue({requests:Array.from({length:10},()=>({status:'rejected'})),pending_request:{id:2,status:'pending',request_type:'resubscription',to_tier:'pro',amount:'50,000원'}} as any);
+        const payment=renderAt('/payment-request?plan=pro',<PaymentRequestPage />,'/payment-request');
+        expect(await screen.findByTestId('location')).toHaveTextContent('/pending-approval');payment.unmount();
+        renderAt('/pending-approval',<PendingApprovalPage />,'/pending-approval');
+        expect(await screen.findByText('50,000원')).toBeInTheDocument();
+        expect(screen.getByRole('heading',{name:'승인 대기 중'})).toBeInTheDocument();expect(screen.queryByTestId('location')).not.toBeInTheDocument();
+    });
+
     it('renders four promotional plans and sends a guest to signup with the canonical plan query', async () => {
         renderAt('/pricing', <PricingPage />, '/pricing');
 

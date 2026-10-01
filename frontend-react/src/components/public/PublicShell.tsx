@@ -1,3 +1,4 @@
+import { subscriptionFunnelTarget } from '@/lib/auth';
 import { ReactNode, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,6 +23,7 @@ export interface PublicActionUser {
     status?: string | null;
     tier?: string | null;
     requested_tier?: string | null;
+    has_pending_subscription?: boolean;
     is_pro_expired?: boolean | null;
 }
 
@@ -46,13 +48,16 @@ export function getPublicAccountAction(
     if (user.role === 'admin') {
         return { to: '/admin', label: '관리 콘솔', hint: '관리자 화면으로 이동합니다.' };
     }
+    if (subscriptionFunnelTarget(user) === '/pending-approval') {
+        return { to: '/pending-approval', label: '승인 상태', hint: '입금 확인과 승인 상태를 확인합니다.' };
+    }
     if (user.status === 'expired' || user.is_pro_expired) {
         return { to: '/plan-select?resubscribe=1&from=expired', label: '재구독', hint: '기존 계정과 기록은 유지됩니다.' };
     }
     if (user.status === 'approved' && (user.tier === 'pro' || user.tier === 'premium')) {
         return { to: '/dashboard', label: '대시보드', hint: '현재 구독으로 대시보드를 엽니다.' };
     }
-    if (user.status === 'pending' && user.requested_tier) {
+    if (user.status === 'pending' && user.requested_tier && user.has_pending_subscription !== false) {
         return { to: '/pending-approval', label: '승인 상태', hint: '입금 확인과 승인 상태를 확인합니다.' };
     }
     if (!user.tier) {

@@ -3,7 +3,7 @@
  * AI Brain 활성으로 Pro 카운터가 일시정지(is_pro_paused)된 구독자는 pro_expires_at 이
  * 동결값이므로 가짜 "Pro 만료 임박" 경고를 절대 보지 않아야 한다.
  */
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -58,6 +58,18 @@ describe('RenewalBanner', () => {
         renderBanner();
         const cta = screen.getByRole('link', { name: /갱신 신청/ });
         expect(cta).toHaveAttribute('href', '/payment-request?plan=pro&renew=1');
+    });
+
+    it('stops reminding after a renewal request is submitted', () => {
+        authState.user={...proExpiringSoon,has_pending_subscription:true};renderBanner();
+        expect(screen.queryByRole('status')).toBeNull();
+    });
+
+    it('dismisses immediately between timer ticks', () => {
+        authState.user=proExpiringSoon;renderBanner();
+        vi.spyOn(Date,'now').mockReturnValue(Date.now()+1000);
+        try {fireEvent.click(screen.getByRole('button',{name:'배너 닫기'}));expect(screen.queryByRole('status')).toBeNull();}
+        finally {vi.restoreAllMocks();}
     });
 
     it('hides the Pro-expiry banner while the Pro clock is paused by an active AI Brain add-on', () => {

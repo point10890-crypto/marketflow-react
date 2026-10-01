@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
-import { getUser } from '@/lib/auth';
+import { getUser, subscriptionFunnelTarget } from '@/lib/auth';
 import { useSeo } from '@/lib/seo';
 
 export type LoginUser = {
@@ -11,6 +11,7 @@ export type LoginUser = {
     tier?: string | null;
     is_pro_expired?: boolean;
     requested_tier?: string | null;
+    has_pending_subscription?: boolean;
 };
 
 export function safeNextPath(value: string | null): string | null {
@@ -42,13 +43,15 @@ export function nextPathForUser(user: LoginUser, nextPath: string | null): strin
     if (user.role === 'admin') {
         return nextPath?.startsWith('/admin') ? nextPath : '/admin';
     }
+    const funnel = subscriptionFunnelTarget(user);
+    if (funnel === '/pending-approval') return funnel;
     if (user.status === 'expired' || user.is_pro_expired) {
         return resubscribePath(planned);
     }
     if (!user.tier) {
         // 구독 신청(입금)까지 제출한 회원(requested_tier 기록됨)은 재입금 안내가 되는
         // /plan-select 대신 승인 대기로 (subscriptionFunnelTarget 과 동일 기준).
-        return planned || (user.requested_tier ? '/pending-approval' : '/plan-select');
+        return planned || funnel || '/plan-select';
     }
     if (user.status !== 'approved') {
         return '/pending-approval';

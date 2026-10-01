@@ -659,11 +659,11 @@ def subscription_status():
         user_id=user.id
     ).order_by(SubscriptionRequest.created_at.desc()).limit(10).all()
 
-    pending_request = next((r for r in requests_list if r.status == 'pending'), None)
-    pending_aibain = next((
-        r for r in requests_list
-        if r.status == 'pending' and r.request_type in ('aibain_addon', 'aibain_renewal')
-    ), None)
+    # 최근 10건은 표시용 이력이다. 실제 대기 요청은 이력 범위와 무관하게 조회한다.
+    pending_request = user.get_pending_subscription_request()
+    pending_aibain = pending_request if (
+        pending_request and pending_request.request_type in ('aibain_addon', 'aibain_renewal')
+    ) else None
     if pending_aibain:
         aibain_state = 'renewal_pending' if pending_aibain.request_type == 'aibain_renewal' else 'activation_pending'
     elif user.is_aibain_active:
@@ -678,6 +678,7 @@ def subscription_status():
     return jsonify({
         'user': user.to_dict(),
         'requests': [r.to_dict() for r in requests_list],
+        'pending_request': pending_request.to_dict() if pending_request else None,
         'aibain_subscription': {
             'state': aibain_state,
             'is_active': user.is_aibain_active,

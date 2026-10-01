@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+import { reminderDue } from '@/lib/subscriptionJourney';
+import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -12,7 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
  * 세션 동안 닫기 가능 (sessionStorage) — 매 방문 리마인드는 유지하되 페이지마다 방해하지 않는다.
  */
 
-const DISMISS_KEY = 'renewal_banner_dismissed';
+const DISMISS_KEY = 'renewal-banner:v2';
 
 function daysLeft(iso: string | null | undefined): number | null {
     if (!iso) return null;
@@ -23,12 +25,17 @@ function daysLeft(iso: string | null | undefined): number | null {
 
 export default function RenewalBanner() {
     const { user } = useAuth();
-    const [dismissed, setDismissed] = useState(() => {
-        try { return sessionStorage.getItem(DISMISS_KEY) === '1'; } catch { return false; }
-    });
+    const [now, setNow] = useState(Date.now);
+    const [dismissedAt, setDismissedAt] = useState<{key: string; at: string} | null>(null);
+    useEffect(() => {
+        const tick = () => { if (document.visibilityState !== 'hidden') setNow(Date.now()); };
+        const interval = window.setInterval(tick, 60_000);
+        window.addEventListener('focus', tick);
+        return () => { window.clearInterval(interval); window.removeEventListener('focus', tick); };
+    }, []);
 
     const banner = useMemo(() => {
-        if (!user || user.role === 'admin') return null;
+        if (!user || user.role === 'admin' || user.has_pending_subscription) return null;
 
         // 1. Pro 베이스 만료 임박 (premium 은 무기한).
         //    AI Brain 활성 중에는 Pro 카운터가 일시정지(is_pro_paused)되고 pro_expires_at 은
@@ -72,13 +79,18 @@ export default function RenewalBanner() {
             }
         }
         return null;
-    }, [user]);
+    }, [user, now]);
 
-    if (!banner || dismissed) return null;
+    const dismissKey = `${DISMISS_KEY}:${user?.id}:${banner?.key}:${user?.pro_expires_at || ''}:${user?.aibain_expires_at || ''}`;
+    const last = dismissedAt?.key === dismissKey ? dismissedAt.at : safeGetItem('session', dismissKey);
+    if (!banner || !reminderDue(last, now)) return null;
 
     const dismiss = () => {
-        setDismissed(true);
-        try { sessionStorage.setItem(DISMISS_KEY, '1'); } catch { /* 무시 */ }
+        const timestamp = Date.now();
+        const at = String(timestamp);
+        setNow(timestamp);
+        setDismissedAt({key: dismissKey, at});
+        safeSetItem('session', dismissKey, at);
     };
 
     return (

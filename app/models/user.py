@@ -144,7 +144,16 @@ class User(db.Model):
         delta = expires - datetime.utcnow()
         return max(0, delta.days)
 
+    def get_pending_subscription_request(self):
+        """실제 미처리 요청만 반환한다. requested_tier 는 대기 여부의 근거가 아니다."""
+        if self.id is None:
+            return None
+        return SubscriptionRequest.query.filter_by(
+            user_id=self.id, status='pending',
+        ).order_by(SubscriptionRequest.created_at.desc(), SubscriptionRequest.id.desc()).first()
+
     def to_dict(self):
+        pending_request = self.get_pending_subscription_request()
         return {
             'id': self.id,
             'email': self.email,
@@ -155,6 +164,15 @@ class User(db.Model):
             'pro_expires_at': self.pro_expires_at.isoformat() if self.pro_expires_at else None,
             'is_pro_expired': self.is_pro_expired,
             'requested_tier': self.requested_tier,
+            'has_pending_subscription': pending_request is not None,
+            'pending_subscription_request': {
+                'id': pending_request.id,
+                'request_type': pending_request.request_type,
+                'from_tier': pending_request.from_tier,
+                'to_tier': pending_request.to_tier,
+                'status': pending_request.status,
+                'created_at': pending_request.created_at.isoformat() if pending_request.created_at else None,
+            } if pending_request else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'approved_at': self.approved_at.isoformat() if self.approved_at else None,
             'last_login_at': self.last_login_at.isoformat() if self.last_login_at else None,

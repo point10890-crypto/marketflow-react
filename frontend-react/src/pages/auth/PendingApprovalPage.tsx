@@ -5,6 +5,7 @@ import { BANK_ACCOUNT } from '@/lib/billingInfo';
 import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { getUser } from '@/lib/auth';
+import { pendingSubscriptionRequest } from '@/lib/subscriptionStatus';
 import { useSeo } from '@/lib/seo';
 
 const FLOW_STEPS = ['계정 생성', '플랜 선택', '입금 정보', '승인 대기'];
@@ -34,16 +35,16 @@ export default function PendingApprovalPage() {
         try {
             const resp = await subscriptionAPI.getStatus(token);
             const reqs = resp.requests || [];
-            const pending = reqs.find((r) => r.status === 'pending') || null;
+            const pending = pendingSubscriptionRequest(resp);
             setPendingSubReq(pending);
             // 대기 중 요청이 없을 때 가장 최근 요청이 거절이면 사유를 노출한다 —
             // 이전에는 거절돼도 "플랜 선택이 필요합니다" 로만 보여 유저가 알 수 없었다.
             setRejectedSubReq(!pending && reqs[0]?.status === 'rejected' ? reqs[0] : null);
+            setSubReqLoaded(true);
             return pending;
         } catch {
+            setMessage('신청 상태를 확인하지 못했습니다. 잠시 후 다시 확인해 주세요.');
             return null;
-        } finally {
-            setSubReqLoaded(true);
         }
     }, [token]);
 
@@ -64,11 +65,18 @@ export default function PendingApprovalPage() {
         const isActive = user.status === 'approved'
             && (user.tier === 'pro' || user.tier === 'premium')
             && !user.is_pro_expired;
-        if (isActive && !pendingSubReq) {
-            // 활성 회원인데 pending sub_req 가 없음 → 대시보드로
-            navigate('/dashboard', { replace: true });
+        if (!pendingSubReq) {
+            if (isActive) navigate('/dashboard', { replace: true });
+            else {
+                const expired = user.status === 'expired' || user.is_pro_expired;
+                const tier = rejectedSubReq?.to_tier || user.requested_tier;
+                const query = new URLSearchParams();
+                if (tier === 'pro' || tier === 'premium') query.set('plan', tier);
+                if (expired) { query.set('resubscribe', '1'); query.set('from', 'expired'); }
+                navigate(`/plan-select${query.size ? '?' + query.toString() : ''}`, { replace: true });
+            }
         }
-    }, [user, navigate, pendingSubReq, subReqLoaded]);
+    }, [user, navigate, pendingSubReq, subReqLoaded, rejectedSubReq]);
 
     // 30초 폴링 — user 상태 + sub_req 둘 다 refresh
     useEffect(() => {

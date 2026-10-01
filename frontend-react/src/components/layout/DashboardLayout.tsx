@@ -88,6 +88,7 @@ export default function DashboardLayout() {
 
                 {/* Main Content */}
                 <main className="claw-shell-bg flex-1 min-w-0 min-h-0 flex flex-col h-full overflow-hidden relative">
+                    <div id="subscription-entry-dashboard" className="shrink-0" />
                     <Header
                         onMenuClick={() => setSidebarOpen(true)}
                     />

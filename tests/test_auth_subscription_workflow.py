@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 import sqlite3
+import pytest
 
 from app import create_app, _apply_aibain_expiry_state
 import app as app_package
@@ -131,6 +132,169 @@ def test_pending_user_can_login_and_submit_subscription_request():
     with app.app_context():
         member = User.query.filter_by(email='pending@example.com').first()
         assert member.requested_tier == 'pro'
+
+
+@pytest.mark.parametrize('historical_status', [None, 'rejected', 'cancelled'])
+def test_historical_requested_tier_does_not_count_as_pending_subscription(historical_status):
+    app = _app()
+    with app.app_context():
+        member = _user('reapply@example.com', '재신청회원', 'Pass1234!')
+        member.requested_tier = 'premium'
+        db.session.add(member)
+        db.session.flush()
+        if historical_status:
+            db.session.add(SubscriptionRequest(
+                user_id=member.id, request_type='upgrade', from_tier='none',
+                to_tier='premium', status=historical_status,
+            ))
+        db.session.commit()
+
+    client = app.test_client()
+    login = client.post('/api/auth/login', json={
+        'email': 'reapply@example.com', 'password': 'Pass1234!',
+    })
+    assert login.status_code == 200
+    login_body = login.get_json()
+    headers = {'Authorization': f"Bearer {login_body['token']}"}
+    users = [login_body['user']]
+    users.append(client.get('/api/auth/me', headers=headers).get_json()['user'])
+    subscription_status = client.get('/api/auth/subscription/status', headers=headers).get_json()
+    assert subscription_status['pending_request'] is None
+    users.append(subscription_status['user'])
+    for user in users:
+        assert user['requested_tier'] == 'premium'
+        assert user['has_pending_subscription'] is False
+        assert user['pending_subscription_request'] is None
+
+    reapplied = client.post('/api/auth/subscription/request', headers=headers, json={
+        'to_tier': 'pro', 'depositor_name': '재신청회원',
+    })
+    assert reapplied.status_code == 201
+    request_id = reapplied.get_json()['request']['id']
+    user = client.get('/api/auth/me', headers=headers).get_json()['user']
+    assert user['has_pending_subscription'] is True
+    assert user['pending_subscription_request']['id'] == request_id
+    assert user['pending_subscription_request']['to_tier'] == 'pro'
+
+
+def test_pending_subscription_summary_uses_real_request_instead_of_historical_preference():
+    app = _app()
+    with app.app_context():
+        member = _user('pending-summary@example.com', '대기회원', 'Pass1234!')
+        member.requested_tier = 'premium'
+        db.session.add(member)
+        db.session.flush()
+        pending = SubscriptionRequest(
+            user_id=member.id, request_type='upgrade', from_tier='none',
+            to_tier='pro', status='pending', depositor_name='입금회원',
+        )
+        db.session.add(pending)
+        db.session.commit()
+        member_token = generate_token(member.id)
+        pending_id = pending.id
+        created_at = pending.created_at.isoformat()
+
+    client = app.test_client()
+    user = client.get('/api/auth/me', headers={
+        'Authorization': f'Bearer {member_token}',
+    }).get_json()['user']
+    assert user['has_pending_subscription'] is True
+    assert user['pending_subscription_request'] == {
+        'id': pending_id, 'request_type': 'upgrade', 'from_tier': 'none',
+        'to_tier': 'pro', 'status': 'pending', 'created_at': created_at,
+    }
+
+
+def test_subscription_status_finds_pending_request_outside_recent_history_limit():
+    app = _app()
+    now = datetime.now(timezone.utc)
+    with app.app_context():
+        member = _user('pending-history@example.com', '갱신대기회원', 'Pass1234!', status='approved', tier='premium')
+        member.aibain_expires_at = now - timedelta(days=1)
+        db.session.add(member)
+        db.session.flush()
+        pending = SubscriptionRequest(
+            user_id=member.id, request_type='aibain_renewal', from_tier='premium',
+            to_tier='premium', status='pending', created_at=now - timedelta(days=12),
+            amount='40,000원', depositor_name='갱신입금회원',
+            admin_note='AI Brain 알파 스캐너 재구독 신청',
+        )
+        db.session.add(pending)
+        for days in range(11):
+            db.session.add(SubscriptionRequest(
+                user_id=member.id, request_type='aibain_renewal', from_tier='premium',
+                to_tier='premium', status='rejected', created_at=now - timedelta(days=days),
+            ))
+        db.session.commit()
+        member_token = generate_token(member.id)
+        pending_id = pending.id
+
+    client = app.test_client()
+    status = client.get('/api/auth/subscription/status', headers={
+        'Authorization': f'Bearer {member_token}',
+    }).get_json()
+    assert len(status['requests']) == 10
+    assert all(r['id'] != pending_id for r in status['requests'])
+    assert status['pending_request']['id'] == pending_id
+    assert status['pending_request']['status'] == 'pending'
+    assert status['pending_request']['request_type'] == 'aibain_renewal'
+    assert status['pending_request']['amount'] == '40,000원'
+    assert status['pending_request']['depositor_name'] == '갱신입금회원'
+    assert status['pending_request']['admin_note'] == 'AI Brain 알파 스캐너 재구독 신청'
+    assert status['aibain_subscription']['state'] == 'renewal_pending'
+    assert status['aibain_subscription']['renewal_eligible'] is False
+    assert status['aibain_subscription']['pending_request']['id'] == pending_id
+    assert status['user']['has_pending_subscription'] is True
+    assert status['user']['pending_subscription_request']['id'] == pending_id
+
+
+@pytest.mark.parametrize('status,tier,has_other_pending,expected_preference', [
+    ('pending', None, False, None),
+    ('pending', None, True, 'premium'),
+    ('approved', 'pro', False, 'premium'),
+    ('expired', 'pro', False, 'premium'),
+])
+def test_subscription_rejection_clears_only_unsubscribed_intent(status, tier, has_other_pending, expected_preference):
+    app = _app()
+    expires_at = datetime.now(timezone.utc) - timedelta(days=1)
+    with app.app_context():
+        admin = _user('reject-admin@example.com', '관리자', 'Admin1234!', status='approved', tier='premium', role='admin')
+        member = _user('rejected-intent@example.com', '신청회원', 'Pass1234!', status=status, tier=tier, pro_expires_at=expires_at if tier else None)
+        member.requested_tier = 'premium'
+        db.session.add_all([admin, member])
+        db.session.flush()
+        pending = SubscriptionRequest(
+            user_id=member.id, request_type='upgrade', from_tier=tier or 'none',
+            to_tier='premium', status='pending',
+        )
+        db.session.add(pending)
+        if has_other_pending:
+            db.session.add(SubscriptionRequest(
+                user_id=member.id, request_type='upgrade', from_tier='none',
+                to_tier='premium', status='pending',
+            ))
+        db.session.commit()
+        admin_token = generate_token(admin.id)
+        member_token = generate_token(member.id)
+        pending_id = pending.id
+
+    client = app.test_client()
+    rejected = client.put(f'/api/admin/subscriptions/{pending_id}/reject', headers={
+        'Authorization': f'Bearer {admin_token}',
+    }, json={'note': '신청 취소'})
+    assert rejected.status_code == 200
+    user = client.get('/api/auth/me', headers={
+        'Authorization': f'Bearer {member_token}',
+    }).get_json()['user']
+    assert user['requested_tier'] == expected_preference
+    assert user['tier'] == tier
+    assert user['status'] == status
+    assert user['has_pending_subscription'] is has_other_pending
+    if tier:
+        with app.app_context():
+            member = User.query.filter_by(email='rejected-intent@example.com').first()
+            saved_expiry = member.pro_expires_at.replace(tzinfo=timezone.utc)
+            assert abs((saved_expiry - expires_at).total_seconds()) < 1
 
 
 def test_expired_pro_user_can_request_same_tier_renewal_and_approval_reactivates():

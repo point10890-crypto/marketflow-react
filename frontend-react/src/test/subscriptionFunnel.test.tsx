@@ -50,3 +50,13 @@ describe('subscriptionFunnelTarget', () => {
         expect(subscriptionFunnelTarget({ ...base, status: 'approved', tier: 'free' })).toBe('/pending-approval');
     });
 });
+
+it('cancelled historical plan does not keep a no-tier member waiting', () => {
+    expect(subscriptionFunnelTarget({status:'pending',tier:null,requested_tier:'premium',has_pending_subscription:false})).toBe('/plan-select');
+});
+it('expired member with a submitted renewal goes to approval rather than another payment', () => {
+    expect(subscriptionFunnelTarget({status:'expired',tier:'pro',has_pending_subscription:true})).toBe('/pending-approval');
+});
+it('active base remains available during an AI Brain renewal request', () => {
+    expect(subscriptionFunnelTarget({status:'approved',tier:'pro',is_pro_expired:false,has_pending_subscription:true})).toBeNull();
+});

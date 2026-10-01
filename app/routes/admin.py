@@ -1360,11 +1360,18 @@ def reject_subscription(req_id):
     sub_req.processed_at = datetime.now(timezone.utc)
     sub_req.processed_by = admin.id if admin else None
 
+    user = db.session.get(User, sub_req.user_id)
+    before = {'requested_tier': user.requested_tier} if user else None
+    # 최초 신청 취소는 플랜 선택부터 다시 시작한다. 기존 베이스/만료 이력과
+    # 다른 미처리 요청은 보존해 갱신 또는 승인 대기 흐름을 유지한다.
+    if user and user.status == 'pending' and user.tier is None \
+            and user.get_pending_subscription_request() is None:
+        user.requested_tier = None
+
     db.session.commit()
 
-    user = db.session.get(User, sub_req.user_id)
     if user:
-        _record_audit('reject_subscription', user, None, None, note=sub_req.admin_note or 'rejected')
+        _record_audit('reject_subscription', user, before, {'requested_tier': user.requested_tier}, note=sub_req.admin_note or 'rejected')
         record_funnel_event(EVENT_REJECT, user.id, {
             'request_id': sub_req.id,
             'request_type': sub_req.request_type,

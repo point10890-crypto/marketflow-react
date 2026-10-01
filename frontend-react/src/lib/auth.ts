@@ -61,6 +61,8 @@ export interface AuthUserData {
     pro_expires_at?: string | null;
     is_pro_expired?: boolean;
     requested_tier?: 'pro' | 'premium' | null;
+    has_pending_subscription?: boolean;
+    pending_subscription_request?: { id: number; request_type: string; status: string } | null;
     // AI Brain 알파 스캐너 (애드온) — backend /api/auth/me 응답 포함
     aibain_enabled?: boolean;
     aibain_expires_at?: string | null;
@@ -144,6 +146,7 @@ export interface FunnelUser {
     tier?: string | null;
     is_pro_expired?: boolean | null;
     requested_tier?: string | null;
+    has_pending_subscription?: boolean;
 }
 
 /**
@@ -164,13 +167,12 @@ export function subscriptionFunnelTarget(user: FunnelUser | null | undefined): s
     // 'unknown' = 토큰만 있고 /api/auth/me 응답 전 합성 유저 — 판정 보류 (가드가 별도 처리)
     if (user.status === 'unknown') return null;
     if (user.role === 'admin') return null;
+    const activeBase = user.status === 'approved' && ['pro', 'premium'].includes(user.tier || '') && !user.is_pro_expired;
+    if (activeBase) return null;
+    if (user.has_pending_subscription === true) return '/pending-approval';
     if (user.status === 'expired' || user.is_pro_expired) return '/plan-select?resubscribe=1&from=expired';
-    // 백엔드는 구독 신청(입금) 제출 시 requested_tier 만 기록하고 tier 는 승인 시점에 설정한다.
-    // 이미 신청·입금한 회원을 /plan-select 로 보내면 "다시 입금하라"는 안내가 되므로
-    // 승인 대기 페이지로 보낸다 (PublicShell CTA 와 동일 기준).
-    if (!user.tier && user.requested_tier) return '/pending-approval';
-    if (!user.tier) return '/plan-select';
-    if (user.status !== 'approved') return '/pending-approval';
-    if (user.tier !== 'pro' && user.tier !== 'premium') return '/pending-approval';
-    return null;
+    // Old clients retain compatibility; explicit server false always overrides historical intent.
+    if (!user.tier && user.has_pending_subscription === undefined && user.requested_tier) return '/pending-approval';
+    if (!user.tier || user.has_pending_subscription === false) return '/plan-select';
+    return '/pending-approval';
 }

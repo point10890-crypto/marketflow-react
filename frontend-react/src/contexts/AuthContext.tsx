@@ -34,6 +34,8 @@ interface AuthUser {
     is_pro_expired?: boolean;
     // 가입 시 유저가 선택한 플랜. pending 유저 안내용.
     requested_tier?: 'pro' | 'premium' | null;
+    has_pending_subscription?: boolean;
+    pending_subscription_request?: AuthUserData['pending_subscription_request'];
     // ── AI Brain 알파 스캐너 애드온 (별도 30일 갱신 구독) ───────────────────
     aibain_enabled?: boolean;
     aibain_expires_at?: string | null;
@@ -84,6 +86,8 @@ function toAuthUser(d: AuthUserData): AuthUser {
         pro_expires_at: d.pro_expires_at || null,
         is_pro_expired: d.is_pro_expired ?? false,
         requested_tier: d.requested_tier ?? null,
+        has_pending_subscription: d.has_pending_subscription,
+        pending_subscription_request: d.pending_subscription_request,
         // AI Brain 알파 스캐너 (애드온) — 빠뜨리면 Summary 배너 숨김 / AiBainPage 풀 콘솔 조건이
         // React 상태에서 항상 false 로 보임 (백엔드는 정상 반환하지만 frontend 가 strip).
         aibain_enabled: d.aibain_enabled ?? false,
