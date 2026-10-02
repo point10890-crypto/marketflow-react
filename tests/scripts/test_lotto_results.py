@@ -330,3 +330,53 @@ def test_nested_paragraph_does_not_mistake_the_same_set_for_an_unparsed_extra_se
 
     html = "<h2>제1243회 후보 조합</h2><h3>안정형</h3><li><p>세트 1: <strong>1,2,3,4,5,6</strong></p></li>"
     assert results.extract_recommendation_sets(html, draw_no=1243) == [{"style": "안정형", "set_index": 1, "numbers": [1, 2, 3, 4, 5, 6]}]
+
+
+def test_full_previous_result_report_does_not_contaminate_current_legacy_recommendations():
+    from scripts import lotto_results as results
+
+    previous_rows = results.extract_recommendation_sets(results.canonical_recommendation_html(1243, candidates()), draw_no=1243)
+    previous_report = results.build_result_report(verified_draw(), previous_rows, {"post_id": 77, "created_at": "2026-09-25 08:00:00"})
+    current = "<h2>제1244회 후보 조합</h2><h3>균형형</h3><li>세트 1: <strong>3,11,19,28,34,42</strong></li><li>세트 2: <strong>7,8,9,10,11,12</strong></li>"
+    mixed = f'<section data-lotto-result="1">{previous_report["content"]}</section>' + current
+
+    assert results.extract_recommendation_sets(mixed, draw_no=1244) == [
+        {"style": "균형형", "set_index": 1, "numbers": [3, 11, 19, 28, 34, 42]},
+        {"style": "균형형", "set_index": 2, "numbers": [7, 8, 9, 10, 11, 12]},
+    ]
+
+
+def test_previous_canonical_table_inside_result_block_is_not_a_current_canonical_candidate():
+    from scripts import lotto_results as results
+
+    previous = results.canonical_recommendation_html(1243, candidates())
+    current = results.canonical_recommendation_html(1244, candidates())
+    mixed = f'<div data-lotto-result="1"><section>{previous}</section></div>' + current
+    assert results.extract_recommendation_sets(mixed, draw_no=1244) == results.extract_recommendation_sets(current, draw_no=1244)
+
+
+def test_result_embedded_canonical_does_not_override_the_current_legacy_section():
+    from scripts import lotto_results as results
+
+    previous = results.canonical_recommendation_html(1243, candidates())
+    current = "<h2>제1244회 후보 조합</h2><h3>안정형</h3><li>세트 1: <strong>3,11,19,28,34,42</strong></li>"
+    assert results.extract_recommendation_sets(f'<div data-lotto-result="1">{previous}</div>' + current, draw_no=1244) == [
+        {"style": "안정형", "set_index": 1, "numbers": [3, 11, 19, 28, 34, 42]},
+    ]
+
+
+def test_result_block_alone_can_never_be_recovered_as_a_recommendation_post():
+    from scripts import lotto_results as results
+
+    excluded = f'<div data-lotto-result="1">{results.canonical_recommendation_html(1244, candidates())}</div>'
+    with pytest.raises(results.LottoResultError):
+        results.extract_recommendation_sets(excluded, draw_no=1244)
+
+
+def test_multiple_current_canonical_tables_remain_ambiguous_after_excluding_result_blocks():
+    from scripts import lotto_results as results
+
+    old = f'<div data-lotto-result="1">{results.canonical_recommendation_html(1243, candidates())}</div>'
+    current = results.canonical_recommendation_html(1244, candidates())
+    with pytest.raises(results.LottoResultError):
+        results.extract_recommendation_sets(old + current + current, draw_no=1244)

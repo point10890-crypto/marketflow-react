@@ -271,11 +271,19 @@ def _numbers_text(text: str) -> list[int] | None:
     return _validate_numbers([int(value) for value in re.findall(r"\d+", text)])
 
 
+def _inside_result_block(node: _Node) -> bool:
+    while node is not None:
+        if node.attrs.get("data-lotto-result") == "1":
+            return True
+        node = node.parent
+    return False
+
+
 def _table_rows(table: _Node) -> list[dict]:
     rows = []
     next_index: Counter = Counter()
     for row in table.nodes():
-        if row.tag != "tr":
+        if row.tag != "tr" or _inside_result_block(row):
             continue
         cells = [node for node in row.children if isinstance(node, _Node) and node.tag == "td"]
         if not cells:
@@ -300,7 +308,9 @@ def extract_recommendation_sets(content: str, draw_no: int | None = None) -> lis
         raise LottoResultError("추천 원문이 없습니다")
     parser = _TreeParser()
     parser.feed(content)
-    canonical = [node for node in parser.root.nodes() if node.tag == "table" and node.attrs.get("data-lotto-recommendations") == "1"]
+    canonical = [node for node in parser.root.nodes()
+                 if node.tag == "table" and node.attrs.get("data-lotto-recommendations") == "1"
+                 and not _inside_result_block(node)]
     if canonical:
         if len(canonical) != 1:
             raise LottoResultError("공식 비교 대상 표가 여러 개입니다")
@@ -314,7 +324,17 @@ def extract_recommendation_sets(content: str, draw_no: int | None = None) -> lis
     counts: Counter = Counter()
     blocks = 0
     visible_recommendations = []
+    excluded_result = None
     for event, node in parser.root.events():
+        if excluded_result is not None:
+            if event == "end" and node is excluded_result:
+                excluded_result = None
+            continue
+        if event == "start" and node.attrs.get("data-lotto-result") == "1":
+            excluded_result = node
+            if active_level is not None:
+                visible_recommendations.append("\n")
+            continue
         if event == "text":
             if active_level is not None:
                 visible_recommendations.append(node)

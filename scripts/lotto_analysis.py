@@ -1566,16 +1566,14 @@ def _ensure_result_post(token: str, draw_no: int) -> dict:
 def _review_preface(result_state: dict) -> str:
     draw = result_state['draw']
     receipt = result_state['receipt']
-    pending = result_state['report'].get('summary', {}).get('status') == 'pending'
-    note = ('대조 보류: ' + result_state['report']['summary']['reason'] if pending else
-            '지난 추천의 세트별 일치 번호와 당첨 결과를 먼저 확인하세요. 미당첨 세트도 함께 공개합니다.')
+    report_content = result_state['report']['content']
+    if not isinstance(report_content, str) or not report_content.strip():
+        raise LottoResultError('지난 추천 결과 본문을 확인하지 못했습니다.')
     return (f'<section data-lotto-review-link="{draw["drwNo"]}">'
             '<h2>지난 추천 결과를 먼저 확인하세요</h2>'
-            f'<p>제{draw["drwNo"]}회 ({escape(draw["drwNoDate"])}) 당첨 번호 '
-            f'<strong>{", ".join(str(n) for n in get_numbers(draw))}</strong>'
-            f' · 보너스 <strong>{draw["bnusNo"]}</strong></p>'
-            f'<p>{escape(note)}</p>'
-            f'<p><a href="/dashboard/community/post/{receipt["post_id"]}">지난 추천과 실제 추첨 결과 보기</a></p>'
+            f'<div data-lotto-result="1" data-draw-no="{draw["drwNo"]}">'
+            f'{report_content}</div>'
+            f'<p><a href="/dashboard/community/post/{receipt["post_id"]}">지난 추천과 실제 추첨 결과 원문 보기</a></p>'
             '</section>\n')
 
 

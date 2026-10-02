@@ -6,7 +6,7 @@ Updated: 2026-10-02
 
 1. Read the last completed draw's official numbers and compare every combination actually published before that draw.
 2. Follow the original recommendation link and inspect matched main numbers, bonus match and the rank for each individual six-number combination.
-3. Read the new draw's recommendation. Its opening section links back to the previous result report.
+3. Read the new draw's recommendation. The same post opens with the previous draw's official winning numbers, every actually published recommendation and its matched numbers/rank. The next draw's recommendation follows that complete comparison; the separate result-report link remains available.
 
 Historical predictions are never regenerated after a draw. Legacy posts are recovered from their currently published HTML, and the report explains that no pre-draw immutable snapshot exists for those old posts. Missing or ambiguous recommendations remain unverified rather than being counted as losing tickets.
 
@@ -31,7 +31,9 @@ The default publication API is `https://marketflow-api.bit-man.net`. `LOTTO_PUBL
 
 New recommendation generation and its final POST both require a time before Saturday 20:35 KST, including generation that crosses the cutoff. Result-only publication and adding the review link to an existing recommendation remain allowed afterward.
 
-New recommendations include a deterministic, machine-readable complete number table and save their prepared candidate/body snapshot and publication receipt. Existing current recommendations receive only the result summary/link prefix; their previous title, number content and images are preserved.
+New recommendations include a deterministic, machine-readable complete number table and save their prepared candidate/body snapshot and publication receipt. The opening review embeds the verified result report without another LLM or image call. Missing or ambiguous prior recommendations show the reason comparison is pending, with official winning numbers and a source link.
+
+Result blocks carry `data-lotto-result="1"` and are excluded when recovering the current draw's recommendations. This keeps previous and current rounds separate in both canonical tables and legacy recommendation HTML. Repeated runs replace the marked review section rather than duplicating it; existing titles, current numbers and images are preserved. The 2026-10-02 extension applies to the next scheduled posting; its deployment does not edit already published posts.
 
 ## Schedule
 

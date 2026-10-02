@@ -292,6 +292,61 @@ def test_live_legacy_titles_are_matched_without_regenerating_this_weeks_numbers(
     assert 'generate' not in calls and 'write' not in calls
 
 
+def _past_recommendation_for_embedded_review(lotto, posts):
+    past = {'안정형': {'desc': '지난 추천', 'sets': [
+        {'numbers': [1, 2, 3, 10, 11, 12], 'score': 75},
+        {'numbers': [10, 11, 12, 13, 14, 15], 'score': 60},
+    ]}}
+    _existing_recommendation(lotto, posts, 1243, past, post_id=245, created_at='2026-09-25T08:01:09')
+
+
+def test_next_recommendation_embeds_all_previous_sets_and_official_result_in_one_post(monkeypatch, tmp_path):
+    lotto, posts, _, _, _, _ = _workflow(monkeypatch, tmp_path)
+    _past_recommendation_for_embedded_review(lotto, posts)
+    result = lotto.run_lotto_analysis_post()
+    assert result
+    body = posts[result['post_id']]['content']
+    report = lotto._load_publication('result', 1243)['report']
+    assert report['content'] in body
+    assert 'data-lotto-result="1" data-draw-no="1243"' in body
+    assert '1, 2, 3, 10, 11, 12' in body and '10, 11, 12, 13, 14, 15' in body
+    assert '본번호 일치' in body and '대조 등수' in body and '미당첨 1조합' in body
+    assert body.index(report['content']) < body.index('data-lotto-recommendations')
+    assert lotto.extract_recommendation_sets(body, 1244) == [
+        {'style': '균형형', 'set_index': 1, 'numbers': [1, 2, 3, 4, 5, 6]},
+    ]
+
+
+def test_full_previous_result_with_legacy_current_numbers_repairs_once_without_mixing_draws(monkeypatch, tmp_path):
+    lotto, posts, calls, _, _, _ = _workflow(monkeypatch, tmp_path)
+    _past_recommendation_for_embedded_review(lotto, posts)
+    legacy = ('<h2>제1244회 후보 조합</h2><h3>균형형 — 이번 추천</h3>'
+              '<ul><li>세트 1: <strong>1, 2, 3, 4, 5, 6</strong> / 점수 95</li></ul>'
+              '<img src="/legacy-original.png" />')
+    posts[255] = {'id': 255, 'title': '로또 6/45 제1244회 통계 분석과 추천 조합', 'content': legacy,
+                  'board': {'slug': 'lotto-ai'}, 'is_notice': True, 'created_at': '2026-10-02T08:00:00'}
+    assert lotto.run_lotto_analysis_post()['post_id'] == 255
+    first = posts[255]['content']
+    assert first.endswith(legacy) and '1, 2, 3, 10, 11, 12' in first
+    assert lotto.extract_recommendation_sets(first, 1244) == [
+        {'style': '균형형', 'set_index': 1, 'numbers': [1, 2, 3, 4, 5, 6]},
+    ]
+    assert lotto.run_lotto_analysis_post()['skipped']
+    assert posts[255]['content'] == first and first.count('data-lotto-review-link') == 1
+    assert 'generate' not in calls and 'write' not in calls
+
+
+def test_embedded_pending_review_keeps_the_original_comparison_hold_reason(monkeypatch, tmp_path):
+    lotto, posts, _, _, _, _ = _workflow(monkeypatch, tmp_path)
+    result = lotto.run_lotto_analysis_post()
+    assert result
+    state = lotto._load_publication('result', 1243)
+    body = posts[result['post_id']]['content']
+    assert state['report']['content'] in body
+    assert state['report']['summary']['reason'] in body and '대조 보류' in body
+    assert 'data-lotto-result="1"' in body
+
+
 def test_parse_llm_json_allows_raw_newlines_in_content():
     import lotto_analysis
 
