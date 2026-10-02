@@ -2,8 +2,9 @@
 
 import os
 import re
+from functools import wraps
 
-from flask import Blueprint, Response, jsonify, request
+from flask import Blueprint, Response, jsonify, make_response, request
 
 from app.auth.decorators import admin_required, admin_or_aibain_required
 from app.services import mirofish
@@ -26,6 +27,37 @@ def _chart_analogue_service():
 def _chart_analogue_evaluation_service():
     from app.services.mirofish import chart_analogue_evaluation
     return chart_analogue_evaluation
+
+
+def _chart_analogue_top3_service():
+    from app.services.mirofish import chart_analogue_top3
+    return chart_analogue_top3
+
+
+def _chart_analogue_top3_no_store(view):
+    @wraps(view)
+    def decorated(*args, **kwargs):
+        response = make_response(view(*args, **kwargs))
+        response.headers['Cache-Control'] = 'private, no-store, max-age=0'
+        return response
+    return decorated
+
+
+@admin_mirofish_bp.route('/chart-analogue/top3', methods=['GET', 'POST'])
+@_chart_analogue_top3_no_store
+@admin_or_aibain_required
+def chart_analogue_top3():
+    raw_body = request.get_data(cache=True).strip()
+    empty_options = request.method == 'POST' and request.is_json and request.get_json(silent=True) == {}
+    if request.query_string or (raw_body and not empty_options):
+        return jsonify({'error': 'invalid_chart_analogue_top3_request'}), 400
+    try:
+        service = _chart_analogue_top3_service()
+        status = service.start_scan() if request.method == 'POST' else service.read_status()
+        code = 202 if request.method == 'POST' and status.get('state') == 'running' else 200
+        return jsonify(status), code
+    except Exception:
+        return jsonify({'error': 'chart_analogue_top3_unavailable'}), 503
 
 
 @admin_mirofish_bp.route('/chart-analogue/evaluation', methods=['GET'])

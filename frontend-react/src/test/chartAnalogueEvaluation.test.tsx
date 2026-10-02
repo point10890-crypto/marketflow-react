@@ -7,7 +7,12 @@ import ChartAnaloguePage from '@/pages/dashboard/aibain/ChartAnaloguePage';
 import { fetchChartAnalogueEvaluation } from '@/lib/chartAnalogueApi';
 
 const api = vi.hoisted(() => ({ fetchAuthAPI: vi.fn() }));
-vi.mock('@/lib/api', () => ({ fetchAuthAPI: api.fetchAuthAPI }));
+vi.mock('@/lib/api', () => ({
+    fetchAuthAPI: (path: string, ...args: unknown[]) => path.endsWith('/top3')
+        ? Promise.resolve({ state: 'none', processed: 0, total: 0, started_at: null,
+            error: null, freshness: 'missing', report: null }) : api.fetchAuthAPI(path, ...args),
+    postAuthAPI: vi.fn(),
+}));
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ token: 'member-token' }) }));
 
 const empty = {

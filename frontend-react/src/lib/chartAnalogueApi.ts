@@ -1,4 +1,4 @@
-import { fetchAuthAPI } from './api';
+import { fetchAuthAPI, postAuthAPI } from './api';
 
 export type ChartAnalogueStatus = 'ready' | 'missing_index' | 'stale_data' | 'insufficient_history' | 'insufficient_analogues' | 'unavailable';
 
@@ -243,4 +243,118 @@ export async function fetchChartAnalogueCandidates(query: string, token?: string
     } catch {
         throw new Error(errorMessage);
     }
+}
+
+export interface ChartAnalogueTop3Candidate {
+    rank: number;
+    symbol: string;
+    target: string;
+    market: 'KR';
+    score: number;
+    sample_count: number;
+    distinct_symbols: number;
+    median_similarity: number;
+    latest_session: string;
+    query_captured_at: string;
+    close: number;
+    horizon: { sessions: 20; median_return_pct: number; p10_return_pct: number; p90_return_pct: number; up_frequency_pct: number };
+    reasons: string[];
+}
+
+export interface ChartAnalogueTop3Report {
+    schema_version: 1;
+    rule_version: 'chart-top3-risk20-v1';
+    mode: 'research';
+    status: 'ready' | 'insufficient_candidates' | 'missing_index' | 'invalid_index' | 'stale_data' | 'failed';
+    as_of: string;
+    generated_at: string;
+    source: ChartAnaloguePrediction['source'];
+    universe: { indexed: number; processed: number; eligible: number; rejected: Record<string, number> };
+    criteria: { horizon_sessions: 20; min_samples: 20; min_up_frequency_pct: 60; min_p10_return_pct: -12;
+        min_median_similarity: 0.8; min_distinct_symbols: 5; cost_bps: 33; downside_weight: 0.5 };
+    candidates: ChartAnalogueTop3Candidate[];
+    warnings: string[];
+}
+
+export interface ChartAnalogueTop3Envelope {
+    state: 'none' | 'running' | 'done' | 'error';
+    processed: number;
+    total: number;
+    started_at: string | null;
+    error: string | null;
+    freshness: 'current' | 'outdated' | 'missing';
+    report: ChartAnalogueTop3Report | null;
+}
+
+const top3Criteria = { horizon_sessions: 20, min_samples: 20, min_up_frequency_pct: 60,
+    min_p10_return_pct: -12, min_median_similarity: 0.8, min_distinct_symbols: 5, cost_bps: 33, downside_weight: 0.5 };
+const isSessionDate = (value: unknown): value is string => typeof value === 'string'
+    && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(`${value}T00:00:00Z`));
+
+function isTop3Report(value: unknown): value is ChartAnalogueTop3Report {
+    if (!isRecord(value) || value.schema_version !== 1 || value.rule_version !== 'chart-top3-risk20-v1' || value.mode !== 'research'
+        || typeof value.status !== 'string' || !['ready', 'insufficient_candidates', 'missing_index', 'invalid_index', 'stale_data', 'failed'].includes(value.status)
+        || !isExplicitTimestamp(value.as_of) || !isExplicitTimestamp(value.generated_at) || !isRecord(value.universe)
+        || !isRecord(value.criteria) || !Array.isArray(value.candidates) || value.candidates.length > 3
+        || !Array.isArray(value.warnings) || !value.warnings.every(warning => typeof warning === 'string')) return false;
+    const universe = value.universe;
+    const criteria = value.criteria;
+    if (!isCount(universe.indexed) || !isCount(universe.processed) || !isCount(universe.eligible)
+        || universe.processed > universe.indexed || universe.eligible > universe.processed || !isRecord(universe.rejected)
+        || !Object.values(universe.rejected).every(isCount)
+        || !Object.entries(top3Criteria).every(([key, expected]) => criteria[key] === expected)) return false;
+    if (value.status === 'ready' && value.candidates.length !== 3) return false;
+    if (value.status === 'insufficient_candidates' && value.candidates.length >= 3) return false;
+    if (!['ready', 'insufficient_candidates'].includes(value.status) && value.candidates.length !== 0) return false;
+    if (value.source !== null) {
+        if (!isRecord(value.source)) return false;
+        const source = value.source;
+        if (!['name', 'source_id', 'price_basis', 'latest_session', 'corpus_latest_session', 'captured_at', 'built_at']
+            .every(key => source[key] === undefined || typeof source[key] === 'string')) return false;
+        if (!['rows', 'symbols', 'freshness_days'].every(key => source[key] === undefined || isNumber(source[key]))) return false;
+        if (source.collection_summary !== undefined && (!isRecord(source.collection_summary) || !Object.values(source.collection_summary).every(isNumber))) return false;
+    }
+    if (value.candidates.length > 0 && (!isRecord(value.source) || value.source.price_basis !== 'provider_adjusted')) return false;
+    const ranks = new Set<number>();
+    const symbols = new Set<string>();
+    return value.candidates.every(row => {
+        if (!isRecord(row) || !isCount(row.rank) || row.rank < 1 || row.rank > 3 || ranks.has(row.rank)
+            || typeof row.symbol !== 'string' || !/^\d{6}$/.test(row.symbol) || symbols.has(row.symbol)
+            || typeof row.target !== 'string' || !row.target.trim() || row.market !== 'KR'
+            || !isNumber(row.score) || row.score <= 0 || !isCount(row.sample_count) || row.sample_count < 20
+            || !isCount(row.distinct_symbols) || row.distinct_symbols < 5 || row.distinct_symbols > row.sample_count
+            || !isNumber(row.median_similarity) || row.median_similarity < 0.8 || row.median_similarity > 1
+            || !isSessionDate(row.latest_session) || !isExplicitTimestamp(row.query_captured_at)
+            || !isNumber(row.close) || row.close <= 0 || !isRecord(row.horizon)
+            || !Array.isArray(row.reasons) || !row.reasons.every(reason => typeof reason === 'string')) return false;
+        const horizon = row.horizon;
+        if (horizon.sessions !== 20 || !['median_return_pct', 'p10_return_pct', 'p90_return_pct', 'up_frequency_pct'].every(key => isNumber(horizon[key]))
+            || (horizon.up_frequency_pct as number) < 60 || (horizon.up_frequency_pct as number) > 100
+            || (horizon.p10_return_pct as number) < -12 || (horizon.p10_return_pct as number) > (horizon.median_return_pct as number)
+            || (horizon.median_return_pct as number) > (horizon.p90_return_pct as number)) return false;
+        const expectedScore = (horizon.median_return_pct as number) - 0.33 - 0.5 * Math.max(0, -(horizon.p10_return_pct as number));
+        if (Math.abs(row.score - expectedScore) > 0.00001) return false;
+        ranks.add(row.rank); symbols.add(row.symbol);
+        return true;
+    });
+}
+
+function validateTop3Envelope(value: unknown): ChartAnalogueTop3Envelope {
+    if (!isRecord(value) || typeof value.state !== 'string' || !['none', 'running', 'done', 'error'].includes(value.state)
+        || !isCount(value.processed) || !isCount(value.total) || value.processed > value.total
+        || (value.started_at !== null && !isExplicitTimestamp(value.started_at))
+        || (value.error !== null && typeof value.error !== 'string')
+        || typeof value.freshness !== 'string' || !['current', 'outdated', 'missing'].includes(value.freshness)
+        || (value.report !== null && !isTop3Report(value.report)) || (value.state === 'done' && value.report === null)) {
+        throw new Error('자동 TOP3 응답 형식이 올바르지 않습니다.');
+    }
+    return value as unknown as ChartAnalogueTop3Envelope;
+}
+
+export async function fetchChartAnalogueTop3(token?: string): Promise<ChartAnalogueTop3Envelope> {
+    return validateTop3Envelope(await fetchAuthAPI<unknown>('/api/admin/mirofish/chart-analogue/top3', token));
+}
+
+export async function startChartAnalogueTop3(token?: string): Promise<ChartAnalogueTop3Envelope> {
+    return validateTop3Envelope(await postAuthAPI<unknown>('/api/admin/mirofish/chart-analogue/top3', {}, token));
 }

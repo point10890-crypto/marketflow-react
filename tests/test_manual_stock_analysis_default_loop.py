@@ -15,6 +15,8 @@ def _isolate_manual_service(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(svc, "UPLOADS_DIR", tmp_path / "uploads")
     monkeypatch.setattr(svc, "DEFAULT_RESULT_PATHS", [])
     monkeypatch.setattr(svc, "DEFAULT_SOURCE_PATHS", [tmp_path / "stock_data.xlsx"])
+    # Progress tests must not run host browser cleanup before their fake cycle.
+    monkeypatch.setattr(svc, "sweep_orphan_browsers", lambda **kwargs: 0)
 
 
 def _write_source(path: Path, rows: int = 3) -> None:

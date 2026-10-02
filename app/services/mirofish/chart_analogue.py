@@ -382,7 +382,8 @@ def status():
     return result
 
 
-def predict(symbol, as_of=None, lookback=252, horizons=(5, 20, 40), k=20):
+def predict(symbol, as_of=None, lookback=252, horizons=(5, 20, 40), k=20,
+            *, index_root=None, _loaded_index=None):
     """Describe historical outcomes knowable by cutoff. Never rebuild or write.
 
     v1 deliberately fixes lookback to 252. The neighbour count is bounded at 50
@@ -408,7 +409,8 @@ def predict(symbol, as_of=None, lookback=252, horizons=(5, 20, 40), k=20):
               'model_version': MODEL_VERSION, 'as_of': decision.isoformat().replace('+00:00', 'Z'),
               'lookback_sessions': lookback, 'source': {}, 'diagnostics': {}, 'sample_count': 0,
               'history': [], 'horizons': [], 'fan': [], 'neighbors': [], 'warnings': list(_WARNINGS)}
-    data, error = _load(full=True)
+    # Offline multi-symbol scans pin one vintage for the complete batch.
+    data, error = _loaded_index if _loaded_index is not None else _load(full=True, index_root=index_root)
     if error:
         result['status'] = error
         result['warnings'].insert(0, error)

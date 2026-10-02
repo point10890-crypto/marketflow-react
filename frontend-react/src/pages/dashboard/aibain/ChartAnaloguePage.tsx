@@ -7,6 +7,7 @@ import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 import ChartAnalogueChart, { formatAnaloguePrice, formatAnalogueReturn } from '@/components/aibain/ChartAnalogueChart';
 import ChartAnalogueEvaluationPanel from '@/components/aibain/ChartAnalogueEvaluationPanel';
 import ChartAnalogueSymbolSearch from '@/components/aibain/ChartAnalogueSymbolSearch';
+import ChartAnalogueTop3Panel from '@/components/aibain/ChartAnalogueTop3Panel';
 
 const stateLabels: Record<Exclude<ChartAnalogueStatus, 'ready'>, { title: string; detail: string }> = {
     missing_index: { title: '과거 사례 색인이 준비되지 않았습니다', detail: '가격 자료의 색인이 준비되면 유사 사례를 조회할 수 있습니다.' },
@@ -78,6 +79,7 @@ export default function ChartAnaloguePage() {
                     <h1 className="ai-page-title">차트 유사 사례</h1>
                     <p className="mt-2 text-sm leading-relaxed text-gray-400">현재 가격 흐름과 닮은 과거 구간의 이후 결과를 비교합니다. 상승 빈도는 과거 표본의 관측값이며 보정된 상승 확률이 아닙니다.</p>
                 </header>
+                <ChartAnalogueTop3Panel token={token ?? undefined} />
                 <ChartAnalogueSymbolSearch symbol={code} token={token ?? undefined} onSelect={selectSymbol} />
                 <details className={`${panelClass} text-sm text-gray-300`}>
                     <summary className="cursor-pointer font-semibold text-[#acd3ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#72b4fb]">사용법 · 수치 해석 가이드</summary>
@@ -121,7 +123,7 @@ export default function ChartAnaloguePage() {
                     {data.warnings.length > 0 && <aside className="rounded-xl border border-amber-400/20 bg-amber-400/[0.04] p-4 text-xs leading-relaxed text-amber-200/90" aria-label="데이터 주의사항"><p className="mb-2 font-semibold">데이터 주의사항</p><ul className="list-disc space-y-1 pl-4">{data.warnings.map((warning, index) => <li key={index}>{warningText(warning)}</li>)}</ul></aside>}
                 </>}
                 <ChartAnalogueEvaluationPanel token={token ?? undefined} />
-                <footer className="border-t border-[#30363f] pt-4 text-xs leading-relaxed text-gray-400">Shadow 관측 단계입니다. 실제 후보 순위에는 반영하지 않습니다. 과거 유사 사례는 미래 수익이나 매매 성과를 보장하지 않으며, 다른 가격·수급·리스크 근거와 함께 확인해야 합니다.</footer>
+                <footer className="border-t border-[#30363f] pt-4 text-xs leading-relaxed text-gray-400">자동 TOP3는 차트 사례 기반의 별도 검토 목록이며 기존 AI Brain 검출 순위를 변경하지 않습니다. 과거 유사 사례는 미래 수익이나 매매 성과를 보장하지 않으며, 다른 가격·수급·리스크 근거와 함께 확인해야 합니다.</footer>
             </div>
         </div>
     );

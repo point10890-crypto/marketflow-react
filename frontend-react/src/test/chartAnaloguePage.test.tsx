@@ -5,10 +5,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ChartAnaloguePage from '@/pages/dashboard/aibain/ChartAnaloguePage';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 
-const api = vi.hoisted(() => ({ fetchAuthAPI: vi.fn(), fetchEvaluation: vi.fn() }));
-// Stock-flow tests keep the independent comparison request explicit and separate.
-vi.mock('@/lib/api', () => ({ fetchAuthAPI: (path: string, token?: string) => path.endsWith('/evaluation')
-    ? api.fetchEvaluation(path, token) : api.fetchAuthAPI(path, token) }));
+const api = vi.hoisted(() => ({ fetchAuthAPI: vi.fn(), fetchEvaluation: vi.fn(), fetchTop3: vi.fn(), postAuthAPI: vi.fn() }));
+// Stock-flow tests keep independent global panel requests separate from symbol forecasts.
+vi.mock('@/lib/api', () => ({
+    fetchAuthAPI: (path: string, token?: string) => path.endsWith('/evaluation') ? api.fetchEvaluation(path, token)
+        : path.endsWith('/top3') ? api.fetchTop3(path, token) : api.fetchAuthAPI(path, token),
+    postAuthAPI: api.postAuthAPI,
+}));
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ token: 'member-token' }) }));
 
 const ready = {
@@ -48,6 +51,10 @@ describe('historical chart analogue member page', () => {
     beforeEach(() => {
         api.fetchAuthAPI.mockReset();
         api.fetchEvaluation.mockReset();
+        api.fetchTop3.mockReset();
+        api.postAuthAPI.mockReset();
+        api.fetchTop3.mockResolvedValue({ state: 'none', processed: 0, total: 0, started_at: null,
+            error: null, freshness: 'missing', report: null });
         api.fetchEvaluation.mockResolvedValue({ schema_version: 1, status: 'collecting', evaluated_at: null,
             protocol: 'chart_median20_v1', ranking_effect: 'none', cost_bps: 23, slippage_bps: 10,
             counts: { recorded: 0, eligible_days: 0, pending: 0, blocked: 0, intraday_excluded: 0 },
@@ -62,10 +69,13 @@ describe('historical chart analogue member page', () => {
         expect(await screen.findByRole('heading', { name: /코리안리/ })).toBeInTheDocument();
         expect(screen.getByRole('combobox', { name: '종목명 또는 코드' })).toHaveValue('003690');
         expect(api.fetchAuthAPI).toHaveBeenCalledWith('/api/admin/mirofish/chart-analogue/003690', 'member-token');
+        const autoTop3 = screen.getByRole('heading', { name: '차트 자동 TOP3' });
+        const manualSearch = screen.getByRole('combobox', { name: '종목명 또는 코드' });
+        expect(autoTop3.compareDocumentPosition(manualSearch) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         expect(screen.getByText(/daily_prices.csv/)).toBeInTheDocument();
-        expect(screen.getByText(/표본 20개/)).toBeInTheDocument();
+        expect(within(screen.getByRole('region', { name: '종목과 데이터 출처' })).getByText(/표본 20개/)).toBeInTheDocument();
         expect(screen.getByText(/보정된 상승 확률이 아닙니다/)).toBeInTheDocument();
-        expect(screen.getByText(/실제 후보 순위에는 반영하지 않습니다/)).toBeInTheDocument();
+        expect(screen.getByText(/기존 AI Brain 검출 순위를 변경하지 않습니다/)).toBeInTheDocument();
         expect(screen.getByText(/통계적으로 독립된 표본이 아닙니다/)).toBeInTheDocument();
         const chart = screen.getByRole('img', { name: /과거 종가와 유사 사례/ });
         expect(chart.querySelector('[data-series="history"]')).toHaveAttribute('points', expect.stringMatching(/\d/));

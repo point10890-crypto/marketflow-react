@@ -15,6 +15,8 @@ def _isolate_storage(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(svc, "UPLOADS_DIR", tmp_path / "uploads")
     monkeypatch.setattr(svc, "DEFAULT_RESULT_PATHS", [])
     monkeypatch.setattr(svc, "DEFAULT_SOURCE_PATHS", [tmp_path / "stock_data.xlsx"])
+    # Keep worker timing independent of host PowerShell/browser inventory.
+    monkeypatch.setattr(svc, "sweep_orphan_browsers", lambda **kwargs: 0)
 
 
 def test_import_result_file_filters_and_exports(monkeypatch, tmp_path):
