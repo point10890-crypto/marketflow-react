@@ -371,6 +371,9 @@ def build_result_report(draw: dict, recommendations: list[dict], source_post: di
     if post_id < 1:
         raise LottoResultError("추천 원문 게시글이 유효하지 않습니다")
     rows, table_rows = [], []
+    cell_style = "padding:12px;border-bottom:1px solid rgba(148,163,184,.16);"
+    number_cell_style = f"{cell_style}white-space:nowrap;"
+    header_style = f"{cell_style}text-align:left;font-weight:600;"
     rank_counts: Counter = Counter()
     seen = set()
     for recommendation in recommendations:
@@ -385,8 +388,11 @@ def build_result_report(draw: dict, recommendations: list[dict], source_post: di
         rows.append(row)
         rank_counts[str(result["rank"] or "none")] += 1
         matched = ", ".join(map(str, result["matched_numbers"])) or "없음"
-        table_rows.append(f"<tr><td>{escape(style)} {index}세트</td><td>{', '.join(map(str, numbers))}</td>"
-                          f"<td>{matched} ({result['match_count']}개)</td><td>{'일치' if result['bonus_match'] else '불일치'}</td><td>{result['label']}</td></tr>")
+        table_rows.append(f'<tr><td style="{cell_style}">{escape(style)} {index}세트</td>'
+                          f'<td style="{number_cell_style}">{", ".join(map(str, numbers))}</td>'
+                          f'<td style="{number_cell_style}">{matched} ({result["match_count"]}개)</td>'
+                          f'<td style="{cell_style}">{"일치" if result["bonus_match"] else "불일치"}</td>'
+                          f'<td style="{cell_style}">{result["label"]}</td></tr>')
     winning = sum(rank_counts[str(rank)] for rank in range(1, 6))
     summary = {"total_sets": len(rows), "winning_sets": winning, "non_winning_sets": rank_counts["none"],
                "rank_counts": {str(rank): rank_counts[str(rank)] for rank in range(1, 6)},
@@ -404,7 +410,11 @@ def build_result_report(draw: dict, recommendations: list[dict], source_post: di
                f'<p><a href="{escape(source_url, quote=True)}">동행복권 공식 추첨 결과</a> · 확인 시각: {source_time}</p>'
                f"<p>{recovery_note}</p><h2>전체 {len(rows)}조합 대조</h2>"
                f"<p>{rank_text} · 미당첨 {summary['non_winning_sets']}조합. 성공 조합과 미당첨 조합을 모두 공개합니다.</p>"
-               f"<table><thead><tr><th>성향 · 세트</th><th>게시한 추천 번호</th><th>본번호 일치</th><th>보너스</th><th>대조 등수</th></tr></thead><tbody>{''.join(table_rows)}</tbody></table>"
+               f'<div style="width:100%;max-width:100%;overflow-x:auto;">'
+               f'<table style="width:100%;min-width:640px;border-collapse:collapse;"><thead><tr>'
+               f'<th style="{header_style}">성향 · 세트</th><th style="{header_style}">게시한 추천 번호</th>'
+               f'<th style="{header_style}">본번호 일치</th><th style="{header_style}">보너스</th>'
+               f'<th style="{header_style}">대조 등수</th></tr></thead><tbody>{"".join(table_rows)}</tbody></table></div>'
                "<p>보너스 번호는 본번호 5개가 일치할 때에만 2등 판정에 사용합니다. 본번호 3개 미만은 미당첨입니다.</p>"
                "<p>위 등수는 추천 번호의 대조 결과입니다. 실제 구매 여부나 당첨금 수령을 확인한 결과가 아닙니다. "
                "로또는 무작위 추첨이며 과거 통계와 추천 점수는 미래 당첨 가능성을 높인다는 증거가 아닙니다. 재미와 참고 범위에서 이용해 주세요.</p>")

@@ -12,7 +12,7 @@ re-introduce the silent-success regression.
 import json
 from contextlib import nullcontext
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -23,13 +23,16 @@ ORIGINAL_SEND_TELEGRAM = scheduler.send_telegram
 
 
 @pytest.fixture(autouse=True)
-def _silence_side_effects():
+def _silence_side_effects(monkeypatch):
     # _with_record calls record_task_run + send_telegram on success/failure.
-    # Patch them so the test stays hermetic.
-    with patch("scheduler.record_task_run") as rec, \
-         patch("scheduler.send_telegram") as tg, \
-         patch("scheduler.time.sleep"):  # skip the 15-min retry sleep
-        yield rec, tg
+    # Share monkeypatch's teardown stack with per-test overrides. Mixing a
+    # context patch here with monkeypatch in a test restores this mock globally
+    # after the context has already restored the real function.
+    rec, tg = Mock(), Mock()
+    monkeypatch.setattr(scheduler, 'record_task_run', rec)
+    monkeypatch.setattr(scheduler, 'send_telegram', tg)
+    monkeypatch.setattr(scheduler.time, 'sleep', Mock())  # skip retry sleep
+    yield rec, tg
 
 
 def _make_task(return_value, name="fake_task"):
