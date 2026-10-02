@@ -342,7 +342,7 @@ def ensure_fresh_history(draws: list[dict]) -> None:
     last = draws[-1]
     last_date = datetime.strptime(last['drwNoDate'], '%Y-%m-%d')
     expected = _expected_latest_draw_date()
-    lag_days = (expected - last_date).days
+    lag_days = (expected.date() - last_date.date()).days
     # 일반 실행 (금요일 등) 에서는 아직 이번주 토요일이 안 지났으니 lag 가 <7
     # lag >= 7 이면 지난 추첨 데이터가 최소 한 주 빠진 상태 → 분석 무의미
     if lag_days >= 7:

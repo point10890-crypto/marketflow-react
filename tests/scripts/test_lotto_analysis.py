@@ -379,6 +379,33 @@ def test_expected_latest_draw_date_uses_current_saturday_after_draw_cutoff():
     assert expected.strftime("%Y-%m-%d") == "2026-07-04"
 
 
+@pytest.mark.parametrize(('now', 'latest_date', 'stale'), [
+    (datetime(2026, 10, 2, 17, 0), '2026-09-26', False),
+    (datetime(2026, 10, 2, 17, 0), '2026-09-19', True),
+    (datetime(2026, 10, 3, 20, 59), '2026-09-26', False),
+    (datetime(2026, 10, 3, 21, 0), '2026-10-03', False),
+    (datetime(2026, 10, 3, 21, 0), '2026-09-26', True),
+])
+def test_default_kst_freshness_compares_draw_dates_without_timezone_error(monkeypatch, now, latest_date, stale):
+    import lotto_analysis as lotto
+    from datetime import timedelta, timezone
+    from types import SimpleNamespace
+
+    clock = now.replace(tzinfo=timezone(timedelta(hours=9)))
+    alerts = []
+    # Exercise the default now() path, including its KST-aware timestamp.
+    monkeypatch.setattr(lotto, 'datetime', SimpleNamespace(now=lambda tz=None: clock, strptime=datetime.strptime))
+    monkeypatch.setattr(lotto, '_alert_telegram', alerts.append)
+    draws = [{'drwNo': 1243, 'drwNoDate': latest_date}]
+    if stale:
+        with pytest.raises(lotto.LottoFetchError, match='7일 지연'):
+            lotto.ensure_fresh_history(draws)
+        assert len(alerts) == 1
+    else:
+        lotto.ensure_fresh_history(draws)
+        assert not alerts
+
+
 def test_lotteryextreme_recent_history_parser(monkeypatch):
     import lotto_analysis
 
