@@ -17,8 +17,13 @@ import sys
 import time
 import uuid
 import base64
+import hashlib
+import re
+from html import escape
 from collections import Counter, defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
+from filelock import FileLock, Timeout as FileLockTimeout
 
 import requests
 
@@ -49,9 +54,17 @@ DEFAULT_IMAGE_PROMPT = (
     'Bright cheerful illustration of Korean Lotto 6/45 lottery balls floating with soft '
     'sparkles, clean modern digital art, no text, no logo, no watermark'
 )
-from app.utils.local_api import local_api_base
+from app.utils.atomic_json import write_json_atomic
+from lotto_results import (
+    LottoResultError, build_result_report, canonical_recommendation_html,
+    extract_recommendation_sets, fetch_official_draw, recommendation_created_before_draw,
+    validate_official_draw,
+)
 
-API_URL = local_api_base()
+# Scheduled publication and operator validation share the deployed API identity.
+# An explicit lotto-only override may be used for isolated integration fixtures.
+API_URL = (os.getenv('LOTTO_PUBLICATION_API_URL') or 'https://marketflow-api.bit-man.net').strip().rstrip('/')
+WORKFLOW_DIR = os.path.join(BASE_DIR, 'data', 'lotto_publication')
 ADMIN_EMAIL = os.getenv("MARKETFLOW_ADMIN_EMAIL") or os.getenv("COMMUNITY_ADMIN_EMAIL") or "point10890@gmail.com"
 ADMIN_TOKEN = os.getenv("MARKETFLOW_ADMIN_TOKEN") or os.getenv("COMMUNITY_ADMIN_TOKEN")
 ADMIN_PASSWORD = os.getenv("MARKETFLOW_ADMIN_PASSWORD") or os.getenv("COMMUNITY_ADMIN_PASSWORD")
@@ -217,6 +230,14 @@ def fetch_draw(drw_no: int) -> dict | None:
     dhlottery 가 일반 GET을 차단(2026-04 이후 302→/error.html)하므로
     lottolyzer.com HTML 미러를 fallback으로 사용. 모든 소스 실패 시 LottoFetchError.
     """
+    # The current official endpoint is preferred. Mirrors remain history-only
+    # fallbacks; publication re-confirms the exact draw through the official API.
+    try:
+        official = fetch_official_draw(drw_no)
+        if official is not None:
+            return official
+    except LottoResultError as e:
+        logger.warning('Current official draw endpoint unavailable: %s', type(e).__name__)
     last_err: str | None = None
 
     # 1) dhlottery 시도 (정상 응답 시 우선)
@@ -293,8 +314,7 @@ def refresh_history(draws: list[dict]) -> list[dict]:
         time.sleep(0.3)
     if new_count > 0:
         draws.sort(key=lambda x: x['drwNo'])
-        with open(DATA_FILE, 'w', encoding='utf-8') as f:
-            json.dump(draws, f, ensure_ascii=False, indent=2)
+        write_json_atomic(DATA_FILE, draws)
         logger.info(f'[DATA] {new_count}개 새 회차 추가 (최신: #{draws[-1]["drwNo"]})')
     if fetch_errors and new_count == 0:
         # 모든 fetch 가 에러로 끝났음 → 상위에서 staleness guard 가 판단
@@ -305,7 +325,7 @@ def refresh_history(draws: list[dict]) -> list[dict]:
 def _expected_latest_draw_date(today: datetime | None = None) -> datetime:
     """오늘 기준 가장 최근에 지나간 '토요일'을 다음 예정 추첨일로 본다.
     토요일이면 오늘. 그 외 요일은 이전 토요일."""
-    today = today or datetime.now()
+    today = today or datetime.now(timezone(timedelta(hours=9)))
     # weekday: Mon=0 ... Sat=5 Sun=6
     days_since_sat = (today.weekday() - 5) % 7
     # Lotto draws are finalized on Saturday evening. Before that cutoff, the
@@ -678,7 +698,7 @@ def generate_lotto_post_fallback(stats: dict, candidates: dict, reason: str = ""
     style_blocks = []
     for style_name, data in candidates.items():
         rows = []
-        for idx, item in enumerate(data.get('sets', [])[:4], 1):
+        for idx, item in enumerate(data.get('sets', []), 1):
             numbers = ', '.join(str(n) for n in item.get('numbers', []))
             score = item.get('score', 0)
             rows.append(
@@ -1198,7 +1218,7 @@ def _existing_lotto_post_for_draw(draw_no: int) -> dict | None:
                 ORDER BY p.created_at DESC
                 LIMIT 1
                 """,
-                (LOTTO_BOARD_SLUG, f"%{draw_no}%"),
+                (LOTTO_BOARD_SLUG, f"제{int(draw_no)}회 AI 로또 분석%"),
             )
             row = cur.fetchone()
             if row:
@@ -1341,126 +1361,364 @@ def pin_notice(token: str, post_id: int):
     if resp.status_code == 200:
         logger.info(f"Notice pinned: id={post_id}")
     else:
-        logger.warning(f"Pin failed: {resp.status_code}")
+        raise RuntimeError(f"Pin failed: {resp.status_code}")
+
+
+def _publication_path(kind: str, draw_no: int) -> str:
+    if kind not in ('recommendation', 'result') or type(draw_no) is not int or draw_no < 1:
+        raise ValueError('Invalid lotto publication identity')
+    return os.path.join(WORKFLOW_DIR, f'{kind}_{draw_no}.json')
+
+
+def _load_publication(kind: str, draw_no: int) -> dict:
+    path = _publication_path(kind, draw_no)
+    if not os.path.exists(path):
+        return {'schema_version': 1, 'kind': kind, 'draw_no': draw_no, 'api_url': API_URL}
+    with open(path, encoding='utf-8') as handle:
+        state = json.load(handle)
+    if (state.get('kind'), state.get('draw_no'), state.get('api_url')) != (kind, draw_no, API_URL):
+        raise RuntimeError('Publication receipt belongs to a different API or draw')
+    return state
+
+
+def _save_publication(state: dict) -> None:
+    write_json_atomic(_publication_path(state['kind'], state['draw_no']), state)
+
+
+def _content_hash(content: str) -> str:
+    return hashlib.sha256(content.encode('utf-8')).hexdigest()
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _ensure_recommendation_window(draw_no: int) -> None:
+    if not recommendation_created_before_draw(_utc_now(), draw_no):
+        raise LottoResultError('추첨이 시작된 회차의 추천 번호를 새로 생성하거나 게시하지 않습니다.')
+
+
+def _read_remote_post(token: str, post_id: int) -> dict:
+    response = requests.get(f'{API_URL}/api/community/posts/{post_id}',
+                            headers={'Authorization': f'Bearer {token}'}, timeout=15)
+    if response.status_code != 200:
+        raise RuntimeError(f'Post verification failed: {response.status_code}')
+    post = response.json().get('post')
+    if (not isinstance(post, dict) or post.get('id') != post_id
+            or post.get('board', {}).get('slug') != LOTTO_BOARD_SLUG
+            or not isinstance(post.get('content'), str) or not post['content'].strip()
+            or not post.get('created_at') or not isinstance(post.get('is_notice'), bool)):
+        raise RuntimeError('Post verification returned an invalid board, body, or timestamp')
+    return post
+
+
+def _post_kind_matches(title: str, kind: str, draw_no: int) -> bool:
+    match = re.search(r'제\s*(\d+)\s*회', title)
+    if not match or int(match.group(1)) != draw_no:
+        return False
+    if kind == 'result':
+        return title.startswith(f'제{draw_no}회 로또 추천 결과')
+    return ('로또' in title and ('분석' in title or re.search(r'(?:추천|후보)\s*(?:번호|조합)', title))
+            and '결과' not in title and '복기' not in title)
+
+
+def _find_remote_post(token: str, kind: str, draw_no: int) -> dict | None:
+    """Read the deployed API, never a developer PC's possibly unrelated DB."""
+    found = {}
+    page = 1
+    while page <= 100:
+        response = requests.get(f'{API_URL}/api/community/boards/{LOTTO_BOARD_SLUG}/posts',
+                                headers={'Authorization': f'Bearer {token}'},
+                                params={'page': page, 'per_page': 50}, timeout=15)
+        if response.status_code != 200:
+            raise RuntimeError(f'Lotto publication lookup failed: {response.status_code}')
+        payload = response.json()
+        if (not isinstance(payload, dict) or not isinstance(payload.get('posts'), list)
+                or not isinstance(payload.get('notices'), list)
+                or not isinstance(payload.get('board'), dict)
+                or payload['board'].get('slug') != LOTTO_BOARD_SLUG
+                or type(payload.get('total_pages')) is not int or payload['total_pages'] < 0):
+            raise RuntimeError('Invalid lotto board lookup response')
+        rows = payload['posts'] + (payload['notices'] if page == 1 else [])
+        for row in rows:
+            if _post_kind_matches(str(row.get('title') or ''), kind, draw_no):
+                post = _read_remote_post(token, int(row['id']))
+                if _post_kind_matches(post['title'], kind, draw_no):
+                    found[post['id']] = post
+        total_pages = max(1, payload['total_pages'])
+        if page >= total_pages:
+            break
+        page += 1
+    else:
+        raise RuntimeError('Lotto board lookup exceeded its page limit')
+    if len(found) > 1:
+        raise RuntimeError(f'Multiple {kind} posts exist for draw {draw_no}; resolve before posting')
+    return next(iter(found.values()), None)
+
+
+def _verified_receipt(state: dict, post: dict) -> dict:
+    prepared = state.get('prepared')
+    if prepared and (post['title'] != prepared['title']
+                     or _content_hash(post['content']) != prepared['content_hash']):
+        raise RuntimeError('Published lotto title/body differs from the prepared snapshot')
+    if not post['is_notice']:
+        raise RuntimeError('Published lotto post is not pinned')
+    state['receipt'] = {'post_id': post['id'], 'title': post['title'], 'created_at': post['created_at'],
+                        'content_hash': _content_hash(post['content']), 'is_notice': True,
+                        'verified_at': datetime.now(timezone.utc).isoformat(),
+                        'url': f'https://bit-man.net/dashboard/community/post/{post["id"]}'}
+    state['published_content'] = post['content']
+    if state['kind'] == 'recommendation':
+        state['published_sets'] = extract_recommendation_sets(post['content'], state['draw_no'])
+    state['status'] = 'published'
+    _save_publication(state)
+    return state
+
+
+def _publish_prepared(token: str, state: dict, existing: dict | None = None) -> dict:
+    prepared = state['prepared']
+    if existing is None:
+        if state['kind'] == 'recommendation':
+            _ensure_recommendation_window(state['draw_no'])
+        post_id = create_post(token, LOTTO_BOARD_SLUG, prepared['title'], prepared['content'])
+        # Persist even before verification/pinning, so interrupted stages can be repaired.
+        state['created_post_id'] = post_id
+        _save_publication(state)
+        post = _read_remote_post(token, post_id)
+    else:
+        post = existing
+    if (post['title'] != prepared['title']
+            or _content_hash(post['content']) != prepared['content_hash']):
+        raise RuntimeError('Published lotto title/body differs from the prepared snapshot')
+    if not post['is_notice']:
+        pin_notice(token, post['id'])
+    return _verified_receipt(state, _read_remote_post(token, post['id']))
+
+
+def _prepare_body(state: dict, title: str, content: str) -> None:
+    title, content = title.strip(), content.strip()
+    state['prepared'] = {'title': title, 'content': content, 'content_hash': _content_hash(content)}
+    state['status'] = 'prepared'
+    _save_publication(state)
+
+
+def _pending_result_report(draw: dict, reason: str, source_post: dict | None) -> dict:
+    """No source means no comparison, never regenerated past picks or fake misses."""
+    number_text = ', '.join(str(n) for n in get_numbers(draw))
+    content = (f'<h2>제{draw["drwNo"]}회 추첨 결과</h2>'
+               f'<p>{escape(draw["drwNoDate"])} 당첨 번호: <strong>{number_text}</strong>'
+               f' · 보너스 <strong>{draw["bnusNo"]}</strong></p>'
+               '<h3>지난 추천 결과 — 대조 보류</h3>'
+               f'<p>{escape(reason)} 과거 추천 번호를 새로 만들거나 미당첨으로 처리하지 않습니다.</p>'
+               f'<p><a href="{escape(draw["source_url"], quote=True)}">동행복권 공식 결과</a>'
+               f' · 확인 시각 {escape(draw["fetched_at"])}</p>')
+    if source_post:
+        content += f'<p><a href="/dashboard/community/post/{source_post["id"]}">지난 추천 원문</a></p>'
+    return {'rows': [], 'summary': {'status': 'pending', 'reason': reason}, 'content': content}
+
+
+def _ensure_result_post(token: str, draw_no: int) -> dict:
+    official = fetch_official_draw(draw_no)
+    if official is None:
+        raise LottoResultError(f'Official draw {draw_no} is not confirmed')
+    draw = validate_official_draw(official, expected_draw_no=draw_no)
+    state = _load_publication('result', draw_no)
+    existing = _find_remote_post(token, 'result', draw_no)
+    if existing and state.get('prepared'):
+        return _publish_prepared(token, state, existing)
+    source = _find_remote_post(token, 'recommendation', draw_no)
+    source_evidence = None
+    try:
+        if not source:
+            raise LottoResultError('추첨 전에 게시된 해당 회차 추천 원문을 확인하지 못했습니다.')
+        if not recommendation_created_before_draw(source['created_at'], draw_no):
+            raise LottoResultError('추천 원문 작성시각이 추첨 전으로 확인되지 않습니다.')
+        rows = extract_recommendation_sets(source['content'], draw_no)
+        source_state = _load_publication('recommendation', draw_no)
+        prior = source_state.get('receipt')
+        if prior and prior['content_hash'] != _content_hash(source['content']):
+            raise LottoResultError('보관된 추천 원문과 현재 게시글이 달라 대조를 보류합니다.')
+        source_evidence = {'post_id': source['id'], 'title': source['title'],
+                           'created_at': source['created_at'],
+                           'url': f'https://bit-man.net/dashboard/community/post/{source["id"]}',
+                           'content_hash': _content_hash(source['content']),
+                           'recovery_kind': 'published_snapshot' if prior else 'legacy_current_body'}
+        report = build_result_report(draw, rows, source_evidence)
+        # Legacy recovery records the exact observed body, without claiming a pre-draw snapshot.
+        if not prior:
+            source_state['recovery_kind'] = 'legacy_current_body'
+            source_state['original_post'] = {**source_evidence, 'content': source['content']}
+            source_state['published_sets'] = rows
+            _save_publication(source_state)
+    except LottoResultError as error:
+        report = _pending_result_report(draw, str(error), source)
+    state.update({'draw': draw, 'source_post': source_evidence, 'report': report})
+    title = f'제{draw_no}회 로또 추천 결과 — 지난 추천과 추첨 결과'
+    content = (f'<div data-lotto-result="1" data-draw-no="{draw_no}">'
+               f'{report["content"]}</div>')
+    _prepare_body(state, title, content)
+    if existing:
+        # An untracked same-title result is not silently accepted or overwritten.
+        return _publish_prepared(token, state, existing)
+    return _publish_prepared(token, state)
+
+
+def _review_preface(result_state: dict) -> str:
+    draw = result_state['draw']
+    receipt = result_state['receipt']
+    pending = result_state['report'].get('summary', {}).get('status') == 'pending'
+    note = ('대조 보류: ' + result_state['report']['summary']['reason'] if pending else
+            '지난 추천의 세트별 일치 번호와 당첨 결과를 먼저 확인하세요. 미당첨 세트도 함께 공개합니다.')
+    return (f'<section data-lotto-review-link="{draw["drwNo"]}">'
+            '<h2>지난 추천 결과를 먼저 확인하세요</h2>'
+            f'<p>제{draw["drwNo"]}회 ({escape(draw["drwNoDate"])}) 당첨 번호 '
+            f'<strong>{", ".join(str(n) for n in get_numbers(draw))}</strong>'
+            f' · 보너스 <strong>{draw["bnusNo"]}</strong></p>'
+            f'<p>{escape(note)}</p>'
+            f'<p><a href="/dashboard/community/post/{receipt["post_id"]}">지난 추천과 실제 추첨 결과 보기</a></p>'
+            '</section>\n')
+
+
+def _repair_existing_recommendation(token: str, post: dict, result_state: dict) -> dict:
+    state = _load_publication('recommendation', result_state['draw']['drwNo'] + 1)
+    if state.get('prepared') and not state.get('receipt') and not state.get('preface_repair'):
+        # Recover a create/pin/verification failure with the identical prepared body.
+        return _publish_prepared(token, state, post)
+    current_hash = _content_hash(post['content'])
+    if state.get('receipt') and current_hash != state['receipt']['content_hash']:
+        raise RuntimeError('Tracked recommendation changed since its verified snapshot')
+    if state.get('preface_repair') and not state.get('receipt'):
+        allowed = {state['repair_source_hash'], state['prepared']['content_hash']}
+        if current_hash not in allowed:
+            raise RuntimeError('Recommendation changed during result-link repair')
+    body = re.sub(r'<section\s+data-lotto-review-link="\d+">.*?</section>\s*', '',
+                  post['content'], flags=re.S)
+    content = _review_preface(result_state) + body
+    # Validate actual original numbers first. Preserve legacy images and all other HTML.
+    before_sets = extract_recommendation_sets(post['content'], state['draw_no'])
+    if extract_recommendation_sets(content, state['draw_no']) != before_sets:
+        raise RuntimeError('Result preface changed the published recommendation numbers')
+    state['preface_repair'] = True
+    state['repair_source_hash'] = current_hash
+    _prepare_body(state, post['title'], content)
+    if content != post['content']:
+        response = requests.put(f'{API_URL}/api/community/posts/{post["id"]}',
+                                headers={'Authorization': f'Bearer {token}'},
+                                json={'content': content}, timeout=30)
+        if response.status_code != 200:
+            raise RuntimeError(f'Lotto result link repair failed: {response.status_code}')
+    return _publish_prepared(token, state, _read_remote_post(token, post['id']))
 
 
 # ═══════════════════════════════════════════════════════════════
 # Main Pipeline
 # ═══════════════════════════════════════════════════════════════
 
-def run_lotto_analysis_post(dry_run: bool = False) -> bool:
-    """전체 파이프라인 실행"""
+def _generate_post_draft(stats: dict, candidates: dict) -> dict:
     try:
-        # 1. 데이터 로드 + 갱신 + 신선도 검증
-        logger.info("[1/6] 로또 데이터 로드 중...")
-        draws = load_history()
-        draws = refresh_history(draws)
-        ensure_fresh_history(draws)  # 오래된 데이터로 분석 방지 (지난 추첨 누락 시 중단)
-        logger.info(f"[1/6] 총 {len(draws)}회차 데이터 (#{draws[0]['drwNo']} ~ #{draws[-1]['drwNo']})")
+        return generate_lotto_post_openai(stats, candidates)
+    except Exception as error:
+        logger.warning('OpenAI lotto draft unavailable: %s', type(error).__name__)
+    try:
+        return generate_lotto_post(get_gemini_client(), stats, candidates)
+    except Exception as error:
+        logger.warning('Gemini lotto draft unavailable: %s', type(error).__name__)
+        return generate_lotto_post_fallback(stats, candidates, reason=type(error).__name__)
 
-        # 2. 통계 계산
-        logger.info("[2/6] 통계 분석 중...")
+
+def _checked_post_draft(stats: dict, candidates: dict, draft: dict) -> dict:
+    """Generated prose cannot silently add/change/omit any published pick."""
+    next_no = stats['last_draw']['drwNo'] + 1
+    try:
+        body = str(draft.get('content') or '')
+        if 'data-lotto-recommendations' in body:
+            raise LottoResultError('Generated prose must not supply a second audit table')
+        actual = extract_recommendation_sets(body, next_no)
+        expected = extract_recommendation_sets(canonical_recommendation_html(next_no, candidates), next_no)
+        def identity(rows):
+            return Counter(tuple(sorted(row['numbers'])) for row in rows)
+        if identity(actual) != identity(expected):
+            raise LottoResultError('Generated recommendation sets differ from deterministic candidates')
+        return draft
+    except (LottoResultError, AttributeError):
+        logger.warning('Generated recommendation numbers are ambiguous; using deterministic body')
+        return generate_lotto_post_fallback(stats, candidates, reason='recommendation validation')
+
+
+def _run_lotto_workflow(dry_run: bool, results_only: bool) -> dict | bool:
+    draws = refresh_history(load_history())
+    ensure_fresh_history(draws)
+    last_no = draws[-1]['drwNo']
+    if dry_run:
+        # Offline/statistical dry-run never logs in, publishes, or invokes paid providers.
         stats = compute_stats(draws)
-        if not dry_run:
-            next_drw = stats['last_draw']['drwNo'] + 1
-            existing = _existing_lotto_post_for_draw(next_drw)
-            if existing:
-                logger.info(
-                    "[GUARD] Lotto draw #%s already posted as id=%s; skipping duplicate post.",
-                    next_drw,
-                    existing.get('post_id'),
-                )
-                return {
-                    'post_id': existing.get('post_id'),
-                    'title': existing.get('title', f'Lotto draw #{next_drw}'),
-                    'candidates': {},
-                    'skipped': True,
-                }
-        logger.info(f"[2/6] 핫넘버(10회): {stats['hot_10'][:6]}")
-        logger.info(f"[2/6] 콜드넘버(10회): {stats['cold_10'][:6]}")
+        if not results_only:
+            candidates = generate_candidates(stats, n_sets=4)
+            logger.info('Candidates:\n%s', build_candidates_text(candidates))
+        return True
+    token = login()
+    result_state = _ensure_result_post(token, last_no)
+    if results_only:
+        return {**result_state['receipt'], 'results_only': True}
 
-        # 3. 후보 생성
-        logger.info("[3/6] AI 후보 생성 중...")
-        candidates = generate_candidates(stats, n_sets=4)
-        for style, data in candidates.items():
-            best = data['sets'][0] if data['sets'] else None
-            if best:
-                logger.info(f"[3/6] {style}: {best['numbers']} (점수: {best['score']})")
-
-        if dry_run:
-            logger.info("--- DRY RUN ---")
-            logger.info("Stats Summary:\n%s", build_stats_summary(stats))
-            logger.info("Candidates:\n%s", build_candidates_text(candidates))
-            return True
-
-        # 4. LLM post generation: GPT-5.5 first, Gemini second, deterministic fallback last.
-        logger.info("[4/6] OpenAI GPT-5.5로 분석 글 작성 중...")
-        client = None
-        try:
-            result = generate_lotto_post_openai(stats, candidates)
-        except Exception as openai_error:
-            logger.warning(
-                "[4/6] OpenAI lotto post generation failed; trying Gemini: %s: %s",
-                type(openai_error).__name__,
-                openai_error,
-            )
-            try:
-                client = get_gemini_client()
-                result = generate_lotto_post(client, stats, candidates)
-            except Exception as gemini_error:
-                logger.warning(
-                    "[4/6] LLM post generation failed; using deterministic fallback: %s: %s",
-                    type(gemini_error).__name__,
-                    gemini_error,
-                )
-                result = generate_lotto_post_fallback(
-                    stats,
-                    candidates,
-                    reason=f"{type(gemini_error).__name__}: {gemini_error}",
-                )
-        title = result['title']
-        content = result['content']
-        image_prompt = result.get('image_prompt', '')
-        logger.info(f"[4/6] 제목: {title}")
-        logger.info(f"[4/6] 본문: {len(content)}자")
-
-        # 5. 이미지 확보 — Nano Banana → OpenAI Images → 로컬 렌더 카드
-        content, image_source = ensure_image_html(content, image_prompt, stats, candidates)
-
-        # 이미지 없는 글은 게시하지 않는다 (조용히 나가던 경로 차단)
+    # Always ensure last week's result first, including when this week's post exists.
+    next_no = last_no + 1
+    existing = _find_remote_post(token, 'recommendation', next_no)
+    if existing:
+        state = _repair_existing_recommendation(token, existing, result_state)
+        return {**state['receipt'], 'candidates': {}, 'skipped': True,
+                'result_post_id': result_state['receipt']['post_id']}
+    _ensure_recommendation_window(next_no)
+    # The confirmed official last draw is authoritative over cached/mirror data.
+    draws[-1] = result_state['draw']
+    stats = compute_stats(draws)
+    state = _load_publication('recommendation', next_no)
+    if 'candidates' not in state:
+        state.update({'candidates': generate_candidates(stats, n_sets=4), 'stats': stats,
+                      'generated_at': datetime.now(timezone.utc).isoformat(), 'status': 'candidates'})
+        _save_publication(state)
+    candidates = state['candidates']
+    # A resumed run uses the exact original source statistics and candidate numbers.
+    stats = state['stats']
+    if 'draft' not in state:
+        state['draft'] = _checked_post_draft(stats, candidates, _generate_post_draft(stats, candidates))
+        state['status'] = 'draft'
+        _save_publication(state)
+    if 'prepared' not in state:
+        draft = state['draft']
+        content, image_source = ensure_image_html(draft['content'], draft.get('image_prompt', ''), stats, candidates)
         if '<img' not in content:
-            logger.error("[BLOCK] 이미지 확보 실패 — 게시 중단")
-            _alert_telegram(
-                '⚠️ <b>AI 로또 분석 게시 중단</b>\n'
-                '이미지를 한 장도 확보하지 못해 게시하지 않았습니다.\n'
-                'Nano Banana / OpenAI / 로컬 렌더 전부 실패 — 수동 확인 필요.'
-            )
-            return False
+            raise RuntimeError('No valid recommendation image was produced')
+        # This canonical table is the audit source, independent of generated prose.
+        content = (_review_preface(result_state) + canonical_recommendation_html(next_no, candidates)
+                   + '\n' + content)
+        state['image_source'] = image_source
+        _prepare_body(state, f'제{next_no}회 AI 로또 분석 — 이번 주 추천 번호', content)
+    state = _publish_prepared(token, state)
+    return {**state['receipt'], 'candidates': candidates,
+            'result_post_id': result_state['receipt']['post_id']}
 
-        # 6. 게시
-        logger.info("[6/6] 관리자 로그인 + 게시...")
-        token = login()
-        post_id = create_post(token, 'lotto-ai', title, content)
-        pin_notice(token, post_id)
 
-        logger.info("=== 완료 ===")
-        logger.info(f"URL: /dashboard/community/post/{post_id}")
-        return {
-            'post_id': post_id,
-            'title': title,
-            'candidates': candidates,
-        }
-
+def run_lotto_analysis_post(dry_run: bool = False, *, results_only: bool = False) -> dict | bool:
+    """Result-first, resumable publication with one owner across all entry points."""
+    try:
+        os.makedirs(WORKFLOW_DIR, exist_ok=True)
+        with FileLock(os.path.join(WORKFLOW_DIR, 'workflow.lock'), timeout=0):
+            return _run_lotto_workflow(dry_run, results_only)
+    except FileLockTimeout:
+        logger.warning('Lotto publication is already running; retry this stage later')
+        return False
     except Exception:
-        logger.exception("로또 분석 실패")  # exc_info=True 자동 포함
+        logger.exception('로또 분석 실패')
         return False
 
 
 def main():
     parser = argparse.ArgumentParser(description="AI 로또 분석 — 통계 기반 추천 + Gemini 해석 + 자동 게시")
     parser.add_argument('--dry-run', action='store_true', help='분석만 하고 게시하지 않음')
+    parser.add_argument('--results-only', action='store_true', help='확정 추첨 결과 대조만 게시 (LLM·이미지 생성 없음)')
     args = parser.parse_args()
-    result = run_lotto_analysis_post(dry_run=args.dry_run)
+    result = run_lotto_analysis_post(dry_run=args.dry_run, results_only=args.results_only)
     return 0 if result else 1
 
 

@@ -2,8 +2,294 @@
 import json
 import logging
 import time
+import pytest
 from datetime import datetime
 from unittest.mock import MagicMock
+
+
+def _workflow(monkeypatch, tmp_path):
+    import lotto_analysis as lotto
+    draw = {'drwNo': 1243, 'drwNoDate': '2026-09-26', 'bnusNo': 7,
+            **{f'drwtNo{i}': i for i in range(1, 7)},
+            'source': 'dhlottery_official',
+            'source_url': 'https://www.dhlottery.co.kr/lt645/selectPstLt645InfoNew.do?srchDir=center&srchLtEpsd=1243',
+            'fetched_at': '2026-10-02T00:00:00Z'}
+    posts = {}
+    calls = []
+    candidates = {'균형형': {'desc': '균형', 'sets': [{'numbers': [1, 2, 3, 4, 5, 6], 'score': 95}]}}
+    monkeypatch.setattr(lotto, 'WORKFLOW_DIR', str(tmp_path / 'lotto'), raising=False)
+    from datetime import timezone
+    monkeypatch.setattr(lotto, '_utc_now', lambda: datetime(2026, 10, 2, 1, 0, tzinfo=timezone.utc), raising=False)
+    monkeypatch.setattr(lotto, 'load_history', lambda: [draw.copy()])
+    monkeypatch.setattr(lotto, 'refresh_history', lambda rows: rows)
+    monkeypatch.setattr(lotto, 'ensure_fresh_history', lambda rows: None)
+    monkeypatch.setattr(lotto, 'login', lambda: 'fake-token')
+    monkeypatch.setattr(lotto, 'fetch_official_draw', lambda no: draw.copy(), raising=False)
+    monkeypatch.setattr(lotto, 'generate_candidates', lambda *args, **kwargs: calls.append('generate') or candidates)
+    monkeypatch.setattr(lotto, 'generate_lotto_post_openai', lambda *args: calls.append('write') or
+                        {'title': 'LLM title', 'content': '<p>새 추천 설명</p>{{IMAGE}}', 'image_prompt': 'balls'})
+    monkeypatch.setattr(lotto, 'ensure_image_html', lambda content, *args: (content.replace('{{IMAGE}}', '<img src="/test.png" />'), 'test'))
+
+    class Response:
+        def __init__(self, payload, status=200):
+            self.status_code = status
+            self._payload = payload
+            self.text = json.dumps(payload)
+        def json(self):
+            return self._payload
+
+    def get(url, **kwargs):
+        if '/boards/lotto-ai/posts' in url:
+            return Response({'posts': [p for p in posts.values() if not p['is_notice']],
+                             'notices': [p for p in posts.values() if p['is_notice']], 'total_pages': 1,
+                             'board': {'slug': 'lotto-ai'}})
+        post_id = int(url.rsplit('/', 1)[-1])
+        return Response({'post': posts[post_id]})
+
+    def post(url, **kwargs):
+        payload = kwargs['json']
+        post_id = max(posts, default=0) + 1
+        posts[post_id] = {'id': post_id, **payload, 'board': {'slug': 'lotto-ai'},
+                          'is_notice': False, 'created_at': '2026-10-02T00:00:00'}
+        calls.append(('post', payload['title'], payload['content']))
+        return Response(posts[post_id], 201)
+
+    def put(url, **kwargs):
+        if url.endswith('/notice'):
+            post_id = int(url.split('/')[-2])
+            posts[post_id]['is_notice'] = True
+        else:
+            post_id = int(url.rsplit('/', 1)[-1])
+            posts[post_id].update(kwargs['json'])
+        return Response({'is_notice': True})
+
+    monkeypatch.setattr(lotto.requests, 'get', get)
+    monkeypatch.setattr(lotto.requests, 'post', post)
+    monkeypatch.setattr(lotto.requests, 'put', put)
+    return lotto, posts, calls, draw, candidates, Response
+
+
+def test_workflow_posts_result_before_recommendation_and_reuses_verified_posts(monkeypatch, tmp_path):
+    lotto, posts, calls, _, _, _ = _workflow(monkeypatch, tmp_path)
+    result = lotto.run_lotto_analysis_post()
+    assert result and len(posts) == 2
+    publications = [item for item in calls if isinstance(item, tuple)]
+    assert '제1243회' in publications[0][1] and '결과' in publications[0][1]
+    assert '제1244회' in publications[1][1] and '추천' in publications[1][1]
+    content = publications[1][2]
+    assert content.index('지난 추천 결과') < content.index('data-lotto-recommendations')
+    assert '대조 보류' in content and '/dashboard/community/post/1' in content
+    before = list(calls)
+    assert lotto.run_lotto_analysis_post()['skipped'] is True
+    assert calls == before
+
+
+def test_results_only_never_generates_candidates_or_calls_llm(monkeypatch, tmp_path):
+    lotto, posts, calls, _, _, _ = _workflow(monkeypatch, tmp_path)
+    assert lotto.run_lotto_analysis_post(results_only=True)
+    assert len(posts) == 1 and all(isinstance(call, tuple) for call in calls)
+
+
+def test_workflow_remote_query_failure_blocks_publication(monkeypatch, tmp_path):
+    lotto, posts, _, _, _, Response = _workflow(monkeypatch, tmp_path)
+    monkeypatch.setattr(lotto.requests, 'get', lambda *args, **kwargs: Response({}, 503))
+    assert lotto.run_lotto_analysis_post() is False
+    assert not posts
+
+
+def test_workflow_unconfirmed_official_draw_blocks_recommendation(monkeypatch, tmp_path):
+    lotto, posts, calls, _, _, _ = _workflow(monkeypatch, tmp_path)
+    monkeypatch.setattr(lotto, 'fetch_official_draw', lambda no: None)
+    assert lotto.run_lotto_analysis_post() is False
+    assert not posts and not calls
+
+
+def test_result_lookup_does_not_confuse_next_recommendation_duplicate(monkeypatch, tmp_path):
+    lotto, posts, calls, _, _, _ = _workflow(monkeypatch, tmp_path)
+    posts[9] = {'id': 9, 'title': '제1244회 로또 추천 결과 — 추첨 결과', 'content': '<p>다른 결과</p>',
+                'board': {'slug': 'lotto-ai'}, 'is_notice': True, 'created_at': '2026-10-02T00:00:00'}
+    assert lotto.run_lotto_analysis_post()
+    assert any('제1244회 AI 로또 분석' in p['title'] for p in posts.values())
+    assert calls.count('generate') == 1
+
+
+def test_workflow_pin_failure_reuses_post_and_prepared_candidates(monkeypatch, tmp_path):
+    lotto, posts, calls, _, _, Response = _workflow(monkeypatch, tmp_path)
+    original_put = lotto.requests.put
+    def fail_recommendation_pin(url, **kwargs):
+        post_id = int(url.split('/')[-2])
+        if '제1244회' in posts[post_id]['title']:
+            return Response({}, 503)
+        return original_put(url, **kwargs)
+    monkeypatch.setattr(lotto.requests, 'put', fail_recommendation_pin)
+    assert lotto.run_lotto_analysis_post() is False
+    assert len(posts) == 2
+    monkeypatch.setattr(lotto.requests, 'put', original_put)
+    assert lotto.run_lotto_analysis_post()
+    assert len(posts) == 2 and calls.count('generate') == calls.count('write') == 1
+    assert all(p['is_notice'] for p in posts.values())
+
+
+def test_workflow_publication_body_mismatch_is_not_completed(monkeypatch, tmp_path):
+    lotto, posts, _, _, _, _ = _workflow(monkeypatch, tmp_path)
+    original_get = lotto.requests.get
+    def altered_get(url, **kwargs):
+        response = original_get(url, **kwargs)
+        if '/posts/' in url:
+            response._payload = {'post': {**response._payload['post'], 'content': '<p>changed</p>'}}
+        return response
+    monkeypatch.setattr(lotto.requests, 'get', altered_get)
+    assert lotto.run_lotto_analysis_post() is False
+    assert len(posts) == 1
+
+
+def test_workflow_singleflight_blocks_parallel_run(monkeypatch, tmp_path):
+    from filelock import FileLock
+    lotto, posts, calls, _, _, _ = _workflow(monkeypatch, tmp_path)
+    root = tmp_path / 'lotto'
+    root.mkdir(parents=True)
+    with FileLock(str(root / 'workflow.lock')):
+        assert lotto.run_lotto_analysis_post() is False
+    assert not posts and not calls
+
+
+def _existing_recommendation(lotto, posts, draw_no, candidates, post_id=2, created_at='2026-10-02T00:00:00'):
+    body = lotto.canonical_recommendation_html(draw_no, candidates) + '<p>기존 설명 유지</p><img src="/original.png" />'
+    posts[post_id] = {'id': post_id, 'title': f'제{draw_no}회 AI 로또 분석', 'content': body,
+                      'board': {'slug': 'lotto-ai'}, 'is_notice': True, 'created_at': created_at}
+    return body
+
+
+def test_existing_recommendation_preface_preserves_numbers_and_image_without_regeneration(monkeypatch, tmp_path):
+    lotto, posts, calls, _, candidates, _ = _workflow(monkeypatch, tmp_path)
+    original = _existing_recommendation(lotto, posts, 1244, candidates)
+    assert lotto.run_lotto_analysis_post()['skipped']
+    assert posts[2]['content'].endswith(original)
+    assert posts[2]['content'].count('data-lotto-review-link') == 1
+    assert 'generate' not in calls and 'write' not in calls
+    first_body = posts[2]['content']
+    assert lotto.run_lotto_analysis_post()['skipped']
+    assert posts[2]['content'] == first_body
+
+
+def test_preface_put_failure_retries_only_the_failed_stage(monkeypatch, tmp_path):
+    lotto, posts, calls, _, candidates, Response = _workflow(monkeypatch, tmp_path)
+    original = _existing_recommendation(lotto, posts, 1244, candidates)
+    original_put = lotto.requests.put
+    monkeypatch.setattr(lotto.requests, 'put', lambda url, **kwargs:
+                        Response({}, 503) if not url.endswith('/notice') else original_put(url, **kwargs))
+    assert lotto.run_lotto_analysis_post() is False
+    assert posts[2]['content'] == original
+    monkeypatch.setattr(lotto.requests, 'put', original_put)
+    assert lotto.run_lotto_analysis_post()['skipped']
+    assert posts[2]['content'].endswith(original)
+    assert len(posts) == 2 and 'generate' not in calls and 'write' not in calls
+
+
+def test_post_response_loss_recovers_identical_recommendation_without_duplicate(monkeypatch, tmp_path):
+    lotto, posts, calls, _, _, _ = _workflow(monkeypatch, tmp_path)
+    original_post = lotto.requests.post
+    def lose_response(url, **kwargs):
+        response = original_post(url, **kwargs)
+        if '제1244회' in kwargs['json']['title']:
+            raise lotto.requests.Timeout('response lost after commit')
+        return response
+    monkeypatch.setattr(lotto.requests, 'post', lose_response)
+    assert lotto.run_lotto_analysis_post() is False
+    assert len(posts) == 2
+    body = posts[2]['content']
+    monkeypatch.setattr(lotto.requests, 'post', original_post)
+    assert lotto.run_lotto_analysis_post()['skipped']
+    assert len(posts) == 2 and posts[2]['content'] == body
+    assert calls.count('generate') == calls.count('write') == 1
+
+
+def test_result_uses_published_original_numbers_and_archives_observed_snapshot(monkeypatch, tmp_path):
+    lotto, posts, calls, _, candidates, _ = _workflow(monkeypatch, tmp_path)
+    original = _existing_recommendation(lotto, posts, 1243, candidates, created_at='2026-09-25T08:00:00')
+    assert lotto.run_lotto_analysis_post(results_only=True)
+    report = lotto._load_publication('result', 1243)
+    assert report['report']['summary']['winning_sets'] == 1
+    assert report['report']['rows'][0]['rank'] == 1
+    assert report['source_post']['content_hash'] == lotto._content_hash(original)
+    assert lotto._load_publication('recommendation', 1243)['original_post']['content'] == original
+    assert 'generate' not in calls and 'write' not in calls
+
+
+def test_recommendation_uses_official_latest_draw_instead_of_divergent_history(monkeypatch, tmp_path):
+    lotto, _, _, draw, _, _ = _workflow(monkeypatch, tmp_path)
+    different = {**draw, 'drwtNo1': 10}
+    monkeypatch.setattr(lotto, 'load_history', lambda: [different])
+    assert lotto.run_lotto_analysis_post()
+    state = lotto._load_publication('recommendation', 1244)
+    assert state['stats']['last_draw']['numbers'] == [1, 2, 3, 4, 5, 6]
+
+
+def test_llm_changed_recommendation_numbers_are_replaced_without_another_paid_call(monkeypatch, tmp_path):
+    lotto, posts, calls, _, _, _ = _workflow(monkeypatch, tmp_path)
+    def incorrect_draft(*args):
+        calls.append('write')
+        return {'title': 'bad', 'content': '<h2>제1244회 추천 번호</h2><h3>균형형</h3>'
+                '<li>세트 1: <strong>10, 11, 12, 13, 14, 15</strong></li>{{IMAGE}}'}
+    monkeypatch.setattr(lotto, 'generate_lotto_post_openai', incorrect_draft)
+    assert lotto.run_lotto_analysis_post()
+    content = next(p['content'] for p in posts.values() if '제1244회' in p['title'])
+    assert '10, 11, 12, 13, 14, 15' not in content
+    assert '1, 2, 3, 4, 5, 6' in content and calls.count('write') == 1
+
+
+def test_official_provenance_failure_cannot_publish_a_pending_result(monkeypatch, tmp_path):
+    lotto, posts, _, draw, _, _ = _workflow(monkeypatch, tmp_path)
+    monkeypatch.setattr(lotto, 'fetch_official_draw', lambda no: {**draw, 'source_url': 'https://mirror.invalid'})
+    assert lotto.run_lotto_analysis_post(results_only=True) is False
+    assert not posts
+
+
+def test_new_recommendation_after_draw_cutoff_never_generates_or_posts(monkeypatch, tmp_path):
+    lotto, posts, calls, _, _, _ = _workflow(monkeypatch, tmp_path)
+    from datetime import timezone
+    monkeypatch.setattr(lotto, '_utc_now', lambda: datetime(2026, 10, 3, 11, 40, tzinfo=timezone.utc), raising=False)
+    assert lotto.run_lotto_analysis_post() is False
+    assert len(posts) == 1 and 'generate' not in calls and 'write' not in calls
+
+
+def test_recommendation_crossing_cutoff_during_draft_cannot_publish(monkeypatch, tmp_path):
+    lotto, posts, calls, _, candidates, _ = _workflow(monkeypatch, tmp_path)
+    from datetime import timezone
+    clock = [datetime(2026, 10, 3, 11, 30, tzinfo=timezone.utc)]
+    monkeypatch.setattr(lotto, '_utc_now', lambda: clock[0], raising=False)
+    def delayed_draft(*args):
+        calls.append('write')
+        clock[0] = datetime(2026, 10, 3, 11, 40, tzinfo=timezone.utc)
+        return {'content': '<p>long draft</p>{{IMAGE}}'}
+    monkeypatch.setattr(lotto, 'generate_lotto_post_openai', delayed_draft)
+    assert lotto.run_lotto_analysis_post() is False
+    assert len(posts) == 1 and calls.count('write') == 1
+
+
+@pytest.mark.parametrize('payload', [
+    {'posts': []}, {'posts': [], 'notices': [], 'total_pages': 1},
+    {'posts': [], 'notices': [], 'total_pages': '1', 'board': {'slug': 'lotto-ai'}},
+    {'posts': [], 'notices': [], 'total_pages': 1, 'board': {'slug': 'notice'}},
+])
+def test_incomplete_board_response_is_not_treated_as_missing_post(monkeypatch, tmp_path, payload):
+    lotto, posts, calls, _, _, Response = _workflow(monkeypatch, tmp_path)
+    monkeypatch.setattr(lotto.requests, 'get', lambda *args, **kwargs: Response(payload))
+    assert lotto.run_lotto_analysis_post() is False
+    assert not posts and not calls
+
+
+def test_live_legacy_titles_are_matched_without_regenerating_this_weeks_numbers(monkeypatch, tmp_path):
+    lotto, posts, calls, _, candidates, _ = _workflow(monkeypatch, tmp_path)
+    _existing_recommendation(lotto, posts, 1243, candidates, post_id=245, created_at='2026-09-25T08:01:09')
+    posts[245]['title'] = '로또 6/45 제1243회 통계 분석과 추천 조합'
+    original = _existing_recommendation(lotto, posts, 1244, candidates, post_id=255)
+    posts[255]['title'] = '로또 6/45 제1244회 주간 통계 분석과 추천 조합'
+    assert lotto.run_lotto_analysis_post()['post_id'] == 255
+    assert len(posts) == 3 and posts[255]['content'].endswith(original)
+    report = lotto._load_publication('result', 1243)
+    assert report['source_post']['post_id'] == 245 and report['report']['summary']['winning_sets'] == 1
+    assert 'generate' not in calls and 'write' not in calls
 
 
 def test_parse_llm_json_allows_raw_newlines_in_content():
@@ -177,6 +463,14 @@ def test_generate_image_creates_client_when_none(monkeypatch):
     제1231~1236회 게시글이 Nano Banana 를 통째로 건너뛴 사고.
     """
     import lotto_analysis
+    import sys
+    from types import ModuleType, SimpleNamespace
+
+    # The unit owns a fake provider client, so isolate its SDK config constructor
+    # too. Native SDK imports are neither a provider contract test nor network QA.
+    sdk = ModuleType('google.genai')
+    sdk.types = SimpleNamespace(GenerateContentConfig=lambda **kwargs: SimpleNamespace(**kwargs))
+    monkeypatch.setitem(sys.modules, 'google.genai', sdk)
 
     made = {}
 
@@ -189,6 +483,7 @@ def test_generate_image_creates_client_when_none(monkeypatch):
             @staticmethod
             def generate_content(**kwargs):
                 made["model"] = kwargs.get("model")
+                made['modalities'] = kwargs['config'].response_modalities
                 response = MagicMock()
                 response.candidates = [MagicMock(content=MagicMock(parts=[_Part()]))]
                 return response
@@ -196,6 +491,7 @@ def test_generate_image_creates_client_when_none(monkeypatch):
     monkeypatch.setattr(lotto_analysis, "get_gemini_client", lambda: _Client())
 
     assert lotto_analysis.generate_image(None, "prompt") == b"PNGDATA"
+    assert made['modalities'] == ['TEXT', 'IMAGE']
     assert made["model"] == "gemini-2.5-flash-image"
 
 

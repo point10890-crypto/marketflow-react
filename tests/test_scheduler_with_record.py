@@ -979,3 +979,26 @@ def test_scheduler_registers_saturday_lotto_recovery(monkeypatch):
         assert str(jobs[0].at_time) == "09:00:00"
     finally:
         scheduler.schedule.clear()
+
+
+def test_lotto_results_runner_is_bounded_and_results_only(monkeypatch):
+    calls = []
+    monkeypatch.setattr(scheduler.subprocess, 'run', lambda cmd, **kwargs: calls.append((cmd, kwargs)) or SimpleNamespace(returncode=0))
+    monkeypatch.setattr(scheduler, 'send_telegram', lambda *args, **kwargs: True)
+    assert scheduler.run_lotto_results_bounded() is True
+    assert calls[0][0][-1] == '--results-only'
+    assert calls[0][1]['timeout'] == 1200
+
+
+def test_scheduler_registers_lotto_results_and_sunday_recovery(monkeypatch):
+    scheduler.schedule.clear()
+    monkeypatch.setattr(scheduler.Config, 'ALPHA_SCANNER_ENABLED', False)
+    try:
+        scheduler.Scheduler().setup_schedules()
+        jobs = {job.job_func.__name__: job for job in scheduler.schedule.jobs}
+        assert str(jobs['run_lotto_results_bounded[lotto_results]'].at_time) == '21:10:00'
+        assert str(jobs['run_lotto_results_bounded[lotto_results_recovery]'].at_time) == '09:00:00'
+        assert jobs['run_lotto_results_bounded[lotto_results]'].start_day == 'saturday'
+        assert jobs['run_lotto_results_bounded[lotto_results_recovery]'].start_day == 'sunday'
+    finally:
+        scheduler.schedule.clear()

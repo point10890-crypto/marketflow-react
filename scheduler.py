@@ -525,6 +525,7 @@ class Config:
     CLAW_OUTCOME_ENABLED = os.environ.get('CLAW_OUTCOME_ENABLED', 'true').lower() == 'true'
     CLAW_OUTCOME_TIME = os.environ.get('CLAW_OUTCOME_TIME', '17:15')
     LOTTO_POST_TIME = os.environ.get('LOTTO_POST_TIME', '17:00')           # 금요일 AI 로또 분석
+    LOTTO_RESULT_TIME = os.environ.get('LOTTO_RESULT_TIME', '21:10')       # 토요일 확정 결과 대조
 
     # 타임아웃 (초)
     PRICE_TIMEOUT = int(os.environ.get('KR_MARKET_PRICE_TIMEOUT', '600'))
@@ -1878,14 +1879,17 @@ def run_lotto_analysis():
         return False
 
 
-def run_lotto_analysis_bounded():
+def run_lotto_analysis_bounded(*, results_only=False):
     """Run lotto posting in a child process so provider hangs cannot block the scheduler."""
     logger.info("Starting bounded AI lotto analysis post")
     try:
         script_path = os.path.join(Config.BASE_DIR, 'scripts', 'lotto_analysis.py')
         timeout_sec = int(os.environ.get('LOTTO_JOB_TIMEOUT_SEC', '1200'))
+        command = [Config.PYTHON_PATH, script_path]
+        if results_only:
+            command.append('--results-only')
         completed = subprocess.run(
-            [Config.PYTHON_PATH, script_path],
+            command,
             cwd=Config.BASE_DIR,
             timeout=timeout_sec,
             check=False,
@@ -1907,6 +1911,11 @@ def run_lotto_analysis_bounded():
         logger.error("AI lotto analysis failed: %s", e, exc_info=True)
         send_telegram(f"AI lotto analysis failed: {str(e)[:200]}", channel=False)
         return False
+
+
+def run_lotto_results_bounded():
+    """Saturday confirmed result publication, without creating next week's picks."""
+    return run_lotto_analysis_bounded(results_only=True)
 
 
 def send_jongga_v2_telegram(max_age_sec: int = 300) -> bool:
@@ -4079,8 +4088,13 @@ def check_and_run_missed_tasks():
             (15 * 60,      'alpha_close_signals', _run_alpha_close_signals, '알파 매매신호',      23 * 60, None),
             (18 * 60,      'alpha_performance_brief', _run_alpha_performance_brief, '알파 성과 브리핑', 23 * 60, None),
             # ── 금요일 전용 ──
-            (17 * 60,      'lotto_analysis',   run_lotto_analysis,          'AI 로또 분석 게시',  23 * 60, {4}),
+            (int(Config.LOTTO_POST_TIME[:2]) * 60 + int(Config.LOTTO_POST_TIME[3:]),
+             'lotto_analysis', run_lotto_analysis_bounded, 'AI 로또 분석 게시', 23 * 60, {4}),
             # ── 토요일 전용 ──
+            (9 * 60, 'lotto_analysis_recovery', run_lotto_analysis_bounded, 'AI 로또 추천 복구', 12 * 60, {5}),
+            (int(Config.LOTTO_RESULT_TIME[:2]) * 60 + int(Config.LOTTO_RESULT_TIME[3:]),
+             'lotto_results', run_lotto_results_bounded, '로또 추천 결과 대조', 23 * 60 + 59, {5}),
+            (9 * 60, 'lotto_results_recovery', run_lotto_results_bounded, '로또 결과 복구', 23 * 60, {6}),
             (10 * 60,      'history',          collect_historical_institutional, '히스토리 수집',  23 * 60, {5}),
         ]
 
@@ -4841,6 +4855,10 @@ def _build_job_registry() -> dict:
         f'금요일 {Config.LOTTO_POST_TIME}', 'System')
     add('lotto_analysis_recovery', 'AI 로또 분석 (복구)', run_lotto_analysis_bounded,
         '토요일 09:00', 'System')
+    add('lotto_results', '로또 추천 결과 대조', run_lotto_results_bounded,
+        f'토요일 {Config.LOTTO_RESULT_TIME}', 'System')
+    add('lotto_results_recovery', '로또 추천 결과 대조 (복구)', run_lotto_results_bounded,
+        '일요일 09:00', 'System')
     add('history', '기관 히스토리 수집', collect_historical_institutional,
         f'토요일 {Config.HISTORY_TIME}', 'KR')
     add('crypto', 'Crypto 전체 파이프라인', run_crypto_pipeline,
@@ -5223,6 +5241,12 @@ class Scheduler:
         schedule.every().saturday.at('09:00').do(
             self._with_record(run_lotto_analysis_bounded, 'lotto_analysis_recovery',
                               max_retries=2, retry_delay=900))
+        schedule.every().saturday.at(Config.LOTTO_RESULT_TIME).do(
+            self._with_record(run_lotto_results_bounded, 'lotto_results',
+                              max_retries=2, retry_delay=900))
+        schedule.every().sunday.at('09:00').do(
+            self._with_record(run_lotto_results_bounded, 'lotto_results_recovery',
+                              max_retries=2, retry_delay=900))
 
         # 토요일 히스토리 수집
         schedule.every().saturday.at(Config.HISTORY_TIME).do(
@@ -5279,6 +5303,7 @@ class Scheduler:
                     f" (alpha>={Config.MIROFISH_WORKFLOW_MIN_ALPHA:g}, risk<={Config.MIROFISH_WORKFLOW_MAX_RISK:g})"
                 )
         logger.info(f"   🎱 금요일 {Config.LOTTO_POST_TIME}  AI 로또 분석 게시")
+        logger.info(f"   🎱 토요일 {Config.LOTTO_RESULT_TIME}  추천 결과 대조 · 일요일 09:00 복구")
         logger.info(f"   🇰🇷 토요일 {Config.HISTORY_TIME}  히스토리 수집")
         logger.info(f"   🪙 매 4시간 {', '.join(Config.CRYPTO_TIMES)}  Crypto 전체 파이프라인")
 
