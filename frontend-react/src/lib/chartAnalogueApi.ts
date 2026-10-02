@@ -205,3 +205,42 @@ export async function fetchChartAnalogueEvaluation(token?: string): Promise<Char
     if (!isEvaluationReport(result)) throw new Error('비교 관측 응답 형식이 올바르지 않습니다.');
     return result;
 }
+
+export interface ChartAnalogueCandidate {
+    symbol: string;
+    name: string;
+}
+
+export async function fetchChartAnalogueCandidates(query: string, token?: string): Promise<ChartAnalogueCandidate[]> {
+    const target = query.trim();
+    if (!target) return [];
+    const errorMessage = '종목 검색을 완료하지 못했습니다. 다시 시도해 주세요.';
+    if (target.length > 80) throw new Error(errorMessage);
+
+    try {
+        const result = await fetchAuthAPI<unknown>(
+            `/api/admin/mirofish/targets/search?target=${encodeURIComponent(target)}&limit=8`, token, 8000,
+        );
+        if (!isRecord(result) || typeof result.target !== 'string' || !Array.isArray(result.candidates)) {
+            throw new Error(errorMessage);
+        }
+        const candidates: ChartAnalogueCandidate[] = [];
+        const symbols = new Set<string>();
+        for (const row of result.candidates) {
+            if (!isRecord(row) || typeof row.symbol !== 'string' || !/^\d{6}$/.test(row.symbol)
+                || (row.asset_type !== undefined && row.asset_type !== 'equity')
+                || (row.market !== undefined && !['KR', 'KOSPI', 'KOSDAQ', 'KONEX'].includes(row.market as string))
+                || (row.name !== null && row.name !== undefined && typeof row.name !== 'string')
+                || (row.display_name !== null && row.display_name !== undefined && typeof row.display_name !== 'string')
+                || (row.name === undefined && typeof row.display_name !== 'string') || symbols.has(row.symbol)) continue;
+            const name = (typeof row.name === 'string' ? row.name.trim() : '')
+                || (typeof row.display_name === 'string' ? row.display_name.trim() : '') || row.symbol;
+            candidates.push({ symbol: row.symbol, name });
+            symbols.add(row.symbol);
+            if (candidates.length === 8) break;
+        }
+        return candidates;
+    } catch {
+        throw new Error(errorMessage);
+    }
+}

@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -60,7 +60,7 @@ describe('historical chart analogue member page', () => {
         api.fetchAuthAPI.mockResolvedValue(ready);
         renderPage();
         expect(await screen.findByRole('heading', { name: /코리안리/ })).toBeInTheDocument();
-        expect(screen.getByRole('textbox', { name: '종목 코드' })).toHaveValue('003690');
+        expect(screen.getByRole('combobox', { name: '종목명 또는 코드' })).toHaveValue('003690');
         expect(api.fetchAuthAPI).toHaveBeenCalledWith('/api/admin/mirofish/chart-analogue/003690', 'member-token');
         expect(screen.getByText(/daily_prices.csv/)).toBeInTheDocument();
         expect(screen.getByText(/표본 20개/)).toBeInTheDocument();
@@ -86,7 +86,7 @@ describe('historical chart analogue member page', () => {
         api.fetchAuthAPI.mockResolvedValue({ ...ready, symbol: '005930', target: '삼성전자' });
         renderPage('/dashboard/ai-bain/chart-predict?code=005930');
         expect(await screen.findByRole('heading', { name: /삼성전자/ })).toBeInTheDocument();
-        expect(screen.getByRole('textbox', { name: '종목 코드' })).toHaveValue('005930');
+        expect(screen.getByRole('combobox', { name: '종목명 또는 코드' })).toHaveValue('005930');
         expect(api.fetchAuthAPI).toHaveBeenCalledWith('/api/admin/mirofish/chart-analogue/005930', 'member-token');
     });
 
@@ -120,12 +120,147 @@ describe('historical chart analogue member page', () => {
         api.fetchAuthAPI.mockResolvedValue(ready);
         renderPage();
         await screen.findByRole('heading', { name: /코리안리/ });
-        const input = screen.getByRole('textbox', { name: '종목 코드' });
+        const input = screen.getByRole('combobox', { name: '종목명 또는 코드' });
         await userEvent.clear(input);
-        await userEvent.type(input, 'BAD');
+        await userEvent.type(input, '123');
         await userEvent.click(screen.getByRole('button', { name: '유사 사례 조회' }));
         expect(screen.getByRole('alert')).toHaveTextContent('6자리');
         expect(api.fetchAuthAPI).toHaveBeenCalledTimes(1);
+    });
+
+    it('resolves a complete Korean name before querying its six digit chart code', async () => {
+        api.fetchAuthAPI.mockImplementation((path: string) => Promise.resolve(path.includes('/targets/search?')
+            ? { target: '한미반도체', candidates: [{ symbol: '042700', name: '한미반도체', market: 'KOSPI', asset_type: 'equity' }] }
+            : path.endsWith('/042700') ? { ...ready, symbol: '042700', target: '한미반도체' } : ready));
+        renderPage();
+        await screen.findByRole('heading', { name: /코리안리/ });
+        const input = screen.getByRole('combobox', { name: '종목명 또는 코드' });
+        await userEvent.clear(input);
+        await userEvent.type(input, '한미반도체');
+        await userEvent.click(screen.getByRole('button', { name: '유사 사례 조회' }));
+        expect(await screen.findByRole('heading', { name: /한미반도체/ })).toBeInTheDocument();
+        expect(api.fetchAuthAPI).toHaveBeenCalledWith('/api/admin/mirofish/chart-analogue/042700', 'member-token');
+        expect(api.fetchAuthAPI.mock.calls.some(([path]) => String(path).includes('/chart-analogue/한미'))).toBe(false);
+    });
+
+    it('shows partial-name candidates and lets the keyboard select an exact stock', async () => {
+        api.fetchAuthAPI.mockImplementation((path: string) => Promise.resolve(path.includes('/targets/search?')
+            ? { target: '한미', candidates: [{ symbol: '042700', name: '한미반도체' }, { symbol: '128940', name: '한미약품' }] }
+            : path.endsWith('/128940') ? { ...ready, symbol: '128940', target: '한미약품' } : ready));
+        renderPage();
+        await screen.findByRole('heading', { name: /코리안리/ });
+        const input = screen.getByRole('combobox', { name: '종목명 또는 코드' });
+        await userEvent.clear(input);
+        await userEvent.type(input, '한미');
+        expect(await screen.findByRole('option', { name: /한미약품.*128940/ })).toBeInTheDocument();
+        await userEvent.keyboard('{ArrowDown}{ArrowDown}{Enter}');
+        expect(await screen.findByRole('heading', { name: /한미약품/ })).toBeInTheDocument();
+        expect(screen.queryByRole('listbox')).toBeNull();
+        expect(api.fetchAuthAPI).toHaveBeenCalledWith('/api/admin/mirofish/chart-analogue/128940', 'member-token');
+    });
+
+    it('requires a choice when a submitted partial name has several matches', async () => {
+        api.fetchAuthAPI.mockImplementation((path: string) => Promise.resolve(path.includes('/targets/search?')
+            ? { target: '한미', candidates: [{ symbol: '042700', name: '한미반도체' }, { symbol: '128940', name: '한미약품' }] } : ready));
+        renderPage();
+        await screen.findByRole('heading', { name: /코리안리/ });
+        const input = screen.getByRole('combobox', { name: '종목명 또는 코드' });
+        await userEvent.clear(input);
+        await userEvent.type(input, '한미');
+        await userEvent.click(screen.getByRole('button', { name: '유사 사례 조회' }));
+        expect(await screen.findByRole('alert')).toHaveTextContent('선택');
+        expect(screen.getAllByRole('option')).toHaveLength(2);
+        expect(api.fetchAuthAPI.mock.calls.filter(([path]) => String(path).includes('/chart-analogue/'))).toHaveLength(1);
+    });
+
+    it('explains an unmatched name while keeping the previous valid chart', async () => {
+        api.fetchAuthAPI.mockImplementation((path: string) => Promise.resolve(path.includes('/targets/search?')
+            ? { target: '없는종목', candidates: [] } : ready));
+        renderPage();
+        await screen.findByRole('heading', { name: /코리안리/ });
+        const input = screen.getByRole('combobox', { name: '종목명 또는 코드' });
+        await userEvent.clear(input);
+        await userEvent.type(input, '없는종목');
+        await userEvent.click(screen.getByRole('button', { name: '유사 사례 조회' }));
+        expect(await screen.findByRole('alert')).toHaveTextContent('검색 결과가 없습니다');
+        expect(screen.getByRole('heading', { name: /코리안리/ })).toBeInTheDocument();
+    });
+
+    it('uses an exact name even when its preferred-share sibling is also returned', async () => {
+        api.fetchAuthAPI.mockImplementation((path: string) => Promise.resolve(path.includes('/targets/search?')
+            ? { target: '삼성전자', candidates: [{ symbol: '005930', name: '삼성전자' }, { symbol: '005935', name: '삼성전자우' }] }
+            : path.endsWith('/005930') ? { ...ready, symbol: '005930', target: '삼성전자' } : ready));
+        renderPage();
+        await screen.findByRole('heading', { name: /코리안리/ });
+        const input = screen.getByRole('combobox', { name: '종목명 또는 코드' });
+        await userEvent.clear(input);
+        await userEvent.type(input, '삼성전자');
+        await userEvent.click(screen.getByRole('button', { name: '유사 사례 조회' }));
+        expect(await screen.findByRole('heading', { name: /삼성전자/ })).toBeInTheDocument();
+        expect(api.fetchAuthAPI).toHaveBeenCalledWith('/api/admin/mirofish/chart-analogue/005930', 'member-token');
+    });
+
+    it('ignores candidate results for an input that has already changed', async () => {
+        let finishOld!: (result: unknown) => void;
+        api.fetchAuthAPI.mockImplementation((path: string) => {
+            if (!path.includes('/targets/search?')) return Promise.resolve(ready);
+            if (path.includes(encodeURIComponent('한미'))) return new Promise(resolve => { finishOld = resolve; });
+            return Promise.resolve({ target: '삼성', candidates: [{ symbol: '005930', name: '삼성전자' }] });
+        });
+        renderPage();
+        await screen.findByRole('heading', { name: /코리안리/ });
+        const input = screen.getByRole('combobox', { name: '종목명 또는 코드' });
+        await userEvent.clear(input);
+        await userEvent.type(input, '한미');
+        await waitFor(() => expect(finishOld).toBeTypeOf('function'));
+        await userEvent.clear(input);
+        await userEvent.type(input, '삼성');
+        await screen.findByRole('option', { name: /삼성전자/ });
+        await act(async () => finishOld({ target: '한미', candidates: [{ symbol: '042700', name: '한미반도체' }] }));
+        expect(screen.queryByRole('option', { name: /한미반도체/ })).toBeNull();
+        expect(screen.getByRole('option', { name: /삼성전자/ })).toBeInTheDocument();
+    });
+
+    it('does not reopen escaped suggestions when a pending request completes', async () => {
+        let finish!: (result: unknown) => void;
+        api.fetchAuthAPI.mockImplementation((path: string) => path.includes('/targets/search?')
+            ? new Promise(resolve => { finish = resolve; }) : Promise.resolve(ready));
+        renderPage();
+        await screen.findByRole('heading', { name: /코리안리/ });
+        const input = screen.getByRole('combobox', { name: '종목명 또는 코드' });
+        await userEvent.clear(input);
+        await userEvent.type(input, '한미');
+        await waitFor(() => expect(finish).toBeTypeOf('function'));
+        await userEvent.keyboard('{Escape}');
+        await act(async () => finish({ target: '한미', candidates: [{ symbol: '042700', name: '한미반도체' }] }));
+        expect(screen.queryByRole('listbox')).toBeNull();
+        expect(input).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('cancels IME Enter defaults even after compositionend has cleared React state', async () => {
+        api.fetchAuthAPI.mockResolvedValue(ready);
+        renderPage();
+        await screen.findByRole('heading', { name: /코리안리/ });
+        const input = screen.getByRole('combobox', { name: '종목명 또는 코드' });
+        expect(fireEvent.keyDown(input, { key: 'Enter', keyCode: 229, isComposing: true })).toBe(false);
+        expect(api.fetchAuthAPI).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps IME composition local and resolves the completed Korean name', async () => {
+        api.fetchAuthAPI.mockImplementation((path: string) => Promise.resolve(path.includes('/targets/search?')
+            ? { target: '한미반도체', candidates: [{ symbol: '042700', name: '한미반도체' }] }
+            : path.endsWith('/042700') ? { ...ready, symbol: '042700', target: '한미반도체' } : ready));
+        renderPage();
+        await screen.findByRole('heading', { name: /코리안리/ });
+        const input = screen.getByRole('combobox', { name: '종목명 또는 코드' });
+        fireEvent.compositionStart(input);
+        fireEvent.change(input, { target: { value: '한미반도체' } });
+        expect(fireEvent.keyDown(input, { key: 'Enter', keyCode: 229, isComposing: true })).toBe(false);
+        expect(api.fetchAuthAPI).toHaveBeenCalledTimes(1);
+        fireEvent.compositionEnd(input);
+        await screen.findByRole('option', { name: /한미반도체/ });
+        await userEvent.click(screen.getByRole('button', { name: '유사 사례 조회' }));
+        expect(await screen.findByRole('heading', { name: /한미반도체/ })).toBeInTheDocument();
     });
 
     it('shows loading without inventing a chart', async () => {
@@ -175,7 +310,7 @@ describe('historical chart analogue member page', () => {
         api.fetchAuthAPI.mockReturnValueOnce(new Promise(resolve => { finishOld = resolve; }))
             .mockResolvedValueOnce({ ...ready, symbol: '005930', target: '삼성전자' });
         renderPage();
-        const input = screen.getByRole('textbox', { name: '종목 코드' });
+        const input = screen.getByRole('combobox', { name: '종목명 또는 코드' });
         await userEvent.clear(input);
         await userEvent.type(input, '005930');
         await userEvent.click(screen.getByRole('button', { name: '유사 사례 조회' }));

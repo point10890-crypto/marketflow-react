@@ -1,11 +1,12 @@
 import '@/pages/dashboard/ai-design.css';
-import { FormEvent, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchChartAnalogue, type ChartAnaloguePrediction, type ChartAnalogueStatus } from '@/lib/chartAnalogueApi';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 import ChartAnalogueChart, { formatAnaloguePrice, formatAnalogueReturn } from '@/components/aibain/ChartAnalogueChart';
 import ChartAnalogueEvaluationPanel from '@/components/aibain/ChartAnalogueEvaluationPanel';
+import ChartAnalogueSymbolSearch from '@/components/aibain/ChartAnalogueSymbolSearch';
 
 const stateLabels: Record<Exclude<ChartAnalogueStatus, 'ready'>, { title: string; detail: string }> = {
     missing_index: { title: '과거 사례 색인이 준비되지 않았습니다', detail: '가격 자료의 색인이 준비되면 유사 사례를 조회할 수 있습니다.' },
@@ -33,7 +34,6 @@ export default function ChartAnaloguePage() {
     const { token } = useAuth();
     const [params, setParams] = useSearchParams();
     const code = params.get('code') ?? '003690';
-    const [input, setInput] = useState(code);
     const [data, setData] = useState<ChartAnaloguePrediction | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -42,7 +42,6 @@ export default function ChartAnaloguePage() {
 
     useEffect(() => {
         let active = true;
-        setInput(code);
         setData(null);
         setError('');
         setInputError('');
@@ -62,14 +61,11 @@ export default function ChartAnaloguePage() {
         return () => { active = false; };
     }, [code, token, revision]);
 
-    function submit(event: FormEvent) {
-        event.preventDefault();
-        const next = input.trim();
-        if (!/^\d{6}$/.test(next)) { setInputError('국내 종목 코드 6자리를 입력해 주세요.'); return; }
+    const selectSymbol = useCallback((next: string) => {
         setInputError('');
         if (code === next) setRevision(value => value + 1);
-        else setParams({ code: next });
-    }
+        else setParams(previous => { const updated = new URLSearchParams(previous); updated.set('code', next); return updated; });
+    }, [code, setParams]);
 
     return (
         <div className="ai-design min-h-full min-w-0 bg-[#101318] p-4 text-white sm:p-6 lg:p-8">
@@ -82,16 +78,7 @@ export default function ChartAnaloguePage() {
                     <h1 className="ai-page-title">차트 유사 사례</h1>
                     <p className="mt-2 text-sm leading-relaxed text-gray-400">현재 가격 흐름과 닮은 과거 구간의 이후 결과를 비교합니다. 상승 빈도는 과거 표본의 관측값이며 보정된 상승 확률이 아닙니다.</p>
                 </header>
-                <form onSubmit={submit} className="ai-search-toolbar flex flex-wrap items-end gap-3">
-                    <div className="min-w-0 flex-1 sm:max-w-xs">
-                        <label htmlFor="analogue-code" className="mb-1.5 block text-xs font-medium text-gray-300">종목 코드</label>
-                        <input id="analogue-code" value={input} onChange={event => setInput(event.target.value)} inputMode="numeric" maxLength={6} autoComplete="off"
-                            aria-invalid={!!inputError} aria-describedby={inputError ? 'analogue-input-error' : 'analogue-code-hint'}
-                            className="h-11 w-full rounded-lg border border-[#3a424d] bg-[#15191e] px-3 font-mono text-sm tracking-wide text-white" />
-                    </div>
-                    <button type="submit" className="h-11 shrink-0 rounded-lg border border-[#365372] bg-[#1b2c40] px-4 text-sm font-semibold text-[#acd3ff] hover:bg-[#243c56]">유사 사례 조회</button>
-                    <p id="analogue-code-hint" className="w-full text-xs text-gray-400">국내 종목 6자리 코드 · 기본 003690 · 일별 종가 기준</p>
-                </form>
+                <ChartAnalogueSymbolSearch symbol={code} token={token ?? undefined} onSelect={selectSymbol} />
                 {inputError && <p id="analogue-input-error" role="alert" className="text-sm text-amber-300">{inputError}</p>}
                 {loading && <div role="status" className={`${panelClass} flex min-h-[340px] items-center justify-center text-sm text-gray-400`}>과거 유사 사례 조회 중…</div>}
                 {!loading && error && <div role="alert" className={`${panelClass} space-y-3`}><p className="text-sm text-amber-200">{error}</p><button onClick={() => setRevision(value => value + 1)} className="rounded-lg border border-[#3a424d] px-3 py-2 text-xs font-medium text-gray-200">다시 조회</button></div>}
