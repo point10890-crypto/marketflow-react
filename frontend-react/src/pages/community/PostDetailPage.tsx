@@ -322,6 +322,7 @@ export default function PostDetailPage() {
                             [&_img]:rounded-xl [&_img]:border [&_img]:border-white/10 [&_img]:max-w-full [&_img]:my-6
                             [&_video]:rounded-xl [&_video]:border [&_video]:border-white/10 [&_video]:max-w-full [&_video]:my-6
                             [&_iframe]:rounded-xl [&_iframe]:my-6 [&_iframe]:w-full [&_iframe]:aspect-video"
+                        data-community-board={post.board?.slug}
                         dangerouslySetInnerHTML={{
                             __html: (() => {
                                 let html = sanitizeCommunityHtml(post.content || '', API_BASE);

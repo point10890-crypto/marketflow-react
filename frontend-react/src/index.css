@@ -922,3 +922,34 @@ body {
 .claw-theme .bg-clip-text.text-transparent[style*="linear-gradient"] {
   background-image: linear-gradient(92deg, #ffb4a3 0%, #ff7a5c 50%, #ff5a3c 100%) !important;
 }
+
+/* Lotto result tables keep every set readable after inline styles are sanitized. */
+[data-community-board="lotto-ai"] [data-lotto-result] > div {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+[data-community-board="lotto-ai"] [data-lotto-result] table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+}
+
+[data-community-board="lotto-ai"] [data-lotto-result] th,
+[data-community-board="lotto-ai"] [data-lotto-result] td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-community-board="lotto-ai"] [data-lotto-result] th {
+  text-align: left;
+  font-weight: 600;
+}
+
+[data-community-board="lotto-ai"] [data-lotto-result] th:nth-child(2),
+[data-community-board="lotto-ai"] [data-lotto-result] td:nth-child(2),
+[data-community-board="lotto-ai"] [data-lotto-result] th:nth-child(3),
+[data-community-board="lotto-ai"] [data-lotto-result] td:nth-child(3) {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
