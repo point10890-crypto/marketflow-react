@@ -79,6 +79,15 @@ export default function ChartAnaloguePage() {
                     <p className="mt-2 text-sm leading-relaxed text-gray-400">현재 가격 흐름과 닮은 과거 구간의 이후 결과를 비교합니다. 상승 빈도는 과거 표본의 관측값이며 보정된 상승 확률이 아닙니다.</p>
                 </header>
                 <ChartAnalogueSymbolSearch symbol={code} token={token ?? undefined} onSelect={selectSymbol} />
+                <details className={`${panelClass} text-sm text-gray-300`}>
+                    <summary className="cursor-pointer font-semibold text-[#acd3ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#72b4fb]">사용법 · 수치 해석 가이드</summary>
+                    <div className="mt-4 space-y-3 text-xs leading-relaxed sm:text-sm">
+                        <p>최근 거래일과 표본 수를 확인한 뒤, 검토할 기간의 상승 빈도·중앙 수익률·하락 쪽 10백분위를 함께 보세요. 과거 유사 사례의 종목과 날짜, 현재 거래량·수급·공시도 대조합니다.</p>
+                        <p>예를 들어, 과거 사례 20개 중 11개가 상승했다면 상승 빈도는 55%입니다. 유사도는 가격 흐름의 닮은 정도이며, 두 수치 모두 미래 상승 확률을 확정하지 않습니다.</p>
+                        <p>점선과 음영은 과거 결과를 현재 기준 종가로 환산한 중앙값과 10~90백분위입니다. 환산 가격은 목표가, 음영 하단은 손절가로 자동 적용할 수 없습니다. 기간 종료 수익률은 보유 중 최대 낙폭을 나타내지 않습니다.</p>
+                        <a href="/guide/using-ai-signals#chart-analogue" className="inline-flex min-h-11 items-center text-[#acd3ff] underline underline-offset-4">차트 유사 사례 사용 매뉴얼 전체 보기</a>
+                    </div>
+                </details>
                 {inputError && <p id="analogue-input-error" role="alert" className="text-sm text-amber-300">{inputError}</p>}
                 {loading && <div role="status" className={`${panelClass} flex min-h-[340px] items-center justify-center text-sm text-gray-400`}>과거 유사 사례 조회 중…</div>}
                 {!loading && error && <div role="alert" className={`${panelClass} space-y-3`}><p className="text-sm text-amber-200">{error}</p><button onClick={() => setRevision(value => value + 1)} className="rounded-lg border border-[#3a424d] px-3 py-2 text-xs font-medium text-gray-200">다시 조회</button></div>}

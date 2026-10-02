@@ -21,8 +21,9 @@ describe('guide provenance visible to readers and search engines', () => {
         );
 
         const article = screen.getByRole('article');
+        const modifiedDate = slug === 'using-ai-signals' ? '2026-10-02' : '2026-09-05';
         expect(within(article).getByText('최초 게시: 2026-08-27')).toBeInTheDocument();
-        expect(within(article).getByText('내용 보강: 2026-09-05')).toBeInTheDocument();
+        expect(within(article).getByText(`내용 보강: ${modifiedDate}`)).toBeInTheDocument();
         const references = within(article).getByRole('region', { name: '출처와 작성 방법' });
         const links = within(references).getAllByRole('link');
         expect(links.length).toBeGreaterThan(0);
@@ -34,7 +35,7 @@ describe('guide provenance visible to readers and search engines', () => {
             .flatMap((script) => JSON.parse(script.textContent || '[]'))
             .find((entry) => entry['@type'] === 'Article');
         expect(schema).toMatchObject({
-            datePublished: '2026-08-27', dateModified: '2026-09-05',
+            datePublished: '2026-08-27', dateModified: modifiedDate,
             mainEntityOfPage: `https://bit-man.net/guide/${slug}/`,
         });
         expect(schema.citation).toEqual(links.map((link) => link.getAttribute('href')));

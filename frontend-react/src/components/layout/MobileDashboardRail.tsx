@@ -8,6 +8,7 @@ const primaryItems = [
     // AI Brain 항목은 구독자/admin 에게만 (canAccessAiBain)
     { name: 'AI Brain', href: '/dashboard/ai-bain', icon: 'fa-robot', aibainOnly: true },
     { name: 'Goodrich TOP 3', href: '/dashboard/ai-bain/goodrich', icon: 'fa-ranking-star', aibainOnly: true },
+    { name: '차트 유사 사례', href: '/dashboard/ai-bain/chart-predict', icon: 'fa-chart-line', aibainOnly: true },
     { name: 'KR', href: '/dashboard/kr', icon: 'fa-chart-line' },
     { name: 'US', href: '/dashboard/us', icon: 'fa-globe-americas' },
     { name: 'Crypto', href: '/dashboard/crypto', icon: 'fab fa-bitcoin' },
@@ -20,6 +21,7 @@ const pageTitles: Array<[RegExp, string, string]> = [
     [/^\/dashboard\/briefing/, 'Briefing', 'AI 브리핑'],
     [/^\/dashboard\/ai-bain\/goodrich/, 'Goodrich TOP 3', 'AI 펀드매니저'],
     [/^\/dashboard\/ai-bain\/decision/, '종목 판단', '근거 비교'],
+    [/^\/dashboard\/ai-bain\/chart-predict/, '차트 유사 사례', '과거 사례 분포'],
     [/^\/dashboard\/ai-bain/, 'AI Brain', 'GraphRAG'],
     [/^\/dashboard\/manual-stock-analysis/, 'AI 분석 목록', '루프 스크래퍼'],
     [/^\/dashboard\/vcp-enhanced/, 'VCP Enhanced', '거래량 수축'],

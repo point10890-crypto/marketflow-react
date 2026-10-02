@@ -24,6 +24,7 @@ const PAGE_NAMES: Record<string, string> = {
     '/dashboard/crypto/signals': 'Crypto VCP Signals',
     '/dashboard/ai-bain/goodrich': 'Goodrich TOP 3',
     '/dashboard/ai-bain/decision': '종목 판단',
+    '/dashboard/ai-bain/chart-predict': '차트 유사 사례',
     '/dashboard/kr/leading-stocks': '주도주 LIVE',
     '/dashboard/kr/claw': 'Claw LIVE',
     '/dashboard/kr/ai-chart': 'KR AI Chart',
