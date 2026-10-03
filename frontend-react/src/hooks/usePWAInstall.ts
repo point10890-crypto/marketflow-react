@@ -6,6 +6,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 let _deferredPrompt: BeforeInstallPromptEvent | null = null;
+let _installedThisSession = false;
 const _listeners = new Set<() => void>();
 
 function notifyAll() {
@@ -21,11 +22,13 @@ if (typeof window !== 'undefined') {
     }
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
+        _installedThisSession = false;
         _deferredPrompt = e as BeforeInstallPromptEvent;
         notifyAll();
     });
     window.addEventListener('appinstalled', () => {
         _deferredPrompt = null;
+        _installedThisSession = true;
         notifyAll();
     });
 }
@@ -39,7 +42,12 @@ export function usePWAInstall() {
         return () => { _listeners.delete(update); };
     }, []);
 
-    const isInstalled = typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches;
+    const isStandaloneDisplay = typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(display-mode: standalone)').matches;
+    const isIOSStandalone = typeof navigator !== 'undefined' &&
+        Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
+    const isInstalled = _installedThisSession || isStandaloneDisplay || isIOSStandalone;
 
     const isIOS = typeof navigator !== 'undefined' &&
         (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
@@ -47,12 +55,20 @@ export function usePWAInstall() {
     const canInstall = !isInstalled && (_deferredPrompt !== null || isIOS);
 
     const install = useCallback(async (): Promise<'accepted' | 'dismissed' | 'manual'> => {
-        if (_deferredPrompt) {
-            await _deferredPrompt.prompt();
-            const { outcome } = await _deferredPrompt.userChoice;
-            if (outcome === 'accepted') _deferredPrompt = null;
+        const prompt = _deferredPrompt;
+        if (prompt) {
+            // beforeinstallprompt events are single-use, regardless of outcome.
+            _deferredPrompt = null;
             notifyAll();
-            return outcome;
+            try {
+                await prompt.prompt();
+                const { outcome } = await prompt.userChoice;
+                if (outcome === 'accepted') _installedThisSession = true;
+                notifyAll();
+                return outcome;
+            } catch {
+                return 'manual';
+            }
         }
         return 'manual'; // show manual guide
     }, []);

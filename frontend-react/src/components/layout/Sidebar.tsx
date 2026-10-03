@@ -108,6 +108,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
     const [showGuide, setShowGuide] = useState(false);
 
+    useEffect(() => {
+        if (isInstalled) setShowGuide(false);
+    }, [isInstalled]);
+
     const userName = user?.name || 'Guest';
     const userTier = user?.tier ?? null;
     // Guards ensure only pro/premium/admin reach the dashboard, so tier-lock UI is vestigial.
@@ -359,18 +363,18 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 </Link>
 
                 {/* App Install — inside scroll area */}
-                {!isInstalled && (
+                {canInstall && !isInstalled && (
                     <button
                         onClick={handleSidebarInstall}
                         className="mt-2 w-full flex items-center gap-2.5 p-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 text-[13px] font-bold text-blue-400 hover:text-blue-300 transition-colors"
                     >
                         <i className="fas fa-mobile-screen-button w-5 text-center"></i>
-                        <span>앱 다운로드</span>
-                        <i className="fas fa-download text-[10px] ml-auto opacity-50"></i>
+                        <span>{isIOS ? '설치 방법 보기' : '앱으로 설치'}</span>
+                        <i className={`fas ${isIOS ? 'fa-circle-info' : 'fa-plus'} text-[10px] ml-auto opacity-50`}></i>
                     </button>
                 )}
             </nav>
-            {showGuide && <InstallGuide isIOS={isIOS} onClose={() => setShowGuide(false)} />}
+            {showGuide && !isInstalled && <InstallGuide isIOS={isIOS} onClose={() => setShowGuide(false)} />}
 
             {/* Profile */}
             <div className="p-4 border-t border-white/5">
