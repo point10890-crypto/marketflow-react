@@ -8,7 +8,8 @@ import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 const api = vi.hoisted(() => ({ fetchAuthAPI: vi.fn(), fetchEvaluation: vi.fn(), fetchTop3: vi.fn(), postAuthAPI: vi.fn() }));
 // Stock-flow tests keep independent global panel requests separate from symbol forecasts.
 vi.mock('@/lib/api', () => ({
-    fetchAuthAPI: (path: string, token?: string) => path.endsWith('/evaluation') ? api.fetchEvaluation(path, token)
+    fetchAuthAPI: (path: string, token?: string) => path.endsWith('/kelly') ? Promise.resolve({ state: 'none', processed: 0, total: 0, started_at: null,
+        error: null, freshness: 'missing', report: null }) : path.endsWith('/evaluation') ? api.fetchEvaluation(path, token)
         : path.endsWith('/top3') ? api.fetchTop3(path, token) : api.fetchAuthAPI(path, token),
     postAuthAPI: api.postAuthAPI,
 }));

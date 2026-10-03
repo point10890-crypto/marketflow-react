@@ -43,6 +43,28 @@ def _chart_analogue_top3_no_store(view):
     return decorated
 
 
+def _chart_analogue_kelly_store_service():
+    from app.services.mirofish import chart_analogue_kelly_store
+    return chart_analogue_kelly_store
+
+
+@admin_mirofish_bp.route('/chart-analogue/kelly', methods=['GET', 'POST'])
+@_chart_analogue_top3_no_store
+@admin_or_aibain_required
+def chart_analogue_kelly():
+    raw_body = request.get_data(cache=True).strip()
+    empty_options = request.method == 'POST' and request.is_json and request.get_json(silent=True) == {}
+    if request.query_string or (raw_body and not empty_options):
+        return jsonify({'error': 'invalid_chart_analogue_kelly_request'}), 400
+    try:
+        service = _chart_analogue_kelly_store_service()
+        status = service.start_scan() if request.method == 'POST' else service.read_status()
+        code = 202 if request.method == 'POST' and status.get('state') == 'running' else 200
+        return jsonify(status), code
+    except Exception:
+        return jsonify({'error': 'chart_analogue_kelly_unavailable'}), 503
+
+
 @admin_mirofish_bp.route('/chart-analogue/top3', methods=['GET', 'POST'])
 @_chart_analogue_top3_no_store
 @admin_or_aibain_required

@@ -1,0 +1,3 @@
+# Optional offline/research tooling; not required by the Flask service.
+# Tested with Python 3.12 on Windows for FinanceData/marcap Parquet snapshots.
+pyarrow==25.0.1
