@@ -63,6 +63,20 @@ def test_cap_ties_break_by_symbol_independent_of_input_order():
     assert [row["symbol"] for row in selected["ranked"]] == ["000001", "000002"]
 
 
+def test_kosdaq_global_is_ranked_as_kosdaq_and_keeps_source_market():
+    rows = listing(3)
+    rows[0]["market"] = "KOSDAQ GLOBAL"
+    rows[1]["market"] = "KONEX"
+    before = copy.deepcopy(rows)
+    selected = module().select_large_caps(rows, AS_OF, top_n=1)
+    assert selected["ranked"][0]["symbol"] == "000001"
+    assert selected["ranked"][0]["market"] == "KOSDAQ"
+    assert selected["ranked"][0]["source_market"] == "KOSDAQ GLOBAL"
+    assert selected["excluded"][0]["symbol"] == "000002"
+    assert selected["excluded"][0]["reason"] == "unsupported_market"
+    assert rows == before
+
+
 @pytest.mark.parametrize("share_type", ["preferred", "fund", "spac", "unknown"])
 def test_non_common_security_types_are_excluded_before_cap_ranking(share_type):
     rows = listing(2)

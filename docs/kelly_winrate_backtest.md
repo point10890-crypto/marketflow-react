@@ -26,6 +26,8 @@ python scripts/screen_large_cap_kelly.py --prices data/chart_analogue/closed_pri
 
 첫 실제 실행은 가격 캐시의 마지막 날짜인 **2026-10-01**을 기준으로 했습니다. 상위 100개, 재무 통과 50개, 당일 2σ 후보 0개였습니다. 제외·보류는 부채비율 초과 39개, 순이익 비양수 9개, 순이익 자료 누락 1개, 재무 누락 1개입니다. 이는 10월 3일 실시간 가격 신호가 아닙니다. 생성 결과는 `data/kelly_research/large_cap_20261001/report.html`, 전체 근거는 `report.json`, 순위·재무 판정은 `universe.csv`에 저장합니다.
 
+2026-10-03 장기 자료 대조에서 `KOSDAQ GLOBAL` 시장 표기 때문에 코스닥 일부가 순위에서 빠지는 오류를 수정했습니다. 같은 10월 1일 원자료로 재확정한 TOP100 결과는 `data/kelly_research/large_cap_20261001_v2/report.json`이며 재무 통과 52개, 당일 가격 후보 0개입니다. 긴 가격 이력·과거 시총·접수번호별 재무 확보 경로와 검증 범위는 [연구자료 확보 안내](kelly_historical_data_acquisition.md)를 확인하세요.
+
 ## 먼저 실행하기
 
 저장소 루트에서 실행합니다. 새로운 패키지 설치는 필요 없습니다.

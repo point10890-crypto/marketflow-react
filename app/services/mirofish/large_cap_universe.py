@@ -55,6 +55,11 @@ def _listing_rows(rows, as_of):
         if _day(raw.get("date"), "listing date") != as_of:
             raise ValueError("every listing row must use the same as_of snapshot date")
         row["market"] = _text(raw.get("market"), "market").upper()
+        # The provider exposes the KOSDAQ segment as a separate label. It
+        # belongs in the combined KOSPI/KOSDAQ ranking, not an excluded market.
+        if row["market"] == "KOSDAQ GLOBAL":
+            row["source_market"] = row["market"]
+            row["market"] = "KOSDAQ"
         row["source"] = _text(raw.get("source"), "listing source")
         row["market_cap"] = _number(raw.get("market_cap"), "market_cap", positive=True)
         row["volume"] = _number(raw.get("volume"), "volume", minimum=0)
