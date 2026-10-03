@@ -191,3 +191,65 @@ def test_verified_request_requires_explicit_execution_input(tmp_path, capsys):
                         '--out', str(tmp_path / 'out'), '--run-id', 'no-quotes']) == 0
     report = json.loads((tmp_path / 'out/report.json').read_text(encoding='utf-8'))
     assert report['status'] == 'held' and report['execution']['fills'] == []
+
+
+def test_render_existing_report_without_reopening_ledger_or_running_actors(tmp_path, monkeypatch):
+    module = cli()
+    from app.services.mirofish.trading_agents.orchestrator import TradingOrchestrator
+    report = asyncio.run(TradingOrchestrator(tmp_path / 'original.sqlite').run(
+        module.demo_request(), run_id='render-original'))
+    source = tmp_path / 'original.json'
+    source.write_text(json.dumps(report), encoding='utf-8')
+    original_bytes = source.read_bytes()
+    ledger_bytes = (tmp_path / 'original.sqlite').read_bytes()
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError('Rendering must not rerun actors or open a ledger')
+
+    monkeypatch.setattr(TradingOrchestrator, '__init__', forbidden)
+    unused_db = tmp_path / 'unused.sqlite'
+    assert module.main(['--render-report', str(source), '--out', str(tmp_path / 'view'),
+                        '--database', str(unused_db)]) == 0
+    assert source.read_bytes() == original_bytes
+    assert (tmp_path / 'original.sqlite').read_bytes() == ledger_bytes
+    assert not unused_db.exists()
+    assert json.loads((tmp_path / 'view/report.json').read_text('utf-8')) == report
+    attribution = json.loads((tmp_path / 'view/kelly_attribution.json').read_text('utf-8'))
+    assert attribution['rows'][0]['final_weight'] == .2
+    assert attribution['rows'][0]['post_cost_target_value'] == pytest.approx(
+        report['execution']['nav_after'] * .2)
+    markup = (tmp_path / 'view/report.html').read_text('utf-8')
+    assert '검출 결과 → 켈리 공식 → 투자 비중' in markup
+    assert '20.00%' in markup and '200,000.00원' in markup
+    in_place = tmp_path / 'same-output'
+    in_place.mkdir()
+    stored = in_place / 'report.json'
+    stored.write_text(json.dumps(report, indent=4), encoding='utf-8')
+    original_format = stored.read_bytes()
+    assert module.main(['--render-report', str(stored), '--out', str(in_place)]) == 0
+    assert stored.read_bytes() == original_format
+
+
+def test_render_blocks_credentials_without_exporting(tmp_path, capsys):
+    module = cli()
+    path = tmp_path / 'report.json'
+    path.write_text(json.dumps({'api_key': 'SECRET-RENDER-NEVER-ECHO'}), encoding='utf-8')
+    assert module.main(['--render-report', str(path), '--out', str(tmp_path / 'view')]) == 2
+    assert 'SECRET-RENDER-NEVER-ECHO' not in capsys.readouterr().out
+    assert not (tmp_path / 'view').exists()
+
+
+@pytest.mark.parametrize('filename', ['kelly_attribution.json', 'report.html', 'report.html.tmp'])
+def test_render_rejects_source_colliding_with_other_output_files(tmp_path, filename):
+    module = cli()
+    report = dict(run_id='collision', status='held', synthetic=False, paper_only=True, live_orders=False,
+        data=dict(status='blocked', reasons=[], ranked=[], eligible_symbols=[]),
+        quant=dict(qualification_complete=False, qualified=[], reasons=[], candidates=[]),
+        risk=dict(status='held', targets={}, reasons=[]), approval=dict(decision='held'),
+        execution=dict(status='held', fills=[]), stages=[])
+    source = tmp_path / filename
+    source.write_text(json.dumps(report, indent=4), encoding='utf-8')
+    before = source.read_bytes()
+    assert module.main(['--render-report', str(source), '--out', str(tmp_path)]) == 2
+    assert source.read_bytes() == before
+    assert not (tmp_path / 'report.json').exists()

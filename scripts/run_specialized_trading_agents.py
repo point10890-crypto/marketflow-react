@@ -134,11 +134,15 @@ def acquired_request(history, cohort):
                 execution=dict(date=next_weekday(as_of), quotes={}, cost_bps=5., slippage_bps=10., sell_tax_bps=0.))
 
 
-def export_report(report, out):
+def export_report(report, out, *, preserve_source=False):
     from app.utils.atomic_json import write_json_atomic
+    from app.services.mirofish.trading_agents.kelly_attribution import build_kelly_attribution, render_kelly_section
+    attribution = build_kelly_attribution(report)  # Validate before creating/exporting files.
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
-    write_json_atomic(str(out / 'report.json'), report)
+    if not preserve_source:
+        write_json_atomic(str(out / 'report.json'), report)
+    write_json_atomic(str(out / 'kelly_attribution.json'), attribution)
     def cell(value):
         return html.escape(str(value))
     stage_rows = ''.join(f'<tr><td>{cell(row["stage"])}</td><td>{cell(row["message_id"])}</td></tr>'
@@ -152,16 +156,28 @@ def export_report(report, out):
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>특화 에이전트 실행 보고서</title>
 <style>body{{font:15px/1.7 system-ui;color:#e8eef3;background:#111820;margin:0}}main{{max-width:1100px;margin:auto;padding:28px 20px}}
 table{{border-collapse:collapse;width:100%;font-size:13px}}td,th{{border-bottom:1px solid #354250;padding:9px;text-align:left}}
-td{{overflow-wrap:anywhere}}.scroll{{overflow-x:auto}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}}</style>
+td{{overflow-wrap:anywhere}}.scroll{{overflow-x:auto}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}}
+.kelly{{border:1px solid #354250;border-radius:12px;padding:20px;margin:24px 0;background:#17222c}}
+.formula{{font-size:20px;color:#91d9dd}}.muted{{color:#a8b8c7;font-size:13px}}
+.kelly-state{{border-left:3px solid #f3bf77;background:#202a34;padding:14px 18px;margin:18px 0}}
+.kelly-stock{{border-top:1px solid #354250;padding-top:12px;margin-top:20px}}
+.kelly-flow{{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:18px 0}}
+.kelly-flow>div{{border:1px solid #40515f;border-radius:8px;padding:12px;min-width:0}}
+.kelly-flow small,.kelly-flow span{{display:block;color:#a8b8c7;font-size:12px}}
+.kelly-flow b{{display:block;font-size:25px;margin:6px 0}}.kelly-flow .kelly-final{{border-color:#64c6bd;background:#203934}}
+details{{margin:18px 0}}summary{{cursor:pointer;color:#a8b8c7}}
+@media(max-width:760px){{.kelly-flow{{grid-template-columns:repeat(2,minmax(0,1fr))}}main{{padding:18px 12px}}.kelly{{padding:14px}}}}
+</style>
 <main><p>{label}</p><h1>특화 에이전트 → CIO → 가상 체결</h1>
 <p>실행 {cell(report['run_id'])} · 상태 {cell(report['status'])} · 가상 체결 {len(report['execution']['fills'])}건</p>
 <p>현재 TOP100 코호트의 연구 실행입니다. 실주문은 전송하지 않으며 미래 승률·수익을 보장하지 않습니다.
 20%는 종목 비중 상한입니다. 합성 검증 결과는 실제 투자 성과가 아닙니다.</p>
+{render_kelly_section(attribution)}
 <h2>판정 근거</h2><pre>{cell(json.dumps(reasons, ensure_ascii=False, indent=2))}</pre>
 <p>CIO: {cell(report['approval']['decision'])} · {cell(report['approval'].get('reason', ''))}</p>
 <h2>학습·검증 통과 종목</h2><div class="scroll"><table><tr><th>종목</th><th>검증 표본</th><th>관측 승률</th><th>Wilson 하한</th></tr>{target_rows}</table></div>
-<h2>비중 및 가상 체결</h2><pre>{cell(json.dumps(dict(targets=report['risk']['targets'], execution=report['execution']), ensure_ascii=False, indent=2))}</pre>
-<h2>메시지 연결 및 복구 기록</h2><div class="scroll"><table><tr><th>단계</th><th>SHA-256 메시지 ID</th></tr>{stage_rows}</table></div></main></html>'''
+<details><summary>비중 및 가상 체결 원문</summary><pre>{cell(json.dumps(dict(targets=report['risk']['targets'], execution=report['execution']), ensure_ascii=False, indent=2))}</pre></details>
+<details><summary>메시지 연결 및 복구 기록</summary><div class="scroll"><table><tr><th>단계</th><th>SHA-256 메시지 ID</th></tr>{stage_rows}</table></div></details></main></html>'''
     temporary = out / 'report.html.tmp'
     temporary.write_text(content, encoding='utf-8')
     temporary.replace(out / 'report.html')
@@ -173,12 +189,28 @@ def main(argv=None):
     mode.add_argument('--demo', action='store_true', help='Manufactured fixture; no empirical performance claim')
     mode.add_argument('--request', type=Path, help='Explicit message input JSON; no key fields permitted')
     mode.add_argument('--acquired-data', type=Path, help='Acquired price/financial audit directory; remains unverified')
+    mode.add_argument('--render-report', type=Path, help='Re-export a stored report; no actors, acquisition, or ledger access')
     parser.add_argument('--cohort', type=Path, default=ROOT / 'data/kelly_research/large_cap_20261001_v2/report.json')
     parser.add_argument('--database', type=Path, default=ROOT / 'data/kelly_research/trading_agents/agents.sqlite')
     parser.add_argument('--out', type=Path, default=ROOT / 'data/kelly_research/trading_agents/latest')
-    parser.add_argument('--run-id', required=True, help='Same ID resumes identical input; different input is rejected')
+    parser.add_argument('--run-id', help='Required for execution; same ID resumes identical input')
     args = parser.parse_args(argv)
+    if not args.render_report and not args.run_id:
+        parser.error('--run-id is required for execution')
     try:
+        if args.render_report:
+            source = args.render_report.resolve()
+            if source in {(args.out / filename).resolve()
+                          for filename in ('kelly_attribution.json', 'report.html', 'report.html.tmp')}:
+                raise ValueError('Stored report collides with an output path')
+            report = read_json(args.render_report)
+            if args.run_id and args.run_id != report['run_id']:
+                raise ValueError('Stored report run ID differs')
+            export_report(report, args.out,
+                          preserve_source=(args.out / 'report.json').resolve() == args.render_report.resolve())
+            print(json.dumps(dict(run_id=report['run_id'], status=report['status'], mode='report-view',
+                                  new_execution=False, report=str((args.out / 'report.html').resolve()))))
+            return 0
         from app.services.mirofish.trading_agents.orchestrator import TradingOrchestrator
         from app.services.mirofish.trading_agents.models import create_message
         request = demo_request() if args.demo else (read_json(args.request) if args.request
