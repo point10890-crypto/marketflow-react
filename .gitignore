@@ -176,3 +176,5 @@ handoff_kit/
 data/omni/
 data/chart_analogue/
 .venv-ci/
+# Offline Kelly research run artifacts
+/data/kelly_research/
