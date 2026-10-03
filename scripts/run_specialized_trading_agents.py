@@ -134,6 +134,76 @@ def acquired_request(history, cohort):
                 execution=dict(date=next_weekday(as_of), quotes={}, cost_bps=5., slippage_bps=10., sell_tax_bps=0.))
 
 
+def render_stock_catalogue(report, attribution):
+    """Show supplied stock identities without promoting preliminary quality to alpha."""
+    def cell(value):
+        return html.escape(str(value))
+    data, quant = report.get('data', {}), report.get('quant', {})
+    ranked, quality = data.get('ranked', []), data.get('quality', {})
+    results = {}
+    for row in quality.get('results', []):
+        results.setdefault(row['symbol'], []).append(row)
+    eligible = set(data.get('eligible_symbols', []))
+    groups = dict(passed=[], held=[], pending=[])
+    for row in ranked:
+        matches = results.get(row['symbol'], [])
+        evidence = matches[0] if len(matches) == 1 else {}
+        if any(evidence.get(key) != row.get(key) for key in ('symbol', 'name', 'market')):
+            evidence = {}
+        group = ('passed' if evidence.get('quality_pass') is True and row['symbol'] in eligible else
+                 'held' if evidence.get('quality_pass') is False else 'pending')
+        groups[group].append((row, evidence))
+    checked = data.get('status') == 'ready' and quant.get('qualification_complete') is True
+    candidates = {row['symbol'] for row in quant.get('candidates', [])} if checked else set()
+    qualified = {row['symbol'] for row in quant.get('qualified', [])} if checked else set()
+    approved = {row['symbol']: row['final_weight'] for row in attribution['rows']
+                if attribution['status'] == 'ready'}
+    title = '합성 검증 종목' if report['synthetic'] else '실제 조사 종목'
+    as_of = quality.get('as_of') or quant.get('as_of') or (ranked[0].get('date') if ranked else '자료 없음')
+    content = [f'<section id="stocks" class="stock-catalogue"><h2>{title}</h2>',
+        f'<p>보고서 기준 {cell(as_of)} · 입력 시총 상위 {len(ranked)}종목 · '
+        f'재무 1차 통과 {len(groups["passed"])}종목 · 재무 1차 보류 {len(groups["held"])}종목 · '
+        f'CIO 승인 목표 {sum(weight > 0 for weight in approved.values())}종목</p>']
+    if not checked:
+        content.append('<p class="stock-state"><strong>승률·켈리 검사 대기</strong> — 가격 이력·재무 최초 공시·출처 검증이 '
+                       '완료되지 않아 최종 통계 검사를 진행하지 않았습니다. 아래는 입력 종목과 1차 재무 판정입니다. '
+                       '현재 매수 추천 목록이 아닙니다.</p>')
+    elif report['synthetic']:
+        content.append('<p class="stock-state">동작 검증용 합성 종목입니다. 실제 종목 검출이나 투자 성과를 뜻하지 않습니다.</p>')
+    else:
+        content.append(f'<p class="stock-state">현재 진입 신호 {len(candidates)}종목. 통계 통과 여부와 CIO 승인 목표를 함께 확인하세요.</p>')
+    labels = dict(quality_passed='재무 1차 통과', high_debt_ratio='부채비율 기준 초과',
+        nonpositive_net_income='순이익 0 이하', nonpositive_operating_profit='영업이익 0 이하',
+        missing_financial_net_income='순이익 자료 누락')
+    for group, heading in [('passed', '재무 1차 통과'), ('held', '재무 1차 보류'), ('pending', '재무 자료 확인 대기')]:
+        rows = groups[group]
+        if not rows:
+            continue
+        content.append(f'<h3>{heading} {len(rows)}종목</h3>' if group == 'passed' else
+                       f'<details><summary>{heading} {len(rows)}종목과 사유</summary>')
+        content.append('<div class="scroll stock-table"><table><thead><tr><th>입력 시총 순위</th><th>종목명 · 코드</th>'
+                       '<th>시장</th><th>1차 재무 판정</th><th>승률 검사</th><th>켈리 배정</th></tr></thead><tbody>')
+        for row, evidence in rows:
+            symbol = row['symbol']
+            financial = ('재무 1차 통과' if group == 'passed' else '자료 확인 대기' if group == 'pending'
+                         else labels.get(evidence.get('reason'), evidence.get('reason', '재무 보류')))
+            statistical = ('재무 기준 보류' if group == 'held' else '승률 검사 대기' if not checked else
+                           '현재 진입 신호' if symbol in candidates else
+                           '통계 통과 · 현재 진입 신호 없음' if symbol in qualified else '통계 미통과 / 미확정')
+            allocation = (f'승인 목표 {approved[symbol]:.2%}' if symbol in approved else
+                          '미계산' if not checked else '추가 체결 없음' if attribution['status'] == 'duplicate_day' else '미승인')
+            content.append(f'<tr><td>{cell(row.get("rank", "—"))}</td><td><strong>{cell(row["name"])}</strong>'
+                           f'<small class="stock-code">{cell(symbol)}</small></td><td>{cell(row["market"])}</td>'
+                           f'<td>{cell(financial)}</td><td>{cell(statistical)}</td><td>{cell(allocation)}</td></tr>')
+        content.append('</tbody></table></div>')
+        if group != 'passed':
+            content.append('</details>')
+    if not ranked:
+        content.append('<p>이 실행에는 입력된 종목 목록이 없습니다.</p>')
+    content.append('</section>')
+    return ''.join(content)
+
+
 def export_report(report, out, *, preserve_source=False):
     from app.utils.atomic_json import write_json_atomic
     from app.services.mirofish.trading_agents.kelly_attribution import build_kelly_attribution, render_kelly_section
@@ -154,7 +224,7 @@ def export_report(report, out, *, preserve_source=False):
     label = '합성 데이터 · 동작 검증' if report['synthetic'] else '실제 자료 · 검증 상태 점검'
     content = f'''<!doctype html><html lang="ko"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>특화 에이전트 실행 보고서</title>
-<style>body{{font:15px/1.7 system-ui;color:#e8eef3;background:#111820;margin:0}}main{{max-width:1100px;margin:auto;padding:28px 20px}}
+<style>body{{font:15px/1.7 system-ui;color:#e8eef3;background:#111820;margin:0}}main{{max-width:1100px;margin:auto;padding:28px 20px;overflow-wrap:anywhere}}
 table{{border-collapse:collapse;width:100%;font-size:13px}}td,th{{border-bottom:1px solid #354250;padding:9px;text-align:left}}
 td{{overflow-wrap:anywhere}}.scroll{{overflow-x:auto}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}}
 .kelly{{border:1px solid #354250;border-radius:12px;padding:20px;margin:24px 0;background:#17222c}}
@@ -165,6 +235,10 @@ td{{overflow-wrap:anywhere}}.scroll{{overflow-x:auto}}pre{{white-space:pre-wrap;
 .kelly-flow>div{{border:1px solid #40515f;border-radius:8px;padding:12px;min-width:0}}
 .kelly-flow small,.kelly-flow span{{display:block;color:#a8b8c7;font-size:12px}}
 .kelly-flow b{{display:block;font-size:25px;margin:6px 0}}.kelly-flow .kelly-final{{border-color:#64c6bd;background:#203934}}
+.stock-catalogue{{border:1px solid #40515f;border-radius:12px;padding:20px;margin:24px 0;background:#17222c}}
+.stock-state{{border-left:3px solid #f3bf77;background:#202a34;padding:12px 16px}}
+.stock-table{{max-height:520px;overflow:auto}}.stock-table th{{position:sticky;top:0;background:#20303d;z-index:1}}
+.stock-table table{{min-width:700px}}.stock-code{{display:block;color:#a8b8c7;font-size:12px}}
 details{{margin:18px 0}}summary{{cursor:pointer;color:#a8b8c7}}
 @media(max-width:760px){{.kelly-flow{{grid-template-columns:repeat(2,minmax(0,1fr))}}main{{padding:18px 12px}}.kelly{{padding:14px}}}}
 </style>
@@ -172,6 +246,7 @@ details{{margin:18px 0}}summary{{cursor:pointer;color:#a8b8c7}}
 <p>실행 {cell(report['run_id'])} · 상태 {cell(report['status'])} · 가상 체결 {len(report['execution']['fills'])}건</p>
 <p>현재 TOP100 코호트의 연구 실행입니다. 실주문은 전송하지 않으며 미래 승률·수익을 보장하지 않습니다.
 20%는 종목 비중 상한입니다. 합성 검증 결과는 실제 투자 성과가 아닙니다.</p>
+{render_stock_catalogue(report, attribution)}
 {render_kelly_section(attribution)}
 <h2>판정 근거</h2><pre>{cell(json.dumps(reasons, ensure_ascii=False, indent=2))}</pre>
 <p>CIO: {cell(report['approval']['decision'])} · {cell(report['approval'].get('reason', ''))}</p>

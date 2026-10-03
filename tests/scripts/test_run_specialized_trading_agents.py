@@ -122,6 +122,11 @@ def test_acquired_unverified_sources_are_held_without_quant_or_fills(tmp_path):
     assert {'price_adjustment_verified_missing_or_unverified',
             'financial_vintage_verified_missing_or_unverified'}.issubset(report['data']['reasons'])
     assert request['acquisition']['price_rows_available'] == 1
+    module.export_report(report, tmp_path / 'actual-view')
+    markup = (tmp_path / 'actual-view/report.html').read_text('utf-8')
+    assert '실제 조사 종목' in markup and '삼성전자' in markup and '005930' in markup
+    assert markup.index('id="stocks"') < markup.index('id="kelly"')
+    assert '승률·켈리 검사 대기' in markup and '미계산' in markup
 
 
 def test_acquired_corrupt_file_is_rejected_and_verification_cannot_be_promoted(tmp_path):
