@@ -64,6 +64,8 @@ def alpha_lab():
     try:
         service = _alpha_lab_service()
         status = service.start_scan() if request.method == 'POST' else service.read_status()
+        from app.services.mirofish.alpha_lab.proposals import present_status
+        status = present_status(status)
         code = 202 if request.method == 'POST' and status.get('state') == 'running' else 200
         return jsonify(status), code
     except Exception:

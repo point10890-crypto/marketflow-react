@@ -9,7 +9,7 @@ separate from this research tournament.
 
 ## Read and run
 
-- Member screen: `/dashboard/ai-bain/chart-predict`, **전략 실험실 · 에이전트 검출**.
+- Member screen: `/dashboard/ai-bain/chart-predict`, **에이전트 매매 제안**.
 - Saved status: `GET /api/admin/mirofish/alpha-lab`.
 - Fixed background experiment: `POST /api/admin/mirofish/alpha-lab` with `{}`.
 - Both require an admin or active AI Brain member and use private/no-store.
@@ -71,6 +71,42 @@ audit evidence; revised closed outcomes are excluded from summary statistics.
 These are watchlist outcome observations, not brokerage account P&L. At 730
 decision days the journal requires explicit archival rather than silent eviction.
 Unsigned/corrupt journals fail closed and preserve the previous public report.
+
+## Clear manual proposals
+
+The member API derives `proposal_summary` and each candidate's `proposal` from
+the verified saved result. The conclusion and stock actions appear before
+strategy diagnostics. Projection is cheap and never fits models, acquires
+sources, rewrites saved evidence or changes the frozen forward journal.
+
+- **매수 제안 (buy):** a conditional manual research proposal. The stock must
+  match the validation-selected champion, its qualified calibration, positive
+  validation mean and positive held-out/doubled-cost returns, with at least 30
+  completed validation/test/stress outcomes. It also requires an active setup,
+  current symbol session, valid source timestamps and a finite reference plan.
+  Research weight is above zero and at most 20%; weight times planned stop
+  fraction is at most 1%. A decision expires 24 hours after the original scan.
+- **진입 대기 (wait):** missing/zero/insufficient evidence, inactive setup,
+  stale/missing/future price/source timestamps, invalid plan, expired decision,
+  refresh failure, or ongoing/failed analysis. Legacy missing fields do not
+  become a buy proposal. Source sessions may be at most seven calendar days old.
+- **매매 제외 (avoid):** the matching strategy lost money in the held-out or
+  doubled-cost test. This excludes a new buy; it is not advice to sell an
+  existing holding. A negative strategy can be excluded even if no champion
+  was selected. In-progress/failed status suppresses any retained buy proposal.
+
+`proposal.proposed_weight` is a manual research suggestion and remains separate
+from the existing `risk.weight` and CIO approval. Historical vintage,
+current-cohort and adjustment limitations remain present; this proposal layer
+does not change `analysis_ready`, approve capital or enable broker orders.
+Prices are last-closed-price references, never live quotes or promised fills.
+Next-open entry requires checking the actual opening price and recalculating
+barriers and sizing. Excluded/waiting stocks' reference plans are collapsed
+under evidence details, so they do not look like active entry instructions.
+
+The UI suppresses retained buy proposals during a rerun, status/poll errors,
+failed analysis and client-side expiry, including while a view remains open.
+Decisive wording describes an action recommendation, not certain future profit.
 
 Local replay evidence lives in `data/alpha_lab/runs/`; compact private member
 status lives in `data/alpha_lab/status.json`. Generated artifacts remain ignored.

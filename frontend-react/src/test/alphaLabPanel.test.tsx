@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AlphaLabPanel from '@/components/aibain/AlphaLabPanel';
-import { fetchAlphaLab, startAlphaLab, validateAlphaLabStatus } from '@/lib/alphaLabApi';
+import { fetchAlphaLab, startAlphaLab, validateAlphaLabStatus, type AlphaLabStatus } from '@/lib/alphaLabApi';
 
 const api = vi.hoisted(() => ({ fetchAuthAPI: vi.fn(), postAuthAPI: vi.fn() }));
 vi.mock('@/lib/api', () => api);
@@ -28,9 +28,29 @@ function reportFixture() {
     });
 }
 const held = () => ({ ...missing, state: 'held', generated_at: '2026-10-04T00:01:00Z', report: reportFixture() });
+const now = '2026-10-04T01:00:00Z';
+function proposed(action: 'buy' | 'wait' | 'avoid' = 'buy'): AlphaLabStatus {
+    const value = held() as AlphaLabStatus;
+    const r = value.report!;
+    r.decision_at = '2026-10-04T00:00:00Z'; r.latest_session = '2026-10-02';
+    r.provenance.captured_at = r.decision_at; r.provenance.analysis_ready = false;
+    r.strategies[0].qualified = true;
+    r.strategies[0].test.trades = 35; r.strategies[0].stress.trades = 35;
+    r.strategies[0].stress.net_total_return = .02;
+    const row = r.candidates[0];
+    row.setup_active = true; row.quote_session = r.latest_session; row.risk.research_weight = .1;
+    row.proposal = { action, label: action === 'buy' ? '매수 제안' : action === 'avoid' ? '매매 제외' : '진입 대기',
+        reason: action === 'avoid' ? '고정 테스트 손실로 신규매수에서 제외합니다.' : action === 'wait' ? '다음 자료 확인까지 진입을 기다립니다.' : '선택 전략의 검증과 비용 검사 및 진입 조건을 통과했습니다.',
+        next_step: action === 'buy' ? '다음 장 시가 확인 후 재계산하세요.' : '새 검사 결과가 나오면 다시 판단하세요.',
+        proposed_weight: action === 'buy' ? .1 : 0, input_session: r.latest_session, derived_at: now,
+        valid_until: '2026-10-05T00:00:00Z', plan_basis: 'last_closed_price_next_open_reference', order_allowed: false };
+    r.proposal_summary = { action, headline: action === 'avoid' ? '오늘 제안: 신규매수 제외' : action === 'buy' ? '오늘 제안: 매수 검토 1종목' : '오늘 제안: 진입 대기',
+        reason: row.proposal.reason, buy_count: Number(action === 'buy'), wait_count: Number(action === 'wait'), avoid_count: Number(action === 'avoid'), policy_version: 'alpha-proposal-v1' };
+    return value;
+}
 
-beforeEach(() => { api.fetchAuthAPI.mockReset(); api.postAuthAPI.mockReset(); });
-afterEach(() => { cleanup(); vi.useRealTimers(); });
+beforeEach(() => { api.fetchAuthAPI.mockReset(); api.postAuthAPI.mockReset(); vi.spyOn(Date, 'now').mockReturnValue(Date.parse(now)); });
+afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
 describe('AlphaLab evidence boundary', () => {
     it('accepts saved research evidence and calls only the protected status GET', async () => {
@@ -63,9 +83,159 @@ describe('AlphaLab evidence boundary', () => {
         value.report!.candidates = Array.from({ length: 4 }, (_, i) => ({ ...structuredClone(value.report!.candidates[0]), symbol: `00000${i}` }));
         expect(() => validateAlphaLabStatus(value)).toThrow(/응답 형식/);
     });
+    it('accepts a qualified manual proposal with held automatic weight and unverified historical vintage', () => {
+        const value = validateAlphaLabStatus(proposed());
+        expect(value.report?.candidates[0].proposal?.action).toBe('buy');
+        expect(value.report?.candidates[0].risk.weight).toBe(0);
+    });
+    it.each([
+        ['wrong action label', (r: NonNullable<AlphaLabStatus['report']>) => { r.candidates[0].proposal!.label = '매매 제외'; }],
+        ['forged summary counts', (r: NonNullable<AlphaLabStatus['report']>) => { r.proposal_summary!.buy_count = 2; }],
+        ['contradictory summary action', (r: NonNullable<AlphaLabStatus['report']>) => { r.proposal_summary!.action = 'avoid'; }],
+        ['negative fixed test', (r: NonNullable<AlphaLabStatus['report']>) => { r.strategies[0].test.net_total_return = -.01; }],
+        ['zero cost stress', (r: NonNullable<AlphaLabStatus['report']>) => { r.strategies[0].stress.net_total_return = 0; }],
+        ['too few outcomes', (r: NonNullable<AlphaLabStatus['report']>) => { r.strategies[0].stress.trades = 29; }],
+        ['negative validation mean', (r: NonNullable<AlphaLabStatus['report']>) => { r.strategies[0].validation.mean_net_return = 0; }],
+        ['not qualified', (r: NonNullable<AlphaLabStatus['report']>) => { r.strategies[0].qualified = false; }],
+        ['not validation champion', (r: NonNullable<AlphaLabStatus['report']>) => { r.champion.strategy_id = null; }],
+        ['inactive setup', (r: NonNullable<AlphaLabStatus['report']>) => { r.candidates[0].setup_active = false; }],
+        ['uncalibrated risk', (r: NonNullable<AlphaLabStatus['report']>) => { r.candidates[0].risk.p = null; }],
+        ['certain probability', (r: NonNullable<AlphaLabStatus['report']>) => { r.candidates[0].risk.p = 1; }],
+        ['missing research weight', (r: NonNullable<AlphaLabStatus['report']>) => { delete r.candidates[0].risk.research_weight; }],
+        ['plan beyond eight percent', (r: NonNullable<AlphaLabStatus['report']>) => { const row = r.candidates[0]; row.plan!.stop_price = 54600; row.plan!.loss_fraction = .09; }],
+        ['entry differs from reference close', (r: NonNullable<AlphaLabStatus['report']>) => { r.candidates[0].last_close = 61000; }],
+        ['understated stop risk near cap', (r: NonNullable<AlphaLabStatus['report']>) => { const row = r.candidates[0]; row.plan!.stop_price = 56994.6; row.plan!.loss_fraction = .05; row.proposal!.proposed_weight = .2; row.risk.research_weight = .2; }],
+        ['mismatched input session', (r: NonNullable<AlphaLabStatus['report']>) => { r.candidates[0].proposal!.input_session = '2026-10-01'; }],
+        ['future decision time', (r: NonNullable<AlphaLabStatus['report']>) => { r.decision_at = '2026-10-05T00:00:00Z'; }],
+        ['wrong validity horizon', (r: NonNullable<AlphaLabStatus['report']>) => { r.candidates[0].proposal!.valid_until = '2026-10-06T00:00:00Z'; }],
+        ['automatic order permission', (r: NonNullable<AlphaLabStatus['report']>) => { Object.assign(r.candidates[0].proposal!, { order_allowed: true }); }],
+        ['excess plan risk', (r: NonNullable<AlphaLabStatus['report']>) => { const row = r.candidates[0]; row.plan!.stop_price = 54000; row.plan!.loss_fraction = .1; row.proposal!.proposed_weight = .2; row.risk.research_weight = .2; }],
+        ['private proposal reason', (r: NonNullable<AlphaLabStatus['report']>) => { r.candidates[0].proposal!.reason = 'C:\\private\\.env'; }],
+        ['private summary reason', (r: NonNullable<AlphaLabStatus['report']>) => { r.proposal_summary!.reason = 'api_key=secret'; }],
+    ])('rejects a forged BUY: %s', (_, mutate) => {
+        const value = proposed(); mutate(value.report!);
+        expect(() => validateAlphaLabStatus(value)).toThrow(/응답 형식/);
+    });
+    it('rejects a nonzero allocation for WAIT or AVOID', () => {
+        const value = proposed('wait'); value.report!.candidates[0].proposal!.proposed_weight = .1;
+        expect(() => validateAlphaLabStatus(value)).toThrow(/응답 형식/);
+    });
+    it('accepts expired genuine evidence but sanitizes its BUY and summary to WAIT', () => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse('2026-10-05T00:00:00Z'));
+        const value = validateAlphaLabStatus(proposed());
+        expect(value.report?.candidates[0].proposal?.action).toBe('wait');
+        expect(value.report?.proposal_summary?.buy_count).toBe(0);
+        expect(value.report?.candidates[0].plan?.stop_price).toBe(57000);
+    });
+    it.each(['source', 'scope', 'session'] as const)('preserves evidence but sanitizes stale %s freshness to WAIT', field => {
+        const input = proposed();
+        if (field === 'source') input.report!.provenance.captured_at = '2026-09-25T00:00:00Z';
+        if (field === 'scope') input.report!.universe.scope_date = '2026-09-25';
+        if (field === 'session') { input.report!.latest_session = '2026-09-25'; input.report!.candidates[0].quote_session = '2026-09-25'; input.report!.candidates[0].proposal!.input_session = '2026-09-25'; }
+        const value = validateAlphaLabStatus(input);
+        expect(value.report?.candidates[0].proposal?.action).toBe('wait');
+        expect(value.report?.candidates[0].plan?.stop_price).toBe(57000);
+    });
+    it('accepts absent source capture on a legitimate WAIT report', () => {
+        const input = proposed('wait'); input.report!.provenance.captured_at = null;
+        expect(validateAlphaLabStatus(input).report?.candidates[0].proposal?.action).toBe('wait');
+    });
 });
 
 describe('AlphaLab operational panel', () => {
+    it('leads with the conclusion and an actionable manual BUY even when automatic allocation remains held', async () => {
+        api.fetchAuthAPI.mockResolvedValue(proposed());
+        render(<AlphaLabPanel />);
+        const card = await screen.findByRole('article', { name: /삼성전자/ });
+        expect(screen.getByRole('heading', { name: '에이전트 매매 제안' })).toBeInTheDocument();
+        const conclusion = screen.getByText('오늘 제안: 매수 검토 1종목');
+        expect(conclusion.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(within(card).getByText('BUY · 매수 제안')).toBeVisible();
+        expect(within(card).getByText('제안 비중')).toBeVisible();
+        expect(within(card).getByText('10.0%')).toBeVisible();
+        expect(within(card).getByText('기준 종가')).toBeVisible();
+        expect(within(card).getByText('다음 장 시가 확인 후 재계산')).toBeVisible();
+        expect(screen.getByText('직접 판단용 · 주문 실행 없음')).toBeVisible();
+        expect(screen.getByRole('table', { name: '전략 검증 비교' })).not.toBeVisible();
+        expect(api.postAuthAPI).not.toHaveBeenCalled();
+    });
+    it('shows AVOID as new-buy exclusion and hides reference prices until the native disclosure opens', async () => {
+        const value = proposed('avoid'); value.report!.strategies[0].test.net_total_return = -.0549;
+        api.fetchAuthAPI.mockResolvedValue(value);
+        const onSelect = vi.fn(); render(<AlphaLabPanel onSelectSymbol={onSelect} />);
+        const card = await screen.findByRole('article', { name: /삼성전자/ });
+        expect(screen.getByText('오늘 제안: 신규매수 제외')).toBeVisible();
+        expect(within(card).getByText('AVOID · 매매 제외')).toBeVisible();
+        expect(within(card).getByText('고정 테스트 손실로 신규매수에서 제외합니다.')).toBeVisible();
+        expect(within(card).getByText('57,000원')).not.toBeVisible();
+        const disclosure = within(card).getByText('제외 근거와 참고 계산');
+        expect(disclosure.tagName).toBe('SUMMARY'); disclosure.focus(); expect(disclosure).toHaveFocus();
+        await userEvent.click(disclosure);
+        expect(within(card).getByText('57,000원')).toBeVisible();
+        await userEvent.click(within(card).getByRole('button', { name: /종목 상세/ }));
+        expect(onSelect).toHaveBeenCalledWith('005930');
+    });
+    it('uses WAIT for a legacy report instead of inferring a buy from its score', async () => {
+        api.fetchAuthAPI.mockResolvedValue(held()); render(<AlphaLabPanel />);
+        const card = await screen.findByRole('article', { name: /삼성전자/ });
+        expect(within(card).getByText('WAIT · 진입 대기')).toBeVisible();
+        expect(within(card).getByText('57,000원')).not.toBeVisible();
+        expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
+    });
+    it.each(['running', 'failed'] as const)('immediately hides a retained BUY before the POST and throughout a %s result', async state => {
+        api.fetchAuthAPI.mockResolvedValue(proposed());
+        let finish!: (value: unknown) => void;
+        api.postAuthAPI.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+        render(<AlphaLabPanel />); await screen.findByText('BUY · 매수 제안');
+        fireEvent.click(screen.getByRole('button', { name: '전략 실험 실행' }));
+        expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
+        expect(screen.getByText('WAIT · 진입 대기')).toBeVisible();
+        await act(async () => { finish({ ...missing, state }); });
+        expect(screen.getByText('WAIT · 진입 대기')).toBeVisible();
+        expect(screen.getByText('57,000원')).not.toBeVisible();
+    });
+    it('downgrades a BUY on expiry while idle without starting or fetching another experiment', async () => {
+        vi.mocked(Date.now).mockRestore(); vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-04T23:59:59Z'));
+        api.fetchAuthAPI.mockResolvedValue(proposed()); render(<AlphaLabPanel />); await act(async () => {});
+        expect(screen.getByText('BUY · 매수 제안')).toBeVisible();
+        await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+        expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
+        expect(screen.getByText('WAIT · 진입 대기')).toBeVisible();
+        expect(screen.getByText('57,000원')).not.toBeVisible();
+        expect(api.fetchAuthAPI).toHaveBeenCalledTimes(1); expect(api.postAuthAPI).not.toHaveBeenCalled();
+    });
+    it.each(['source', 'scope'] as const)('downgrades a BUY when its %s becomes eight KST calendar days old before the decision expires', async field => {
+        vi.mocked(Date.now).mockRestore(); vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-04T14:59:59Z'));
+        const value = proposed();
+        if (field === 'source') value.report!.provenance.captured_at = '2026-09-27T00:00:00Z';
+        else value.report!.universe.scope_date = '2026-09-27';
+        api.fetchAuthAPI.mockResolvedValue(value); render(<AlphaLabPanel />); await act(async () => {});
+        expect(screen.getByText('BUY · 매수 제안')).toBeVisible();
+        await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+        expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
+        expect(screen.getByText('WAIT · 진입 대기')).toBeVisible();
+        expect(api.fetchAuthAPI).toHaveBeenCalledTimes(1);
+    });
+    it('suppresses a retained BUY immediately during a refresh and after a read fails', async () => {
+        let rejectRead!: (reason: Error) => void;
+        api.fetchAuthAPI.mockResolvedValueOnce(proposed()).mockImplementationOnce(() => new Promise((_, reject) => { rejectRead = reject; }));
+        render(<AlphaLabPanel />); await screen.findByText('BUY · 매수 제안');
+        fireEvent.click(screen.getByRole('button', { name: '저장 결과 새로고침' }));
+        expect(screen.getByText('WAIT · 진입 대기')).toBeVisible();
+        expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
+        await act(async () => { rejectRead(new Error('private worker error')); });
+        expect(screen.getByRole('alert')).not.toHaveTextContent('private');
+        expect(screen.getByText('WAIT · 진입 대기')).toBeVisible();
+        expect(screen.getByText('57,000원')).not.toBeVisible();
+    });
+    it('reevaluates an expired proposal when returning to the window after a clock jump', async () => {
+        api.fetchAuthAPI.mockResolvedValue(proposed()); render(<AlphaLabPanel />); await screen.findByText('BUY · 매수 제안');
+        vi.mocked(Date.now).mockReturnValue(Date.parse('2026-10-05T00:00:00Z'));
+        fireEvent(window, new Event('focus'));
+        expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
+        expect(screen.getByText('WAIT · 진입 대기')).toBeVisible();
+        expect(api.fetchAuthAPI).toHaveBeenCalledTimes(1);
+    });
     it('shows held stock, price plan, validation contest and agent evidence without an automatic start', async () => {
         api.fetchAuthAPI.mockResolvedValue(held());
         const onSelect = vi.fn();
@@ -76,7 +246,11 @@ describe('AlphaLab operational panel', () => {
         expect(candidate).toHaveTextContent('57,000원');
         expect(candidate).toHaveTextContent('66,000원');
         expect(candidate).toHaveTextContent('0.0%');
-        expect(screen.getByText(/실투자 승인 없음/)).toBeInTheDocument();
+        expect(screen.getByText(/직접 판단용 연구 의견 · 실투자 승인 없음/)).toBeVisible();
+        expect(within(candidate).getByText('57,000원')).not.toBeVisible();
+        await userEvent.click(within(candidate).getByText('대기 근거와 참고 계산'));
+        expect(within(candidate).getByText('57,000원')).toBeVisible();
+        await userEvent.click(screen.getByText('전략 비교 · 에이전트 · 자료 근거 펼치기'));
         expect(screen.getByRole('table', { name: '전략 검증 비교' })).toHaveTextContent('추세 지속');
         expect(screen.getByRole('list', { name: '에이전트 진행 상태' }).children).toHaveLength(6);
         expect(screen.getByText(/전향 관측 대기/)).toBeInTheDocument();

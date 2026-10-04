@@ -153,3 +153,56 @@ def test_alpha_lab_does_not_expose_other_mutation_methods(client, provider, meth
     assert response.status_code == 405
     provider.read_status.assert_not_called()
     provider.start_scan.assert_not_called()
+
+
+def full_research_status(state='held'):
+    return dict(schema_version=1, state=state, error=None, report=dict(schema_version=1, mode='research',
+        champion=dict(strategy_id=None), candidates=[dict(symbol='042700', name='한미반도체', strategy_id='momentum')],
+        strategies=[dict(strategy_id='momentum', test=dict(net_total_return=-.1))],
+        approval=dict(status='held', approved_exposure=0., live_orders=False)))
+
+
+@pytest.mark.parametrize('method', ['GET', 'POST'])
+def test_routes_add_manual_opinions_without_mutating_retained_report(client, provider, method):
+    from copy import deepcopy
+    saved = full_research_status(); original = deepcopy(saved)
+    operation = provider.read_status if method == 'GET' else provider.start_scan
+    operation.return_value = saved
+    response = client.open(ALPHA_LAB_PATH, method=method)
+    assert response.status_code == 200
+    proposal = response.json['report']['candidates'][0]['proposal']
+    assert proposal['action'] == 'avoid'
+    assert proposal['order_allowed'] is False
+    assert response.json['report']['proposal_summary']['avoid_count'] == 1
+    assert response.json['report']['approval'] == original['report']['approval']
+    assert saved == original
+    assert_private(response)
+
+
+@pytest.mark.parametrize('method, state, code', [('GET', 'failed', 200), ('GET', 'running', 200), ('POST', 'running', 202)])
+def test_routes_never_reuse_retained_buy_when_scan_running_or_failed(client, provider, method, state, code):
+    saved = full_research_status(state)
+    saved['report']['candidates'][0]['proposal'] = dict(action='buy')
+    operation = provider.read_status if method == 'GET' else provider.start_scan
+    operation.return_value = saved
+    response = client.open(ALPHA_LAB_PATH, method=method)
+    assert response.status_code == code
+    assert response.json['report']['candidates'][0]['proposal']['action'] == 'wait'
+    assert response.json['report']['candidates'][0]['proposal']['proposed_weight'] == 0.
+
+
+def test_repeated_get_never_changes_the_forward_journal(client, provider, monkeypatch, tmp_path):
+    from app.services.mirofish.alpha_lab import store
+    journal = tmp_path/'forward.json'; journal.write_text('{"immutable":"decision"}')
+    before = journal.read_bytes()
+    def forbidden(*_args, **_kwargs): raise AssertionError('GET must not write or observe future outcomes')
+    monkeypatch.setattr(store, '_write', forbidden)
+    monkeypatch.setattr(store, 'observe_and_freeze', forbidden)
+    provider.read_status.return_value = full_research_status()
+    for _ in range(2):
+        response = client.get(ALPHA_LAB_PATH)
+        assert response.status_code == 200
+        assert response.json['report']['candidates'][0]['proposal']['action'] == 'avoid'
+    assert journal.read_bytes() == before
+    assert provider.read_status.call_count == 2
+    provider.start_scan.assert_not_called()

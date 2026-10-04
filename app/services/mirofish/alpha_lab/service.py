@@ -84,7 +84,7 @@ def normalize_report(core, inputs, *, now=None):
         if not inputs['provenance']['analysis_ready']:
             reasons.append('source_verification_required')
         candidates.append(dict(symbol=raw['symbol'], name=raw['name'], strategy_id=raw.get('strategy_id', raw.get('strategy')),
-            score=raw['score'], last_close=raw['last_close'], plan={key: plan[key] for key in
+            score=raw['score'], last_close=raw['last_close'], quote_session=raw.get('as_of'), plan={key: plan[key] for key in
                 ('entry_price', 'stop_price', 'target_price', 'loss_fraction')} if plan and plan['entry_price'] > 0 else None,
             risk=dict(weight=risk['weight'] if eligible else 0., status='research' if eligible else 'held',
                       reasons=reasons, p=risk.get('p'), kelly_raw=risk.get('raw_fraction'),
