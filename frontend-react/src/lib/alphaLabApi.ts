@@ -44,11 +44,37 @@ export interface AlphaLabCandidate {
     score: number;
     last_close: number | null;
     plan: { entry_price: number; stop_price: number; target_price: number; loss_fraction: number } | null;
-    risk: { weight: number; status: string; reasons: string[]; p: number | null; kelly_raw: number | null; research_weight?: number };
+    risk: { weight: number; status: string; reasons: string[]; p: number | null; kelly_raw: number | null; research_weight?: number; quarter_kelly_fraction?: number; planned_account_risk?: number };
     setup_active?: boolean;
     quote_session?: string | null;
     proposal?: AlphaLabProposal;
     reasons: string[];
+}
+export interface AlphaLabOpportunityPhase {
+    samples: number; wins: number; losses: number; zeros: number; win_rate: number;
+    mean_net_return: number; stress_mean_net_return: number;
+    compounded_trade_return: number; stress_compounded_trade_return: number;
+    start: string; end: string; last_exit_session: string; t_stat: number | null;
+    return_basis?: 'compounded_nonoverlapping_unit_notional_trades_not_account_allocation';
+}
+export interface AlphaLabOpportunityCandidate extends AlphaLabCandidate {
+    evidence: {
+        selection_basis: 'calibration_stress_mean_then_confirmation';
+        stronger_evidence: boolean; retrospective: true; independent_validation: false;
+        calibration: AlphaLabOpportunityPhase; confirmation: AlphaLabOpportunityPhase;
+    };
+}
+export interface AlphaLabOpportunityScan {
+    policy_version: 'quality-setup-opportunity-v1';
+    selection_basis: 'calibration_stress_mean_then_confirmation';
+    status: 'ready' | 'held';
+    latest_session: string | null;
+    lookback_sessions: 1260; calibration_sessions: 1008; confirmation_sessions: 252; horizon_sessions: 10;
+    inspected_count: number; eligible_count: number; active_setup_count: number; reasons: string[]; warnings?: string[];
+    forward?: AlphaLabReport['forward'];
+}
+export interface AlphaLabOpportunitySummary extends Omit<AlphaLabProposalSummary, 'policy_version'> {
+    policy_version: 'quality-setup-opportunity-v1';
 }
 export interface AlphaLabReport {
     schema_version: 1;
@@ -57,6 +83,9 @@ export interface AlphaLabReport {
     decision_at?: string;
     latest_session?: string | null;
     proposal_summary?: AlphaLabProposalSummary;
+    buy_candidates?: AlphaLabOpportunityCandidate[];
+    opportunity_scan?: AlphaLabOpportunityScan;
+    opportunity_summary?: AlphaLabOpportunitySummary;
     universe: { ranked_count: number; quality_count: number; inspected_count: number; scope_date: string | null };
     provenance: {
         price_basis: string;
@@ -89,7 +118,7 @@ export interface AlphaLabStatus {
     error: string | null;
 }
 
-const invalid = '전략 실험 응답 형식이 올바르지 않습니다. 저장 결과를 다시 확인해 주세요.';
+const invalid = '매수 후보 검출 응답 형식이 올바르지 않습니다. 저장 결과를 다시 확인해 주세요.';
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const finite = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 const count = (value: unknown): value is number => finite(value) && Number.isInteger(value) && value >= 0;
@@ -116,9 +145,9 @@ function proposal(value: unknown): value is AlphaLabProposal {
         && (value.valid_until === null || utcTimestamp(value.valid_until))
         && value.plan_basis === 'last_closed_price_next_open_reference' && value.order_allowed === false;
 }
-function proposalSummary(value: unknown, candidates: AlphaLabCandidate[]): value is AlphaLabProposalSummary {
+function proposalSummary(value: unknown, candidates: AlphaLabCandidate[], policy = 'alpha-proposal-v1'): boolean {
     if (!record(value) || !action(value.action) || !safeText(value.headline, 160) || !value.headline.trim()
-        || !safeText(value.reason) || !value.reason.trim() || value.policy_version !== 'alpha-proposal-v1') return false;
+        || !safeText(value.reason) || !value.reason.trim() || value.policy_version !== policy) return false;
     const counts = { buy: 0, wait: 0, avoid: 0 };
     candidates.forEach(row => { counts[row.proposal?.action ?? 'wait']++; });
     const expected = counts.buy ? 'buy' : counts.wait || !candidates.length ? 'wait' : 'avoid';
@@ -200,6 +229,74 @@ function candidate(value: unknown, strategies: Set<string>): value is AlphaLabCa
         && finite(p.loss_fraction) && p.loss_fraction > 0 && p.loss_fraction < 1
         && Math.abs(p.loss_fraction - (p.entry_price - p.stop_price) / p.entry_price) < .0001;
 }
+const opportunityPolicy = 'quality-setup-opportunity-v1';
+const opportunityBasis = 'calibration_stress_mean_then_confirmation';
+const opportunityStrategies = new Set(['momentum', 'liquidity_breakout', 'mean_reversion']);
+function opportunityPhase(value: unknown, minimum: number): value is AlphaLabOpportunityPhase {
+    return record(value) && count(value.samples) && value.samples >= minimum
+        && count(value.wins) && value.wins > 0 && count(value.losses) && value.losses > 0 && count(value.zeros)
+        && value.wins + value.losses + value.zeros === value.samples && finite(value.win_rate)
+        && Math.abs(value.win_rate - value.wins / value.samples) <= 1e-8
+        && ['mean_net_return', 'stress_mean_net_return', 'compounded_trade_return', 'stress_compounded_trade_return'].every(key => finite(value[key]) && value[key] > 0)
+        && finite(value.stress_mean_net_return) && finite(value.mean_net_return) && value.stress_mean_net_return <= value.mean_net_return + 1e-10
+        && (value.return_basis === undefined || value.return_basis === 'compounded_nonoverlapping_unit_notional_trades_not_account_allocation')
+        && nullableFinite(value.t_stat) && date(value.start) && date(value.end) && date(value.last_exit_session)
+        && value.start <= value.last_exit_session && value.last_exit_session <= value.end && value.start < value.end;
+}
+function opportunityCandidate(value: unknown, report: AlphaLabReport): value is AlphaLabOpportunityCandidate {
+    if (!candidate(value, opportunityStrategies) || !record(value) || !record(value.evidence)) return false;
+    const e = value.evidence;
+    if (e.selection_basis !== opportunityBasis || typeof e.stronger_evidence !== 'boolean' || e.retrospective !== true || e.independent_validation !== false
+        || !opportunityPhase(e.calibration, 30) || !opportunityPhase(e.confirmation, 10)
+        || e.calibration.end >= e.confirmation.start || !report.latest_session || e.confirmation.end !== report.latest_session
+        || Math.abs(value.score - e.calibration.stress_mean_net_return) > 1e-8
+        || value.risk.weight !== 0 || value.risk.research_weight === undefined || value.risk.research_weight <= 0 || value.risk.research_weight > .05
+        || value.risk.p === null || Math.abs(value.risk.p - e.calibration.wins / (e.calibration.wins + e.calibration.losses)) > 1e-8
+        || value.risk.kelly_raw === null || value.risk.kelly_raw <= 0
+        || value.setup_active !== true || value.quote_session !== report.latest_session || !value.plan
+        || 'approved_weight' in value && value.approved_weight !== 0
+        || !finite(value.risk.quarter_kelly_fraction) || value.risk.quarter_kelly_fraction <= 0
+        || Math.abs(value.risk.quarter_kelly_fraction - value.risk.kelly_raw * .25) > 1e-8
+        || record(value.risk) && value.risk.planned_account_risk !== undefined && (!finite(value.risk.planned_account_risk) || value.risk.planned_account_risk < 0 || value.risk.planned_account_risk > .01 + 1e-10)) return false;
+    if (e.stronger_evidence && (e.confirmation.samples < 30 || e.calibration.t_stat === null || e.calibration.t_stat < 2
+        || e.confirmation.t_stat === null || e.confirmation.t_stat < 2)) return false;
+    const plan = value.plan;
+    const stopLoss = (plan.entry_price - plan.stop_price) / plan.entry_price;
+    if (plan.loss_fraction > .08 + 1e-10 || value.last_close === null
+        || Math.abs(plan.entry_price - value.last_close) > Math.max(1e-9, value.last_close * 1e-9)
+        || Math.abs(plan.loss_fraction - stopLoss) > Math.max(1e-10, 1e-7 * Math.max(Math.abs(plan.loss_fraction), Math.abs(stopLoss)))
+        || value.risk.research_weight * stopLoss > .01 + 1e-10
+        || Math.abs(value.risk.research_weight - Math.min(value.risk.quarter_kelly_fraction, .05, .01 / stopLoss)) > 1e-8) return false;
+    const p = value.proposal;
+    if (p?.action !== 'buy') return true;
+    if (p.proposed_weight > .05 || Math.abs(p.proposed_weight - value.risk.research_weight) > 1e-8 || p.proposed_weight * stopLoss > .01 + 1e-10
+        || p.input_session !== report.latest_session || !p.valid_until || !report.decision_at || !report.provenance.captured_at) return false;
+    const decision = Date.parse(report.decision_at), capture = Date.parse(report.provenance.captured_at), now = Date.now();
+    return decision <= now && capture <= decision && Date.parse(p.derived_at) <= now && Date.parse(p.valid_until) === decision + 86400000;
+}
+function validOpportunities(report: AlphaLabReport): boolean {
+    const r = report as unknown as Record<string, unknown>;
+    if (r.buy_candidates === undefined && r.opportunity_scan === undefined && r.opportunity_summary === undefined) return true;
+    if (!Array.isArray(r.buy_candidates) || r.buy_candidates.length > 3 || !record(r.opportunity_scan)) return false;
+    const scan = r.opportunity_scan;
+    if (scan.policy_version !== opportunityPolicy || scan.selection_basis !== opportunityBasis || !['ready', 'held'].includes(String(scan.status))
+        || scan.latest_session !== report.latest_session || scan.lookback_sessions !== 1260 || scan.calibration_sessions !== 1008
+        || scan.confirmation_sessions !== 252 || scan.horizon_sessions !== 10 || !count(scan.inspected_count) || scan.inspected_count > report.universe.quality_count
+        || !count(scan.eligible_count) || scan.eligible_count < r.buy_candidates.length || scan.eligible_count > scan.inspected_count
+        || !count(scan.active_setup_count) || scan.active_setup_count > scan.inspected_count * 3 || !reasons(scan.reasons)
+        || scan.warnings !== undefined && !reasons(scan.warnings)) return false;
+    if (scan.forward !== undefined && (!record(scan.forward) || !count(scan.forward.decisions) || !count(scan.forward.matured)
+        || !nullableRate(scan.forward.win_rate) || !nullableFinite(scan.forward.mean_net_return)
+        || scan.forward.matured === 0 && (scan.forward.win_rate !== null || scan.forward.mean_net_return !== null))) return false;
+    if (r.approval !== undefined && (!record(r.approval) || r.approval.approved_exposure !== 0 || r.approval.live_orders !== false)) return false;
+    const symbols = new Set<string>();
+    for (const row of r.buy_candidates) {
+        if (!opportunityCandidate(row, report) || symbols.has(row.symbol)) return false;
+        symbols.add(row.symbol);
+    }
+    return r.opportunity_summary === undefined ? !r.buy_candidates.some(row => row.proposal?.action === 'buy')
+        : proposalSummary(r.opportunity_summary, r.buy_candidates, opportunityPolicy);
+}
 
 function validReport(value: unknown): value is AlphaLabReport {
     if (!record(value) || value.schema_version !== 1 || value.mode !== 'research' || !timestamp(value.as_of)
@@ -238,6 +335,7 @@ function validReport(value: unknown): value is AlphaLabReport {
     if (value.proposal_summary !== undefined && !proposalSummary(value.proposal_summary, value.candidates)) return false;
     if (value.candidates.some(row => row.proposal?.action === 'buy') && !value.proposal_summary) return false;
     if (!value.candidates.every(row => validBuy(row, value as unknown as AlphaLabReport))) return false;
+    if (!validOpportunities(value as unknown as AlphaLabReport)) return false;
     return exposure <= .6 + 1e-8 && value.agents.every(row => record(row) && label(row.id) && label(row.name)
         && label(row.status) && safeText(row.detail));
 }
@@ -250,20 +348,27 @@ export function validateAlphaLabStatus(value: unknown): AlphaLabStatus {
         || ['ready', 'held'].includes(String(value.state)) && value.report === null) throw new Error(invalid);
     const status = value as unknown as AlphaLabStatus;
     if (!status.report) return status;
-    const candidates = status.report.candidates.map(row => {
+    const normalizeProposal = (row: AlphaLabCandidate, opportunity = false) => {
         const p = row.proposal;
-        if (p?.action !== 'buy' || ['ready', 'held'].includes(status.state) && freshBuy(row, status.report!, Date.now())) return row;
-        return { ...row, proposal: { ...p, action: 'wait' as const, label: '진입 대기' as const, proposed_weight: 0,
-            reason: '제안이 만료되었거나 최신 검사 결과를 확인 중입니다.', next_step: '저장 결과를 다시 확인한 뒤 판단하세요.' } };
-    });
-    const summary = status.report.proposal_summary;
-    if (candidates.every((row, index) => row === status.report!.candidates[index])) return status;
-    const buy = candidates.filter(row => row.proposal?.action === 'buy').length;
-    const wait = candidates.filter(row => !row.proposal || row.proposal.action === 'wait').length;
-    const avoid = candidates.length - buy - wait;
-    return { ...status, report: { ...status.report, candidates, proposal_summary: summary && { ...summary,
-        action: buy ? 'buy' : wait || !candidates.length ? 'wait' : 'avoid', buy_count: buy, wait_count: wait, avoid_count: avoid,
-        headline: buy ? summary.headline : '오늘 제안: 진입 대기', reason: '만료되었거나 갱신 중인 매수 제안은 대기로 전환했습니다.' } } };
+        const scanReady = !opportunity || status.report!.opportunity_scan?.status === 'ready'
+            && !status.report!.opportunity_scan.reasons.some(reason => currentSourceBlocks.has(reason) || reason.includes('refresh_failed'));
+        if (p?.action !== 'buy' || scanReady && ['ready', 'held'].includes(status.state) && freshBuy(row, status.report!, Date.now())) return p;
+        return { ...p, action: 'wait' as const, label: '진입 대기' as const, proposed_weight: 0,
+            reason: '제안이 만료되었거나 최신 검사 결과를 확인 중입니다.', next_step: '저장 결과를 다시 확인한 뒤 판단하세요.' };
+    };
+    const candidates = status.report.candidates.map(row => { const p = normalizeProposal(row); return p === row.proposal ? row : { ...row, proposal: p }; });
+    const buyCandidates = status.report.buy_candidates?.map(row => { const p = normalizeProposal(row, true); return p === row.proposal ? row : { ...row, proposal: p }; });
+    const normalizedSummary = <T extends AlphaLabProposalSummary | AlphaLabOpportunitySummary>(summary: T | undefined, rows: AlphaLabCandidate[], oldRows: AlphaLabCandidate[]) => {
+        if (!summary || rows.every((row, index) => row === oldRows[index])) return summary;
+        const buy = rows.filter(row => row.proposal?.action === 'buy').length;
+        const wait = rows.filter(row => !row.proposal || row.proposal.action === 'wait').length;
+        return { ...summary, action: (buy ? 'buy' : wait || !rows.length ? 'wait' : 'avoid') as AlphaLabAction,
+            buy_count: buy, wait_count: wait, avoid_count: rows.length - buy - wait, headline: buy ? summary.headline : '오늘 제안: 진입 대기',
+            reason: '만료되었거나 갱신 중인 매수 제안은 대기로 전환했습니다.' };
+    };
+    return { ...status, report: { ...status.report, candidates, buy_candidates: buyCandidates,
+        proposal_summary: normalizedSummary(status.report.proposal_summary, candidates, status.report.candidates),
+        opportunity_summary: buyCandidates && normalizedSummary(status.report.opportunity_summary, buyCandidates, status.report.buy_candidates!) } };
 }
 export async function fetchAlphaLab(token?: string): Promise<AlphaLabStatus> {
     return validateAlphaLabStatus(await fetchAuthAPI<unknown>('/api/admin/mirofish/alpha-lab', token));

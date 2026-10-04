@@ -131,6 +131,34 @@ def _lock(root):
     return FileLock(str(Path(root)/'scan.lock'), thread_local=False)
 
 
+def discover_opportunities(*args, **kwargs):
+    from .discovery import discover_opportunities as discover
+    return discover(*args, **kwargs)
+
+
+def _add_opportunities(root, report, inputs):
+    from copy import deepcopy
+    from .proposals import present_status
+    discovery = discover_opportunities(inputs['prices_by_symbol'], names=inputs['names'],
+                                      as_of=inputs['latest_session'])
+    digest = store._hash(discovery)
+    path = Path(root)/'opportunities'/'runs'/f"{inputs['latest_session']}-{inputs['input_fingerprint'][:12]}-{digest}.json"
+    if not path.exists():
+        store._write(path, discovery)
+    elif store._hash(store._read(path)) != digest:
+        raise ValueError('opportunity_integrity')
+    public = deepcopy(discovery)
+    report['buy_candidates'] = public.pop('candidates')
+    public.pop('audit', None)
+    public['audit_hash'] = digest
+    public['status'] = inputs['status']
+    report['opportunity_scan'] = public
+    view = present_status(dict(state='held', report=report), now=report['decision_at'])['report']
+    forward_report = dict(report, candidates=[row for row in view['buy_candidates']
+                                             if row.get('proposal', {}).get('action') == 'buy'])
+    public['forward'] = store.observe_and_freeze(Path(root)/'opportunities', forward_report,
+                                                inputs['prices_by_symbol'], now=report['decision_at'])
+
 def _execute(root):
     try:
         inputs = load_inputs(*resolve_inputs(root))
@@ -144,6 +172,7 @@ def _execute(root):
         core = run_research(inputs['prices_by_symbol'], names=inputs['names'],
                             config=ResearchConfig(as_of=inputs['latest_session']))
         report = normalize_report(core, inputs)
+        _add_opportunities(root, report, inputs)
         report['forward'] = store.observe_and_freeze(root, report, inputs['prices_by_symbol'])
         # Full replay evidence is private local data; the member API publishes a compact, path-free view.
         report['experiment_hash'] = store._hash(core)
