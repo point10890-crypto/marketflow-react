@@ -37,6 +37,36 @@ export interface AlphaLabProposalSummary {
     avoid_count: number;
     policy_version: 'alpha-proposal-v1';
 }
+export type AlphaLabAnalystId = 'rev_5' | 'low_vol_60' | 'anti_max_21' | 'attention_fade';
+export interface AlphaLabAnalystContext {
+    schema_version: 1;
+    policy_version: 'quality-analyst-context-v1';
+    symbol: string;
+    as_of: string;
+    input_fingerprint: string;
+    scope: 'current_quality_cohort';
+    cohort_count: number;
+    comparison_count: number;
+    status: 'ready' | 'unavailable';
+    score: number | null;
+    favorable_count: number;
+    caution_count: number;
+    neutral_count: number;
+    analysts: Array<{ id: AlphaLabAnalystId; metric_value: number | null; percentile: number | null;
+        stance: 'favorable' | 'caution' | 'neutral' | 'unavailable' }>;
+    reasons: string[];
+}
+export interface AlphaLabEntryGuard {
+    policy_version: 'reference-chase-cap-v1';
+    symbol: string;
+    as_of: string;
+    input_fingerprint: string;
+    reference_price: number;
+    max_chase_fraction: .02;
+    max_entry_price: number;
+    applies_to: 'manual_next_open_reference';
+    backtest_applied: false;
+}
 export interface AlphaLabCandidate {
     symbol: string;
     name: string;
@@ -48,6 +78,8 @@ export interface AlphaLabCandidate {
     setup_active?: boolean;
     quote_session?: string | null;
     proposal?: AlphaLabProposal;
+    analyst_context?: AlphaLabAnalystContext;
+    entry_guard?: AlphaLabEntryGuard;
     reasons: string[];
 }
 export interface AlphaLabOpportunityPhase {
@@ -82,6 +114,7 @@ export interface AlphaLabReport {
     as_of: string;
     decision_at?: string;
     latest_session?: string | null;
+    input_fingerprint?: string;
     proposal_summary?: AlphaLabProposalSummary;
     buy_candidates?: AlphaLabOpportunityCandidate[];
     opportunity_scan?: AlphaLabOpportunityScan;
@@ -134,6 +167,8 @@ const date = (value: unknown): value is string => typeof value === 'string' && /
 const timestamp = (value: unknown): value is string => typeof value === 'string'
     && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value));
 const utcTimestamp = (value: unknown): value is string => timestamp(value) && /(?:Z|\+00:00)$/.test(value);
+const fingerprint = (value: unknown): value is string => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
+const onlyKeys = (value: Record<string, unknown>, keys: string[]) => Object.keys(value).every(key => keys.includes(key));
 // Server decision/assessment clocks may lead the browser slightly; source freshness and expiry stay strict.
 const maxServerClockAheadMs = 60_000;
 const weight = (value: unknown): value is number => finite(value) && value >= 0 && value <= .2;
@@ -231,6 +266,57 @@ function candidate(value: unknown, strategies: Set<string>): value is AlphaLabCa
         && finite(p.loss_fraction) && p.loss_fraction > 0 && p.loss_fraction < 1
         && Math.abs(p.loss_fraction - (p.entry_price - p.stop_price) / p.entry_price) < .0001;
 }
+const analystIds = ['rev_5', 'low_vol_60', 'anti_max_21', 'attention_fade'] as const;
+const analystReasons = new Set(['insufficient_cohort', 'missing_prices', 'missing_current_quote', 'insufficient_history',
+    'sparse_factor_window', 'invalid_observation', 'flagged_observation', 'latest_quote_nontradable', 'nonpositive_amount_mean']);
+const percentile = (value: unknown): value is number => finite(value) && value >= 0 && value <= 100;
+const analystStance = (rank: number) => rank >= 66.666667 ? 'favorable' : rank <= 33.333333 ? 'caution' : 'neutral';
+function guidanceBinding(value: Record<string, unknown>, row: AlphaLabCandidate, report: AlphaLabReport): boolean {
+    return value.symbol === row.symbol && date(value.as_of) && value.as_of === row.quote_session
+        && value.as_of === report.latest_session && fingerprint(value.input_fingerprint)
+        && value.input_fingerprint === report.input_fingerprint;
+}
+function analystContext(value: unknown, row: AlphaLabCandidate, report: AlphaLabReport): value is AlphaLabAnalystContext {
+    if (!record(value) || !onlyKeys(value, ['schema_version', 'policy_version', 'symbol', 'as_of', 'input_fingerprint', 'scope',
+        'cohort_count', 'comparison_count', 'status', 'score', 'favorable_count', 'caution_count', 'neutral_count', 'analysts', 'reasons'])
+        || value.schema_version !== 1 || value.policy_version !== 'quality-analyst-context-v1' || value.scope !== 'current_quality_cohort'
+        || !guidanceBinding(value, row, report) || !count(value.cohort_count) || value.cohort_count !== report.universe.quality_count
+        || !count(value.comparison_count) || value.comparison_count > value.cohort_count
+        || (value.status !== 'ready' && value.status !== 'unavailable') || !count(value.favorable_count) || !count(value.caution_count)
+        || !count(value.neutral_count) || !reasons(value.reasons) || !value.reasons.every(reason => analystReasons.has(reason))
+        || !Array.isArray(value.analysts) || value.analysts.length !== analystIds.length) return false;
+    const ready = value.status === 'ready';
+    const counts = { favorable: 0, caution: 0, neutral: 0 };
+    let total = 0;
+    for (const [index, analyst] of value.analysts.entries()) {
+        if (!record(analyst) || !onlyKeys(analyst, ['id', 'metric_value', 'percentile', 'stance']) || analyst.id !== analystIds[index]) return false;
+        if (!ready) {
+            if (analyst.metric_value !== null || analyst.percentile !== null || analyst.stance !== 'unavailable') return false;
+            continue;
+        }
+        if (!finite(analyst.metric_value) || !percentile(analyst.percentile)
+            || (index === 0 || index === 2 ? analyst.metric_value <= -1 : analyst.metric_value < 0)) return false;
+        const stance = analystStance(analyst.percentile);
+        if (analyst.stance !== stance) return false;
+        counts[stance]++; total += analyst.percentile;
+    }
+    return ready ? value.comparison_count >= 8 && percentile(value.score) && Math.abs(value.score - total / analystIds.length) <= 1e-6
+        && value.favorable_count === counts.favorable && value.caution_count === counts.caution && value.neutral_count === counts.neutral
+        : value.score === null && value.favorable_count === 0 && value.caution_count === 0 && value.neutral_count === 0;
+}
+function entryGuard(value: unknown, row: AlphaLabCandidate, report: AlphaLabReport): value is AlphaLabEntryGuard {
+    return record(value) && onlyKeys(value, ['policy_version', 'symbol', 'as_of', 'input_fingerprint', 'reference_price',
+        'max_chase_fraction', 'max_entry_price', 'applies_to', 'backtest_applied'])
+        && value.policy_version === 'reference-chase-cap-v1' && guidanceBinding(value, row, report)
+        && finite(value.reference_price) && value.reference_price > 0 && value.reference_price === row.last_close
+        && value.max_chase_fraction === .02 && finite(value.max_entry_price)
+        && Math.abs(value.max_entry_price - Math.round(value.reference_price * 1.02 * 1e6) / 1e6) <= 1e-6
+        && value.applies_to === 'manual_next_open_reference' && value.backtest_applied === false;
+}
+function additionalGuidance(row: AlphaLabCandidate, report: AlphaLabReport): boolean {
+    return (row.analyst_context === undefined || analystContext(row.analyst_context, row, report))
+        && (row.entry_guard === undefined || entryGuard(row.entry_guard, row, report));
+}
 const opportunityPolicy = 'quality-setup-opportunity-v1';
 const opportunityBasis = 'calibration_stress_mean_then_confirmation';
 const opportunityStrategies = new Set(['momentum', 'liquidity_breakout', 'mean_reversion']);
@@ -246,7 +332,7 @@ function opportunityPhase(value: unknown, minimum: number): value is AlphaLabOpp
         && value.start <= value.last_exit_session && value.last_exit_session <= value.end && value.start < value.end;
 }
 function opportunityCandidate(value: unknown, report: AlphaLabReport): value is AlphaLabOpportunityCandidate {
-    if (!candidate(value, opportunityStrategies) || !record(value) || !record(value.evidence)) return false;
+    if (!candidate(value, opportunityStrategies) || !record(value) || !record(value.evidence) || !additionalGuidance(value, report)) return false;
     const e = value.evidence;
     if (e.selection_basis !== opportunityBasis || typeof e.stronger_evidence !== 'boolean' || e.retrospective !== true || e.independent_validation !== false
         || !opportunityPhase(e.calibration, 30) || !opportunityPhase(e.confirmation, 10)
@@ -327,11 +413,12 @@ function validReport(value: unknown): value is AlphaLabReport {
         || !protocol.source_references.every(publicReference)) return false;
     if (value.decision_at !== undefined && !utcTimestamp(value.decision_at)
         || value.latest_session !== undefined && !(value.latest_session === null || date(value.latest_session))
+        || value.input_fingerprint !== undefined && !fingerprint(value.input_fingerprint)
         || p.captured_at !== undefined && p.captured_at !== null && !utcTimestamp(p.captured_at)) return false;
     const symbols = new Set<string>();
     let exposure = 0;
     for (const row of value.candidates) {
-        if (!candidate(row, ids) || symbols.has(row.symbol)) return false;
+        if (!candidate(row, ids) || symbols.has(row.symbol) || !additionalGuidance(row, value as unknown as AlphaLabReport)) return false;
         symbols.add(row.symbol); exposure += row.risk.weight;
     }
     if (value.proposal_summary !== undefined && !proposalSummary(value.proposal_summary, value.candidates)) return false;
