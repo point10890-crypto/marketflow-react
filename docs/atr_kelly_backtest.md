@@ -13,7 +13,7 @@
 $env:PYTHONIOENCODING='utf-8'
 .\.venv\Scripts\python.exe scripts/backtest_atr_kelly.py `
   --prices data/kelly_research/atr-input-20261004/prices.csv `
-  --symbols 000660,005930,240810 `
+  --symbols '000660,005930,240810' `
   --train-end 2024-12-31 `
   --validation-end 2025-06-30 `
   --input-audit data/kelly_research/atr-input-20261004/input-audit.json `
