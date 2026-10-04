@@ -48,11 +48,84 @@ function proposed(action: 'buy' | 'wait' | 'avoid' = 'buy'): AlphaLabStatus {
         reason: row.proposal.reason, buy_count: Number(action === 'buy'), wait_count: Number(action === 'wait'), avoid_count: Number(action === 'avoid'), policy_version: 'alpha-proposal-v1' };
     return value;
 }
+function opportunity() {
+    const value = proposed('avoid');
+    value.report!.universe.quality_count = 52; value.report!.universe.inspected_count = 52;
+    value.report!.strategies[0].qualified = false; value.report!.strategies[0].test.net_total_return = -.05;
+    const phase = (start: string, end: string, samples: number) => ({ samples, wins: samples * .6, losses: samples * .4, zeros: 0,
+        win_rate: .6, mean_net_return: .015, stress_mean_net_return: .01, compounded_trade_return: .5,
+        stress_compounded_trade_return: .3, start, end, last_exit_session: end, t_stat: 1.7 });
+    const buy_candidates = [['196170', '알테오젠', 'mean_reversion'], ['007660', '이수페타시스', 'momentum'], ['402340', 'SK스퀘어', 'mean_reversion']].map(([symbol, name, strategy_id]) => ({
+        ...structuredClone(value.report!.candidates[0]), symbol, name, strategy_id, score: .01,
+        risk: { weight: 0, status: 'held', reasons: ['research_only_cio_approval_required'], p: .6, kelly_raw: .2, research_weight: .05,
+            quarter_kelly_fraction: .05, planned_account_risk: .0025 },
+        proposal: { ...value.report!.candidates[0].proposal!, action: 'buy', label: '매수 제안', proposed_weight: .05,
+            reason: '이 종목의 두 기간 조건부 거래 순손익과 현재 진입 조건을 통과했습니다.', next_step: '다음 장 시가를 확인하고 최대 10거래일 계획을 다시 계산하세요.' },
+        evidence: { selection_basis: 'calibration_stress_mean_then_confirmation', stronger_evidence: false,
+            calibration: phase('2021-10-01', '2025-09-30', 40), confirmation: phase('2025-10-01', '2026-10-02', 20),
+            retrospective: true, independent_validation: false },
+    }));
+    return { ...value, report: { ...value.report!, buy_candidates,
+        opportunity_scan: { policy_version: 'quality-setup-opportunity-v1', selection_basis: 'calibration_stress_mean_then_confirmation',
+            status: 'ready', latest_session: '2026-10-02', lookback_sessions: 1260, calibration_sessions: 1008, confirmation_sessions: 252,
+            horizon_sessions: 10, inspected_count: 52, eligible_count: 3, active_setup_count: 12, reasons: [] as string[],
+            forward: { decisions: 3, matured: 0, win_rate: null, mean_net_return: null } },
+        opportunity_summary: { action: 'buy', headline: '오늘 제안: 새 매수 후보 3종목', reason: '종목별 두 기간의 조건부 성과와 최신 진입 조건을 통과한 후보입니다.',
+            buy_count: 3, wait_count: 0, avoid_count: 0, policy_version: 'quality-setup-opportunity-v1' },
+    } };
+}
 
 beforeEach(() => { api.fetchAuthAPI.mockReset(); api.postAuthAPI.mockReset(); vi.spyOn(Date, 'now').mockReturnValue(Date.parse(now)); });
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
+const openOriginal = () => fireEvent.click(screen.getByText('기존 실험 후보 · 제외 근거'));
 
 describe('AlphaLab evidence boundary', () => {
+    it('accepts independent conditional opportunities while the original champion remains unqualified and losing', () => {
+        const result = validateAlphaLabStatus(opportunity());
+        expect(result.report?.buy_candidates?.map(row => row.symbol)).toEqual(['196170', '007660', '402340']);
+        expect(result.report?.strategies[0].qualified).toBe(false);
+    });
+    it('accepts uncapped quarter Kelly while capping the proposed research allocation at five percent', () => {
+        const input = opportunity(); const row = input.report.buy_candidates[0];
+        row.risk.kelly_raw = .8; row.risk.quarter_kelly_fraction = .2;
+        expect(validateAlphaLabStatus(input).report?.buy_candidates?.[0].proposal?.proposed_weight).toBe(.05);
+    });
+    it.each([
+        ['wrong policy', (r: ReturnType<typeof opportunity>['report']) => { r.opportunity_scan.policy_version = 'loose'; }],
+        ['wrong selection', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].evidence.selection_basis = 'confirmation_best'; }],
+        ['calibration sample shortage', (r: ReturnType<typeof opportunity>['report']) => { const p = r.buy_candidates[0].evidence.calibration; p.samples = 25; p.wins = 15; p.losses = 10; }],
+        ['confirmation sample shortage', (r: ReturnType<typeof opportunity>['report']) => { const p = r.buy_candidates[0].evidence.confirmation; p.samples = 5; p.wins = 3; p.losses = 2; }],
+        ['zero confirmation stress mean', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].evidence.confirmation.stress_mean_net_return = 0; }],
+        ['cost stress improves the mean', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].evidence.confirmation.stress_mean_net_return = .02; }],
+        ['confirmation does not end at latest session', (r: ReturnType<typeof opportunity>['report']) => { const p = r.buy_candidates[0].evidence.confirmation; p.end = '2026-10-01'; p.last_exit_session = p.end; }],
+        ['negative calibration compounded return', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].evidence.calibration.compounded_trade_return = -.1; }],
+        ['nonfinite confirmation return', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].evidence.confirmation.mean_net_return = Infinity; }],
+        ['invented win rate', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].evidence.calibration.win_rate = .99; }],
+        ['overlapping phases', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].evidence.confirmation.start = '2025-09-30'; }],
+        ['exit outside phase', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].evidence.calibration.last_exit_session = '2025-10-01'; }],
+        ['no losses', (r: ReturnType<typeof opportunity>['report']) => { const p = r.buy_candidates[0].evidence.calibration; p.wins = 40; p.losses = 0; p.win_rate = 1; }],
+        ['six percent allocation', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].proposal.proposed_weight = .06; r.buy_candidates[0].risk.research_weight = .06; }],
+        ['proposal differs from calculated research weight', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].proposal.proposed_weight = .04; }],
+        ['approved risk weight', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].risk.weight = .01; }],
+        ['forged quarter Kelly', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].risk.quarter_kelly_fraction = .04; }],
+        ['forged directional probability', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].risk.p = .99; }],
+        ['forged stronger evidence', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].evidence.stronger_evidence = true; }],
+        ['forged summary', (r: ReturnType<typeof opportunity>['report']) => { r.opportunity_summary.buy_count = 4; }],
+        ['duplicate opportunities', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[1].symbol = r.buy_candidates[0].symbol; }],
+        ['private evidence', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].proposal.reason = 'C:\\private\\.env'; }],
+        ['pretended independent test', (r: ReturnType<typeof opportunity>['report']) => { r.buy_candidates[0].evidence.independent_validation = true; }],
+    ])('rejects invalid opportunity evidence: %s', (_, mutate) => {
+        const input = opportunity(); mutate(input.report);
+        expect(() => validateAlphaLabStatus(input)).toThrow(/응답 형식/);
+    });
+    it.each(['held', 'refresh_failed'] as const)('retains the opportunity evidence but downgrades a BUY when scan status is %s', condition => {
+        const input = opportunity();
+        if (condition === 'held') input.report.opportunity_scan.status = 'held';
+        else input.report.opportunity_scan.reasons = ['source_refresh_failed'];
+        const result = validateAlphaLabStatus(input);
+        expect(result.report?.buy_candidates?.[0].proposal?.action).toBe('wait');
+        expect(result.report?.opportunity_summary?.buy_count).toBe(0);
+    });
     it('accepts saved research evidence and calls only the protected status GET', async () => {
         api.fetchAuthAPI.mockResolvedValue(held());
         expect((await fetchAlphaLab('member-token')).report?.candidates[0].symbol).toBe('005930');
@@ -143,10 +216,72 @@ describe('AlphaLab evidence boundary', () => {
 });
 
 describe('AlphaLab operational panel', () => {
-    it('leads with the conclusion and an actionable manual BUY even when automatic allocation remains held', async () => {
+    it('puts three new exploratory BUY cards before the closed original excluded candidates', async () => {
+        api.fetchAuthAPI.mockResolvedValue(opportunity()); const onSelect = vi.fn();
+        render(<AlphaLabPanel onSelectSymbol={onSelect} />);
+        const first = await screen.findByRole('article', { name: /알테오젠/ });
+        expect(first).toBeVisible(); expect(within(first).getByText('BUY · 매수 제안')).toBeVisible();
+        expect(within(first).getAllByText('5.0%')[0]).toBeVisible();
+        expect(within(first).getByText('보유 계획 · 최대 10거래일')).toBeVisible();
+        expect(screen.getByRole('article', { name: /이수페타시스/ })).toBeVisible();
+        expect(screen.getByRole('article', { name: /SK스퀘어/ })).toBeVisible();
+        expect(screen.getByRole('article', { name: /삼성전자/ })).not.toBeVisible();
+        expect(screen.getByText('탐색적 매수 제안')).toBeVisible();
+        await userEvent.click(within(first).getByText('검증 근거와 참고 계산'));
+        expect(within(first).getAllByText(/과거 승리 비율/)).toHaveLength(2);
+        expect(within(first).getAllByText(/평균 거래 순손익/).every(element => element.closest('details')?.open !== false)).toBe(true);
+        expect(within(first).getAllByText(/독립 검증/)[0]).toBeVisible();
+        await userEvent.click(within(first).getByRole('button', { name: /종목 상세/ }));
+        expect(onSelect).toHaveBeenCalledWith('196170'); expect(api.postAuthAPI).not.toHaveBeenCalled();
+    });
+    it('does not promote the old excluded cards when the independent scan has no eligible opportunities', async () => {
+        const input = opportunity(); input.report.buy_candidates = []; input.report.opportunity_scan.eligible_count = 0;
+        input.report.opportunity_summary = { ...input.report.opportunity_summary, action: 'wait', headline: '오늘 제안: 진입 대기', buy_count: 0 };
+        api.fetchAuthAPI.mockResolvedValue(input); render(<AlphaLabPanel />);
+        expect(await screen.findByText('현재 조건을 통과한 새 매수 후보가 없습니다.')).toBeVisible();
+        expect(screen.getByRole('article', { name: /삼성전자/ })).not.toBeVisible();
+        expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
+    });
+    it.each(['running', 'failed'] as const)('hides all new BUY proposals immediately during POST and retains them only as WAIT after %s', async state => {
+        let finish!: (value: unknown) => void;
+        api.fetchAuthAPI.mockResolvedValue(opportunity()); api.postAuthAPI.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+        render(<AlphaLabPanel />); const first = await screen.findByRole('article', { name: /알테오젠/ });
+        fireEvent.click(screen.getByRole('button', { name: '매수 후보 검출' }));
+        expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
+        expect(within(first).getByText('WAIT · 진입 대기')).toBeVisible();
+        await act(async () => { finish({ ...missing, state }); });
+        expect(within(first).getByText('WAIT · 진입 대기')).toBeVisible();
+        expect(within(first).getByText('57,000원')).not.toBeVisible();
+        expect(screen.getByRole('article', { name: /삼성전자/ })).not.toBeVisible();
+    });
+    it('suppresses every new BUY during a read and after a rejected refresh, retaining the evidence', async () => {
+        api.fetchAuthAPI.mockResolvedValueOnce(opportunity()).mockRejectedValueOnce(new Error('secret-key'));
+        render(<AlphaLabPanel />); const first = await screen.findByRole('article', { name: /알테오젠/ });
+        fireEvent.click(screen.getByRole('button', { name: '저장 결과 새로고침' }));
+        expect(within(first).getByText('WAIT · 진입 대기')).toBeVisible();
+        await screen.findByRole('alert');
+        expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
+        expect(within(first).getByText('57,000원')).not.toBeVisible();
+        expect(api.postAuthAPI).not.toHaveBeenCalled();
+    });
+    it('expires new candidates while preserving their evidence and the closed original experiment', async () => {
+        vi.mocked(Date.now).mockRestore(); vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-04T23:59:59Z'));
+        api.fetchAuthAPI.mockResolvedValue(opportunity()); render(<AlphaLabPanel />); await act(async () => {});
+        const first = screen.getByRole('article', { name: /알테오젠/ });
+        expect(within(first).getByText('BUY · 매수 제안')).toBeVisible();
+        await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+        expect(within(first).getByText('WAIT · 진입 대기')).toBeVisible();
+        expect(within(first).getByText('57,000원')).not.toBeVisible();
+        expect(screen.getByRole('article', { name: /삼성전자/ })).not.toBeVisible();
+        expect(api.fetchAuthAPI).toHaveBeenCalledTimes(1);
+    });
+    it('preserves an actionable legacy BUY in the closed original experiment without promoting it to the new candidate list', async () => {
         api.fetchAuthAPI.mockResolvedValue(proposed());
         render(<AlphaLabPanel />);
         const card = await screen.findByRole('article', { name: /삼성전자/ });
+        expect(card).not.toBeVisible();
+        expect(screen.getByText('현재 조건을 통과한 새 매수 후보가 없습니다.')).toBeVisible();
+        openOriginal();
         expect(screen.getByRole('heading', { name: '에이전트 매매 제안' })).toBeInTheDocument();
         const conclusion = screen.getByText('오늘 제안: 매수 검토 1종목');
         expect(conclusion.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -164,6 +299,7 @@ describe('AlphaLab operational panel', () => {
         api.fetchAuthAPI.mockResolvedValue(value);
         const onSelect = vi.fn(); render(<AlphaLabPanel onSelectSymbol={onSelect} />);
         const card = await screen.findByRole('article', { name: /삼성전자/ });
+        openOriginal();
         expect(screen.getByText('오늘 제안: 신규매수 제외')).toBeVisible();
         expect(within(card).getByText('AVOID · 매매 제외')).toBeVisible();
         expect(within(card).getByText('고정 테스트 손실로 신규매수에서 제외합니다.')).toBeVisible();
@@ -178,6 +314,7 @@ describe('AlphaLab operational panel', () => {
     it('uses WAIT for a legacy report instead of inferring a buy from its score', async () => {
         api.fetchAuthAPI.mockResolvedValue(held()); render(<AlphaLabPanel />);
         const card = await screen.findByRole('article', { name: /삼성전자/ });
+        expect(card).not.toBeVisible(); openOriginal();
         expect(within(card).getByText('WAIT · 진입 대기')).toBeVisible();
         expect(within(card).getByText('57,000원')).not.toBeVisible();
         expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
@@ -187,7 +324,8 @@ describe('AlphaLab operational panel', () => {
         let finish!: (value: unknown) => void;
         api.postAuthAPI.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
         render(<AlphaLabPanel />); await screen.findByText('BUY · 매수 제안');
-        fireEvent.click(screen.getByRole('button', { name: '전략 실험 실행' }));
+        openOriginal();
+        fireEvent.click(screen.getByRole('button', { name: '매수 후보 검출' }));
         expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
         expect(screen.getByText('WAIT · 진입 대기')).toBeVisible();
         await act(async () => { finish({ ...missing, state }); });
@@ -197,6 +335,7 @@ describe('AlphaLab operational panel', () => {
     it('downgrades a BUY on expiry while idle without starting or fetching another experiment', async () => {
         vi.mocked(Date.now).mockRestore(); vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-04T23:59:59Z'));
         api.fetchAuthAPI.mockResolvedValue(proposed()); render(<AlphaLabPanel />); await act(async () => {});
+        openOriginal();
         expect(screen.getByText('BUY · 매수 제안')).toBeVisible();
         await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
         expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
@@ -210,6 +349,7 @@ describe('AlphaLab operational panel', () => {
         if (field === 'source') value.report!.provenance.captured_at = '2026-09-27T00:00:00Z';
         else value.report!.universe.scope_date = '2026-09-27';
         api.fetchAuthAPI.mockResolvedValue(value); render(<AlphaLabPanel />); await act(async () => {});
+        openOriginal();
         expect(screen.getByText('BUY · 매수 제안')).toBeVisible();
         await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
         expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
@@ -220,6 +360,7 @@ describe('AlphaLab operational panel', () => {
         let rejectRead!: (reason: Error) => void;
         api.fetchAuthAPI.mockResolvedValueOnce(proposed()).mockImplementationOnce(() => new Promise((_, reject) => { rejectRead = reject; }));
         render(<AlphaLabPanel />); await screen.findByText('BUY · 매수 제안');
+        openOriginal();
         fireEvent.click(screen.getByRole('button', { name: '저장 결과 새로고침' }));
         expect(screen.getByText('WAIT · 진입 대기')).toBeVisible();
         expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
@@ -230,6 +371,7 @@ describe('AlphaLab operational panel', () => {
     });
     it('reevaluates an expired proposal when returning to the window after a clock jump', async () => {
         api.fetchAuthAPI.mockResolvedValue(proposed()); render(<AlphaLabPanel />); await screen.findByText('BUY · 매수 제안');
+        openOriginal();
         vi.mocked(Date.now).mockReturnValue(Date.parse('2026-10-05T00:00:00Z'));
         fireEvent(window, new Event('focus'));
         expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
@@ -241,6 +383,7 @@ describe('AlphaLab operational panel', () => {
         const onSelect = vi.fn();
         render(<AlphaLabPanel token="member-token" onSelectSymbol={onSelect} />);
         const candidate = await screen.findByRole('article', { name: /삼성전자/ });
+        openOriginal();
         expect(candidate).toHaveTextContent('005930');
         expect(candidate).toHaveTextContent('60,000원');
         expect(candidate).toHaveTextContent('57,000원');
@@ -261,7 +404,7 @@ describe('AlphaLab operational panel', () => {
     it('shows warmup without inventing candidates or win rates', async () => {
         api.fetchAuthAPI.mockResolvedValue(missing);
         render(<AlphaLabPanel />);
-        expect(await screen.findByText(/저장된 전략 실험 결과가 없습니다/)).toBeInTheDocument();
+        expect(await screen.findByText(/저장된 매수 후보 검출 결과가 없습니다/)).toBeInTheDocument();
         expect(screen.queryByRole('article')).toBeNull();
         expect(api.postAuthAPI).not.toHaveBeenCalled();
     });
@@ -302,9 +445,9 @@ describe('AlphaLab operational panel', () => {
         api.postAuthAPI.mockResolvedValue({ ...missing, state: 'running' });
         render(<AlphaLabPanel />);
         await screen.findByRole('article', { name: /삼성전자/ });
-        await userEvent.click(screen.getByRole('button', { name: '전략 실험 실행' }));
+        await userEvent.click(screen.getByRole('button', { name: '매수 후보 검출' }));
         expect(screen.getByRole('article', { name: /삼성전자/ })).toBeInTheDocument();
-        expect(screen.getByRole('status')).toHaveTextContent('전략 실험 진행 중');
+        expect(screen.getByRole('status')).toHaveTextContent('매수 후보 검출 진행 중');
         expect(screen.getByText(/이전 검증 결과/)).toBeInTheDocument();
     });
     it('retries a failed read and never exposes raw server diagnostics', async () => {
@@ -320,7 +463,7 @@ describe('AlphaLab operational panel', () => {
         api.postAuthAPI.mockResolvedValue({ ...missing, state: 'failed', error: 'C:\\private\\worker.py' });
         render(<AlphaLabPanel />);
         await screen.findByRole('article', { name: /삼성전자/ });
-        await userEvent.click(screen.getByRole('button', { name: '전략 실험 실행' }));
+        await userEvent.click(screen.getByRole('button', { name: '매수 후보 검출' }));
         expect(screen.getByRole('article', { name: /삼성전자/ })).toBeInTheDocument();
         expect(screen.getByRole('alert')).not.toHaveTextContent('worker.py');
     });
@@ -348,14 +491,14 @@ describe('AlphaLab operational panel', () => {
         expect(api.fetchAuthAPI).toHaveBeenCalledTimes(2);
         await act(async () => { finishRead(held()); });
         expect(screen.getByRole('article', { name: /삼성전자/ })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: '전략 실험 실행' })).not.toBeDisabled();
+        expect(screen.getByRole('button', { name: '매수 후보 검출' })).not.toBeDisabled();
     });
     it('discards a result returned for a previous token', async () => {
         let oldResolve!: (value: unknown) => void;
         api.fetchAuthAPI.mockImplementationOnce(() => new Promise(resolve => { oldResolve = resolve; })).mockResolvedValueOnce(missing);
         const view = render(<AlphaLabPanel token="old" />);
         view.rerender(<AlphaLabPanel token="new" />);
-        await screen.findByText(/저장된 전략 실험 결과가 없습니다/);
+        await screen.findByText(/저장된 매수 후보 검출 결과가 없습니다/);
         await act(async () => { oldResolve(held()); });
         expect(screen.queryByRole('article')).toBeNull();
     });

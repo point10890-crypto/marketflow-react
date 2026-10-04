@@ -184,4 +184,5 @@ def present_status(status, *, now=None):
               'avoid': '후보의 해당 전략이 이후 평가에서 손실을 보여 신규 매수를 제외합니다. 매도 지시는 아닙니다.'}[action]
     report['proposal_summary'] = dict(action=action, headline=headline[:160], reason=reason[:300],
         buy_count=counts['buy'], wait_count=counts['wait'], avoid_count=counts['avoid'], policy_version=POLICY_VERSION)
-    return result
+    from .opportunities import present_opportunities
+    return present_opportunities(result, current)

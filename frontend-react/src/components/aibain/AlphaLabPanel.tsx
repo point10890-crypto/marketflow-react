@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { fetchAlphaLab, startAlphaLab, type AlphaLabCandidate, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
+import { fetchAlphaLab, startAlphaLab, type AlphaLabCandidate, type AlphaLabOpportunityCandidate, type AlphaLabOpportunityPhase, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
 
 const numberPct = (value: number | null, signed = false) => value === null ? '대기' : `${signed && value > 0 ? '+' : ''}${(value * 100).toFixed(1)}%`;
 const money = (value: number | null) => value === null ? '대기' : `${Math.round(value).toLocaleString('ko-KR')}원`;
@@ -37,6 +37,15 @@ const reasonLabels: Record<string, string> = {
     research_only_cio_approval_required: '연구 근거이며 CIO의 실투자 승인이 필요합니다.',
     t_stat_below_two: '평균 순수익의 통계 진단 기준 미충족',
     no_validation_qualified_champion: '검증 조건을 통과한 선택 전략 없음',
+    manual_exploratory_research_only: '직접 판단용 탐색적 연구 제안입니다.',
+    source_and_cio_approval_required: '자료 인증·CIO 승인 및 자동 주문 권한과 별도입니다.',
+    stronger_statistical_evidence_not_met: '엄격한 통계 진단 조건은 미충족입니다.',
+    new_retrospective_policy_not_untouched_validation: '새 정책을 과거 자료로 탐색했습니다. 건드리지 않은 독립 검증 성과가 아닙니다.',
+    current_quality_cohort_survivorship_bias: '현재 재무 우량 종목 목록에 따른 생존 편향이 남아 있습니다.',
+    multiple_symbol_and_setup_screening: '여러 종목과 진입 조건을 함께 검색한 선택 효과가 남아 있습니다.',
+    source_vintage_and_corporate_action_adjustment_not_certified: '당시 자료 시점·기업행사의 가격 보정은 인증되지 않았습니다.',
+    research_weights_not_order_approval: '제안 비중은 자동 승인·주문 권한이 아닙니다.',
+    insufficient_union_history: '고정 탐색에 필요한 5년 가격 자료가 부족합니다.',
 };
 const explain = (reason: string) => reasonLabels[reason] ?? reason;
 const stateLabels: Record<string, string> = {
@@ -71,7 +80,17 @@ function Prices({ row }: { row: AlphaLabCandidate }) {
     ].map(([label, value]) => <div key={label} className="flex flex-wrap items-center justify-between gap-2 py-2"><dt className="text-gray-400">{label}</dt><dd className="font-mono text-gray-100">{value}</dd></div>)}</dl>;
 }
 
-function Candidate({ row, report, proposal, onSelectSymbol }: { row: AlphaLabCandidate; report: AlphaLabReport; proposal: AlphaLabProposal; onSelectSymbol?: (symbol: string) => void }) {
+const strategyNames: Record<string, string> = { momentum: '추세 지속', liquidity_breakout: '거래량 동반 돌파', mean_reversion: '과매도 회복' };
+function OpportunityPhase({ label, phase }: { label: string; phase: AlphaLabOpportunityPhase }) {
+    return <div className="min-w-0 border-t border-[#30363f] pt-3"><h5 className="font-semibold text-gray-200">{label} · {phase.start} ~ {phase.end}</h5>
+        <p className="mt-2 tabular-nums">조건일 {phase.samples}건 · 승리 {phase.wins} / 손실 {phase.losses} / 동일 {phase.zeros}</p>
+        <p className="mt-1 tabular-nums">과거 승리 비율 {numberPct(phase.win_rate)} · 평균 거래 순손익 {numberPct(phase.mean_net_return, true)}</p>
+        <p className="mt-1 tabular-nums">비용 2배 평균 거래 순손익 {numberPct(phase.stress_mean_net_return, true)}</p>
+        <p className="mt-1 tabular-nums">거래별 전액 재투자 합성 진단 {numberPct(phase.compounded_trade_return, true)} · 비용 2배 {numberPct(phase.stress_compounded_trade_return, true)}</p>
+        <p className="mt-1">합성 진단은 제안 비중 5%의 계좌 성과가 아닙니다. 마지막 청산 {phase.last_exit_session} · t 진단 {phase.t_stat === null ? '미산출' : phase.t_stat.toFixed(2)}</p>
+    </div>;
+}
+function Candidate({ row, report, proposal, evidence, onSelectSymbol }: { row: AlphaLabCandidate; report: AlphaLabReport; proposal: AlphaLabProposal; evidence?: AlphaLabOpportunityCandidate['evidence']; onSelectSymbol?: (symbol: string) => void }) {
     const strategy = report.strategies.find(item => item.strategy_id === row.strategy_id);
     const reasons = Array.from(new Set([...row.risk.reasons, ...row.reasons]));
     const buy = proposal.action === 'buy';
@@ -82,22 +101,26 @@ function Candidate({ row, report, proposal, onSelectSymbol }: { row: AlphaLabCan
         </div>
         <p className="mt-3 break-words text-sm leading-relaxed text-gray-100">{proposal.reason}</p>
         <p className="mt-2 break-words text-xs leading-relaxed text-[#acd3ff]">다음 행동 · {proposal.next_step}</p>
+        {evidence && <p className="mt-2 text-[11px] leading-relaxed tabular-nums text-gray-400">과거 조건일 평균 거래 순손익 · 형성 {evidence.calibration.samples}건 {numberPct(evidence.calibration.mean_net_return, true)} / 최근 확인 {evidence.confirmation.samples}건 {numberPct(evidence.confirmation.mean_net_return, true)}</p>}
         {proposal.action === 'avoid' && <p className="mt-2 text-[11px] leading-relaxed text-gray-400">신규매수 제외 의견입니다. 보유 주식의 매도 지시가 아닙니다.</p>}
         {buy && <div className="mt-3 border-y border-[#497368] py-3">
             <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-xs text-gray-300">제안 비중</span><strong className="font-mono text-lg tabular-nums text-teal-200">{numberPct(proposal.proposed_weight)}</strong></div>
             <p className="mt-2 text-xs font-semibold text-[#acd3ff]">다음 장 시가 확인 후 재계산</p>
             <p className="mt-1 text-[11px] leading-relaxed text-gray-400">마지막 종가로 계산한 참고 가격입니다. 현재 체결가·주문 가격이 아닙니다.</p>
             <Prices row={row} />
+            {evidence && <p className="mt-2 text-xs font-semibold text-gray-200">보유 계획 · 최대 10거래일</p>}
             <p className="mt-2 text-[11px] text-gray-400">입력 거래일 {proposal.input_session ?? '미확인'} · 제안 만료 {proposal.valid_until ? clock(proposal.valid_until) : '미확인'}</p>
         </div>}
         <details key={proposal.action} className="mt-3 border-t border-[#30363f] pt-1 text-[11px] leading-relaxed text-gray-400">
             <summary className={disclosureClass}>{buy ? '검증 근거와 참고 계산' : proposal.action === 'avoid' ? '제외 근거와 참고 계산' : '대기 근거와 참고 계산'}</summary>
-            <p className="mt-2 break-words">{strategy?.name ?? row.strategy_id} · 점수 {row.score.toFixed(3)}</p>
-            <p className="mt-1">점수는 전략 내 상대 평가이며 상승 확률이 아닙니다.</p>
+            <p className="mt-2 break-words">{strategy?.name ?? strategyNames[row.strategy_id] ?? row.strategy_id} · {evidence ? `형성 구간 비용 2배 평균 ${numberPct(row.score, true)}` : `점수 ${row.score.toFixed(3)}`}</p>
+            <p className="mt-1">{evidence ? '형성 구간에서 선택하고 최근 확인 구간을 통과한 과거 조건부 근거입니다. 미래 승리 확률이나 독립 검증 성과가 아닙니다.' : '점수는 전략 내 상대 평가이며 상승 확률이 아닙니다.'}</p>
+            {evidence && <div className="mt-3 space-y-3"><OpportunityPhase label="형성 구간" phase={evidence.calibration} /><OpportunityPhase label="최근 확인 구간" phase={evidence.confirmation} />
+                <p>{evidence.stronger_evidence ? '통계 진단 조건도 통과했습니다. 출처 보정·독립 검증을 인증하지 않습니다.' : '탐색적 근거입니다. 엄격한 통계 진단이나 독립 검증을 통과한 확정 신호가 아닙니다.'}</p></div>}
             {!buy && <><p className="mt-2">아래는 제외·대기 종목의 참고 계산이며 진입 제안이 아닙니다.</p><Prices row={row} /></>}
             <p className="mt-3 tabular-nums">기존 승인 체계의 모의 비중 {numberPct(row.risk.weight)} · {stateText(row.risk.status)}</p>
             <p className="mt-1 tabular-nums">검증 상승 빈도 {numberPct(row.risk.p)} · 원 켈리 {numberPct(row.risk.kelly_raw)} · 연구 비중 {numberPct(row.risk.research_weight ?? null)}</p>
-            <p className="mt-1">하프 켈리 · 종목 한도 20%. 제안 비중은 직접 판단용 의견이며 자동 승인·주문 권한이 없습니다.</p>
+            <p className="mt-1">{evidence ? '쿼터 켈리 · 종목 한도 5% · 계좌 계획 손실 한도 1%.' : '하프 켈리 · 종목 한도 20%.'} 제안 비중은 직접 판단용 의견이며 자동 승인·주문 권한이 없습니다.</p>
             {reasons.length > 0 && <ul className="mt-3 space-y-1 break-words">{reasons.map(reason => <li key={reason}>{explain(reason)}</li>)}</ul>}
         </details>
         {onSelectSymbol ? <button type="button" onClick={() => onSelectSymbol(row.symbol)} className={`${buttonClass} mt-4 w-full`}>종목 상세 · 차트 사례</button>
@@ -110,23 +133,37 @@ function Evidence({ report, previous, blocked, now, onSelectSymbol }: { report: 
     const provenance = report.provenance;
     const forward = report.forward;
     const exposure = report.candidates.reduce((sum, row) => sum + row.risk.weight, 0);
-    const proposals = report.candidates.map(row => effectiveProposal(row, report, blocked, now));
+    const rows = report.buy_candidates ?? [];
+    const scanBlocked = blocked || report.opportunity_scan?.status !== 'ready'
+        || !!report.opportunity_scan.reasons.some(reason => reason.includes('refresh_failed'));
+    const proposals = rows.map(row => effectiveProposal(row, report, scanBlocked, now));
     const buys = proposals.filter(row => row.action === 'buy').length;
     const waits = proposals.filter(row => row.action === 'wait').length;
     const avoids = proposals.length - buys - waits;
-    const summary = report.proposal_summary;
+    const summary = report.opportunity_summary;
     const summaryMatches = summary && summary.buy_count === buys && summary.wait_count === waits && summary.avoid_count === avoids;
-    const headline = summaryMatches ? summary.headline : buys ? `오늘 제안: 매수 검토 ${buys}종목` : waits || !proposals.length ? '오늘 제안: 진입 대기' : '오늘 제안: 신규매수 제외';
+    const headline = summaryMatches ? summary.headline : buys ? `오늘 제안: 새 매수 후보 ${buys}종목` : '오늘 제안: 진입 대기';
     return <div className="space-y-4">
         <div className="rounded-lg border border-[#365372] bg-[#151f2b] p-4" aria-label="오늘 매매 제안 결론">
             <h3 className="break-words text-lg font-semibold text-gray-100">{headline}</h3>
-            <p className="mt-2 break-words text-sm leading-relaxed text-gray-300">{summaryMatches ? summary.reason : '최신 근거와 유효기간을 확인한 종목만 매수 제안을 표시합니다.'}</p>
+            <p className="mt-2 break-words text-sm leading-relaxed text-gray-300">{summaryMatches ? summary.reason : report.opportunity_scan ? '최신 근거와 유효기간을 확인한 새 후보만 매수 제안을 표시합니다.' : '새 매수 후보 스캔 결과가 없습니다. 실행하여 종목별 조건과 가격 계획을 확인하세요.'}</p>
             <p className="mt-3 text-xs tabular-nums text-gray-400">매수 제안 {buys} · 진입 대기 {waits} · 매매 제외 {avoids}</p>
         </div>
-        {report.candidates.length > 0 ? <div className="grid min-w-0 gap-3 lg:grid-cols-3">{report.candidates.map((row, index) => <Candidate key={row.symbol} row={row} report={report} proposal={proposals[index]} onSelectSymbol={onSelectSymbol} />)}</div>
-            : <p className="rounded-lg border border-[#30363f] p-4 text-xs text-gray-400">종목별 제안을 만들 자료가 없습니다. 새 검사 결과를 기다리세요.</p>}
-        {previous && <p className="rounded-lg border border-amber-400/20 p-3 text-xs leading-relaxed text-amber-200">이전 검증 결과입니다. 새 실험이 완료될 때까지 아래 자료의 분석 기준 시각을 확인해 주세요.</p>}
+        {rows.length > 0 ? <div><h3 className="mb-2 text-sm font-semibold text-gray-200">탐색적 매수 제안</h3><p className="mb-3 text-[11px] leading-relaxed text-gray-400">종목별 두 기간의 과거 조건부 근거를 사용합니다. 미래 승률·독립 검증 성과를 보장하지 않습니다.</p>
+            <div className="grid min-w-0 gap-3 lg:grid-cols-3">{rows.map((row, index) => <Candidate key={row.symbol} row={row} report={report} proposal={proposals[index]} evidence={row.evidence} onSelectSymbol={onSelectSymbol} />)}</div></div>
+            : <p className="rounded-lg border border-[#30363f] p-4 text-xs text-gray-400">현재 조건을 통과한 새 매수 후보가 없습니다.</p>}
+        {report.opportunity_scan && <p className="break-words text-[11px] leading-relaxed tabular-nums text-gray-400">새 후보 검사 {report.opportunity_scan.inspected_count}종목 · 현재 진입 조건 {report.opportunity_scan.active_setup_count}건 · 근거 통과 {report.opportunity_scan.eligible_count}종목 · 최근 거래일 {report.opportunity_scan.latest_session ?? '미확인'} · 형성 1,008 / 최근 확인 252거래일</p>}
+        {report.opportunity_scan?.forward && <p className="text-[11px] leading-relaxed tabular-nums text-gray-400">새 후보 전향 관측 · 고정 {report.opportunity_scan.forward.decisions}건 / 완료 {report.opportunity_scan.forward.matured}건 · 과거 결과와 별도 누적</p>}
+        {report.opportunity_scan && <details className="min-w-0 border-t border-[#30363f] pt-2"><summary className={disclosureClass}>새 후보 탐색 기준 · 한계</summary>
+            <ul className="mt-2 space-y-1 break-words text-[11px] leading-relaxed text-gray-400">{[...report.opportunity_scan.reasons, ...report.opportunity_scan.warnings ?? []].map(reason => <li key={reason}>{explain(reason)}</li>)}</ul>
+        </details>}
+        {previous && <p className="rounded-lg border border-amber-400/20 p-3 text-xs leading-relaxed text-amber-200">이전 검증 결과입니다. 새 검출이 완료될 때까지 아래 자료의 분석 기준 시각을 확인해 주세요.</p>}
         <p className="text-[11px] leading-relaxed text-gray-400">직접 판단용 연구 의견 · 실투자 승인 없음. 자동 주문을 실행하지 않습니다.</p>
+        <details className="min-w-0 border-t border-[#30363f] pt-2"><summary className={disclosureClass}>기존 실험 후보 · 제외 근거</summary><div className="mt-3 space-y-3">
+            {report.proposal_summary && <p className="break-words text-xs text-gray-400">{report.proposal_summary.headline}</p>}
+            <p className="text-[11px] leading-relaxed text-gray-400">이전 공통 전략 실험 결과입니다. 새 종목별 탐색과 선택·성과 근거를 공유하지 않습니다.</p>
+            <div className="grid min-w-0 gap-3 lg:grid-cols-3">{report.candidates.map(row => <Candidate key={row.symbol} row={row} report={report} proposal={effectiveProposal(row, report, blocked, now)} onSelectSymbol={onSelectSymbol} />)}</div>
+        </div></details>
         <details className="min-w-0 border-t border-[#30363f] pt-2"><summary className={disclosureClass}>전략 비교 · 에이전트 · 자료 근거 펼치기</summary><div className="mt-3 min-w-0 space-y-4">
         <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-y border-[#30363f] py-3 text-xs sm:grid-cols-4">
             {[
@@ -192,7 +229,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol }: { token?: strin
         if (previousToken.current !== token) { previousToken.current = token; setSnapshot(null); }
         setReading(true); setPosting(false); setError('');
         fetchAlphaLab(token).then(next => { if (active && current === generation.current) accept(next); })
-            .catch(() => { if (active && current === generation.current) setError('저장된 전략 실험 결과를 불러오지 못했습니다. 다시 조회해 주세요.'); })
+            .catch(() => { if (active && current === generation.current) setError('매수 후보 검출 결과를 불러오지 못했습니다. 다시 조회해 주세요.'); })
             .finally(() => { if (active && current === generation.current) setReading(false); });
         return () => { active = false; mounted.current = false; ++generation.current; };
     }, [token, revision]);
@@ -208,11 +245,14 @@ export default function AlphaLabPanel({ token, onSelectSymbol }: { token?: strin
         };
     }, []);
     useEffect(() => {
+        const report = snapshot?.report;
+        if (!report) return;
         const now = Date.now();
-        const expirations = snapshot?.report?.candidates.flatMap(row => row.proposal?.action === 'buy' && row.proposal.valid_until
-            ? [Date.parse(row.proposal.valid_until), ...(snapshot.report!.provenance.captured_at ? [sourceExpiry(snapshot.report!.provenance.captured_at)] : []),
-                ...(snapshot.report!.latest_session ? [sourceExpiry(`${snapshot.report!.latest_session}T00:00:00+09:00`)] : []),
-                ...(snapshot.report!.universe.scope_date ? [sourceExpiry(`${snapshot.report!.universe.scope_date}T00:00:00+09:00`)] : [])] : []) ?? [];
+        const expiryCandidates = [...report.candidates, ...report.buy_candidates ?? []];
+        const expirations = expiryCandidates.flatMap(row => row.proposal?.action === 'buy' && row.proposal.valid_until
+            ? [Date.parse(row.proposal.valid_until), ...(report.provenance.captured_at ? [sourceExpiry(report.provenance.captured_at)] : []),
+                ...(report.latest_session ? [sourceExpiry(`${report.latest_session}T00:00:00+09:00`)] : []),
+                ...(report.universe.scope_date ? [sourceExpiry(`${report.universe.scope_date}T00:00:00+09:00`)] : [])] : []);
         const next = Math.min(...expirations.filter(value => value > now));
         if (!Number.isFinite(next)) return;
         const timer = setTimeout(() => setCurrentTime(Date.now()), Math.min(next - now, 2147483647));
@@ -230,7 +270,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol }: { token?: strin
                 accept(next);
                 if (next.state === 'running') timer = setTimeout(poll, 4000);
             } catch {
-                if (active && current === generation.current) setError('실험 진행 상태를 확인하지 못했습니다. 저장 결과를 다시 확인해 주세요.');
+                if (active && current === generation.current) setError('매수 후보 검출 진행 상태를 확인하지 못했습니다. 저장 결과를 다시 확인해 주세요.');
             }
         };
         timer = setTimeout(poll, 4000);
@@ -241,17 +281,17 @@ export default function AlphaLabPanel({ token, onSelectSymbol }: { token?: strin
         const current = ++generation.current;
         setPosting(true); setError('');
         try { const next = await startAlphaLab(token); if (mounted.current && current === generation.current) accept(next); }
-        catch { if (mounted.current && current === generation.current) setError('전략 실험을 시작하지 못했습니다. 저장 결과를 확인하고 다시 실행해 주세요.'); }
+        catch { if (mounted.current && current === generation.current) setError('매수 후보 검출을 시작하지 못했습니다. 저장 결과를 확인하고 다시 실행해 주세요.'); }
         finally { if (mounted.current && current === generation.current) setPosting(false); }
     };
-    const problem = error || (state === 'failed' ? '전략 실험을 완료하지 못했습니다. 이전 결과를 보존했습니다. 자료 상태를 확인하고 다시 실행해 주세요.' : '');
+    const problem = error || (state === 'failed' ? '매수 후보 검출을 완료하지 못했습니다. 이전 결과를 보존했습니다. 자료 상태를 확인하고 다시 실행해 주세요.' : '');
     return <section aria-labelledby={heading} className="ai-panel min-w-0 border border-[#30363f] p-4 text-white sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h2 id={heading} className="ai-section-title text-lg">에이전트 매매 제안</h2><p className="mt-2 text-xs leading-relaxed text-gray-400">종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 마지막 종가로 계산한 참고 제안입니다.</p></div><span className="rounded border border-[#365372] bg-[#1b2c40] px-2 py-1 text-[11px] font-semibold text-[#acd3ff]">직접 판단용 · 주문 실행 없음</span></div>
-        <div className="my-4 flex flex-wrap gap-2"><button type="button" onClick={start} disabled={reading || posting || state === 'running'} className={`${buttonClass} bg-[#1b2c40]`}>전략 실험 실행</button><button type="button" onClick={() => { setReading(true); setRevision(value => value + 1); }} disabled={reading || posting} className={buttonClass}>저장 결과 새로고침</button></div>
-        {reading && <p role="status" className="min-h-16 py-4 text-xs text-gray-400">저장된 전략 실험 결과 확인 중…</p>}
-        {!reading && (posting || state === 'running') && <p role="status" className="mb-4 rounded-lg border border-[#365372] bg-[#1b2c40] p-3 text-xs text-[#acd3ff]">전략 실험 진행 중 · 완료된 저장 결과를 자동 확인합니다.</p>}
+        <div className="my-4 flex flex-wrap gap-2"><button type="button" onClick={start} disabled={reading || posting || state === 'running'} className={`${buttonClass} bg-[#1b2c40]`}>매수 후보 검출</button><button type="button" onClick={() => { setReading(true); setRevision(value => value + 1); }} disabled={reading || posting} className={buttonClass}>저장 결과 새로고침</button></div>
+        {reading && <p role="status" className="min-h-16 py-4 text-xs text-gray-400">매수 후보 검출 결과 확인 중…</p>}
+        {!reading && (posting || state === 'running') && <p role="status" className="mb-4 rounded-lg border border-[#365372] bg-[#1b2c40] p-3 text-xs text-[#acd3ff]">매수 후보 검출 진행 중 · 완료된 저장 결과를 자동 확인합니다.</p>}
         {problem && <p role="alert" className="mb-4 rounded-lg border border-amber-400/25 p-3 text-xs leading-relaxed text-amber-200">{problem}</p>}
-        {!reading && !snapshot?.report && !problem && state !== 'running' && !posting && <p className="py-4 text-xs leading-relaxed text-gray-400">저장된 전략 실험 결과가 없습니다. 실행 버튼으로 고정된 모의 검사를 시작해 주세요.</p>}
+        {!reading && !snapshot?.report && !problem && state !== 'running' && !posting && <p className="py-4 text-xs leading-relaxed text-gray-400">저장된 매수 후보 검출 결과가 없습니다. 매수 후보 검출 버튼으로 새 검사를 시작해 주세요.</p>}
         {snapshot?.report && <Evidence report={snapshot.report} previous={state === 'running' || state === 'failed' || !!error}
             blocked={reading || posting || !['ready', 'held'].includes(state ?? '') || !!error} now={Math.max(currentTime, Date.now())} onSelectSymbol={onSelectSymbol} />}
     </section>;
