@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { fetchAlphaLab, startAlphaLab, type AlphaLabAnalystId, type AlphaLabCandidate, type AlphaLabOpportunityCandidate, type AlphaLabOpportunityPhase, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
+import { fetchAlphaLab, liveAlphaLabMonitoring, startAlphaLab, type AlphaLabAnalystId, type AlphaLabCandidate, type AlphaLabMonitorQuote, type AlphaLabOperations, type AlphaLabOpportunityCandidate, type AlphaLabOpportunityPhase, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
 
 const numberPct = (value: number | null, signed = false) => value === null ? '대기' : `${signed && value > 0 ? '+' : ''}${(value * 100).toFixed(1)}%`;
 const money = (value: number | null) => value === null ? '대기' : `${Math.round(value).toLocaleString('ko-KR')}원`;
@@ -54,6 +54,17 @@ const reasonLabels: Record<string, string> = {
     flagged_observation: '주의 표시가 있는 가격 자료입니다.',
     latest_quote_nontradable: '입력 거래일의 거래량이 없어 비교를 보류합니다.',
     nonpositive_amount_mean: '추정 거래대금 평균을 계산할 수 없습니다.',
+    identity_mismatch: '현재 분석 입력과 감시 자료가 달라 가격 안내를 보류합니다.',
+    research_unavailable: '연구 결과 갱신 대기', calendar_unavailable: '공식 거래일 달력 확인 대기',
+    calendar_invalid: '공식 거래일 자료 확인 실패', calendar_stale: '공식 거래일 달력 갱신 대기', calendar_gap: '다음 거래일 확인 대기',
+    calendar_revision: '최초 확인한 거래일과 달라 진입 제안을 보류합니다.',
+    market_closed: '장외·휴장으로 시가 확인 대기', before_open: '장 시작 전 시가 확인 대기', after_close: '장 종료 후 감시 대기',
+    quote_unavailable: '현재 가격 조회 실패', quote_invalid: '가격 관측 자료 확인 실패', quote_stale: '현재 가격 갱신 대기',
+    quote_future: '가격 관측 시각 확인 대기', quote_symbol_mismatch: '종목이 다른 가격 자료입니다.',
+    opening_revision: '최초 시가 참고값과 자료가 달라 확인이 필요합니다.', monitor_corrupt: '저장된 감시 자료 확인 실패',
+    source_stale: '분석 입력 자료 갱신 대기', window_expired: '신규 진입 제안 기간 종료',
+    above_ceiling: '추격 상한 초과로 신규 진입 대기', below_stop: '손절 기준 아래로 신규 진입 보류',
+    target_reached: '참고 목표 도달', capacity_exceeded: '감시 기록 한도 확인 대기',
 };
 const explain = (reason: string) => reasonLabels[reason] ?? reason;
 const stateLabels: Record<string, string> = {
@@ -122,7 +133,47 @@ function PriceContext({ row }: { row: AlphaLabCandidate }) {
             <p>다음 장 시가를 확인할 때만 쓰는 수동 참고 조건입니다. 호가 단위나 주문 가격을 뜻하지 않습니다. 과거 백테스트·전향 모의 성과에는 이 상한을 적용하지 않았습니다.</p></>}
     </div>;
 }
-function Candidate({ row, report, proposal, evidence, onSelectSymbol }: { row: AlphaLabCandidate; report: AlphaLabReport; proposal: AlphaLabProposal; evidence?: AlphaLabOpportunityCandidate['evidence']; onSelectSymbol?: (symbol: string) => void }) {
+const quoteStateLabels: Record<AlphaLabMonitorQuote['entry_state'], string> = {
+    wait_open: '시가 확인 대기', within_band: '시가 참고 조건 통과', above_ceiling: '시가 상한 초과 · 신규 진입 제외',
+    below_stop: '손절 기준 아래 · 신규 진입 보류', target_reached: '참고 목표 도달', closed: '장외·휴장 · 시가 확인 대기',
+    stale: '갱신 대기', unavailable: '자료 확인 대기',
+};
+function CurrentPrice({ quote }: { quote?: AlphaLabMonitorQuote }) {
+    if (!quote || quote.price === null) return <p className="mt-3 break-words text-[11px] leading-relaxed text-amber-200">현재 가격 확인 대기 · {quote ? quoteStateLabels[quote.entry_state] : '감시 자료 없음'}</p>;
+    return <div className="mt-3 min-w-0 space-y-2 border-t border-[#365372] pt-3 text-[11px] leading-relaxed text-gray-400">
+        <div className="flex flex-wrap items-center justify-between gap-2"><span>현재 관측 가격</span><strong className="font-mono text-sm tabular-nums text-gray-100">{money(quote.price)}</strong></div>
+        <p className="break-words">{quoteStateLabels[quote.entry_state]}{quote.price > quote.entry_ceiling ? ' · 현재가 상한 초과로 신규 진입 대기' : ''}</p>
+        <p className="font-semibold text-[#acd3ff]">공식 시가 참고 · 체결 아님</p>
+        <p className="tabular-nums">시가 {money(quote.opening_price)} · 관측 {quote.quote_at ? clock(quote.quote_at) : '미확인'}</p>
+        {quote.adjusted_plan && <p className="break-words tabular-nums">시가 기준 참고 손절 {money(quote.adjusted_plan.stop_price)} / 목표 {money(quote.adjusted_plan.target_price)} · 비중 {numberPct(quote.adjusted_plan.proposed_weight)}</p>}
+        <p>KIS 가격 관측입니다. 실제 진입·보유·청산을 뜻하지 않습니다.</p>
+    </div>;
+}
+function OperationsBand({ snapshot, monitoring, now }: { snapshot: AlphaLabStatus; monitoring: AlphaLabOperations['monitoring'] | null; now: number }) {
+    const operations = snapshot.operations;
+    if (!operations) return null;
+    const c = operations.cadence;
+    const closedEntry = !!monitoring?.valid_until && now >= Date.parse(monitoring.valid_until);
+    const watched = closedEntry ? monitoring.quotes.filter(quote => quote.price !== null) : [];
+    return <div className="mb-4 min-w-0 rounded-lg border border-[#303f4b] p-3 text-[11px] leading-relaxed text-gray-400" aria-label="분석 실행 주기와 가격 감시">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1"><span className="font-semibold text-gray-200">자동 연구 · 18:45 KST</span><span className="font-semibold text-gray-200">가격 감시 · 5분</span><span>{c.market_state === 'open' ? '장중' : c.market_state === 'unknown' ? '거래일 확인 대기' : '장외·휴장'} · 달력 {c.calendar_status === 'ready' ? '확인' : c.calendar_status === 'failed' ? '확인 실패' : '대기'}</span></div>
+        <p className="mt-2 break-words">다음 진입 거래일 {snapshot.report?.proposal_window?.entry_session ?? monitoring?.entry_session ?? '공식 달력 확인 대기'} · 감시 {monitoring?.status === 'failed' ? '조회 실패' : monitoring?.status === 'ready' ? '저장 관측' : '자료 확인 대기'}</p>
+        <details className="mt-2"><summary className={disclosureClass}>실행·갱신 시각</summary><dl className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">{[
+            ['최근 연구', c.last_scan_at], ['다음 연구', c.next_scan_at], ['최근 가격 감시', c.last_monitor_at], ['다음 가격 감시', c.next_monitor_at],
+        ].map(([label, time]) => <div key={label} className="min-w-0"><dt>{label}</dt><dd className="mt-1 break-words tabular-nums text-gray-200">{time ? clock(time) : '확인 대기'}</dd></div>)}</dl><p className="mt-2">화면은 저장 결과를 30초마다 조회합니다. 조회가 새 계산이나 주문을 실행하지 않습니다.</p></details>
+        {c.reasons.length > 0 && <p className="mt-2 break-words text-amber-200">{c.reasons.map(explain).join(' · ')}</p>}
+        {watched.length > 0 && <div className="mt-3 border-t border-[#303f4b] pt-2"><h3 className="font-semibold text-gray-200">진입 종료 · 참고 감시</h3><p className="mt-1">만료된 제안은 갱신하지 않습니다. 최초 시가 참고값에 대한 관측만 표시합니다.</p><ul className="mt-2 space-y-1">{watched.map(quote => <li key={quote.symbol} className="break-words tabular-nums">{snapshot.report?.buy_candidates?.find(row => row.symbol === quote.symbol)?.name ?? quote.symbol} · {money(quote.price)} · {quoteStateLabels[quote.entry_state]}</li>)}</ul></div>}
+    </div>;
+}
+function PaperOutcomes({ paper }: { paper: AlphaLabOperations['paper'] }) {
+    return <div className="rounded-lg border border-[#303f4b] p-3 text-[11px] leading-relaxed text-gray-400"><h3 className="font-semibold text-gray-200">새 후보 전향 모의 결과</h3>
+        <p className="mt-2 tabular-nums">고정 결정 {paper.decisions}건 · 종료 {paper.counts.closed}건 · 완료·수정 제외 분모 {paper.matured}건</p>
+        <p className="mt-1 tabular-nums">승리 비율 {paper.matured ? numberPct(paper.win_rate) : '관측 대기'} · 평균 거래 순손익 {paper.matured ? numberPct(paper.mean_net_return, true) : '관측 대기'}</p>
+        <p className="mt-1 break-words tabular-nums">대기 {paper.counts.pending} · 진행 {paper.counts.open} · 미진입 {paper.counts.unfilled} · 거래일 부족 {paper.counts.missing_session} · 자료 수정 {paper.counts.source_revision} · 수정 종료 제외 {paper.excluded_revised_closed}건</p>
+        <p className="mt-2">고정 관찰 목록의 다음 장 시가 기반 모의 결과입니다. 추격 상한을 적용한 성과나 계좌 손익이 아닙니다.</p>
+    </div>;
+}
+function Candidate({ row, report, proposal, evidence, quote, monitorEnabled, onSelectSymbol }: { row: AlphaLabCandidate; report: AlphaLabReport; proposal: AlphaLabProposal; evidence?: AlphaLabOpportunityCandidate['evidence']; quote?: AlphaLabMonitorQuote; monitorEnabled?: boolean; onSelectSymbol?: (symbol: string) => void }) {
     const strategy = report.strategies.find(item => item.strategy_id === row.strategy_id);
     const reasons = Array.from(new Set([...row.risk.reasons, ...row.reasons]));
     const buy = proposal.action === 'buy';
@@ -144,6 +195,7 @@ function Candidate({ row, report, proposal, evidence, onSelectSymbol }: { row: A
             {row.entry_guard && <><dl className="border-t border-[#30363f] text-xs tabular-nums"><div className="flex flex-wrap items-center justify-between gap-2 py-2"><dt className="text-gray-300">추격 매수 상한 (+2%)</dt><dd className="font-mono text-gray-100">{money(row.entry_guard.max_entry_price)}</dd></div></dl>
                 <p className="text-[11px] leading-relaxed text-gray-400">다음 장 시가가 상한을 넘으면 진입을 기다립니다. 상한 이내라도 실제 시가로 손절·비중을 다시 계산하세요.</p></>}
             {evidence && <p className="mt-2 text-xs font-semibold text-gray-200">보유 계획 · 최대 10거래일</p>}
+            {monitorEnabled && <CurrentPrice quote={quote} />}
             <p className="mt-2 text-[11px] text-gray-400">입력 거래일 {proposal.input_session ?? '미확인'} · 제안 만료 {proposal.valid_until ? clock(proposal.valid_until) : '미확인'}</p>
         </div>}
         <details key={proposal.action} className="mt-3 border-t border-[#30363f] pt-1 text-[11px] leading-relaxed text-gray-400">
@@ -164,7 +216,7 @@ function Candidate({ row, report, proposal, evidence, onSelectSymbol }: { row: A
     </article>;
 }
 
-function Evidence({ report, previous, blocked, now, onSelectSymbol }: { report: AlphaLabReport; previous: boolean; blocked: boolean; now: number; onSelectSymbol?: (symbol: string) => void }) {
+function Evidence({ report, previous, blocked, now, monitoring, operations, onSelectSymbol }: { report: AlphaLabReport; previous: boolean; blocked: boolean; now: number; monitoring: AlphaLabOperations['monitoring'] | null; operations?: AlphaLabOperations; onSelectSymbol?: (symbol: string) => void }) {
     const champion = report.strategies.find(row => row.strategy_id === report.champion.strategy_id);
     const provenance = report.provenance;
     const forward = report.forward;
@@ -186,10 +238,10 @@ function Evidence({ report, previous, blocked, now, onSelectSymbol }: { report: 
             <p className="mt-3 text-xs tabular-nums text-gray-400">매수 제안 {buys} · 진입 대기 {waits} · 매매 제외 {avoids}</p>
         </div>
         {rows.length > 0 ? <div><h3 className="mb-2 text-sm font-semibold text-gray-200">탐색적 매수 제안</h3><p className="mb-3 text-[11px] leading-relaxed text-gray-400">종목별 두 기간의 과거 조건부 근거를 사용합니다. 미래 승률·독립 검증 성과를 보장하지 않습니다.</p>
-            <div className="grid min-w-0 gap-3 lg:grid-cols-3">{rows.map((row, index) => <Candidate key={row.symbol} row={row} report={report} proposal={proposals[index]} evidence={row.evidence} onSelectSymbol={onSelectSymbol} />)}</div></div>
+            <div className="grid min-w-0 gap-3 lg:grid-cols-3">{rows.map((row, index) => <Candidate key={row.symbol} row={row} report={report} proposal={proposals[index]} evidence={row.evidence} quote={monitoring?.quotes.find(quote => quote.symbol === row.symbol)} monitorEnabled={!!operations} onSelectSymbol={onSelectSymbol} />)}</div></div>
             : <p className="rounded-lg border border-[#30363f] p-4 text-xs text-gray-400">현재 조건을 통과한 새 매수 후보가 없습니다.</p>}
         {report.opportunity_scan && <p className="break-words text-[11px] leading-relaxed tabular-nums text-gray-400">새 후보 검사 {report.opportunity_scan.inspected_count}종목 · 현재 진입 조건 {report.opportunity_scan.active_setup_count}건 · 근거 통과 {report.opportunity_scan.eligible_count}종목 · 최근 거래일 {report.opportunity_scan.latest_session ?? '미확인'} · 형성 1,008 / 최근 확인 252거래일</p>}
-        {report.opportunity_scan?.forward && <p className="text-[11px] leading-relaxed tabular-nums text-gray-400">새 후보 전향 관측 · 고정 {report.opportunity_scan.forward.decisions}건 / 완료 {report.opportunity_scan.forward.matured}건 · 과거 결과와 별도 누적</p>}
+        {operations ? <PaperOutcomes paper={operations.paper} /> : report.opportunity_scan?.forward && <p className="text-[11px] leading-relaxed tabular-nums text-gray-400">새 후보 전향 관측 · 고정 {report.opportunity_scan.forward.decisions}건 / 완료 {report.opportunity_scan.forward.matured}건 · 과거 결과와 별도 누적</p>}
         {report.opportunity_scan && <details className="min-w-0 border-t border-[#30363f] pt-2"><summary className={disclosureClass}>새 후보 탐색 기준 · 한계</summary>
             <ul className="mt-2 space-y-1 break-words text-[11px] leading-relaxed text-gray-400">{[...report.opportunity_scan.reasons, ...report.opportunity_scan.warnings ?? []].map(reason => <li key={reason}>{explain(reason)}</li>)}</ul>
         </details>}
@@ -247,11 +299,13 @@ function Evidence({ report, previous, blocked, now, onSelectSymbol }: { report: 
 export default function AlphaLabPanel({ token, onSelectSymbol }: { token?: string; onSelectSymbol?: (symbol: string) => void }) {
     const heading = useId();
     const generation = useRef(0);
+    const inFlight = useRef<number | null>(null);
     const mounted = useRef(false);
     const previousToken = useRef(token);
     const [snapshot, setSnapshot] = useState<AlphaLabStatus | null>(null);
     const [reading, setReading] = useState(true);
     const [posting, setPosting] = useState(false);
+    const [polling, setPolling] = useState(false);
     const [error, setError] = useState('');
     const [revision, setRevision] = useState(0);
     const [currentTime, setCurrentTime] = useState(Date.now);
@@ -262,11 +316,12 @@ export default function AlphaLabPanel({ token, onSelectSymbol }: { token?: strin
         mounted.current = true;
         let active = true;
         const current = ++generation.current;
+        inFlight.current = current;
         if (previousToken.current !== token) { previousToken.current = token; setSnapshot(null); }
-        setReading(true); setPosting(false); setError('');
+        setReading(true); setPosting(false); setPolling(false); setError('');
         fetchAlphaLab(token).then(next => { if (active && current === generation.current) accept(next); })
             .catch(() => { if (active && current === generation.current) setError('매수 후보 검출 결과를 불러오지 못했습니다. 다시 조회해 주세요.'); })
-            .finally(() => { if (active && current === generation.current) setReading(false); });
+            .finally(() => { if (active && current === generation.current) { inFlight.current = null; setReading(false); } });
         return () => { active = false; mounted.current = false; ++generation.current; };
     }, [token, revision]);
     const state = snapshot?.state;
@@ -289,46 +344,61 @@ export default function AlphaLabPanel({ token, onSelectSymbol }: { token?: strin
             ? [Date.parse(row.proposal.valid_until), ...(report.provenance.captured_at ? [sourceExpiry(report.provenance.captured_at)] : []),
                 ...(report.latest_session ? [sourceExpiry(`${report.latest_session}T00:00:00+09:00`)] : []),
                 ...(report.universe.scope_date ? [sourceExpiry(`${report.universe.scope_date}T00:00:00+09:00`)] : [])] : []);
+        for (const quote of snapshot?.operations?.monitoring.quotes ?? []) {
+            if (quote.price === null) continue;
+            for (const time of [quote.quote_at, quote.fetched_at]) if (time) expirations.push(Date.parse(time) + 420000);
+        }
+        if (snapshot?.operations) expirations.push(Date.parse(`${new Date(now + 9 * 3600000).toISOString().slice(0, 10)}T15:30:00+09:00`));
         const next = Math.min(...expirations.filter(value => value > now));
         if (!Number.isFinite(next)) return;
         const timer = setTimeout(() => setCurrentTime(Date.now()), Math.min(next - now, 2147483647));
         return () => clearTimeout(timer);
     }, [snapshot, currentTime]);
     useEffect(() => {
-        if (state !== 'running' || reading || posting) return;
+        if (reading || posting) return;
         let active = true;
         let timer: ReturnType<typeof setTimeout>;
         const poll = async () => {
+            if (inFlight.current !== null) { timer = setTimeout(poll, state === 'running' ? 4000 : 30000); return; }
             const current = ++generation.current;
+            inFlight.current = current; setPolling(true);
             try {
                 const next = await fetchAlphaLab(token);
                 if (!active || current !== generation.current) return;
-                accept(next);
-                if (next.state === 'running') timer = setTimeout(poll, 4000);
+                accept(next); setError('');
+                timer = setTimeout(poll, next.state === 'running' ? 4000 : 30000);
             } catch {
                 if (active && current === generation.current) setError('매수 후보 검출 진행 상태를 확인하지 못했습니다. 저장 결과를 다시 확인해 주세요.');
+                if (active) timer = setTimeout(poll, state === 'running' ? 4000 : 30000);
+            } finally {
+                if (mounted.current && current === generation.current) { inFlight.current = null; setPolling(false); }
             }
         };
-        timer = setTimeout(poll, 4000);
+        timer = setTimeout(poll, state === 'running' ? 4000 : 30000);
         return () => { active = false; clearTimeout(timer); };
     }, [state, token, revision, reading, posting]);
     const start = async () => {
-        if (reading || posting || state === 'running') return;
+        if (reading || posting || state === 'running' || inFlight.current !== null) return;
         const current = ++generation.current;
+        inFlight.current = current;
         setPosting(true); setError('');
         try { const next = await startAlphaLab(token); if (mounted.current && current === generation.current) accept(next); }
         catch { if (mounted.current && current === generation.current) setError('매수 후보 검출을 시작하지 못했습니다. 저장 결과를 확인하고 다시 실행해 주세요.'); }
-        finally { if (mounted.current && current === generation.current) setPosting(false); }
+        finally { if (mounted.current && current === generation.current) { inFlight.current = null; setPosting(false); } }
     };
     const problem = error || (state === 'failed' ? '매수 후보 검출을 완료하지 못했습니다. 이전 결과를 보존했습니다. 자료 상태를 확인하고 다시 실행해 주세요.' : '');
+    const blocked = reading || posting || !['ready', 'held'].includes(state ?? '') || !!error;
+    const now = Math.max(currentTime, Date.now());
+    const monitoring = snapshot ? liveAlphaLabMonitoring(snapshot, now, blocked) : null;
     return <section aria-labelledby={heading} className="ai-panel min-w-0 border border-[#30363f] p-4 text-white sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h2 id={heading} className="ai-section-title text-lg">에이전트 매매 제안</h2><p className="mt-2 text-xs leading-relaxed text-gray-400">종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 마지막 종가로 계산한 참고 제안입니다.</p></div><span className="rounded border border-[#365372] bg-[#1b2c40] px-2 py-1 text-[11px] font-semibold text-[#acd3ff]">직접 판단용 · 주문 실행 없음</span></div>
-        <div className="my-4 flex flex-wrap gap-2"><button type="button" onClick={start} disabled={reading || posting || state === 'running'} className={`${buttonClass} bg-[#1b2c40]`}>매수 후보 검출</button><button type="button" onClick={() => { setReading(true); setRevision(value => value + 1); }} disabled={reading || posting} className={buttonClass}>저장 결과 새로고침</button></div>
+        <div className="my-4 flex flex-wrap gap-2"><button type="button" onClick={start} disabled={reading || posting || polling || state === 'running'} className={`${buttonClass} bg-[#1b2c40]`}>매수 후보 검출</button><button type="button" onClick={() => { if (inFlight.current === null) { setReading(true); setRevision(value => value + 1); } }} disabled={reading || posting || polling} className={buttonClass}>저장 결과 새로고침</button></div>
+        {snapshot?.operations && <OperationsBand snapshot={snapshot} monitoring={monitoring} now={now} />}
         {reading && <p role="status" className="min-h-16 py-4 text-xs text-gray-400">매수 후보 검출 결과 확인 중…</p>}
         {!reading && (posting || state === 'running') && <p role="status" className="mb-4 rounded-lg border border-[#365372] bg-[#1b2c40] p-3 text-xs text-[#acd3ff]">매수 후보 검출 진행 중 · 완료된 저장 결과를 자동 확인합니다.</p>}
         {problem && <p role="alert" className="mb-4 rounded-lg border border-amber-400/25 p-3 text-xs leading-relaxed text-amber-200">{problem}</p>}
         {!reading && !snapshot?.report && !problem && state !== 'running' && !posting && <p className="py-4 text-xs leading-relaxed text-gray-400">저장된 매수 후보 검출 결과가 없습니다. 매수 후보 검출 버튼으로 새 검사를 시작해 주세요.</p>}
         {snapshot?.report && <Evidence report={snapshot.report} previous={state === 'running' || state === 'failed' || !!error}
-            blocked={reading || posting || !['ready', 'held'].includes(state ?? '') || !!error} now={Math.max(currentTime, Date.now())} onSelectSymbol={onSelectSymbol} />}
+            blocked={blocked} now={now} monitoring={monitoring} operations={snapshot.operations} onSelectSymbol={onSelectSymbol} />}
     </section>;
 }

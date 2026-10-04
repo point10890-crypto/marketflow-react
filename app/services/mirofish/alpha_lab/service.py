@@ -207,15 +207,20 @@ def _execute(root):
             store._write(audit_path, core)
         elif store._hash(store._read(audit_path)) != report['experiment_hash']:
             raise ValueError('experiment_integrity')
-        return store.publish(root, report, held=inputs['status'] != 'ready' or report['champion']['status'] == 'held'
-                             or not inputs['provenance']['analysis_ready'])
+        published = store.publish(root, report, held=inputs['status'] != 'ready' or report['champion']['status'] == 'held'
+                                  or not inputs['provenance']['analysis_ready'])
+        from .monitor import register_report
+        register_report(root, report, now=report['decision_at'])
+        return published
     except Exception as exc:
         logging.getLogger(__name__).warning('AlphaLab scan failed (%s)', type(exc).__name__)
         return store.set_failure(root)
 
 
 def read_status():
-    return store.read_status(ROOT)
+    # Saved projections only: no quote/source acquisition, fitting or writes.
+    from .monitor import attach_operations
+    return attach_operations(store.read_status(ROOT), ROOT)
 
 
 def scan_once(root=None):

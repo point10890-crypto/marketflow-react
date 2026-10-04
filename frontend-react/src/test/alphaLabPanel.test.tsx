@@ -95,12 +95,123 @@ function contextualOpportunity() {
         })),
     } };
 }
+const monitorNow = '2026-10-05T00:05:00Z';
+function monitoredOpportunity() {
+    const value = contextualOpportunity(); const audit = 'b'.repeat(64);
+    const valid_until = '2026-10-05T06:30:00Z';
+    return { ...value, report: { ...value.report,
+        opportunity_scan: { ...value.report.opportunity_scan, audit_hash: audit },
+        proposal_window: { policy_version: 'next-session-proposal-v1', input_fingerprint: value.report.input_fingerprint,
+            opportunity_audit_hash: audit, origin_at: value.report.decision_at!, entry_session: '2026-10-05', valid_until,
+            calendar_source: 'KIS:CTCA0903R' },
+        buy_candidates: value.report.buy_candidates.map(row => ({ ...row, plan: { ...row.plan!, atr: 1500 },
+            proposal: { ...row.proposal, derived_at: monitorNow, valid_until } })),
+    }, operations: { schema_version: 1, policy_version: 'alpha-cadence-v1', generated_at: monitorNow,
+        cadence: { timezone: 'Asia/Seoul', research_time: '18:45', monitor_interval_seconds: 300, market_state: 'open',
+            calendar_status: 'ready', calendar_checked_at: '2026-10-04T23:55:00Z', last_scan_at: value.report.decision_at!,
+            next_scan_at: '2026-10-05T09:45:00Z', last_monitor_at: monitorNow, next_monitor_at: '2026-10-05T00:10:00Z', reasons: [] as string[] },
+        monitoring: { status: 'ready', decision_at: value.report.decision_at!, origin_at: value.report.decision_at!,
+            input_fingerprint: value.report.input_fingerprint, opportunity_audit_hash: audit, entry_session: '2026-10-05',
+            valid_until, observed_at: monitorNow, reasons: [] as string[], quotes: value.report.buy_candidates.map(row => ({ symbol: row.symbol,
+                price: 60500, quote_at: '2026-10-05T00:04:30Z', fetched_at: monitorNow, opening_price: 60000,
+                source: 'KIS:J:FHKST03010200+FHKST01010100', entry_state: 'within_band', reference_price: 60000,
+                entry_ceiling: 61200, stop_price: 57000, target_price: 66000,
+                adjusted_plan: { entry_price: 60000, stop_price: 57000, target_price: 66000, loss_fraction: .05, proposed_weight: .05 },
+                reasons: [] as string[] })) },
+        paper: { decisions: 3, matured: 1, win_rate: 1, mean_net_return: .01,
+            counts: { pending: 2, open: 0, unfilled: 0, missing_session: 0, source_revision: 0, closed: 1 },
+            excluded_revised_closed: 0, basis: 'frozen_watchlist_next_open_outcomes_not_account_pnl', entry_guard_applied: false },
+    } };
+}
 
 beforeEach(() => { api.fetchAuthAPI.mockReset(); api.postAuthAPI.mockReset(); vi.spyOn(Date, 'now').mockReturnValue(Date.parse(now)); });
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
 const openOriginal = () => fireEvent.click(screen.getByText('기존 실험 후보 · 제외 근거'));
 
 describe('AlphaLab evidence boundary', () => {
+    it('rejects malformed optional operations even for a structurally valid legacy-expiry report', () => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse(monitorNow)); const input = monitoredOpportunity();
+        Reflect.deleteProperty(input.report, 'proposal_window');
+        input.report.buy_candidates.forEach(row => { row.proposal.valid_until = '2026-10-05T00:00:00Z'; });
+        input.operations.monitoring.quotes[0].price = NaN;
+        expect(() => validateAlphaLabStatus(input)).toThrow(/응답 형식/);
+    });
+    it('accepts the certified next-session window beyond legacy twenty-four hours without renewing the origin', () => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse(monitorNow));
+        const result = validateAlphaLabStatus(monitoredOpportunity());
+        expect(result.report?.buy_candidates?.[0].proposal?.action).toBe('buy');
+    });
+    it('preserves three unfetched closed-day quote states without inventing stale-price warnings', () => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse('2026-10-04T07:10:00Z')); const input = monitoredOpportunity();
+        input.report.proposal_window.entry_session = '2026-10-06'; input.report.proposal_window.valid_until = '2026-10-06T06:30:00Z';
+        input.report.buy_candidates.forEach(row => { row.proposal.derived_at = '2026-10-04T07:10:00Z'; row.proposal.valid_until = input.report.proposal_window.valid_until; });
+        input.operations.generated_at = '2026-10-04T07:10:00Z'; input.operations.cadence.market_state = 'closed';
+        input.operations.cadence.calendar_checked_at = input.operations.generated_at;
+        Object.assign(input.operations.monitoring, { status: 'held', observed_at: null, entry_session: '2026-10-06', valid_until: input.report.proposal_window.valid_until });
+        input.operations.monitoring.quotes.forEach(quote => Object.assign(quote, { price: null, opening_price: null, quote_at: null,
+            fetched_at: null, adjusted_plan: null, entry_state: 'closed', reasons: ['market_closed'] }));
+        const result = validateAlphaLabStatus(input);
+        expect(result.report?.buy_candidates?.filter(row => row.proposal?.action === 'buy')).toHaveLength(3);
+        expect(result.operations?.monitoring.quotes.every(quote => quote.price === null && quote.entry_state === 'closed' && !quote.reasons.includes('quote_stale'))).toBe(true);
+    });
+    it('holds a corrected calendar instead of renewing a source-bound entry deadline', () => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse(monitorNow)); const input = monitoredOpportunity();
+        Object.assign(input.report.proposal_window, { entry_session: null, valid_until: null });
+        Object.assign(input.operations.monitoring, { entry_session: null, valid_until: null, reasons: ['calendar_revision'] });
+        expect(validateAlphaLabStatus(input).report?.buy_candidates?.[0].proposal?.action).toBe('wait');
+    });
+    it('rejects a within-band opening above the frozen entry ceiling even without an adjusted plan', () => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse(monitorNow)); const input = monitoredOpportunity();
+        input.operations.monitoring.quotes[0].opening_price = 62000;
+        Reflect.deleteProperty(input.operations.monitoring.quotes[0], 'adjusted_plan');
+        expect(() => validateAlphaLabStatus(input)).toThrow(/응답 형식/);
+    });
+    it.each([
+        ['window policy', (v: ReturnType<typeof monitoredOpportunity>) => { v.report.proposal_window.policy_version = 'renew_on_rescan'; }],
+        ['window fingerprint', (v: ReturnType<typeof monitoredOpportunity>) => { v.report.proposal_window.input_fingerprint = 'c'.repeat(64); }],
+        ['window audit identity', (v: ReturnType<typeof monitoredOpportunity>) => { v.report.proposal_window.opportunity_audit_hash = 'c'.repeat(64); }],
+        ['origin after decision', (v: ReturnType<typeof monitoredOpportunity>) => { v.report.proposal_window.origin_at = '2026-10-04T00:00:01Z'; }],
+        ['unverified calendar source', (v: ReturnType<typeof monitoredOpportunity>) => { v.report.proposal_window.calendar_source = 'weekday_guess'; }],
+        ['entry on origin day', (v: ReturnType<typeof monitoredOpportunity>) => { v.report.proposal_window.entry_session = '2026-10-04'; }],
+        ['more than seven days', (v: ReturnType<typeof monitoredOpportunity>) => { v.report.proposal_window.entry_session = '2026-10-12'; v.report.proposal_window.valid_until = '2026-10-12T06:30:00Z'; }],
+        ['wrong session close', (v: ReturnType<typeof monitoredOpportunity>) => { v.report.proposal_window.valid_until = '2026-10-05T06:30:01Z'; }],
+        ['wrong cadence timezone', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.cadence.timezone = 'UTC'; }],
+        ['wrong cadence interval', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.cadence.monitor_interval_seconds = 30; }],
+        ['wrong monitor enum', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.monitoring.status = 'approved'; }],
+        ['nonfinite current price', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.monitoring.quotes[0].price = NaN; }],
+        ['unknown price provider', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.monitoring.quotes[0].source = 'LLM'; }],
+        ['forged frozen reference', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.monitoring.quotes[0].reference_price = 61000; }],
+        ['forged current ceiling', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.monitoring.quotes[0].entry_ceiling = 63000; }],
+        ['forged adjusted risk', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.monitoring.quotes[0].adjusted_plan.loss_fraction = .001; }],
+        ['overweight adjusted plan', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.monitoring.quotes[0].adjusted_plan.proposed_weight = .06; }],
+        ['duplicate monitored symbol', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.monitoring.quotes[1].symbol = v.operations.monitoring.quotes[0].symbol; }],
+        ['unknown monitored symbol', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.monitoring.quotes[0].symbol = '005930'; }],
+        ['private monitor reason', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.monitoring.quotes[0].reasons = ['C:\\private\\.env']; }],
+        ['wrong paper denominator', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.paper.matured = 2; }],
+        ['revised closed counted', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.paper.excluded_revised_closed = 1; }],
+        ['claims guard-tested paper', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.paper.entry_guard_applied = true; }],
+        ['claims account profit', (v: ReturnType<typeof monitoredOpportunity>) => { v.operations.paper.basis = 'account_pnl'; }],
+    ])('rejects malformed cadence/monitor evidence: %s', (_, mutate) => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse(monitorNow)); const input = monitoredOpportunity(); mutate(input);
+        expect(() => validateAlphaLabStatus(input)).toThrow(/응답 형식/);
+    });
+    it.each(['pending', 'calendar_failed', 'calendar_identity'] as const)('holds next-session BUY without a verified matching calendar: %s', condition => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse(monitorNow)); const input = monitoredOpportunity();
+        if (condition === 'pending') {
+            Object.assign(input.report.proposal_window, { entry_session: null, valid_until: null });
+            Object.assign(input.operations.monitoring, { entry_session: null, valid_until: null });
+        } else if (condition === 'calendar_failed') input.operations.cadence.calendar_status = 'failed';
+        else input.operations.monitoring.input_fingerprint = 'c'.repeat(64);
+        expect(validateAlphaLabStatus(input).report?.buy_candidates?.[0].proposal?.action).toBe('wait');
+    });
+    it.each(['stale', 'failed'] as const)('suppresses current quotes while preserving a certified research BUY after monitor %s', condition => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse(monitorNow)); const input = monitoredOpportunity();
+        if (condition === 'stale') input.operations.monitoring.quotes.forEach(quote => { quote.quote_at = '2026-10-04T23:57:00Z'; quote.fetched_at = quote.quote_at; });
+        else input.operations.monitoring.status = 'failed';
+        const result = validateAlphaLabStatus(input);
+        expect(result.report?.buy_candidates?.[0].proposal?.action).toBe('buy');
+        expect(JSON.stringify(result)).not.toContain('"price":60500');
+    });
     it('accepts snapshot-bound diagnostic context and the manual reference ceiling without changing selection or weights', () => {
         const result = validateAlphaLabStatus(contextualOpportunity());
         expect(result.report?.buy_candidates?.map(row => [row.symbol, row.proposal?.action, row.risk.research_weight])).toEqual([
@@ -307,6 +418,73 @@ describe('AlphaLab evidence boundary', () => {
 });
 
 describe('AlphaLab operational panel', () => {
+    it('shows saved cadence, current quotes and opening-reference plans without claiming fills or account profits', async () => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse(monitorNow)); api.fetchAuthAPI.mockResolvedValue(monitoredOpportunity());
+        render(<AlphaLabPanel />); const card = await screen.findByRole('article', { name: /알테오젠/ });
+        expect(screen.getByText('자동 연구 · 18:45 KST')).toBeVisible();
+        expect(screen.getByText('가격 감시 · 5분')).toBeVisible();
+        expect(within(card).getByText('60,500원')).toBeVisible();
+        expect(within(card).getByText('공식 시가 참고 · 체결 아님')).toBeVisible();
+        expect(screen.getByText('새 후보 전향 모의 결과')).toBeVisible();
+        expect(screen.getByText(/완료·수정 제외 분모 1건/)).toBeVisible();
+        expect(screen.getByText(/추격 상한을 적용한 성과나 계좌 손익이 아닙니다/)).toBeVisible();
+        expect(api.postAuthAPI).not.toHaveBeenCalled();
+    });
+    it('keeps revised closed paper outcomes out of the visible performance denominator', async () => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse(monitorNow)); const input = monitoredOpportunity();
+        input.operations.paper.counts.closed = 3; input.operations.paper.matured = 2; input.operations.paper.excluded_revised_closed = 1;
+        input.operations.paper.win_rate = .5; api.fetchAuthAPI.mockResolvedValue(input); render(<AlphaLabPanel />);
+        await screen.findByText('새 후보 전향 모의 결과');
+        expect(screen.getByText(/완료·수정 제외 분모 2건/)).toBeVisible();
+        expect(screen.getByText(/수정 종료 제외 1건/)).toBeVisible();
+    });
+    it('polls only saved status every thirty seconds when ready and cleans up the timer on unmount', async () => {
+        vi.useFakeTimers(); api.fetchAuthAPI.mockResolvedValue(contextualOpportunity());
+        const view = render(<AlphaLabPanel />); await act(async () => {});
+        await act(async () => { await vi.advanceTimersByTimeAsync(29999); }); expect(api.fetchAuthAPI).toHaveBeenCalledTimes(1);
+        await act(async () => { await vi.advanceTimersByTimeAsync(1); }); expect(api.fetchAuthAPI).toHaveBeenCalledTimes(2);
+        expect(api.postAuthAPI).not.toHaveBeenCalled(); view.unmount();
+        await act(async () => { await vi.advanceTimersByTimeAsync(60000); }); expect(api.fetchAuthAPI).toHaveBeenCalledTimes(2);
+    });
+    it('expires current-price guidance on the idle TTL while preserving the longer certified research BUY', async () => {
+        vi.mocked(Date.now).mockRestore(); vi.useFakeTimers(); vi.setSystemTime(new Date(monitorNow));
+        api.fetchAuthAPI.mockResolvedValueOnce(monitoredOpportunity()).mockImplementation(() => new Promise(() => {}));
+        render(<AlphaLabPanel />); await act(async () => {}); const card = screen.getByRole('article', { name: /알테오젠/ });
+        expect(within(card).getByText('60,500원')).toBeVisible();
+        await act(async () => { await vi.advanceTimersByTimeAsync(390000); });
+        expect(within(card).queryByText('60,500원')).toBeNull();
+        expect(within(card).getByText('BUY · 매수 제안')).toBeVisible();
+        expect(within(card).getByText(/현재 가격 확인 대기/)).toBeVisible();
+    });
+    it('masks current prices during a failed poll then safely recovers on a later saved GET', async () => {
+        vi.mocked(Date.now).mockRestore(); vi.useFakeTimers(); vi.setSystemTime(new Date(monitorNow));
+        api.fetchAuthAPI.mockResolvedValueOnce(monitoredOpportunity()).mockRejectedValueOnce(new Error('private')).mockResolvedValue(monitoredOpportunity());
+        render(<AlphaLabPanel />); await act(async () => {}); const card = screen.getByRole('article', { name: /알테오젠/ });
+        await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+        expect(within(card).queryByText('60,500원')).toBeNull(); expect(screen.getByRole('alert')).not.toHaveTextContent('private');
+        await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+        expect(within(card).getByText('60,500원')).toBeVisible(); expect(screen.queryByRole('alert')).toBeNull();
+        expect(api.postAuthAPI).not.toHaveBeenCalled();
+    });
+    it('prevents overlapping manual requests while a saved-status poll is still pending', async () => {
+        vi.useFakeTimers(); api.fetchAuthAPI.mockResolvedValueOnce(contextualOpportunity()).mockImplementation(() => new Promise(() => {}));
+        render(<AlphaLabPanel />); await act(async () => {});
+        await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+        expect(screen.getByRole('button', { name: '저장 결과 새로고침' })).toBeDisabled();
+        expect(screen.getByRole('button', { name: '매수 후보 검출' })).toBeDisabled();
+        fireEvent.click(screen.getByRole('button', { name: '저장 결과 새로고침' }));
+        expect(api.fetchAuthAPI).toHaveBeenCalledTimes(2); expect(api.postAuthAPI).not.toHaveBeenCalled();
+    });
+    it('shows subsequent-session reference monitoring separately without renewing an expired entry proposal', async () => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse('2026-10-06T00:05:00Z')); const input = monitoredOpportunity();
+        input.operations.generated_at = '2026-10-06T00:05:00Z'; input.operations.monitoring.observed_at = input.operations.generated_at;
+        input.operations.monitoring.quotes.forEach(quote => { quote.quote_at = '2026-10-06T00:04:30Z'; quote.fetched_at = input.operations.generated_at; });
+        api.fetchAuthAPI.mockResolvedValue(input); render(<AlphaLabPanel />);
+        expect(await screen.findByText('진입 종료 · 참고 감시')).toBeVisible();
+        const card = screen.getByRole('article', { name: /알테오젠/ });
+        expect(within(card).getByText('WAIT · 진입 대기')).toBeVisible(); expect(within(card).queryByText('60,500원')).toBeNull();
+        expect(screen.getAllByText(/알테오젠 · 60,500원/)[0]).toBeVisible(); expect(api.postAuthAPI).not.toHaveBeenCalled();
+    });
     it('shows descriptive price-factor counts and the two-percent reference ceiling only on the current BUY cards', async () => {
         api.fetchAuthAPI.mockResolvedValue(contextualOpportunity()); const onSelect = vi.fn();
         render(<AlphaLabPanel onSelectSymbol={onSelect} />);
