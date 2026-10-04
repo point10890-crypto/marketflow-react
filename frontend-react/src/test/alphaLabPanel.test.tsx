@@ -80,6 +80,30 @@ afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
 const openOriginal = () => fireEvent.click(screen.getByText('기존 실험 후보 · 제외 근거'));
 
 describe('AlphaLab evidence boundary', () => {
+    it.each(['legacy', 'opportunity'] as const)('accepts a fresh %s BUY from a server clock two seconds ahead', kind => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse(now));
+        const input = kind === 'legacy' ? proposed() : opportunity();
+        input.report!.decision_at = '2026-10-04T01:00:02Z';
+        for (const row of [...input.report!.candidates, ...(input.report!.buy_candidates ?? [])]) {
+            if (!row.proposal) continue;
+            row.proposal.derived_at = '2026-10-04T01:00:02Z'; row.proposal.valid_until = '2026-10-05T01:00:02Z';
+        }
+        const result = validateAlphaLabStatus(input);
+        expect(kind === 'legacy' ? result.report?.candidates[0].proposal?.action : result.report?.buy_candidates?.[0].proposal?.action).toBe('buy');
+    });
+    it.each(['legacy', 'opportunity'] as const)('rejects a %s BUY whose decision or assessment exceeds sixty seconds ahead', kind => {
+        const makeInput = () => kind === 'legacy' ? proposed() : opportunity();
+        const decision = makeInput(); decision.report!.decision_at = '2026-10-04T01:01:00.001Z';
+        for (const row of [...decision.report!.candidates, ...(decision.report!.buy_candidates ?? [])]) {
+            if (row.proposal) row.proposal.valid_until = '2026-10-05T01:01:00.001Z';
+        }
+        expect(() => validateAlphaLabStatus(decision)).toThrow(/응답 형식/);
+        const assessment = makeInput();
+        for (const row of [...assessment.report!.candidates, ...(assessment.report!.buy_candidates ?? [])]) {
+            if (row.proposal) row.proposal.derived_at = '2026-10-04T01:01:00.001Z';
+        }
+        expect(() => validateAlphaLabStatus(assessment)).toThrow(/응답 형식/);
+    });
     it('accepts independent conditional opportunities while the original champion remains unqualified and losing', () => {
         const result = validateAlphaLabStatus(opportunity());
         expect(result.report?.buy_candidates?.map(row => row.symbol)).toEqual(['196170', '007660', '402340']);
