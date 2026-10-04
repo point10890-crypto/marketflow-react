@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { fetchAlphaLab, startAlphaLab, type AlphaLabCandidate, type AlphaLabOpportunityCandidate, type AlphaLabOpportunityPhase, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
+import { fetchAlphaLab, startAlphaLab, type AlphaLabAnalystId, type AlphaLabCandidate, type AlphaLabOpportunityCandidate, type AlphaLabOpportunityPhase, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
 
 const numberPct = (value: number | null, signed = false) => value === null ? '대기' : `${signed && value > 0 ? '+' : ''}${(value * 100).toFixed(1)}%`;
 const money = (value: number | null) => value === null ? '대기' : `${Math.round(value).toLocaleString('ko-KR')}원`;
@@ -46,6 +46,14 @@ const reasonLabels: Record<string, string> = {
     source_vintage_and_corporate_action_adjustment_not_certified: '당시 자료 시점·기업행사의 가격 보정은 인증되지 않았습니다.',
     research_weights_not_order_approval: '제안 비중은 자동 승인·주문 권한이 아닙니다.',
     insufficient_union_history: '고정 탐색에 필요한 5년 가격 자료가 부족합니다.',
+    insufficient_cohort: '비교할 수 있는 종목이 최소 8개보다 적습니다.',
+    missing_current_quote: '입력 거래일의 가격 자료가 없습니다.',
+    insufficient_history: '가격 요인 계산에 필요한 과거 자료가 부족합니다.',
+    sparse_factor_window: '가격 요인 계산 구간에 거래일 자료가 빠져 있습니다.',
+    invalid_observation: '가격·거래량 자료의 유효성을 확인하지 못했습니다.',
+    flagged_observation: '주의 표시가 있는 가격 자료입니다.',
+    latest_quote_nontradable: '입력 거래일의 거래량이 없어 비교를 보류합니다.',
+    nonpositive_amount_mean: '추정 거래대금 평균을 계산할 수 없습니다.',
 };
 const explain = (reason: string) => reasonLabels[reason] ?? reason;
 const stateLabels: Record<string, string> = {
@@ -90,6 +98,30 @@ function OpportunityPhase({ label, phase }: { label: string; phase: AlphaLabOppo
         <p className="mt-1">합성 진단은 제안 비중 5%의 계좌 성과가 아닙니다. 마지막 청산 {phase.last_exit_session} · t 진단 {phase.t_stat === null ? '미산출' : phase.t_stat.toFixed(2)}</p>
     </div>;
 }
+const analystNames: Record<AlphaLabAnalystId, string> = {
+    rev_5: '5일 가격 변화', low_vol_60: '60일 변동성 · 연율', anti_max_21: '21일 최대 일간 수익률', attention_fade: '추정 거래대금 · 5일 / 60일',
+};
+const stanceNames = { favorable: '우호', caution: '주의', neutral: '중립', unavailable: '자료 부족' };
+function PriceContext({ row }: { row: AlphaLabCandidate }) {
+    const context = row.analyst_context;
+    const guard = row.entry_guard;
+    if (!context && !guard) return null;
+    return <div className="mt-3 min-w-0 space-y-2 border-t border-[#30363f] pt-3">
+        {context && <><h5 className="font-semibold text-gray-200">가격 요인 기록 · {context.as_of}</h5>
+            {context.status === 'ready' ? <>
+                <p className="tabular-nums">현재 우량 종목 {context.cohort_count}개 중 유효 비교 {context.comparison_count}개 · 상대 위치 균등 평균 {context.score!.toFixed(1)}점</p>
+                <dl className="divide-y divide-[#30363f]">{context.analysts.map(analyst => <div key={analyst.id} className="min-w-0 py-2">
+                    <dt className="break-words text-gray-200">{analystNames[analyst.id]} · {stanceNames[analyst.stance]}</dt>
+                    <dd className="mt-1 break-words font-mono tabular-nums">관측값 {analyst.id === 'attention_fade' ? `${analyst.metric_value!.toFixed(6)}배` : `${(analyst.metric_value! * 100).toFixed(4)}%`} · 상대 위치 {analyst.percentile!.toFixed(6)}점</dd>
+                </div>)}</dl>
+            </> : <p>가격 요인 자료 부족 · {context.reasons.map(explain).join(' · ') || '계산 가능한 입력을 기다립니다.'}</p>}
+            <p>동일 입력 거래일의 가격을 네 고정 관점으로 대조한 설명입니다. 낮은 관측값을 우호로 보고 비교 종목 내 상대 위치를 표시합니다. 학습된 모델이나 독립 에이전트 투표가 아닙니다. 후보 선정·순위·비중을 바꾸지 않습니다.</p>
+            <p>추정 거래대금은 종가 × 거래량의 대용값이며 실제 거래대금이 아닙니다. 현재 종목 목록의 생존 편향이 남아 있고, 점수는 미래 수익률·승률이 아닙니다.</p>
+        </>}
+        {guard && <><p className="tabular-nums">수동 진입 참고 기록 · {guard.as_of} 기준 {money(guard.reference_price)} × 1.02 = {money(guard.max_entry_price)}</p>
+            <p>다음 장 시가를 확인할 때만 쓰는 수동 참고 조건입니다. 호가 단위나 주문 가격을 뜻하지 않습니다. 과거 백테스트·전향 모의 성과에는 이 상한을 적용하지 않았습니다.</p></>}
+    </div>;
+}
 function Candidate({ row, report, proposal, evidence, onSelectSymbol }: { row: AlphaLabCandidate; report: AlphaLabReport; proposal: AlphaLabProposal; evidence?: AlphaLabOpportunityCandidate['evidence']; onSelectSymbol?: (symbol: string) => void }) {
     const strategy = report.strategies.find(item => item.strategy_id === row.strategy_id);
     const reasons = Array.from(new Set([...row.risk.reasons, ...row.reasons]));
@@ -101,6 +133,7 @@ function Candidate({ row, report, proposal, evidence, onSelectSymbol }: { row: A
         </div>
         <p className="mt-3 break-words text-sm leading-relaxed text-gray-100">{proposal.reason}</p>
         <p className="mt-2 break-words text-xs leading-relaxed text-[#acd3ff]">다음 행동 · {proposal.next_step}</p>
+        {buy && row.analyst_context?.status === 'ready' && <p className="mt-2 break-words text-[11px] leading-relaxed tabular-nums text-gray-300">가격 요인 대조 · 우호 {row.analyst_context.favorable_count} / 주의 {row.analyst_context.caution_count} / 중립 {row.analyst_context.neutral_count}</p>}
         {evidence && <p className="mt-2 text-[11px] leading-relaxed tabular-nums text-gray-400">과거 조건일 평균 거래 순손익 · 형성 {evidence.calibration.samples}건 {numberPct(evidence.calibration.mean_net_return, true)} / 최근 확인 {evidence.confirmation.samples}건 {numberPct(evidence.confirmation.mean_net_return, true)}</p>}
         {proposal.action === 'avoid' && <p className="mt-2 text-[11px] leading-relaxed text-gray-400">신규매수 제외 의견입니다. 보유 주식의 매도 지시가 아닙니다.</p>}
         {buy && <div className="mt-3 border-y border-[#497368] py-3">
@@ -108,6 +141,8 @@ function Candidate({ row, report, proposal, evidence, onSelectSymbol }: { row: A
             <p className="mt-2 text-xs font-semibold text-[#acd3ff]">다음 장 시가 확인 후 재계산</p>
             <p className="mt-1 text-[11px] leading-relaxed text-gray-400">마지막 종가로 계산한 참고 가격입니다. 현재 체결가·주문 가격이 아닙니다.</p>
             <Prices row={row} />
+            {row.entry_guard && <><dl className="border-t border-[#30363f] text-xs tabular-nums"><div className="flex flex-wrap items-center justify-between gap-2 py-2"><dt className="text-gray-300">추격 매수 상한 (+2%)</dt><dd className="font-mono text-gray-100">{money(row.entry_guard.max_entry_price)}</dd></div></dl>
+                <p className="text-[11px] leading-relaxed text-gray-400">다음 장 시가가 상한을 넘으면 진입을 기다립니다. 상한 이내라도 실제 시가로 손절·비중을 다시 계산하세요.</p></>}
             {evidence && <p className="mt-2 text-xs font-semibold text-gray-200">보유 계획 · 최대 10거래일</p>}
             <p className="mt-2 text-[11px] text-gray-400">입력 거래일 {proposal.input_session ?? '미확인'} · 제안 만료 {proposal.valid_until ? clock(proposal.valid_until) : '미확인'}</p>
         </div>}
@@ -118,6 +153,7 @@ function Candidate({ row, report, proposal, evidence, onSelectSymbol }: { row: A
             {evidence && <div className="mt-3 space-y-3"><OpportunityPhase label="형성 구간" phase={evidence.calibration} /><OpportunityPhase label="최근 확인 구간" phase={evidence.confirmation} />
                 <p>{evidence.stronger_evidence ? '통계 진단 조건도 통과했습니다. 출처 보정·독립 검증을 인증하지 않습니다.' : '탐색적 근거입니다. 엄격한 통계 진단이나 독립 검증을 통과한 확정 신호가 아닙니다.'}</p></div>}
             {!buy && <><p className="mt-2">아래는 제외·대기 종목의 참고 계산이며 진입 제안이 아닙니다.</p><Prices row={row} /></>}
+            <PriceContext row={row} />
             <p className="mt-3 tabular-nums">기존 승인 체계의 모의 비중 {numberPct(row.risk.weight)} · {stateText(row.risk.status)}</p>
             <p className="mt-1 tabular-nums">검증 상승 빈도 {numberPct(row.risk.p)} · 원 켈리 {numberPct(row.risk.kelly_raw)} · 연구 비중 {numberPct(row.risk.research_weight ?? null)}</p>
             <p className="mt-1">{evidence ? '쿼터 켈리 · 종목 한도 5% · 계좌 계획 손실 한도 1%.' : '하프 켈리 · 종목 한도 20%.'} 제안 비중은 직접 판단용 의견이며 자동 승인·주문 권한이 없습니다.</p>

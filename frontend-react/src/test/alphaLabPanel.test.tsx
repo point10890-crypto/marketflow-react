@@ -75,11 +75,78 @@ function opportunity() {
     } };
 }
 
+function contextualOpportunity() {
+    const value = opportunity();
+    const input_fingerprint = 'a'.repeat(64);
+    return { ...value, report: { ...value.report, input_fingerprint,
+        buy_candidates: value.report.buy_candidates.map(row => ({ ...row,
+            analyst_context: { schema_version: 1, policy_version: 'quality-analyst-context-v1', symbol: row.symbol,
+                as_of: row.quote_session!, input_fingerprint, scope: 'current_quality_cohort', cohort_count: 52,
+                comparison_count: 52, status: 'ready', score: 53.676471, favorable_count: 2, caution_count: 1, neutral_count: 1,
+                analysts: [
+                    { id: 'rev_5', metric_value: -.03, percentile: 78.431373, stance: 'favorable' },
+                    { id: 'low_vol_60', metric_value: .35, percentile: 19.607843, stance: 'caution' },
+                    { id: 'anti_max_21', metric_value: .05, percentile: 50, stance: 'neutral' },
+                    { id: 'attention_fade', metric_value: .8, percentile: 66.666667, stance: 'favorable' },
+                ], reasons: [] as string[] },
+            entry_guard: { policy_version: 'reference-chase-cap-v1', symbol: row.symbol, as_of: row.quote_session!,
+                input_fingerprint, reference_price: row.last_close!, max_chase_fraction: .02,
+                max_entry_price: 61200, applies_to: 'manual_next_open_reference', backtest_applied: false },
+        })),
+    } };
+}
+
 beforeEach(() => { api.fetchAuthAPI.mockReset(); api.postAuthAPI.mockReset(); vi.spyOn(Date, 'now').mockReturnValue(Date.parse(now)); });
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
 const openOriginal = () => fireEvent.click(screen.getByText('기존 실험 후보 · 제외 근거'));
 
 describe('AlphaLab evidence boundary', () => {
+    it('accepts snapshot-bound diagnostic context and the manual reference ceiling without changing selection or weights', () => {
+        const result = validateAlphaLabStatus(contextualOpportunity());
+        expect(result.report?.buy_candidates?.map(row => [row.symbol, row.proposal?.action, row.risk.research_weight])).toEqual([
+            ['196170', 'buy', .05], ['007660', 'buy', .05], ['402340', 'buy', .05],
+        ]);
+    });
+    it('rejects a coerced array status even when the unavailable diagnostic shape is otherwise valid', () => {
+        const input = contextualOpportunity(); const context = input.report.buy_candidates[0].analyst_context;
+        Object.assign(context, { status: ['unavailable'], score: null, favorable_count: 0, caution_count: 0, neutral_count: 0 });
+        context.analysts.forEach(analyst => Object.assign(analyst, { metric_value: null, percentile: null, stance: 'unavailable' }));
+        expect(() => validateAlphaLabStatus(input)).toThrow(/응답 형식/);
+    });
+    it.each([
+        ['different symbol', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.symbol = '005930'; }],
+        ['different context session', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.as_of = '2026-10-01'; }],
+        ['different snapshot', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.input_fingerprint = 'b'.repeat(64); }],
+        ['missing report snapshot', (r: ReturnType<typeof contextualOpportunity>['report']) => { Reflect.deleteProperty(r, 'input_fingerprint'); }],
+        ['invalid report snapshot', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.input_fingerprint = 'private'; }],
+        ['wrong context policy', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.policy_version = 'trained'; }],
+        ['wrong quality cohort', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.cohort_count = 51; }],
+        ['comparison exceeds cohort', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.comparison_count = 53; }],
+        ['fractional comparison', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.comparison_count = 51.5; }],
+        ['small cohort marked ready', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.comparison_count = 7; }],
+        ['nonfinite metric', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.analysts[0].metric_value = NaN; }],
+        ['negative volatility', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.analysts[1].metric_value = -.1; }],
+        ['negative amount proxy', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.analysts[3].metric_value = -.1; }],
+        ['return below total loss', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.analysts[0].metric_value = -1; }],
+        ['percentile outside range', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.analysts[0].percentile = 101; }],
+        ['stance contradicts percentile', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.analysts[0].stance = 'caution'; }],
+        ['forged favorable count', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.favorable_count = 3; }],
+        ['forged score', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.score = 90; }],
+        ['changed analyst order', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.analysts.reverse(); }],
+        ['private context reason', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].analyst_context.reasons = ['C:\\private\\.env']; }],
+        ['unknown context field', (r: ReturnType<typeof contextualOpportunity>['report']) => { Object.assign(r.buy_candidates[0].analyst_context, { worker_path: 'C:\\private' }); }],
+        ['guard for a different symbol', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].entry_guard.symbol = '005930'; }],
+        ['guard for a different session', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].entry_guard.as_of = '2026-10-01'; }],
+        ['guard for a different snapshot', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].entry_guard.input_fingerprint = 'b'.repeat(64); }],
+        ['guard for a different reference', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].entry_guard.reference_price = 59000; }],
+        ['wrong chase fraction', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].entry_guard.max_chase_fraction = .03; }],
+        ['wrong ceiling equation', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].entry_guard.max_entry_price = 61201; }],
+        ['claims historical application', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].entry_guard.backtest_applied = true; }],
+        ['claims order execution', (r: ReturnType<typeof contextualOpportunity>['report']) => { r.buy_candidates[0].entry_guard.applies_to = 'order_limit'; }],
+    ])('rejects unbound or contradictory optional guidance: %s', (_, mutate) => {
+        const input = contextualOpportunity(); mutate(input.report);
+        expect(() => validateAlphaLabStatus(input)).toThrow(/응답 형식/);
+    });
     it.each(['legacy', 'opportunity'] as const)('accepts a fresh %s BUY from a server clock two seconds ahead', kind => {
         vi.mocked(Date.now).mockReturnValue(Date.parse(now));
         const input = kind === 'legacy' ? proposed() : opportunity();
@@ -240,6 +307,37 @@ describe('AlphaLab evidence boundary', () => {
 });
 
 describe('AlphaLab operational panel', () => {
+    it('shows descriptive price-factor counts and the two-percent reference ceiling only on the current BUY cards', async () => {
+        api.fetchAuthAPI.mockResolvedValue(contextualOpportunity()); const onSelect = vi.fn();
+        render(<AlphaLabPanel onSelectSymbol={onSelect} />);
+        const card = await screen.findByRole('article', { name: /알테오젠/ });
+        expect(within(card).getByText('가격 요인 대조 · 우호 2 / 주의 1 / 중립 1')).toBeVisible();
+        expect(within(card).getByText('추격 매수 상한 (+2%)')).toBeVisible();
+        expect(within(card).getAllByText('61,200원')[0]).toBeVisible();
+        expect(within(card).getByText(/다음 장 시가가 상한을 넘으면 진입을 기다립니다/)).toBeVisible();
+        const disclosure = within(card).getByText('검증 근거와 참고 계산');
+        disclosure.focus(); expect(disclosure).toHaveFocus(); fireEvent.keyDown(disclosure, { key: 'Enter' });
+        await userEvent.click(disclosure);
+        expect(within(card).getByText(/종가 × 거래량/)).toBeVisible();
+        expect(within(card).getByText(/과거 백테스트·전향 모의 성과에는 이 상한을 적용하지 않았습니다/)).toBeVisible();
+        expect(within(card).getByText(/학습된 모델이나 독립 에이전트 투표가 아닙니다/)).toBeVisible();
+        await userEvent.click(within(card).getByRole('button', { name: /종목 상세/ }));
+        expect(onSelect).toHaveBeenCalledWith('196170'); expect(api.postAuthAPI).not.toHaveBeenCalled();
+    });
+    it('preserves BUY selection when optional price context is unavailable and reveals only its data limitation', async () => {
+        const input = contextualOpportunity();
+        for (const row of input.report.buy_candidates) {
+            Object.assign(row.analyst_context, { status: 'unavailable', comparison_count: 7, score: null,
+                favorable_count: 0, caution_count: 0, neutral_count: 0, reasons: ['insufficient_cohort'] });
+            row.analyst_context.analysts.forEach(analyst => Object.assign(analyst, { metric_value: null, percentile: null, stance: 'unavailable' }));
+        }
+        expect(validateAlphaLabStatus(input).report?.buy_candidates?.[0].proposal?.action).toBe('buy');
+        api.fetchAuthAPI.mockResolvedValue(input); render(<AlphaLabPanel />);
+        const card = await screen.findByRole('article', { name: /알테오젠/ });
+        expect(within(card).queryByText(/가격 요인 대조/)).toBeNull();
+        await userEvent.click(within(card).getByText('검증 근거와 참고 계산'));
+        expect(within(card).getByText(/가격 요인 자료 부족/)).toBeVisible();
+    });
     it('puts three new exploratory BUY cards before the closed original excluded candidates', async () => {
         api.fetchAuthAPI.mockResolvedValue(opportunity()); const onSelect = vi.fn();
         render(<AlphaLabPanel onSelectSymbol={onSelect} />);
@@ -268,33 +366,39 @@ describe('AlphaLab operational panel', () => {
     });
     it.each(['running', 'failed'] as const)('hides all new BUY proposals immediately during POST and retains them only as WAIT after %s', async state => {
         let finish!: (value: unknown) => void;
-        api.fetchAuthAPI.mockResolvedValue(opportunity()); api.postAuthAPI.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+        api.fetchAuthAPI.mockResolvedValue(contextualOpportunity()); api.postAuthAPI.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
         render(<AlphaLabPanel />); const first = await screen.findByRole('article', { name: /알테오젠/ });
         fireEvent.click(screen.getByRole('button', { name: '매수 후보 검출' }));
         expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
         expect(within(first).getByText('WAIT · 진입 대기')).toBeVisible();
+        expect(within(first).queryByText('추격 매수 상한 (+2%)')).toBeNull();
+        expect(within(first).queryByText(/가격 요인 대조/)).toBeNull();
         await act(async () => { finish({ ...missing, state }); });
         expect(within(first).getByText('WAIT · 진입 대기')).toBeVisible();
         expect(within(first).getByText('57,000원')).not.toBeVisible();
         expect(screen.getByRole('article', { name: /삼성전자/ })).not.toBeVisible();
     });
     it('suppresses every new BUY during a read and after a rejected refresh, retaining the evidence', async () => {
-        api.fetchAuthAPI.mockResolvedValueOnce(opportunity()).mockRejectedValueOnce(new Error('secret-key'));
+        api.fetchAuthAPI.mockResolvedValueOnce(contextualOpportunity()).mockRejectedValueOnce(new Error('secret-key'));
         render(<AlphaLabPanel />); const first = await screen.findByRole('article', { name: /알테오젠/ });
         fireEvent.click(screen.getByRole('button', { name: '저장 결과 새로고침' }));
         expect(within(first).getByText('WAIT · 진입 대기')).toBeVisible();
+        expect(within(first).queryByText('추격 매수 상한 (+2%)')).toBeNull();
         await screen.findByRole('alert');
         expect(screen.queryByText('BUY · 매수 제안')).toBeNull();
         expect(within(first).getByText('57,000원')).not.toBeVisible();
+        expect(within(first).queryByText(/가격 요인 대조/)).toBeNull();
         expect(api.postAuthAPI).not.toHaveBeenCalled();
     });
     it('expires new candidates while preserving their evidence and the closed original experiment', async () => {
         vi.mocked(Date.now).mockRestore(); vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-04T23:59:59Z'));
-        api.fetchAuthAPI.mockResolvedValue(opportunity()); render(<AlphaLabPanel />); await act(async () => {});
+        api.fetchAuthAPI.mockResolvedValue(contextualOpportunity()); render(<AlphaLabPanel />); await act(async () => {});
         const first = screen.getByRole('article', { name: /알테오젠/ });
         expect(within(first).getByText('BUY · 매수 제안')).toBeVisible();
         await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
         expect(within(first).getByText('WAIT · 진입 대기')).toBeVisible();
+        expect(within(first).queryByText('추격 매수 상한 (+2%)')).toBeNull();
+        expect(within(first).queryByText(/가격 요인 대조/)).toBeNull();
         expect(within(first).getByText('57,000원')).not.toBeVisible();
         expect(screen.getByRole('article', { name: /삼성전자/ })).not.toBeVisible();
         expect(api.fetchAuthAPI).toHaveBeenCalledTimes(1);
@@ -523,7 +627,19 @@ describe('AlphaLab operational panel', () => {
         const view = render(<AlphaLabPanel token="old" />);
         view.rerender(<AlphaLabPanel token="new" />);
         await screen.findByText(/저장된 매수 후보 검출 결과가 없습니다/);
-        await act(async () => { oldResolve(held()); });
+        await act(async () => { oldResolve(contextualOpportunity()); });
         expect(screen.queryByRole('article')).toBeNull();
+    });
+    it('removes prior-account factor context and entry guidance immediately when the token changes', async () => {
+        let finish!: (value: unknown) => void;
+        api.fetchAuthAPI.mockResolvedValueOnce(contextualOpportunity()).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+        const view = render(<AlphaLabPanel token="old" />);
+        const card = await screen.findByRole('article', { name: /알테오젠/ });
+        expect(within(card).getByText('추격 매수 상한 (+2%)')).toBeVisible();
+        view.rerender(<AlphaLabPanel token="new" />);
+        expect(screen.queryByRole('article')).toBeNull();
+        expect(screen.queryByText(/가격 요인 대조/)).toBeNull();
+        await act(async () => { finish(missing); });
+        expect(screen.queryByText('추격 매수 상한 (+2%)')).toBeNull();
     });
 });

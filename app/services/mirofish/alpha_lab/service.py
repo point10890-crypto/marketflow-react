@@ -10,6 +10,7 @@ import threading
 
 from filelock import FileLock, Timeout
 
+from .analyst_context import build_analyst_context, build_entry_guard
 from .data import file_hash, load_inputs
 from .research import ResearchConfig, run_research
 from . import store
@@ -149,6 +150,31 @@ def _add_opportunities(root, report, inputs):
         raise ValueError('opportunity_integrity')
     public = deepcopy(discovery)
     report['buy_candidates'] = public.pop('candidates')
+    # Bind descriptive factors to the exact canonical snapshot. The existing
+    # discovery hash, selection and net-Kelly calculations remain unchanged.
+    context_prices = {symbol: inputs['prices_by_symbol'].get(symbol, []) for symbol in inputs['names']}
+    contexts = build_analyst_context(context_prices, as_of=inputs['latest_session'],
+                                    input_fingerprint=inputs['input_fingerprint'])
+    context_audit = dict(schema_version=1, policy_version='quality-analyst-context-v1',
+                         latest_session=inputs['latest_session'], input_fingerprint=inputs['input_fingerprint'],
+                         opportunity_audit_hash=digest, universe=deepcopy(inputs['universe']),
+                         provenance=deepcopy(inputs['provenance']), contexts=contexts)
+    context_hash = store._hash(context_audit)
+    context_path = Path(root)/'opportunities'/'context-runs'/f"{inputs['latest_session']}-{inputs['input_fingerprint'][:12]}-{context_hash}.json"
+    if not context_path.exists():
+        store._write(context_path, context_audit)
+    elif store._hash(store._read(context_path)) != context_hash:
+        raise ValueError('analyst_context_integrity')
+    for row in report['buy_candidates']:
+        if row['symbol'] in contexts:
+            row['analyst_context'] = deepcopy(contexts[row['symbol']])
+        row['entry_guard'] = build_entry_guard(row['symbol'], row['quote_session'], row['last_close'],
+                                              inputs['input_fingerprint'])
+    ready_contexts = sum(row['status'] == 'ready' for row in contexts.values())
+    report['agents'].append(dict(id='price_context', name='가격 요인 대조',
+        status='complete' if ready_contexts else 'unavailable',
+        detail=f"현재 재무 품질 코호트 {len(contexts)}종목 중 {ready_contexts}종목의 고정 4개 가격 요인 참고 비교 · 매수 선정·비중에 미반영"))
+    public['analyst_context_audit_hash'] = context_hash
     public.pop('audit', None)
     public['audit_hash'] = digest
     public['status'] = inputs['status']
