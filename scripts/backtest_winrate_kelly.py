@@ -112,6 +112,34 @@ def load_fundamental_csv(path: Path, symbols: set[str] | None = None) -> list[di
     return rows
 
 
+def load_market_volatility_csv(path: Path) -> tuple[list[dict], dict]:
+    """Read supplied availability dates, without claiming they are independently verified."""
+    path = Path(path)
+    rows, dates, sources = [], set(), set()
+    required = {'available_date', 'vix_index', 'source_id'}
+    with path.open(encoding='utf-8-sig', newline='') as handle:
+        reader = csv.DictReader(handle)
+        if not required.issubset(reader.fieldnames or []):
+            raise ValueError('VIX requires available_date, vix_index, source_id columns')
+        for row in reader:
+            if any(not isinstance(row.get(key), str) or not row[key].strip() for key in required):
+                raise ValueError('VIX required evidence cannot be missing or empty')
+            day = _day(row['available_date'])
+            if day in dates:
+                raise ValueError('Duplicate VIX available_date is ambiguous')
+            dates.add(day)
+            source = row['source_id'].strip()
+            sources.add(source)
+            rows.append({'available_date': day, 'vix_index': _number(row['vix_index'], 'vix_index'),
+                         'source_id': source})
+    if not rows:
+        raise ValueError('VIX CSV must contain at least one observation')
+    return sorted(rows, key=lambda row: row['available_date']), {
+        'path': str(path.resolve()), 'sha256': _hash(path), 'rows': len(rows),
+        'source_ids': sorted(sources), 'availability_verified': False,
+        'date_semantics': 'available_date is supplied by the caller; execution uses previous-session cutoff'}
+
+
 def demo_data() -> tuple[list[dict], list[dict]]:
     """Manufactured mean-reversion and weak controls, not an empirical market result."""
     rng = random.Random(601020)
@@ -195,6 +223,40 @@ def _qualification_view(report):
     return rows
 
 
+def _kelly_calculation_rows(report: dict) -> list[dict]:
+    rows = []
+    for item in report['qualification']:
+        calculation = item.get('kelly_calculation', {})
+        two_point = calculation.get('two_point', {})
+        rows.append({'symbol': item['symbol'], 'name': item.get('name', item['symbol']),
+                     'eligible': item['eligible'], 'reason': item['reason'],
+                     'selected': item['symbol'] in report['selected_symbols'],
+                     'model': calculation.get('model'),
+                     **{key: two_point.get(key) for key in (
+                         'p', 'gain_fraction', 'loss_fraction', 'sample_count', 'wins', 'losses', 'zeros')},
+                     'two_point_fraction': two_point.get('raw_fraction'),
+                     **{key: calculation.get(key) for key in (
+                         'empirical_fraction', 'raw_fraction', 'kelly_fraction', 'fractional_fraction',
+                         'capped_fraction', 'stock_volatility_guard', 'vix_index', 'vix_status',
+                         'vix_available_date', 'vix_source_id')},
+                     'target_weight': item['target_weight'], 'approval_status': 'research_only'})
+    return rows
+
+
+def _kelly_calculation_view(rows: list[dict]) -> list[dict]:
+    return [{'종목': f'{row["name"]} ({row["symbol"]})', '모델': row['model'],
+             '검증 p': _percent(row['p']), '평균 순이익 b': _percent(row['gain_fraction']),
+             '평균 순손실 a': _percent(row['loss_fraction']), '순손익 0 표본': row['zeros'],
+             '일반화 원값': _percent(row['two_point_fraction']),
+             '실측 분포 원값': _percent(row['empirical_fraction']),
+             '적용 원값': _percent(row['raw_fraction']), '적용 배율': row['kelly_fraction'],
+             '보정 후': _percent(row['fractional_fraction']), '20% 상한 후': _percent(row['capped_fraction']),
+             'VIX': row['vix_index'] if row['vix_index'] is not None else '미입력',
+             'VIX 이용가능일': row['vix_available_date'], 'VIX 출처': row['vix_source_id'],
+             '자격 판정': '통과' if row['eligible'] else '보류',
+             '연구 비중': _percent(row['target_weight'])} for row in rows]
+
+
 def export_report(report: dict, out: Path) -> None:
     sys.path.insert(0, str(ROOT / 'app/utils'))
     from atomic_json import write_json_atomic
@@ -208,6 +270,10 @@ def export_report(report: dict, out: Path) -> None:
     _write_csv(out / 'fills.csv', fills, ['date', 'symbol', 'side', 'quantity', 'price', 'cost', 'reason', 'signal_date'])
     q_fields = sorted({key for row in qualification for key in row})
     _write_csv(out / 'qualification.csv', qualification, q_fields or ['symbol'])
+    calculations = _kelly_calculation_rows(report)
+    calculation_fields = list(calculations[0]) if calculations else ['symbol', 'model', 'target_weight']
+    _write_csv(out / 'kelly_calculations.csv', calculations, calculation_fields)
+    calculation_view = _kelly_calculation_view(calculations)
     demo = report['input_evidence']['kind'] == 'synthetic_demo'
     label = '합성 데이터 · 실행 검증용' if demo else '실제 입력 CSV · 과거 자료 연구'
     warnings = report['input_evidence']['limitations']
@@ -220,7 +286,7 @@ def export_report(report: dict, out: Path) -> None:
                    f' · 매도세: {cfg["sell_tax_bps"]}bp · 일일 재조정: {"사용" if cfg["rebalance"] else "미사용"}')
     gates = (f'기간별 최소 {cfg["min_samples"]}표본 · 관측 승률 {_percent(cfg["min_win_rate"])} 이상'
              f' · 손익비 {cfg["min_payoff"]} 이상 · 신뢰하한 {_percent(cfg["min_win_lower"])} 이상'
-             f' · 켈리 배율 {cfg["kelly_fraction"]} · 종목/전체 비중 상한 '
+             f' · 켈리 모델 {cfg.get("kelly_model", "empirical")} · 기본 배율 {cfg["kelly_fraction"]} · 종목/전체 비중 상한 '
              f'{_percent(cfg["max_weight"])}/{_percent(cfg["max_exposure"])}')
     view = _qualification_view(report)
     comparison = (f'벤치마크 {report["benchmark"]["symbol"]}: 총 순수익률 '
@@ -243,6 +309,16 @@ th{{color:#84c9f0}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}}a{{color:#8
 <h2>검증 조건과 선택 종목</h2><pre>{html.escape(json.dumps(report['splits'], ensure_ascii=False, indent=2))}</pre>
 <p>선택: {html.escape(', '.join(report['selected_symbols']) or '조건 충족 종목 없음')}</p>
 {_table(view, list(view[0]) if view else ['종목', '판정', '사유'])}<h2>최종 테스트 성과</h2><p>{html.escape(summary)}</p><p>{html.escape(comparison)}</p><p>{html.escape(errors)}</p>
+<h2>켈리 계산 과정</h2>
+<p>일반화 모델: f* = p/a − (1−p)/b. a와 b는 비용 차감 후 실제 검증 표본의 평균 손실·이익률입니다.
+p는 순손익 0 표본을 제외한 조건부 승률이며, 손익비 b/a와 b는 서로 다른 값입니다.
+두 평균으로 압축한 근사값과 실제 순수익률 분포의 로그성장 최적값을 함께 표시합니다.</p>
+<p>일반 상태는 설정 배율(기본 하프 0.5), VIX ≥ 30은 최대 쿼터 0.25를 먼저 적용한 뒤 20% 상한을 적용합니다.
+큰 원값에서는 쿼터여도 20% 상한에 도달할 수 있습니다. 종목 변동성 가드는 상한 적용 후 별도로 비중을 줄입니다.
+미입력 VIX는 정상 시장으로 입증된 값이 아니며, 설정 배율을 사용하는 정책 기본값입니다.
+통계·재무 자격이 보류된 종목의 계산은 진단이며 연구 비중은 0%입니다.</p>
+{_table(calculation_view, list(calculation_view[0]) if calculation_view else ['종목', '연구 비중'])}
+<p>데이터 프레임용 계산 원장은 <a href="kelly_calculations.csv">kelly_calculations.csv</a>에서 내려받을 수 있습니다.</p>
 <p>전체 숫자와 가정은 <a href="report.json">report.json</a>, 일별 자산은 <a href="equity_curve.csv">equity_curve.csv</a>, 체결은 <a href="fills.csv">fills.csv</a>에서 확인하세요.</p>
 <h2>가상 체결 내역 (최근 30건)</h2>{_table(fills[-30:], ['date', 'symbol', 'side', 'quantity', 'price', 'cost', 'reason'])}
 <p>실제 주문 없음. <a href="https://www.stat.berkeley.edu/~aldous/Real_World/kelly.html">Kelly의 수익분포·로그성장 정의</a> ·
@@ -270,6 +346,9 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument('--cost-bps', type=float, default=5.)
     p.add_argument('--slippage-bps', type=float, default=10.)
     p.add_argument('--sell-tax-bps', type=float, default=0.)
+    p.add_argument('--kelly-model', choices=['empirical', 'generalized'], default='empirical',
+                   help='Empirical log growth or generalized two-point net-return approximation')
+    p.add_argument('--vix-csv', type=Path, help='Dated available_date,vix_index,source_id observations')
     p.add_argument('--kelly-fraction', type=float, default=.5)
     p.add_argument('--rebalance', action='store_true', help='Experimental constant-weight daily rebalancing')
     return p
@@ -294,6 +373,11 @@ def main(argv=None) -> int:
                 evidence['fundamentals_path'] = str(args.fundamentals.resolve())
                 evidence['fundamentals_sha256'] = _hash(args.fundamentals)
             benchmark = args.benchmark
+        market_volatility = None
+        if args.vix_csv:
+            market_volatility, evidence['market_volatility'] = load_market_volatility_csv(args.vix_csv)
+        else:
+            evidence['market_volatility'] = {'status': 'missing', 'availability_verified': False}
         days = sorted({row['date'] for row in prices})
         if len(days) < 20:
             raise ValueError('At least 20 distinct market sessions are required')
@@ -302,11 +386,13 @@ def main(argv=None) -> int:
         test_end = args.test_end or days[-1]
         config = {key: getattr(args, key) for key in (
             'execution_price', 'lookback', 'horizon', 'min_samples', 'min_win_lower', 'cost_bps',
-            'slippage_bps', 'sell_tax_bps', 'kelly_fraction', 'rebalance')}
+            'slippage_bps', 'sell_tax_bps', 'kelly_fraction', 'kelly_model', 'rebalance')}
+        sys.path.insert(0, str(ROOT))
         sys.path.insert(0, str(ROOT / 'app/services/mirofish'))
         from kelly_research import run_research
         report = run_research(prices, fundamentals, train_end=train_end, validation_end=validation_end,
-                              test_end=test_end, benchmark_symbol=benchmark, config=config)
+                              test_end=test_end, benchmark_symbol=benchmark, config=config,
+                              market_volatility=market_volatility)
         evidence.update({'live_orders': False, 'generated_at': datetime.now(timezone.utc).isoformat(),
                          'limitations': [
             '합성 데이터는 실행 검증용입니다. 실제 종목의 검출력·승률을 입증하지 않습니다.' if args.demo else
@@ -314,9 +400,11 @@ def main(argv=None) -> int:
             '2σ 하락은 시험할 평균회귀 가설이며, 저평가나 반등 확률 60%를 자동으로 의미하지 않습니다.',
             '검증 후 선택을 동결합니다. 최종 테스트 수익으로 종목이나 파라미터를 다시 고르지 않습니다.',
             'Wilson 하한은 독립 이항 표본 가정의 보조 지표입니다. 상관·시장 변화·다중검정 문제를 해결하거나 미래 승률을 보장하지 않습니다.',
-            '켈리는 실측 순수익률의 로그성장을 기준으로 산정합니다. 20%는 상한이며 파산 방지 보장이 아닙니다.',
+            '기본 켈리는 실측 순수익률의 로그성장 최적화입니다. generalized는 비용 차감 검증 표본의 평균 이익·손실로 압축한 두 점 근사입니다. 20% 상한은 파산 방지 보장이 아닙니다.',
             '수수료·슬리피지·매도세율은 입력 가정입니다. 기본 매도세 0은 현행 한국 세율을 뜻하지 않습니다.',
         ]})
+        evidence['limitations'].append('VIX 이용가능일은 CSV 제공자의 주장입니다. 실제 체결에는 이전 시장일에 이용 가능했던 값만 쓰지만 과거 시점 자료의 진위를 독립 검증하지 않습니다.' if market_volatility else
+                                      'VIX 자료 미입력: 시장 고위험 여부를 판단할 수 없어 설정 켈리 배율을 적용합니다.')
         if args.rebalance:
             evidence['limitations'].append('일일 비중 재조정은 고정 보유기간 표본과 다른 손익을 만듭니다. 최종 포트폴리오 성과를 별도로 평가하세요.')
         if not fundamentals:

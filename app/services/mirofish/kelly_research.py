@@ -9,11 +9,23 @@ from datetime import date
 import math
 from statistics import fmean, pstdev
 
+if __package__:
+    from .kelly_position import fractional_kelly, two_point_kelly
+else:
+    # The offline CLI and tests also load this module without the Flask package.
+    import importlib.util
+    from pathlib import Path
+    _position_spec = importlib.util.spec_from_file_location(
+        "marketflow_offline_kelly_position", Path(__file__).with_name("kelly_position.py"))
+    _position_module = importlib.util.module_from_spec(_position_spec)
+    _position_spec.loader.exec_module(_position_module)
+    fractional_kelly, two_point_kelly = _position_module.fractional_kelly, _position_module.two_point_kelly
+
 
 DEFAULT_CONFIG = {
     "lookback": 60, "horizon": 5, "z_threshold": -2., "min_samples": 30,
     "min_win_rate": .60, "min_payoff": 1., "min_win_lower": .60,
-    "confidence_z": 1.96, "max_weight": .20, "kelly_fraction": .5,
+    "confidence_z": 1.96, "max_weight": .20, "kelly_fraction": .5, "kelly_model": "empirical",
     "max_exposure": .60, "max_positions": 3, "min_market_cap": 300e9,
     "max_debt_ratio": 150., "fundamental_max_age_days": 180,
     "cost_bps": 5., "slippage_bps": 10., "sell_tax_bps": 0.,
@@ -75,6 +87,9 @@ def _configuration(overrides):
         elif key == "execution_price":
             if value not in {"close", "open"}:
                 raise ValueError("execution_price must be close or open")
+        elif key == "kelly_model":
+            if not isinstance(value, str) or value not in {"empirical", "generalized"}:
+                raise ValueError("kelly_model must be empirical or generalized")
         else:
             cfg[key] = _number(value, key)
     if cfg["z_threshold"] >= 0:
@@ -165,9 +180,37 @@ def _curve_metrics(curve, fills):
             "fill_count": len(fills)}
 
 
+def _market_volatility_series(rows):
+    """Index optional, explicitly available market observations without fabrication."""
+    if rows is None:
+        return [], []
+    if not isinstance(rows, list):
+        raise ValueError("market_volatility must be a list of VIX observations")
+    by_date = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError("market_volatility rows must be dictionaries")
+        available = _day(row.get("available_date"), "VIX available_date")
+        if available in by_date:
+            raise ValueError("duplicate VIX available_date")
+        vix = _number(row.get("vix_index"), "vix_index", minimum=0.)
+        source_id = row.get("source_id")
+        if not isinstance(source_id, str) or not source_id.strip():
+            raise ValueError("VIX source_id is required")
+        by_date[available] = {"available_date": available.isoformat(), "vix_index": vix,
+                              "source_id": source_id.strip()}
+    dates = sorted(by_date)
+    return dates, [by_date[day] for day in dates]
+
+
 def run_research(prices: list[dict], fundamentals: list[dict], *, train_end: str, validation_end: str,
-                 test_end: str | None = None, benchmark_symbol: str | None = None, config: dict | None = None) -> dict:
+                 test_end: str | None = None, benchmark_symbol: str | None = None, config: dict | None = None,
+                 market_volatility: list[dict] | None = None) -> dict:
     cfg = _configuration(config)
+    market_dates, market_rows = _market_volatility_series(market_volatility)
+    def market_at(day):
+        index = bisect_right(market_dates, day)-1
+        return market_rows[index] if index >= 0 else None
     train_date, validation_date = _day(train_end, "train_end"), _day(validation_end, "validation_end")
     if train_date >= validation_date:
         raise ValueError("splits must satisfy train_end < validation_end < test_end")
@@ -277,17 +320,48 @@ def run_research(prices: list[dict], fundamentals: list[dict], *, train_end: str
         if okay:
             failed = _failed_metrics(validation_metrics, cfg)
             if failed: okay, reason = False, "validation_"+failed
-        estimated = empirical_kelly(validation_returns) if okay else 0.
-        base_weight = min(cfg["max_weight"], cfg["kelly_fraction"]*estimated) if okay else 0.
-        weight = base_weight*.5 if prior_vol is not None and prior_vol > cfg["volatility_threshold"] else base_weight
+        empirical_fraction = empirical_kelly(validation_returns) if validation_returns else None
+        two_point = two_point_kelly(validation_returns)
+        raw_fraction = empirical_fraction if cfg["kelly_model"] == "empirical" else two_point["raw_fraction"]
+        market = market_at(validation_date)
+        vix_index = market["vix_index"] if market else None
+        calculation = fractional_kelly(estimated_fraction=raw_fraction if raw_fraction is not None else 0.,
+            kelly_fraction=cfg["kelly_fraction"], vix_index=vix_index, cap_limit=cfg["max_weight"])
+        if raw_fraction is None:
+            for key in ("raw_fraction", "fractional_fraction", "capped_fraction"):
+                calculation[key] = None
+        if okay and raw_fraction is None:
+            okay, reason = False, "insufficient_kelly_evidence"
+        estimated = raw_fraction if okay else 0.
+        base_weight = calculation["capped_fraction"] if okay else 0.
+        stock_guard = prior_vol is not None and prior_vol > cfg["volatility_threshold"]
+        weight = base_weight*.5 if stock_guard else base_weight
+        calculation.update({"model": cfg["kelly_model"], "two_point": two_point,
+            "empirical_fraction": empirical_fraction, "applied": okay,
+            "held_reason": None if okay else reason, "approval_status": "held",
+            "input_basis": "validation_realized_net_returns",
+            "vix_status": "available" if market else "missing",
+            "vix_available_date": market["available_date"] if market else None,
+            "vix_source_id": market["source_id"] if market else None,
+            "stock_volatility_guard": stock_guard, "target_weight": weight})
         qualifications.append({"symbol": symbol, "name": names[symbol], "eligible": okay, "reason": reason or "qualified",
             "train": train_metrics, "validation": validation_metrics, "estimated_kelly": estimated,
-            "base_target_weight": base_weight, "target_weight": weight, "prior_volatility": prior_vol})
+            "base_target_weight": base_weight, "target_weight": weight, "prior_volatility": prior_vol,
+            "kelly_calculation": calculation})
     selected = sorted((item for item in qualifications if item["eligible"] and item["target_weight"] > 0),
                       key=lambda item: (-item["validation"]["expected_net_return"], item["symbol"]))[:cfg["max_positions"]]
     selected_symbols = [item["symbol"] for item in selected]
     weights = {item["symbol"]: item["target_weight"] for item in selected}
-    base_weights = {item["symbol"]: item["base_target_weight"] for item in selected}
+    estimated_fractions = {item["symbol"]: item["estimated_kelly"] for item in selected}
+    def execution_target(symbol, prior_day, stock_guard):
+        # Qualification and its return estimates stay frozen. Newly available
+        # market risk can only lower the configured, frozen execution ceiling.
+        market = market_at(prior_day)
+        stage = fractional_kelly(estimated_fraction=estimated_fractions[symbol],
+            kelly_fraction=cfg["kelly_fraction"], vix_index=market["vix_index"] if market else None,
+            cap_limit=cfg["max_weight"])
+        target = stage["capped_fraction"]*(.5 if stock_guard else 1.)
+        return min(weights[symbol], target), stage["vix_high"]
     # Holdout labels are diagnostics only: eligibility, ranking and weights are
     # already frozen above and never read these test returns.
     evaluation = {"true_positive": 0, "false_positive": 0, "false_negative": 0, "true_negative": 0,
@@ -367,13 +441,13 @@ def run_research(prices: list[dict], fundamentals: list[dict], *, train_end: str
                 equity = cash+value(index, cfg["execution_price"])
                 price = series[symbol][day][cfg["execution_price"]]
                 own = holdings[symbol]["quantity"]*price
-                target = min(weights[symbol], base_weights[symbol]*.5) if high_vol else weights[symbol]
-                target = min(target, cfg["max_weight"]*.5) if high_vol else target
-                if cfg["rebalance"] or high_vol:
+                target, high_vix = execution_target(symbol, previous_day, high_vol)
+                if cfg["rebalance"] or high_vol or high_vix:
                     excess = own-target*equity
                     if excess > 1e-12:
                         quantity = excess/(price*(1-target*exit_cost))
-                        sell(symbol, index, quantity, "rebalance" if cfg["rebalance"] else "volatility_risk_trim")
+                        trim_reason = "rebalance" if cfg["rebalance"] else "vix_risk_trim" if high_vix else "volatility_risk_trim"
+                        sell(symbol, index, quantity, trim_reason)
                     if cfg["rebalance"] and symbol in holdings:
                         buy(symbol, index, target, "rebalance", holdings[symbol]["signal_date"])
             for symbol in selected_symbols:
@@ -381,7 +455,8 @@ def run_research(prices: list[dict], fundamentals: list[dict], *, train_end: str
                 if symbol in holdings or signal is None or not signal["fundamental_ok"]: continue
                 okay, _ = fundamental_check(symbol, previous_day)
                 if not okay: continue
-                target = min(weights[symbol], base_weights[symbol]*.5) if signal["prior_volatility"] > cfg["volatility_threshold"] else weights[symbol]
+                target, _ = execution_target(symbol, previous_day,
+                    signal["prior_volatility"] > cfg["volatility_threshold"])
                 buy(symbol, index, target, "kelly_signal", signal["date"])
         held_value = value(index, "close")
         equity = _number(cash+held_value, "portfolio equity", positive=True)
@@ -425,11 +500,19 @@ def run_research(prices: list[dict], fundamentals: list[dict], *, train_end: str
                 "Fixed-horizon samples use actual next-session execution and completed labels only.",
                 "Entry weight/exposure caps apply at execution; fixed-quantity holding drift is reported separately.",
                 "False positives/false negatives cover completed signal opportunities in the supplied universe, not missed stocks across the full market; the benchmark is excluded."]
+    warnings.extend([
+        "Generalized Kelly uses a two-outcome approximation of mean realized net gains and losses, not the full return distribution or target take-profit rates.",
+        "Zero net outcomes remain in qualification win rates; the two-point diagnostic conditions its probability on nonzero outcomes.",
+        "VIX availability dates are supplied research assumptions; missing VIX is null, not a zero or a normal-market certification.",
+        "Fractional Kelly is applied before the position cap; high VIX need not reduce an already capped weight.",
+        "All position weights are research calculations; production investment approval remains held.",
+    ])
     if cfg["execution_price"] == "close": warnings.append("Close-only execution uses the next calendar session close, not signal-day close.")
     if cfg["rebalance"]: warnings.append("Daily rebalance introduces a calibration mismatch with fixed-horizon qualification samples.")
     if any("volume" not in row for data in series.values() for day, row in data.items() if day <= end_date):
         warnings.append("Missing volume assumes executable sessions; zero supplied volume always prevents fills.")
     report = {"schema_version": 1, "config": cfg,
+            "market_volatility": [dict(row) for row in market_rows],
             "splits": {"train_end": train_end, "validation_end": validation_end, "test_start": calendar[test_indices[0]].isoformat(), "test_end": end_date.isoformat(), "qualification_frozen_at": validation_end},
             "qualification": qualifications, "selected_symbols": selected_symbols, "signals": latest,
             "evaluation": evaluation,

@@ -101,3 +101,88 @@ def test_bad_input_returns_error_without_a_success_report(tmp_path, capsys):
     assert cli.main(['--prices', str(path), '--out', str(out)]) == 2
     assert not (out / 'report.json').exists()
     assert 'error' in capsys.readouterr().err.lower()
+
+
+def test_vix_csv_requires_availability_and_source_and_records_hash(tmp_path):
+    cli = load_cli()
+    path = csv_file(tmp_path / 'vix.csv', ['available_date', 'vix_index', 'source_id'],
+                    [{'available_date': '2024-01-02', 'vix_index': '30', 'source_id': 'fixture-vix'}])
+    rows, evidence = cli.load_market_volatility_csv(path)
+    assert rows == [{'available_date': '2024-01-02', 'vix_index': 30., 'source_id': 'fixture-vix'}]
+    assert evidence['rows'] == 1 and len(evidence['sha256']) == 64
+    assert evidence['source_ids'] == ['fixture-vix']
+    assert evidence['availability_verified'] is False
+
+
+@pytest.mark.parametrize('value', ['nan', 'inf', '-1', 'garbage'])
+def test_invalid_vix_csv_is_rejected(tmp_path, value):
+    cli = load_cli()
+    path = csv_file(tmp_path / 'vix.csv', ['available_date', 'vix_index', 'source_id'],
+                    [{'available_date': '2024-01-02', 'vix_index': value, 'source_id': 'fixture'}])
+    with pytest.raises(ValueError):
+        cli.load_market_volatility_csv(path)
+
+
+@pytest.mark.parametrize('rows', [
+    [{'available_date': '2024-01-02', 'vix_index': '30', 'source_id': ''}],
+    [{'available_date': '2024-01-02', 'vix_index': '30', 'source_id': 'one'},
+     {'available_date': '2024-01-02', 'vix_index': '20', 'source_id': 'two'}],
+    [],
+])
+def test_vix_csv_missing_evidence_or_ambiguous_date_is_rejected(tmp_path, rows):
+    cli = load_cli()
+    path = csv_file(tmp_path / 'vix.csv', ['available_date', 'vix_index', 'source_id'], rows)
+    with pytest.raises(ValueError):
+        cli.load_market_volatility_csv(path)
+
+
+def test_generalized_cli_exports_sizing_trace_and_dated_vix(tmp_path):
+    cli = load_cli()
+    prices, _ = cli.demo_data()
+    days = sorted({row['date'] for row in prices})
+    vix = csv_file(tmp_path / 'vix.csv', ['available_date', 'vix_index', 'source_id'],
+                   [{'available_date': days[0], 'vix_index': '35', 'source_id': 'synthetic-fixture'},
+                    {'available_date': days[-1], 'vix_index': '10', 'source_id': 'synthetic-fixture'}])
+    out = tmp_path / 'generalized'
+    assert cli.main(['--demo', '--kelly-model', 'generalized', '--vix-csv', str(vix),
+                     '--min-win-lower', '0', '--min-samples', '5', '--out', str(out)]) == 0
+    report = json.loads((out / 'report.json').read_text(encoding='utf-8'))
+    assert report['config']['kelly_model'] == 'generalized'
+    assert report['input_evidence']['market_volatility']['sha256'] == cli._hash(vix)
+    assert report['input_evidence']['live_orders'] is False
+    calculations = [row['kelly_calculation'] for row in report['qualification']]
+    assert calculations
+    for calculation in calculations:
+        assert calculation['model'] == 'generalized'
+        assert calculation['vix_index'] == 35
+        assert calculation['vix_available_date'] == days[0]
+        assert calculation['kelly_fraction'] == .25
+    with (out / 'kelly_calculations.csv').open(encoding='utf-8-sig', newline='') as handle:
+        records = list(csv.DictReader(handle))
+    assert records and {'p', 'gain_fraction', 'loss_fraction', 'raw_fraction',
+                        'fractional_fraction', 'capped_fraction', 'target_weight'} <= records[0].keys()
+    page = (out / 'report.html').read_text(encoding='utf-8')
+    assert 'p/a' in page and '쿼터' in page and 'kelly_calculations.csv' in page
+    assert '순손익 0' in page and '파산' in page
+
+
+def test_generalized_cli_runs_from_outside_repository(tmp_path):
+    import subprocess
+    result = subprocess.run([sys.executable, str(SCRIPT), '--demo', '--kelly-model', 'generalized',
+                             '--out', str(tmp_path / 'portable')], cwd=tmp_path, capture_output=True,
+                            text=True, encoding='utf-8', timeout=30)
+    assert result.returncode == 0, result.stderr
+    report = json.loads((tmp_path / 'portable/report.json').read_text(encoding='utf-8'))
+    assert report['config']['kelly_model'] == 'generalized'
+    assert report['input_evidence']['market_volatility']['status'] == 'missing'
+    assert all(row['kelly_calculation']['vix_index'] is None for row in report['qualification'])
+
+
+def test_vix_csv_truncated_or_undated_input_is_rejected(tmp_path):
+    cli = load_cli()
+    for contents in ('vix_index,source_id\n30,fixture\n',
+                     'available_date,vix_index,source_id\n2024-01-02,30\n'):
+        path = tmp_path / 'vix.csv'
+        path.write_text(contents, encoding='utf-8')
+        with pytest.raises(ValueError):
+            cli.load_market_volatility_csv(path)
