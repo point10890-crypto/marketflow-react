@@ -1,7 +1,8 @@
 """Manual buy opinions from separate conditional setup research, never orders."""
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, time, timedelta
+import re
 import math
 
 from .proposals import (_mapping, _number, _timestamp, _stamp, _session,
@@ -43,6 +44,13 @@ def _decision(status, report, row, now, decision, valid_until):
     scan = _mapping(report.get('opportunity_scan'))
     if status.get('state') not in {'ready', 'held'} or scan.get('status') != 'ready':
         return wait
+    if 'proposal_window' in report:
+        if decision is None or valid_until is None:
+            return ('wait', '공식 다음 거래일과 최초 제안의 유효기간을 확인 중입니다.',
+                    '거래일 감시 작업의 확인 결과를 기다리세요.', 0.)
+        if now >= valid_until:
+            return ('wait', '이 제안의 다음 거래일 진입 기간이 종료됐습니다.',
+                    '새 장 마감 데이터에서 검출된 다음 제안을 확인하세요. 같은 데이터의 재검출로 기간은 연장되지 않습니다.', 0.)
     if (scan.get('policy_version') != POLICY or scan.get('selection_basis') != BASIS
             or scan.get('latest_session') != report.get('latest_session')
             or scan.get('horizon_sessions') != 10 or scan.get('lookback_sessions') != 1260
@@ -83,17 +91,52 @@ def _decision(status, report, row, now, decision, valid_until):
             '다음 거래일 시가 진입을 제안합니다. 실제 시가로 ATR 손절·목표를 조정하고 제안 비중을 적용하세요. 최대 10거래일 계획입니다.', weight)
 
 
+
+def proposal_window(report):
+    """Validate an optional sealed-calendar projection; legacy reports retain24h.
+
+    The API creates this field from the separate monitor registry. Invalid or
+    unverified optional windows never fall back to a later rescan timestamp.
+    """
+    decision = _timestamp(report.get('decision_at'))
+    try:
+        legacy_until = decision + timedelta(hours=24) if decision else None
+    except OverflowError:
+        legacy_until = None
+    if 'proposal_window' not in report:
+        return decision, legacy_until
+    window = _mapping(report.get('proposal_window'))
+    fingerprint, audit = window.get('input_fingerprint'), window.get('opportunity_audit_hash')
+    origin = _timestamp(window.get('origin_at'))
+    session = _session(window.get('entry_session'))
+    until = _timestamp(window.get('valid_until'))
+    capture = _timestamp(_mapping(report.get('provenance')).get('captured_at'))
+    if (window.get('policy_version') != 'next-session-proposal-v1'
+            or window.get('calendar_source') != 'KIS:CTCA0903R'
+            or not isinstance(fingerprint, str) or re.fullmatch(r'[0-9a-f]{64}', fingerprint) is None
+            or not isinstance(audit, str) or re.fullmatch(r'[0-9a-f]{64}', audit) is None
+            or fingerprint != report.get('input_fingerprint')
+            or audit != _mapping(report.get('opportunity_scan')).get('audit_hash')
+            or origin is None or decision is None or capture is None or capture > origin
+            or origin > decision or session is None or until is None):
+        return None, None
+    origin_day = origin.astimezone(KST).date()
+    from datetime import date
+    entry_day = date.fromisoformat(session)
+    expected = datetime.combine(entry_day, time(15, 30), tzinfo=KST)
+    if (not origin_day < entry_day <= origin_day + timedelta(days=7)
+            or until != expected or _session(report.get('latest_session')) is None
+            or date.fromisoformat(report['latest_session']) > origin_day):
+        return None, None
+    return origin, until
+
 def present_opportunities(result, now):
     """Project onto an already copied API view; perform no IO or research."""
     report = _mapping(result.get('report'))
     rows = report.get('buy_candidates')
     if not isinstance(rows, list) or not all(isinstance(row, dict) for row in rows):
         return result
-    decision = _timestamp(report.get('decision_at'))
-    try:
-        valid_until = decision+timedelta(hours=24) if decision else None
-    except OverflowError:
-        valid_until = None
+    decision, valid_until = proposal_window(report)
     counts = dict(buy=0, wait=0, avoid=0)
     for row in rows:
         action, reason, next_step, weight = _decision(result, report, row, now, decision, valid_until)

@@ -73,7 +73,7 @@ export interface AlphaLabCandidate {
     strategy_id: string;
     score: number;
     last_close: number | null;
-    plan: { entry_price: number; stop_price: number; target_price: number; loss_fraction: number } | null;
+    plan: { entry_price: number; stop_price: number; target_price: number; loss_fraction: number; atr?: number } | null;
     risk: { weight: number; status: string; reasons: string[]; p: number | null; kelly_raw: number | null; research_weight?: number; quarter_kelly_fraction?: number; planned_account_risk?: number };
     setup_active?: boolean;
     quote_session?: string | null;
@@ -104,6 +104,7 @@ export interface AlphaLabOpportunityScan {
     lookback_sessions: 1260; calibration_sessions: 1008; confirmation_sessions: 252; horizon_sessions: 10;
     inspected_count: number; eligible_count: number; active_setup_count: number; reasons: string[]; warnings?: string[];
     forward?: AlphaLabReport['forward'];
+    audit_hash?: string;
 }
 export interface AlphaLabOpportunitySummary extends Omit<AlphaLabProposalSummary, 'policy_version'> {
     policy_version: 'quality-setup-opportunity-v1';
@@ -115,6 +116,7 @@ export interface AlphaLabReport {
     decision_at?: string;
     latest_session?: string | null;
     input_fingerprint?: string;
+    proposal_window?: AlphaLabProposalWindow;
     proposal_summary?: AlphaLabProposalSummary;
     buy_candidates?: AlphaLabOpportunityCandidate[];
     opportunity_scan?: AlphaLabOpportunityScan;
@@ -149,6 +151,33 @@ export interface AlphaLabStatus {
     generated_at: string | null;
     report: AlphaLabReport | null;
     error: string | null;
+    operations?: AlphaLabOperations;
+}
+export interface AlphaLabProposalWindow {
+    policy_version: 'next-session-proposal-v1'; input_fingerprint: string; opportunity_audit_hash: string;
+    origin_at: string; entry_session: string | null; valid_until: string | null; calendar_source: 'KIS:CTCA0903R';
+}
+export interface AlphaLabMonitorQuote {
+    symbol: string; price: number | null; quote_at: string | null; fetched_at: string | null; opening_price: number | null;
+    source: 'KIS:J:FHKST03010200+FHKST01010100';
+    entry_state: 'wait_open' | 'within_band' | 'above_ceiling' | 'below_stop' | 'target_reached' | 'closed' | 'stale' | 'unavailable';
+    reference_price: number; entry_ceiling: number; stop_price: number; target_price: number;
+    adjusted_plan?: { entry_price: number; stop_price: number; target_price: number; loss_fraction: number; proposed_weight: number } | null;
+    reasons: string[];
+}
+export interface AlphaLabOperations {
+    schema_version: 1; policy_version: 'alpha-cadence-v1'; generated_at: string;
+    cadence: { timezone: 'Asia/Seoul'; research_time: '18:45'; monitor_interval_seconds: 300;
+        market_state: 'open' | 'closed' | 'holiday' | 'unknown'; calendar_status: 'ready' | 'held' | 'failed';
+        calendar_checked_at: string | null; last_scan_at: string | null; next_scan_at: string | null;
+        last_monitor_at: string | null; next_monitor_at: string | null; reasons: string[] };
+    monitoring: { status: 'ready' | 'held' | 'failed'; decision_at: string | null; origin_at: string | null;
+        input_fingerprint: string | null; opportunity_audit_hash: string | null; entry_session: string | null;
+        valid_until: string | null; observed_at: string | null; quotes: AlphaLabMonitorQuote[]; reasons: string[] };
+    paper: { decisions: number; matured: number; win_rate: number | null; mean_net_return: number | null;
+        counts: { pending: number; open: number; unfilled: number; missing_session: number; source_revision: number; closed: number };
+        excluded_revised_closed: number; basis: 'frozen_watchlist_next_open_outcomes_not_account_pnl'; entry_guard_applied: false;
+        revision_policy?: 'preserve_terminal_result_exclude_revised_closed_from_statistics' };
 }
 
 const invalid = '매수 후보 검출 응답 형식이 올바르지 않습니다. 저장 결과를 다시 확인해 주세요.';
@@ -191,16 +220,50 @@ function proposalSummary(value: unknown, candidates: AlphaLabCandidate[], policy
     return value.action === expected && value.buy_count === counts.buy && value.wait_count === counts.wait && value.avoid_count === counts.avoid;
 }
 const kstDay = (ms: number) => Math.floor((ms + 9 * 3600000) / 86400000);
+const sessionClose = (session: string) => Date.parse(`${session}T15:30:00+09:00`);
+const nullableTimestamp = (value: unknown) => value === null || utcTimestamp(value);
+const nullablePositive = (value: unknown) => value === null || finite(value) && value > 0;
+const near = (actual: number, expected: number) => Math.abs(actual - expected) <= Math.max(1e-8, Math.abs(expected) * 1e-8);
+function proposalWindow(value: unknown, report: AlphaLabReport): value is AlphaLabProposalWindow {
+    if (!record(value) || !onlyKeys(value, ['policy_version', 'input_fingerprint', 'opportunity_audit_hash', 'origin_at', 'entry_session', 'valid_until', 'calendar_source'])
+        || value.policy_version !== 'next-session-proposal-v1' || value.calendar_source !== 'KIS:CTCA0903R'
+        || !fingerprint(value.input_fingerprint) || value.input_fingerprint !== report.input_fingerprint
+        || !fingerprint(value.opportunity_audit_hash) || value.opportunity_audit_hash !== report.opportunity_scan?.audit_hash
+        || !utcTimestamp(value.origin_at) || !report.decision_at || Date.parse(value.origin_at) > Date.parse(report.decision_at)) return false;
+    if (value.entry_session === null || value.valid_until === null) return value.entry_session === null && value.valid_until === null;
+    if (!date(value.entry_session) || !utcTimestamp(value.valid_until)) return false;
+    const delta = kstDay(sessionClose(value.entry_session)) - kstDay(Date.parse(value.origin_at));
+    return delta > 0 && delta <= 7 && Date.parse(value.valid_until) === sessionClose(value.entry_session);
+}
+function monitorIdentity(operations: AlphaLabOperations, report: AlphaLabReport | null): boolean {
+    const m = operations.monitoring, w = report?.proposal_window;
+    return !!report && m.input_fingerprint === report.input_fingerprint && m.opportunity_audit_hash === report.opportunity_scan?.audit_hash
+        && !!m.decision_at && !!report.decision_at && Date.parse(m.decision_at) === Date.parse(report.decision_at)
+        && !!m.origin_at && Date.parse(m.origin_at) <= Date.parse(report.decision_at)
+        && (!w || m.origin_at === w.origin_at && m.entry_session === w.entry_session && m.valid_until === w.valid_until);
+}
+function certifiedWindow(report: AlphaLabReport, operations?: AlphaLabOperations): boolean {
+    const w = report.proposal_window;
+    return !!w?.entry_session && !!w.valid_until && !!operations && monitorIdentity(operations, report)
+        && operations.cadence.calendar_status === 'ready' && !!operations.cadence.calendar_checked_at
+        && !operations.cadence.reasons.some(reason => ['calendar_unavailable', 'calendar_invalid', 'calendar_stale', 'calendar_gap', 'calendar_revision', 'monitor_corrupt'].includes(reason))
+        && !operations.monitoring.reasons.some(reason => reason === 'calendar_revision');
+}
+function opportunityExpiry(report: AlphaLabReport): number | null {
+    return report.proposal_window ? report.proposal_window.valid_until ? Date.parse(report.proposal_window.valid_until) : null
+        : Date.parse(report.decision_at ?? '') + 86400000;
+}
 const currentSourceBlocks = new Set(['stale_prices', 'stale_scope', 'future_source_capture', 'missing_current_price',
     'price_capture_before_session_close', 'input_pointer_unavailable', 'input_refresh_failed_previous_snapshot_retained',
     'source_refresh_failed', 'refresh_failed']);
-function freshBuy(row: AlphaLabCandidate, report: AlphaLabReport, now: number): boolean {
+function freshBuy(row: AlphaLabCandidate, report: AlphaLabReport, now: number, opportunity = false, operations?: AlphaLabOperations): boolean {
     if (row.proposal?.action !== 'buy') return true;
     const capture = Date.parse(report.provenance.captured_at ?? '');
     const session = Date.parse(`${report.latest_session}T00:00:00+09:00`);
     const scope = Date.parse(`${report.universe.scope_date}T00:00:00+09:00`);
     const groups = [...report.warnings, ...report.champion.reasons, ...row.reasons, ...row.risk.reasons];
-    return now < Date.parse(row.proposal.valid_until ?? '') && [capture, session, scope].every(value => Number.isFinite(value)
+    return (!opportunity || !report.proposal_window || certifiedWindow(report, operations))
+        && now < Date.parse(row.proposal.valid_until ?? '') && [capture, session, scope].every(value => Number.isFinite(value)
         && value <= now && kstDay(now) - kstDay(value) <= 7)
         && !groups.some(reason => currentSourceBlocks.has(reason) || reason.includes('refresh_failed'));
 }
@@ -264,7 +327,8 @@ function candidate(value: unknown, strategies: Set<string>): value is AlphaLabCa
     return record(p) && finite(p.entry_price) && finite(p.stop_price) && finite(p.target_price)
         && p.stop_price > 0 && p.stop_price < p.entry_price && p.target_price > p.entry_price
         && finite(p.loss_fraction) && p.loss_fraction > 0 && p.loss_fraction < 1
-        && Math.abs(p.loss_fraction - (p.entry_price - p.stop_price) / p.entry_price) < .0001;
+        && Math.abs(p.loss_fraction - (p.entry_price - p.stop_price) / p.entry_price) < .0001
+        && (p.atr === undefined || finite(p.atr) && p.atr > 0);
 }
 const analystIds = ['rev_5', 'low_vol_60', 'anti_max_21', 'attention_fade'] as const;
 const analystReasons = new Set(['insufficient_cohort', 'missing_prices', 'missing_current_quote', 'insufficient_history',
@@ -358,9 +422,11 @@ function opportunityCandidate(value: unknown, report: AlphaLabReport): value is 
     const p = value.proposal;
     if (p?.action !== 'buy') return true;
     if (p.proposed_weight > .05 || Math.abs(p.proposed_weight - value.risk.research_weight) > 1e-8 || p.proposed_weight * stopLoss > .01 + 1e-10
-        || p.input_session !== report.latest_session || !p.valid_until || !report.decision_at || !report.provenance.captured_at) return false;
+        || p.input_session !== report.latest_session || !report.decision_at || !report.provenance.captured_at) return false;
     const decision = Date.parse(report.decision_at), capture = Date.parse(report.provenance.captured_at), now = Date.now();
-    return decision <= now + maxServerClockAheadMs && capture <= decision && Date.parse(p.derived_at) <= now + maxServerClockAheadMs && Date.parse(p.valid_until) === decision + 86400000;
+    const expiry = opportunityExpiry(report);
+    return decision <= now + maxServerClockAheadMs && capture <= decision && Date.parse(p.derived_at) <= now + maxServerClockAheadMs
+        && (expiry === null || !!p.valid_until && Date.parse(p.valid_until) === expiry);
 }
 function validOpportunities(report: AlphaLabReport): boolean {
     const r = report as unknown as Record<string, unknown>;
@@ -373,6 +439,7 @@ function validOpportunities(report: AlphaLabReport): boolean {
         || !count(scan.eligible_count) || scan.eligible_count < r.buy_candidates.length || scan.eligible_count > scan.inspected_count
         || !count(scan.active_setup_count) || scan.active_setup_count > scan.inspected_count * 3 || !reasons(scan.reasons)
         || scan.warnings !== undefined && !reasons(scan.warnings)) return false;
+    if (scan.audit_hash !== undefined && !fingerprint(scan.audit_hash)) return false;
     if (scan.forward !== undefined && (!record(scan.forward) || !count(scan.forward.decisions) || !count(scan.forward.matured)
         || !nullableRate(scan.forward.win_rate) || !nullableFinite(scan.forward.mean_net_return)
         || scan.forward.matured === 0 && (scan.forward.win_rate !== null || scan.forward.mean_net_return !== null))) return false;
@@ -415,6 +482,7 @@ function validReport(value: unknown): value is AlphaLabReport {
         || value.latest_session !== undefined && !(value.latest_session === null || date(value.latest_session))
         || value.input_fingerprint !== undefined && !fingerprint(value.input_fingerprint)
         || p.captured_at !== undefined && p.captured_at !== null && !utcTimestamp(p.captured_at)) return false;
+    if (value.proposal_window !== undefined && !proposalWindow(value.proposal_window, value as unknown as AlphaLabReport)) return false;
     const symbols = new Set<string>();
     let exposure = 0;
     for (const row of value.candidates) {
@@ -429,19 +497,129 @@ function validReport(value: unknown): value is AlphaLabReport {
         && label(row.status) && safeText(row.detail));
 }
 
+const operationalReasons = new Set(['missing_report', 'invalid_report', 'identity_mismatch', 'research_unavailable',
+    'calendar_unavailable', 'calendar_invalid', 'calendar_stale', 'calendar_gap', 'calendar_revision', 'market_closed', 'before_open', 'after_close',
+    'window_expired', 'source_stale', 'quote_unavailable', 'quote_invalid', 'quote_stale', 'quote_future', 'quote_symbol_mismatch',
+    'opening_revision', 'above_ceiling', 'below_stop', 'target_reached', 'monitor_corrupt', 'capacity_exceeded']);
+const operationalReasonList = (value: unknown) => reasons(value) && value.every(reason => operationalReasons.has(reason));
+const monitorSource = 'KIS:J:FHKST03010200+FHKST01010100';
+const quoteStates = ['wait_open', 'within_band', 'above_ceiling', 'below_stop', 'target_reached', 'closed', 'stale', 'unavailable'];
+function monitorQuote(value: unknown, report: AlphaLabReport | null, bound: boolean): value is AlphaLabMonitorQuote {
+    if (!record(value) || !onlyKeys(value, ['symbol', 'price', 'quote_at', 'fetched_at', 'opening_price', 'source', 'entry_state',
+        'reference_price', 'entry_ceiling', 'stop_price', 'target_price', 'adjusted_plan', 'reasons'])
+        || typeof value.symbol !== 'string' || !/^\d{6}$/.test(value.symbol) || !nullablePositive(value.price)
+        || !nullablePositive(value.opening_price) || !nullableTimestamp(value.quote_at) || !nullableTimestamp(value.fetched_at)
+        || value.source !== monitorSource || typeof value.entry_state !== 'string' || !quoteStates.includes(value.entry_state)
+        || !operationalReasonList(value.reasons) || !finite(value.reference_price) || value.reference_price <= 0
+        || !finite(value.entry_ceiling) || Math.abs(value.entry_ceiling - Math.round(value.reference_price * 1.02 * 1e6) / 1e6) > 1e-6
+        || !finite(value.stop_price) || value.stop_price <= 0 || value.stop_price >= value.reference_price
+        || !finite(value.target_price) || value.target_price <= value.reference_price) return false;
+    const row = report?.buy_candidates?.find(candidate => candidate.symbol === value.symbol);
+    if (bound && (!row?.plan || value.reference_price !== row.last_close || value.stop_price !== row.plan.stop_price
+        || value.target_price !== row.plan.target_price)) return false;
+    const p = value.adjusted_plan;
+    const observed = value.price !== null && value.opening_price !== null;
+    if (observed && value.entry_state === 'within_band' && (value.opening_price as number > value.entry_ceiling
+        || (value.opening_price as number) < value.stop_price || !record(p))) return false;
+    if (observed && value.entry_state === 'above_ceiling' && ((value.opening_price as number) <= value.entry_ceiling || p != null)) return false;
+    if (observed && value.entry_state === 'below_stop' && (value.opening_price as number) >= value.stop_price && !record(p)) return false;
+    if (observed && value.entry_state === 'target_reached' && !record(p)) return false;
+    if (p === undefined || p === null) return true;
+    if (!record(p) || !onlyKeys(p, ['entry_price', 'stop_price', 'target_price', 'loss_fraction', 'proposed_weight'])
+        || !finite(p.entry_price) || p.entry_price <= 0 || p.entry_price !== value.opening_price
+        || !finite(p.stop_price) || p.stop_price <= 0 || p.stop_price >= p.entry_price
+        || !finite(p.target_price) || p.target_price <= p.entry_price || !finite(p.loss_fraction) || p.loss_fraction <= 0 || p.loss_fraction > .08 + 1e-10
+        || !finite(p.proposed_weight) || p.proposed_weight <= 0 || p.proposed_weight > .05
+        || !near(p.loss_fraction, (p.entry_price - p.stop_price) / p.entry_price) || p.proposed_weight * p.loss_fraction > .01 + 1e-10) return false;
+    if (observed && (value.entry_state === 'within_band' && ((value.price as number) <= p.stop_price || (value.price as number) >= p.target_price)
+        || value.entry_state === 'target_reached' && (value.price as number) < p.target_price
+        || value.entry_state === 'below_stop' && (value.opening_price as number) >= value.stop_price && (value.price as number) > p.stop_price)) return false;
+    if (bound) {
+        if (!row?.plan?.atr || !row.risk.research_weight || p.proposed_weight > row.risk.research_weight + 1e-8) return false;
+        const distance = Math.min(2 * row.plan.atr, p.entry_price * .08);
+        if (!near(p.stop_price, p.entry_price - distance) || !near(p.target_price, p.entry_price + 2 * distance)) return false;
+    }
+    return true;
+}
+function validOperations(value: unknown, report: AlphaLabReport | null): value is AlphaLabOperations {
+    if (!record(value) || !onlyKeys(value, ['schema_version', 'policy_version', 'generated_at', 'cadence', 'monitoring', 'paper'])
+        || value.schema_version !== 1 || value.policy_version !== 'alpha-cadence-v1' || !utcTimestamp(value.generated_at)
+        || Date.parse(value.generated_at) > Date.now() + maxServerClockAheadMs || !record(value.cadence) || !record(value.monitoring) || !record(value.paper)) return false;
+    const c = value.cadence, m = value.monitoring, p = value.paper;
+    if (!onlyKeys(c, ['timezone', 'research_time', 'monitor_interval_seconds', 'market_state', 'calendar_status', 'calendar_checked_at',
+        'last_scan_at', 'next_scan_at', 'last_monitor_at', 'next_monitor_at', 'reasons'])
+        || c.timezone !== 'Asia/Seoul' || c.research_time !== '18:45' || c.monitor_interval_seconds !== 300
+        || typeof c.market_state !== 'string' || !['open', 'closed', 'holiday', 'unknown'].includes(c.market_state)
+        || typeof c.calendar_status !== 'string' || !['ready', 'held', 'failed'].includes(c.calendar_status)
+        || !['calendar_checked_at', 'last_scan_at', 'next_scan_at', 'last_monitor_at', 'next_monitor_at'].every(key => nullableTimestamp(c[key]))
+        || !operationalReasonList(c.reasons)) return false;
+    if (!onlyKeys(m, ['status', 'decision_at', 'origin_at', 'input_fingerprint', 'opportunity_audit_hash', 'entry_session', 'valid_until', 'observed_at', 'quotes', 'reasons'])
+        || typeof m.status !== 'string' || !['ready', 'held', 'failed'].includes(m.status)
+        || !['decision_at', 'origin_at', 'valid_until', 'observed_at'].every(key => nullableTimestamp(m[key]))
+        || !(m.input_fingerprint === null || fingerprint(m.input_fingerprint)) || !(m.opportunity_audit_hash === null || fingerprint(m.opportunity_audit_hash))
+        || !(m.entry_session === null || date(m.entry_session)) || (m.entry_session === null) !== (m.valid_until === null)
+        || m.entry_session !== null && Date.parse(m.valid_until as string) !== sessionClose(m.entry_session as string)
+        || !Array.isArray(m.quotes) || m.quotes.length > 3 || !operationalReasonList(m.reasons)) return false;
+    const operations = value as unknown as AlphaLabOperations;
+    const bound = monitorIdentity(operations, report);
+    const symbols = new Set<string>();
+    for (const quote of m.quotes) {
+        if (!monitorQuote(quote, report, bound) || symbols.has(quote.symbol)) return false;
+        symbols.add(quote.symbol);
+    }
+    const counts = p.counts;
+    if (!onlyKeys(p, ['decisions', 'matured', 'win_rate', 'mean_net_return', 'counts', 'excluded_revised_closed', 'basis', 'entry_guard_applied', 'revision_policy'])
+        || !count(p.decisions) || !count(p.matured) || !nullableRate(p.win_rate) || !nullableFinite(p.mean_net_return)
+        || !record(counts) || !onlyKeys(counts, ['pending', 'open', 'unfilled', 'missing_session', 'source_revision', 'closed'])
+        || !['pending', 'open', 'unfilled', 'missing_session', 'source_revision', 'closed'].every(key => count(counts[key]))
+        || !count(p.excluded_revised_closed) || p.excluded_revised_closed > (counts.closed as number)
+        || p.matured !== (counts.closed as number) - p.excluded_revised_closed
+        || (p.matured === 0 ? p.win_rate !== null || p.mean_net_return !== null : !finite(p.win_rate) || !finite(p.mean_net_return))
+        || p.basis !== 'frozen_watchlist_next_open_outcomes_not_account_pnl' || p.entry_guard_applied !== false
+        || p.revision_policy !== undefined && p.revision_policy !== 'preserve_terminal_result_exclude_revised_closed_from_statistics') return false;
+    return true;
+}
+/** Reevaluated on idle/focus as well as GET: old prices cannot survive a failed or expired observation. */
+export function liveAlphaLabMonitoring(status: AlphaLabStatus, now = Date.now(), blocked = false): AlphaLabOperations['monitoring'] | null {
+    const operations = status.operations;
+    if (!operations) return null;
+    const m = operations.monitoring;
+    const bound = monitorIdentity(operations, status.report);
+    const localTime = ((now + 9 * 3600000) % 86400000 + 86400000) % 86400000;
+    const active = !blocked && bound && ['ready', 'held'].includes(status.state) && status.report?.opportunity_scan?.status === 'ready'
+        && !status.report.opportunity_scan.reasons.some(reason => currentSourceBlocks.has(reason) || reason.includes('refresh_failed'))
+        && operations.cadence.calendar_status === 'ready' && operations.cadence.market_state === 'open' && m.status === 'ready'
+        && localTime >= 9 * 3600000 && localTime < 15.5 * 3600000
+        && !m.reasons.some(reason => ['identity_mismatch', 'research_unavailable', 'source_stale', 'quote_unavailable', 'quote_invalid', 'monitor_corrupt'].includes(reason));
+    const quotes = m.quotes.map(quote => {
+        const at = Date.parse(quote.quote_at ?? ''), fetched = Date.parse(quote.fetched_at ?? '');
+        const fresh = active && quote.price !== null && quote.opening_price !== null && Number.isFinite(at) && Number.isFinite(fetched)
+            && at <= now + maxServerClockAheadMs && fetched <= now + maxServerClockAheadMs && at <= fetched && fetched - at <= 120000
+            && now - at < 420000 && now - fetched < 420000 && kstDay(at) === kstDay(now)
+            && !!m.entry_session && kstDay(at) >= kstDay(sessionClose(m.entry_session))
+            && !['stale', 'unavailable', 'wait_open', 'closed'].includes(quote.entry_state);
+        if (fresh) return quote;
+        const untouched = quote.price === null && ['wait_open', 'closed', 'unavailable', 'stale'].includes(quote.entry_state);
+        return { ...quote, price: null, opening_price: null, adjusted_plan: null,
+            entry_state: (!bound ? 'unavailable' : untouched ? quote.entry_state : 'stale') as AlphaLabMonitorQuote['entry_state'],
+            reasons: untouched && bound ? quote.reasons : Array.from(new Set([...quote.reasons, !bound ? 'identity_mismatch' : 'quote_stale'])) };
+    });
+    return { ...m, status: active || m.status === 'failed' ? m.status : 'held', quotes };
+}
 /** Only finite, identified research evidence crosses the API boundary; raw worker errors are never rendered. */
 export function validateAlphaLabStatus(value: unknown): AlphaLabStatus {
     if (!record(value) || value.schema_version !== 1 || !['missing', 'running', 'ready', 'held', 'failed'].includes(String(value.state))
         || !(value.generated_at === null || timestamp(value.generated_at)) || !(value.error === null || typeof value.error === 'string')
         || !(value.report === null || validReport(value.report))
-        || ['ready', 'held'].includes(String(value.state)) && value.report === null) throw new Error(invalid);
+        || ['ready', 'held'].includes(String(value.state)) && value.report === null
+        || value.operations !== undefined && !validOperations(value.operations, value.report as AlphaLabReport | null)) throw new Error(invalid);
     const status = value as unknown as AlphaLabStatus;
-    if (!status.report) return status;
+    if (!status.report) return { ...status, operations: status.operations ? { ...status.operations, monitoring: liveAlphaLabMonitoring(status)! } : undefined };
     const normalizeProposal = (row: AlphaLabCandidate, opportunity = false) => {
         const p = row.proposal;
         const scanReady = !opportunity || status.report!.opportunity_scan?.status === 'ready'
             && !status.report!.opportunity_scan.reasons.some(reason => currentSourceBlocks.has(reason) || reason.includes('refresh_failed'));
-        if (p?.action !== 'buy' || scanReady && ['ready', 'held'].includes(status.state) && freshBuy(row, status.report!, Date.now())) return p;
+        if (p?.action !== 'buy' || scanReady && ['ready', 'held'].includes(status.state) && freshBuy(row, status.report!, Date.now(), opportunity, status.operations)) return p;
         return { ...p, action: 'wait' as const, label: '진입 대기' as const, proposed_weight: 0,
             reason: '제안이 만료되었거나 최신 검사 결과를 확인 중입니다.', next_step: '저장 결과를 다시 확인한 뒤 판단하세요.' };
     };
@@ -455,7 +633,8 @@ export function validateAlphaLabStatus(value: unknown): AlphaLabStatus {
             buy_count: buy, wait_count: wait, avoid_count: rows.length - buy - wait, headline: buy ? summary.headline : '오늘 제안: 진입 대기',
             reason: '만료되었거나 갱신 중인 매수 제안은 대기로 전환했습니다.' };
     };
-    return { ...status, report: { ...status.report, candidates, buy_candidates: buyCandidates,
+    return { ...status, operations: status.operations ? { ...status.operations, monitoring: liveAlphaLabMonitoring(status)! } : undefined,
+        report: { ...status.report, candidates, buy_candidates: buyCandidates,
         proposal_summary: normalizedSummary(status.report.proposal_summary, candidates, status.report.candidates),
         opportunity_summary: buyCandidates && normalizedSummary(status.report.opportunity_summary, buyCandidates, status.report.buy_candidates!) } };
 }

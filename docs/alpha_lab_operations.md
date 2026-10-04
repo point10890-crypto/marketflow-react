@@ -85,7 +85,7 @@ sources, rewrites saved evidence or changes the frozen forward journal.
   completed validation/test/stress outcomes. It also requires an active setup,
   current symbol session, valid source timestamps and a finite reference plan.
   Research weight is above zero and at most 20%; weight times planned stop
-  fraction is at most 1%. A decision expires 24 hours after the original scan.
+  fraction is at most 1%. Legacy decisions expire 24 hours after the original scan; certified opportunity decisions use the next-session window described below.
 - **진입 대기 (wait):** missing/zero/insufficient evidence, inactive setup,
   stale/missing/future price/source timestamps, invalid plan, expired decision,
   refresh failure, or ongoing/failed analysis. Legacy missing fields do not
@@ -113,10 +113,29 @@ status lives in `data/alpha_lab/status.json`. Generated artifacts remain ignored
 
 ## Operations and sources
 
-Dedicated Windows MiniPC task: `MarketFlow-AlphaLab-Research`, daily 18:45 KST,
-`scripts/refresh_alpha_lab.ps1`, IgnoreNew, 90-minute limit. It is independent of
-the existing chart index task so a chart refresh failure cannot skip this job.
-Flask production remains 127.0.0.1:5003; development remains 5001.
+Dedicated Windows MiniPC tasks, installed with `scripts/install_alpha_lab_tasks.ps1`:
+
+- `MarketFlow-AlphaLab-Research`:18:45KST,90-minute limit, completed-session source acquisition then research. An official closed date skips collection and preserves the last report.
+- `MarketFlow-AlphaLab-Prime`:08:55KST,3-minute limit, official KIS session calendar preparation.
+- `MarketFlow-AlphaLab-Monitor`:09:00–15:30KST every five minutes,3-minute limit, at most the three current proposal references. Known closed days issue no quote requests.
+
+All use IgnoreNew and saved atomic/locked artifacts. Task installation does not launch a first research cycle. GET remains a cheap read; READY screens re-read saved status every30seconds and RUNNING screens every4seconds.
+Flask production remains127.0.0.1:5003; development remains5001. Chart index scheduling stays independent.
+
+## Certified session windows and price monitoring
+
+New optional `next-session-proposal-v1` windows apply only to the separate quality-setup BUY candidates. The first source identity and origin are frozen under `data/alpha_lab/monitor/`. Manual rescans against the same fingerprint/opportunity audit/candidate plan do not renew the window. The first certified session/deadline is also sealed; later calendar corrections hold the proposal instead of moving its entry day. Once KIS calendar dates fully establish the first trading session strictly after that origin day, the window ends at that session15:30KST. Missing/failed calendar confirmation produces a null window and a WAIT view. Legacy tournament candidates retain their original24-hour rule.
+
+The calendar source is official `CTCA0903R` (`tr_day_yn` and `opnd_yn`), successfully fetched once per date and persisted. Failed calendar observations retry no earlier than15minutes, at most3attempts per KSTday. There is no fallback to a weekday-only trading-day claim. Calendar ranges with missing dates, invalid flags, future captures or corrupted artifacts hold confirmation.
+
+Quote evidence uses KRX market code J. The current minute close and its business-date/time come from `FHKST03010200`; the **daily opening price** comes from `FHKST01010100`. A minute bar opening is never interpreted as the session opening. Provider inputs must be at most120seconds old at acquisition; saved quotes lose active guidance at420seconds. HTTP/API errors, future/previous-session quotes, changed identities, incomplete scans and failed attempts remove live guidance.
+
+An observed opening-reference decision is fixed once for that source/session. Open above the close×1.02 ceiling or below the original reference stop skips entry for that session. Accepted reference barriers use the frozen ATR: distance=min(2ATR, opening×8%), stop=opening−distance and target=opening+2distance, retaining the existing quarter-Kelly research cap. Later quotes may show reference stop/target or monitor-only states. These are observations/reference plans, never actual brokerage fills or tracked user positions; approved exposure and live orders remain zero/false.
+
+The separate current-candidate forward panel uses the existing sealed daily next-open paper journal. Closed unrevised outcomes form the win-rate/mean-return denominator; pending, open, unfilled and revised events are shown separately. The manual2% entry guard and live monitor are **not applied to that historical/forward simulation**. No account P&L is inferred.
+
+Official provider references: [KIS holiday API](https://github.com/koreainvestment/open-trading-api/blob/main/examples_llm/domestic_stock/chk_holiday/chk_holiday.py), [KIS minute-price API](https://github.com/koreainvestment/open-trading-api/blob/main/examples_llm/domestic_stock/inquire_time_itemchartprice/inquire_time_itemchartprice.py).
+
 
 Independent implementations were informed by:
 
