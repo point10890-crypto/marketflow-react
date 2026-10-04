@@ -99,6 +99,45 @@ def test_blocked_data_is_held_without_research_computation():
     assert 'unverified_price_basis' in result.payload['quant']['reasons']
 
 
+def test_agent_research_configuration_rejects_generalized_kelly_model():
+    quant, _, _ = agents()
+    request, _ = synthetic_request()
+    request['config']['research']['kelly_model'] = 'generalized'
+    with pytest.raises(ValueError, match='empirical'):
+        quant.research_configuration(request)
+
+
+def test_quant_holds_generalized_request_without_running_or_forwarding_candidates():
+    request, data = synthetic_request()
+    request['config']['research']['kelly_model'] = 'generalized'
+
+    def forbidden(*args, **kwargs):
+        pytest.fail('Empirical trading agents must not run generalized Kelly research')
+
+    result, _ = run_quant(request, data, research_runner=forbidden)
+    quant = result.payload['quant']
+    assert quant['status'] == 'held'
+    assert quant['reasons'] == ['unsupported_agent_kelly_model']
+    assert quant['candidates'] == []
+    assert quant['qualified'] == []
+    assert quant['qualification'] == []
+    assert quant['qualification_complete'] is False
+    assert quant['methodology'] == 'empirical_net_returns_no_distribution_assumption'
+
+
+def test_default_and_explicit_empirical_agent_requests_remain_compatible():
+    quant, _, _ = agents()
+    request, data = synthetic_request()
+    implicit_config = quant.research_configuration(request)
+    implicit, _ = run_quant(request, data)
+    request['config']['research']['kelly_model'] = 'empirical'
+    assert quant.research_configuration(request) == implicit_config
+    explicit, _ = run_quant(request, data)
+    assert explicit.payload['quant'] == implicit.payload['quant']
+    assert explicit.payload['quant']['status'] == 'ready'
+    assert explicit.payload['quant']['candidates'][0]['estimated_kelly'] > 0
+
+
 def test_real_engine_qualifies_and_requires_the_asof_current_signal():
     request, data = synthetic_request()
     result, _ = run_quant(request, data)

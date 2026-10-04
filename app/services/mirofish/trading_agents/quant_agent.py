@@ -57,6 +57,10 @@ def universe_map(request, ranked=None):
     return result
 
 
+class _UnsupportedKellyModel(ValueError):
+    """The trading agent contract accepts empirical net-return sizing only."""
+
+
 def research_configuration(request):
     config = request.get('config', {})
     if not isinstance(config, dict) or set(config) - {'research', 'risk'}:
@@ -64,6 +68,8 @@ def research_configuration(request):
     research = config.get('research', {})
     if not isinstance(research, dict) or not isinstance(config.get('risk', {}), dict):
         raise ValueError('Configuration sections require objects')
+    if research.get('kelly_model', 'empirical') != 'empirical':
+        raise _UnsupportedKellyModel('Trading agents require empirical Kelly; generalized Kelly is offline research only')
     research = copy.deepcopy(research)
     # Allocation overrides cannot relax the architecture's hard limits.
     for field, maximum in (('max_weight', .2), ('max_exposure', .6), ('kelly_fraction', .5)):
@@ -178,6 +184,9 @@ class QuantAgent:
             quant['reasons'] = [] if candidates else ['no_fresh_qualified_signal']
             quant['warnings'] = report.get('warnings', [])
             quant['benchmark'] = report.get('benchmark')
+        except _UnsupportedKellyModel:
+            quant.update(status='held', reasons=['unsupported_agent_kelly_model'],
+                         candidates=[], qualified=[], qualification=[], qualification_complete=False)
         except (ValueError, KeyError, TypeError, IndexError, OverflowError):
             quant.update(status='held', reasons=['invalid_quant_input_or_research'],
                          candidates=[], qualified=[], qualification=[], qualification_complete=False)
