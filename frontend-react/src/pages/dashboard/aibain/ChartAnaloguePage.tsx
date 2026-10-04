@@ -9,6 +9,7 @@ import ChartAnalogueEvaluationPanel from '@/components/aibain/ChartAnalogueEvalu
 import ChartAnalogueSymbolSearch from '@/components/aibain/ChartAnalogueSymbolSearch';
 import ChartAnalogueTop3Panel from '@/components/aibain/ChartAnalogueTop3Panel';
 import ChartAnalogueKellyPanel from '@/components/aibain/ChartAnalogueKellyPanel';
+import AlphaLabPanel from '@/components/aibain/AlphaLabPanel';
 
 const stateLabels: Record<Exclude<ChartAnalogueStatus, 'ready'>, { title: string; detail: string }> = {
     missing_index: { title: '과거 사례 색인이 준비되지 않았습니다', detail: '가격 자료의 색인이 준비되면 유사 사례를 조회할 수 있습니다.' },
@@ -80,6 +81,7 @@ export default function ChartAnaloguePage() {
                     <h1 className="ai-page-title">차트 유사 사례</h1>
                     <p className="mt-2 text-sm leading-relaxed text-gray-400">현재 가격 흐름과 닮은 과거 구간의 이후 결과를 비교합니다. 상승 빈도는 과거 표본의 관측값이며 보정된 상승 확률이 아닙니다.</p>
                 </header>
+                <AlphaLabPanel token={token ?? undefined} onSelectSymbol={selectSymbol} />
                 <ChartAnalogueKellyPanel token={token ?? undefined} onSelect={selectSymbol} />
                 <ChartAnalogueTop3Panel token={token ?? undefined} />
                 <ChartAnalogueSymbolSearch symbol={code} token={token ?? undefined} onSelect={selectSymbol} />

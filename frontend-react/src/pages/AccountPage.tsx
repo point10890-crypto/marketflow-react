@@ -17,6 +17,10 @@ export default function AccountPage() {
     const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
     const [showInstallGuide, setShowInstallGuide] = useState(false);
 
+    useEffect(() => {
+        if (isInstalled) setShowInstallGuide(false);
+    }, [isInstalled]);
+
     // 비밀번호 변경
     const [showPwChange, setShowPwChange] = useState(false);
     const [currentPw, setCurrentPw] = useState('');
@@ -727,14 +731,14 @@ export default function AccountPage() {
             )}
 
             {/* App Install */}
-            {!isInstalled && (
+            {canInstall && !isInstalled && (
                 <div className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-blue-500/20 bg-[#15191e]">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
                             <i className="fas fa-mobile-screen-button text-blue-400" />
                         </div>
                         <div>
-                            <h3 className="dash-section-title text-white font-bold">앱 다운로드</h3>
+                            <h3 className="dash-section-title text-white font-bold">홈 화면에 추가</h3>
                             <p className="text-[#a6afbb] text-xs">홈 화면에 추가하고 앱처럼 사용하세요</p>
                         </div>
                     </div>
@@ -747,12 +751,12 @@ export default function AccountPage() {
                         onClick={handleInstallApp}
                         className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-bold text-sm transition-all flex items-center justify-center gap-2"
                     >
-                        <i className="fas fa-download" />
-                        앱 설치하기
+                        <i className={`fas ${isIOS ? 'fa-circle-info' : 'fa-plus'}`} />
+                        {isIOS ? '설치 방법 보기' : '앱으로 설치'}
                     </button>
                 </div>
             )}
-            {showInstallGuide && <InstallGuide isIOS={isIOS} onClose={() => setShowInstallGuide(false)} />}
+            {showInstallGuide && !isInstalled && <InstallGuide isIOS={isIOS} onClose={() => setShowInstallGuide(false)} />}
 
             {/* Links */}
             <div className="flex items-center gap-4 pt-2">
