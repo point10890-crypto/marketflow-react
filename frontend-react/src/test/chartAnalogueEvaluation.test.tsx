@@ -8,7 +8,8 @@ import { fetchChartAnalogueEvaluation } from '@/lib/chartAnalogueApi';
 
 const api = vi.hoisted(() => ({ fetchAuthAPI: vi.fn() }));
 vi.mock('@/lib/api', () => ({
-    fetchAuthAPI: (path: string, ...args: unknown[]) => path.endsWith('/top3') || path.endsWith('/kelly')
+    fetchAuthAPI: (path: string, ...args: unknown[]) => path.endsWith('/alpha-lab') ? Promise.resolve({ schema_version: 1,
+        state: 'missing', generated_at: null, report: null, error: null }) : path.endsWith('/top3') || path.endsWith('/kelly')
         ? Promise.resolve({ state: 'none', processed: 0, total: 0, started_at: null,
             error: null, freshness: 'missing', report: null }) : api.fetchAuthAPI(path, ...args),
     postAuthAPI: vi.fn(),

@@ -14,7 +14,7 @@ export default function InstallPrompt({ onVisibilityChange }: InstallPromptProps
     useEffect(() => {
         if (isInstalled || !canInstall) {
             setShowBanner(false);
-            setShowGuide(false);
+            if (isInstalled) setShowGuide(false);
             return;
         }
 
@@ -46,36 +46,40 @@ export default function InstallPrompt({ onVisibilityChange }: InstallPromptProps
         safeSetItem('local', 'install-dismissed', String(Date.now()));
     };
 
-    if (!isVisible) return null;
+    if (!isVisible && (!showGuide || isInstalled)) return null;
 
     return (
         <>
-            {/* Banner */}
-            <div className="install-prompt-banner fixed left-3 right-3 z-[60] md:left-auto md:right-6 md:w-96" style={{ animation: 'pwa-slide-up 0.3s ease-out' }}>
-                <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-4 shadow-2xl shadow-black/50">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-10 h-10 bg-gradient-to-br from-yellow-300 via-amber-500 to-yellow-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm">B</div>
-                            <div>
-                                <p className="text-sm font-bold text-white">BitMan 앱 설치</p>
-                                <p className="text-[10px] text-gray-400">{isIOS ? '홈 화면에 추가하세요' : '빠른 접속 + 오프라인 지원'}</p>
+            {isVisible && (
+                <>
+                    {/* Banner */}
+                    <div className="install-prompt-banner fixed left-3 right-3 z-[60] md:left-auto md:right-6 md:w-96" style={{ animation: 'pwa-slide-up 0.3s ease-out' }}>
+                        <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-4 shadow-2xl shadow-black/50">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-10 h-10 bg-gradient-to-br from-yellow-300 via-amber-500 to-yellow-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm">B</div>
+                                    <div>
+                                        <p className="text-sm font-bold text-white">BitMan 앱 설치</p>
+                                        <p className="text-[10px] text-gray-400">{isIOS ? '홈 화면에 추가하세요' : '빠른 접속 + 오프라인 지원'}</p>
+                                    </div>
+                                </div>
+                                <button onClick={handleDismiss} className="text-gray-500 hover:text-white p-1">
+                                    <i className="fas fa-times text-sm" />
+                                </button>
                             </div>
+                            <button
+                                onClick={isIOS ? () => setShowGuide(true) : handleInstall}
+                                className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold text-sm rounded-xl active:scale-[0.98] transition-transform"
+                            >
+                                {isIOS ? '설치 방법 보기' : '앱 설치하기'}
+                            </button>
                         </div>
-                        <button onClick={handleDismiss} className="text-gray-500 hover:text-white p-1">
-                            <i className="fas fa-times text-sm" />
-                        </button>
                     </div>
-                    <button
-                        onClick={isIOS ? () => setShowGuide(true) : handleInstall}
-                        className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold text-sm rounded-xl active:scale-[0.98] transition-transform"
-                    >
-                        {isIOS ? '설치 방법 보기' : '앱 설치하기'}
-                    </button>
-                </div>
-            </div>
+                </>
+            )}
 
             {/* Guide overlay */}
-            {showGuide && <InstallGuide isIOS={isIOS} onClose={handleDismiss} />}
+            {showGuide && !isInstalled && <InstallGuide isIOS={isIOS} onClose={handleDismiss} />}
 
             <style>{`
                 @keyframes pwa-slide-up {

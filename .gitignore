@@ -178,3 +178,5 @@ data/chart_analogue/
 .venv-ci/
 # Offline Kelly research run artifacts
 /data/kelly_research/
+# AlphaLab private source snapshots, models, forward observations and status
+/data/alpha_lab/

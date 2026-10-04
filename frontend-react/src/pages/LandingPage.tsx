@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ClawMascot from '@/components/claw/ClawMascot';
 import { InstallGuide } from '@/components/layout/InstallPrompt';
@@ -290,6 +290,10 @@ export default function LandingPage() {
     const action = getPublicAccountAction(user, loading);
     const [showGuide, setShowGuide] = useState(false);
     const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
+
+    useEffect(() => {
+        if (isInstalled) setShowGuide(false);
+    }, [isInstalled]);
 
     useSeo({
         title: 'MarketFlow — 에이전트 주식 분석 자동화 · AI Brain',
@@ -687,7 +691,8 @@ export default function LandingPage() {
                             onClick={handleInstall}
                             className="inline-flex min-h-[44px] shrink-0 items-center rounded-full border border-white/10 bg-white/[0.05] px-5 text-[12px] font-bold text-gray-200 transition-colors hover:bg-white/[0.09]"
                         >
-                            <i className="fas fa-download mr-2 text-[10px]" aria-hidden />앱으로 추가
+                            <i className={`fas ${isIOS ? 'fa-circle-info' : 'fa-plus'} mr-2 text-[10px]`} aria-hidden />
+                            {isIOS ? '설치 방법 보기' : '앱으로 설치'}
                         </button>
                     </div>
                 </section>
@@ -719,7 +724,7 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {showGuide && <InstallGuide isIOS={isIOS} onClose={() => setShowGuide(false)} />}
+            {showGuide && !isInstalled && <InstallGuide isIOS={isIOS} onClose={() => setShowGuide(false)} />}
         </PublicShell>
     );
 }

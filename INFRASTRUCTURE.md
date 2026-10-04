@@ -27,6 +27,7 @@ Last updated: 2026-08-21
 | 데이터 디렉토리 | `C:\bitman_marketfloww\data` | `/c/bitman_marketfloww/data` |
 | JEV shadow 연구 기록 | `C:\bitman_marketfloww\data\admin_mirofish\semantic_decisions` | `/c/bitman_marketfloww/data/admin_mirofish/semantic_decisions` |
 | AlphaClaw 페이퍼 원장 | `C:\bitman_marketfloww\data\alphaclaw\paper.db` | `/c/bitman_marketfloww/data/alphaclaw/paper.db` |
+| AlphaLab 검출 연구·불변 입력·전향 관측 | `C:\bitman_marketfloww\data\alpha_lab` | `/c/bitman_marketfloww/data/alpha_lab` |
 | 로그 디렉토리 | `C:\bitman_marketfloww\logs` | `/c/bitman_marketfloww/logs` |
 | 프론트엔드 | `C:\bitman_marketfloww\frontend-react` | `/c/bitman_marketfloww/frontend-react` |
 | ~~백엔드 (Spring)~~ | `C:\bitman_marketfloww\backend` (**DEAD CODE — 운영 배포 없음**) | 동일 |
@@ -76,6 +77,7 @@ Last updated: 2026-08-21
 | **5173** | Vite dev (Local development only) | `frontend-react` | `npm run dev` | 로컬만 |
 | **N/A** | Scheduler 데몬 (Windows MiniPC production) | `scheduler.py --daemon` | Task `MarketFlow-Scheduler` | 없음 (백그라운드 잡) |
 | **N/A** | AlphaClaw v1.1 paper core | Flask 내부 GET projection + 별도 SQLite 원장 | 기존 Flask에서 읽기, 명시적 CLI로만 paper event 기록 | 없음 (실주문 경로 금지) |
+| **N/A** | AlphaLab 독립 검출 연구 | Task `MarketFlow-AlphaLab-Research` | `scripts\refresh_alpha_lab.ps1`, daily 18:45 KST, IgnoreNew, 90-minute limit | 회원 저장 결과 API만; 실주문 없음 |
 
 **금지/외부 점유 포트**:
 - `5002`: 구 cloudflared 잘못된 라우팅의 흔적, 사용 안 함

@@ -19,6 +19,11 @@ from app.services.mirofish import events as mf_events
 admin_mirofish_bp = Blueprint('admin_mirofish', __name__)
 
 
+def _alpha_lab_service():
+    from app.services.mirofish.alpha_lab import service
+    return service
+
+
 def _chart_analogue_service():
     from app.services.mirofish import chart_analogue
     return chart_analogue
@@ -46,6 +51,23 @@ def _chart_analogue_top3_no_store(view):
 def _chart_analogue_kelly_store_service():
     from app.services.mirofish import chart_analogue_kelly_store
     return chart_analogue_kelly_store
+
+
+@admin_mirofish_bp.route('/alpha-lab', methods=['GET', 'POST'])
+@_chart_analogue_top3_no_store
+@admin_or_aibain_required
+def alpha_lab():
+    raw_body = request.get_data(cache=True).strip()
+    empty_options = request.method == 'POST' and request.is_json and request.get_json(silent=True) == {}
+    if request.query_string or (raw_body and not empty_options):
+        return jsonify({'error': 'invalid_alpha_lab_request'}), 400
+    try:
+        service = _alpha_lab_service()
+        status = service.start_scan() if request.method == 'POST' else service.read_status()
+        code = 202 if request.method == 'POST' and status.get('state') == 'running' else 200
+        return jsonify(status), code
+    except Exception:
+        return jsonify({'error': 'alpha_lab_unavailable'}), 503
 
 
 @admin_mirofish_bp.route('/chart-analogue/kelly', methods=['GET', 'POST'])
