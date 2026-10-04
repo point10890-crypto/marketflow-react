@@ -24,6 +24,11 @@ def _alpha_lab_service():
     return service
 
 
+def _stock_analysis_service():
+    from app.services.mirofish.alpha_lab import symbol_analysis
+    return symbol_analysis
+
+
 def _chart_analogue_service():
     from app.services.mirofish import chart_analogue
     return chart_analogue
@@ -51,6 +56,55 @@ def _chart_analogue_top3_no_store(view):
 def _chart_analogue_kelly_store_service():
     from app.services.mirofish import chart_analogue_kelly_store
     return chart_analogue_kelly_store
+
+
+@admin_mirofish_bp.route('/stock-analysis/search', methods=['GET'])
+@_chart_analogue_top3_no_store
+@admin_required
+def stock_analysis_search():
+    if (set(request.args) - {'q', 'limit'} or request.get_data(cache=True).strip()
+            or any(len(request.args.getlist(key)) != 1 for key in request.args)):
+        return jsonify({'error': 'invalid_stock_analysis_request'}), 400
+    query = request.args.get('q', '')
+    limit = request.args.get('limit', '8')
+    if len(query) > 80 or re.fullmatch(r'[1-9][0-9]?', limit) is None or int(limit) > 20:
+        return jsonify({'error': 'invalid_stock_analysis_request'}), 400
+    try:
+        return jsonify(_stock_analysis_service().search(query, limit=int(limit)))
+    except Exception:
+        return jsonify({'error': 'stock_analysis_unavailable'}), 503
+
+
+@admin_mirofish_bp.route('/stock-analysis', methods=['POST'])
+@_chart_analogue_top3_no_store
+@admin_required
+def stock_analysis_start():
+    payload = request.get_json(silent=True) if request.is_json else None
+    if (request.query_string or not isinstance(payload, dict) or set(payload) != {'symbol'}
+            or not isinstance(payload['symbol'], str)
+            or re.fullmatch(r'[0-9]{6}', payload['symbol']) is None or payload['symbol'] == '000000'):
+        return jsonify({'error': 'invalid_stock_analysis_request'}), 400
+    try:
+        result = _stock_analysis_service().start_analysis(payload['symbol'])
+        return jsonify(result), 202 if result.get('state') == 'running' else 200
+    except ValueError:
+        return jsonify({'error': 'invalid_stock_analysis_symbol'}), 400
+    except Exception:
+        return jsonify({'error': 'stock_analysis_unavailable'}), 503
+
+
+@admin_mirofish_bp.route('/stock-analysis/<symbol>', methods=['GET'])
+@_chart_analogue_top3_no_store
+@admin_required
+def stock_analysis_saved(symbol):
+    if request.query_string or request.get_data(cache=True).strip() or re.fullmatch(r'[0-9]{6}', symbol) is None or symbol == '000000':
+        return jsonify({'error': 'invalid_stock_analysis_request'}), 400
+    try:
+        return jsonify(_stock_analysis_service().read_status(symbol))
+    except ValueError:
+        return jsonify({'error': 'invalid_stock_analysis_symbol'}), 400
+    except Exception:
+        return jsonify({'error': 'stock_analysis_unavailable'}), 503
 
 
 @admin_mirofish_bp.route('/alpha-lab', methods=['GET', 'POST'])
