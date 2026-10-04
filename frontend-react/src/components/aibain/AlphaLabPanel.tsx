@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import AdminStockAnalysisPanel from './AdminStockAnalysisPanel';
 import { fetchAlphaLab, liveAlphaLabMonitoring, startAlphaLab, type AlphaLabAnalystId, type AlphaLabCandidate, type AlphaLabMonitorQuote, type AlphaLabOperations, type AlphaLabOpportunityCandidate, type AlphaLabOpportunityPhase, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
 
 const numberPct = (value: number | null, signed = false) => value === null ? '대기' : `${signed && value > 0 ? '+' : ''}${(value * 100).toFixed(1)}%`;
@@ -296,7 +297,7 @@ function Evidence({ report, previous, blocked, now, monitoring, operations, onSe
     </div>;
 }
 
-export default function AlphaLabPanel({ token, onSelectSymbol }: { token?: string; onSelectSymbol?: (symbol: string) => void }) {
+export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false }: { token?: string; onSelectSymbol?: (symbol: string) => void; isAdmin?: boolean }) {
     const heading = useId();
     const generation = useRef(0);
     const inFlight = useRef<number | null>(null);
@@ -396,6 +397,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol }: { token?: strin
         {snapshot?.operations && <OperationsBand snapshot={snapshot} monitoring={monitoring} now={now} />}
         {reading && <p role="status" className="min-h-16 py-4 text-xs text-gray-400">매수 후보 검출 결과 확인 중…</p>}
         {!reading && (posting || state === 'running') && <p role="status" className="mb-4 rounded-lg border border-[#365372] bg-[#1b2c40] p-3 text-xs text-[#acd3ff]">매수 후보 검출 진행 중 · 완료된 저장 결과를 자동 확인합니다.</p>}
+        {isAdmin && <AdminStockAnalysisPanel />}
         {problem && <p role="alert" className="mb-4 rounded-lg border border-amber-400/25 p-3 text-xs leading-relaxed text-amber-200">{problem}</p>}
         {!reading && !snapshot?.report && !problem && state !== 'running' && !posting && <p className="py-4 text-xs leading-relaxed text-gray-400">저장된 매수 후보 검출 결과가 없습니다. 매수 후보 검출 버튼으로 새 검사를 시작해 주세요.</p>}
         {snapshot?.report && <Evidence report={snapshot.report} previous={state === 'running' || state === 'failed' || !!error}
