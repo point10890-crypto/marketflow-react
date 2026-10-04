@@ -157,7 +157,7 @@ def _prepared(prices_by_symbol, as_of):
     return groups
 
 
-def discover_opportunities(prices_by_symbol, *, names=None, as_of=None):
+def discover_opportunities(prices_by_symbol, *, names=None, as_of=None, reference_calendar=None):
     """Inspect current setups with one fixed conditional evidence policy.
 
     Rank/choose on calibration stress mean only; confirmation is pass/fail.
@@ -166,7 +166,18 @@ def discover_opportunities(prices_by_symbol, *, names=None, as_of=None):
     if as_of is not None:
         _day(as_of)
     groups = _prepared(prices_by_symbol, as_of)
-    calendar = sorted({row['date'] for rows in groups.values() for row in rows})
+    observed_dates = {row['date'] for rows in groups.values() for row in rows}
+    calendar = sorted(observed_dates)
+    if reference_calendar is not None:
+        if not isinstance(reference_calendar, list) or len(reference_calendar) > 20000:
+            raise ValueError('Reference calendar requires a bounded ordered session list')
+        calendar = [_day(day) for day in reference_calendar]
+        if any(a >= b for a, b in zip(calendar, calendar[1:])):
+            raise ValueError('Reference calendar sessions must be unique and increasing')
+        if as_of is not None:
+            calendar = [day for day in calendar if day <= as_of]
+        if not observed_dates.issubset(calendar):
+            raise ValueError('Reference calendar must cover every observed price session')
     latest = as_of or (calendar[-1] if calendar else None)
     policy = ExecutionPolicy()
     result = dict(policy_version=POLICY_VERSION, selection_basis=SELECTION_BASIS, latest_session=latest,

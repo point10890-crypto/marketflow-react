@@ -3,8 +3,11 @@ import { fetchChartAnalogueCandidates, type ChartAnalogueCandidate } from '@/lib
 
 const normalizedName = (value: string) => value.replace(/\s+/g, '').toLocaleLowerCase();
 
-export default function ChartAnalogueSymbolSearch({ symbol, token, onSelect }: {
+export default function ChartAnalogueSymbolSearch({ symbol, token, onSelect, fetchCandidates = fetchChartAnalogueCandidates,
+    submitLabel = '유사 사례 조회', hint = '국내 종목명 · 6자리 코드 · 초성 검색 · 일별 종가 기준', idPrefix = 'analogue' }: {
     symbol: string; token?: string; onSelect: (symbol: string) => void;
+    fetchCandidates?: (query: string, token?: string) => Promise<ChartAnalogueCandidate[]>;
+    submitLabel?: string; hint?: string; idPrefix?: string;
 }) {
     const [input, setInput] = useState(symbol);
     const [candidates, setCandidates] = useState<ChartAnalogueCandidate[]>([]);
@@ -45,7 +48,7 @@ export default function ChartAnalogueSymbolSearch({ symbol, token, onSelect }: {
         setSearching(true);
         setError('');
         try {
-            const found = await fetchChartAnalogueCandidates(query, token);
+            const found = await fetchCandidates(query, token);
             if (!mounted.current || sequence.current !== request || composingRef.current) return;
             if (resolve) {
                 const exact = found.filter(candidate => normalizedName(candidate.name) === normalizedName(query));
@@ -64,7 +67,7 @@ export default function ChartAnalogueSymbolSearch({ symbol, token, onSelect }: {
         } finally {
             if (mounted.current && sequence.current === request) setSearching(false);
         }
-    }, [token, choose]);
+    }, [token, choose, fetchCandidates]);
 
     useEffect(() => {
         const query = input.trim();
@@ -113,13 +116,13 @@ export default function ChartAnalogueSymbolSearch({ symbol, token, onSelect }: {
     return <div>
         <form onSubmit={submit} className="ai-search-toolbar flex flex-wrap items-end gap-3">
             <div className="relative min-w-0 flex-1 sm:max-w-sm">
-                <label htmlFor="analogue-code" className="mb-1.5 block text-xs font-medium text-gray-300">종목명 또는 코드</label>
-                <input id="analogue-code" role="combobox" value={input} maxLength={80} autoComplete="off"
+                <label htmlFor={`${idPrefix}-code`} className="mb-1.5 block text-xs font-medium text-gray-300">종목명 또는 코드</label>
+                <input id={`${idPrefix}-code`} role="combobox" value={input} maxLength={80} autoComplete="off"
                     placeholder="예: 한미반도체, 삼성전자, 005930"
                     aria-autocomplete="list" aria-expanded={candidates.length > 0}
-                    aria-controls="analogue-symbol-options"
-                    aria-activedescendant={activeIndex >= 0 ? `analogue-symbol-${candidates[activeIndex]?.symbol}` : undefined}
-                    aria-invalid={!!error} aria-describedby={error ? 'analogue-search-error' : 'analogue-code-hint'}
+                    aria-controls={`${idPrefix}-symbol-options`}
+                    aria-activedescendant={activeIndex >= 0 ? `${idPrefix}-symbol-${candidates[activeIndex]?.symbol}` : undefined}
+                    aria-invalid={!!error} aria-describedby={error ? `${idPrefix}-search-error` : `${idPrefix}-code-hint`}
                     onChange={event => {
                         sequence.current += 1;
                         setInput(event.target.value);
@@ -131,9 +134,9 @@ export default function ChartAnalogueSymbolSearch({ symbol, token, onSelect }: {
                     onCompositionStart={() => { composingRef.current = true; sequence.current += 1; setComposing(true); setCandidates([]); setActiveIndex(-1); setSearching(false); }}
                     onCompositionEnd={() => { composingRef.current = false; setComposing(false); }}
                     className="h-11 w-full rounded-lg border border-[#3a424d] bg-[#15191e] px-3 text-sm text-white placeholder:text-gray-500 focus:border-[#72b4fb] focus:outline-none" />
-                {candidates.length > 0 && <ul id="analogue-symbol-options" role="listbox" aria-label="종목 검색 결과"
+                {candidates.length > 0 && <ul id={`${idPrefix}-symbol-options`} role="listbox" aria-label="종목 검색 결과"
                     className="absolute left-0 right-0 top-full z-30 mt-1 max-h-64 overflow-y-auto rounded-lg border border-[#3a424d] bg-[#15191e] py-1 shadow-xl">
-                    {candidates.map((candidate, index) => <li key={candidate.symbol} id={`analogue-symbol-${candidate.symbol}`} role="option"
+                    {candidates.map((candidate, index) => <li key={candidate.symbol} id={`${idPrefix}-symbol-${candidate.symbol}`} role="option"
                         aria-selected={index === activeIndex} onMouseDown={event => event.preventDefault()}
                         onClick={() => choose(candidate)}
                         className={`flex cursor-pointer items-center justify-between gap-3 px-3 py-3 text-sm hover:bg-[#243c56] ${index === activeIndex ? 'bg-[#243c56]' : ''}`}>
@@ -142,10 +145,10 @@ export default function ChartAnalogueSymbolSearch({ symbol, token, onSelect }: {
                     </li>)}
                 </ul>}
             </div>
-            <button type="submit" className="h-11 shrink-0 rounded-lg border border-[#365372] bg-[#1b2c40] px-4 text-sm font-semibold text-[#acd3ff] hover:bg-[#243c56]">유사 사례 조회</button>
-            <p id="analogue-code-hint" className="w-full text-xs text-gray-400">국내 종목명 · 6자리 코드 · 초성 검색 · 일별 종가 기준</p>
+            <button type="submit" className="h-11 shrink-0 rounded-lg border border-[#365372] bg-[#1b2c40] px-4 text-sm font-semibold text-[#acd3ff] hover:bg-[#243c56]">{submitLabel}</button>
+            <p id={`${idPrefix}-code-hint`} className="w-full text-xs text-gray-400">{hint}</p>
         </form>
         {searching && <p role="status" className="mt-2 text-xs text-gray-400">종목 검색 중…</p>}
-        {error && <p id="analogue-search-error" role="alert" className="mt-2 text-sm text-amber-300">{error}</p>}
+        {error && <p id={`${idPrefix}-search-error`} role="alert" className="mt-2 text-sm text-amber-300">{error}</p>}
     </div>;
 }

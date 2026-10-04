@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { adminAPI, AdminDashboard } from '@/lib/api';
 import DashboardTab from './tabs/DashboardTab';
@@ -55,6 +56,10 @@ export default function AdminPage() {
                     <i className="fas fa-shield-alt mr-1" /> 관리자 전용
                 </span>
             </div>
+
+            <Link to="/admin/stock-analysis" className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-lg border border-cyan-500/20 bg-cyan-500/5 px-4 py-3 text-sm text-cyan-200 hover:bg-cyan-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300">
+                <span className="font-semibold">종목 검색 분석</span><span className="text-xs text-gray-400">종목명 · 코드 · 초성으로 선택하고 매매 제안 확인</span>
+            </Link>
 
             {/* Tab Navigation */}
             <div className="grid grid-cols-3 lg:grid-cols-7 gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/[0.06]">

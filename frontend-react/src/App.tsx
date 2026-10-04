@@ -59,6 +59,7 @@ const AccountPage = lazy(() => import('@/pages/AccountPage'));
 const DataStatusPage = lazy(() => import('@/pages/dashboard/DataStatusPage'));
 const AdminPage = lazy(() => import('@/pages/admin/AdminPage'));
 const AdminEndpointsPage = lazy(() => import('@/pages/admin/AdminEndpointsPage'));
+const AdminStockAnalysisPage = lazy(() => import('@/pages/admin/AdminStockAnalysisPage'));
 const CommunityPage = lazy(() => import('@/pages/community/CommunityPage'));
 const BoardPage = lazy(() => import('@/pages/community/BoardPage'));
 const PostDetailPage = lazy(() => import('@/pages/community/PostDetailPage'));
@@ -138,7 +139,7 @@ function AiBainGuard({ children }: { children: React.ReactNode }) {
     return <Navigate to="/dashboard/ai-bain" replace />;
 }
 
-function AdminGuard({ children }: { children: React.ReactNode }) {
+export function AdminGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     const location = useLocation();
     const next = `${location.pathname}${location.search || ''}`;
@@ -268,6 +269,7 @@ export default function App() {
                         <Route index element={<Suspense fallback={<LoadingFallback />}><AdminPage /></Suspense>} />
                         <Route path="data-status" element={<Suspense fallback={<LoadingFallback />}><DataStatusPage /></Suspense>} />
                         <Route path="endpoints" element={<Suspense fallback={<LoadingFallback />}><AdminEndpointsPage /></Suspense>} />
+                        <Route path="stock-analysis" element={<Suspense fallback={<LoadingFallback />}><AdminStockAnalysisPage /></Suspense>} />
                         <Route path="users" element={<Navigate to="/admin" replace />} />
                         <Route path="subscriptions" element={<Navigate to="/admin" replace />} />
                         <Route path="system" element={<Navigate to="/admin" replace />} />

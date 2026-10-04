@@ -316,6 +316,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 {/* Admin Section */}
                 {userRole === 'admin' && (
                     <div className="space-y-1 mt-2">
+                        <Link to="/admin/stock-analysis" onClick={onNavigate} aria-current={pathname === '/admin/stock-analysis' ? 'page' : undefined}
+                            className={`flex min-h-11 items-center gap-3 rounded-xl border px-3 py-2 text-[13px] font-medium transition-colors ${pathname === '/admin/stock-analysis' ? 'border-cyan-500/25 bg-cyan-500/10 text-cyan-300' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-gray-300'}`}>
+                            <i className="fas fa-magnifying-glass-chart w-5 text-center text-sm" aria-hidden="true" />
+                            <span>종목 검색 분석</span>
+                        </Link>
                         <Link to="/admin/endpoints" onClick={onNavigate}
                             className={`mt-2 flex items-center gap-2.5 p-3 rounded-xl text-[13px] font-bold transition-all border ${
                                 pathname === '/admin/endpoints'
@@ -339,7 +344,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                         </Link>
                         <Link to="/admin" onClick={onNavigate}
                             className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all border ${
-                                pathname.startsWith('/admin') && pathname !== '/admin/data-status'
+                                pathname === '/admin'
                                     ? 'text-red-400 bg-red-500/10 border-red-500/20'
                                     : 'text-gray-400 hover:text-red-400 hover:bg-red-500/5 border-transparent'
                             }`}

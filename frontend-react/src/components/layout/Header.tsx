@@ -41,6 +41,7 @@ const PAGE_NAMES: Record<string, string> = {
     '/dashboard/briefing': 'Market Briefing',
     '/admin/data-status': 'Data Status',
     '/admin/endpoints': 'MiroFish x ASCII Brain',
+    '/admin/stock-analysis': '종목 검색 분석',
 };
 
 function getPageTitle(pathname: string): string {
