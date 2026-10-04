@@ -134,6 +134,8 @@ const date = (value: unknown): value is string => typeof value === 'string' && /
 const timestamp = (value: unknown): value is string => typeof value === 'string'
     && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value));
 const utcTimestamp = (value: unknown): value is string => timestamp(value) && /(?:Z|\+00:00)$/.test(value);
+// Server decision/assessment clocks may lead the browser slightly; source freshness and expiry stay strict.
+const maxServerClockAheadMs = 60_000;
 const weight = (value: unknown): value is number => finite(value) && value >= 0 && value <= .2;
 const proposalLabels = { buy: '매수 제안', wait: '진입 대기', avoid: '매매 제외' } as const;
 const action = (value: unknown): value is AlphaLabAction => value === 'buy' || value === 'wait' || value === 'avoid';
@@ -186,7 +188,7 @@ function validBuy(row: AlphaLabCandidate, report: AlphaLabReport): boolean {
         || !report.decision_at || !report.provenance.captured_at || !p.valid_until) return false;
     const now = Date.now();
     const decision = Date.parse(report.decision_at), captured = Date.parse(report.provenance.captured_at);
-    return decision <= now && captured <= now && Date.parse(p.derived_at) <= now
+    return decision <= now + maxServerClockAheadMs && captured <= now && Date.parse(p.derived_at) <= now + maxServerClockAheadMs
         && captured <= decision
         && Date.parse(p.valid_until) === decision + 86400000;
 }
@@ -272,7 +274,7 @@ function opportunityCandidate(value: unknown, report: AlphaLabReport): value is 
     if (p.proposed_weight > .05 || Math.abs(p.proposed_weight - value.risk.research_weight) > 1e-8 || p.proposed_weight * stopLoss > .01 + 1e-10
         || p.input_session !== report.latest_session || !p.valid_until || !report.decision_at || !report.provenance.captured_at) return false;
     const decision = Date.parse(report.decision_at), capture = Date.parse(report.provenance.captured_at), now = Date.now();
-    return decision <= now && capture <= decision && Date.parse(p.derived_at) <= now && Date.parse(p.valid_until) === decision + 86400000;
+    return decision <= now + maxServerClockAheadMs && capture <= decision && Date.parse(p.derived_at) <= now + maxServerClockAheadMs && Date.parse(p.valid_until) === decision + 86400000;
 }
 function validOpportunities(report: AlphaLabReport): boolean {
     const r = report as unknown as Record<string, unknown>;
