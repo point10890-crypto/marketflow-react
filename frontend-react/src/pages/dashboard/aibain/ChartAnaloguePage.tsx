@@ -34,7 +34,7 @@ const warningLabels: Record<string, string> = {
 const warningText = (warning: string) => warningLabels[warning] ?? warning;
 
 export default function ChartAnaloguePage() {
-    const { token } = useAuth();
+    const { token, user, loading: authLoading } = useAuth();
     const [params, setParams] = useSearchParams();
     const code = params.get('code') ?? '003690';
     const [data, setData] = useState<ChartAnaloguePrediction | null>(null);
@@ -81,7 +81,8 @@ export default function ChartAnaloguePage() {
                     <h1 className="ai-page-title">차트 유사 사례</h1>
                     <p className="mt-2 text-sm leading-relaxed text-gray-400">현재 가격 흐름과 닮은 과거 구간의 이후 결과를 비교합니다. 상승 빈도는 과거 표본의 관측값이며 보정된 상승 확률이 아닙니다.</p>
                 </header>
-                <AlphaLabPanel token={token ?? undefined} onSelectSymbol={selectSymbol} />
+                <AlphaLabPanel token={token ?? undefined} onSelectSymbol={selectSymbol}
+                    isAdmin={!authLoading && user?.role === 'admin' && user.status === 'approved' && !!token} />
                 <ChartAnalogueKellyPanel token={token ?? undefined} onSelect={selectSymbol} />
                 <ChartAnalogueTop3Panel token={token ?? undefined} />
                 <ChartAnalogueSymbolSearch symbol={code} token={token ?? undefined} onSelect={selectSymbol} />
