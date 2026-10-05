@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AiBainDashboard from '@/pages/dashboard/aibain/AiBainDashboard';
@@ -88,6 +89,7 @@ function mockDashboardResponses(overview: typeof fullOverview | typeof emptyOver
   mockApi.fetchAuthAPI.mockImplementation(async (path: string) => {
     if (path === '/api/admin/mirofish/aibain/overview') return overview;
     if (path === '/api/admin/mirofish/paper/overview') return null;
+    if (path === '/api/admin/mirofish/alpha-lab') return { schema_version: 1, state: 'missing', generated_at: null, report: null, error: null };
     // Alpha Core is an independent, fail-closed read surface. Keep its calls
     // explicit so they cannot consume the dashboard response by call order.
     if (path.startsWith('/api/kr/alpha-core/')) return null;
@@ -104,7 +106,7 @@ describe('AiBainDashboard', () => {
     const user = userEvent.setup();
     mockDashboardResponses(fullOverview);
 
-    render(<AiBainDashboard />);
+    render(<MemoryRouter><AiBainDashboard /></MemoryRouter>);
 
     await waitFor(() => expect(mockApi.fetchAuthAPI).toHaveBeenCalledWith(
       '/api/admin/mirofish/aibain/overview',
@@ -126,11 +128,24 @@ describe('AiBainDashboard', () => {
     expect(screen.queryByText('알파 스캐너 신규 이벤트')).toBeNull();
   });
 
+  it('keeps the saved opportunity desk visible when overview reads fail', async () => {
+    mockApi.fetchAuthAPI.mockImplementation(async (path: string) => {
+      if (path === '/api/admin/mirofish/aibain/overview' || path === '/api/admin/mirofish/paper/overview') throw new Error('unavailable');
+      if (path === '/api/admin/mirofish/alpha-lab') return { schema_version: 1, state: 'missing', generated_at: null, report: null, error: null };
+      if (path.startsWith('/api/kr/alpha-core/')) return null;
+      throw new Error(`Unexpected endpoint: ${path}`);
+    });
+    render(<MemoryRouter><AiBainDashboard /></MemoryRouter>);
+    expect(await screen.findByRole('region', { name: '유력 종목 데스크' })).toBeInTheDocument();
+    expect(await screen.findByText('데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '저장 결과 새로고침' })).toBeInTheDocument();
+  });
+
   it('renders empty-state messaging when sections have no data', async () => {
     const user = userEvent.setup();
     mockDashboardResponses(emptyOverview);
 
-    render(<AiBainDashboard />);
+    render(<MemoryRouter><AiBainDashboard /></MemoryRouter>);
 
     await waitFor(() => expect(mockApi.fetchAuthAPI).toHaveBeenCalledWith(
       '/api/admin/mirofish/aibain/overview',

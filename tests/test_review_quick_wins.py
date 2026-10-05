@@ -65,6 +65,48 @@ def test_sensitive_prefixes_and_errors_stay_no_store(api_app):
     assert 'ETag' not in auth_error.headers
 
 
+@pytest.mark.parametrize('method', ['GET', 'POST'])
+@pytest.mark.parametrize('role, expected_status', [
+    ('admin', 200),
+    ('anonymous', 401),
+    ('forbidden', 403),
+])
+def test_alpha_lab_global_cache_policy_retains_private_no_store(
+    api_app, monkeypatch, method, role, expected_status,
+):
+    """The app-wide hook must preserve privacy on allowed and denied responses."""
+    import app.auth.decorators as auth
+    import app.routes.admin_mirofish as routes
+
+    user = None if role == 'anonymous' else SimpleNamespace(
+        id=1, email='fixture@example.test', status='approved',
+        is_admin=role == 'admin', is_aibain_active=False,
+    )
+    monkeypatch.setattr(auth, '_get_current_user', lambda: user)
+    saved_status = {
+        'state': 'none', 'processed': 0, 'total': 0, 'started_at': None,
+        'error': None, 'freshness': 'missing', 'report': None,
+    }
+    provider = SimpleNamespace(
+        read_status=lambda: saved_status,
+        start_scan=lambda: saved_status,
+    )
+    monkeypatch.setattr(routes, '_alpha_lab_service', lambda: provider)
+
+    response = api_app.test_client().open('/api/admin/mirofish/alpha-lab', method=method)
+
+    assert response.status_code == expected_status
+    if expected_status == 200:
+        assert response.json == saved_status
+    assert response.cache_control.private is True
+    assert response.cache_control.no_store is True
+    assert response.cache_control.no_cache is True
+    assert response.cache_control.must_revalidate is True
+    assert response.cache_control.max_age == 0
+    assert response.headers['Pragma'] == 'no-cache'
+    assert 'ETag' not in response.headers
+
+
 # ─────────────────────────── LLM circuit breaker ────────────────────────────
 
 # ─────────────────────────── Briefing prompt honesty ─────────────────────────

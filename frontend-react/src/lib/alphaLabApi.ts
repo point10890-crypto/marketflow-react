@@ -1,4 +1,5 @@
 import { fetchAuthAPI, postAuthAPI } from './api';
+import { validateOpportunityEngine, type OpportunityEngine } from './opportunityEngine';
 
 export interface AlphaLabPerformance {
     net_total_return: number | null;
@@ -152,6 +153,7 @@ export interface AlphaLabStatus {
     report: AlphaLabReport | null;
     error: string | null;
     operations?: AlphaLabOperations;
+    opportunity_engine?: OpportunityEngine;
 }
 export interface AlphaLabProposalWindow {
     policy_version: 'next-session-proposal-v1'; input_fingerprint: string; opportunity_audit_hash: string;
@@ -613,6 +615,11 @@ export function validateAlphaLabStatus(value: unknown): AlphaLabStatus {
         || !(value.report === null || validReport(value.report))
         || ['ready', 'held'].includes(String(value.state)) && value.report === null
         || value.operations !== undefined && !validOperations(value.operations, value.report as AlphaLabReport | null)) throw new Error(invalid);
+    if (value.opportunity_engine !== undefined) validateOpportunityEngine(value.opportunity_engine, {
+        input_fingerprint: (value.report as AlphaLabReport | null)?.input_fingerprint,
+        latest_session: (value.report as AlphaLabReport | null)?.latest_session,
+        source_audit_hash: (value.report as AlphaLabReport | null)?.opportunity_scan?.audit_hash,
+    });
     const status = value as unknown as AlphaLabStatus;
     if (!status.report) return { ...status, operations: status.operations ? { ...status.operations, monitoring: liveAlphaLabMonitoring(status)! } : undefined };
     const normalizeProposal = (row: AlphaLabCandidate, opportunity = false) => {

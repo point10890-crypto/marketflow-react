@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import AdminStockAnalysisPanel from './AdminStockAnalysisPanel';
+import OpportunityBoard from './OpportunityBoard';
+import { opportunityClockExpirations } from '@/lib/opportunityEngine';
 import { fetchAlphaLab, liveAlphaLabMonitoring, startAlphaLab, type AlphaLabAnalystId, type AlphaLabCandidate, type AlphaLabMonitorQuote, type AlphaLabOperations, type AlphaLabOpportunityCandidate, type AlphaLabOpportunityPhase, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
 
 const numberPct = (value: number | null, signed = false) => value === null ? '대기' : `${signed && value > 0 ? '+' : ''}${(value * 100).toFixed(1)}%`;
@@ -297,7 +299,7 @@ function Evidence({ report, previous, blocked, now, monitoring, operations, onSe
     </div>;
 }
 
-export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false }: { token?: string; onSelectSymbol?: (symbol: string) => void; isAdmin?: boolean }) {
+export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false, desk = false }: { token?: string; onSelectSymbol?: (symbol: string) => void; isAdmin?: boolean; desk?: boolean }) {
     const heading = useId();
     const generation = useRef(0);
     const inFlight = useRef<number | null>(null);
@@ -312,6 +314,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false }
     const [currentTime, setCurrentTime] = useState(Date.now);
     const accept = (next: AlphaLabStatus) => setSnapshot(old => ({ ...next,
         report: next.report ?? (['running', 'failed'].includes(next.state) ? old?.report ?? null : null),
+        opportunity_engine: next.opportunity_engine ?? (['running', 'failed'].includes(next.state) ? old?.opportunity_engine : undefined),
     }));
     useEffect(() => {
         mounted.current = true;
@@ -319,13 +322,14 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false }
         const current = ++generation.current;
         inFlight.current = current;
         if (previousToken.current !== token) { previousToken.current = token; setSnapshot(null); }
-        setReading(true); setPosting(false); setPolling(false); setError('');
+        setReading(true); setPosting(false); setPolling(false); setError(''); setCurrentTime(Date.now());
         fetchAlphaLab(token).then(next => { if (active && current === generation.current) accept(next); })
             .catch(() => { if (active && current === generation.current) setError('매수 후보 검출 결과를 불러오지 못했습니다. 다시 조회해 주세요.'); })
             .finally(() => { if (active && current === generation.current) { inFlight.current = null; setReading(false); } });
         return () => { active = false; mounted.current = false; ++generation.current; };
     }, [token, revision]);
-    const state = snapshot?.state;
+    const visibleSnapshot = previousToken.current === token ? snapshot : null;
+    const state = visibleSnapshot?.state;
     useEffect(() => {
         const recheckTime = () => setCurrentTime(Date.now());
         const recheckVisible = () => { if (document.visibilityState === 'visible') recheckTime(); };
@@ -337,7 +341,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false }
         };
     }, []);
     useEffect(() => {
-        const report = snapshot?.report;
+        const report = visibleSnapshot?.report;
         if (!report) return;
         const now = Date.now();
         const expiryCandidates = [...report.candidates, ...report.buy_candidates ?? []];
@@ -345,18 +349,19 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false }
             ? [Date.parse(row.proposal.valid_until), ...(report.provenance.captured_at ? [sourceExpiry(report.provenance.captured_at)] : []),
                 ...(report.latest_session ? [sourceExpiry(`${report.latest_session}T00:00:00+09:00`)] : []),
                 ...(report.universe.scope_date ? [sourceExpiry(`${report.universe.scope_date}T00:00:00+09:00`)] : [])] : []);
-        for (const quote of snapshot?.operations?.monitoring.quotes ?? []) {
+        for (const quote of visibleSnapshot?.operations?.monitoring.quotes ?? []) {
             if (quote.price === null) continue;
             for (const time of [quote.quote_at, quote.fetched_at]) if (time) expirations.push(Date.parse(time) + 420000);
         }
-        if (snapshot?.operations) expirations.push(Date.parse(`${new Date(now + 9 * 3600000).toISOString().slice(0, 10)}T15:30:00+09:00`));
+        if (visibleSnapshot?.operations) expirations.push(Date.parse(`${new Date(now + 9 * 3600000).toISOString().slice(0, 10)}T15:30:00+09:00`));
+        if (visibleSnapshot?.opportunity_engine) expirations.push(...opportunityClockExpirations(visibleSnapshot.opportunity_engine));
         const next = Math.min(...expirations.filter(value => value > now));
         if (!Number.isFinite(next)) return;
         const timer = setTimeout(() => setCurrentTime(Date.now()), Math.min(next - now, 2147483647));
         return () => clearTimeout(timer);
-    }, [snapshot, currentTime]);
+    }, [visibleSnapshot, currentTime]);
     useEffect(() => {
-        if (reading || posting) return;
+        if (desk || reading || posting) return;
         let active = true;
         let timer: ReturnType<typeof setTimeout>;
         const poll = async () => {
@@ -377,9 +382,9 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false }
         };
         timer = setTimeout(poll, state === 'running' ? 4000 : 30000);
         return () => { active = false; clearTimeout(timer); };
-    }, [state, token, revision, reading, posting]);
+    }, [state, token, revision, reading, posting, desk]);
     const start = async () => {
-        if (reading || posting || state === 'running' || inFlight.current !== null) return;
+        if (desk || reading || posting || state === 'running' || inFlight.current !== null) return;
         const current = ++generation.current;
         inFlight.current = current;
         setPosting(true); setError('');
@@ -390,17 +395,20 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false }
     const problem = error || (state === 'failed' ? '매수 후보 검출을 완료하지 못했습니다. 이전 결과를 보존했습니다. 자료 상태를 확인하고 다시 실행해 주세요.' : '');
     const blocked = reading || posting || !['ready', 'held'].includes(state ?? '') || !!error;
     const now = Math.max(currentTime, Date.now());
-    const monitoring = snapshot ? liveAlphaLabMonitoring(snapshot, now, blocked) : null;
+    const monitoring = visibleSnapshot ? liveAlphaLabMonitoring(visibleSnapshot, now, blocked) : null;
     return <section aria-labelledby={heading} className="ai-panel min-w-0 border border-[#30363f] p-4 text-white sm:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h2 id={heading} className="ai-section-title text-lg">에이전트 매매 제안</h2><p className="mt-2 text-xs leading-relaxed text-gray-400">종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 마지막 종가로 계산한 참고 제안입니다.</p></div><span className="rounded border border-[#365372] bg-[#1b2c40] px-2 py-1 text-[11px] font-semibold text-[#acd3ff]">직접 판단용 · 주문 실행 없음</span></div>
-        <div className="my-4 flex flex-wrap gap-2"><button type="button" onClick={start} disabled={reading || posting || polling || state === 'running'} className={`${buttonClass} bg-[#1b2c40]`}>매수 후보 검출</button><button type="button" onClick={() => { if (inFlight.current === null) { setReading(true); setRevision(value => value + 1); } }} disabled={reading || posting || polling} className={buttonClass}>저장 결과 새로고침</button></div>
-        {snapshot?.operations && <OperationsBand snapshot={snapshot} monitoring={monitoring} now={now} />}
+        <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h2 id={heading} className="ai-section-title text-lg">{desk ? '유력 종목 데스크' : '에이전트 매매 제안'}</h2><p className="mt-2 text-xs leading-relaxed text-gray-400">{desk ? '저장된 분석에서 선별한 최대 세 종목의 가격 조건과 참고 비중을 확인하세요.' : visibleSnapshot?.opportunity_engine ? '종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 저장 종가 또는 새 시세로 계산한 참고 계획입니다.' : '종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 마지막 종가로 계산한 참고 제안입니다.'}</p></div><span className="rounded border border-[#365372] bg-[#1b2c40] px-2 py-1 text-[11px] font-semibold text-[#acd3ff]">직접 판단용 · 주문 실행 없음</span></div>
+        <div className="my-4 flex flex-wrap gap-2">{!desk && <button type="button" onClick={start} disabled={reading || posting || polling || state === 'running'} className={`${buttonClass} bg-[#1b2c40]`}>매수 후보 검출</button>}<button type="button" onClick={() => { if (inFlight.current === null) { setReading(true); setRevision(value => value + 1); } }} disabled={reading || posting || polling} className={buttonClass}>저장 결과 새로고침</button></div>
+        {!desk && visibleSnapshot?.operations && <OperationsBand snapshot={visibleSnapshot} monitoring={monitoring} now={now} />}
         {reading && <p role="status" className="min-h-16 py-4 text-xs text-gray-400">매수 후보 검출 결과 확인 중…</p>}
-        {!reading && (posting || state === 'running') && <p role="status" className="mb-4 rounded-lg border border-[#365372] bg-[#1b2c40] p-3 text-xs text-[#acd3ff]">매수 후보 검출 진행 중 · 완료된 저장 결과를 자동 확인합니다.</p>}
-        {isAdmin && <AdminStockAnalysisPanel />}
+        {!reading && (posting || state === 'running') && <p role="status" className="mb-4 rounded-lg border border-[#365372] bg-[#1b2c40] p-3 text-xs text-[#acd3ff]">{desk ? '분석 결과를 저장하는 중입니다. 완료 후 저장 결과 새로고침으로 확인해 주세요.' : '매수 후보 검출 진행 중 · 완료된 저장 결과를 자동 확인합니다.'}</p>}
+        {!desk && isAdmin && <AdminStockAnalysisPanel />}
         {problem && <p role="alert" className="mb-4 rounded-lg border border-amber-400/25 p-3 text-xs leading-relaxed text-amber-200">{problem}</p>}
-        {!reading && !snapshot?.report && !problem && state !== 'running' && !posting && <p className="py-4 text-xs leading-relaxed text-gray-400">저장된 매수 후보 검출 결과가 없습니다. 매수 후보 검출 버튼으로 새 검사를 시작해 주세요.</p>}
-        {snapshot?.report && <Evidence report={snapshot.report} previous={state === 'running' || state === 'failed' || !!error}
-            blocked={blocked} now={now} monitoring={monitoring} operations={snapshot.operations} onSelectSymbol={onSelectSymbol} />}
+        {!reading && (desk ? !visibleSnapshot?.opportunity_engine : !visibleSnapshot?.report) && !problem && state !== 'running' && !posting && <p className="py-4 text-xs leading-relaxed text-gray-400">{desk ? '저장된 유력 종목 후보가 없습니다. 결과가 준비되면 저장 결과 새로고침으로 확인해 주세요.' : '저장된 매수 후보 검출 결과가 없습니다. 매수 후보 검출 버튼으로 새 검사를 시작해 주세요.'}</p>}
+        {visibleSnapshot?.opportunity_engine && <OpportunityBoard board={visibleSnapshot.opportunity_engine} now={now} blocked={blocked} onSelectSymbol={onSelectSymbol} />}
+        {!desk && visibleSnapshot?.report && (visibleSnapshot.opportunity_engine ? <details className="min-w-0 border-t border-[#30363f] pt-2"><summary className={disclosureClass}>이전 연구 제안 · 근거 펼치기</summary><div className="mt-3"><Evidence report={visibleSnapshot.report} previous={state === 'running' || state === 'failed' || !!error}
+            blocked={blocked} now={now} monitoring={monitoring} operations={visibleSnapshot.operations} onSelectSymbol={onSelectSymbol} /></div></details>
+            : <Evidence report={visibleSnapshot.report} previous={state === 'running' || state === 'failed' || !!error}
+            blocked={blocked} now={now} monitoring={monitoring} operations={visibleSnapshot.operations} onSelectSymbol={onSelectSymbol} />)}
     </section>;
 }

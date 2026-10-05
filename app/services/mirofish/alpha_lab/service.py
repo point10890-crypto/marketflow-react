@@ -137,11 +137,73 @@ def discover_opportunities(*args, **kwargs):
     return discover(*args, **kwargs)
 
 
+def build_opportunity_board(*args, **kwargs):
+    from .decision_engine import build_opportunity_board as build
+    return build(*args, **kwargs)
+
+
+def _held_opportunity_board(report):
+    fingerprint = report['input_fingerprint']
+    audit = report['opportunity_scan']['audit_hash']
+    identity = store._hash(dict(policy='profit-opportunity-v1', input_fingerprint=fingerprint,
+                               source_audit_hash=audit, stage='unavailable'))
+    return dict(schema_version=1, policy_version='profit-opportunity-v1', decision_id=identity,
+        input_fingerprint=fingerprint, source_audit_hash=audit, generated_at=report['decision_at'],
+        latest_session=report['latest_session'], entry_session=None, valid_until=None, status='held',
+        research_only=True, live_orders=False, coverage=dict(inspected=0, eligible=0, selected=0),
+        candidates=[], alternatives=[], reasons=['opportunity_engine_unavailable'],
+        stages=[dict(id='data', status='unavailable', detail='분석 자료를 갱신한 후 다시 확인해 주세요.', count=0)])
+
+
+def _add_decision_engine(root, report, inputs, discovery):
+    from . import opportunity_store
+    try:
+        board = build_opportunity_board(discovery, inputs['prices_by_symbol'], report, now=report['decision_at'])
+        report['opportunity_board'] = opportunity_store.register_board(root, board)
+        view = opportunity_store.attach_saved(dict(state='held', report=report), root, now=report['decision_at'])
+        report['opportunity_board'] = view['report']['opportunity_board']
+    except Exception as exc:
+        logging.getLogger(__name__).warning('Opportunity engine held (%s)', type(exc).__name__)
+        report['opportunity_board'] = _held_opportunity_board(report)
+    _add_leadership_context(root, report, inputs)
+
+
+def _add_leadership_context(root, report, inputs):
+    # Descriptive evidence has a separate immutable audit. It cannot change or
+    # reissue a previously sealed trade decision, plan, clock or position size.
+    from copy import deepcopy
+    from .leadership_context import build_leadership_context
+    from .leadership_evidence import public_leadership_context
+    try:
+        board = report['opportunity_board']
+        prices = {symbol: inputs['prices_by_symbol'].get(symbol, []) for symbol in inputs['names']}
+        context = build_leadership_context(prices, names=inputs['names'],
+            as_of=inputs['latest_session'], input_fingerprint=inputs['input_fingerprint'],
+            source_audit_hash=board['source_audit_hash'],
+            selected_symbols=[row['symbol'] for row in board['candidates']])
+        context = public_leadership_context(context, board)
+        if context is None:
+            raise ValueError('leadership_context_invalid')
+        audit = dict(schema_version=1, context=context, provenance=deepcopy(inputs['provenance']))
+        digest = store._hash(audit)
+        path = Path(root)/'opportunities'/'leadership-runs'/f"{inputs['latest_session']}-{digest}.json"
+        if not path.exists():
+            store._write(path, audit)
+        elif store._hash(store._read(path)) != digest:
+            raise ValueError('leadership_context_integrity')
+        board['leadership_context'] = context
+    except Exception as exc:
+        logging.getLogger(__name__).warning('Leadership context unavailable (%s)', type(exc).__name__)
+
+
 def _add_opportunities(root, report, inputs):
     from copy import deepcopy
     from .proposals import present_status
     discovery = discover_opportunities(inputs['prices_by_symbol'], names=inputs['names'],
-                                      as_of=inputs['latest_session'])
+                                      as_of=inputs['latest_session'], candidate_limit=100)
+    all_discovery = deepcopy(discovery)
+    # The original BUY3 artifact and both old journals keep their exact identity.
+    discovery['candidates'] = discovery['candidates'][:3]
     digest = store._hash(discovery)
     path = Path(root)/'opportunities'/'runs'/f"{inputs['latest_session']}-{inputs['input_fingerprint'][:12]}-{digest}.json"
     if not path.exists():
@@ -184,6 +246,7 @@ def _add_opportunities(root, report, inputs):
                                              if row.get('proposal', {}).get('action') == 'buy'])
     public['forward'] = store.observe_and_freeze(Path(root)/'opportunities', forward_report,
                                                 inputs['prices_by_symbol'], now=report['decision_at'])
+    _add_decision_engine(root, report, inputs, all_discovery)
 
 def _execute(root):
     try:
@@ -217,10 +280,22 @@ def _execute(root):
         return store.set_failure(root)
 
 
-def read_status():
+def read_status(*, now=None):
     # Saved projections only: no quote/source acquisition, fitting or writes.
     from .monitor import attach_operations
-    return attach_operations(store.read_status(ROOT), ROOT)
+    from . import opportunity_store
+    from .decision_engine import project_opportunity_board
+    status = attach_operations(store.read_status(ROOT, now=now), ROOT, now=now)
+    status = opportunity_store.attach_saved(status, ROOT, now=now)
+    board = (status.get('report') or {}).get('opportunity_board')
+    try:
+        snapshot = opportunity_store.read_quote_snapshot(ROOT, board)
+    except (OSError, ValueError, KeyError, TypeError):
+        snapshot = None
+        if isinstance(board, dict):
+            board.update(status='held', reasons=list(dict.fromkeys(
+                [*board.get('reasons', []), 'opportunity_store_unavailable'])))
+    return project_opportunity_board(status, now=now, quote_snapshot=snapshot)
 
 
 def scan_once(root=None):
@@ -234,11 +309,12 @@ def scan_once(root=None):
 
 
 def start_scan():
+    from .decision_engine import project_opportunity_board
     root = ROOT; lock = _lock(root)
     try:
         lock.acquire(timeout=0)
     except Timeout:
-        return store.read_status(root)
+        return project_opportunity_board(store.read_status(root))
     try:
         status = store.set_running(root)
         def run():
@@ -247,7 +323,7 @@ def start_scan():
             finally:
                 lock.release()
         threading.Thread(target=run, name='alpha-lab-research', daemon=True).start()
-        return status
+        return project_opportunity_board(status)
     except Exception:
         lock.release()
         raise
