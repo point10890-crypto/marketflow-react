@@ -288,7 +288,7 @@ def create_app(config=None):
                 or response.status_code >= 400
                 or path.startswith(_NO_STORE_PREFIXES)
             ):
-                response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+                response.headers['Cache-Control'] = 'private, no-store, no-cache, must-revalidate, max-age=0'
                 response.headers['Pragma'] = 'no-cache'
             elif not response.headers.get('Cache-Control'):
                 # API responses may become user-specific as access rules evolve.
