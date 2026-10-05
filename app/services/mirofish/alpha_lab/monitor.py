@@ -464,7 +464,7 @@ def _current_report(root, now):
     return report, binding, None
 
 
-def run_monitor(root, provider, now=None):
+def _run_legacy_monitor(root, provider, now=None):
     """Observe official opening/current references and save only monitor artifacts."""
     current = _now(now)
     directory = Path(root)/'monitor'; directory.mkdir(parents=True, exist_ok=True)
@@ -646,3 +646,101 @@ def attach_operations(status, root, now=None):
                 opportunity_audit_hash=binding['opportunity_audit_hash'], origin_at=binding['origin_at'],
                 entry_session=None, valid_until=None, calendar_source=CALENDAR_SOURCE)
         return result
+
+
+def _observe_opportunity_board(root, provider, operations, now=None):
+    """Add bounded current-price references without changing legacy monitor output."""
+    from . import opportunity_store
+
+    # Use the legacy post-request clock. Sparse reports add no provider calls.
+    current = _timestamp(operations.get('generated_at'))
+    if current is None:
+        return
+    source = store.read_status(root, now=_stamp(current))
+    report = source.get('report') or {}
+    board = report.get('opportunity_board')
+    if (source.get('state') not in {'ready', 'held'} or not isinstance(board, dict)
+            or not isinstance(board.get('candidates'), list)):
+        return
+    if (board.get('input_fingerprint') != report.get('input_fingerprint')
+            or board.get('source_audit_hash') != (report.get('opportunity_scan') or {}).get('audit_hash')):
+        return
+    view = attach_operations(source, root, now=_stamp(current))
+    window = (view.get('report') or {}).get('proposal_window') or {}
+    saved_operations = view['operations']
+    cadence = saved_operations['cadence']
+    market = _calendar_view(_load(root, 'calendar'), current)
+    calendar = dict(status=cadence['calendar_status'], source=CALENDAR_SOURCE,
+        checked_at=cadence['calendar_checked_at'], is_open=market['is_open'],
+        market_state=cadence['market_state'], entry_session=window.get('entry_session'),
+        valid_until=window.get('valid_until'))
+    binding = opportunity_store._binding(board)
+    snapshot = dict(binding, observed_at=_stamp(current), calendar=calendar, quotes={}, reasons=[])
+    session = _day(window.get('entry_session'))
+    deadline = _timestamp(window.get('valid_until'))
+    local = current.astimezone(KST)
+    eligible_clock = (calendar['status'] == 'ready' and calendar['is_open'] is True
+        and session == local.date() and deadline and current < deadline
+        and time(9) <= local.time().replace(tzinfo=None) < time(15,30)
+        and saved_operations['monitoring']['status'] != 'failed')
+    if eligible_clock:
+        # Quotes for the original frozen BUY3 were fetched by the old monitor.
+        # Reuse only its identity-bound saved projection; add at most three new calls.
+        legacy = {row['symbol']: row for row in saved_operations['monitoring']['quotes']}
+        failed = False
+        for candidate in board['candidates'][:3]:
+            symbol = candidate['symbol']
+            row = legacy.get(symbol)
+            try:
+                if row is not None:
+                    raw = {key: deepcopy(row.get(key)) for key in
+                        ('symbol', 'price', 'opening_price', 'quote_at', 'fetched_at', 'source')}
+                else:
+                    raw = provider.fetch_quote(symbol, _stamp(current) if now is not None else None)
+                    current = current if now is not None else _now(None)
+                problem = _validate_quote(raw, symbol, current)
+                if problem:
+                    raise ValueError(problem)
+                snapshot['quotes'][symbol] = {key: deepcopy(raw[key]) for key in
+                    ('symbol', 'price', 'opening_price', 'quote_at', 'fetched_at', 'source')}
+            except Exception:
+                failed = True
+        if failed:
+            snapshot.update(quotes={}, reasons=['quote_unavailable'])
+    elif saved_operations['monitoring']['status'] == 'failed':
+        snapshot['reasons'] = ['quote_unavailable']
+    snapshot['observed_at'] = _stamp(current)
+    # Recheck the complete raw board and source after all external requests.
+    latest = store.read_status(root, now=_stamp(current))
+    latest_report = latest.get('report') or {}
+    latest_board = latest_report.get('opportunity_board')
+    if (latest.get('state') not in {'ready', 'held'} or not isinstance(latest_board, dict)
+            or opportunity_store._stable(latest_board) != opportunity_store._stable(board)
+            or latest_report.get('input_fingerprint') != report.get('input_fingerprint')
+            or (latest_report.get('opportunity_scan') or {}).get('audit_hash') != board['source_audit_hash']):
+        return
+    fresh_view = attach_operations(latest, root, now=_stamp(current))
+    final_window = (fresh_view.get('report') or {}).get('proposal_window') or {}
+    final_calendar = _calendar_view(_load(root,'calendar'), current)
+    if (final_window.get('entry_session') != calendar['entry_session']
+            or final_window.get('valid_until') != calendar['valid_until']
+            or final_calendar['calendar_status'] != calendar['status']):
+        snapshot.update(quotes={}, reasons=['calendar_revision'])
+        snapshot['calendar']['status'] = 'held'
+    elif (final_calendar['is_open'] is not True
+            or current.astimezone(KST).time().replace(tzinfo=None) >= time(15,30)):
+        snapshot['quotes'] = {}
+    opportunity_store.save_quote_snapshot(root, board, snapshot, now=_stamp(current))
+
+
+def run_monitor(root, provider, now=None):
+    """Retain the original return value, adding an isolated opportunity snapshot."""
+    result = _run_legacy_monitor(root, provider, now=now)
+    try:
+        _observe_opportunity_board(root, provider, result, now=now)
+    except Exception as exc:
+        # The saved raw/new guidance holds when its isolated evidence is missing;
+        # the two original journals and the monitor return value are untouched.
+        import logging
+        logging.getLogger(__name__).warning('Opportunity observations held (%s)', type(exc).__name__)
+    return result

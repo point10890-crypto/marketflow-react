@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import AdminStockAnalysisPanel from './AdminStockAnalysisPanel';
+import OpportunityBoard from './OpportunityBoard';
+import { opportunityClockExpirations } from '@/lib/opportunityEngine';
 import { fetchAlphaLab, liveAlphaLabMonitoring, startAlphaLab, type AlphaLabAnalystId, type AlphaLabCandidate, type AlphaLabMonitorQuote, type AlphaLabOperations, type AlphaLabOpportunityCandidate, type AlphaLabOpportunityPhase, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
 
 const numberPct = (value: number | null, signed = false) => value === null ? '대기' : `${signed && value > 0 ? '+' : ''}${(value * 100).toFixed(1)}%`;
@@ -312,6 +314,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false }
     const [currentTime, setCurrentTime] = useState(Date.now);
     const accept = (next: AlphaLabStatus) => setSnapshot(old => ({ ...next,
         report: next.report ?? (['running', 'failed'].includes(next.state) ? old?.report ?? null : null),
+        opportunity_engine: next.opportunity_engine ?? (['running', 'failed'].includes(next.state) ? old?.opportunity_engine : undefined),
     }));
     useEffect(() => {
         mounted.current = true;
@@ -350,6 +353,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false }
             for (const time of [quote.quote_at, quote.fetched_at]) if (time) expirations.push(Date.parse(time) + 420000);
         }
         if (snapshot?.operations) expirations.push(Date.parse(`${new Date(now + 9 * 3600000).toISOString().slice(0, 10)}T15:30:00+09:00`));
+        if (snapshot?.opportunity_engine) expirations.push(...opportunityClockExpirations(snapshot.opportunity_engine));
         const next = Math.min(...expirations.filter(value => value > now));
         if (!Number.isFinite(next)) return;
         const timer = setTimeout(() => setCurrentTime(Date.now()), Math.min(next - now, 2147483647));
@@ -392,7 +396,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false }
     const now = Math.max(currentTime, Date.now());
     const monitoring = snapshot ? liveAlphaLabMonitoring(snapshot, now, blocked) : null;
     return <section aria-labelledby={heading} className="ai-panel min-w-0 border border-[#30363f] p-4 text-white sm:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h2 id={heading} className="ai-section-title text-lg">에이전트 매매 제안</h2><p className="mt-2 text-xs leading-relaxed text-gray-400">종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 마지막 종가로 계산한 참고 제안입니다.</p></div><span className="rounded border border-[#365372] bg-[#1b2c40] px-2 py-1 text-[11px] font-semibold text-[#acd3ff]">직접 판단용 · 주문 실행 없음</span></div>
+        <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h2 id={heading} className="ai-section-title text-lg">에이전트 매매 제안</h2><p className="mt-2 text-xs leading-relaxed text-gray-400">{snapshot?.opportunity_engine ? '종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 저장 종가 또는 새 시세로 계산한 참고 계획입니다.' : '종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 마지막 종가로 계산한 참고 제안입니다.'}</p></div><span className="rounded border border-[#365372] bg-[#1b2c40] px-2 py-1 text-[11px] font-semibold text-[#acd3ff]">직접 판단용 · 주문 실행 없음</span></div>
         <div className="my-4 flex flex-wrap gap-2"><button type="button" onClick={start} disabled={reading || posting || polling || state === 'running'} className={`${buttonClass} bg-[#1b2c40]`}>매수 후보 검출</button><button type="button" onClick={() => { if (inFlight.current === null) { setReading(true); setRevision(value => value + 1); } }} disabled={reading || posting || polling} className={buttonClass}>저장 결과 새로고침</button></div>
         {snapshot?.operations && <OperationsBand snapshot={snapshot} monitoring={monitoring} now={now} />}
         {reading && <p role="status" className="min-h-16 py-4 text-xs text-gray-400">매수 후보 검출 결과 확인 중…</p>}
@@ -400,7 +404,10 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false }
         {isAdmin && <AdminStockAnalysisPanel />}
         {problem && <p role="alert" className="mb-4 rounded-lg border border-amber-400/25 p-3 text-xs leading-relaxed text-amber-200">{problem}</p>}
         {!reading && !snapshot?.report && !problem && state !== 'running' && !posting && <p className="py-4 text-xs leading-relaxed text-gray-400">저장된 매수 후보 검출 결과가 없습니다. 매수 후보 검출 버튼으로 새 검사를 시작해 주세요.</p>}
-        {snapshot?.report && <Evidence report={snapshot.report} previous={state === 'running' || state === 'failed' || !!error}
-            blocked={blocked} now={now} monitoring={monitoring} operations={snapshot.operations} onSelectSymbol={onSelectSymbol} />}
+        {snapshot?.opportunity_engine && <OpportunityBoard board={snapshot.opportunity_engine} now={now} blocked={blocked} onSelectSymbol={onSelectSymbol} />}
+        {snapshot?.report && (snapshot.opportunity_engine ? <details className="min-w-0 border-t border-[#30363f] pt-2"><summary className={disclosureClass}>이전 연구 제안 · 근거 펼치기</summary><div className="mt-3"><Evidence report={snapshot.report} previous={state === 'running' || state === 'failed' || !!error}
+            blocked={blocked} now={now} monitoring={monitoring} operations={snapshot.operations} onSelectSymbol={onSelectSymbol} /></div></details>
+            : <Evidence report={snapshot.report} previous={state === 'running' || state === 'failed' || !!error}
+            blocked={blocked} now={now} monitoring={monitoring} operations={snapshot.operations} onSelectSymbol={onSelectSymbol} />)}
     </section>;
 }

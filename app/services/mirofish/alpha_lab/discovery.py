@@ -157,12 +157,14 @@ def _prepared(prices_by_symbol, as_of):
     return groups
 
 
-def discover_opportunities(prices_by_symbol, *, names=None, as_of=None, reference_calendar=None):
+def discover_opportunities(prices_by_symbol, *, names=None, as_of=None, reference_calendar=None, candidate_limit=3):
     """Inspect current setups with one fixed conditional evidence policy.
 
     Rank/choose on calibration stress mean only; confirmation is pass/fail.
     Quarter net-Kelly is capped at 5%, and grants no automated approval.
     """
+    if isinstance(candidate_limit, bool) or not isinstance(candidate_limit, int) or not 1 <= candidate_limit <= 100:
+        raise ValueError('candidate_limit must be an integer from one through 100')
     if as_of is not None:
         _day(as_of)
     groups = _prepared(prices_by_symbol, as_of)
@@ -266,7 +268,7 @@ def discover_opportunities(prices_by_symbol, *, names=None, as_of=None, referenc
                 calibration=dict(cal['summary']), confirmation=dict(phase['summary']),
                 retrospective=True, independent_validation=False)))
     survivors.sort(key=lambda row: (-row['score'], row['symbol']))
-    result['eligible_count'], result['candidates'], result['diagnostics'] = len(survivors), survivors[:3], dict(diagnostics)
+    result['eligible_count'], result['candidates'], result['diagnostics'] = len(survivors), survivors[:candidate_limit], dict(diagnostics)
     if not survivors:
         result['reasons'].append('no_positive_current_setup_evidence')
     return result
