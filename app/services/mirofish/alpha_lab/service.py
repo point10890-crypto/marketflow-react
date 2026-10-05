@@ -165,6 +165,35 @@ def _add_decision_engine(root, report, inputs, discovery):
     except Exception as exc:
         logging.getLogger(__name__).warning('Opportunity engine held (%s)', type(exc).__name__)
         report['opportunity_board'] = _held_opportunity_board(report)
+    _add_leadership_context(root, report, inputs)
+
+
+def _add_leadership_context(root, report, inputs):
+    # Descriptive evidence has a separate immutable audit. It cannot change or
+    # reissue a previously sealed trade decision, plan, clock or position size.
+    from copy import deepcopy
+    from .leadership_context import build_leadership_context
+    from .leadership_evidence import public_leadership_context
+    try:
+        board = report['opportunity_board']
+        prices = {symbol: inputs['prices_by_symbol'].get(symbol, []) for symbol in inputs['names']}
+        context = build_leadership_context(prices, names=inputs['names'],
+            as_of=inputs['latest_session'], input_fingerprint=inputs['input_fingerprint'],
+            source_audit_hash=board['source_audit_hash'],
+            selected_symbols=[row['symbol'] for row in board['candidates']])
+        context = public_leadership_context(context, board)
+        if context is None:
+            raise ValueError('leadership_context_invalid')
+        audit = dict(schema_version=1, context=context, provenance=deepcopy(inputs['provenance']))
+        digest = store._hash(audit)
+        path = Path(root)/'opportunities'/'leadership-runs'/f"{inputs['latest_session']}-{digest}.json"
+        if not path.exists():
+            store._write(path, audit)
+        elif store._hash(store._read(path)) != digest:
+            raise ValueError('leadership_context_integrity')
+        board['leadership_context'] = context
+    except Exception as exc:
+        logging.getLogger(__name__).warning('Leadership context unavailable (%s)', type(exc).__name__)
 
 
 def _add_opportunities(root, report, inputs):

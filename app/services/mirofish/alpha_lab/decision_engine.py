@@ -510,6 +510,10 @@ def project_opportunity_board(status, *, now=None, quote_snapshot=None):
         valid_rows = False
         board['candidates'] = []
     board['coverage']['selected'] = len(board['candidates'])
+    from .leadership_evidence import public_leadership_context
+    leadership = public_leadership_context(raw.get('leadership_context'), board)
+    if leadership is not None:
+        board['leadership_context'] = leadership
     # Retain only a canonical original-plan view for safe repeated projection.
     # In particular, the observed current-price plan below never overwrites it.
     public_raw = deepcopy(board)

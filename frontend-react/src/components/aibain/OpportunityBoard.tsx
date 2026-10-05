@@ -1,4 +1,4 @@
-import { effectiveOpportunityEngine, opportunityActionLabels, type OpportunityEngine, type OpportunityStrategy } from '@/lib/opportunityEngine';
+import { effectiveOpportunityEngine, opportunityActionLabels, type LeadershipObservation, type OpportunityEngine, type OpportunityStrategy } from '@/lib/opportunityEngine';
 
 const money = (value: number | null) => value === null ? '관측 대기' : `${Math.round(value).toLocaleString('ko-KR')}원`;
 const pct = (value: number, signed = false) => `${signed && value > 0 ? '+' : ''}${(value * 100).toFixed(1)}%`;
@@ -11,12 +11,30 @@ const reasons: Record<string, string> = { correlation_unavailable: '종목 간 �
     window_expired: '최초 진입 유효기간 종료', source_stale: '입력 자료 갱신 대기', quote_stale: '가격 관측 갱신 대기',
     calendar_unavailable: '공식 거래일 확인 대기', identity_mismatch: '연구 결정과 관측 자료 식별자 확인 대기' };
 const explanation = (codes: string[]) => Array.from(new Set(codes.map(code => reasons[code] ?? '저장 근거의 제한 사항을 확인해야 합니다.'))).join(' · ');
+const observedReturn = (value: number | null) => value === null ? '확인 대기' : pct(value, true);
+const checkNames = { top3: '코호트 상위 3위', fresh: '1개월 +10~40%', trend: '상승 추세', near_high: '52주 고가 75% 이상' } as const;
+const breadthNames = { broad: '상승 확산', mixed: '혼재', weak: '상승 범위 제한', unknown: '확인 자료 부족' } as const;
+function LeadershipDetails({ row, waiting }: { row: LeadershipObservation; waiting: boolean }) {
+    return <div aria-label={`${row.name} 저장 가격 조건`} className="mt-3 space-y-2 border-t border-[#30363f] pt-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+            <span className="rounded border border-[#365372] px-2 py-1 font-semibold tabular-nums text-[#acd3ff]">가격 조건 {row.points}/{row.available_checks}</span>
+            <span className="text-gray-400">{waiting ? '저장 관측 · 갱신 대기' : '저장 가격 관측'}</span>
+        </div>
+        <ul className="flex flex-wrap gap-1.5 text-[11px]">{(Object.keys(checkNames) as Array<keyof typeof checkNames>).map(key => <li key={key}
+            className={`rounded border px-1.5 py-1 ${!waiting && row.checks[key] === true ? 'border-[#365372] text-[#acd3ff]' : 'border-[#30363f] text-gray-400'}`}>
+            {checkNames[key]} · {row.checks[key] === null ? '대기' : row.checks[key] ? '통과' : '미충족'}
+        </li>)}</ul>
+        <p className="text-[11px] leading-relaxed tabular-nums text-gray-400">3개월 {observedReturn(row.ret_63)} · 52주 고가 대비 {observedReturn(row.from_high_252)}</p>
+    </div>;
+}
 
 export default function OpportunityBoard({ board, now, blocked = false, onSelectSymbol }: {
     board: OpportunityEngine; now: number; blocked?: boolean; onSelectSymbol?: (symbol: string) => void;
 }) {
     const view = effectiveOpportunityEngine(board, now, blocked);
     const weight = view.candidates.reduce((sum, row) => sum + row.reference_weight, 0);
+    const leadership = view.leadership_context;
+    const leadershipWaiting = blocked || view.status !== 'ready' || !view.candidates.some(row => row.action === 'entry_candidate');
     return <section aria-label="수익 기회 순위" className="mb-5 min-w-0 space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-3 border-y border-[#365372] py-3">
             <div className="min-w-0"><h3 className="text-base font-semibold text-gray-100">수익 기회 순위</h3>
@@ -25,12 +43,20 @@ export default function OpportunityBoard({ board, now, blocked = false, onSelect
         </div>
         <p className="break-words text-[11px] leading-relaxed text-gray-400">과거 자료로 탐색한 새 순위 정책입니다. 독립 검증과 미래 수익 확률은 인증되지 않았습니다. 진입·체결·계좌 성과를 뜻하지 않습니다.</p>
         {blocked && <p className="text-xs text-amber-200">결과를 확인 중이거나 갱신에 실패하여 현재 진입 안내를 보류합니다.</p>}
+        {leadership && <div role="status" aria-label="저장 가격 분포" className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#30363f] bg-[#121a22] px-3 py-2.5 text-xs">
+            <p className="font-medium text-gray-200">{leadership.market.state === 'unknown' ? '확인 자료 부족' : leadershipWaiting ? '저장 관측 · 갱신 대기' : `저장 코호트 · ${breadthNames[leadership.market.state]}`}</p>
+            <p className="tabular-nums text-gray-400">{leadership.latest_session} 종가 · 품질 코호트 200일선 위 {leadership.cohort.above_ma200}/{leadership.cohort.valid}종목
+                {leadership.market.ratio !== null && ` (${pct(leadership.market.ratio)})`}</p>
+        </div>}
         {view.candidates.length === 0 ? <p className="rounded-lg border border-[#30363f] p-4 text-xs text-gray-300">현재 선택된 기회 후보가 없습니다. 다음 저장 연구와 자료 상태를 확인하세요.</p>
             : <div className="grid min-w-0 gap-3 lg:grid-cols-3">{view.candidates.map(row => <article key={row.opportunity_id}
                 aria-label={`${row.rank}위 ${row.name} ${row.symbol}`} className="min-w-0 rounded-lg border border-[#3b4d5c] bg-[#121a22] p-4">
                 <div className="flex flex-wrap items-start justify-between gap-2"><div className="min-w-0"><span className="text-xs font-semibold text-[#acd3ff]">{row.rank}위</span>
                     <h4 className="mt-1 break-words text-base font-semibold text-gray-100">{row.name}</h4><p className="mt-1 text-[11px] tabular-nums text-gray-400">{row.symbol} · KR · {names[row.strategy_id]}</p></div>
                     <span className={`rounded border px-2 py-1 text-[11px] font-semibold ${row.action === 'entry_candidate' ? 'border-[#365372] text-[#acd3ff]' : 'border-amber-400/25 text-amber-200'}`}>{opportunityActionLabels[row.action]}</span></div>
+                {leadership?.selected.find(observation => observation.symbol === row.symbol) && <LeadershipDetails
+                    row={leadership.selected.find(observation => observation.symbol === row.symbol)!}
+                    waiting={leadershipWaiting || row.action !== 'entry_candidate'} />}
                 <dl className="mt-3 divide-y divide-[#30363f] text-xs tabular-nums">{[
                     ['현재 관측 가격', money(row.current_price)], ['참고 진입 범위', `${money(row.plan.entry_low)} ~ ${money(row.plan.entry_high)}`],
                     ['참고 손절', money(row.plan.stop_price)], ['참고 목표', money(row.plan.target_price)], ['참고 비중', pct(row.reference_weight)],
@@ -52,6 +78,33 @@ export default function OpportunityBoard({ board, now, blocked = false, onSelect
                     <p className="break-all font-mono">결정 {row.decision_id}<br />입력 {row.input_fingerprint}<br />출처 감사 {row.source_audit_hash}</p>
                 </div></details>
             </article>)}</div>}
+        {leadership && leadership.watchlist.length > 0 && <section aria-label="추가 추세 연구" className="space-y-2 border-t border-[#30363f] pt-3">
+            <div className="flex flex-wrap items-end justify-between gap-2"><h4 className="text-sm font-semibold text-gray-200">추가 추세 연구 후보 · {leadership.watchlist.length}종목</h4>
+                <p className="text-[11px] text-gray-400">{leadership.latest_session} 저장 종가 기준{leadershipWaiting ? ' · 갱신 대기' : ''}</p></div>
+            <p className="text-[11px] leading-relaxed text-gray-400">현재 품질 코호트의 상승 추세 관측입니다. 기존 비용·위험 연구 정책의 TOP3와 별도로 비교하세요.</p>
+            <div className="overflow-x-auto rounded border border-[#30363f]" tabIndex={0} aria-label="추세 연구 표 가로 스크롤">
+                <table aria-label="추가 추세 연구 후보" className="w-full min-w-[640px] text-right text-xs tabular-nums">
+                    <thead className="bg-[#151d26] text-gray-400"><tr><th scope="col" className="px-3 py-2 text-left">상승 추세 내 순위 · 종목</th>
+                        <th scope="col" className="px-3 py-2">최근 3개월</th><th scope="col" className="px-3 py-2">52주 고가 대비</th>
+                        <th scope="col" className="px-3 py-2">참고 종가</th><th scope="col" className="px-3 py-2">가격 조건</th></tr></thead>
+                    <tbody>{leadership.watchlist.map(row => <tr key={row.symbol} className="border-t border-[#30363f]">
+                        <th scope="row" className="px-3 py-1 text-left font-normal"><span className="mr-2 text-gray-400">{row.rank ?? '—'}</span>
+                            {onSelectSymbol ? <button type="button" onClick={() => onSelectSymbol(row.symbol)} aria-label={`${row.name} 상세 분석`}
+                                className="min-h-11 rounded px-1 text-left font-medium text-[#acd3ff] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#72b4fb]">{row.name}</button>
+                                : <span className="font-medium text-gray-200">{row.name}</span>}<span className="ml-2 text-[11px] text-gray-400">{row.symbol}</span></th>
+                        <td className="px-3 py-2 text-gray-200">{observedReturn(row.ret_63)}</td><td className="px-3 py-2 text-gray-300">{observedReturn(row.from_high_252)}</td>
+                        <td className="px-3 py-2 font-mono text-gray-200">{money(row.reference_price)}</td><td className="px-3 py-2 text-gray-300">{row.points}/{row.available_checks}</td>
+                    </tr>)}</tbody>
+                </table>
+            </div>
+        </section>}
+        {leadership && <details className="border-t border-[#30363f] pt-1"><summary className={disclosure}>가격 조건 · 추세 관측 기준</summary>
+            <div className="space-y-2 text-[11px] leading-relaxed text-gray-400"><p>품질 코호트 안에서 상승 추세 품질·52주 고가 근접도·3개월 수익을 고정 규칙으로 비교한 관측 순위입니다. 학습된 위원회 점수나 미래 수익 확률이 아닙니다.</p>
+                <p>가격 조건은 코호트 상위 3위, 1개월 +10~40%, 종가 &gt; 50 &gt; 150 &gt; 200일선과 200일선 상승, 52주 고가의 75% 이상입니다. 확인하지 못한 조건은 대기로 남깁니다.</p>
+                <p>TOP3에는 과매도 회복 연구 후보도 포함될 수 있습니다. 네 가지 가격 조건은 추세 주도 관측을 설명하며, 모든 전략에 적용되는 수익 확신 점수가 아닙니다.</p>
+                <p>200일선 위 종목 비율은 저장된 품질 코호트의 가격 분포입니다. KOSPI 지수나 전체 시장 날씨를 뜻하지 않으며, 기존 진입 조건과 Kelly 비중을 바꾸지 않습니다.</p>
+            </div>
+        </details>}
         <details className="border-t border-[#30363f] pt-1"><summary className={disclosure}>검사 단계 · 대안 · 관측 기록</summary><div className="space-y-3 text-[11px] leading-relaxed text-gray-400">
             <ul className="grid gap-x-5 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">{view.stages.map(stage => <li key={stage.id} className="min-w-0"><strong className="text-gray-200">{stageNames[stage.id]} · {stateNames[stage.status]} · {stage.count}건</strong><p className="mt-1 break-words">{stage.detail}</p></li>)}</ul>
             {view.reasons.length > 0 && <p>{explanation(view.reasons)}</p>}

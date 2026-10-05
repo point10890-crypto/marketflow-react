@@ -38,6 +38,19 @@ function statusFixture(board = opportunityFixture()) {
             protocol: { train_end: '2019-12-31', validation_end: '2022-12-31', test_start: '2023-01-01', horizon_sessions: 10, source_references: [] } },
     };
 }
+function leadershipFixture() {
+    const board = opportunityFixture();
+    const observation = (symbol: string, name: string, rank: number) => ({ symbol, name, rank, status: 'ready',
+        reference_price: 60000, ret_21: .2, ret_63: .3, from_high_252: -.04, trend_quality: .15,
+        checks: { top3: rank <= 3, fresh: true, trend: true, near_high: true },
+        points: rank <= 3 ? 4 : 3, available_checks: 4, reasons: [] as string[] });
+    return { ...board, leadership_context: { policy_version: 'quality-leadership-context-v1',
+        input_fingerprint: board.input_fingerprint, source_audit_hash: board.source_audit_hash,
+        latest_session: board.latest_session, status: 'ready', cohort: { inspected: 100, valid: 20, above_ma200: 15, strict_trend: 10 },
+        market: { basis: 'quality_cohort_price_breadth', state: 'broad', ratio: .75 },
+        selected: [observation('005930', '삼성전자', 1)],
+        watchlist: Array.from({ length: 7 }, (_, index) => observation(`10000${index}`, `연구 종목 ${index + 1}`, index + 2)) } };
+}
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(now); api.fetchAuthAPI.mockReset(); api.postAuthAPI.mockReset(); });
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
@@ -150,5 +163,88 @@ describe('investor opportunity board', () => {
         expect(screen.queryByText(/private trace/)).not.toBeInTheDocument();
         api.fetchAuthAPI.mockReturnValue(new Promise(() => {})); view.rerender(<AlphaLabPanel token="new" />);
         expect(screen.queryByRole('region', { name: '수익 기회 순위' })).not.toBeInTheDocument();
+    });
+});
+
+describe('saved leadership observations', () => {
+    it('accepts optional bound observations without changing the original opportunity policy', () => {
+        const value = leadershipFixture();
+        const result = validateOpportunityEngine(value);
+        expect(result).toEqual(value);
+        expect(validateAlphaLabStatus(statusFixture(value)).opportunity_engine).toEqual(value);
+        expect(result.candidates[0].reference_weight).toBe(.04);
+        expect(validateOpportunityEngine(opportunityFixture())).not.toHaveProperty('leadership_context');
+    });
+    it.each([
+        ['foreign input', (v: any) => { v.leadership_context.input_fingerprint = 'f'.repeat(64); }],
+        ['foreign audit', (v: any) => { v.leadership_context.source_audit_hash = 'f'.repeat(64); }],
+        ['foreign session', (v: any) => { v.leadership_context.latest_session = '2026-10-01'; }],
+        ['nonfinite metric', (v: any) => { v.leadership_context.selected[0].ret_63 = Infinity; }],
+        ['unknown metric without cause', (v: any) => { v.leadership_context.selected[0].trend_quality = null; }],
+        ['impossible breadth', (v: any) => { v.leadership_context.market.ratio = .5; }],
+        ['wrong breadth label', (v: any) => { v.leadership_context.market.state = 'weak'; }],
+        ['invalid cohort', (v: any) => { v.leadership_context.cohort.above_ma200 = 21; }],
+        ['mismatched check count', (v: any) => { v.leadership_context.selected[0].points = 3; }],
+        ['invented fresh check', (v: any) => { v.leadership_context.selected[0].ret_21 = -.1; }],
+        ['invented high proximity', (v: any) => { v.leadership_context.selected[0].from_high_252 = -.3; }],
+        ['wrong selected symbol', (v: any) => { v.leadership_context.selected[0].symbol = '000660'; }],
+        ['duplicate selected name', (v: any) => { v.leadership_context.watchlist[0].symbol = '005930'; }],
+        ['duplicate strict rank', (v: any) => { v.leadership_context.watchlist[0].rank = 1; }],
+        ['prose instead of reason code', (v: any) => { v.leadership_context.selected[0].reasons = ['not a reason code']; }],
+        ['falling research row', (v: any) => { v.leadership_context.watchlist[0].checks.trend = false; v.leadership_context.watchlist[0].points = 3; }],
+        ['too many research rows', (v: any) => { v.leadership_context.watchlist.push({ ...v.leadership_context.watchlist[0], symbol: '100007' }); }],
+        ['private extra field', (v: any) => { v.leadership_context.selected[0].private_path = 'C:/private/.env'; }],
+        ['private prose', (v: any) => { v.leadership_context.watchlist[0].name = '<script>secret</script>'; }],
+    ])('rejects %s before rendering observations', (_, mutate) => {
+        const value = leadershipFixture(); mutate(value);
+        expect(() => validateOpportunityEngine(value)).toThrow(/응답 형식/);
+    });
+    it('retains defined own observations when cohort comparisons or trend quality are unavailable', () => {
+        const small = leadershipFixture();
+        Object.assign(small.leadership_context, { status: 'unavailable', cohort: { inspected: 100, valid: 3, above_ma200: 3, strict_trend: 3 },
+            market: { basis: 'quality_cohort_price_breadth', state: 'unknown', ratio: null }, watchlist: [] });
+        Object.assign(small.leadership_context.selected[0], { rank: null, checks: { top3: null, fresh: true, trend: true, near_high: true },
+            points: 3, available_checks: 3 });
+        expect(validateOpportunityEngine(small)).toEqual(small);
+        const flat = leadershipFixture();
+        Object.assign(flat.leadership_context.selected[0], { rank: null, ret_21: 0, ret_63: 0, from_high_252: 0, trend_quality: null,
+            checks: { top3: false, fresh: false, trend: false, near_high: true }, points: 1, available_checks: 4, reasons: ['undefined_trend_quality'] });
+        expect(validateOpportunityEngine(flat)).toEqual(flat);
+    });
+    it('keeps TOP3 trading guidance and shows at most seven distinct research rows without plans', () => {
+        const select = vi.fn();
+        render(<OpportunityBoard board={validateOpportunityEngine(leadershipFixture())} now={now} onSelectSymbol={select} />);
+        const card = screen.getByRole('article', { name: /1위.*삼성전자.*005930/ });
+        expect(card).toHaveTextContent('가격 조건 4/4'); expect(card).toHaveTextContent('3개월 +30.0%');
+        expect(card).toHaveTextContent('52주 고가 대비 -4.0%'); expect(card).toHaveTextContent('1/4 Kelly');
+        expect(screen.getByRole('status', { name: '저장 가격 분포' })).toHaveTextContent('2026-10-02');
+        expect(screen.getByRole('status', { name: '저장 가격 분포' })).toHaveTextContent('75.0%');
+        const table = screen.getByRole('table', { name: '추가 추세 연구 후보' });
+        expect(within(table).getAllByRole('row')).toHaveLength(8);
+        expect(table).not.toHaveTextContent('Kelly'); expect(table).not.toHaveTextContent('손절'); expect(table).not.toHaveTextContent('목표');
+        expect(screen.getAllByRole('article')).toHaveLength(1);
+        fireEvent.click(within(table).getByRole('button', { name: '연구 종목 1 상세 분석' })); expect(select).toHaveBeenCalledWith('100000');
+        expect(screen.queryByText(/강한 후보|오늘의|미래 승률\s*\d/)).not.toBeInTheDocument();
+    });
+    it.each([
+        ['blocked read', now, true], ['stale quote', Date.parse('2026-10-05T01:06:30Z'), false],
+        ['expired entry', Date.parse('2026-10-05T06:30:00Z'), false],
+    ])('labels %s as saved observations awaiting refresh', (_, time, blocked) => {
+        render(<OpportunityBoard board={validateOpportunityEngine(leadershipFixture())} now={time} blocked={blocked} />);
+        const banner = screen.getByRole('status', { name: '저장 가격 분포' });
+        expect(banner).toHaveTextContent('저장 관측 · 갱신 대기'); expect(banner).not.toHaveTextContent('상승 확산');
+        expect(screen.getByRole('article', { name: /1위.*삼성전자/ })).toHaveTextContent('저장 관측 · 갱신 대기');
+    });
+    it('preserves unknown checks and never fills missing research candidates', () => {
+        const value = leadershipFixture();
+        Object.assign(value.leadership_context, { status: 'unavailable', cohort: { inspected: 100, valid: 0, above_ma200: 0, strict_trend: 0 },
+            market: { basis: 'quality_cohort_price_breadth', state: 'unknown', ratio: null }, watchlist: [] });
+        Object.assign(value.leadership_context.selected[0], { status: 'unavailable', rank: null, reference_price: null,
+            ret_21: null, ret_63: null, from_high_252: null, trend_quality: null,
+            checks: { top3: null, fresh: null, trend: null, near_high: null }, points: 0, available_checks: 0, reasons: ['insufficient_history'] });
+        render(<OpportunityBoard board={validateOpportunityEngine(value)} now={now} />);
+        expect(screen.getByRole('article', { name: /1위.*삼성전자/ })).toHaveTextContent('가격 조건 0/0');
+        expect(screen.getByRole('status', { name: '저장 가격 분포' })).toHaveTextContent('확인 자료 부족');
+        expect(screen.queryByRole('table', { name: '추가 추세 연구 후보' })).not.toBeInTheDocument();
     });
 });

@@ -1,5 +1,6 @@
 import '@/pages/dashboard/ai-design.css';
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI } from '@/lib/api';
 import DetectionsCard from './DetectionsCard';
@@ -10,6 +11,7 @@ import ServiceGuardCard from './ServiceGuardCard';
 import CloseLeadersCard from './CloseLeadersCard';
 import AlphaCoreOpsCard from './AlphaCoreOpsCard';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
+import AlphaLabPanel from '@/components/aibain/AlphaLabPanel';
 
 interface AiBainOverview {
     generated_at: string;
@@ -51,6 +53,10 @@ interface AiBainOverview {
 
 export default function AiBainDashboard() {
     const { token } = useAuth();
+    const navigate = useNavigate();
+    const openStockDetail = useCallback((symbol: string) => {
+        if (/^[0-9]{6}$/.test(symbol)) navigate(`/dashboard/ai-bain/chart-predict?code=${symbol}`);
+    }, [navigate]);
     const [overview, setOverview] = useState<AiBainOverview | null>(null);
     const [paper, setPaper] = useState<PaperOverview | null>(null);
     const [loading, setLoading] = useState(true);
@@ -86,59 +92,66 @@ export default function AiBainDashboard() {
 
     return (
         <div className="ai-design min-h-full bg-[#101318] text-white p-4 sm:p-6 lg:p-8">
-            <div className="max-w-3xl mx-auto space-y-5">
-                {/* AI Brain 서비스 고정 네비게이션 — 3개 페이지 공통 */}
-                <AiBrainServiceTabs active="scanner" />
+            <div className="max-w-6xl mx-auto space-y-5">
+                <div className="max-w-3xl mx-auto space-y-5">
+                    {/* AI Brain 서비스 고정 네비게이션 — 3개 페이지 공통 */}
+                    <AiBrainServiceTabs active="scanner" />
 
-                <Header
-                    hitRatePct={overview?.performance?.hit_rate_pct ?? null}
-                    windowDays={overview?.performance?.window_days ?? 30}
-                    asOf={overview?.detections?.as_of ?? null}
-                    live={!loading && !error}
-                />
+                    <Header
+                        hitRatePct={overview?.performance?.hit_rate_pct ?? null}
+                        windowDays={overview?.performance?.window_days ?? 30}
+                        asOf={overview?.detections?.as_of ?? null}
+                        live={!loading && !error}
+                    />
 
-                {/* AlphaClaw v1.1 — GET 전용 관측·페이퍼 운영면. 주문/승인 액션은 의도적으로 없다. */}
-                <AlphaCoreOpsCard />
+                </div>
 
-                {loading && <LoadingState />}
+                <AlphaLabPanel desk token={token ?? undefined} onSelectSymbol={openStockDetail} />
 
-                {!loading && error && <ErrorState error={error} onRetry={load} />}
+                <div className="max-w-3xl mx-auto space-y-5">
+                    {/* AlphaClaw v1.1 — GET 전용 관측·페이퍼 운영면. 주문/승인 액션은 의도적으로 없다. */}
+                    <AlphaCoreOpsCard />
 
-                {!loading && !error && (
-                    <>
-                        {/* 핵심: 가상 매매 시그널 (국면·보유·성과) — 사용자가 매일 보는 것 */}
-                        {paper && <PaperTradingCard data={paper} />}
+                    {loading && <LoadingState />}
 
-                        {/* Claw LIVE — 장중 주도주 전이 감시 (자체 폴링, 기존 엔드포인트와 독립) */}
-                        <ClawLiveCard />
+                    {!loading && error && <ErrorState error={error} onRetry={load} />}
 
-                        {/* 마감 주도주 — 마감 기준 세션 확정본 (마스터 플랜 P3) */}
-                        <CloseLeadersCard />
+                    {!loading && !error && (
+                        <>
+                            {/* 핵심: 가상 매매 시그널 (국면·보유·성과) — 사용자가 매일 보는 것 */}
+                            {paper && <PaperTradingCard data={paper} />}
 
-                        {/* 검출 Top3 */}
-                        {overview && <DetectionsCard data={overview.detections} />}
+                            {/* Claw LIVE — 장중 주도주 전이 감시 (자체 폴링, 기존 엔드포인트와 독립) */}
+                            <ClawLiveCard />
 
-                        {/* 상세 분석(검증·학습)은 접힘 — 필요한 사람만 펼쳐본다 */}
-                        {overview && (
-                            <div>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowDetail(v => !v)}
-                                    className="flex w-full items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-[12px] font-bold text-gray-500 transition-colors hover:text-gray-300"
-                                >
-                                    <span><i className="fas fa-flask mr-2 text-[10px]" />상세 분석 (검증 표본 · 학습 패턴)</span>
-                                    <i className={`fas fa-chevron-${showDetail ? 'up' : 'down'} text-[10px]`} />
-                                </button>
-                                {showDetail && (
-                                    <div className="mt-3 space-y-4">
-                                        <ServiceGuardCard />
-                                        <PerformanceCard data={overview.performance} learningPattern={learningPattern} />
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </>
-                )}
+                            {/* 마감 주도주 — 마감 기준 세션 확정본 (마스터 플랜 P3) */}
+                            <CloseLeadersCard />
+
+                            {/* 검출 Top3 */}
+                            {overview && <DetectionsCard data={overview.detections} />}
+
+                            {/* 상세 분석(검증·학습)은 접힘 — 필요한 사람만 펼쳐본다 */}
+                            {overview && (
+                                <div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowDetail(v => !v)}
+                                        className="flex w-full items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-[12px] font-bold text-gray-500 transition-colors hover:text-gray-300"
+                                    >
+                                        <span><i className="fas fa-flask mr-2 text-[10px]" />상세 분석 (검증 표본 · 학습 패턴)</span>
+                                        <i className={`fas fa-chevron-${showDetail ? 'up' : 'down'} text-[10px]`} />
+                                    </button>
+                                    {showDetail && (
+                                        <div className="mt-3 space-y-4">
+                                            <ServiceGuardCard />
+                                            <PerformanceCard data={overview.performance} learningPattern={learningPattern} />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     );

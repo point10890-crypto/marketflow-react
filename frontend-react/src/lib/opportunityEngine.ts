@@ -1,6 +1,20 @@
 export type OpportunityAction = 'entry_candidate' | 'wait_next_session' | 'data_check' | 'skip';
 export type OpportunityStrategy = 'momentum' | 'liquidity_breakout' | 'mean_reversion';
 export interface OpportunityIdentity { decision_id: string; input_fingerprint: string; source_audit_hash: string }
+export interface LeadershipObservation {
+    symbol: string; name: string; rank: number | null; status: 'ready' | 'unavailable';
+    reference_price: number | null; ret_21: number | null; ret_63: number | null;
+    from_high_252: number | null; trend_quality: number | null;
+    checks: { top3: boolean | null; fresh: boolean | null; trend: boolean | null; near_high: boolean | null };
+    points: number; available_checks: number; reasons: string[];
+}
+export interface LeadershipContext {
+    policy_version: 'quality-leadership-context-v1'; input_fingerprint: string; source_audit_hash: string;
+    latest_session: string; status: 'ready' | 'unavailable';
+    cohort: { inspected: number; valid: number; above_ma200: number; strict_trend: number };
+    market: { basis: 'quality_cohort_price_breadth'; state: 'broad' | 'mixed' | 'weak' | 'unknown'; ratio: number | null };
+    selected: LeadershipObservation[]; watchlist: LeadershipObservation[];
+}
 export interface ProfitOpportunity extends OpportunityIdentity {
     opportunity_id: string; symbol: string; name: string; market: 'KR'; strategy_id: OpportunityStrategy; rank: number;
     action: OpportunityAction; label: string; why_stock: string; why_now: string; next_action: string;
@@ -19,6 +33,7 @@ export interface OpportunityEngine extends OpportunityIdentity {
     alternatives: Array<{ symbol: string; name: string; strategy_id: OpportunityStrategy; score: number | null; reason: string }>;
     stages: Array<{ id: string; status: 'passed' | 'held' | 'unavailable'; detail: string; count: number }>; reasons: string[];
     evaluation?: { basis: 'issued_opportunities_not_fills'; issued: number; pending: number; expired: number; observed: number; unobserved: number };
+    leadership_context?: LeadershipContext;
 }
 const invalid = '수익 기회 응답 형식이 올바르지 않습니다. 저장 결과를 다시 확인해 주세요.';
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
@@ -49,6 +64,58 @@ const bound = (row: OpportunityIdentity, board: OpportunityIdentity) => identity
 const blockedReasons = new Set(['saved_board_invalid', 'scan_unavailable', 'entry_window_changed', 'entry_window_unavailable', 'source_identity_unavailable']);
 const blockingReason = (reason: string) => blockedReasons.has(reason)
     || /(?:stale|future|expired|mismatch|corrupt|refresh_failed|calendar_(?:unavailable|invalid|gap|revision)|quote_(?:unavailable|invalid)|source_(?:unavailable|failure)|missing_(?:source|fingerprint|window))/.test(reason);
+const leadershipMetrics = ['reference_price', 'ret_21', 'ret_63', 'from_high_252', 'trend_quality'] as const;
+const leadershipChecks = ['top3', 'fresh', 'trend', 'near_high'] as const;
+function validLeadershipRow(value: unknown, context: LeadershipContext): value is LeadershipObservation {
+    if (!record(value) || !keys(value, ['symbol', 'name', 'rank', 'status', ...leadershipMetrics, 'checks', 'points', 'available_checks', 'reasons'])
+        || !symbol(value.symbol) || value.symbol === '000000' || !safeText(value.name, 100) || !['ready', 'unavailable'].includes(String(value.status))
+        || !(value.rank === null || count(value.rank) && value.rank > 0 && value.rank <= context.cohort.strict_trend)
+        || !leadershipMetrics.every(key => value[key] === null || finite(value[key]))
+        || !record(value.checks) || !keys(value.checks, [...leadershipChecks])
+        || !leadershipChecks.every(key => (value.checks as Record<string, unknown>)[key] === null || typeof (value.checks as Record<string, unknown>)[key] === 'boolean')
+        || !count(value.points) || !count(value.available_checks) || value.points > 4 || value.available_checks > 4 || !reasons(value.reasons)
+        || !value.reasons.every(reason => /^[a-z][a-z0-9_]{0,95}$/.test(reason))) return false;
+    const row = value as unknown as LeadershipObservation;
+    if (row.points !== leadershipChecks.filter(key => row.checks[key] === true).length
+        || row.available_checks !== leadershipChecks.filter(key => row.checks[key] !== null).length) return false;
+    if (row.status === 'unavailable') return row.rank === null && leadershipMetrics.every(key => row[key] === null) && row.available_checks === 0;
+    if (!positive(row.reference_price) || !finite(row.ret_21) || row.ret_21 <= -1 || !finite(row.ret_63) || row.ret_63 <= -1
+        || !finite(row.from_high_252) || row.from_high_252 <= -1 || row.from_high_252 > 1e-9
+        || !(finite(row.trend_quality) || row.trend_quality === null && row.reasons.includes('undefined_trend_quality') && row.checks.trend === false)
+        || typeof row.checks.trend !== 'boolean' || row.checks.fresh !== (row.ret_21 >= .1 && row.ret_21 <= .4)
+        || row.checks.near_high !== (row.from_high_252 >= -.25)) return false;
+    if (context.cohort.valid < 8) return row.rank === null && row.checks.top3 === null;
+    return (row.rank !== null) === row.checks.trend && row.checks.top3 === (row.rank !== null && row.rank <= 3);
+}
+function validLeadershipContext(value: unknown, board: OpportunityEngine): value is LeadershipContext {
+    if (!record(value) || !keys(value, ['policy_version', 'input_fingerprint', 'source_audit_hash', 'latest_session', 'status', 'cohort', 'market', 'selected', 'watchlist'])
+        || value.policy_version !== 'quality-leadership-context-v1' || value.input_fingerprint !== board.input_fingerprint
+        || value.source_audit_hash !== board.source_audit_hash || value.latest_session !== board.latest_session
+        || !record(value.cohort) || !keys(value.cohort, ['inspected', 'valid', 'above_ma200', 'strict_trend'])
+        || !['inspected', 'valid', 'above_ma200', 'strict_trend'].every(key => count((value.cohort as Record<string, unknown>)[key]) && ((value.cohort as Record<string, unknown>)[key] as number) <= 100)
+        || !record(value.market) || !keys(value.market, ['basis', 'state', 'ratio']) || value.market.basis !== 'quality_cohort_price_breadth'
+        || !Array.isArray(value.selected) || value.selected.length !== board.candidates.length
+        || !Array.isArray(value.watchlist) || value.watchlist.length > 7) return false;
+    const context = value as unknown as LeadershipContext, { cohort, market } = context;
+    if (cohort.strict_trend > cohort.above_ma200 || cohort.above_ma200 > cohort.valid || cohort.valid > cohort.inspected) return false;
+    if (cohort.valid < 8) {
+        if (context.status !== 'unavailable' || market.state !== 'unknown' || market.ratio !== null || context.watchlist.length !== 0) return false;
+    } else if (context.status !== 'ready' || !finite(market.ratio) || market.ratio < 0 || market.ratio > 1 || !near(market.ratio, cohort.above_ma200 / cohort.valid)
+        || market.state !== (market.ratio >= .6 ? 'broad' : market.ratio >= .4 ? 'mixed' : 'weak')) return false;
+    const seen = new Set<string>(), ranks = new Set<number>();
+    for (const [index, row] of context.selected.entries()) {
+        if (!validLeadershipRow(row, context) || row.symbol !== board.candidates[index].symbol || row.name !== board.candidates[index].name) return false;
+        if (row.rank !== null && ranks.has(row.rank)) return false;
+        seen.add(row.symbol); if (row.rank !== null) ranks.add(row.rank);
+    }
+    let previousRank = 0;
+    for (const row of context.watchlist) {
+        if (!validLeadershipRow(row, context) || row.status !== 'ready' || row.checks.trend !== true || row.rank === null
+            || seen.has(row.symbol) || ranks.has(row.rank) || row.rank <= previousRank) return false;
+        seen.add(row.symbol); previousRank = row.rank;
+    }
+    return true;
+}
 function validCandidate(value: unknown, board: OpportunityEngine, index: number): value is ProfitOpportunity {
     if (!record(value) || !keys(value, [...identityKeys, 'opportunity_id', 'symbol', 'name', 'market', 'strategy_id', 'rank', 'action', 'label',
         'why_stock', 'why_now', 'next_action', 'quote_session', 'source_at', 'current_price', 'quote_at', 'fetched_at', 'quote_source', 'valid_until',
@@ -86,7 +153,7 @@ function validCandidate(value: unknown, board: OpportunityEngine, index: number)
 /** Public projection only: no raw internal fields or unbound guidance crosses this boundary. */
 export function validateOpportunityEngine(value: unknown, binding?: { input_fingerprint?: string; latest_session?: string | null; source_audit_hash?: string }): OpportunityEngine {
     if (!record(value) || !keys(value, ['schema_version', 'policy_version', ...identityKeys, 'generated_at', 'latest_session', 'entry_session', 'valid_until',
-        'status', 'research_only', 'live_orders', 'coverage', 'candidates', 'alternatives', 'stages', 'reasons'], ['evaluation'])
+        'status', 'research_only', 'live_orders', 'coverage', 'candidates', 'alternatives', 'stages', 'reasons'], ['evaluation', 'leadership_context'])
         || value.schema_version !== 1 || value.policy_version !== 'profit-opportunity-v1' || !identityKeys.every(key => hash(value[key]))
         || !timestamp(value.generated_at) || !date(value.latest_session) || !(value.entry_session === null || date(value.entry_session))
         || !nullableTime(value.valid_until) || (value.entry_session === null) !== (value.valid_until === null)
@@ -124,6 +191,7 @@ export function validateOpportunityEngine(value: unknown, binding?: { input_fing
     if (e !== undefined && (!record(e) || !keys(e, ['basis', 'issued', 'pending', 'expired', 'observed', 'unobserved'])
         || e.basis !== 'issued_opportunities_not_fills' || !['issued', 'pending', 'expired', 'observed', 'unobserved'].every(key => count((e as unknown as Record<string, unknown>)[key]))
         || e.pending + e.expired + e.observed + e.unobserved !== e.issued)) throw new Error(invalid);
+    if (board.leadership_context !== undefined && !validLeadershipContext(board.leadership_context, board)) throw new Error(invalid);
     return board;
 }
 export const opportunityActionLabels: Record<OpportunityAction, string> = {
