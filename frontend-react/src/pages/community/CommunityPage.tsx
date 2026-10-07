@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { communityAPI, type CommunityBoard } from '@/lib/api';
+import { FORMULA_BOARDS } from '@/lib/formulaBoards';
 
 const BOARD_ICONS: Record<string, string> = {
     notice: 'fa-bullhorn',
@@ -157,6 +158,7 @@ export default function CommunityPage() {
                     const badge = tierLabel(board.min_tier);
                     const iconClass = BOARD_ICONS[board.slug] || board.icon || 'fa-comments';
                     const isNew = Boolean(newBoards[board.slug]);
+                    const boardTitle = board.slug === 'formula-market' ? FORMULA_BOARDS['formula-market'].title : board.name;
 
                     return (
                         <button
@@ -178,7 +180,7 @@ export default function CommunityPage() {
                                 {isNew && (
                                     <span
                                         className="community-new-badge absolute right-10 bottom-5 rounded border border-[#73b7ff]/30 bg-[#73b7ff]/10 px-2 py-0.5 text-[10px] font-bold text-[#73b7ff]"
-                                        aria-label={`${board.name} new post`}
+                                        aria-label={`${boardTitle} new post`}
                                         title={board.latest_post_title || 'New post'}
                                     >
                                         NEW
@@ -203,7 +205,7 @@ export default function CommunityPage() {
                                 </div>
 
                                 {/* Title */}
-                                <h3 className="font-semibold text-base mb-1 text-[#f5f5f7]">{board.name}</h3>
+                                <h3 className="font-semibold text-base mb-1 text-[#f5f5f7]">{boardTitle}</h3>
                                 <p className="text-[#a6afbb] text-xs md:text-sm leading-relaxed line-clamp-2 mb-4">
                                     {board.description}
                                 </p>

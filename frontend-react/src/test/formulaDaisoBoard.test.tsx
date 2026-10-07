@@ -64,7 +64,7 @@ describe('FormulaListPage (formula-daiso)', () => {
             </MemoryRouter>,
         );
         await waitFor(() => expect(getPosts).toHaveBeenCalledWith('formula-market', 1));
-        expect(await screen.findByText('수식 마켓')).toBeInTheDocument();
+        expect(await screen.findByText('프리미엄 수식/조건검색식 마켓')).toBeInTheDocument();
         expect(screen.queryByText('30,000원 균일가')).not.toBeInTheDocument();
     });
 });

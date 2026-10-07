@@ -26,7 +26,7 @@ export interface FormulaBoardConfig {
 export const FORMULA_BOARDS: Record<string, FormulaBoardConfig> = {
     'formula-market': {
         slug: 'formula-market',
-        title: '수식 마켓',
+        title: '프리미엄 수식/조건검색식 마켓',
         subtitle: '검증된 트레이딩 수식을 만나보세요',
         writeLabel: '수식 등록',
         fixedPrice: null,
