@@ -101,9 +101,12 @@ def _seal_result(result, decision, candidate, prices, observed_day):
     symbol = candidate['symbol']
     calendar = sorted({row['date'] for rows in prices.values() for row in rows
                        if decision['decision_date'] < row['date'] <= observed_day})
-    cutoff = result.get('exit_date') or (calendar[0] if result['status'] == 'unfilled' and calendar else observed_day)
-    future = [row for row in prices.get(symbol, []) if decision['decision_date'] < row['date'] <= cutoff]
     original = decision['snapshots'].get(symbol, [])
+    # A collection can lag the wall clock; unobserved tail sessions are not consumed.
+    known_sessions = calendar + [row['date'] for row in original if row['date'] <= observed_day]
+    latest_known = max(known_sessions, default=decision['decision_date'])
+    cutoff = result.get('exit_date') or (calendar[0] if result['status'] == 'unfilled' and calendar else latest_known)
+    future = [row for row in prices.get(symbol, []) if decision['decision_date'] < row['date'] <= cutoff]
     consumed = [{key: row.get(key) for key in ('date', 'open', 'high', 'low', 'close', 'volume')}
                 for row in original + future]
     first_session = calendar[0] if calendar else None
@@ -152,8 +155,11 @@ def _record_revision(outcome, decision, report, prices, moment):
     entry_day = outcome.get('expected_entry_session')
     if entry_day and outcome.get('entry_quote') is None and entry_day in current:
         reasons.append('previously_missing_entry_quote_added')
+    # Bound legacy wall-clock cutoffs without changing their sealed result bodies.
+    known_sessions = outcome['consumed_calendar'] + [bar['date'] for bar in outcome['consumed_ohlcv']]
+    cutoff = min(outcome['consumed_cutoff'], max(known_sessions, default=decision['decision_date']))
     added = sorted({row['date'] for rows in prices.values() for row in rows
-                    if decision['decision_date'] < row['date'] <= outcome['consumed_cutoff']}
+                    if decision['decision_date'] < row['date'] <= cutoff}
                    - set(outcome['consumed_calendar']))
     if added:
         reasons.append('consumed_calendar_revision')
