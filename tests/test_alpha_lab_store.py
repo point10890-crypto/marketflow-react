@@ -194,3 +194,129 @@ def test_missing_already_observed_entry_defers_open_result_until_quotes_return(t
     summary = store.observe_and_freeze(tmp_path, observation, prices, now='2026-10-07T09:00:00Z')
     assert store.read_journal(tmp_path)['decisions'][0]['outcomes'][0]['status'] == 'closed'
     assert summary['matured'] == 1
+
+
+def _open_forward(root, *, observed_at='2026-10-06T09:00:00Z'):
+    prices = {'005930': bars()}
+    store.observe_and_freeze(root, report(), prices, now=NOW)
+    observation = report(); observation['candidates'] = []
+    prices['005930'].append(dict(date='2026-10-05', open=100., high=101., low=99., close=100., volume=100.))
+    store.observe_and_freeze(root, observation, prices, now=observed_at)
+    return prices, observation, deepcopy(store.read_journal(root)['decisions'][0])
+
+
+def _legacy_clock_cutoff(root, cutoff):
+    # Model a valid artifact issued by the old wall-clock cutoff implementation.
+    journal = store.read_journal(root)
+    outcome = journal['decisions'][0]['outcomes'][0]
+    outcome['consumed_cutoff'] = cutoff
+    outcome['result_sha256'] = store._hash(store._result_body(outcome))
+    outcome['sha256'] = store._hash({key: value for key, value in outcome.items() if key != 'sha256'})
+    journal['sha256'] = store._hash({key: value for key, value in journal.items() if key != 'sha256'})
+    store._write(root / 'forward.json', journal)
+    return deepcopy(journal['decisions'][0])
+
+
+def test_delayed_daily_append_advances_open_trade_from_last_known_session(tmp_path):
+    prices, observation, original = _open_forward(tmp_path)
+    prices['005930'].append(dict(date='2026-10-06', open=100., high=110., low=99., close=108., volume=100.))
+    summary = store.observe_and_freeze(tmp_path, observation, prices, now='2026-10-07T09:00:00Z')
+    decision = store.read_journal(tmp_path)['decisions'][0]
+    outcome = decision['outcomes'][0]
+    assert outcome['status'] == 'closed'
+    assert outcome['entry_date'] == '2026-10-05' and outcome['exit_date'] == '2026-10-06'
+    assert outcome['source_revisions'] == [] and summary['matured'] == 1
+    assert decision['sha256'] == original['sha256']
+    assert original['outcomes'][0]['observed_through'] == '2026-10-06'
+    assert original['outcomes'][0]['consumed_cutoff'] == '2026-10-05'
+
+
+def test_legacy_open_clock_cutoff_does_not_reject_normal_tail_append(tmp_path):
+    prices, observation, _ = _open_forward(tmp_path)
+    original = _legacy_clock_cutoff(tmp_path, '2026-10-06')
+    prices['005930'].append(dict(date='2026-10-06', open=100., high=110., low=99., close=108., volume=100.))
+    summary = store.observe_and_freeze(tmp_path, observation, prices, now='2026-10-07T09:00:00Z')
+    decision = store.read_journal(tmp_path)['decisions'][0]
+    outcome = decision['outcomes'][0]
+    assert outcome['status'] == 'closed' and summary['matured'] == 1
+    assert outcome['entry_date'] == '2026-10-05' and outcome['exit_date'] == '2026-10-06'
+    assert outcome['source_revisions'] == []
+    assert decision['sha256'] == original['sha256']
+
+
+def test_legacy_terminal_clock_cutoff_preserves_result_and_existing_revisions(tmp_path):
+    prices = {'005930': bars()}
+    store.observe_and_freeze(tmp_path, report(), prices, now=NOW)
+    prices['005930'].append(dict(date='2026-10-05', open=100., high=101., low=99., close=100., volume=100.))
+    observation = report(); observation['candidates'] = []
+    observation['provenance']['price_basis'] = 'different_provider_basis'
+    store.observe_and_freeze(tmp_path, observation, prices, now='2026-10-06T09:00:00Z')
+    _legacy_clock_cutoff(tmp_path, '2026-10-06')
+    store.observe_and_freeze(tmp_path, observation, prices, now='2026-10-06T10:00:00Z')
+    original = deepcopy(store.read_journal(tmp_path)['decisions'][0])
+    assert original['outcomes'][0]['source_revisions'][0]['reasons'] == ['price_basis_changed']
+    prices['005930'].append(dict(date='2026-10-06', open=100., high=110., low=99., close=108., volume=100.))
+    store.observe_and_freeze(tmp_path, observation, prices, now='2026-10-07T09:00:00Z')
+    decision = store.read_journal(tmp_path)['decisions'][0]
+    assert decision == original
+    assert decision['outcomes'][0]['status'] == 'source_revision'
+
+
+def test_backfilled_gap_within_known_calendar_still_blocks_open_advancement(tmp_path):
+    prices, observation, _ = _open_forward(tmp_path, observed_at='2026-10-05T09:00:00Z')
+    prices['005930'].append(dict(date='2026-10-07', open=100., high=101., low=99., close=100., volume=100.))
+    store.observe_and_freeze(tmp_path, observation, prices, now='2026-10-08T09:00:00Z')
+    original = deepcopy(store.read_journal(tmp_path)['decisions'][0]['outcomes'][0])
+    prices['005930'].insert(-1, dict(date='2026-10-06', open=100., high=101., low=99., close=100., volume=100.))
+    prices['005930'].append(dict(date='2026-10-08', open=100., high=110., low=99., close=108., volume=100.))
+    store.observe_and_freeze(tmp_path, observation, prices, now='2026-10-09T09:00:00Z')
+    outcome = store.read_journal(tmp_path)['decisions'][0]['outcomes'][0]
+    assert outcome['status'] == 'open' and outcome['net_return'] is None
+    assert outcome['result_sha256'] == original['result_sha256']
+    assert outcome['consumed_ohlcv'] == original['consumed_ohlcv']
+    assert outcome['source_revisions'][0]['reasons'] == ['consumed_calendar_revision']
+
+
+@pytest.mark.parametrize('closed', [False, True], ids=['open', 'closed'])
+def test_volume_only_revision_preserves_result_and_is_not_duplicated(tmp_path, closed):
+    observation = report(); observation['candidates'] = []
+    if closed:
+        prices = {'005930': bars()}
+        store.observe_and_freeze(tmp_path, report(), prices, now=NOW)
+        prices['005930'].append(dict(date='2026-10-05', open=100., high=110., low=99., close=108., volume=100.))
+        store.observe_and_freeze(tmp_path, observation, prices, now='2026-10-05T09:00:00Z')
+    else:
+        prices, observation, _ = _open_forward(tmp_path)
+    original = deepcopy(store.read_journal(tmp_path)['decisions'][0])
+    prices['005930'][-1]['volume'] += 1.
+    prices['005930'].append(dict(date='2026-10-06', open=100., high=110., low=99., close=108., volume=100.))
+    for now in ('2026-10-07T09:00:00Z', '2026-10-08T09:00:00Z'):
+        summary = store.observe_and_freeze(tmp_path, observation, prices, now=now)
+    decision = store.read_journal(tmp_path)['decisions'][0]
+    outcome = decision['outcomes'][0]
+    previous = original['outcomes'][0]
+    assert decision['sha256'] == original['sha256']
+    assert outcome['status'] == previous['status']
+    assert outcome['result_sha256'] == previous['result_sha256']
+    assert outcome['consumed_ohlcv'] == previous['consumed_ohlcv']
+    assert outcome['entry_date'] == previous['entry_date']
+    assert outcome['net_return'] == previous['net_return']
+    assert len(outcome['source_revisions']) == 1
+    assert outcome['source_revisions'][0]['reasons'] == ['consumed_bar_revision']
+    assert summary['matured'] == 0 and summary['counts']['source_revision'] == 1
+
+
+def test_previously_missing_entry_quote_remains_a_revision_and_never_fills(tmp_path):
+    prices = {'005930': bars()}
+    store.observe_and_freeze(tmp_path, report(), prices, now=NOW)
+    observation = report(); observation['candidates'] = []
+    prices['000660'] = [dict(date='2026-10-05', open=100., high=101., low=99., close=100., volume=100.)]
+    store.observe_and_freeze(tmp_path, observation, prices, now='2026-10-06T09:00:00Z')
+    original = deepcopy(store.read_journal(tmp_path)['decisions'][0]['outcomes'][0])
+    assert original['status'] == 'unfilled' and original['entry_quote'] is None
+    prices['005930'].append(dict(date='2026-10-05', open=100., high=110., low=99., close=108., volume=100.))
+    store.observe_and_freeze(tmp_path, observation, prices, now='2026-10-07T09:00:00Z')
+    outcome = store.read_journal(tmp_path)['decisions'][0]['outcomes'][0]
+    assert outcome['status'] == 'unfilled' and outcome['net_return'] is None
+    assert outcome['result_sha256'] == original['result_sha256']
+    assert outcome['source_revisions'][0]['reasons'] == ['previously_missing_entry_quote_added']

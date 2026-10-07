@@ -71,6 +71,25 @@ audit evidence; revised closed outcomes are excluded from summary statistics.
 These are watchlist outcome observations, not brokerage account P&L. At 730
 decision days the journal requires explicit archival rather than silent eviction.
 Unsigned/corrupt journals fail closed and preserve the previous public report.
+Observation time and consumed source time are separate. A morning rerun with
+only yesterday's data must not claim to have consumed today's absent session.
+New results seal the calendar cutoff at the last supplied session (or the
+existing fixed exit/unfilled-entry session). Revision checks bound legacy
+inflated cutoffs by the stored consumed bars/calendar without rewriting the
+original result. A later normal session append can continue an open outcome;
+a new date inside an already consumed interval, a restored missing entry quote,
+or changed OHLCV still records a revision and holds that result.
+
+The 2026-10-07 operational correction addresses source latency only. It changes
+no ranking, strategy parameters, cost assumptions, sizing, approvals or reported
+returns. Existing revision events and terminal results remain immutable, even
+when an old event also contained an overly broad calendar reason. Provider
+restatements are real evidence: the public feed has revised prior close/high and
+volume values after collection. Capture after 15:30 does not establish a final
+KRX close or verified adjustment/vintage. Do not clear revisions or recalculate
+historical outcomes to make the success rate improve. Regression validation
+uses fixed synthetic delayed-append, past-gap, missing-entry and OHLCV-revision
+fixtures, independently of historical strategy performance.
 
 ## Clear manual proposals
 
