@@ -33,7 +33,7 @@ def _fake_run(tmp_path, age_hours, now):
     d = tmp_path / 'runs' / 'mfas_20260831093000_aaaaaaaaaaaa'
     d.mkdir(parents=True)
     p = d / 'run.json'
-    p.write_text('{}', encoding='utf-8')
+    p.write_text(json.dumps({'id': d.name, 'status': 'completed', 'candidates': []}), encoding='utf-8')
     ts = now.timestamp() - age_hours * 3600
     os.utime(p, (ts, ts))
     return alpha_scanner, str(tmp_path / 'runs')
@@ -43,7 +43,7 @@ def test_scanner_fresh_in_session_is_ok(tmp_path, monkeypatch):
     alpha_scanner, root = _fake_run(tmp_path, age_hours=0.5, now=MONDAY_1030)
     monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
     alpha_scanner._invalidate_run_paths_cache()
-    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {})
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {'last_run_id': 'mfas_20260831093000_aaaaaaaaaaaa'})
     assert sg.check_scanner(MONDAY_1030)['status'] == 'ok'
 
 
@@ -51,7 +51,7 @@ def test_scanner_stale_in_session_warns_then_fails(tmp_path, monkeypatch):
     alpha_scanner, root = _fake_run(tmp_path, age_hours=2.5, now=MONDAY_1400)
     monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
     alpha_scanner._invalidate_run_paths_cache()
-    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {})
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {'last_run_id': 'mfas_20260831093000_aaaaaaaaaaaa'})
     assert sg.check_scanner(MONDAY_1400)['status'] == 'warn'
     # 같은 나이라도 장외(일요일) 기준으로는 ok
     assert sg.check_scanner(SUNDAY_2300)['status'] == 'ok'
@@ -68,7 +68,7 @@ def test_scanner_overnight_age_at_open_is_ok(tmp_path, monkeypatch):
     alpha_scanner, root = _fake_run(tmp_path, age_hours=65, now=monday_0930)  # 금요일 산출물
     monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
     alpha_scanner._invalidate_run_paths_cache()
-    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {})
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {'last_run_id': 'mfas_20260831093000_aaaaaaaaaaaa'})
     out = sg.check_scanner(monday_0930)
     assert out['status'] == 'ok'
     assert out['detail']['stale_h'] == 0.5  # 지연은 세션 시작(09:00) 기준으로 잰다
@@ -80,38 +80,245 @@ def test_scanner_krx_holiday_uses_offhours_thresholds(tmp_path, monkeypatch):
     alpha_scanner, root = _fake_run(tmp_path, age_hours=6, now=HOLIDAY_1030)
     monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
     alpha_scanner._invalidate_run_paths_cache()
-    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {})
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {'last_run_id': 'mfas_20260831093000_aaaaaaaaaaaa'})
     assert sg.check_scanner(HOLIDAY_1030)['status'] == 'ok'  # 장중이면 fail 이었을 나이
 
 
 def test_scanner_without_runs_fails(tmp_path, monkeypatch):
     import app.services.mirofish.alpha_scanner as alpha_scanner
     monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'empty'))
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {})
     alpha_scanner._invalidate_run_paths_cache()
     assert sg.check_scanner(MONDAY_1030)['status'] == 'fail'
+
+
+def test_scanner_guard_reads_only_the_completed_monitor_reference(tmp_path, monkeypatch):
+    alpha_scanner, root = _fake_run(tmp_path, age_hours=0.5, now=MONDAY_1030)
+    run_id = 'mfas_20260831093000_aaaaaaaaaaaa'
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
+    monkeypatch.setattr(alpha_scanner, '_latest_scanner_run_paths', lambda: pytest.fail('archive enumeration forbidden'))
+    monitor_calls, run_calls = [], []
+    reader = alpha_scanner.read_scanner_run
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: monitor_calls.append(1) or {'last_run_id': run_id, 'last_status': 'unchanged'})
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_run', lambda ref: run_calls.append(ref) or reader(ref))
+    result = sg.check_scanner(MONDAY_1030)
+    assert result['status'] == 'ok'
+    assert result['detail']['lookup_basis'] == 'monitor_reference'
+    assert result['detail']['run_id'] == run_id
+    assert result['detail']['latest_run_age_h'] == 0.5
+    assert result['detail']['monitor']['last_status'] == 'unchanged'
+    assert monitor_calls == [1] and run_calls == [run_id]
+
+
+@pytest.mark.parametrize('case', ['missing_reference', 'unsafe', 'missing_run', 'corrupt', 'running', 'identity_mismatch', 'incomplete'])
+def test_scanner_guard_bad_reference_never_falls_back_to_the_archive(tmp_path, monkeypatch, case):
+    alpha_scanner, root = _fake_run(tmp_path, age_hours=0.5, now=MONDAY_1030)
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
+    monkeypatch.setattr(alpha_scanner, '_latest_scanner_run_paths', lambda: pytest.fail('archive enumeration forbidden'))
+    run_id = 'mfas_20260831093000_aaaaaaaaaaaa'
+    reference = run_id
+    header = tmp_path / 'runs' / run_id / 'run.json'
+    if case == 'missing_reference':
+        reference = None
+    elif case == 'unsafe':
+        reference = '../outside'
+    elif case == 'missing_run':
+        reference = 'mfas_20260831103000_bbbbbbbbbbbb'
+    elif case == 'corrupt':
+        header.write_text('{bad json', encoding='utf-8')
+    elif case == 'running':
+        header.write_text(json.dumps({'id': run_id, 'status': 'running', 'candidates': []}), encoding='utf-8')
+    elif case == 'identity_mismatch':
+        header.write_text(json.dumps({'id': 'mfas_20260831103000_bbbbbbbbbbbb', 'status': 'completed', 'candidates': []}), encoding='utf-8')
+    else:
+        header.write_text(json.dumps({'id': run_id, 'status': 'completed'}), encoding='utf-8')
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {'last_run_id': reference})
+    result = sg.check_scanner(MONDAY_1030)
+    assert result['status'] == 'fail'
+    assert result['detail']['reason'] == 'reference_unavailable'
+    assert result['detail']['lookup_basis'] == 'monitor_reference'
+
+
+def test_hot_symbols_uses_monitor_reference_without_latest_lookup(tmp_path, monkeypatch):
+    from app.services.mirofish import goodrich_ledger
+    from app.services import kis_screener
+    alpha_scanner, root = _fake_run(tmp_path, age_hours=0.5, now=MONDAY_1030)
+    run_id = 'mfas_20260831093000_aaaaaaaaaaaa'
+    header = tmp_path / 'runs' / run_id / 'run.json'
+    header.write_text(json.dumps({'id': run_id, 'status': 'completed', 'candidates': [{'symbol': '005930', 'rank': 1}]}), encoding='utf-8')
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {'last_run_id': run_id})
+    monkeypatch.setattr(alpha_scanner, 'read_latest_scanner_candidates', lambda **kwargs: pytest.fail('archive enumeration forbidden'))
+    monkeypatch.setattr(goodrich_ledger, 'read_ledger', lambda: [])
+    monkeypatch.setattr(kis_screener, 'load_latest', lambda: {})
+    assert sg.hot_symbols() == ['005930']
 
 
 # ─── 판단 프로브 ─────────────────────────────────────────────
 
 def test_decision_probe_budget_and_slowest_source(tmp_path, monkeypatch):
     from app.services.mirofish import decision_brief
+    alpha_scanner, root = _fake_run(tmp_path, age_hours=0.5, now=MONDAY_1030)
+    run_id = 'mfas_20260831093000_aaaaaaaaaaaa'
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {'last_run_id': run_id})
     monkeypatch.setattr(dc, 'DB_PATH', str(tmp_path / 'cache.db'))
     monkeypatch.setattr(sg, 'hot_symbols', lambda limit=1: ['005930'])
     monkeypatch.setattr(decision_brief, 'build_decision_brief',
-                        lambda s: {'timings_ms': {'scanner': 120, 'news': 30, 'total': 150}})
+                        lambda s, **kwargs: {'timings_ms': {'scanner': 120, 'news': 30, 'total': 150}})
     out = sg.check_decision(MONDAY_1030)
     assert out['status'] == 'ok' and out['detail']['slowest_source'] == 'scanner'
-    assert out['detail']['cache_write'] is True
+    assert out['detail']['cache_write'] is False
+    assert out['detail']['probe_cache_policy'] == 'monitor_reference_no_warm'
 
     monkeypatch.setenv('AIBRAIN_DECISION_PROBE_FAIL_S', '0')
     assert sg.check_decision(MONDAY_1030)['status'] == 'fail'
 
-    def boom(s):
+    def boom(s, **kwargs):
         raise RuntimeError('db locked')
     monkeypatch.setattr(decision_brief, 'build_decision_brief', boom)
     monkeypatch.delenv('AIBRAIN_DECISION_PROBE_FAIL_S')
     out = sg.check_decision(MONDAY_1030)
     assert out['status'] == 'fail' and 'db locked' in out['detail']['probe_error']
+
+
+def test_decision_probe_binds_monitor_reference_without_replacing_normal_cache(tmp_path, monkeypatch):
+    from app.services.mirofish import decision_brief
+    alpha_scanner, root = _fake_run(tmp_path, age_hours=0.5, now=MONDAY_1030)
+    run_id = 'mfas_20260831093000_aaaaaaaaaaaa'
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {'last_run_id': run_id})
+    monkeypatch.setattr(alpha_scanner, '_latest_scanner_run_paths', lambda: pytest.fail('archive enumeration forbidden'))
+    monkeypatch.setattr(dc, 'DB_PATH', str(tmp_path / 'cache.db'))
+    monkeypatch.setenv('DECISION_CACHE_DISABLED', '')
+    dc.cache_put('brief', '005930', {'snapshot': 'normal_latest'})
+    original = dc.cache_get('brief', '005930')
+    calls = []
+
+    def build(symbol, *, scanner_run_id):
+        calls.append((symbol, scanner_run_id))
+        return {'snapshot': 'monitor_reference', 'timings_ms': {'scanner': 1, 'total': 2}}
+
+    monkeypatch.setattr(decision_brief, 'build_decision_brief', build)
+    monkeypatch.setattr(dc, 'cache_put', lambda *args: pytest.fail('guard must not warm normal cache'))
+    result = sg.check_decision(MONDAY_1030, probe_symbol='005930')
+    assert result['status'] == 'ok'
+    assert calls == [('005930', run_id)]
+    assert result['detail']['run_id'] == run_id
+    assert result['detail']['lookup_basis'] == 'monitor_reference'
+    assert result['detail']['cache_write'] is False
+    assert dc.cache_get('brief', '005930') == original
+
+
+@pytest.mark.parametrize('reference', [None, '../outside'])
+def test_decision_probe_defers_without_a_valid_monitor_reference(tmp_path, monkeypatch, reference):
+    from app.services.mirofish import alpha_scanner, decision_brief
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {'last_run_id': reference})
+    monkeypatch.setattr(alpha_scanner, '_latest_scanner_run_paths', lambda: pytest.fail('archive enumeration forbidden'))
+    monkeypatch.setattr(decision_brief, 'build_decision_brief', lambda *args, **kwargs: pytest.fail('probe should be deferred'))
+    monkeypatch.setattr(dc, 'cache_put', lambda *args: pytest.fail('guard must not warm normal cache'))
+    result = sg.check_decision(MONDAY_1030, probe_symbol='005930')
+    assert result['status'] == 'warn'
+    assert result['detail']['reason'] == 'reference_unavailable'
+    assert result['detail']['probe_deferred'] is True
+    assert result['detail']['cache_write'] is False
+
+
+def test_guard_scanner_and_decision_never_enumerate_or_warm_normal_cache(tmp_path, monkeypatch, guard_paths):
+    from app.services.mirofish import decision_brief, goodrich_ledger
+    from app.services import kis_screener
+    alpha_scanner, root = _fake_run(tmp_path, age_hours=0.5, now=MONDAY_1030)
+    run_id = 'mfas_20260831093000_aaaaaaaaaaaa'
+    header = tmp_path / 'runs' / run_id / 'run.json'
+    header.write_text(json.dumps({'id': run_id, 'status': 'completed',
+                                 'candidates': [{'symbol': '005930', 'rank': 1, 'action': 'BUY'}]}), encoding='utf-8')
+    os.utime(header, (MONDAY_1030.timestamp() - 1800,) * 2)
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {'last_run_id': run_id})
+    monkeypatch.setattr(alpha_scanner, '_latest_scanner_run_paths', lambda: pytest.fail('archive enumeration forbidden'))
+    monkeypatch.setattr(dc, 'cache_put', lambda *args: pytest.fail('guard must not warm normal cache'))
+    monkeypatch.setattr(goodrich_ledger, 'read_ledger', lambda: [])
+    monkeypatch.setattr(kis_screener, 'load_latest', lambda: {})
+    for name in decision_brief.SOURCE_READERS:
+        if name != 'scanner':
+            monkeypatch.setitem(decision_brief.SOURCE_READERS, name, lambda symbol: None)
+    monkeypatch.setattr(decision_brief, '_read_news', lambda symbol: {'count': 0, 'items': []})
+    monkeypatch.setattr(decision_brief, '_read_regime', lambda: {})
+    monkeypatch.setattr(sg, 'CHECKERS', {'scanner': sg.check_scanner, 'decision': sg.check_decision})
+    result = sg.run_guard(now=MONDAY_1030)
+    assert result['overall'] == 'ok'
+    assert result['services']['scanner']['detail']['run_id'] == run_id
+    assert result['services']['decision']['detail']['run_id'] == run_id
+    assert result['services']['decision']['detail']['probe_symbol'] == '005930'
+    assert (guard_paths / 'latest.json').is_file()
+
+
+def test_decision_probe_symbol_is_bound_to_the_already_validated_run(tmp_path, monkeypatch):
+    from app.services.mirofish import decision_brief
+    alpha_scanner, root = _fake_run(tmp_path, age_hours=0.5, now=MONDAY_1030)
+    run_id = 'mfas_20260831093000_aaaaaaaaaaaa'
+    header = tmp_path / 'runs' / run_id / 'run.json'
+    header.write_text(json.dumps({'id': run_id, 'status': 'completed',
+                                 'candidates': [{'code': '005930', 'rank': 2}, {'symbol': '000660', 'rank': 1}]}), encoding='utf-8')
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
+    monitor_reads = []
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: monitor_reads.append(1) or {'last_run_id': run_id})
+    monkeypatch.setattr(sg, 'hot_symbols', lambda **kwargs: pytest.fail('do not resolve a second monitor snapshot'))
+    calls = []
+    monkeypatch.setattr(decision_brief, 'build_decision_brief',
+                        lambda symbol, **kwargs: calls.append((symbol, kwargs)) or {'timings_ms': {}})
+    result = sg.check_decision(MONDAY_1030)
+    assert result['status'] == 'ok'
+    assert calls == [('000660', {'scanner_run_id': run_id})]
+    assert monitor_reads == [1]
+
+
+@pytest.mark.parametrize('errors,fail_threshold,expected_status', [
+    ({'scanner': 'ValueError: scanner_reference_unavailable'}, '20', 'warn'),
+    ({'scanner': 'ValueError: scanner_reference_unavailable'}, '0', 'fail'),
+    ({}, '20', 'ok'),
+    ({'news': 'RuntimeError: source unavailable'}, '20', 'ok'),
+])
+def test_decision_probe_reports_scanner_errors_without_promoting_latency_failure(tmp_path, monkeypatch, errors, fail_threshold, expected_status):
+    from app.services.mirofish import decision_brief
+    alpha_scanner, root = _fake_run(tmp_path, age_hours=0.5, now=MONDAY_1030)
+    run_id = 'mfas_20260831093000_aaaaaaaaaaaa'
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {'last_run_id': run_id})
+    monkeypatch.setenv('AIBRAIN_DECISION_PROBE_FAIL_S', fail_threshold)
+    monkeypatch.setattr(decision_brief, 'build_decision_brief', lambda *args, **kwargs:
+                        {'timings_ms': {'scanner': 1}, 'errors': errors, 'data_gaps': ['scanner']})
+    result = sg.check_decision(MONDAY_1030, probe_symbol='005930')
+    assert result['status'] == expected_status
+    assert result['detail']['probe_error_sources'] == sorted(errors)
+    assert result['detail']['cache_write'] is False
+
+
+def test_decision_probe_warns_when_reference_changes_after_initial_validation(tmp_path, monkeypatch):
+    from app.services.mirofish import decision_brief
+    alpha_scanner, root = _fake_run(tmp_path, age_hours=0.5, now=MONDAY_1030)
+    run_id = 'mfas_20260831093000_aaaaaaaaaaaa'
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', root)
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_monitor_state', lambda: {'last_run_id': run_id})
+    run_reads = []
+
+    def read_run(reference):
+        run_reads.append(reference)
+        return {'id': reference, 'status': 'completed' if len(run_reads) == 1 else 'running',
+                'candidates': [{'symbol': '005930', 'action': 'BUY'}]}
+
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_run', read_run)
+    monkeypatch.setattr(alpha_scanner, '_latest_scanner_run_paths', lambda: pytest.fail('archive enumeration forbidden'))
+    for name in decision_brief.SOURCE_READERS:
+        if name != 'scanner':
+            monkeypatch.setitem(decision_brief.SOURCE_READERS, name, lambda symbol: None)
+    monkeypatch.setattr(decision_brief, '_read_news', lambda symbol: {'count': 0, 'items': []})
+    monkeypatch.setattr(decision_brief, '_read_regime', lambda: {})
+    result = sg.check_decision(MONDAY_1030, probe_symbol='005930')
+    assert result['status'] == 'warn'
+    assert result['detail']['probe_error_sources'] == ['scanner']
+    assert run_reads == [run_id, run_id]
 
 
 # ─── 실패 진입 알림 ─────────────────────────────────────────

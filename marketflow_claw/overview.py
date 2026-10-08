@@ -227,13 +227,16 @@ def build_overview(*, now: datetime | None = None) -> dict[str, Any]:
     try:
         from marketflow_claw.observation import build_quality
 
-        quality = build_quality(now=now)
+        # The five-second overview poll must not run a full-ledger FK scan.
+        # The explicit quality endpoint retains a bounded integrity check.
+        quality = build_quality(now=now, check_integrity=False)
         out['observation'] = {
             'status': quality.get('status'),
             'schema_version': (quality.get('database') or {}).get('schema_version'),
             'freshness': quality.get('freshness') or {},
             'ledger': quality.get('ledger') or {},
             'outcomes': quality.get('outcomes') or {},
+            'integrity': quality.get('integrity') or {},
         }
     except Exception as e:  # noqa: BLE001
         errors['observation'] = f'{type(e).__name__}: {e}'

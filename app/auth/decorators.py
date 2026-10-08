@@ -8,6 +8,7 @@ import threading
 from datetime import timezone
 from functools import wraps
 from flask import request, jsonify, current_app
+from sqlalchemy.orm import object_session
 from app.models import db
 from app.models.user import User
 
@@ -55,6 +56,10 @@ def validate_token(token: str):
 _PW_CHANGE_GRACE_SEC = 5
 
 
+def _is_claw_read_request():
+    return request.method in {'GET', 'HEAD'} and request.path.startswith('/api/kr/claw/')
+
+
 def _get_current_user():
     auth = request.headers.get('Authorization', '')
     if not auth.startswith('Bearer '):
@@ -63,7 +68,19 @@ def _get_current_user():
     user_id = validate_token(token)
     if user_id is None:
         return None
-    user = db.session.get(User, user_id)
+    # Only reuse an identity verified in this request; current_user may be set
+    # by other hooks and is not an authentication credential.
+    cached = getattr(request, '_claw_verified_auth', None) if _is_claw_read_request() else None
+    if (
+        isinstance(cached, tuple)
+        and len(cached) == 2
+        and cached[0] == auth
+        and isinstance(cached[1], User)
+        and cached[1].id == user_id
+    ):
+        user = cached[1]
+    else:
+        user = db.session.get(User, user_id)
     if user is None:
         return None
     # 비밀번호 변경 이전에 발급된 토큰은 무효 — 유출 토큰/구 세션 강제 로그아웃.
@@ -80,7 +97,21 @@ def _get_current_user():
                 return None
         except (ValueError, IndexError):
             return None
+    if _is_claw_read_request():
+        request._claw_verified_auth = (auth, user)
     return user
+
+
+def _release_claw_auth_session(user):
+    """Release auth checkout after permission checks, before file-only Claw work."""
+    if not _is_claw_read_request() or not isinstance(user, User):
+        return
+    request.current_user_id = user.id
+    request.current_user_email = user.email
+    session = object_session(user)
+    if session is not None:
+        session.expunge(user)
+    db.session.remove()
 
 
 def _is_account_blocked(user: User) -> bool:
@@ -135,6 +166,7 @@ def pro_required(f):
         if user.is_pro_expired:
             return jsonify({'error': 'Pro subscription expired', 'expired': True}), 403
         request.current_user = user
+        _release_claw_auth_session(user)
         return f(*args, **kwargs)
     return decorated
 
@@ -152,6 +184,7 @@ def admin_required(f):
             return jsonify({'error': 'Admin access denied'}), 403
 
         request.current_user = user
+        _release_claw_auth_session(user)
         if (request.path or '').startswith('/api/admin/mirofish'):
             request.current_user_id = user.id
             request.current_user_email = user.email
@@ -185,6 +218,7 @@ def admin_or_aibain_required(f):
             }), 403
 
         request.current_user = user
+        _release_claw_auth_session(user)
         # admin_required 와 동일한 세션 정리 (mirofish 경로용)
         if (request.path or '').startswith('/api/admin/mirofish'):
             request.current_user_id = user.id

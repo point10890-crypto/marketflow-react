@@ -673,6 +673,7 @@ def _latest_scanner_run_path() -> str | None:
 
 
 _RUN_PATHS_CACHE: dict[str, tuple[float, list[str]]] = {}
+_RUN_PATHS_CACHE_LOCK = threading.RLock()
 
 
 def _run_paths_ttl_seconds() -> float:
@@ -683,7 +684,9 @@ def _run_paths_ttl_seconds() -> float:
 
 
 def _invalidate_run_paths_cache() -> None:
-    _RUN_PATHS_CACHE.clear()
+    # A rebuild that started before publication must not undo this invalidation.
+    with _RUN_PATHS_CACHE_LOCK:
+        _RUN_PATHS_CACHE.clear()
 
 
 def _scan_latest_run_paths(root: str) -> list[str]:
@@ -725,13 +728,21 @@ def _latest_scanner_run_paths() -> list[str]:
     """
     root = SCANNER_RUNS_ROOT
     ttl = _run_paths_ttl_seconds()
-    now = time_mod.time()
+    now = time_mod.monotonic()
     hit = _RUN_PATHS_CACHE.get(root)
     if ttl > 0 and hit is not None and now - hit[0] < ttl:
         return list(hit[1])
-    paths = _scan_latest_run_paths(root)
-    _RUN_PATHS_CACHE[root] = (now, paths)
-    return list(paths)
+    # Concurrent cold requests share one scan, including requests that missed
+    # before another caller acquired the lock and completed the rebuild.
+    with _RUN_PATHS_CACHE_LOCK:
+        now = time_mod.monotonic()
+        hit = _RUN_PATHS_CACHE.get(root)
+        if ttl > 0 and hit is not None and now - hit[0] < ttl:
+            return list(hit[1])
+        paths = _scan_latest_run_paths(root)
+        # Cold directory enumeration can exceed the TTL; age starts on completion.
+        _RUN_PATHS_CACHE[root] = (time_mod.monotonic(), paths)
+        return list(paths)
 
 
 def read_price_chart(symbol: str, limit: int = 120) -> dict[str, Any]:

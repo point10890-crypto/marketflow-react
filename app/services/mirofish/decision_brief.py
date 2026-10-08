@@ -361,23 +361,39 @@ def _src_jongga(symbol: str) -> dict[str, Any] | None:
     }
 
 
-def _src_scanner(symbol: str) -> dict[str, Any] | None:
+def _src_scanner(symbol: str, *, scanner_run_id: str | None = None) -> dict[str, Any] | None:
     """알파 스캐너 최신 후보 (alpha/risk/RS)."""
-    from app.services.mirofish.alpha_scanner import read_latest_scanner_candidates
+    from app.services.mirofish.alpha_scanner import read_latest_scanner_candidates, read_scanner_run, _safe_run_id
 
-    data = read_latest_scanner_candidates(limit=20) or {}
+    if scanner_run_id is None:
+        data = read_latest_scanner_candidates(limit=20) or {}
+    else:
+        if _safe_run_id(scanner_run_id) != scanner_run_id:
+            raise ValueError('scanner_reference_invalid_id')
+        data = read_scanner_run(scanner_run_id)
+        if data is None:
+            raise FileNotFoundError('scanner_reference_unavailable')
+        if (not isinstance(data, dict) or data.get('id') != scanner_run_id
+                or data.get('status') != 'completed'
+                or not isinstance(data.get('candidates'), list)
+                or any(not isinstance(item, dict) for item in data['candidates'])):
+            raise ValueError('scanner_reference_invalid_run')
     cand = next((c for c in (data.get('candidates') or [])
-                 if str(c.get('symbol')) == symbol), None)
+                 if str(c.get('symbol') or c.get('code') or c.get('ticker')) == symbol), None)
     if not cand:
         return None
-    action = str(cand.get('action') or '').upper()
+    action = str(cand.get('action') or cand.get('verdict') or '').upper()
     stance = 'positive' if 'BUY' in action else 'neutral'
+    detail = {'rank': cand.get('rank'), 'action': action or None,
+              'alpha_score': cand.get('alpha_score', cand.get('score')),
+              'risk_score': cand.get('risk_score', cand.get('risk'))}
+    if scanner_run_id is not None:
+        detail.update(run_id=scanner_run_id, lookup_basis='monitor_reference')
     return {
         'stance': stance,
         'as_of': data.get('generated_at'),
-        'name': cand.get('name') or cand.get('display_name'),
-        'detail': {'rank': cand.get('rank'), 'action': action or None,
-                   'alpha_score': cand.get('alpha_score'), 'risk_score': cand.get('risk_score')},
+        'name': cand.get('name') or cand.get('display_name') or cand.get('stock_name'),
+        'detail': detail,
     }
 
 
@@ -796,7 +812,8 @@ def run_deep_analysis_for(symbol: Any, *, rounds: int | None = None) -> dict[str
 
 # ─── 집계 진입점 ────────────────────────────────────────────
 
-def build_decision_brief(symbol: Any, *, now: datetime | None = None) -> dict[str, Any]:
+def build_decision_brief(symbol: Any, *, now: datetime | None = None,
+                         scanner_run_id: str | None = None) -> dict[str, Any]:
     """한 종목의 모든 독립 근거를 모아 합의·공백·신뢰 상한을 계산한다 (읽기전용)."""
     code, resolved_name = resolve_symbol(symbol)
     stamp = (now or datetime.now(timezone.utc)).isoformat()
@@ -814,7 +831,10 @@ def build_decision_brief(symbol: Any, *, now: datetime | None = None) -> dict[st
         reader = SOURCE_READERS[source]
         t0 = time.perf_counter()
         try:
-            result = reader(code)
+            if source == 'scanner' and scanner_run_id is not None:
+                result = reader(code, scanner_run_id=scanner_run_id)
+            else:
+                result = reader(code)
         except Exception as exc:  # noqa: BLE001 — 소스 장애가 판단 전체를 막지 않는다
             errors[source] = f'{type(exc).__name__}: {exc}'
             data_gaps.append(source)
