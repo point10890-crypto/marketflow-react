@@ -193,6 +193,34 @@ def test_changed_identity_cannot_attach_old_current_quotes(tmp_path):
     assert 'identity_mismatch' in view['operations']['monitoring']['reasons']
 
 
+def test_new_registered_analysis_refreshes_same_symbol_references_without_replaying_monitor(tmp_path):
+    seed(tmp_path)
+    monitor().run_monitor(tmp_path, Provider(), now=OPEN)
+    changed = report()
+    changed['input_fingerprint'] = 'c'*64
+    changed['opportunity_scan']['audit_hash'] = 'd'*64
+    changed['decision_at'] = '2026-10-06T01:00:00Z'
+    candidate = changed['buy_candidates'][0]
+    candidate['last_close'] = 110.
+    candidate['plan'].update(entry_price=110., stop_price=106., target_price=118., loss_fraction=4/110)
+    monitor().register_report(tmp_path, changed, now=changed['decision_at'])
+    before = {str(path): path.read_bytes() for path in tmp_path.rglob('*.json')}
+
+    view = projected(tmp_path, now=changed['decision_at'], value=changed)
+    quote = view['operations']['monitoring']['quotes'][0]
+    assert quote['reference_price'] == 110.
+    assert quote['entry_ceiling'] == 112.2
+    assert quote['stop_price'] == 106. and quote['target_price'] == 118.
+    assert quote['price'] is None and quote['opening_price'] is None
+    assert quote['quote_at'] is None and quote['fetched_at'] is None
+    assert quote.get('adjusted_plan') is None
+    assert quote['entry_state'] == 'unavailable'
+    assert view['operations']['monitoring']['status'] == 'held'
+    assert 'identity_mismatch' in quote['reasons']
+    assert view['report']['proposal_window']['entry_session'] is None
+    assert before == {str(path): path.read_bytes() for path in tmp_path.rglob('*.json')}
+
+
 @pytest.mark.parametrize('mutation', ['source', 'gap', 'bool', 'future'])
 def test_invalid_calendar_cannot_certify_entry_or_today_open(tmp_path, mutation):
     seed(tmp_path)

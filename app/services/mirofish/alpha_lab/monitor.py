@@ -600,6 +600,9 @@ def attach_operations(status, root, now=None):
         if record is not None and (saved_monitor.get('input_fingerprint') != record['input_fingerprint']
                 or saved_monitor.get('opportunity_audit_hash') != record['opportunity_audit_hash']
                 or (saved or {}).get('identity') != record['identity']):
+            # A repeated symbol does not bind its previous reference prices to
+            # new evidence. Project the new frozen plan without replaying quotes.
+            quotes = [_base_quote(row) for row in record['candidates']]
             if saved:
                 reason = reason or 'identity_mismatch'
         if saved_monitor.get('status') == 'failed':
