@@ -67,6 +67,7 @@ from contextlib import nullcontext
 import json
 import threading
 import uuid
+from app.utils.storage_guard import check_storage, is_disk_full
 
 # Windows 환경에서 콘솔 출력 인코딩 강제 설정
 if sys.platform.startswith('win'):
@@ -4959,9 +4960,32 @@ class Scheduler:
 
             for attempt in range(1 + max_retries):
                 try:
+                    # Do not spend provider calls or retry a known full volume.
+                    # No failure file is written: preserve previously completed stages.
+                    storage = check_storage([Config.BASE_DIR, Config.DATA_DIR, Config.LOG_DIR])
+                    if storage['status'] != 'healthy':
+                        logger.error(
+                            "Storage preflight blocked %s: status=%s free_bytes=%s "
+                            "min_free_bytes=%s error_type=%s; "
+                            "collection and retries skipped",
+                            task_key, storage['status'],
+                            storage['checks'][-1]['free_bytes'] if storage['status'] == 'low_space' else None,
+                            storage['min_free_bytes'], storage.get('error_type'),
+                        )
+                        return False
                     if attempt > 0:
                         logger.info(f"🔄 {task_key} 재시도 {attempt}/{max_retries} ({retry_delay}초 후)")
                         time.sleep(retry_delay)
+                        storage = check_storage([Config.BASE_DIR, Config.DATA_DIR, Config.LOG_DIR])
+                        if storage['status'] != 'healthy':
+                            logger.error(
+                                "Storage preflight blocked %s after retry delay: status=%s "
+                                "free_bytes=%s min_free_bytes=%s error_type=%s; "
+                                "collection and retries skipped", task_key, storage['status'],
+                                storage['checks'][-1]['free_bytes'] if storage['status'] == 'low_space' else None,
+                                storage['min_free_bytes'], storage.get('error_type'),
+                            )
+                            return False
                         if task_key == 'crypto':
                             retry_due, retry_slot = _crypto_slot_due(
                                 datetime.now(), include_current=True
@@ -4992,6 +5016,12 @@ class Scheduler:
                         try:
                             success = verify_fn()
                         except Exception as ve:
+                            if is_disk_full(ve):
+                                logger.error(
+                                    "Storage verification failure for %s: disk_full; "
+                                    "collection retries skipped", task_key,
+                                )
+                                return False
                             logger.warning(f"⚠️ {task_key} 검증 실패: {ve}")
                             success = False
 
@@ -5004,6 +5034,12 @@ class Scheduler:
                         logger.warning(f"⚠️ {task_key} 실패 (시도 {attempt + 1}/{1 + max_retries})")
 
                 except Exception as e:
+                    if is_disk_full(e):
+                        logger.error(
+                            "Storage failure for %s: disk_full; collection retries skipped",
+                            task_key,
+                        )
+                        return False
                     logger.error(f"❌ {task_key} 예외 (시도 {attempt + 1}/{1 + max_retries}): {e}")
 
             # 모든 재시도 실패
