@@ -1,5 +1,6 @@
 import { fetchAuthAPI, postAuthAPI } from './api';
 import { validateOpportunityEngine, type OpportunityEngine } from './opportunityEngine';
+import { validateAgentDesk, type AgentDesk } from './agentDeskApi';
 
 export interface AlphaLabPerformance {
     net_total_return: number | null;
@@ -154,6 +155,7 @@ export interface AlphaLabStatus {
     error: string | null;
     operations?: AlphaLabOperations;
     opportunity_engine?: OpportunityEngine;
+    agent_desk?: AgentDesk;
 }
 export interface AlphaLabProposalWindow {
     policy_version: 'next-session-proposal-v1'; input_fingerprint: string; opportunity_audit_hash: string;
@@ -620,6 +622,7 @@ export function validateAlphaLabStatus(value: unknown): AlphaLabStatus {
         latest_session: (value.report as AlphaLabReport | null)?.latest_session,
         source_audit_hash: (value.report as AlphaLabReport | null)?.opportunity_scan?.audit_hash,
     });
+    if (value.agent_desk !== undefined) validateAgentDesk(value.agent_desk, value.opportunity_engine as OpportunityEngine | undefined);
     const status = value as unknown as AlphaLabStatus;
     if (!status.report) return { ...status, operations: status.operations ? { ...status.operations, monitoring: liveAlphaLabMonitoring(status)! } : undefined };
     const normalizeProposal = (row: AlphaLabCandidate, opportunity = false) => {

@@ -280,6 +280,11 @@ def _execute(root):
         return store.set_failure(root)
 
 
+def _with_agent_desk(status, *, now=None):
+    from .decision_contract import build_agent_desk
+    return {**status, 'agent_desk': build_agent_desk(status, now=now)}
+
+
 def read_status(*, now=None):
     # Saved projections only: no quote/source acquisition, fitting or writes.
     from .monitor import attach_operations
@@ -295,7 +300,7 @@ def read_status(*, now=None):
         if isinstance(board, dict):
             board.update(status='held', reasons=list(dict.fromkeys(
                 [*board.get('reasons', []), 'opportunity_store_unavailable'])))
-    return project_opportunity_board(status, now=now, quote_snapshot=snapshot)
+    return _with_agent_desk(project_opportunity_board(status, now=now, quote_snapshot=snapshot), now=now)
 
 
 def scan_once(root=None):
@@ -314,7 +319,7 @@ def start_scan():
     try:
         lock.acquire(timeout=0)
     except Timeout:
-        return project_opportunity_board(store.read_status(root))
+        return _with_agent_desk(project_opportunity_board(store.read_status(root)))
     try:
         status = store.set_running(root)
         def run():
@@ -323,7 +328,7 @@ def start_scan():
             finally:
                 lock.release()
         threading.Thread(target=run, name='alpha-lab-research', daemon=True).start()
-        return project_opportunity_board(status)
+        return _with_agent_desk(project_opportunity_board(status))
     except Exception:
         lock.release()
         raise
