@@ -5,7 +5,7 @@
 "구독자가 지금 이 기능을 쓸 수 있는가"만 판정한다 (2026-09-01 서비스 개시).
 
 원칙
-- 읽기전용 + 프로브. 스캔·발송·주문을 트리거하지 않는다(판단 프로브의 캐시 워밍 제외).
+- 읽기전용 + 프로브. 스캔·발송·주문을 트리거하지 않고 일반 판단 캐시를 덮어쓰지 않는다.
 - 체커 하나의 예외가 가드 전체를 죽이지 않는다 — 예외는 그 서비스의 fail 로 환산.
 - 알림은 실제 장애(→fail) 진입 때만 보낸다. warn/ok/복구와 동일 fail 지속은 기록만 한다.
 - 발송 함수는 주입받는다(send_fn). 이 모듈은 텔레그램을 모른다.
@@ -73,18 +73,54 @@ def _env_float(name: str, default: float) -> float:
 
 # ─── 체커 ───────────────────────────────────────────────────
 
+def _scanner_monitor_reference() -> tuple[dict[str, Any] | None, dict[str, Any], str | None]:
+    """Resolve one completed monitor run; never enumerate the scanner archive."""
+    from app.services.mirofish import alpha_scanner
+
+    try:
+        monitor = alpha_scanner.read_scanner_monitor_state()
+    except Exception:  # noqa: BLE001 — a broken reference must not trigger a full archive scan
+        return None, {}, 'monitor_unreadable'
+    if not isinstance(monitor, dict):
+        return None, {}, 'monitor_unavailable'
+    reference = monitor.get('last_run_id')
+    if not isinstance(reference, str) or not reference:
+        return None, monitor, 'missing_reference'
+    try:
+        if alpha_scanner._safe_run_id(reference) != reference:
+            return None, monitor, 'invalid_reference'
+        run = alpha_scanner.read_scanner_run(reference)
+    except Exception:  # noqa: BLE001
+        return None, monitor, 'reference_unreadable'
+    if not isinstance(run, dict):
+        return None, monitor, 'missing_run'
+    if (run.get('id') != reference or run.get('status') != 'completed'
+            or not isinstance(run.get('candidates'), list)
+            or any(not isinstance(item, dict) for item in run['candidates'])):
+        return None, monitor, 'invalid_run'
+    return run, monitor, None
+
+
 def check_scanner(now: datetime | None = None) -> dict[str, Any]:
-    """최신 run 신선도 + 모니터 상태. 장중 90분/240분, 장외 3일/7일 기준."""
+    """모니터가 참조한 run 신선도. 장중 90분/240분, 장외 3일/7일 기준."""
     from app.services.mirofish import alpha_scanner
 
     now = _now_kst(now)
-    paths = alpha_scanner._latest_scanner_run_paths()
-    if not paths:
-        return {'status': 'fail', 'detail': {'reason': 'no_scanner_runs'}}
+    run, monitor, reference_error = _scanner_monitor_reference()
+    detail: dict[str, Any] = {
+        'lookup_basis': 'monitor_reference',
+        'monitor': {k: monitor.get(k) for k in ('last_status', 'blocked_reason', 'updated_at')
+                    if monitor.get(k) is not None},
+    }
+    if run is None:
+        detail.update(reason='reference_unavailable', reference_error=reference_error)
+        return {'status': 'fail', 'detail': detail}
+    detail['run_id'] = run['id']
     try:
-        age_h = _age_hours(os.path.getmtime(paths[0]), now)
-    except OSError as exc:
-        return {'status': 'fail', 'detail': {'reason': f'latest_run_unreadable: {exc}'}}
+        age_h = _age_hours(os.path.getmtime(alpha_scanner._run_path(run['id'])), now)
+    except OSError:
+        detail.update(reason='reference_unavailable', reference_error='reference_unreadable')
+        return {'status': 'fail', 'detail': detail}
 
     in_session = _market_session(now)
     if in_session:
@@ -98,14 +134,8 @@ def check_scanner(now: datetime | None = None) -> dict[str, Any]:
         stale_h = age_h
     status = 'fail' if stale_h > fail_h else ('warn' if stale_h > warn_h else 'ok')
 
-    detail: dict[str, Any] = {'latest_run_age_h': round(age_h, 2), 'stale_h': round(stale_h, 2),
-                              'warn_h': warn_h, 'fail_h': fail_h, 'market_session': in_session}
-    try:
-        monitor = alpha_scanner.read_scanner_monitor_state()
-        detail['monitor'] = {k: monitor.get(k) for k in ('last_status', 'blocked_reason', 'updated_at')
-                             if monitor.get(k) is not None}
-    except Exception as exc:  # noqa: BLE001 — 모니터 상태는 참고 정보다
-        detail['monitor_error'] = f'{type(exc).__name__}'
+    detail.update(latest_run_age_h=round(age_h, 2), stale_h=round(stale_h, 2),
+                  warn_h=warn_h, fail_h=fail_h, market_session=in_session)
     return {'status': status, 'detail': detail}
 
 
@@ -166,41 +196,45 @@ def check_goodrich(now: datetime | None = None) -> dict[str, Any]:
 
 
 def check_decision(now: datetime | None = None, *, probe_symbol: str | None = None) -> dict[str, Any]:
-    """판단 조회 합성 프로브 — 계산 지연·최다 소요 소스·캐시 쓰기까지 실측.
-
-    프로브 결과는 실제 캐시에 저장한다(해당 심볼의 워밍을 겸함) — 읽기전용 원칙의
-    유일한 예외이며, 사용자 요청과 동일한 산출물이라 부작용이 아니다.
-    """
-    from app.services.mirofish import decision_brief, decision_cache
+    """참조 run으로 판단 계산 지연을 재되 일반 사용자 캐시는 덮어쓰지 않는다."""
+    from app.services.mirofish import alpha_scanner, decision_brief
 
     now = _now_kst(now)
-    symbol = probe_symbol or (hot_symbols(limit=1) or ['005930'])[0]
+    run, _, reference_error = _scanner_monitor_reference()
+    detail: dict[str, Any] = {'lookup_basis': 'monitor_reference', 'cache_write': False,
+                              'probe_cache_policy': 'monitor_reference_no_warm'}
+    if run is None:
+        detail.update(reason='reference_unavailable', reference_error=reference_error,
+                      probe_deferred=True)
+        return {'status': 'warn', 'detail': detail}
+    detail['run_id'] = run['id']
+    candidates = sorted(run['candidates'],
+                        key=lambda item: alpha_scanner._clean_rank(item.get('rank')))
+    symbols = [str(item.get('symbol') or item.get('code') or item.get('ticker') or '').strip()
+               for item in candidates]
+    symbol = probe_symbol or next((code for code in symbols if code), '005930')
     warn_s = _env_float('AIBRAIN_DECISION_PROBE_WARN_S', 5)
     fail_s = _env_float('AIBRAIN_DECISION_PROBE_FAIL_S', 20)
 
     t0 = time.perf_counter()
     try:
-        payload = decision_brief.build_decision_brief(symbol)
+        payload = decision_brief.build_decision_brief(symbol, scanner_run_id=run['id'])
     except Exception as exc:  # noqa: BLE001
-        return {'status': 'fail', 'detail': {'probe_symbol': symbol,
-                                             'probe_error': f'{type(exc).__name__}: {exc}'}}
+        detail.update(probe_symbol=symbol, probe_error=f'{type(exc).__name__}: {exc}')
+        return {'status': 'fail', 'detail': detail}
     probe_s = time.perf_counter() - t0
 
     timings = payload.get('timings_ms') or {}
     slowest = max(((k, v) for k, v in timings.items() if k != 'total'),
                   key=lambda kv: kv[1], default=(None, 0))
     status = 'fail' if probe_s > fail_s else ('warn' if probe_s > warn_s else 'ok')
-    detail: dict[str, Any] = {'probe_symbol': symbol, 'probe_s': round(probe_s, 2),
-                              'warn_s': warn_s, 'fail_s': fail_s,
-                              'slowest_source': slowest[0], 'slowest_ms': slowest[1]}
-
-    try:
-        decision_cache.cache_put('brief', symbol, payload)
-        detail['cache_write'] = True
-    except Exception as exc:  # noqa: BLE001
-        detail['cache_write'] = False
-        detail['cache_error'] = f'{type(exc).__name__}: {exc}'
+    error_sources = sorted(payload.get('errors') or {})
+    if 'scanner' in error_sources:
         status = max_status(status, 'warn')
+    detail.update(probe_symbol=symbol, probe_s=round(probe_s, 2),
+                  warn_s=warn_s, fail_s=fail_s,
+                  slowest_source=slowest[0], slowest_ms=slowest[1],
+                  probe_error_sources=error_sources)
     return {'status': status, 'detail': detail}
 
 
@@ -227,9 +261,12 @@ def hot_symbols(limit: int = 12) -> list[str]:
             out.append(c)
 
     try:
-        from app.services.mirofish.alpha_scanner import read_latest_scanner_candidates
-        for cand in (read_latest_scanner_candidates(limit=10) or {}).get('candidates') or []:
-            _add(cand.get('symbol'))
+        from app.services.mirofish import alpha_scanner
+        run, _, _ = _scanner_monitor_reference()
+        candidates = sorted((run or {}).get('candidates') or [],
+                            key=lambda item: alpha_scanner._clean_rank(item.get('rank')))
+        for cand in candidates[:10]:
+            _add(cand.get('symbol') or cand.get('code') or cand.get('ticker'))
     except Exception:  # noqa: BLE001
         pass
     try:

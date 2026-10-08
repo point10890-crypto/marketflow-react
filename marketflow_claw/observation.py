@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 import sqlite3
+import time
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from typing import Any, Iterator
@@ -29,6 +30,7 @@ OUTCOME_METHOD_VERSION = 'daily_prices_current_price_unadjusted.v1'
 DEFAULT_HORIZONS = (1, 5)
 MIN_SCORECARD_COMPLETE = 5
 FRESH_SCAN_SECONDS = 300
+QUALITY_SQL_BUDGET_SECONDS = 1.0
 STRUCTURAL_MAX_CALENDAR_DAYS = 7
 KST = timezone(timedelta(hours=9))
 
@@ -941,11 +943,31 @@ def build_scorecards(*, now: datetime | None = None, window_days: int = 30,
     }
 
 
-def build_quality(*, now: datetime | None = None) -> dict[str, Any]:
-    """Read-only health projection. Never creates schema or starts a scan."""
+@contextmanager
+def _quality_sql_budget(con: sqlite3.Connection, deadline: float) -> Iterator[None]:
+    """Bound SQL execution, including full-ledger diagnostic scans."""
+    con.set_progress_handler(lambda: int(time.monotonic() >= deadline), 1000)
+    try:
+        yield
+    finally:
+        con.set_progress_handler(None, 0)
+
+
+def build_quality(
+    *, now: datetime | None = None, check_integrity: bool = True,
+) -> dict[str, Any]:
+    """Read-only health projection with a one-second SQL execution budget.
+
+    Polling callers may skip the full foreign-key scan. Skipped or interrupted
+    diagnostics are explicitly degraded, never reported as complete/healthy.
+    """
+    deadline = time.monotonic() + QUALITY_SQL_BUDGET_SECONDS
     now = now or datetime.now()
     health = _read_health()
     errors: list[str] = []
+    integrity = {'status': 'incomplete' if check_integrity else 'not_checked', 'complete': False}
+    if not check_integrity:
+        errors.append('integrity_not_checked')
     counts = {'scans': 0, 'contexts': 0, 'instances': 0, 'state_events': 0}
     outcome_counts = {'pending': 0, 'complete': 0, 'missing': 0}
     schema_version: int | None = None
@@ -959,7 +981,7 @@ def build_quality(*, now: datetime | None = None) -> dict[str, Any]:
     except OSError:
         db_bytes = 0
     try:
-        with connect(write=False) as con:
+        with connect(write=False) as con, _quality_sql_budget(con, deadline):
             foreign_keys = bool(con.execute('PRAGMA foreign_keys').fetchone()[0])
             raw_version = _meta_get(con, 'schema_version')
             schema_version = int(raw_version) if raw_version is not None else None
@@ -982,11 +1004,16 @@ def build_quality(*, now: datetime | None = None) -> dict[str, Any]:
             ).fetchone()
             last_scan_at = scan['observed_at'] if scan else None
             data_as_of = _meta_get(con, 'outcomes_data_as_of') or None
-            fk_issues = con.execute('PRAGMA foreign_key_check').fetchall()
-            if fk_issues:
-                errors.append(f'foreign_key_violations:{len(fk_issues)}')
+            if check_integrity:
+                fk_issues = con.execute('PRAGMA foreign_key_check').fetchall()
+                integrity = {'status': 'violations' if fk_issues else 'ok', 'complete': True}
+                if fk_issues:
+                    errors.append(f'foreign_key_violations:{len(fk_issues)}')
     except Exception as exc:  # noqa: BLE001 - diagnostics must remain available
-        errors.append(f'{type(exc).__name__}: {str(exc)[:180]}')
+        if isinstance(exc, sqlite3.OperationalError) and str(exc) == 'interrupted':
+            errors.append('quality_sql_budget_exceeded')
+        else:
+            errors.append(f'{type(exc).__name__}: {str(exc)[:180]}')
     age = _safe_age_seconds(last_scan_at, now)
     consecutive = int(health.get('consecutive_errors') or 0)
     if schema_version is None:
@@ -998,6 +1025,7 @@ def build_quality(*, now: datetime | None = None) -> dict[str, Any]:
     return {
         'schema_version': 'marketflow.claw.quality.v1',
         'generated_at': _now_iso(now), 'status': status,
+        'integrity': integrity,
         'database': {
             'path_exists': path_exists, 'bytes': db_bytes, 'foreign_keys': foreign_keys,
             'schema_version': schema_version,

@@ -251,3 +251,93 @@ def test_cap_unaffected_when_all_numbers_verified():
         verification={'verified': 5, 'unverified': 0, 'contradicted': 0})
     assert cap == pytest.approx(0.75)
     assert reasons == []
+
+
+@pytest.mark.parametrize('candidate', [
+    {'symbol': '005930', 'name': '삼성전자', 'rank': 2, 'action': 'BUY', 'alpha_score': 88, 'risk_score': 15},
+    {'code': '005930', 'stock_name': '삼성전자', 'rank': 2, 'verdict': 'BUY', 'score': 88, 'risk': 15},
+])
+def test_build_scanner_reference_is_bounded_and_preserves_reader_registry(tmp_path, monkeypatch, candidate):
+    import json
+    from app.services.mirofish import alpha_scanner
+    run_id = 'mfas_20260831093000_aaaaaaaaaaaa'
+    root = tmp_path / 'runs'
+    header = root / run_id / 'run.json'
+    header.parent.mkdir(parents=True)
+    header.write_text(json.dumps({'id': run_id, 'status': 'completed',
+                                  'generated_at': '2026-08-31T09:30:00+09:00',
+                                  'candidates': [candidate]}), encoding='utf-8')
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(root))
+    monkeypatch.setattr(alpha_scanner, 'read_latest_scanner_candidates', lambda **kwargs: pytest.fail('archive enumeration forbidden'))
+    _stub_sources(monkeypatch, {'scanner': db._src_scanner})
+    _regime_stub(monkeypatch)
+    registry_before = dict(db.SOURCE_READERS)
+    result = db.build_decision_brief('005930', scanner_run_id=run_id)
+    scanner = next(signal for signal in result['signals'] if signal['source'] == 'scanner')
+    assert scanner['detail'] == {'rank': 2, 'action': 'BUY', 'alpha_score': 88,
+                                'risk_score': 15, 'run_id': run_id,
+                                'lookup_basis': 'monitor_reference'}
+    assert scanner['as_of'] == '2026-08-31T09:30:00+09:00'
+    assert result['name'] == '삼성전자'
+    assert db.SOURCE_READERS == registry_before
+
+
+def test_default_scanner_reader_keeps_normal_latest_contract(monkeypatch):
+    from app.services.mirofish import alpha_scanner
+    calls = []
+    monkeypatch.setattr(alpha_scanner, 'read_latest_scanner_candidates',
+                        lambda **kwargs: calls.append(kwargs) or {'generated_at': 'latest',
+                        'candidates': [{'symbol': '005930', 'rank': 1, 'action': 'HOLD', 'alpha_score': 77}]})
+    monkeypatch.setattr(alpha_scanner, 'read_scanner_candidates', lambda *args: pytest.fail('default must use latest'))
+    _stub_sources(monkeypatch, {'scanner': db._src_scanner})
+    _regime_stub(monkeypatch)
+    result = db.build_decision_brief('005930')
+    scanner = next(signal for signal in result['signals'] if signal['source'] == 'scanner')
+    assert calls == [{'limit': 20}]
+    assert scanner['as_of'] == 'latest'
+    assert scanner['detail'] == {'rank': 1, 'action': 'HOLD', 'alpha_score': 77, 'risk_score': None}
+
+
+def test_missing_scanner_reference_is_a_gap_without_latest_fallback(tmp_path, monkeypatch):
+    from app.services.mirofish import alpha_scanner
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'empty'))
+    monkeypatch.setattr(alpha_scanner, 'read_latest_scanner_candidates', lambda **kwargs: pytest.fail('archive enumeration forbidden'))
+    _stub_sources(monkeypatch, {'scanner': db._src_scanner})
+    _regime_stub(monkeypatch)
+    result = db.build_decision_brief('005930', scanner_run_id='mfas_20260831093000_aaaaaaaaaaaa')
+    assert 'scanner' in result['data_gaps']
+    assert 'scanner' in result['errors']
+    assert not any(signal['source'] == 'scanner' for signal in result['signals'])
+
+
+@pytest.mark.parametrize('case', ['unsafe', 'identity_mismatch', 'running', 'incomplete', 'malformed_candidates', 'malformed_candidate'])
+def test_bounded_scanner_rejects_invalid_reference_header(tmp_path, monkeypatch, case):
+    import json
+    from app.services.mirofish import alpha_scanner
+    run_id = 'mfas_20260831093000_aaaaaaaaaaaa'
+    root = tmp_path / 'runs'
+    header = root / run_id / 'run.json'
+    header.parent.mkdir(parents=True)
+    run = {'id': run_id, 'status': 'completed',
+           'candidates': [{'symbol': '005930', 'action': 'BUY', 'alpha_score': 99}]}
+    if case == 'unsafe':
+        run_id = '../outside'
+    elif case == 'identity_mismatch':
+        run['id'] = 'mfas_20260831103000_bbbbbbbbbbbb'
+    elif case == 'running':
+        run['status'] = 'running'
+    elif case == 'incomplete':
+        run.pop('candidates')
+    elif case == 'malformed_candidates':
+        run['candidates'] = {'symbol': '005930'}
+    else:
+        run['candidates'].append(None)
+    header.write_text(json.dumps(run), encoding='utf-8')
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(root))
+    monkeypatch.setattr(alpha_scanner, 'read_latest_scanner_candidates', lambda **kwargs: pytest.fail('archive enumeration forbidden'))
+    _stub_sources(monkeypatch, {'scanner': db._src_scanner})
+    _regime_stub(monkeypatch)
+    result = db.build_decision_brief('005930', scanner_run_id=run_id)
+    assert 'scanner' in result['errors']
+    assert 'scanner' in result['data_gaps']
+    assert not any(signal['source'] == 'scanner' for signal in result['signals'])

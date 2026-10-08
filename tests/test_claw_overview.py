@@ -83,3 +83,20 @@ def test_overview_hides_detection_unknown_guard_rows(monkeypatch, tmp_path):
     o = ov.build_overview(now=now)
 
     assert [row['code'] for row in o['leaders']['rows']] == ['001']
+
+
+def test_overview_keeps_full_integrity_scan_out_of_five_second_poll(monkeypatch, tmp_path):
+    from marketflow_claw import observation
+
+    now = _setup(monkeypatch, tmp_path)
+    integrity = {'status': 'not_checked', 'reason': 'overview_poll'}
+
+    def read_health(**kwargs):
+        assert kwargs['check_integrity'] is False
+        return {'status': 'degraded', 'integrity': integrity}
+
+    monkeypatch.setattr(observation, 'build_quality', read_health)
+    result = ov.build_overview(now=now)
+
+    assert 'observation' not in result['errors']
+    assert result['observation']['integrity'] == integrity

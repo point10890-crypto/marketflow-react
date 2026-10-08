@@ -84,3 +84,48 @@ RS changes, CSV availability cutoffs and provider TTL boundaries can change
 scores without equivalent file metadata. Production semantic ranking also
 requires its normal evaluation. Space recovery must not relax freshness,
 look-ahead, learning, CIO approval or live-order contracts.
+
+## Authenticated API recovery
+
+Space recovery exposed a second failure: `/healthz` remained 200 while protected
+API requests failed with a QueuePool timeout (20 pooled + 40 overflow
+connections). Restarting Flask cleared this only temporarily. A read-only thread
+profile identified 60 Claw overview requests executing a whole-ledger
+`PRAGMA foreign_key_check`, each retaining its users.db authentication connection.
+The observation database is separate from users.db; the request lifetime linked
+their otherwise independent resources. Browser timeouts did not cancel those
+server-side SQLite operations.
+
+Claw endpoints now return their authentication connection after their existing
+permission checks, before starting data analysis. The validated user snapshot is
+cached only within that Claw request, so the global Pro gate and route decorator
+do not authenticate twice. Account/subscription mutation routes keep their ORM
+session behavior, including persisting expiration in the global gate.
+
+The five-second overview poll skips full integrity checking. Quality SQL has a
+one-second monotonic execution budget, including counting and explicit integrity
+checking. Skipped/interrupted checks are marked `not_checked`/`incomplete` and
+degraded; this repair does not claim the observation ledger passed a full check.
+The explicit `/api/kr/claw/quality` endpoint retains bounded full checking.
+
+Concurrent scanner latest-list reads share one cold directory enumeration. The
+cache TTL starts when enumeration completes and uses a monotonic clock; completed
+run publication invalidates through the same lock. This reduces duplicate file
+work without caching analyses or changing candidate freshness/decisions. A single
+cold enumeration of a large archive can still be slow.
+
+The service guard runs on the same scheduler thread as collections. Its scanner
+check and hot-symbol selection therefore use the validated completed run named
+by the monitor state, without a cold archive search. This is explicitly labeled
+`monitor_reference`, not claimed to be the globally newest historical run.
+Missing, unsafe, mismatched or incomplete references are reported as unavailable.
+The guard's decision probe uses that bounded reference and does not overwrite
+the ordinary user brief cache with a different snapshot. The general user brief
+and explicit prewarm contracts retain their normal source selection.
+
+After a backend restart, verify protected APIs repeatedly beyond the prior
+three-minute failure window and inspect thread/timeout counts. Health-only
+checks or a single successful authenticated request are insufficient. Use a
+read-only profiler without local variables; do not expose credentials or account
+fields in diagnostic output. Observe ordinary scheduled updates instead of
+replaying jobs that can notify subscribers.
