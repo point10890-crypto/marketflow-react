@@ -27,6 +27,8 @@ ROOT = Path(__file__).resolve().parents[1]
 KST = timezone(timedelta(hours=9))
 SOURCE = 'naver_sise_json_public'
 BASIS = 'provider_reported_unverified'
+ACQUISITION_CUTOFF_KST = time(20, 30)
+ACQUISITION_POLICY_VERSION = 'postmarket_2030_kst_v1'
 
 
 class RefreshError(ValueError):
@@ -76,11 +78,23 @@ def _capture(value, now):
     return captured
 
 
+def acquisition_cutoff(as_of):
+    """Acquisition buffer after NXT, not a certification of provider finality."""
+    return datetime.combine(date.fromisoformat(_day(as_of)), ACQUISITION_CUTOFF_KST, KST)
+
+
+def _price_capture(value, as_of, now):
+    captured = _capture(value, now)
+    if captured < acquisition_cutoff(as_of):
+        raise RefreshError('price_capture_before_acquisition_cutoff')
+    return captured
+
+
 def latest_closed_weekday(now):
-    """Calendar fallback, not a certified exchange/holiday calendar."""
+    """Buffered weekday fallback, not a certified exchange/holiday calendar."""
     local = now.astimezone(KST)
     day = local.date()
-    if local.time().replace(tzinfo=None) < time(15, 30):
+    if local.time().replace(tzinfo=None) < ACQUISITION_CUTOFF_KST:
         day -= timedelta(days=1)
     while day.weekday() >= 5:
         day -= timedelta(days=1)
@@ -121,7 +135,17 @@ def _inside(root, relative):
     return path
 
 
-def _reuse(root, as_of, settings):
+def _audit_snapshot_captures(root, pointer, as_of, settings, now):
+    # Hashes alone cannot prove a cached batch was captured after the buffer.
+    # Revalidate every original capture without updating any source artifact.
+    directory = _inside(root, pointer['prices']).parent
+    scope_path = _inside(root, f"snapshots/{pointer['snapshot_id']}/scope/report.json")
+    _price_capture(pointer['source_metadata']['captured_at'], as_of, now)
+    _prices(directory, scope_path, as_of, settings['start'], now)
+    _scope(_inside(root, pointer['universe_report']), as_of, now)
+
+
+def _reuse(root, as_of, settings, now):
     try:
         pointer = _json(root/'current.json')
         if pointer.get('schema_version') != 1 or pointer.get('as_of') != as_of or pointer.get('settings') != settings:
@@ -129,6 +153,7 @@ def _reuse(root, as_of, settings):
         for key in ('prices', 'price_manifest', 'universe_report'):
             if _hash(_inside(root, pointer[key])) != pointer['hashes'][key]:
                 return None
+        _audit_snapshot_captures(root, pointer, as_of, settings, now)
         return dict(status='complete', reused=True, **pointer)
     except (OSError, ValueError, KeyError, TypeError):
         return None
@@ -142,8 +167,7 @@ def _recover_sealed(root, destination, as_of, settings, now):
     for key in ('prices', 'price_manifest', 'universe_report'):
         if _hash(_inside(root, pointer[key])) != pointer['hashes'][key]:
             raise RefreshError('sealed_snapshot_artifact_changed')
-    _capture(pointer['source_metadata']['captured_at'], now)
-    _scope(_inside(root, pointer['universe_report']), as_of, now)
+    _audit_snapshot_captures(root, pointer, as_of, settings, now)
     _write(root/'current.json', pointer)
     _write(root/'last_attempt.json', dict(status='complete', as_of=as_of,
                                         snapshot_id=destination.name, recovered_publication=True))
@@ -214,7 +238,7 @@ def _prices(directory, scope_path, as_of, start, now):
     for row in metadata:
         if row.get('status') != 'collected' or row.get('coverage', {}).get('last_date') != as_of:
             raise RefreshError('stale_or_failed_symbol_prices')
-        _capture(row.get('captured_at'), now)
+        _price_capture(row.get('captured_at'), as_of, now)
     counts, latest, captures = Counter(), {}, set()
     with (directory/'prices.csv').open(encoding='utf-8-sig', newline='') as handle:
         reader = csv.DictReader(handle)
@@ -227,17 +251,15 @@ def _prices(directory, scope_path, as_of, start, now):
                 raise RefreshError('price_rows_outside_request')
             if row['source'] != SOURCE or row['price_basis'] != BASIS or row['analysis_ready'].lower() != 'false':
                 raise RefreshError('mixed_or_promoted_price_row_source')
-            stamp = _capture(row['captured_at'], now)
-            if stamp < datetime.combine(date.fromisoformat(day), time(15, 30), KST):
-                raise RefreshError('price_capture_before_session_close')
+            stamp = _price_capture(row['captured_at'], as_of, now)
             counts[symbol] += 1
             latest[symbol] = max(latest.get(symbol, day), day)
-            captures.add(stamp.isoformat())
+            captures.add(stamp)
     if set(counts) != expected or any(latest[symbol] != as_of for symbol in expected):
         raise RefreshError('actual_price_rows_are_stale')
     if sum(counts.values()) != report.get('total_rows') or any(counts[row['symbol']] != row['coverage'].get('rows') for row in metadata):
         raise RefreshError('price_row_count_mismatch')
-    return report, max(captures)
+    return report, max(captures).isoformat()
 
 
 def _diagnostic(stage, result):
@@ -318,9 +340,10 @@ def refresh_inputs(*, root=None, seed_prices=None, as_of=None, start='2005-01-01
     if as_of > latest_closed_weekday(now) or start > as_of or date.fromisoformat(as_of).weekday() >= 5:
         raise RefreshError('requested_session_not_closed')
     year, report_code = _period(as_of, year, report_code)
-    settings = dict(start=start, year=year, report_code=report_code, top_n=100)
+    settings = dict(start=start, year=year, report_code=report_code, top_n=100,
+                    acquisition_policy_version=ACQUISITION_POLICY_VERSION)
     root = Path(root or ROOT/'data/alpha_lab/inputs').resolve()
-    reused = _reuse(root, as_of, settings)
+    reused = _reuse(root, as_of, settings, now)
     if reused and not dry_run:
         return reused
     if seed_prices is None:

@@ -134,12 +134,20 @@ status lives in `data/alpha_lab/status.json`. Generated artifacts remain ignored
 
 Dedicated Windows MiniPC tasks, installed with `scripts/install_alpha_lab_tasks.ps1`:
 
-- `MarketFlow-AlphaLab-Research`:18:45KST,90-minute limit, completed-session source acquisition then research. An official closed date skips collection and preserves the last report.
+- `MarketFlow-AlphaLab-Research`:20:30KST,90-minute limit, post-session source acquisition then research. An official closed date skips collection and preserves the last report.
 - `MarketFlow-AlphaLab-Prime`:08:55KST,3-minute limit, official KIS session calendar preparation.
 - `MarketFlow-AlphaLab-Monitor`:09:00–15:30KST every five minutes,3-minute limit, at most the three current proposal references. Known closed days issue no quote requests.
 
 All use IgnoreNew and saved atomic/locked artifacts. Task installation does not launch a first research cycle. GET remains a cheap read; READY screens re-read saved status every30seconds and RUNNING screens every4seconds.
 Flask production remains127.0.0.1:5003; development remains5001. Chart index scheduling stays independent.
+
+### Daily-feed settling window (2026-10-08 source audit)
+
+The former18:45 collection accepted a daily feed that was still changing. A bounded3-symbol probe at19:26KST found actual same-day close/volume changes for000660,007660 and196170 against the immutable18:45 snapshot; the previous day's rows were stable in that probe. This is a temporal input defect, not a capture-timestamp-only revision. The official [NXT trading system](https://www.nextrade.co.kr/menu/transactionSys.do) states that its aftermarket ends20:00. That timing is consistent with the observed updates; the NAVER feed's exact venue/adjustment semantics remain unverified.
+
+Acquisition now waits until20:30KST, a30-minute buffer after that session. Explicit earlier same-day requests are rejected before collection/publication, and actual per-symbol/CSV capture times must meet the same cutoff. A versioned acquisition policy prevents reuse of old provisional snapshots as compliant inputs; old sealed files, first decisions and terminal outcomes remain preserved. The weekday helper is still not an exchange holiday certificate; the scheduled wrapper retains its official KIS calendar check. A time buffer cannot guarantee provider finality: later numeric corrections still create source revisions and remain excluded from performance. No parameters or inspected historical windows were retuned, and no realized profit is inferred.
+
+The separate admin-symbol acquisition path uses the same buffer for its official-calendar selection and raw-price cache. It records the price capture separately from later financial captures, which cannot make an early price appear settled. Next-session entry expiry remains15:30KST. Legacy saved reports remain readable for audit; deployment does not rerun their first decisions. The next scheduled compliant collection publishes a separate snapshot atomically.
 
 ## Certified session windows and price monitoring
 

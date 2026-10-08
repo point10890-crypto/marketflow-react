@@ -61,6 +61,7 @@ def test_new_verified_closed_session_failure_does_not_silently_reuse_old_prices(
 
 def test_targeted_cache_revalidates_calendar_on_a_new_day_and_holds_if_unavailable(monkeypatch,tmp_path):
     source=source_module();data=snapshot();data['source_mode']='targeted_collection'
+    data['provenance']['price_captured_at']=data['provenance']['captured_at']
     data['official_calendar']=dict(source='KIS:CTCA0903R',captured_at='2026-10-03T00:00:00Z',
         days=[dict(date='2026-10-02',is_open=True),dict(date='2026-10-03',is_open=False),dict(date='2026-10-04',is_open=False),dict(date='2026-10-05',is_open=True)])
     source.store._write(tmp_path/'sources'/'inputs.json',dict(inputs=data,sha256=source.store._hash(data)))
@@ -183,3 +184,162 @@ def test_busy_reanalysis_keeps_prices_but_suppresses_saved_buy(monkeypatch,tmp_p
     assert busy['result']['candidate']['proposal']['action']=='wait'
     assert busy['result']['candidate']['proposal']['proposed_weight']==0.
     assert busy['result']['candidate']['plan']==first['result']['candidate']['plan']
+
+
+def official_calendar(now):
+    from datetime import datetime, timedelta
+    today = datetime.fromisoformat(now.replace('Z', '+00:00')).date()
+    first = today - timedelta(days=10)
+    return dict(source='KIS:CTCA0903R', captured_at=now,
+        days=[dict(date=(first + timedelta(days=i)).isoformat(),
+            is_open=(first + timedelta(days=i)).weekday() < 5) for i in range(18)])
+
+
+@pytest.mark.parametrize('now, expected', [
+    ('2026-10-08T18:45:00+09:00', '2026-10-07'),
+    ('2026-10-08T20:29:59+09:00', '2026-10-07'),
+    ('2026-10-08T20:30:00+09:00', '2026-10-08'),
+])
+def test_official_symbol_calendar_waits_for_daily_feed_settling(monkeypatch, now, expected):
+    from app.services.mirofish.alpha_lab import market_provider
+    source = source_module()
+    calendar = official_calendar(now)
+    monkeypatch.setattr(market_provider, 'KISMarketProvider', lambda: SimpleNamespace(
+        fetch_calendar=lambda *_args: calendar))
+
+    _, closed = source._calendar(now)
+
+    assert closed == expected
+
+
+@pytest.mark.parametrize('mode', ['canonical', 'targeted'])
+@pytest.mark.parametrize('late_financial_capture', [False, True])
+def test_provisional_price_inputs_cannot_be_reused_as_completed_sources(monkeypatch, tmp_path, mode, late_financial_capture):
+    from app.services.mirofish.alpha_lab import service
+    source = source_module()
+    data = snapshot()
+    data['provenance']['captured_at'] = '2026-10-02T09:45:00Z'
+    if late_financial_capture:
+        data['provenance'].update(captured_at='2026-10-02T12:00:00Z', price_captured_at='2026-10-02T09:45:00Z')
+    data['official_calendar'] = official_calendar(NOW)
+    monkeypatch.setattr(source, '_canonical', lambda _now: data if mode == 'canonical' else None)
+    monkeypatch.setattr(service, 'read_status', lambda: dict(state='missing', report=None))
+    monkeypatch.setattr(source, '_calendar', lambda _now: (official_calendar(NOW), '2026-10-02'))
+    original = deepcopy(data)
+    source_path = tmp_path/'sources'/'inputs.json'
+    if mode == 'targeted':
+        data['source_mode'] = 'targeted_collection'
+        original = deepcopy(data)
+        source.store._write(source_path, dict(inputs=data, sha256=source.store._hash(data)))
+        before = source_path.read_bytes()
+    def collect(*_args, **_kwargs):
+        raise ValueError('new_capture_required')
+    monkeypatch.setattr(source, '_collect', collect)
+
+    with pytest.raises(ValueError, match='new_capture_required'):
+        source.acquire_inputs(dict(symbol='196170', name='알테오젠', market='KR'), root=tmp_path, now=NOW)
+
+    assert data == original
+    if mode == 'targeted':
+        assert source_path.read_bytes() == before
+
+
+def test_targeted_cache_does_not_roll_to_unfinished_same_day_prices(monkeypatch, tmp_path):
+    from datetime import datetime, timedelta
+    source = source_module()
+    now = '2026-10-08T18:45:00+09:00'
+    data = snapshot()
+    for row in data['prices_by_symbol']['196170']:
+        row['date'] = (datetime.fromisoformat(row['date']).date() + timedelta(days=5)).isoformat()
+    data.update(latest_session='2026-10-07', source_mode='targeted_collection',
+        decision_at='2026-10-07T12:00:00Z', official_calendar=official_calendar(now))
+    data['universe']['scope_date'] = '2026-10-07'
+    data['provenance'].update(captured_at='2026-10-07T11:30:00Z', price_captured_at='2026-10-07T11:30:00Z')
+    source.store._write(tmp_path/'sources'/'inputs.json', dict(inputs=data, sha256=source.store._hash(data)))
+    monkeypatch.setattr(source, '_canonical', lambda _now: None)
+    def collect(*_args, **_kwargs):
+        raise AssertionError('the same-day daily feed is not settled yet')
+    monkeypatch.setattr(source, '_collect', collect)
+
+    result = source.acquire_inputs(dict(symbol='196170', name='알테오젠', market='KR'), root=tmp_path, now=now)
+
+    assert result['latest_session'] == '2026-10-07'
+    assert result['prices_by_symbol'] == data['prices_by_symbol']
+    assert result['proposal_window']['valid_until'] == '2026-10-08T06:30:00Z'
+
+
+def test_pre_cutoff_raw_stage_is_recaptured_without_deleting_old_evidence(monkeypatch, tmp_path):
+    import hashlib
+    source = source_module()
+    now = '2026-10-08T12:00:00Z'
+    directory = tmp_path/'sources'/'prices'
+    directory.mkdir(parents=True)
+    original = b'provisional-bars'
+    digest = hashlib.sha256(original).hexdigest()
+    old_raw = directory/f'{digest}.txt'
+    old_raw.write_bytes(original)
+    params = dict(symbol='196170', requestType='1', startTime='20050101', endTime='20261008', timeframe='day')
+    source.store._write(directory/'capture.json', dict(request_params=params, raw_sha256=digest,
+        captured_at='2026-10-08T09:45:00Z', http_status=200))
+    monkeypatch.setattr(source.store, 'timestamp', lambda _now=None: now)
+    prices = SimpleNamespace(fetch_payload=lambda *_args: dict(payload=b'settled-bars',
+        captured_at='2026-10-08T11:30:00Z', http_status=200),
+        atomic_write=lambda path, payload: path.write_bytes(payload))
+
+    result = source._price_capture(prices, '196170', params, tmp_path, now)
+
+    assert result['payload'] == b'settled-bars'
+    assert result['captured_at'] == '2026-10-08T11:30:00Z'
+    assert old_raw.read_bytes() == original
+
+
+def test_new_price_capture_before_settling_cannot_be_published(monkeypatch, tmp_path):
+    source = source_module()
+    now = '2026-10-08T12:00:00Z'
+    monkeypatch.setattr(source.store, 'timestamp', lambda _now=None: now)
+    params = dict(symbol='196170', requestType='1', startTime='20050101', endTime='20261008', timeframe='day')
+    prices = SimpleNamespace(fetch_payload=lambda *_args: dict(payload=b'provisional-bars',
+        captured_at='2026-10-08T09:45:00Z', http_status=200),
+        atomic_write=lambda path, payload: (path.parent.mkdir(parents=True, exist_ok=True), path.write_bytes(payload)))
+
+    with pytest.raises(ValueError, match='price_capture_before_acquisition_cutoff'):
+        source._price_capture(prices, '196170', params, tmp_path, now)
+
+    assert not (tmp_path/'sources'/'inputs.json').exists()
+    assert not (tmp_path/'sources'/'prices'/'capture.json').exists()
+
+
+def test_calendar_context_cannot_bypass_same_day_acquisition_cutoff(monkeypatch, tmp_path):
+    source = source_module()
+    now = '2026-10-08T18:45:00+09:00'
+    monkeypatch.setattr(source, 'import_module', lambda _name: SimpleNamespace())
+    def price_stage(*_args, **_kwargs):
+        raise AssertionError('an unfinished same-day capture was requested')
+    monkeypatch.setattr(source, '_price_capture', price_stage)
+
+    with pytest.raises(ValueError, match='requested_session_not_closed'):
+        source._collect(dict(symbol='196170', name='알테오젠', market='KR'), root=tmp_path, now=now,
+            calendar_context=(official_calendar(now), '2026-10-08'))
+
+    assert not list(tmp_path.rglob('*.json'))
+
+
+def test_legacy_targeted_aggregate_capture_cannot_certify_prices(monkeypatch, tmp_path):
+    source = source_module()
+    data = snapshot()
+    data.update(source_mode='targeted_collection', official_calendar=official_calendar(NOW))
+    # Legacy metadata used max(price capture, financial capture), hiding an early price stage.
+    data['provenance']['captured_at'] = '2026-10-02T12:00:00Z'
+    source_path = tmp_path/'sources'/'inputs.json'
+    source.store._write(source_path, dict(inputs=data, sha256=source.store._hash(data)))
+    before = source_path.read_bytes()
+    monkeypatch.setattr(source, '_canonical', lambda _now: None)
+    monkeypatch.setattr(source, '_calendar', lambda _now: (official_calendar(NOW), '2026-10-02'))
+    def collect(*_args, **_kwargs):
+        raise ValueError('verified_price_capture_required')
+    monkeypatch.setattr(source, '_collect', collect)
+
+    with pytest.raises(ValueError, match='verified_price_capture_required'):
+        source.acquire_inputs(dict(symbol='196170', name='알테오젠', market='KR'), root=tmp_path, now=NOW)
+
+    assert source_path.read_bytes() == before

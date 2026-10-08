@@ -107,9 +107,9 @@ function monitoredOpportunity() {
         buy_candidates: value.report.buy_candidates.map(row => ({ ...row, plan: { ...row.plan!, atr: 1500 },
             proposal: { ...row.proposal, derived_at: monitorNow, valid_until } })),
     }, operations: { schema_version: 1, policy_version: 'alpha-cadence-v1', generated_at: monitorNow,
-        cadence: { timezone: 'Asia/Seoul', research_time: '18:45', monitor_interval_seconds: 300, market_state: 'open',
+        cadence: { timezone: 'Asia/Seoul', research_time: '20:30', monitor_interval_seconds: 300, market_state: 'open',
             calendar_status: 'ready', calendar_checked_at: '2026-10-04T23:55:00Z', last_scan_at: value.report.decision_at!,
-            next_scan_at: '2026-10-05T09:45:00Z', last_monitor_at: monitorNow, next_monitor_at: '2026-10-05T00:10:00Z', reasons: [] as string[] },
+            next_scan_at: '2026-10-05T11:30:00Z', last_monitor_at: monitorNow, next_monitor_at: '2026-10-05T00:10:00Z', reasons: [] as string[] },
         monitoring: { status: 'ready', decision_at: value.report.decision_at!, origin_at: value.report.decision_at!,
             input_fingerprint: value.report.input_fingerprint, opportunity_audit_hash: audit, entry_session: '2026-10-05',
             valid_until, observed_at: monitorNow, reasons: [] as string[], quotes: value.report.buy_candidates.map(row => ({ symbol: row.symbol,
@@ -421,7 +421,7 @@ describe('AlphaLab operational panel', () => {
     it('shows saved cadence, current quotes and opening-reference plans without claiming fills or account profits', async () => {
         vi.mocked(Date.now).mockReturnValue(Date.parse(monitorNow)); api.fetchAuthAPI.mockResolvedValue(monitoredOpportunity());
         render(<AlphaLabPanel />); const card = await screen.findByRole('article', { name: /알테오젠/ });
-        expect(screen.getByText('자동 연구 · 18:45 KST')).toBeVisible();
+        expect(screen.getByText('자동 연구 · 20:30 KST')).toBeVisible();
         expect(screen.getByText('가격 감시 · 5분')).toBeVisible();
         expect(within(card).getByText('60,500원')).toBeVisible();
         expect(within(card).getByText('공식 시가 참고 · 체결 아님')).toBeVisible();
@@ -429,6 +429,13 @@ describe('AlphaLab operational panel', () => {
         expect(screen.getByText(/완료·수정 제외 분모 1건/)).toBeVisible();
         expect(screen.getByText(/추격 상한을 적용한 성과나 계좌 손익이 아닙니다/)).toBeVisible();
         expect(api.postAuthAPI).not.toHaveBeenCalled();
+    });
+    it('renders the saved legacy cadence during a rolling server release', async () => {
+        vi.mocked(Date.now).mockReturnValue(Date.parse(monitorNow));
+        const input = monitoredOpportunity(); input.operations.cadence.research_time = '18:45';
+        input.operations.cadence.next_scan_at = '2026-10-05T09:45:00Z';
+        api.fetchAuthAPI.mockResolvedValue(input); render(<AlphaLabPanel />);
+        expect(await screen.findByText('자동 연구 · 18:45 KST')).toBeVisible();
     });
     it('keeps revised closed paper outcomes out of the visible performance denominator', async () => {
         vi.mocked(Date.now).mockReturnValue(Date.parse(monitorNow)); const input = monitoredOpportunity();

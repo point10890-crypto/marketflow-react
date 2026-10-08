@@ -326,6 +326,19 @@ def test_calendar_day_and_live_session_clock_are_distinct(tmp_path, now, state, 
     assert result['operations']['cadence']['next_monitor_at'] == next_monitor
 
 
+@pytest.mark.parametrize('now,next_scan', [
+    ('2026-10-06T18:45:00+09:00', '2026-10-06T11:30:00Z'),
+    ('2026-10-06T20:29:59+09:00', '2026-10-06T11:30:00Z'),
+    ('2026-10-06T20:30:00+09:00', '2026-10-07T11:30:00Z'),
+])
+def test_research_waits_until_public_daily_feed_settling_window(tmp_path, now, next_scan):
+    seed(tmp_path)
+    monitor().calendar_check(tmp_path, Provider(), now=now)
+    cadence = projected(tmp_path, now)['operations']['cadence']
+    assert cadence['research_time'] == '20:30'
+    assert cadence['next_scan_at'] == next_scan
+
+
 def test_calendar_revision_cannot_move_a_previously_certified_entry_window(tmp_path):
     seed(tmp_path)
     monitor().run_monitor(tmp_path, Provider(), now=REGISTER)

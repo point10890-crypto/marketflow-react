@@ -11,6 +11,8 @@ from importlib import import_module
 import hashlib
 from pathlib import Path
 
+from scripts.refresh_alpha_lab_inputs import ACQUISITION_CUTOFF_KST, acquisition_cutoff
+
 from . import service, store
 from .opportunities import proposal_window
 from .proposals import _timestamp, KST
@@ -18,13 +20,21 @@ from .proposals import _timestamp, KST
 
 def _fresh(inputs, now):
     current=_timestamp(now)
-    capture=_timestamp(inputs.get('provenance',{}).get('captured_at'))
+    provenance=inputs.get('provenance',{})
+    capture=_timestamp(provenance.get('captured_at'))
+    price_value=provenance.get('price_captured_at')
+    # Legacy targeted aggregates may be a later DART capture, not the price time.
+    if price_value is None and inputs.get('source_mode')!='targeted_collection':
+        price_value=provenance.get('captured_at')
+    price_capture=_timestamp(price_value)
     try:
         session=date.fromisoformat(inputs['latest_session'])
         scope=date.fromisoformat(inputs['universe']['scope_date'])
     except (ValueError,TypeError,KeyError):return False
     today=current.astimezone(KST).date()
-    return (capture is not None and capture<=current and current-capture<=timedelta(days=7)
+    return (capture is not None and price_capture is not None
+        and acquisition_cutoff(session.isoformat())<=price_capture<=capture<=current
+        and current-price_capture<=timedelta(days=7)
         and 0<=(today-session).days<=7 and 0<=(today-scope).days<=7
         and inputs.get('status')=='ready' and not inputs.get('reasons'))
 
@@ -58,7 +68,7 @@ def acquire_inputs(target, *, root, now):
                     value['calendar_confirmed_at']=now
         except (OSError,ValueError,KeyError,TypeError):pass
         current=_timestamp(now).astimezone(KST)
-        weekday_closed=current.date() if current.time().replace(tzinfo=None)>=time(15,30) else current.date()-timedelta(days=1)
+        weekday_closed=current.date() if current.time().replace(tzinfo=None)>=ACQUISITION_CUTOFF_KST else current.date()-timedelta(days=1)
         while weekday_closed.weekday()>=5:weekday_closed-=timedelta(days=1)
         if not value.get('proposal_window') or inputs['latest_session']<weekday_closed.isoformat():
             try:
@@ -94,7 +104,7 @@ def acquire_inputs(target, *, root, now):
                 held['reasons']=list(dict.fromkeys([*held.get('reasons',[]),'official_calendar_unavailable']))
                 return held
         else:
-            cutoff=current.date() if current.time().replace(tzinfo=None)>=time(15,30) else current.date()-timedelta(days=1)
+            cutoff=current.date() if current.time().replace(tzinfo=None)>=ACQUISITION_CUTOFF_KST else current.date()-timedelta(days=1)
             closed=max((row['date'] for row in calendar.get('days',[]) if row['is_open'] and row['date']<=cutoff.isoformat()),default=None)
         if closed==cached['latest_session']:
             value=deepcopy(cached);value['official_calendar']=calendar;value['calendar_confirmed_at']=calendar['captured_at']
@@ -119,7 +129,7 @@ def _calendar(now):
         day=date.fromisoformat(row['date'])
         if day.isoformat()!=row['date'] or day in dates or not isinstance(row['is_open'],bool):raise ValueError('calendar_invalid')
         dates[day]=row['is_open']
-    last_closed=today if current.astimezone(KST).time().replace(tzinfo=None)>=time(15,30) else today-timedelta(days=1)
+    last_closed=today if current.astimezone(KST).time().replace(tzinfo=None)>=ACQUISITION_CUTOFF_KST else today-timedelta(days=1)
     possible=[day for day,opened in dates.items() if opened and day<=last_closed]
     if not possible or min(dates)>base or max(dates)<today:raise ValueError('calendar_unavailable')
     first,last=min(dates),max(dates)
@@ -150,13 +160,16 @@ def _stable_quality(result):
 
 def _price_capture(prices, symbol, params, root, now):
     """Keep a completed exact-request price stage while retrying missing stages."""
+    ready_at=acquisition_cutoff(datetime.strptime(params['endTime'],'%Y%m%d').date().isoformat())
+    if _timestamp(now)<ready_at:raise ValueError('requested_session_not_closed')
     directory=Path(root)/'sources'/'prices'
     try:
         previous=store._read(directory/'capture.json')
         if isinstance(previous,dict) and previous.get('request_params')==params:
             captured=_timestamp(previous.get('captured_at'))
             raw_hash=previous.get('raw_sha256')
-            if (captured is not None and timedelta(0)<=_timestamp(now)-captured<timedelta(days=1)
+            if (captured is not None and captured>=ready_at
+                    and timedelta(0)<=_timestamp(now)-captured<timedelta(days=1)
                     and isinstance(raw_hash,str) and len(raw_hash)==64
                     and all(char in '0123456789abcdef' for char in raw_hash)):
                 path=directory/f'{raw_hash}.txt'
@@ -170,6 +183,8 @@ def _price_capture(prices, symbol, params, root, now):
             or len(capture['payload'])>5*1024*1024 or _timestamp(capture.get('captured_at')) is None
             or _timestamp(capture['captured_at'])>_timestamp(store.timestamp())):
         raise ValueError('price_capture_invalid')
+    if _timestamp(capture['captured_at'])<ready_at:
+        raise ValueError('price_capture_before_acquisition_cutoff')
     raw_hash=hashlib.sha256(capture['payload']).hexdigest()
     prices.atomic_write(directory/f'{raw_hash}.txt',capture['payload'])
     store._write(directory/'capture.json',dict(request_params=params,raw_sha256=raw_hash,
@@ -190,6 +205,7 @@ def _collect(target, *, root, now, canonical=None, calendar_context=None):
     except Exception:
         as_of=refresh.latest_closed_weekday(current)
         calendar_reason=['official_calendar_unavailable']
+    if current<acquisition_cutoff(as_of):raise ValueError('requested_session_not_closed')
     start='2005-01-01'
     params=dict(symbol=symbol,requestType='1',startTime=start.replace('-',''),endTime=as_of.replace('-',''),timeframe='day')
     capture=_price_capture(prices,symbol,params,root,now)
@@ -241,14 +257,15 @@ def _collect(target, *, root, now, canonical=None, calendar_context=None):
     actual_capture=store.timestamp()
     reasons=list(calendar_reason)
     if latest!=as_of:reasons.append('stale_prices')
-    if fetched<datetime.combine(date.fromisoformat(latest),time(15,30),KST).astimezone(timezone.utc):
-        reasons.append('price_capture_before_session_close')
+    if fetched<acquisition_cutoff(as_of):
+        reasons.append('price_capture_before_acquisition_cutoff')
     capture_times=[fetched,*[_timestamp(value) for value in financial_capture]]
     capture_times=[value for value in capture_times if value is not None]
     if any(value>_timestamp(actual_capture) for value in capture_times):raise ValueError('future_source_capture')
     provenance=dict(price_basis=prices.PRICE_BASIS,price_adjustment_verified=False,historical_vintage_verified=False,
         point_in_time_universe_verified=False,analysis_ready=False,current_cohort_bias=False,
-        captured_at=max(capture_times).isoformat().replace('+00:00','Z'),price_source=prices.SOURCE)
+        captured_at=max(capture_times).isoformat().replace('+00:00','Z'),
+        price_captured_at=fetched.isoformat().replace('+00:00','Z'),price_source=prices.SOURCE)
     value=dict(status='held' if reasons else 'ready',reasons=reasons,latest_session=latest,prices_by_symbol={symbol:bars},
         names={symbol:target['name']},input_fingerprint=fingerprint,origin_identity=origin_identity,
         reference_calendar=reference,quality=quality,provenance=provenance,source_mode='targeted_collection',
