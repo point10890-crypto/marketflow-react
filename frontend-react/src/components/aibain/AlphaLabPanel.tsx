@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import AdminStockAnalysisPanel from './AdminStockAnalysisPanel';
 import OpportunityBoard from './OpportunityBoard';
+import AgentDesk from './AgentDesk';
 import { opportunityClockExpirations } from '@/lib/opportunityEngine';
 import { fetchAlphaLab, liveAlphaLabMonitoring, startAlphaLab, type AlphaLabAnalystId, type AlphaLabCandidate, type AlphaLabMonitorQuote, type AlphaLabOperations, type AlphaLabOpportunityCandidate, type AlphaLabOpportunityPhase, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
 
@@ -76,8 +77,8 @@ const stateLabels: Record<string, string> = {
     research: '연구', collecting: '관측 누적 중',
 };
 const stateText = (state: string) => stateLabels[state] ?? state;
-const buttonClass = 'min-h-11 rounded-lg border border-[#365372] px-3 py-2 text-xs font-semibold text-[#acd3ff] hover:bg-[#1b2c40] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#72b4fb] disabled:cursor-wait disabled:opacity-50';
-const disclosureClass = 'cursor-pointer rounded py-2 text-xs font-semibold text-[#acd3ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#72b4fb]';
+const buttonClass = 'min-h-11 rounded-lg border border-[#365372] px-3 py-2 text-base font-semibold text-[#acd3ff] hover:bg-[#1b2c40] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#72b4fb] disabled:cursor-wait disabled:opacity-50 sm:text-sm';
+const disclosureClass = 'min-h-11 cursor-pointer rounded py-3 text-base font-semibold text-[#acd3ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#72b4fb] sm:text-sm';
 const sourceExpiry = (value: string) => (Math.floor((Date.parse(value) + 9 * 3600000) / 86400000) + 8) * 86400000 - 9 * 3600000;
 function effectiveProposal(row: AlphaLabCandidate, report: AlphaLabReport, blocked: boolean, now: number): AlphaLabProposal {
     const p = row.proposal;
@@ -95,7 +96,7 @@ function effectiveProposal(row: AlphaLabCandidate, report: AlphaLabReport, block
         plan_basis: 'last_closed_price_next_open_reference', order_allowed: false };
 }
 function Prices({ row }: { row: AlphaLabCandidate }) {
-    return <dl className="mt-3 divide-y divide-[#30363f] text-xs tabular-nums">{[
+    return <dl className="mt-3 divide-y divide-[#30363f] text-base tabular-nums sm:text-sm">{[
         ['기준 종가', money(row.last_close)], ['참고 진입', money(row.plan?.entry_price ?? null)],
         ['참고 손절', money(row.plan?.stop_price ?? null)], ['참고 목표', money(row.plan?.target_price ?? null)],
         ['계획 손실폭', numberPct(row.plan?.loss_fraction ?? null)],
@@ -182,11 +183,11 @@ function Candidate({ row, report, proposal, evidence, quote, monitorEnabled, onS
     const buy = proposal.action === 'buy';
     return <article aria-label={`${proposal.label} ${row.name} ${row.symbol}`} className="min-w-0 rounded-lg border border-[#3b4d5c] bg-[#121a22] p-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="min-w-0"><h4 className="break-words text-base font-semibold">{row.name}</h4><p className="mt-1 font-mono text-xs text-gray-400">{row.symbol} · KR</p></div>
+            <div className="min-w-0"><h4 className="break-words text-xl font-semibold">{row.name}</h4><p className="mt-1 font-mono text-sm text-gray-400">{row.symbol} · KR</p></div>
             <span className={`rounded border px-2 py-1 text-xs font-bold ${buy ? 'border-[#497368] text-teal-200' : 'border-[#796b4e] text-amber-200'}`}>{proposal.action.toUpperCase()} · {proposal.label}</span>
         </div>
-        <p className="mt-3 break-words text-sm leading-relaxed text-gray-100">{proposal.reason}</p>
-        <p className="mt-2 break-words text-xs leading-relaxed text-[#acd3ff]">다음 행동 · {proposal.next_step}</p>
+        <p className="mt-3 break-words text-base leading-relaxed text-gray-100 sm:text-sm">{proposal.reason}</p>
+        <p className="mt-2 break-words text-base leading-relaxed text-[#acd3ff] sm:text-sm">다음 행동 · {proposal.next_step}</p>
         {buy && row.analyst_context?.status === 'ready' && <p className="mt-2 break-words text-[11px] leading-relaxed tabular-nums text-gray-300">가격 요인 대조 · 우호 {row.analyst_context.favorable_count} / 주의 {row.analyst_context.caution_count} / 중립 {row.analyst_context.neutral_count}</p>}
         {evidence && <p className="mt-2 text-[11px] leading-relaxed tabular-nums text-gray-400">과거 조건일 평균 거래 순손익 · 형성 {evidence.calibration.samples}건 {numberPct(evidence.calibration.mean_net_return, true)} / 최근 확인 {evidence.confirmation.samples}건 {numberPct(evidence.confirmation.mean_net_return, true)}</p>}
         {proposal.action === 'avoid' && <p className="mt-2 text-[11px] leading-relaxed text-gray-400">신규매수 제외 의견입니다. 보유 주식의 매도 지시가 아닙니다.</p>}
@@ -355,6 +356,8 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false, 
         }
         if (visibleSnapshot?.operations) expirations.push(Date.parse(`${new Date(now + 9 * 3600000).toISOString().slice(0, 10)}T15:30:00+09:00`));
         if (visibleSnapshot?.opportunity_engine) expirations.push(...opportunityClockExpirations(visibleSnapshot.opportunity_engine));
+        for (const row of visibleSnapshot?.agent_desk?.candidates ?? []) if (row.invalidation.valid_until) expirations.push(Date.parse(row.invalidation.valid_until));
+        if (visibleSnapshot?.agent_desk) expirations.push(Date.parse(visibleSnapshot.agent_desk.generated_at) + 420000);
         const next = Math.min(...expirations.filter(value => value > now));
         if (!Number.isFinite(next)) return;
         const timer = setTimeout(() => setCurrentTime(Date.now()), Math.min(next - now, 2147483647));
@@ -396,7 +399,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false, 
     const blocked = reading || posting || !['ready', 'held'].includes(state ?? '') || !!error;
     const now = Math.max(currentTime, Date.now());
     const monitoring = visibleSnapshot ? liveAlphaLabMonitoring(visibleSnapshot, now, blocked) : null;
-    return <section aria-labelledby={heading} className="ai-panel min-w-0 border border-[#30363f] p-4 text-white sm:p-5">
+    return <section aria-labelledby={heading} className="ai-panel min-w-0 border border-[#30363f] p-4 text-white [&_a]:!min-h-11 [&_button]:!min-h-11 [&_summary]:!min-h-11 sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h2 id={heading} className="ai-section-title text-lg">{desk ? '유력 종목 데스크' : '에이전트 매매 제안'}</h2><p className="mt-2 text-xs leading-relaxed text-gray-400">{desk ? '저장된 분석에서 선별한 최대 세 종목의 가격 조건과 참고 비중을 확인하세요.' : visibleSnapshot?.opportunity_engine ? '종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 저장 종가 또는 새 시세로 계산한 참고 계획입니다.' : '종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 마지막 종가로 계산한 참고 제안입니다.'}</p></div><span className="rounded border border-[#365372] bg-[#1b2c40] px-2 py-1 text-[11px] font-semibold text-[#acd3ff]">직접 판단용 · 주문 실행 없음</span></div>
         <div className="my-4 flex flex-wrap gap-2">{!desk && <button type="button" onClick={start} disabled={reading || posting || polling || state === 'running'} className={`${buttonClass} bg-[#1b2c40]`}>매수 후보 검출</button>}<button type="button" onClick={() => { if (inFlight.current === null) { setReading(true); setRevision(value => value + 1); } }} disabled={reading || posting || polling} className={buttonClass}>저장 결과 새로고침</button></div>
         {!desk && visibleSnapshot?.operations && <OperationsBand snapshot={visibleSnapshot} monitoring={monitoring} now={now} />}
@@ -406,6 +409,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false, 
         {problem && <p role="alert" className="mb-4 rounded-lg border border-amber-400/25 p-3 text-xs leading-relaxed text-amber-200">{problem}</p>}
         {!reading && (desk ? !visibleSnapshot?.opportunity_engine : !visibleSnapshot?.report) && !problem && state !== 'running' && !posting && <p className="py-4 text-xs leading-relaxed text-gray-400">{desk ? '저장된 유력 종목 후보가 없습니다. 결과가 준비되면 저장 결과 새로고침으로 확인해 주세요.' : '저장된 매수 후보 검출 결과가 없습니다. 매수 후보 검출 버튼으로 새 검사를 시작해 주세요.'}</p>}
         {visibleSnapshot?.opportunity_engine && <OpportunityBoard board={visibleSnapshot.opportunity_engine} now={now} blocked={blocked} onSelectSymbol={onSelectSymbol} />}
+        {visibleSnapshot?.opportunity_engine && <AgentDesk desk={visibleSnapshot.agent_desk} board={visibleSnapshot.opportunity_engine} now={now} blocked={blocked || polling} token={token} />}
         {!desk && visibleSnapshot?.report && (visibleSnapshot.opportunity_engine ? <details className="min-w-0 border-t border-[#30363f] pt-2"><summary className={disclosureClass}>이전 연구 제안 · 근거 펼치기</summary><div className="mt-3"><Evidence report={visibleSnapshot.report} previous={state === 'running' || state === 'failed' || !!error}
             blocked={blocked} now={now} monitoring={monitoring} operations={visibleSnapshot.operations} onSelectSymbol={onSelectSymbol} /></div></details>
             : <Evidence report={visibleSnapshot.report} previous={state === 'running' || state === 'failed' || !!error}

@@ -2,6 +2,7 @@
 
 import os
 import re
+import json
 from functools import wraps
 
 from flask import Blueprint, Response, jsonify, make_response, request
@@ -124,6 +125,70 @@ def alpha_lab():
         return jsonify(status), code
     except Exception:
         return jsonify({'error': 'alpha_lab_unavailable'}), 503
+
+
+def _account_plan_body():
+    """Bound request-only balances; reject ambiguous/duplicate JSON properties."""
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('duplicate_property')
+            result[key] = value
+        return result
+
+    def reject_constant(_value):
+        raise ValueError('nonfinite_json')
+
+    if request.query_string or not request.is_json or (request.content_length or 0) > 16384:
+        raise ValueError('invalid_body')
+    raw = request.stream.read(16385)
+    if len(raw) > 16384:
+        raise ValueError('body_limit')
+    body = json.loads(raw, object_pairs_hook=unique, parse_constant=reject_constant)
+    if not isinstance(body, dict) or set(body) != {'account', 'opportunity_ids'}:
+        raise ValueError('invalid_fields')
+    account, ids = body['account'], body['opportunity_ids']
+    if (not isinstance(account, dict) or set(account) != {'equity', 'available_cash', 'daily_pnl',
+            'weekly_pnl', 'positions_confirmed', 'positions'}
+            or not isinstance(ids, list) or not 1 <= len(ids) <= 3
+            or any(not isinstance(value, str) or not re.fullmatch(r'[A-Za-z0-9_:-]{1,128}', value) for value in ids)
+            or len(set(ids)) != len(ids)):
+        raise ValueError('invalid_account_or_ids')
+    return account, ids
+
+
+@admin_mirofish_bp.route('/alpha-lab/account-plan', methods=['POST'])
+@_chart_analogue_top3_no_store
+@admin_or_aibain_required
+def alpha_lab_account_plan():
+    try:
+        account, ids = _account_plan_body()
+        from app.services.mirofish.alpha_lab.account_plan import _validate_account
+        normalized, _reasons = _validate_account(account)
+        if normalized is None:
+            raise ValueError('invalid_account')
+    except (ValueError, TypeError, UnicodeError, RecursionError):
+        return jsonify({'error': 'invalid_account_plan_request'}), 400
+    try:
+        status = _alpha_lab_service().read_status()
+    except Exception:
+        return jsonify({'error': 'account_plan_unavailable'}), 503
+    try:
+        board = status.get('opportunity_engine')
+        if not isinstance(board, dict) or not isinstance(status.get('agent_desk'), dict):
+            return jsonify({'error': 'account_plan_unavailable'}), 503
+        current = [row.get('opportunity_id') for row in board.get('candidates', [])]
+        if ids != current:
+            return jsonify({'error': 'account_plan_identity_changed'}), 409
+        from app.services.mirofish.alpha_lab.account_plan import build_account_plan
+        result = build_account_plan(status, account)
+        return jsonify(result)
+    except ValueError:
+        return jsonify({'error': 'invalid_account_plan_request'}), 400
+    except Exception:
+        # No account values, raw errors, tokens or source paths in logs/responses.
+        return jsonify({'error': 'account_plan_unavailable'}), 503
 
 
 @admin_mirofish_bp.route('/chart-analogue/kelly', methods=['GET', 'POST'])
