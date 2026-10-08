@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import errno
 import hashlib
 import html
 import json
@@ -24,6 +25,7 @@ import app.services.mirofish.live_data as live_data
 import app.services.mirofish.sector_rs as sector_rs_service
 import app.services.mirofish.tradingview_provider as tradingview_provider
 from app.utils.atomic_json import write_json_atomic
+from app.utils import storage_guard
 
 # 종가베팅 V2 total 을 alpha 10점으로 환산할 때의 포화점.
 # engine.models.ScoreDetail.total 의 이론 최대는 20점(news3+volume3+chart2+candle1
@@ -302,6 +304,7 @@ SCORING_SCHEMA = {
 
 
 def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    _scanner_storage_preflight()
     payload = payload or {}
     limit = _clean_limit(payload.get('limit'), default=DEFAULT_LIMIT)
     requested_symbols = _clean_symbols(payload.get('symbols'))
@@ -393,8 +396,6 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         },
     }
 
-    write_json_atomic(_run_path(run_id), run, sort_keys=False)
-    _invalidate_run_paths_cache()   # 새 런이 관측/판단 경로에 즉시 보이도록
     write_json_atomic(_run_artifact_path(run_id, 'feature_vectors.json'), {
         'run_id': run_id,
         'generated_at': generated_at,
@@ -427,7 +428,20 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         'run_id': run_id,
         **chart_analogue_artifact,
     }, sort_keys=False)
+    # Publish the completed header last; latest/readers cannot discover partial runs.
+    write_json_atomic(_run_path(run_id), run, sort_keys=False)
+    _invalidate_run_paths_cache()
     return run
+
+
+def _scanner_storage_preflight() -> None:
+    """Fail before collection or directory creation when storage is unsafe."""
+    status = storage_guard.check_storage([SCANNER_RUNS_ROOT]).get('status')
+    if status != 'healthy':
+        code = errno.ENOSPC if status == 'low_space' else (
+            errno.EINVAL if status == 'invalid_config' else errno.EIO
+        )
+        raise OSError(code, f'scanner_storage:{status or "unavailable"}')
 
 
 def _attach_chart_analogue_shadow(
