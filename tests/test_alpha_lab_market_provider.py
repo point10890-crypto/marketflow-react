@@ -309,7 +309,7 @@ def test_refresh_checks_calendar_before_sources_and_installer_is_bounded():
     assert '$calendarExit -eq 10' in refresh and '$calendarExit -ne 0' in refresh
     assert installer.is_file()
     text = installer.read_text(encoding='utf-8')
-    for expected in ('18:45', '08:55', '09:00', 'PT5M', 'PT6H31M', 'IgnoreNew', 'WindowStyle Hidden'):
+    for expected in ('20:30', '08:55', '09:00', 'PT5M', 'PT6H31M', 'IgnoreNew', 'WindowStyle Hidden'):
         assert expected in text
     assert '.Repetition = ' in text  # Daily trigger repetition starts null; initialize it first.
     assert 'Start-ScheduledTask' not in text  # Installation does not trigger a live cycle.

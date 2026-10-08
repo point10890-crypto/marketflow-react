@@ -171,7 +171,7 @@ export interface AlphaLabMonitorQuote {
 }
 export interface AlphaLabOperations {
     schema_version: 1; policy_version: 'alpha-cadence-v1'; generated_at: string;
-    cadence: { timezone: 'Asia/Seoul'; research_time: '18:45'; monitor_interval_seconds: 300;
+    cadence: { timezone: 'Asia/Seoul'; research_time: '18:45' | '20:30'; monitor_interval_seconds: 300;
         market_state: 'open' | 'closed' | 'holiday' | 'unknown'; calendar_status: 'ready' | 'held' | 'failed';
         calendar_checked_at: string | null; last_scan_at: string | null; next_scan_at: string | null;
         last_monitor_at: string | null; next_monitor_at: string | null; reasons: string[] };
@@ -552,7 +552,7 @@ function validOperations(value: unknown, report: AlphaLabReport | null): value i
     const c = value.cadence, m = value.monitoring, p = value.paper;
     if (!onlyKeys(c, ['timezone', 'research_time', 'monitor_interval_seconds', 'market_state', 'calendar_status', 'calendar_checked_at',
         'last_scan_at', 'next_scan_at', 'last_monitor_at', 'next_monitor_at', 'reasons'])
-        || c.timezone !== 'Asia/Seoul' || c.research_time !== '18:45' || c.monitor_interval_seconds !== 300
+        || c.timezone !== 'Asia/Seoul' || !['18:45', '20:30'].includes(c.research_time as string) || c.monitor_interval_seconds !== 300
         || typeof c.market_state !== 'string' || !['open', 'closed', 'holiday', 'unknown'].includes(c.market_state)
         || typeof c.calendar_status !== 'string' || !['ready', 'held', 'failed'].includes(c.calendar_status)
         || !['calendar_checked_at', 'last_scan_at', 'next_scan_at', 'last_monitor_at', 'next_monitor_at'].every(key => nullableTimestamp(c[key]))

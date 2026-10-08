@@ -30,7 +30,7 @@ def write(path, value):
 
 
 def fake_collectors(*, fail_stage=None, stale_price=False, changed_final_scope=False, future_capture=False,
-                    strict_opens=False, local_financial_metadata=False, live_capture=False):
+                    strict_opens=False, local_financial_metadata=False, live_capture=False, captured_at=None):
     calls = []
     ranked = [dict(symbol=f'{100000+i*10:06d}', rank=i+1, name=f'Stock{i}', market='KOSPI', market_cap=1e12-i)
               for i in range(100)]
@@ -41,7 +41,8 @@ def fake_collectors(*, fail_stage=None, stale_price=False, changed_final_scope=F
         if stage == fail_stage:
             return CompletedProcess(command, 2, '', 'Error: Source request failed: HTTP 403 https://x.invalid/?crtfc_key=topsecret123')
         arg = lambda key: Path(command[command.index(key)+1])
-        captured = (datetime.now(timezone.utc).isoformat() if live_capture else
+        as_of = command[command.index('--end' if stage == 'prices' else '--as-of')+1]
+        captured = (captured_at if captured_at is not None else datetime.now(timezone.utc).isoformat() if live_capture else
                     '2026-10-05T00:00:00+00:00' if future_capture else '2026-10-04T01:00:00+00:00')
         if stage in {'scope', 'final_scope'}:
             if strict_opens:
@@ -50,7 +51,7 @@ def fake_collectors(*, fail_stage=None, stale_price=False, changed_final_scope=F
                         return CompletedProcess(command, 2, '', 'Error: open must be finite and positive')
             out = arg('--out')
             if stage == 'scope':
-                listing, financials = out/'sources'/f'listing_{AS_OF}.csv', out/'sources'/'financials.json'
+                listing, financials = out/'sources'/f'listing_{as_of}.csv', out/'sources'/'financials.json'
                 listing.parent.mkdir(parents=True, exist_ok=True)
                 listing.write_text('dated listing source', encoding='utf-8')
                 write(financials, [])
@@ -60,9 +61,9 @@ def fake_collectors(*, fail_stage=None, stale_price=False, changed_final_scope=F
             if changed_final_scope and stage == 'final_scope':
                 own_ranked[-1]['symbol'] = '999990'
             quality = [dict(row, quality_pass=i < 3) for i, row in enumerate(own_ranked)]
-            report = dict(as_of=AS_OF, ranking=dict(as_of=AS_OF, ranked=own_ranked),
-                          quality=dict(as_of=AS_OF, results=quality, passed=quality[:3]),
-                          input_evidence=dict(listing=dict(path=str(listing), sha256=digest(listing), as_of=AS_OF),
+            report = dict(as_of=as_of, ranking=dict(as_of=as_of, ranked=own_ranked),
+                          quality=dict(as_of=as_of, results=quality, passed=quality[:3]),
+                          input_evidence=dict(listing=dict(path=str(listing), sha256=digest(listing), as_of=as_of),
                           financials=dict(path=str(financials), sha256=digest(financials),
                                           fetched_at_by_batch=[captured], historical_vintage_verified=False),
                           prices=dict(path=str(arg('--prices')), sha256=digest(arg('--prices'))),
@@ -74,7 +75,7 @@ def fake_collectors(*, fail_stage=None, stale_price=False, changed_final_scope=F
             out = arg('--output-dir')
             out.mkdir(parents=True, exist_ok=True)
             source = arg('--universe-report')
-            day = '2026-10-01' if stale_price else AS_OF
+            day = '2026-10-01' if stale_price else as_of
             fields = ['symbol', 'date', 'open', 'high', 'low', 'close', 'volume', 'captured_at', 'source', 'price_basis', 'analysis_ready', 'quality_flags']
             with (out/'prices.csv').open('w', newline='', encoding='utf-8') as handle:
                 writer = csv.DictWriter(handle, fieldnames=fields)
@@ -83,7 +84,7 @@ def fake_collectors(*, fail_stage=None, stale_price=False, changed_final_scope=F
                     writer.writerow(dict(symbol=row['symbol'], date=day, open=100, high=101, low=99, close=100,
                                          volume=100, captured_at=captured, source='naver_sise_json_public',
                                          price_basis='provider_reported_unverified', analysis_ready='false', quality_flags=''))
-            write(out/'manifest.json', dict(start='2005-01-01', end=AS_OF, universe_report_sha256=digest(source)))
+            write(out/'manifest.json', dict(start='2005-01-01', end=as_of, universe_report_sha256=digest(source)))
             write(out/'report.json', dict(source='naver_sise_json_public', price_basis='provider_reported_unverified',
                 selected_symbols=[row['symbol'] for row in ranked], status_counts=dict(collected=100), total_rows=100,
                 prices_sha256=digest(out/'prices.csv'), analysis_ready=False, corporate_action_adjustment_verified=False,
@@ -261,3 +262,213 @@ def test_real_time_capture_after_refresh_start_is_validated_at_publication_time(
     out = mod.refresh_inputs(root=tmp_path/'inputs', seed_prices=seed(tmp_path), runner=run, as_of=AS_OF, fetch=True)
     assert out['status'] == 'complete'
     assert datetime.fromisoformat(out['published_at']) >= datetime.fromisoformat(out['source_metadata']['captured_at'])
+
+
+@pytest.mark.parametrize('clock', ['2026-10-08T15:30:00+09:00', '2026-10-08T18:45:00+09:00',
+                                  '2026-10-08T20:29:59+09:00'])
+def test_same_day_before_acquisition_cutoff_rejected_before_network_or_write(tmp_path, clock):
+    mod = module()
+    run, calls = fake_collectors(captured_at=clock)
+    root = tmp_path/'inputs'
+    with pytest.raises(mod.RefreshError, match='requested_session_not_closed'):
+        mod.refresh_inputs(root=root, seed_prices=seed(tmp_path), runner=run, now=datetime.fromisoformat(clock),
+                           as_of='2026-10-08', fetch=True)
+    assert not calls
+    assert not root.exists()
+
+
+@pytest.mark.parametrize(('clock', 'expected'), [
+    ('2026-10-08T20:29:59+09:00', '2026-10-07'),
+    ('2026-10-08T20:30:00+09:00', '2026-10-08'),
+    ('2026-10-12T18:45:00+09:00', '2026-10-09'),
+])
+def test_default_session_waits_for_acquisition_cutoff(tmp_path, clock, expected):
+    run, calls = fake_collectors()
+    root = tmp_path/'inputs'
+    result = module().refresh_inputs(root=root, seed_prices=seed(tmp_path), runner=run,
+                                    now=datetime.fromisoformat(clock), dry_run=True)
+    assert result['as_of'] == expected
+    assert not calls
+    assert not root.exists()
+
+
+def alter_one_price_capture(directory, location, capture='2026-10-08T18:45:00+09:00'):
+    report = json.loads((directory/'report.json').read_text())
+    if location == 'metadata':
+        report['symbols'][0]['captured_at'] = capture
+    else:
+        with (directory/'prices.csv').open(encoding='utf-8', newline='') as handle:
+            reader = csv.DictReader(handle)
+            fields, rows = reader.fieldnames, list(reader)
+        if location == 'historical_csv':
+            rows.append(dict(rows[0], date='2026-10-07', captured_at=capture))
+            report['total_rows'] += 1
+            report['symbols'][0]['coverage'].update(rows=2, first_date='2026-10-07')
+        else:
+            rows[0]['captured_at'] = capture
+        with (directory/'prices.csv').open('w', encoding='utf-8', newline='') as handle:
+            writer = csv.DictWriter(handle, fieldnames=fields)
+            writer.writeheader()
+            writer.writerows(rows)
+        report['prices_sha256'] = digest(directory/'prices.csv')
+    write(directory/'report.json', report)
+
+
+@pytest.mark.parametrize('location', ['metadata', 'csv', 'historical_csv'])
+def test_every_price_capture_must_follow_requested_session_cutoff(tmp_path, location):
+    mod = module()
+    run, calls = fake_collectors(captured_at='2026-10-08T20:30:00+09:00')
+    root = tmp_path/'inputs'
+
+    def retained_provisional_capture(command, **kwargs):
+        result = run(command, **kwargs)
+        if Path(command[1]).name.startswith('collect_'):
+            alter_one_price_capture(Path(command[command.index('--output-dir')+1]), location)
+        return result
+
+    with pytest.raises(mod.RefreshError, match='price_capture_before_acquisition_cutoff'):
+        mod.refresh_inputs(root=root, seed_prices=seed(tmp_path), runner=retained_provisional_capture,
+                           as_of='2026-10-08', now=datetime.fromisoformat('2026-10-08T20:40:00+09:00'), fetch=True)
+    assert len(calls) == 2
+    assert not (root/'current.json').exists()
+
+
+def test_cutoff_capture_is_accepted_without_certifying_finality(tmp_path):
+    mod = module()
+    clock = datetime.fromisoformat('2026-10-08T20:30:00+09:00')
+    run, _ = fake_collectors(captured_at=clock.isoformat())
+    seed_path = seed(tmp_path)
+    out = mod.refresh_inputs(root=tmp_path/'inputs', seed_prices=seed_path, runner=run, now=clock,
+                             as_of='2026-10-08', fetch=True)
+    assert out['settings'].get('acquisition_policy_version') == 'postmarket_2030_kst_v1'
+    assert out['source_metadata']['calendar_verified'] is False
+    assert out['source_metadata']['corporate_action_adjustment_verified'] is False
+
+
+@pytest.mark.parametrize('location', ['metadata', 'csv'])
+def test_retry_after_cutoff_never_promotes_retained_pre_cutoff_capture(tmp_path, location):
+    mod = module()
+    run, calls = fake_collectors(captured_at='2026-10-08T20:30:00+09:00')
+    price_attempts = 0
+    root = tmp_path/'inputs'
+
+    def partial_then_retained_cache(command, **kwargs):
+        nonlocal price_attempts
+        if Path(command[1]).name.startswith('collect_'):
+            price_attempts += 1
+            directory = Path(command[command.index('--output-dir')+1])
+            if price_attempts == 2:
+                calls.append(command)
+                report = json.loads((directory/'report.json').read_text())
+                report['status_counts'] = dict(collected=100)
+                write(directory/'report.json', report)
+                return CompletedProcess(command, 0, 'resumed cached bars', '')
+        result = run(command, **kwargs)
+        if Path(command[1]).name.startswith('collect_'):
+            alter_one_price_capture(directory, location)
+            report = json.loads((directory/'report.json').read_text())
+            report['status_counts'] = dict(collected=99, failed=1)
+            write(directory/'report.json', report)
+            return CompletedProcess(command, 2, '', 'partial collection')
+        return result
+
+    kwargs = dict(root=root, seed_prices=seed(tmp_path), runner=partial_then_retained_cache,
+                  as_of='2026-10-08', now=datetime.fromisoformat('2026-10-08T20:40:00+09:00'), fetch=True)
+    with pytest.raises(mod.RefreshError, match='collector_failed:prices'):
+        mod.refresh_inputs(**kwargs)
+    scope = next((root/'snapshots').glob('*/scope/report.json'))
+    before = scope.read_bytes()
+    kwargs['now'] = datetime.fromisoformat('2026-10-08T21:10:00+09:00')
+    with pytest.raises(mod.RefreshError, match='price_capture_before_acquisition_cutoff'):
+        mod.refresh_inputs(**kwargs)
+    assert scope.read_bytes() == before
+    assert sum('--fetch-listing' in command for command in calls) == 1
+    assert price_attempts == 2
+    assert not (root/'current.json').exists()
+
+
+@pytest.mark.parametrize('location', ['metadata', 'csv'])
+@pytest.mark.parametrize('current_exists', [True, False])
+def test_reuse_and_sealed_recovery_recheck_every_capture_without_changing_sources(tmp_path, location, current_exists):
+    mod = module()
+    clock = datetime.fromisoformat('2026-10-08T20:40:00+09:00')
+    run, calls = fake_collectors(captured_at='2026-10-08T20:30:00+09:00')
+    root, seed_path = tmp_path/'inputs', seed(tmp_path)
+    out = mod.refresh_inputs(root=root, seed_prices=seed_path, runner=run, now=clock,
+                             as_of='2026-10-08', fetch=True)
+    directory = (root/out['prices']).parent
+    alter_one_price_capture(directory, location)
+    pointer = json.loads((root/'current.json').read_text())
+    for key in ('prices', 'price_manifest'):
+        pointer['hashes'][key] = digest(root/pointer[key])
+    sealed = directory.parent/'sealed.json'
+    write(sealed, pointer)
+    write(root/'current.json', pointer)
+    if not current_exists:
+        (root/'current.json').unlink()
+    original = {path: path.read_bytes() for path in (sealed, directory/'report.json', directory/'prices.csv')}
+    with pytest.raises(mod.RefreshError, match='price_capture_before_acquisition_cutoff'):
+        mod.refresh_inputs(root=root, seed_prices=seed_path, runner=run, now=clock,
+                           as_of='2026-10-08', fetch=True)
+    assert len(calls) == 3
+    assert all(path.read_bytes() == content for path, content in original.items())
+    if not current_exists:
+        assert not (root/'current.json').exists()
+
+
+def legacy_provisional_snapshot(mod, root, seed_path):
+    """Pre-policy 18:45 fixture with the original request identity and artifacts."""
+    as_of, captured = '2026-10-08', '2026-10-08T18:45:00+09:00'
+    settings = dict(start='2005-01-01', year=2026, report_code='11012', top_n=100)
+    request = dict(as_of=as_of, **settings, seed_prices_sha256=digest(seed_path), capture_day=as_of)
+    legacy_id = as_of+'-'+hashlib.sha256(json.dumps(request, sort_keys=True).encode()).hexdigest()[:20]
+    destination = root/'snapshots'/legacy_id
+    scope, prices, final = destination/'scope', destination/'prices', destination/'universe'
+    run, _ = fake_collectors(captured_at=captured)
+    projection = mod._screen_projection(seed_path, scope/'technical_prices.csv')
+    run(['python', 'screen_large_cap_kelly.py', '--as-of', as_of, '--fetch-listing',
+         '--prices', str(scope/'technical_prices.csv'), '--out', str(scope)])
+    mod._link_screen_evidence(scope/'report.json', projection)
+    run(['python', 'collect_large_cap_price_history.py', '--end', as_of,
+         '--universe-report', str(scope/'report.json'), '--output-dir', str(prices)])
+    projection = mod._screen_projection(prices/'prices.csv', final/'technical_prices.csv')
+    run(['python', 'screen_large_cap_kelly.py', '--as-of', as_of, '--prices', str(final/'technical_prices.csv'),
+         '--listing', str(scope/'sources'/f'listing_{as_of}.csv'),
+         '--financials', str(scope/'sources'/'financials.json'), '--out', str(final)])
+    mod._link_screen_evidence(final/'report.json', projection, json.loads((scope/'report.json').read_text()))
+    artifacts = dict(prices=prices/'prices.csv', price_manifest=prices/'report.json', universe_report=final/'report.json')
+    pointer = dict(schema_version=1, snapshot_id=legacy_id, as_of=as_of, latest_session=as_of,
+                   published_at=captured, settings=settings, ranked_count=100, quality_count=3,
+                   hashes={key: digest(path) for key, path in artifacts.items()},
+                   source_metadata=dict(price_source=mod.SOURCE, price_basis=mod.BASIS, captured_at=captured,
+                       financial_captures=[captured], screen_price_input=projection, analysis_ready=False,
+                       corporate_action_adjustment_verified=False, historical_vintage_verified=False,
+                       point_in_time_universe_verified=False, current_cohort_bias=True, calendar_verified=False,
+                       financial_period_policy='conservative_standard_deadline_not_latest_filing_search'),
+                   **{key: path.relative_to(root).as_posix() for key, path in artifacts.items()})
+    write(destination/'sealed.json', pointer)
+    write(root/'current.json', pointer)
+    return pointer, destination
+
+
+def test_real_legacy_policy_migration_creates_fresh_snapshot_and_preserves_all_sources(tmp_path):
+    mod = module()
+    clock = datetime.fromisoformat('2026-10-08T20:40:00+09:00')
+    run, calls = fake_collectors(captured_at='2026-10-08T20:30:00+09:00')
+    root, seed_path = tmp_path/'inputs', seed(tmp_path)
+    legacy, destination = legacy_provisional_snapshot(mod, root, seed_path)
+    original = {path: path.read_bytes() for path in destination.rglob('*') if path.is_file()}
+    out = mod.refresh_inputs(root=root, seed_prices=seed_path, runner=run, now=clock,
+                             as_of='2026-10-08', fetch=True)
+    assert out['reused'] is False
+    assert out['snapshot_id'] != legacy['snapshot_id']
+    assert out['settings']['acquisition_policy_version'] == 'postmarket_2030_kst_v1'
+    assert all(path.read_bytes() == content for path, content in original.items())
+    assert json.loads((destination/'sealed.json').read_text()) == legacy
+    assert json.loads((root/'current.json').read_text())['snapshot_id'] == out['snapshot_id']
+    assert len(calls) == 3
+    again = mod.refresh_inputs(root=root, seed_prices=seed_path, runner=run, now=clock,
+                               as_of='2026-10-08', fetch=True)
+    assert again['reused'] is True
+    assert again['snapshot_id'] == out['snapshot_id']
+    assert len(calls) == 3

@@ -438,10 +438,10 @@ def _operations(report, record, cached, now, *, root, quotes=None, status='held'
         step = int((now-opening).total_seconds()//300)+1
         next_monitor = _stamp(min(opening+timedelta(seconds=step*300), datetime.combine(local.date(), time(15, 30), KST)))
     return dict(schema_version=1, policy_version=POLICY, generated_at=_stamp(now),
-        cadence=dict(timezone='Asia/Seoul', research_time='18:45', monitor_interval_seconds=300,
+        cadence=dict(timezone='Asia/Seoul', research_time='20:30', monitor_interval_seconds=300,
             market_state=calendar['market_state'], calendar_status=calendar['calendar_status'],
             calendar_checked_at=calendar['calendar_checked_at'], last_scan_at=(report or {}).get('decision_at'),
-            next_scan_at=_schedule(cached, now, time(18, 45)), last_monitor_at=observed_at,
+            next_scan_at=_schedule(cached, now, time(20, 30)), last_monitor_at=observed_at,
             next_monitor_at=next_monitor, reasons=calendar['reasons']),
         monitoring=dict(status=status, decision_at=(report or {}).get('decision_at'),
             origin_at=record['origin_at'] if record else None,

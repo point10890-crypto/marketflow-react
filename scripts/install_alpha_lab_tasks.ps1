@@ -11,7 +11,7 @@ $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccou
 $monitorSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Minutes 3)
 $researchSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Minutes 90)
 $researchAction = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$refreshPath`" -Root `"$rootPath`"" -WorkingDirectory $rootPath
-$researchTrigger = New-ScheduledTaskTrigger -Daily -At '18:45'
+$researchTrigger = New-ScheduledTaskTrigger -Daily -At '20:30'
 Register-ScheduledTask -TaskName 'MarketFlow-AlphaLab-Research' -Action $researchAction -Trigger $researchTrigger -Settings $researchSettings -Principal $principal -Description 'Completed-session sources then fixed research; official closed days skip; no broker orders.' -Force | Out-Null
 $primeAction = New-ScheduledTaskAction -Execute $pythonPath -Argument "`"$monitorPath`" prime --root `"$(Join-Path $rootPath 'data\alpha_lab')`"" -WorkingDirectory $rootPath
 $primeTrigger = New-ScheduledTaskTrigger -Daily -At '08:55'
@@ -25,4 +25,4 @@ $tickTrigger.Repetition.Interval = 'PT5M'
 $tickTrigger.Repetition.Duration = 'PT6H31M'
 $tickTrigger.Repetition.StopAtDurationEnd = $false
 Register-ScheduledTask -TaskName 'MarketFlow-AlphaLab-Monitor' -Action $tickAction -Trigger $tickTrigger -Settings $monitorSettings -Principal $principal -Description 'Saved manual price guards every five minutes09:00-15:30; known closed days skip; no orders.' -Force | Out-Null
-Write-Output 'Installed AlphaLab Research18:45, Prime08:55, Monitor09:00-15:30 every five minutes; no initial cycles started.'
+Write-Output 'Installed AlphaLab Research20:30, Prime08:55, Monitor09:00-15:30 every five minutes; no initial cycles started.'
