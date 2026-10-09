@@ -343,6 +343,11 @@ def build_account_plan(status, account, *, now=None):
     for index, row in enumerate(candidates):
         desk_row = _mapping(desk_rows[index]) if index < len(desk_rows) else {}
         blocked, until = _candidate_checks(row, board, desk_row, current, themes)
+        from .desk_evidence import contract_blockers
+        market_reasons, market_until = contract_blockers(desk, board, row, now=current)
+        blocked.extend(market_reasons)
+        if market_until is not None:
+            until.append(market_until)
         deadlines.extend(until)
         if reasons or halts or blocked:
             held[index] = _empty_plan(row, [*halts, *reasons, *blocked], 'halt' if halts else 'held')

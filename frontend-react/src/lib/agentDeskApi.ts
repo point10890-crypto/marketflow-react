@@ -33,10 +33,32 @@ const reasonLabels: Record<string, string> = {
     evidence_unavailable: '사용 가능한 출처 자료 없음', evidence_confidence_invalid: '출처 신뢰 기록 확인 필요', evidence_timestamp_invalid: '출처 자료 시각 확인 필요',
     evidence_cutoff_invalid: '연구 결정 기준 시각 확인 필요', evidence_after_decision: '연구 결정 이후 자료는 당시 판단에서 제외', evidence_time_order_invalid: '공개·확보 시각 순서 확인 필요',
     evidence_expired: '출처 자료 유효기간 종료', evidence_stale: '출처 자료 갱신 필요',
+    evidence_semantics_missing: '근거의 방향·수치·단위 확인 필요', evidence_semantics_invalid: '근거의 방향·수치·단위가 올바르지 않습니다.',
+    evidence_direction_conflict: '같은 판단 근거의 방향 충돌', evidence_id_conflict: '같은 근거 식별자의 내용 충돌', evidence_id_invalid: '근거 식별자 확인 필요',
+    evidence_bundle_missing: '저장 근거 묶음 없음', evidence_bundle_invalid: '저장 근거 묶음 확인 필요', evidence_bundle_corrupt: '저장 근거 묶음 무결성 확인 필요',
+    evidence_bundle_identity_mismatch: '근거 묶음과 현재 결정 일치 여부 확인 필요', evidence_decision_mismatch: '근거와 현재 결정 일치 여부 확인 필요',
+    evidence_policy_hash_mismatch: '저장 근거의 정책 식별자 확인 필요', policy_hash_mismatch: '저장 정책 식별자 확인 필요',
+    desk_evidence_missing: '저장 근거 묶음 없음', desk_evidence_integrity: '저장 근거 묶음 무결성 확인 필요', desk_policy_changed: '저장 정책 식별자 변경',
+    directional_semantics_missing: '근거의 방향·수치·단위 확인 필요', directional_semantics: '근거의 방향·수치·단위',
+    flow_required_for_plan: '외국인 수급 확인 후 계좌 계획 계산', disclosure_required_for_plan: '공시 자료 확인 후 계좌 계획 계산',
+    desk_market_guard_invalid: '현재 시장 가드 형식 확인 필요', desk_market_guard_held: '현재 시장 가드 확인 보류',
+    market_entry_window_unavailable: '신규 진입 거래일 확인 필요', market_entry_window_expired: '신규 진입 유효기간 종료',
+    market_state_missing: '현재 시장 상태 자료 없음', market_state_invalid: '현재 시장 상태 형식 확인 필요', market_state_stale: '현재 시장 상태 갱신 필요',
+    market_identity_mismatch: '현재 시장 상태와 종목·결정 일치 여부 확인 필요', market_source_missing: '현재 시장 상태의 출처 확인 필요', market_source_grade_invalid: '현재 시장 상태의 출처 등급 확인 필요',
+    market_timestamp_invalid: '현재 시장 상태의 관측 시각 확인 필요', market_timestamp_future: '미래 시각의 시장 상태 제외', market_time_order_invalid: '시장 상태의 공개·확보 시각 순서 확인 필요',
+    market_now_invalid: '시장 검사 기준 시각 확인 필요', market_policy_invalid: '시장 검사 정책 확인 필요', market_session_invalid: '현재 거래 세션 확인 필요',
+    market_session_unavailable: '현재 거래 세션 확인 필요', market_session_not_continuous: '연속 거래 세션 확인 필요', market_session_closed: '신규 진입 가능한 거래 시간 확인 필요',
+    market_outside_plan_session: '신규 진입 가능한 거래 시간 확인 필요', market_guard_expired: '현재 시장 가드 갱신 필요',
+    market_weekend: '현재 거래일 확인 필요', market_expiration_invalid: '현재 시장 상태 유효기간 확인 필요', market_state_expired: '현재 시장 상태 유효기간 종료',
+    market_vi_active: '변동성 완화장치 발동', market_vi_cooldown: '변동성 완화장치 해제 후 대기',
+    market_sidecar_active: '사이드카 발동', market_sidecar_cooldown: '사이드카 해제 후 대기',
+    market_circuit_active: '서킷브레이커 발동', market_circuit_cooldown: '서킷브레이커 해제 후 대기',
 };
 export function agentDeskReasonLabel(code: string): string {
     const field = /^account_(equity|available_cash|daily_pnl|weekly_pnl)_(required|invalid)$/.exec(code);
     if (field) return `${({ equity: '총자산', available_cash: '주문 가능 현금', daily_pnl: '오늘 손익', weekly_pnl: '이번 주 손익' } as Record<string, string>)[field[1]]} 확인 필요`;
+    const marketEvent = /^market_(vi|sidecar|circuit)_(flag_invalid|release_missing|release_invalid|release_future|release_after_capture)$/.exec(code);
+    if (marketEvent) return `${({ vi: '변동성 완화장치', sidecar: '사이드카', circuit: '서킷브레이커' } as Record<string, string>)[marketEvent[1]]} ${marketEvent[2] === 'flag_invalid' ? '발동 상태 확인 필요' : '해제 시각 확인 필요'}`;
     return reasonLabels[code] ?? agentRoleLabels[code] ?? '저장 근거 확인 필요';
 }
 export function agentDeskHoldMessage(codes: string[]): string {
@@ -55,6 +77,12 @@ export interface AgentDesk {
         probability: { kind: 'unavailable'; bull: null; base: null; bear: null; reason: string };
         invalidation: { price_below: number | null; price_above: number | null; valid_until: string | null; detail: string }; missing: string[] }>;
     promotion: { stage: 'M0'; reasons: string[] };
+    contract?: AgentDeskEvidenceContract;
+}
+export interface AgentDeskEvidenceContract {
+    schema_version: 1; policy_version: 'desk-evidence-v2'; policy_hash: string; decision_id: string | null;
+    evidence_snapshot_id: string | null; evidence_status: 'ready' | 'missing' | 'held';
+    market_checks: Array<{ symbol: string; opportunity_id: string; status: 'passed' | 'held'; reasons: string[]; valid_until: string | null }>;
 }
 export interface AccountInput {
     equity: number; available_cash: number; daily_pnl: number; weekly_pnl: number; positions_confirmed: true;
@@ -90,14 +118,35 @@ export function agentDeskInspectionFresh(desk: AgentDesk, now = Date.now()): boo
     return Number.isFinite(generated) && generated <= now + 60000 && now < generated + 420000;
 }
 
+/** Validate the server's receipt and binding; the client does not recompute its policy hash. */
+function validateEvidenceContract(value: unknown, board?: OpportunityEngine): asserts value is AgentDeskEvidenceContract {
+    if (!record(value) || !keys(value, ['schema_version', 'policy_version', 'policy_hash', 'decision_id', 'evidence_snapshot_id', 'evidence_status', 'market_checks'])
+        || value.schema_version !== 1 || value.policy_version !== 'desk-evidence-v2' || !hash(value.policy_hash)
+        || !(value.decision_id === null || hash(value.decision_id)) || !(value.evidence_snapshot_id === null || hash(value.evidence_snapshot_id))
+        || !['ready', 'missing', 'held'].includes(String(value.evidence_status))
+        || value.evidence_status === 'ready' && !hash(value.evidence_snapshot_id)
+        || (board ? !hash(board.decision_id) || value.decision_id !== board.decision_id : value.decision_id !== null)
+        || !Array.isArray(value.market_checks) || value.market_checks.length > 3 || value.market_checks.length !== (board?.candidates.length ?? 0)) throw new Error(invalid);
+    for (const [index, check] of value.market_checks.entries()) {
+        const bound = board?.candidates[index];
+        if (!record(check) || !keys(check, ['symbol', 'opportunity_id', 'status', 'reasons', 'valid_until'])
+            || !bound || !symbol(check.symbol) || check.symbol !== bound.symbol || !hash(check.opportunity_id) || check.opportunity_id !== bound.opportunity_id
+            || !['passed', 'held'].includes(String(check.status)) || !reasons(check.reasons) || !nullableTime(check.valid_until)
+            || check.status === 'passed' && (check.reasons.length !== 0 || !timestamp(check.valid_until) || !timestamp(bound.valid_until)
+                || Date.parse(check.valid_until) > Date.parse(bound.valid_until))) throw new Error(invalid);
+    }
+}
+
 /** Optional projection is bound to the same displayed opportunities; unsupported claims never render. */
 export function validateAgentDesk(value: unknown, board?: OpportunityEngine, now = Date.now()): AgentDesk {
-    if (!record(value) || !keys(value, ['schema_version', 'policy_version', 'generated_at', 'order_allowed', 'roles', 'candidates', 'promotion'])
+    const hasContract = record(value) && Object.prototype.hasOwnProperty.call(value, 'contract');
+    if (!record(value) || !keys(value, ['schema_version', 'policy_version', 'generated_at', 'order_allowed', 'roles', 'candidates', 'promotion', ...(hasContract ? ['contract'] : [])])
         || value.schema_version !== 1 || value.policy_version !== 'evidence-account-v1' || value.order_allowed !== false
         || !timestamp(value.generated_at) || Date.parse(value.generated_at) > now + 60000
         || !Array.isArray(value.roles) || value.roles.length !== 12 || !Array.isArray(value.candidates) || value.candidates.length > 3
         || value.candidates.length !== (board?.candidates.length ?? 0) || !record(value.promotion)
         || !keys(value.promotion, ['stage', 'reasons']) || value.promotion.stage !== 'M0' || !reasons(value.promotion.reasons)) throw new Error(invalid);
+    if (hasContract) validateEvidenceContract(value.contract, board);
     const roles = new Set<string>();
     for (const role of value.roles) {
         if (!record(role) || !keys(role, ['id', 'title', 'status', 'detail']) || typeof role.id !== 'string'
@@ -140,6 +189,7 @@ export function validAccountInput(value: unknown): value is AccountInput {
     return exposure + value.available_cash <= value.equity + 1e-6;
 }
 export function validateAccountPlan(value: unknown, board: OpportunityEngine, desk: AgentDesk, account: AccountInput, now = Date.now()): AccountPlan {
+    if (Object.prototype.hasOwnProperty.call(desk, 'contract')) validateEvidenceContract(desk.contract, board);
     if (!validAccountInput(account) || !record(value) || !keys(value, ['schema_version', 'policy_version', 'status', 'reasons', 'generated_at', 'valid_until', 'order_allowed', 'limits', 'plans'])
         || value.schema_version !== 1 || value.policy_version !== 'evidence-account-v1' || value.order_allowed !== false || !status(value.status) || !reasons(value.reasons)
         || !timestamp(value.generated_at) || Date.parse(value.generated_at) > now + 60000 || !nullableTime(value.valid_until)
@@ -165,6 +215,10 @@ export function validateAccountPlan(value: unknown, board: OpportunityEngine, de
         }
         const flowAndFxMissing = audit.missing.includes('flow') && audit.missing.includes('fx_liquidity')
             || audit.missing.includes('foreign_flow') && audit.missing.includes('fx');
+        const market = desk.contract?.market_checks.find(check => check.opportunity_id === p.opportunity_id);
+        if (!desk.contract || desk.contract.evidence_status !== 'ready' || market?.status !== 'passed' || market.reasons.length !== 0
+            || !market.valid_until || now >= Date.parse(market.valid_until) || !plan.valid_until
+            || Date.parse(plan.valid_until) > Date.parse(market.valid_until)) throw new Error(invalid);
         if (plan.status !== 'ready' || !count(p.quantity) || p.quantity < 1 || audit.audit.status !== 'passed' || audit.audit.independent_sources < 2
             || audit.audit.reasons.length !== 0 || flowAndFxMissing || !['Watch', 'Conditional plan'].includes(audit.state)
             || effective.candidates.find(r => r.opportunity_id === p.opportunity_id)?.action !== 'entry_candidate'

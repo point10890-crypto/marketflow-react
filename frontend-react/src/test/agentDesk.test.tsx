@@ -4,12 +4,24 @@ import AlphaLabPanel from '@/components/aibain/AlphaLabPanel';
 import AgentDesk from '@/components/aibain/AgentDesk';
 import { validateAlphaLabStatus } from '@/lib/alphaLabApi';
 import { validAccountInput, validateAccountPlan, validateAgentDesk } from '@/lib/agentDeskApi';
-import { accountResult, deskBoard, deskContract, deskNow, deskStatus } from './agentDeskFixtures';
+import { accountResult, deskBoard, deskContract, deskNow, deskStatus as legacyDeskStatus } from './agentDeskFixtures';
 
 const api = vi.hoisted(() => ({ fetchAuthAPI: vi.fn(), postAuthAPI: vi.fn() }));
 vi.mock('@/lib/api', () => api);
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(deskNow); api.fetchAuthAPI.mockReset(); api.postAuthAPI.mockReset(); });
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
+// Quantity scenarios require a saved v2 receipt; legacy display uses deskContract().
+function evidenceDesk() {
+    return Object.assign(deskContract(), { contract: {
+        schema_version: 1 as const, policy_version: 'desk-evidence-v2' as const, policy_hash: 'e'.repeat(64),
+        decision_id: 'a'.repeat(64), evidence_snapshot_id: 'f'.repeat(64), evidence_status: 'ready' as const,
+        market_checks: [{ symbol: '005930', opportunity_id: 'd'.repeat(64), status: 'passed' as const,
+            reasons: [] as string[], valid_until: '2026-10-05T01:06:30Z' }],
+    } });
+}
+function deskStatus() {
+    const value = legacyDeskStatus(); value.agent_desk = evidenceDesk(); return value;
+}
 function fillAccount() {
     for (const [label, value] of [['총자산 (원)', '10000000'], ['주문 가능 현금 (원)', '8000000'], ['오늘 손익 (원)', '0'], ['이번 주 손익 (원)', '0']]) {
         fireEvent.change(screen.getByLabelText(label), { target: { value } });
@@ -33,7 +45,7 @@ describe('agent desk boundary', () => {
     it('rejects a ready account plan whose deadline outlives current quote evidence', () => {
         const plan = accountResult(); plan.valid_until = '2026-10-05T06:30:00Z';
         const account = { equity: 10000000, available_cash: 8000000, daily_pnl: 0, weekly_pnl: 0, positions_confirmed: true as const, positions: [] };
-        expect(() => validateAccountPlan(plan, deskBoard(), deskContract(), account)).toThrow(/응답 형식/);
+        expect(() => validateAccountPlan(plan, deskBoard(), evidenceDesk(), account)).toThrow(/응답 형식/);
     });
     it('accepts a desk deadline tightened to independent evidence expiry', () => {
         const desk = deskContract(); desk.candidates[0].invalidation.valid_until = '2026-10-05T01:01:00Z';
@@ -44,7 +56,7 @@ describe('agent desk boundary', () => {
         expect(() => validateAgentDesk(desk, deskBoard())).toThrow(/응답 형식/);
     });
     it('rejects ready account quantity with both flow and FX missing', () => {
-        const desk = deskContract(); desk.candidates[0].missing = ['flow', 'fx_liquidity'];
+        const desk = evidenceDesk(); desk.candidates[0].missing = ['flow', 'fx_liquidity'];
         const account = { equity: 10000000, available_cash: 8000000, daily_pnl: 0, weekly_pnl: 0, positions_confirmed: true as const, positions: [] };
         expect(() => validateAccountPlan(accountResult(), deskBoard(), desk, account)).toThrow(/응답 형식/);
     });

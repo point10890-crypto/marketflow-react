@@ -194,3 +194,65 @@ Reference sizing floors whole shares at the maximum entry reference, then applie
 Both the AI Brain stock desk and chart-analogue page share the portrait layout: stock/action, prominent entry/stop/target, next action and invalidation first; full evidence, role and account details expand below. Source expiry, refresh/error, account edits and logout invalidate dependent calculations. Additional watchlist rows become vertical on phones and retain table semantics on desktop. The optional contract is backward compatible with older responses; absence cannot expose account quantities.
 
 `empirical_cvar` accepts only actual completed costed return arrays as an optional diagnostic. It does not change ranking or infer tail losses from a win rate. M1 replay, predeclared independent OOS, probability calibration, M2 paper duration and M3 human approval remain promotion requirements, not claims established by this integration.
+
+## Decision evidence receipts and market guard (2026-10-09)
+
+The selected K-EQUITY v2 ideas are independently implemented inside AlphaLab;
+the downloaded package, probability weights and its mutable policy runtime are
+not transplanted. TOP3 ranking, existing Kelly math, frozen research and forward
+outcomes remain intact. The new optional `agent_desk.contract` carries a full
+SHA-256 policy hash, exact decision identity, receipt ID/status and one ordered
+market check per displayed candidate. Legacy desks remain displayable, but a
+missing contract never permits account quantities.
+
+Only an authenticated administrator may publish a receipt through
+`POST /api/admin/mirofish/alpha-lab/evidence`. The exact JSON envelope contains
+`schema_version: 1`, `decision_id`, `input_fingerprint`, `source_audit_hash`,
+`policy_hash`, `evidence` and `market_states`; both maps are keyed by current
+six-digit candidate symbols. Obtain the current identities and policy hash from
+the saved status GET. The route rejects query overrides, duplicate JSON keys,
+nonfinite numbers, extra fields and bodies above256KiB. Rejections are bounded
+409/503 responses and never echo source payloads. Members can read the compact
+audit and request reference arithmetic, but cannot import evidence.
+
+Evidence retains the existing explicit source metadata, lineage and original
+availability/capture timestamps. Each record additionally requires a stable
+`evidence_id`, `direction` (`up`, `down`, `neutral`, `unknown`), finite `figure`
+or null, `unit`, `conflict_group` and explicit `missing_reason`. Unknown/null
+claims can document a gap but cannot certify a core claim. Opposite authoritative
+directions for the same server-derived claim hold its audit; caller-supplied
+group names cannot hide a contradiction. Duplicate IDs with different contents
+are rejected by the auditor, while copied upstream lineages still count once.
+Legacy unstructured evidence is explicitly missing directional semantics. A
+reference account plan additionally requires usable flow and disclosure roles.
+Source claims must have been available and fetched by the original decision
+cutoff; later market observations do not repair that historical evidence.
+
+Market state is a separate current observation: exact symbol/opportunity/decision,
+explicit S/A source grade, source/available/fetched timestamps, session,
+`vi_active`, `sidecar_active`, `circuit_active`, and each corresponding
+`*_released_at`. False flags require explicit null only if never observed active,
+otherwise a real release timestamp. Current facts expire420seconds after source
+time, including the exact boundary. VI holds new reference quantities until
+300seconds after release; sidecar/circuit cooldowns are900seconds. The source
+must explicitly report continuous trading and the KST clock must be09:00–15:05
+on a weekday; that clock window does not replace the existing official next-session
+calendar. Account validity is the earliest of market, quote, evidence and entry
+deadlines. Missing event feeds hold quantities without removing TOP3 stock cards.
+
+Receipts live under `data/alpha_lab/desk-evidence/runs/{snapshot_id}.json` and an
+atomic decision-specific `current/{decision_id}.json`. The body hash includes an
+owned policy snapshot; identical imports are idempotent and do not refresh clocks.
+Previous receipts are never overwritten. Once a market symbol is recorded, later
+imports must retain it and advance its source time before changing its facts;
+they cannot erase activation/release history to replay an older safe state.
+Corrupt receipts or changed policies hold the decision rather than silently
+repairing it. GET only reads these files; it does not collect sources or write.
+
+This release supplies the checked ingestion path, not a newly certified upstream
+feed. Existing KIS flow, cached FX and DART adapters lack some required lineage,
+availability or event-release fields. Collectors must provide actual verified
+facts before publishing; do not synthesize independence, grade, timestamps or
+inactive-event flags. Raw evidence and collector details stay server-side;
+the portrait stock desk shows saved/missing/held receipt status, policy hash and
+per-stock market reasons. M0, unavailable forecasts and disabled orders remain.

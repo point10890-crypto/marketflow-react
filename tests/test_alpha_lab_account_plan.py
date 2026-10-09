@@ -37,9 +37,20 @@ def candidate(symbol='000001', opportunity_id='1'*64, **changes):
     return value
 
 
+def with_market_contract(fixture):
+    from app.services.mirofish.alpha_lab.desk_evidence import policy_snapshot
+    board = fixture['opportunity_engine']
+    fixture['agent_desk']['contract'] = dict(schema_version=1, policy_version='desk-evidence-v2',
+        decision_id=board['decision_id'], policy_hash=policy_snapshot()['policy_hash'],
+        evidence_snapshot_id='d'*64, evidence_status='ready', market_checks=[dict(
+            symbol=row['symbol'], opportunity_id=row['opportunity_id'], status='passed', reasons=[],
+            valid_until='2026-10-08T01:12:00Z') for row in board['candidates']])
+    return fixture
+
+
 def status():
     row = candidate()
-    return dict(state='held',
+    return with_market_contract(dict(state='held',
         report=dict(buy_candidates=[dict(symbol='000001', theme='반도체')]),
         opportunity_engine=dict(schema_version=1, policy_version='profit-opportunity-v1',
             status='ready', decision_id='a'*64, input_fingerprint='b'*64,
@@ -55,7 +66,7 @@ def status():
                 invalidation=dict(price_below=90., price_above=100.,
                     valid_until='2026-10-08T06:30:00Z', detail=''), missing=[])],
             promotion=dict(stage='M0', reasons=['predeclared_oos_pending',
-                'calibration_pending', 'manual_approval_required'])))
+                'calibration_pending', 'manual_approval_required']))))
 
 
 def test_m0_unknown_forecast_can_calculate_reference_quantity_without_strategy_approval():
@@ -71,6 +82,66 @@ def test_m0_unknown_forecast_can_calculate_reference_quantity_without_strategy_a
     assert set(result['plans'][0]) == {'opportunity_id', 'symbol', 'name', 'status', 'reasons',
         'quantity', 'weight', 'budget', 'planned_loss', 'entry_price', 'stop_price', 'target_price'}
     json.dumps(result, allow_nan=False)
+
+
+def test_v2_market_guard_cannot_be_overridden_by_a_passed_source_audit():
+    fixture = status()
+    from app.services.mirofish.alpha_lab.desk_evidence import policy_snapshot
+    fixture['agent_desk']['contract'] = dict(schema_version=1, policy_version='desk-evidence-v2',
+        decision_id='a'*64, policy_hash=policy_snapshot()['policy_hash'],
+        evidence_snapshot_id='d'*64, evidence_status='ready', market_checks=[dict(
+            symbol='000001', opportunity_id='1'*64, status='held', reasons=['market_vi_active'], valid_until=None)])
+    result = risk().build_account_plan(fixture, account(), now=NOW)
+    assert result['status'] == 'held'
+    assert result['plans'][0]['quantity'] is None
+    assert 'market_vi_active' in result['plans'][0]['reasons']
+
+
+def test_v2_market_guard_bounds_account_plan_deadline():
+    fixture = status()
+    from app.services.mirofish.alpha_lab.desk_evidence import policy_snapshot
+    fixture['agent_desk']['contract'] = dict(schema_version=1, policy_version='desk-evidence-v2',
+        decision_id='a'*64, policy_hash=policy_snapshot()['policy_hash'],
+        evidence_snapshot_id='d'*64, evidence_status='ready', market_checks=[dict(
+            symbol='000001', opportunity_id='1'*64, status='passed', reasons=[], valid_until='2026-10-08T01:06:00Z')])
+    result = risk().build_account_plan(fixture, account(), now=NOW)
+    assert result['status'] == 'ready'
+    assert result['valid_until'] == '2026-10-08T01:06:00Z'
+
+
+def test_missing_market_contract_holds_quantity_despite_passed_source_audit():
+    fixture = status()
+    fixture['agent_desk'].pop('contract', None)
+    result = risk().build_account_plan(fixture, account(), now=NOW)
+    assert result['status'] == 'held'
+    assert result['plans'][0]['quantity'] is None
+    assert 'desk_market_guard_invalid' in result['plans'][0]['reasons']
+
+
+def test_non_mapping_market_candidate_is_held_instead_of_crashing():
+    fixture = status()
+    from app.services.mirofish.alpha_lab.desk_evidence import policy_snapshot
+    fixture['agent_desk']['contract'] = dict(schema_version=1, policy_version='desk-evidence-v2',
+        decision_id='a'*64, policy_hash=policy_snapshot()['policy_hash'],
+        evidence_snapshot_id='d'*64, evidence_status='ready', market_checks=[dict(
+            symbol='000001', opportunity_id='1'*64, status='passed', reasons=[], valid_until='2026-10-08T01:06:00Z'), {}])
+    fixture['opportunity_engine']['candidates'].append(None)
+    result = risk().build_account_plan(fixture, account(), now=NOW)
+    assert result['status'] == 'held'
+    assert result['plans'][0]['quantity'] is None
+
+
+def test_missing_opportunity_identity_is_held_instead_of_crashing():
+    fixture = status()
+    from app.services.mirofish.alpha_lab.desk_evidence import policy_snapshot
+    fixture['agent_desk']['contract'] = dict(schema_version=1, policy_version='desk-evidence-v2',
+        decision_id='a'*64, policy_hash=policy_snapshot()['policy_hash'],
+        evidence_snapshot_id='d'*64, evidence_status='ready', market_checks=[dict(
+            symbol='000001', status='passed', reasons=[], valid_until='2026-10-08T01:06:00Z')])
+    fixture['opportunity_engine']['candidates'][0].pop('opportunity_id')
+    result = risk().build_account_plan(fixture, account(), now=NOW)
+    assert result['status'] == 'held'
+    assert result['plans'][0]['quantity'] is None
 
 
 @pytest.mark.parametrize('field', ['equity', 'available_cash', 'daily_pnl', 'weekly_pnl',
@@ -208,6 +279,7 @@ def test_public_top_three_share_holdings_theme_cash_and_position_limits():
         dict(symbol='000002', theme='반도체'), dict(symbol='000003', theme='바이오')]
     values.update(available_cash=410_050, positions=[
         dict(symbol='000099', theme='반도체', market_value=295_000)])
+    with_market_contract(source)
     result = risk().build_account_plan(source, values, now=NOW)
     assert [row['quantity'] for row in result['plans']] == [50, None, 50]
     assert sum(row['budget'] for row in result['plans']) == 10_000
@@ -349,7 +421,7 @@ def _real_agent_status(*, include_fx=False):
         records.append(record)
     contract = importlib.import_module('app.services.mirofish.alpha_lab.decision_contract')
     source['agent_desk'] = contract.build_agent_desk(source, now=NOW, evidence={row['symbol']: records})
-    return source
+    return with_market_contract(source)
 
 
 def test_real_agent_desk_missing_fx_and_foreign_flow_halts_every_new_plan():

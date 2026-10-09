@@ -454,3 +454,193 @@ def test_malformed_status_and_records_are_bounded_unknown_not_exceptions():
 def test_naive_evaluation_clock_is_rejected():
     with pytest.raises(ValueError, match='timezone_required'):
         contract().build_agent_desk(status(), now='2026-10-08T02:00:00')
+
+
+def semantic_evidence(row):
+    records = usable_evidence(row)
+    for evidence in records[:4]:
+        evidence.update(direction='up', figure=100., unit='KRW_bn',
+            conflict_group='caller-group', missing_reason=None)
+    return records
+
+
+def test_legacy_source_pass_does_not_certify_directional_semantics():
+    fixture = status(); row = fixture['opportunity_engine']['candidates'][0]
+    actual = first(fixture=fixture, evidence={row['symbol']: usable_evidence(row)})
+    assert actual['audit'] == dict(status='passed', reasons=[], independent_sources=2)
+    assert 'directional_semantics' in actual['missing']
+
+
+def test_complete_semantics_pass_sources_without_forecast_or_orders():
+    fixture = status(); row = fixture['opportunity_engine']['candidates'][0]
+    records = semantic_evidence(row)
+    original = deepcopy(records)
+    actual = first(fixture=fixture, evidence={row['symbol']: records})
+    assert records == original
+    assert actual['audit'] == dict(status='passed', reasons=[], independent_sources=2)
+    assert 'directional_semantics' not in actual['missing']
+    assert actual['state'] == 'Watch'
+    assert actual['probability']['bull'] is None
+    assert set(actual) == {'opportunity_id', 'symbol', 'name', 'state', 'audit',
+                           'probability', 'invalidation', 'missing'}
+
+
+@pytest.mark.parametrize('field,value', [
+    ('direction', ['up']), ('direction', {}), ('direction', None),
+    ('direction', 'buy'), ('figure', True), ('figure', float('nan')),
+    ('figure', float('inf')), ('figure', float('-inf')), ('figure', '100'),
+    ('figure', []), ('figure', {}), ('figure', 10**400),
+    ('unit', None), ('unit', []), ('unit', ''), ('unit', 'x'*65),
+    ('unit', 'KRW\nforged'), ('conflict_group', []), ('conflict_group', {}),
+    ('conflict_group', None), ('conflict_group', 'bad group'),
+    ('conflict_group', 'x'*161), ('missing_reason', []),
+    ('missing_reason', {}), ('missing_reason', False),
+    ('missing_reason', ''), ('missing_reason', 'x'*161),
+    ('missing_reason', 'missing\nforged'),
+])
+def test_malformed_semantics_are_held_and_cannot_supply_core_sources(field, value):
+    fixture = status(); row = fixture['opportunity_engine']['candidates'][0]
+    records = semantic_evidence(row)
+    for evidence in records[:4]:
+        evidence[field] = value
+    actual = first(fixture=fixture, evidence={row['symbol']: records})
+    assert actual['audit']['status'] == 'held'
+    assert actual['audit']['independent_sources'] == 0
+    assert 'evidence_semantics_invalid' in actual['audit']['reasons']
+
+
+@pytest.mark.parametrize('field', ['direction', 'figure', 'unit',
+                                 'conflict_group', 'missing_reason'])
+def test_one_semantic_field_requires_the_complete_contract(field):
+    fixture = status(); row = fixture['opportunity_engine']['candidates'][0]
+    records = usable_evidence(row)
+    values = dict(direction='up', figure=1., unit='KRW',
+                  conflict_group='group', missing_reason=None)
+    for evidence in records[:4]:
+        evidence[field] = values[field]
+    actual = first(fixture=fixture, evidence={row['symbol']: records})
+    assert actual['audit']['status'] == 'held'
+    assert actual['audit']['independent_sources'] == 0
+    assert 'evidence_semantics_invalid' in actual['audit']['reasons']
+
+
+@pytest.mark.parametrize('changes', [
+    dict(direction='unknown', figure=None, missing_reason='unavailable'),
+    dict(direction='unknown'), dict(figure=None, missing_reason='not_measured'),
+    dict(missing_reason='unverified'),
+])
+def test_unknown_or_missing_semantics_cannot_certify_core_claims(changes):
+    fixture = status(); row = fixture['opportunity_engine']['candidates'][0]
+    records = semantic_evidence(row)
+    for evidence in records[:4]:
+        evidence.update(changes)
+    actual = first(fixture=fixture, evidence={row['symbol']: records})
+    assert actual['audit']['status'] == 'held'
+    assert actual['audit']['independent_sources'] == 0
+    assert 'evidence_semantics_invalid' not in actual['audit']['reasons']
+    assert 'direction_independent_sources_missing' in actual['audit']['reasons']
+    assert 'directional_semantics' in actual['missing']
+
+
+@pytest.mark.parametrize('claim', ['direction', 'risk'])
+def test_authoritative_opposite_claims_are_held_despite_split_caller_groups(claim):
+    fixture = status(); row = fixture['opportunity_engine']['candidates'][0]
+    records = semantic_evidence(row)
+    matching = [evidence for evidence in records if evidence['claim_id'] == claim]
+    matching[0].update(direction='up', source_grade='S', conflict_group='first-label')
+    matching[1].update(direction='down', source_grade='A', conflict_group='second-label')
+    actual = first(fixture=fixture, evidence={row['symbol']: records})
+    assert actual['audit']['status'] == 'held'
+    assert 'evidence_direction_conflict' in actual['audit']['reasons']
+    assert actual['probability']['bull'] is None
+
+
+def test_same_caller_group_cannot_merge_different_claims_into_a_conflict():
+    fixture = status(); row = fixture['opportunity_engine']['candidates'][0]
+    records = semantic_evidence(row)
+    for evidence in records[:4]:
+        if evidence['claim_id'] == 'risk':
+            evidence['direction'] = 'down'
+    actual = first(fixture=fixture, evidence={row['symbol']: records})
+    assert actual['audit']['status'] == 'passed'
+    assert 'evidence_direction_conflict' not in actual['audit']['reasons']
+
+
+@pytest.mark.parametrize('changes', [
+    dict(source_grade='C'), dict(source_grade='B'), dict(kind='social'),
+    dict(kind='news'), dict(role='sentiment'),
+])
+def test_supporting_opposite_direction_cannot_force_authoritative_conflict(changes):
+    fixture = status(); row = fixture['opportunity_engine']['candidates'][0]
+    records = semantic_evidence(row)
+    supporting = deepcopy(records[0])
+    supporting.update(direction='down', lineage_id='supporting', origin_ids=['supporting'])
+    supporting.update(changes)
+    records.append(supporting)
+    actual = first(fixture=fixture, evidence={row['symbol']: records})
+    assert actual['audit']['status'] == 'passed'
+    assert actual['audit']['independent_sources'] == 2
+    assert 'evidence_direction_conflict' not in actual['audit']['reasons']
+
+
+@pytest.mark.parametrize('changes', [
+    dict(direction='down'), dict(figure=200.), dict(source_grade='S'),
+    dict(lineage_id='another', origin_ids=['another']),
+    dict(source='another-source'), dict(confidence=.9),
+    dict(fetched_at='2026-10-08T00:56:00Z'),
+])
+def test_reused_evidence_id_with_mismatched_record_is_held(changes):
+    fixture = status(); row = fixture['opportunity_engine']['candidates'][0]
+    records = semantic_evidence(row)
+    records[0]['evidence_id'] = 'evidence-one'
+    duplicate = deepcopy(records[0]); duplicate.update(changes)
+    records.append(duplicate)
+    actual = first(fixture=fixture, evidence={row['symbol']: records})
+    assert actual['audit']['status'] == 'held'
+    assert 'evidence_id_conflict' in actual['audit']['reasons']
+
+
+@pytest.mark.parametrize('value', [None, True, [], {}, '', 'bad id', 'x'*161])
+def test_optional_evidence_id_must_be_a_bounded_token(value):
+    fixture = status(); row = fixture['opportunity_engine']['candidates'][0]
+    records = semantic_evidence(row)
+    for evidence in records[:4]:
+        evidence['evidence_id'] = value
+    actual = first(fixture=fixture, evidence={row['symbol']: records})
+    assert actual['audit']['status'] == 'held'
+    assert actual['audit']['independent_sources'] == 0
+    assert 'evidence_id_invalid' in actual['audit']['reasons']
+
+
+def test_exact_repeated_evidence_id_does_not_add_independent_sources():
+    fixture = status(); row = fixture['opportunity_engine']['candidates'][0]
+    records = semantic_evidence(row)
+    records[0]['evidence_id'] = 'evidence-one'
+    expected = first(fixture=fixture, evidence={row['symbol']: records})
+    repeated = first(fixture=fixture, evidence={row['symbol']: records+[deepcopy(records[0])]*10})
+    assert repeated == expected
+
+
+def test_reused_id_cannot_swap_lineage_with_origin_even_when_union_is_identical():
+    fixture = status(); row = fixture['opportunity_engine']['candidates'][0]
+    records = semantic_evidence(row)
+    records[0].update(evidence_id='evidence-one', origin_ids=['filing'])
+    swapped = deepcopy(records[0]); swapped.update(lineage_id='filing', origin_ids=['exchange'])
+    actual = first(fixture=fixture, evidence={row['symbol']: records+[swapped]})
+    assert 'evidence_id_conflict' in actual['audit']['reasons']
+
+
+def test_validated_semantics_are_immutable_and_detached_from_raw_record():
+    fixture = status(); row = fixture['opportunity_engine']['candidates'][0]
+    raw = semantic_evidence(row)[0]
+    module = contract()
+    normalized, reason = module._record(raw, row, module._timestamp(ORIGIN), module._timestamp(NOW))
+    assert reason is None
+    raw.update(direction='down', figure=float('nan'), unit='changed', conflict_group='changed')
+    semantics = normalized['semantics']
+    assert semantics.direction == 'up'
+    assert semantics.figure == 100.
+    assert semantics.unit == 'KRW_bn'
+    assert semantics.conflict_group == row['symbol']+':'+row['opportunity_id']+':direction'
+    with pytest.raises(AttributeError):
+        semantics.direction = 'down'

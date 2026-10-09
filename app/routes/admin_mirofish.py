@@ -191,6 +191,43 @@ def alpha_lab_account_plan():
         return jsonify({'error': 'account_plan_unavailable'}), 503
 
 
+@admin_mirofish_bp.route('/alpha-lab/evidence', methods=['POST'])
+@_chart_analogue_top3_no_store
+@admin_required
+def alpha_lab_evidence():
+    """Private evidence publication; member calculators never accept sources."""
+    from app.services.mirofish.alpha_lab.desk_evidence import BUNDLE_KEYS, MAX_BUNDLE_BYTES
+
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('duplicate_property')
+            result[key] = value
+        return result
+
+    def finite_constants(_value):
+        raise ValueError('nonfinite_json')
+
+    try:
+        if request.query_string or not request.is_json or (request.content_length or 0) > MAX_BUNDLE_BYTES:
+            raise ValueError('invalid_body')
+        raw = request.stream.read(MAX_BUNDLE_BYTES+1)
+        if len(raw) > MAX_BUNDLE_BYTES:
+            raise ValueError('body_limit')
+        payload = json.loads(raw, object_pairs_hook=unique, parse_constant=finite_constants)
+        if not isinstance(payload, dict) or set(payload) != BUNDLE_KEYS:
+            raise ValueError('invalid_fields')
+    except (ValueError, TypeError, UnicodeError, RecursionError):
+        return jsonify({'error': 'invalid_desk_evidence_request'}), 400
+    try:
+        return jsonify(_alpha_lab_service().save_desk_evidence(payload))
+    except ValueError:
+        return jsonify({'error': 'desk_evidence_rejected'}), 409
+    except Exception:
+        return jsonify({'error': 'desk_evidence_unavailable'}), 503
+
+
 @admin_mirofish_bp.route('/chart-analogue/kelly', methods=['GET', 'POST'])
 @_chart_analogue_top3_no_store
 @admin_or_aibain_required
