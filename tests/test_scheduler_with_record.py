@@ -19,6 +19,47 @@ import pytest
 import scheduler
 from scheduler import Scheduler
 
+
+def test_news_success_refreshes_saved_context_without_resending_detection(monkeypatch):
+    from app.services.omni import news_sensor
+    calls = []
+    monkeypatch.setattr(news_sensor, 'run_news_sweep', lambda: dict(
+        status='ok', sources=['rss'], fetched=1, kept=1, saved=1, errors={}))
+    monkeypatch.setattr(scheduler, '_refresh_alpha_catalyst_context', lambda: calls.append('refresh'), raising=False)
+    assert scheduler.run_omni_news_sweep() is True
+    assert calls == ['refresh']
+
+
+def test_news_context_failure_keeps_sensor_success(monkeypatch, caplog):
+    from app.services.omni import news_sensor
+    monkeypatch.setattr(news_sensor, 'run_news_sweep', lambda: dict(
+        status='ok', sources=['rss'], fetched=0, kept=0, saved=0, errors={}))
+    def failed():
+        raise ValueError('sensitive source credentials')
+    monkeypatch.setattr(scheduler, '_refresh_alpha_catalyst_context', failed, raising=False)
+    assert scheduler.run_omni_news_sweep() is True
+    assert 'context unavailable' in caplog.text
+    assert 'sensitive source credentials' not in caplog.text
+
+
+def test_news_returned_context_failure_is_visible_and_does_not_undo_sweep(monkeypatch, caplog):
+    from app.services.omni import news_sensor
+    monkeypatch.setattr(news_sensor, 'run_news_sweep', lambda: dict(status='ok', sources=['rss'], fetched=1, errors={}))
+    monkeypatch.setattr(scheduler, '_refresh_alpha_catalyst_context', lambda: dict(status='failed', error='private credential'), raising=False)
+    assert scheduler.run_omni_news_sweep() is True
+    assert 'refresh_failed' in caplog.text and 'private credential' not in caplog.text
+
+
+@pytest.mark.parametrize('result', [dict(status='disabled'), dict(
+    status='ok', sources=['rss'], fetched=0, errors={'rss': 'unavailable'})])
+def test_news_disabled_or_all_failed_does_not_refresh_context(monkeypatch, result):
+    from app.services.omni import news_sensor
+    calls = []
+    monkeypatch.setattr(news_sensor, 'run_news_sweep', lambda: result)
+    monkeypatch.setattr(scheduler, '_refresh_alpha_catalyst_context', lambda: calls.append(1), raising=False)
+    scheduler.run_omni_news_sweep()
+    assert calls == []
+
 ORIGINAL_SEND_TELEGRAM = scheduler.send_telegram
 
 

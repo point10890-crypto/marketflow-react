@@ -22,6 +22,8 @@ MIN_NAME_LEN = 2
 
 _TICKER_RE = re.compile(r'(?<!\d)(\d{6})(?!\d)')
 _HANGUL_OR_WORD = re.compile(r'[가-힣A-Za-z0-9]')
+_NAME_PARTICLES = frozenset({'가', '이', '는', '은', '를', '을', '의', '와', '과',
+                           '도', '로', '으로', '에서', '에게', '에', '만', '부터', '까지'})
 
 # 회사명이 일반명사·지명과 겹치는 종목들. 실데이터 육안 검증(2026-08-29)에서
 # '반도체 대상 관세', '진도군 업무협약', '미래산업 유치' 같은 오탐이 나왔다.
@@ -51,12 +53,16 @@ def content_hash(title: Any, link: Any) -> str:
     return hashlib.sha256(payload.encode('utf-8')).hexdigest()
 
 
-def _is_standalone(text: str, start: int, end: int) -> bool:
+def _is_standalone(text: str, start: int, end: int, *, allow_particle=False) -> bool:
     """앞뒤가 다른 단어에 붙어 있지 않은지 — 부분 일치 오탐을 줄인다."""
     before = text[start - 1] if start > 0 else ''
     after = text[end] if end < len(text) else ''
     touching_before = bool(before) and bool(_HANGUL_OR_WORD.match(before))
     touching_after = bool(after) and bool(_HANGUL_OR_WORD.match(after))
+    if touching_after and allow_particle:
+        tail = re.match(r'[가-힣A-Za-z0-9]+', text[end:])
+        # A complete grammatical suffix is allowed, not a compound/prefix match.
+        touching_after = tail is None or tail.group() not in _NAME_PARTICLES
     return not touching_before and not touching_after
 
 
@@ -78,12 +84,11 @@ def match_symbols(text: Any, universe: dict[str, str]) -> list[str]:
         ambiguous = label in AMBIGUOUS_NAMES or len(label) <= 2
         if ambiguous and not has_financial_context(body):
             continue  # 일반명사와 겹치는 이름은 금융 문맥이 있어야 인정한다
-        idx = body.find(label)
-        while idx != -1:
-            if _is_standalone(body, idx, idx + len(label)):
+        pattern = re.sub(r'([A-Za-z]+)(?=[가-힣])', r'\1\\s*', re.escape(label))
+        for match in re.finditer(pattern, body, flags=re.IGNORECASE):
+            if _is_standalone(body, match.start(), match.end(), allow_particle=not ambiguous):
                 hits.append(code)
                 break
-            idx = body.find(label, idx + 1)
     return hits
 
 

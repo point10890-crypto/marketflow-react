@@ -274,6 +274,18 @@ def _execute(root):
                                   or not inputs['provenance']['analysis_ready'])
         from .monitor import register_report
         register_report(root, report, now=report['decision_at'])
+        # A post-publication sidecar cannot change frozen prices, rank, Kelly or
+        # approval. Its prospective cohort excludes decisions before enrollment.
+        try:
+            from .catalyst_store import register_cohort, refresh_context
+            cohort = register_cohort(root, report.get('opportunity_board'), inputs['names'])
+            if cohort.get('status') == 'failed':
+                logging.getLogger(__name__).warning('AlphaLab news context unavailable (cohort_failed)')
+            refreshed = refresh_context(root)
+            if refreshed.get('status') == 'failed':
+                logging.getLogger(__name__).warning('AlphaLab news context unavailable (refresh_failed)')
+        except Exception:
+            logging.getLogger(__name__).warning('AlphaLab news context unavailable')
         # Notify only after the frozen decision and saved report exist. Delivery
         # owns its independent receipt; a transport failure cannot undo research.
         try:
@@ -293,7 +305,15 @@ def _with_agent_desk(status, *, now=None):
     board = status.get('opportunity_engine')
     snapshot = read_bundle(ROOT, board)
     desk = build_agent_desk(status, now=now, evidence=snapshot['evidence'])
-    return {**status, 'agent_desk': attach_contract(desk, board, snapshot, now=now)}
+    result = {**status, 'agent_desk': attach_contract(desk, board, snapshot, now=now)}
+    try:
+        from .catalyst_store import read_context
+        context = read_context(ROOT, board, now=now)
+        if context is not None:
+            result['catalyst_context'] = context
+    except Exception:
+        logging.getLogger(__name__).warning('AlphaLab saved news context unavailable')
+    return result
 
 
 def save_desk_evidence(payload, *, now=None):

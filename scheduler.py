@@ -4239,6 +4239,13 @@ def _run_graphrag_entities_bootstrap() -> bool:
         return False
 
 
+def _refresh_alpha_catalyst_context():
+    """Explicit sensor-side update; GET and news refresh never send detection alerts."""
+    from app.services.mirofish.alpha_lab.service import ROOT
+    from app.services.mirofish.alpha_lab.catalyst_store import refresh_context
+    return refresh_context(ROOT)
+
+
 def run_omni_news_sweep() -> bool:
     """옴니소스 O1 — 공개 뉴스 RSS 수집 → 결정론 깔때기 → 사건 원장.
 
@@ -4260,6 +4267,12 @@ def run_omni_news_sweep() -> bool:
         if sources and not result.get('fetched') and set(errors) >= set(sources):
             logger.error("Omni news sweep: all %d sources failed — reporting failure", len(sources))
             return False
+        try:
+            refreshed = _refresh_alpha_catalyst_context()
+            if isinstance(refreshed, dict) and refreshed.get('status') == 'failed':
+                logger.warning('AlphaLab news context unavailable (refresh_failed); sensor result retained')
+        except Exception:
+            logger.warning('AlphaLab news context unavailable; sensor result retained')
         return True
     except Exception as e:
         logger.error("Omni news sweep failed: %s", e)

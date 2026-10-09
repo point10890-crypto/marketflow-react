@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import AdminStockAnalysisPanel from './AdminStockAnalysisPanel';
 import OpportunityBoard from './OpportunityBoard';
 import AgentDesk from './AgentDesk';
+import CatalystContext from './CatalystContext';
 import { opportunityClockExpirations } from '@/lib/opportunityEngine';
 import { fetchAlphaLab, liveAlphaLabMonitoring, startAlphaLab, type AlphaLabAnalystId, type AlphaLabCandidate, type AlphaLabMonitorQuote, type AlphaLabOperations, type AlphaLabOpportunityCandidate, type AlphaLabOpportunityPhase, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
 
@@ -409,6 +410,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false, 
         {problem && <p role="alert" className="mb-4 rounded-lg border border-amber-400/25 p-3 text-xs leading-relaxed text-amber-200">{problem}</p>}
         {!reading && (desk ? !visibleSnapshot?.opportunity_engine : !visibleSnapshot?.report) && !problem && state !== 'running' && !posting && <p className="py-4 text-xs leading-relaxed text-gray-400">{desk ? '저장된 유력 종목 후보가 없습니다. 결과가 준비되면 저장 결과 새로고침으로 확인해 주세요.' : '저장된 매수 후보 검출 결과가 없습니다. 매수 후보 검출 버튼으로 새 검사를 시작해 주세요.'}</p>}
         {visibleSnapshot?.opportunity_engine && <OpportunityBoard board={visibleSnapshot.opportunity_engine} now={now} blocked={blocked} onSelectSymbol={onSelectSymbol} />}
+        {visibleSnapshot?.opportunity_engine && <CatalystContext context={visibleSnapshot.catalyst_context} board={visibleSnapshot.opportunity_engine} now={now} />}
         {visibleSnapshot?.opportunity_engine && <AgentDesk desk={visibleSnapshot.agent_desk} board={visibleSnapshot.opportunity_engine} now={now} blocked={blocked || polling} token={token} />}
         {!desk && visibleSnapshot?.report && (visibleSnapshot.opportunity_engine ? <details className="min-w-0 border-t border-[#30363f] pt-2"><summary className={disclosureClass}>이전 연구 제안 · 근거 펼치기</summary><div className="mt-3"><Evidence report={visibleSnapshot.report} previous={state === 'running' || state === 'failed' || !!error}
             blocked={blocked} now={now} monitoring={monitoring} operations={visibleSnapshot.operations} onSelectSymbol={onSelectSymbol} /></div></details>
