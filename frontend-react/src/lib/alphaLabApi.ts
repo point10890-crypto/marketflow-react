@@ -1,6 +1,7 @@
 import { fetchAuthAPI, postAuthAPI } from './api';
 import { validateOpportunityEngine, type OpportunityEngine } from './opportunityEngine';
 import { validateAgentDesk, type AgentDesk } from './agentDeskApi';
+import { validateCatalystContext, type CatalystContext } from './catalystContext';
 
 export interface AlphaLabPerformance {
     net_total_return: number | null;
@@ -156,6 +157,7 @@ export interface AlphaLabStatus {
     operations?: AlphaLabOperations;
     opportunity_engine?: OpportunityEngine;
     agent_desk?: AgentDesk;
+    catalyst_context?: CatalystContext;
 }
 export interface AlphaLabProposalWindow {
     policy_version: 'next-session-proposal-v1'; input_fingerprint: string; opportunity_audit_hash: string;
@@ -623,7 +625,9 @@ export function validateAlphaLabStatus(value: unknown): AlphaLabStatus {
         source_audit_hash: (value.report as AlphaLabReport | null)?.opportunity_scan?.audit_hash,
     });
     if (value.agent_desk !== undefined) validateAgentDesk(value.agent_desk, value.opportunity_engine as OpportunityEngine | undefined);
-    const status = value as unknown as AlphaLabStatus;
+    const { catalyst_context: rawCatalystContext, ...sourceStatus } = value;
+    const catalystContext = validateCatalystContext(rawCatalystContext, value.opportunity_engine as OpportunityEngine | undefined);
+    const status = { ...sourceStatus, ...(catalystContext ? { catalyst_context: catalystContext } : {}) } as unknown as AlphaLabStatus;
     if (!status.report) return { ...status, operations: status.operations ? { ...status.operations, monitoring: liveAlphaLabMonitoring(status)! } : undefined };
     const normalizeProposal = (row: AlphaLabCandidate, opportunity = false) => {
         const p = row.proposal;

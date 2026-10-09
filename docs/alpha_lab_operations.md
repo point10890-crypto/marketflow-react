@@ -296,3 +296,40 @@ decision. It does not rerun research or modify the existing research/prime/monit
 tasks. Research success survives transport failures; missing/invalid saved
 decisions cannot send. The notification task and CLI load only this project's
 environment, without exposing its contents.
+
+## Price detection and public-news chronology (2026-10-09)
+
+Optional saved `catalyst_context` binds to the current decision/input/source-audit
+hashes and the earliest hash-valid issued decision per selected stock. Publication,
+actual first capture and first decision clocks stay distinct. General media are
+B supporting context; later reports never become an original selection reason,
+probability, Kelly input or CIO approval.
+
+The public YNA industry RSS supplements the existing nine feeds. Exact issuer
+matching handles Latin case, mixed-script spacing and complete Korean particles;
+group/chairman-only stories are not attributed to an issuer by assumption.
+The existing source allowlist and per-source kill switches remain effective.
+The compact stock chronology requires an exact issuer name/code in the title;
+body-only mentions remain in the ledger but cannot present another issuer's
+positive report as this stock's own catalyst.
+
+Bounded reads retain the latest256 and pre-first-decision256 ledger rows per
+stock. The eight displayed reports reserve four slots per capture period, then
+fill unused slots from recent remaining reports. Original article capture clocks
+stay unchanged; follow-up volume does not displace all pre-selection evidence.
+
+Successful news sweeps and post-publication research refresh a separate immutable
+sidecar. Failed updates preserve prior pointers without undoing completed research
+or acquisition. GET only reads checked JSON; it performs no SQLite initialization,
+RSS requests, fitting, writes or Telegram delivery. Detection receipts stay intact.
+
+`python scripts/run_alpha_lab_catalysts.py` explicitly refreshes the context using
+the existing read-only news ledger. Its first run freezes the protocol start for
+`price_setup_leads_catalyst_72h_v1`. Subsequent new research decisions enroll selected
+stocks and the exact same quality-universe controls. Historical decisions remain
+historical; cohorts and original hashes cannot be retuned after observation. This
+release registers and preserves observations; matured comparisons and rejection
+of chance are not claimed. Missing RSS coverage is not evidence of no event.
+
+Audit: `docs/sk_hynix_detection_audit_2026_10_09.md`. Provisional-price source
+revisions remain terminal holds, excluded from completed performance.

@@ -50,6 +50,32 @@ def test_does_not_match_unrelated_text():
     assert funnel.match_symbols('오늘 날씨는 맑겠습니다', UNIVERSE) == []
 
 
+@pytest.mark.parametrize('text', [
+    'SK 하이닉스, 반도체 부지 점검', 'sk하이닉스 저평가',
+    'SK하이닉스가 투자 계획을 밝혔다', '삼성전자와 SK하이닉스는 동반 상승',
+])
+def test_issuer_case_spacing_and_complete_korean_particles_are_supported(text):
+    assert '000660' in funnel.match_symbols(text, UNIVERSE)
+
+
+@pytest.mark.parametrize('text', [
+    'SK하이닉스보험 투자', 'SK하이닉스가짜 주식', '가짜SK하이닉스 공시',
+    'SK그룹 최태원 호남 부지 방문',
+])
+def test_issuer_normalization_does_not_map_prefix_compounds_or_group_to_stock(text):
+    assert '000660' not in funnel.match_symbols(text, UNIVERSE)
+
+
+def test_industry_feed_covers_general_company_reporting_as_supporting_news(monkeypatch):
+    from app.services.omni import news_sensor
+    monkeypatch.delenv('OMNI_NEWS_SOURCES', raising=False)
+    monkeypatch.delenv('OMNI_SOURCE_YONHAP_INDUSTRY_ENABLED', raising=False)
+    source = next((row for row in news_sensor.active_sources() if row['name'] == 'yonhap_industry'), None)
+    assert source == dict(name='yonhap_industry', grade='B', url='https://www.yna.co.kr/rss/industry.xml')
+    monkeypatch.setenv('OMNI_SOURCE_YONHAP_INDUSTRY_ENABLED', '0')
+    assert 'yonhap_industry' not in {row['name'] for row in news_sensor.active_sources()}
+
+
 def test_theme_matching_is_deterministic():
     themes = funnel.match_themes('정부, 원전 수출 지원 확대', {'원전': '전력기기'})
     assert themes == ['전력기기']

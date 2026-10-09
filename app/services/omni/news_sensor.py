@@ -42,6 +42,10 @@ SOURCES = [
      'url': 'https://www.yna.co.kr/rss/economy.xml'},
     {'name': 'yonhap_market', 'grade': 'B',
      'url': 'https://www.yna.co.kr/rss/market.xml'},
+    # Official RSS verified 2026-10-09: company/industry news absent from the
+    # economy feed. Group-only stories still require an exact issuer match.
+    {'name': 'yonhap_industry', 'grade': 'B',
+     'url': 'https://www.yna.co.kr/rss/industry.xml'},
     # 한국경제
     {'name': 'hankyung_economy', 'grade': 'B',
      'url': 'https://www.hankyung.com/feed/economy'},
