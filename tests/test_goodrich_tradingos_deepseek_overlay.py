@@ -541,6 +541,8 @@ def test_start_script_exposes_isolated_runtime_parameters():
         [
             "powershell",
             "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
             "-Command",
             (
                 f"$parameters = (Get-Command -Name '{START_SCRIPT}').Parameters; "

@@ -282,7 +282,16 @@ def _execute(root):
 
 def _with_agent_desk(status, *, now=None):
     from .decision_contract import build_agent_desk
-    return {**status, 'agent_desk': build_agent_desk(status, now=now)}
+    from .desk_evidence import read_bundle, attach_contract
+    board = status.get('opportunity_engine')
+    snapshot = read_bundle(ROOT, board)
+    desk = build_agent_desk(status, now=now, evidence=snapshot['evidence'])
+    return {**status, 'agent_desk': attach_contract(desk, board, snapshot, now=now)}
+
+
+def save_desk_evidence(payload, *, now=None):
+    from .desk_evidence import publish_bundle
+    return publish_bundle(ROOT, read_status(now=now), payload, now=now)
 
 
 def read_status(*, now=None):

@@ -15,6 +15,15 @@ and record count never supply implicit independent origins. Overlapping origin
 chains are one lineage. Required core claims are direction and risk, each with
 at least two independent S/A market, disclosure or official-news lineages. B/C
 and general news are supporting information. No collector, IO or fitting runs.
+
+Optional claim semantics are an all-or-none extension: direction, figure, unit,
+conflict_group and missing_reason. Figures are finite numbers or null; units
+and missing reasons are bounded printable strings. Only measured, known
+directions without a missing reason can substantiate structured core claims.
+Conflict joins use projected identity plus claim, never caller group labels.
+Legacy records retain source-only compatibility and explicitly lack directional
+semantics in the existing missing list. An optional evidence_id cannot identify
+different normalized records. Accepted semantics and origins are immutable.
 """
 from __future__ import annotations
 
@@ -23,6 +32,7 @@ import hashlib
 import json
 import math
 import re
+from typing import NamedTuple
 
 
 POLICY_VERSION = 'evidence-account-v1'
@@ -41,6 +51,15 @@ MAX_SOURCE_AGE = dict(regime=7*86400, fx_liquidity=86400, flow=86400,
 MAX_RECORDS = 100
 MAX_ORIGINS = 16
 QUOTE_SOURCE = 'KIS:J:FHKST03010200+FHKST01010100'
+SEMANTIC_FIELDS = ('direction', 'figure', 'unit', 'conflict_group', 'missing_reason')
+
+
+class _Semantics(NamedTuple):
+    direction: str
+    figure: float | None
+    unit: str
+    conflict_group: str
+    missing_reason: str | None
 
 
 def _mapping(value):
@@ -80,6 +99,34 @@ def _token(value):
 
 def _hash_valid(value):
     return isinstance(value, str) and re.fullmatch(r'[0-9a-f]{64}', value) is not None
+
+
+def _bounded_text(value, maximum):
+    return (isinstance(value, str) and 1 <= len(value) <= maximum
+            and bool(value.strip()) and all(character.isprintable() for character in value))
+
+
+def _semantics(raw, row, claim):
+    if not any(key in raw for key in SEMANTIC_FIELDS):
+        return None, None
+    if not all(key in raw for key in SEMANTIC_FIELDS):
+        return None, 'evidence_semantics_invalid'
+    direction = raw['direction']
+    figure = None if raw['figure'] is None else _number(raw['figure'])
+    missing = raw['missing_reason']
+    if (not isinstance(direction, str) or direction not in ('up', 'down', 'neutral', 'unknown')
+            or (raw['figure'] is not None and figure is None)
+            or not _bounded_text(raw['unit'], 64)
+            or _token(raw['conflict_group']) is None
+            or (missing is not None and not _bounded_text(missing, 160))):
+        return None, 'evidence_semantics_invalid'
+    group = row['symbol']+':'+row['opportunity_id']+':'+claim
+    return _Semantics(direction, figure, raw['unit'], group, missing), None
+
+
+def _substantive(semantics):
+    return (semantics is not None and semantics.direction in ('up', 'down', 'neutral')
+            and semantics.figure is not None and semantics.missing_reason is None)
 
 
 def _candidate_rows(board):
@@ -132,6 +179,12 @@ def _record(raw, row, cutoff, current):
             or not isinstance(raw.get('core'), bool)
             or raw['core'] != (claim in CORE_CLAIMS)):
         return None, 'evidence_claim_invalid'
+    evidence_id = _token(raw.get('evidence_id'))
+    if 'evidence_id' in raw and evidence_id is None:
+        return None, 'evidence_id_invalid'
+    semantics, semantic_reason = _semantics(raw, row, claim)
+    if semantic_reason:
+        return None, semantic_reason
     lineage = _token(raw.get('lineage_id'))
     origins = raw.get('origin_ids')
     if (lineage is None or not isinstance(origins, list) or not 1 <= len(origins) <= MAX_ORIGINS
@@ -158,9 +211,15 @@ def _record(raw, row, cutoff, current):
         return None, 'evidence_expired'
     if (current-published).total_seconds() >= MAX_SOURCE_AGE[role]:
         return None, 'evidence_stale'
+    # Only normalized immutable values participate in duplicate-ID comparisons.
+    upstream = frozenset(_token(origin) for origin in origins)
+    origins = upstream | {lineage}
+    signature = (role, kind, grade, claim, raw['core'], lineage, upstream, raw['source'],
+                 published, available, fetched, expires, confidence, semantics,
+                 _token(raw.get('conflict_group')))
     # Source labels and URLs are never substituted for explicitly supplied IDs.
     return dict(role=role, kind=kind, source_grade=grade, claim_id=claim, core=raw['core'],
-        origins={lineage, *(_token(origin) for origin in origins)},
+        origins=origins, semantics=semantics, evidence_id=evidence_id, signature=signature,
         fresh_until=min(expires, published+timedelta(seconds=MAX_SOURCE_AGE[role]))), None
 
 
@@ -168,10 +227,13 @@ def _core_usable(record):
     # A sentiment wrapper cannot disguise social/search interest as market data.
     return (record['core'] and record['source_grade'] in ('S', 'A')
             and record['kind'] in ('market', 'disclosure', 'official_news')
-            and record['role'] != 'sentiment')
+            and record['role'] != 'sentiment'
+            and (record['semantics'] is None or _substantive(record['semantics'])))
 
 
 def _role_usable(record):
+    if record['semantics'] is not None and not _substantive(record['semantics']):
+        return False
     role = record['role']
     if role in ('fx_liquidity', 'flow'):
         required = 'fx' if role == 'fx_liquidity' else 'foreign_flow'
@@ -244,6 +306,7 @@ def _entry(row, board, current):
 
 def _audit(row, board, raw_records, cutoff, current):
     records, reasons = [], []
+    by_id, contested = {}, set()
     if raw_records is None:
         raw_records = []
     if not isinstance(raw_records, list):
@@ -255,7 +318,23 @@ def _audit(row, board, raw_records, cutoff, current):
         if reason:
             reasons.append(reason)
         else:
+            evidence_id = record['evidence_id']
+            if evidence_id is not None and evidence_id in by_id:
+                if record['signature'] != by_id[evidence_id]['signature']:
+                    reasons.append('evidence_id_conflict'); contested.add(evidence_id)
+                continue
+            if evidence_id is not None:
+                by_id[evidence_id] = record
             records.append(record)
+    records = [record for record in records if record['evidence_id'] not in contested]
+    directions = {}
+    for record in records:
+        semantics = record['semantics']
+        if _core_usable(record) and _substantive(semantics):
+            group = (record['claim_id'], semantics.conflict_group)
+            directions.setdefault(group, set()).add(semantics.direction)
+    if any({'up', 'down'} <= signs for signs in directions.values()):
+        reasons.append('evidence_direction_conflict')
     groups = _components(records)
     independent = [group for group in groups if any(_core_usable(record) for record in group['records'])]
     for claim in CORE_CLAIMS:
@@ -284,6 +363,12 @@ def _audit(row, board, raw_records, cutoff, current):
     missing = [role for role in SOURCE_ROLES if role not in roles]
     missing.extend(claim+'_independent_sources' for claim in CORE_CLAIMS
                    if claim+'_independent_sources_missing' in reasons)
+    if (not independent or any(_core_usable(record) and record['semantics'] is None
+                               for record in records)
+            or any(sum(any(record['claim_id'] == claim and _core_usable(record)
+                           and _substantive(record['semantics']) for record in group['records'])
+                       for group in groups) < 2 for claim in CORE_CLAIMS)):
+        missing.append('directional_semantics')
     missing.append('calibrated_probability')
     state = 'No-trade' if row.get('action') == 'skip' or 'entry_window_expired' in reasons else 'Watch'
     result = dict(opportunity_id=row['opportunity_id'], symbol=row['symbol'], name=row['name'],

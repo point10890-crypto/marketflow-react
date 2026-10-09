@@ -42,7 +42,11 @@ def harness(monkeypatch, tmp_path):
     svc = service()
     data = {'metadata': {'source': copy.deepcopy(SOURCE)},
             'symbols': np.array([f'{i + 1:06d}' for i in range(5)])}
-    state = {'data': data, 'loads': [], 'calls': [], 'rows': {s: prediction(s) for s in data['symbols']}}
+    state = {'data': data, 'loads': [], 'calls': [], 'rows': {s: prediction(s) for s in data['symbols']},
+             'now': AS_OF}
+    original_cutoff = engine._cutoff
+    monkeypatch.setattr(engine, '_cutoff',
+        lambda value=None: original_cutoff(state['now'] if value is None else value))
     def load(**kwargs):
         state['loads'].append(kwargs)
         return (data if kwargs.get('full') else data['metadata']), None
@@ -128,6 +132,16 @@ def test_status_reads_are_cheap_and_result_becomes_outdated_on_index_change(harn
     assert status['state'] == 'done' and status['freshness'] == 'current'
     assert all(not row['full'] for row in h['loads'])
     h['data']['metadata']['source']['built_at'] = '2026-10-02T12:00:00Z'
+    assert h['svc'].read_status(root=h['root'])['freshness'] == 'outdated'
+
+
+def test_saved_cache_expires_after_source_freshness_window(harness, monkeypatch):
+    h = harness
+    h['svc'].run_scan(root=h['root'], as_of=AS_OF)
+    monkeypatch.setattr(engine, 'predict', lambda *a, **kw: pytest.fail('GET must never predict'))
+    h['now'] = '2026-10-08T01:00:00Z'  # Latest Oct 1 session is still within seven days.
+    assert h['svc'].read_status(root=h['root'])['freshness'] == 'current'
+    h['now'] = '2026-10-09T01:00:00Z'
     assert h['svc'].read_status(root=h['root'])['freshness'] == 'outdated'
 
 
