@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 import importlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import sqlite3
 
@@ -47,8 +48,34 @@ def make_db(path, rows=None):
     return path
 
 
-def files(root):
-    return {str(p.relative_to(root)):(p.read_bytes(), p.stat().st_mtime_ns) for p in Path(root).rglob('*') if p.is_file()}
+def files(root, *, exclude_coordination_lock=False):
+    # Explicit writers may update their top-level coordination lock on Linux.
+    # GET checks retain the strict default: all files, including every lock.
+    return {str(p.relative_to(root)):(p.read_bytes(), p.stat().st_mtime_ns)
+        for p in Path(root).rglob('*') if p.is_file()
+        and not (exclude_coordination_lock and p.relative_to(root).as_posix() == 'write.lock')}
+
+
+def test_mutating_snapshot_excludes_only_top_level_coordination_lock_and_still_detects_json_mtime(tmp_path):
+    lock = tmp_path/'write.lock'; lock.write_bytes(b'')
+    artifact = tmp_path/'cohorts'/'saved.json'
+    artifact.parent.mkdir()
+    artifact.write_bytes(b'{"state":"saved"}')
+    nested_lock = artifact.parent/'write.lock'; nested_lock.write_bytes(b'')
+    strict = files(tmp_path)
+    preserved = files(tmp_path, exclude_coordination_lock=True)
+    assert 'write.lock' in strict and 'write.lock' not in preserved
+    assert str(nested_lock.relative_to(tmp_path)) in preserved
+    assert preserved[str(artifact.relative_to(tmp_path))][0] == b'{"state":"saved"}'
+    # Deterministically model Linux FileLock's metadata update on either OS.
+    stamp = lock.stat()
+    os.utime(lock, ns=(stamp.st_atime_ns, stamp.st_mtime_ns+2_000_000_000))
+    assert files(tmp_path) != strict
+    assert files(tmp_path, exclude_coordination_lock=True) == preserved
+    stamp = artifact.stat()
+    os.utime(artifact, ns=(stamp.st_atime_ns, stamp.st_mtime_ns+2_000_000_000))
+    assert files(tmp_path, exclude_coordination_lock=True) != preserved
+    assert artifact.read_bytes() == b'{"state":"saved"}'
 
 
 def test_refresh_is_bound_to_frozen_decision_and_read_does_not_touch_db_or_write(tmp_path, monkeypatch):
@@ -85,10 +112,10 @@ def test_failed_refresh_retains_previous_snapshot_and_immutable_runs(tmp_path):
     root = tmp_path/'alpha'; current = save_board(root); db = make_db(tmp_path/'omni.db')
     first = module().refresh_context(root, now=CAPTURE, db_path=db)
     public = module().read_context(root, current, now=CAPTURE)
-    saved = files(root/'catalyst-context')
+    saved = files(root/'catalyst-context', exclude_coordination_lock=True)
     result = module().refresh_context(root, now='2026-10-09T12:00:00Z', db_path=tmp_path/'missing.db')
     assert result['status'] == 'failed' and result['error'] == 'catalyst_news_unavailable'
-    assert files(root/'catalyst-context') == saved
+    assert files(root/'catalyst-context', exclude_coordination_lock=True) == saved
     assert module().read_context(root, current, now='2026-10-09T12:00:00Z') == public
     assert first['snapshot_id'] == public['snapshot_id']
 
@@ -152,10 +179,10 @@ def test_new_cohort_freezes_all_same_quality_controls_and_cannot_be_reselected(t
     assert cohort['decision_at'] == '2026-10-09T12:00:00Z'
     assert cohort['horizon_until'] == '2026-10-12T12:00:00Z'
     assert cohort['input_fingerprint'] == 'a'*64
-    before = files(root/'catalyst-context')
+    before = files(root/'catalyst-context', exclude_coordination_lock=True)
     assert module().register_cohort(root, current, universe, now='2026-10-09T12:02:00Z')['status'] == 'existing'
     assert module().register_cohort(root, current, ['000660','005930'], now='2026-10-09T12:02:00Z')['status'] == 'failed'
-    assert files(root/'catalyst-context') == before
+    assert files(root/'catalyst-context', exclude_coordination_lock=True) == before
     module().refresh_context(root, now='2026-10-09T12:03:00Z', db_path=db)
     public = module().read_context(root, current, now='2026-10-09T12:03:00Z')
     assert public['validation']['enrolled_decisions'] == 1
@@ -166,10 +193,10 @@ def test_expired_window_cannot_be_enrolled_after_its_news_outcome_is_already_kno
     root = tmp_path/'alpha'; save_board(root); db = make_db(tmp_path/'omni.db')
     module().refresh_context(root, now=CAPTURE, db_path=db)
     current = save_board(root, board('2026-10-09T12:00:00Z', 'c'))
-    before = files(root/'catalyst-context')
+    before = files(root/'catalyst-context', exclude_coordination_lock=True)
     result = module().register_cohort(root, current, ['000660','005930'], now='2026-10-12T12:00:00Z')
     assert result == dict(status='failed', error='catalyst_cohort_registration_late')
-    assert files(root/'catalyst-context') == before
+    assert files(root/'catalyst-context', exclude_coordination_lock=True) == before
 
 
 def test_refresh_requires_hash_valid_issued_clock_and_never_changes_status(tmp_path):
