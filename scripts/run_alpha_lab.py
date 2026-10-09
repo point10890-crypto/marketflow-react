@@ -14,6 +14,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=ROOT, help='Private AlphaLab artifacts and canonical input pointer')
     args = parser.parse_args(argv)
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parents[1]/'.env', override=False)
     status = scan_once(args.root)
     report = status.get('report') or {}
     print(json.dumps(dict(state=status['state'], error=status['error'],
