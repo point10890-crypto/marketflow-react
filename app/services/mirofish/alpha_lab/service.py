@@ -274,6 +274,13 @@ def _execute(root):
                                   or not inputs['provenance']['analysis_ready'])
         from .monitor import register_report
         register_report(root, report, now=report['decision_at'])
+        # Notify only after the frozen decision and saved report exist. Delivery
+        # owns its independent receipt; a transport failure cannot undo research.
+        try:
+            from .telegram_alerts import deliver_latest
+            deliver_latest(root)
+        except Exception:
+            logging.getLogger(__name__).warning('AlphaLab notification unavailable')
         return published
     except Exception as exc:
         logging.getLogger(__name__).warning('AlphaLab scan failed (%s)', type(exc).__name__)

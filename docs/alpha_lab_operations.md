@@ -256,3 +256,43 @@ facts before publishing; do not synthesize independence, grade, timestamps or
 inactive-event flags. Raw evidence and collector details stay server-side;
 the portrait stock desk shows saved/missing/held receipt status, policy hash and
 per-stock market reasons. M0, unavailable forecasts and disabled orders remain.
+
+## Private detection-event delivery (2026-10-09)
+
+The operator explicitly requested immediate delivery and subsequent new detection
+events through `@bitman75_bot`. This authorizes this narrow private automation;
+the older one-shot scanner confirmation flow and other notification flags are
+unchanged. OpenClaw remains independent and read-only.
+
+`ALPHA_LAB_TELEGRAM_ENABLED=true` opts in. Both scheduled research and the manual
+scan hook send only after the research report and exact first-issued decision
+are saved. The event key is the frozen decision identity, recipient fingerprint
+and fixed message digest. New source inputs can produce a new decision even for
+the same symbols. Re-running that decision, member GETs, page refreshes, evidence
+receipt updates and five-minute price ticks do not send repeated stock messages.
+
+The sender verifies `getMe` equals `bitman75_bot` and `getChat` is the configured
+private operator chat before sending one escaped TOP3 message. It uses the
+project's personal bot token by default; the optional token-key alias is limited
+to the project's two existing Telegram token keys. It never targets a channel.
+The message uses saved names/codes, reference entry/stop/target, reference weights
+and the held status with the actual source session. It does not substitute monitored
+prices, advertise calibrated probabilities or claim execution approval.
+
+Private receipts under `data/alpha_lab/notifications/` are separate from research
+and scanner ledgers. A locked pending claim is persisted before transport;
+verified delivery, pending or uncertain acceptance prevent replay of the exact
+event. Timeout, malformed success or ambiguous server failure never cause an
+automatic duplicate. Authentication/blocked-recipient errors require operator
+action. Rate-limit recovery is bounded and respects the returned delay. Public
+CLI output contains only sanitized status/decision/digest/count/session fields;
+do not print, copy or stage private receipts, tokens, recipients or raw messages.
+
+`scripts/run_alpha_lab_telegram.py` defaults to a saved preview. `--send` performs
+one explicitly authorized send; `--automatic` honors the opt-in. The independent
+`scripts/install_alpha_lab_telegram_task.ps1` installs only
+`MarketFlow-AlphaLab-Telegram-Events`, a five-minute recovery check for the latest
+decision. It does not rerun research or modify the existing research/prime/monitor
+tasks. Research success survives transport failures; missing/invalid saved
+decisions cannot send. The notification task and CLI load only this project's
+environment, without exposing its contents.
