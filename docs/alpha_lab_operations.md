@@ -368,6 +368,8 @@ confirmation outcomes for nominee and control, six complete 10-session blocks,
 positive normal/stress means and paired advantages, nonworse tail loss, and
 positive block advantage minus 3.5 standard errors. This fixed research gate is
 not a calibrated probability or assurance of profitability.
+Separate decision blocks can share market and holding-period effects; the
+3.5-error margin is a fixed research metric rather than a confidence interval.
 
 Memory lives only under `data/alpha_lab/evolution/`: signed protocol/cohorts,
 recoverable observations, bound nomination, review receipts and compact status.

@@ -100,6 +100,25 @@ describe('optional evolution public boundary', () => {
         expect(region).toHaveTextContent('연구 후보 · 검토 대기');
         expect(region).toHaveTextContent('승인 노출 0 · 주문 실행 없음');
     });
+    it('describes shared-exposure blocks as a fixed research metric without an independence or confidence claim', async () => {
+        api.fetchAuthAPI.mockResolvedValue(evolutionStatusFixture(completedEvolutionFixture()));
+        render(<AlphaLabPanel token="member" desk />); await act(async () => {});
+        const region = screen.getByRole('region', { name: '알파 진화 관측' });
+        const detail = within(region).getByText('연구 검토 근거 · 저장 시각').closest('details');
+        expect(detail).toHaveTextContent('구간별 보수적 차이 지표');
+        expect(detail).toHaveTextContent('구간이 같은 시장과 보유 기간의 영향을 공유할 수 있습니다.');
+        expect(detail).toHaveTextContent('고정 연구 지표이며 신뢰구간이나 확률을 뜻하지 않습니다.');
+        expect(region).not.toHaveTextContent('독립 구간');
+        expect(region).not.toHaveTextContent(/\d+(?:\.\d+)?%\s*(?:신뢰|확률)|신뢰(?:구간|수준)\s*\d/);
+    });
+    it('describes the nonpositive block metric hold without calling it a confidence bound', async () => {
+        const value = evolutionFixture(); value.review.reasons = ['confirmation_block_lower_bound_nonpositive'];
+        api.fetchAuthAPI.mockResolvedValue(evolutionStatusFixture(value));
+        render(<AlphaLabPanel token="member" desk />); await act(async () => {});
+        const region = screen.getByRole('region', { name: '알파 진화 관측' });
+        expect(region).toHaveTextContent('별도 확인 구간의 보수적 차이 지표가 양수 조건을 충족하지 못했습니다.');
+        expect(region).not.toHaveTextContent('평균 차이 하한');
+    });
     it.each(['decision_id', 'input_fingerprint', 'source_audit_hash'] as const)('holds a foreign %s without exposing current selections or performance', key => {
         const raw = evolutionFixture(); raw.binding[key] = 'f'.repeat(64);
         const result = validateEvolutionContext(raw, validateOpportunityEngine(evolutionBoardFixture()));
@@ -146,6 +165,13 @@ describe('optional evolution public boundary', () => {
         expect(region).toHaveTextContent('진입 생략 1'); expect(region).toHaveTextContent('연구 후보 판단 보류');
         expect(region).toHaveTextContent('관심목록'); expect(region).toHaveTextContent('계좌 수익');
         expect(within(region).queryByText(/승률|성공 확률|전략 승격/)).not.toBeInTheDocument();
+    });
+    it.each([false, true])('places primary stock opportunities before supporting evolution for desk=%s', async desk => {
+        api.fetchAuthAPI.mockResolvedValue(evolutionStatusFixture());
+        render(<AlphaLabPanel token="member" desk={desk} />); await act(async () => {});
+        const board = screen.getByRole('region', { name: '수익 기회 순위' });
+        const evolution = screen.getByRole('region', { name: '알파 진화 관측' });
+        expect(board.compareDocumentPosition(evolution) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     });
     it('shows null metrics as unknown rather than zero or a win while keeping named selections readable', async () => {
         const value = evolutionFixture(); value.window.resolved_sessions = 0;

@@ -1,5 +1,6 @@
 """The explicit recovery command never backfills old research or acquires data."""
 from copy import deepcopy
+from filelock import Timeout
 
 from scripts import run_alpha_lab_evolution as cli
 from tests.test_alpha_lab_evolution_store import context
@@ -43,3 +44,12 @@ def test_missing_source_emits_only_safe_hold_code(tmp_path, monkeypatch, capsys)
     assert cli.main(['--root', str(tmp_path)]) == 2
     output = capsys.readouterr().out
     assert 'saved_evolution_inputs_unavailable' in output and 'private' not in output
+
+
+def test_busy_writer_returns_safe_hold_without_changing_completed_stages(tmp_path, monkeypatch, capsys):
+    calls, *_ = setup_cli(tmp_path, monkeypatch)
+    def busy(*args, **kwargs):
+        raise Timeout('private lock path')
+    monkeypatch.setattr(cli.evolution_store, 'initialize', busy)
+    assert cli.main(['--root', str(tmp_path)]) == 2
+    assert calls == [] and 'private' not in capsys.readouterr().out

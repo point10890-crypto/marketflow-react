@@ -97,6 +97,9 @@ control, nonpositive worsening of downside-tail loss, and a conservative block
 mean advantage margin bound using fixed multiplier3.5 on the confirmation blocks only; this is a conservative research gate, not a calibrated probability. Missing/revised coverage
 or missing/unbound capture provenance prevents qualification. Known historical
 vintage, adjustment and current-cohort limitations remain explicit for human review.
+Disjoint decision blocks can still share market regimes and overlapping holding
+periods; the margin is a fixed research indicator, not an independence claim or
+calibrated confidence interval.
 All qualification is research-only, `live_orders=false`, `approved_exposure=0`,
 `awaiting_review`; the existing AgentDesk M0/CIO/account contract stays intact.
 

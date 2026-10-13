@@ -36,7 +36,7 @@ const reasonLabels: Record<string, string> = {
     confirmation_nonpositive_stress_mean: '별도 확인 구간의 비용 2배 순평균이 양수 조건을 충족하지 못했습니다.',
     confirmation_nonpositive_paired_advantage: '별도 확인 구간의 대조군 대비 대응 우위가 양수 조건을 충족하지 못했습니다.',
     confirmation_nonpositive_paired_stress_advantage: '별도 확인 구간의 비용 2배 대응 우위가 양수 조건을 충족하지 못했습니다.',
-    confirmation_block_lower_bound_nonpositive: '별도 확인 구간의 보수적인 평균 차이 하한이 양수 조건을 충족하지 못했습니다.',
+    confirmation_block_lower_bound_nonpositive: '별도 확인 구간의 보수적 차이 지표가 양수 조건을 충족하지 못했습니다.',
     confirmation_downside_tail_worse_or_unknown: '별도 확인 구간의 하방 꼬리 손실이 악화되었거나 확인되지 않았습니다.',
     nomination_window_incomplete: '후보 지명 관측 구간이 아직 완료되지 않았습니다.',
     confirmation_window_incomplete: '별도 확인 관측 구간이 아직 완료되지 않았습니다.',
@@ -115,7 +115,8 @@ export default function AlphaLabEvolutionPanel({ context, board, now = Date.now(
             <p className="text-gray-400">고정 평가를 통과해도 연구 후보로 검토를 기다립니다. 승인 노출 0 · 주문 실행 없음.</p>
             <details className="min-w-0 border-t border-[#30363f]"><summary className={disclosureClass}>연구 검토 근거 · 저장 시각</summary><div className="space-y-2 pb-2 text-gray-400">
                 <p className="tabular-nums">별도 확인 진입 결과 {value.review.entered_outcomes} · 대조군 {value.review.control_entered_outcomes}<br />겹치지 않는 {value.window.block_sessions}거래일 구간 {value.review.completed_blocks}/{value.window.minimum_blocks}</p>
-                <p className="tabular-nums">선택 비교군 순평균 {pct(value.review.normal_mean)} · 비용 2배 {pct(value.review.stress_mean)}<br />대조군 차이 {points(value.review.paired_advantage)} · 비용 2배 차이 {points(value.review.stress_paired_advantage)}<br />독립 구간 평균 차이 하한 {points(value.review.block_lower_bound)} · 꼬리 손실 변화 {points(value.review.downside_tail_delta)}</p>
+                <p className="tabular-nums">선택 비교군 순평균 {pct(value.review.normal_mean)} · 비용 2배 {pct(value.review.stress_mean)}<br />대조군 차이 {points(value.review.paired_advantage)} · 비용 2배 차이 {points(value.review.stress_paired_advantage)}<br />구간별 보수적 차이 지표 {points(value.review.block_lower_bound)} · 꼬리 손실 변화 {points(value.review.downside_tail_delta)}</p>
+                <p>구간이 같은 시장과 보유 기간의 영향을 공유할 수 있습니다. 고정 연구 지표이며 신뢰구간이나 확률을 뜻하지 않습니다.</p>
                 <p className="tabular-nums">고정 선언 <time dateTime={value.declared_at}>{clock(value.declared_at)}</time><br />관측 저장 <time dateTime={value.generated_at}>{clock(value.generated_at)}</time></p>
             </div></details>
         </div>
