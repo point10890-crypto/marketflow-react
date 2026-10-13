@@ -333,3 +333,57 @@ of chance are not claimed. Missing RSS coverage is not evidence of no event.
 
 Audit: `docs/sk_hynix_detection_audit_2026_10_09.md`. Provisional-price source
 revisions remain terminal holds, excluded from completed performance.
+
+## Autonomous prospective improvement (2026-10-14)
+
+The shared portrait desk now displays **자동 개선 연구**. The existing 20:30 KST
+research job refreshes a separate evolution journal only after the original
+research report and issued decision have been published. Optional trial failure
+cannot undo a completed research stage, ranking, Kelly, CIO or Telegram receipt.
+GET reads saved bounded JSON only; no model fitting or source requests occur.
+
+Four policies compare the same dated financial-quality universe: current TOP3,
+next-open entry restricted to the frozen reference band, closed-bar recovery
+confirmation, and positive final correlation-adjusted ranking with cash for
+unused slots. All use next-session IOC, ATR14×2, 8% stop cap, 2R target and
+10-session horizon. Fees/slippage/sell tax are 5/5/20 bps; stress doubles costs
+without choosing different trades. These are paper watchlist returns, not an
+account return. Missing or revised quotes do not become profitable outcomes.
+
+The protocol freezes at initialization, then enrolls only future same-session
+decisions acquired after 20:30. Input `capture_audit` preserves each quality
+symbol's actual first/last accepted-row acquisition clock without changing the
+original source fingerprint. The first decision per session, full discovery
+pool and 64-bar causal prefixes are immutable. Later source changes audit the
+original result and exclude revised evidence; later prices beyond the fixed
+10-session horizon cannot rewrite an earlier outcome.
+
+The finite trial has 106 decision sessions: 36 nominate one challenger, 10 allow
+its labels to mature, and 60 independently confirm or reject that fixed nominee.
+Up to 10 additional sessions mature the final labels. No profitable-result-based
+extensions or substitution of a better confirmation winner are allowed. Nomination
+receipts bind to the protocol ID and ordered first-36 cohort IDs. Qualification
+requires the whole declared window resolved/unrevised, at least 30 entered
+confirmation outcomes for nominee and control, six complete 10-session blocks,
+positive normal/stress means and paired advantages, nonworse tail loss, and
+positive block advantage minus 3.5 standard errors. This fixed research gate is
+not a calibrated probability or assurance of profitability.
+
+Memory lives only under `data/alpha_lab/evolution/`: signed protocol/cohorts,
+recoverable observations, bound nomination, review receipts and compact status.
+The latest attempt has separate recoverable metadata. A failed refresh visibly
+holds saved status, while successful earlier stages and first decisions remain.
+Known historical-vintage, adjustment, current-cohort and paper-fill limitations
+stay explicit. Every result is `research_only=true`, `live_orders=false`,
+`approved_exposure=0`; an accepted research candidate is **awaiting human review**.
+
+Saved-source-only initialization/recovery (no collection, Telegram or orders):
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_alpha_lab_evolution.py
+```
+
+Running this command for an old saved report initializes a waiting trial with
+zero prospective cohorts. It never backfills old losing/winning decisions.
+The next successful scheduled research supplies its first future comparison.
+No duplicate Windows task, paid dependency or execution key is installed.

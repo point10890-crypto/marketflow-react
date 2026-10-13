@@ -3,6 +3,7 @@ import AdminStockAnalysisPanel from './AdminStockAnalysisPanel';
 import OpportunityBoard from './OpportunityBoard';
 import AgentDesk from './AgentDesk';
 import CatalystContext from './CatalystContext';
+import AlphaLabEvolutionPanel from './AlphaLabEvolutionPanel';
 import { opportunityClockExpirations } from '@/lib/opportunityEngine';
 import { fetchAlphaLab, liveAlphaLabMonitoring, startAlphaLab, type AlphaLabAnalystId, type AlphaLabCandidate, type AlphaLabMonitorQuote, type AlphaLabOperations, type AlphaLabOpportunityCandidate, type AlphaLabOpportunityPhase, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
 
@@ -404,6 +405,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false, 
         <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h2 id={heading} className="ai-section-title text-lg">{desk ? '유력 종목 데스크' : '에이전트 매매 제안'}</h2><p className="mt-2 text-xs leading-relaxed text-gray-400">{desk ? '저장된 분석에서 선별한 최대 세 종목의 가격 조건과 참고 비중을 확인하세요.' : visibleSnapshot?.opportunity_engine ? '종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 저장 종가 또는 새 시세로 계산한 참고 계획입니다.' : '종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 마지막 종가로 계산한 참고 제안입니다.'}</p></div><span className="rounded border border-[#365372] bg-[#1b2c40] px-2 py-1 text-[11px] font-semibold text-[#acd3ff]">직접 판단용 · 주문 실행 없음</span></div>
         <div className="my-4 flex flex-wrap gap-2">{!desk && <button type="button" onClick={start} disabled={reading || posting || polling || state === 'running'} className={`${buttonClass} bg-[#1b2c40]`}>매수 후보 검출</button>}<button type="button" onClick={() => { if (inFlight.current === null) { setReading(true); setRevision(value => value + 1); } }} disabled={reading || posting || polling} className={buttonClass}>저장 결과 새로고침</button></div>
         {!desk && visibleSnapshot?.operations && <OperationsBand snapshot={visibleSnapshot} monitoring={monitoring} now={now} />}
+        {visibleSnapshot?.evolution && <AlphaLabEvolutionPanel context={visibleSnapshot.evolution} board={visibleSnapshot.opportunity_engine} now={now} onSelectSymbol={onSelectSymbol} />}
         {reading && <p role="status" className="min-h-16 py-4 text-xs text-gray-400">매수 후보 검출 결과 확인 중…</p>}
         {!reading && (posting || state === 'running') && <p role="status" className="mb-4 rounded-lg border border-[#365372] bg-[#1b2c40] p-3 text-xs text-[#acd3ff]">{desk ? '분석 결과를 저장하는 중입니다. 완료 후 저장 결과 새로고침으로 확인해 주세요.' : '매수 후보 검출 진행 중 · 완료된 저장 결과를 자동 확인합니다.'}</p>}
         {!desk && isAdmin && <AdminStockAnalysisPanel />}

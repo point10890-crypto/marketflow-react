@@ -74,6 +74,7 @@ def load_inputs(price_csv, price_manifest, universe_report, *, as_of=None):
     groups = {symbol: [] for symbol in sorted(selected)}
     excluded, flags, seen = Counter(), Counter(), set()
     captures, bases, sources = set(), set(), set()
+    symbol_captures = {symbol: [] for symbol in selected}
     observed_at = datetime.now(timezone.utc)
     total = 0
     with prices_path.open('r', encoding='utf-8-sig', newline='') as handle:
@@ -128,6 +129,7 @@ def load_inputs(price_csv, price_manifest, universe_report, *, as_of=None):
                     if captured > observed_at:
                         flags['future_source_capture'] += 1
                     captures.add(captured.isoformat())
+                    symbol_captures[symbol].append(captured.isoformat())
                 except ValueError:
                     flags['capture_timezone_unverified'] += 1
             groups[symbol].append(row)
@@ -158,6 +160,9 @@ def load_inputs(price_csv, price_manifest, universe_report, *, as_of=None):
         source_hash=source_hash, manifest_hash=file_hash(manifest_path), scope_hash=file_hash(scope_path))
     return dict(status='held' if reasons else 'ready', reasons=reasons, as_of=today,
         latest_session=latest, prices_by_symbol=groups, names=names,
+        capture_audit={symbol: dict(first=min(symbol_captures[symbol]), last=max(symbol_captures[symbol]))
+                       for symbol, rows in groups.items()
+                       if len(symbol_captures[symbol]) == len(rows)},
         universe=dict(ranked_count=len(ranked), quality_count=len(selected),
                       inspected_count=len(groups), scope_date=scope_date),
         provenance=provenance, input_fingerprint=fingerprint,

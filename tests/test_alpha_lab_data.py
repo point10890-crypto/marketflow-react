@@ -36,6 +36,30 @@ def test_actual_scope_preserves_code_and_unknown_history(tmp_path):
     assert result['names']['005930'] == '삼성전자'
     assert result['provenance']['analysis_ready'] is False
     assert result['provenance']['point_in_time_universe_verified'] is False
+
+
+def test_capture_audit_uses_each_actual_row_without_changing_fingerprint(tmp_path):
+    rows = [dict(symbol='005930', date='2026-10-01', open=100, high=110, low=90, close=105, volume=100,
+                 captured_at='2026-10-03T00:00:00+00:00'),
+            dict(symbol='005930', date='2026-10-02', open=100, high=110, low=90, close=105, volume=100,
+                 captured_at='2026-10-03T01:00:00+00:00')]
+    source = inputs(tmp_path, rows)
+    result = load_inputs(*source, as_of='2026-10-04')
+    assert result['capture_audit'] == {'005930': {'first': '2026-10-03T00:00:00+00:00', 'last': '2026-10-03T01:00:00+00:00'}}
+    assert result['provenance']['captured_at'] == '2026-10-03T01:00:00+00:00'
+    expected = hashlib.sha256(json.dumps(dict(prices=hashlib.sha256(source[0].read_bytes()).hexdigest(),
+        manifest=hashlib.sha256(source[1].read_bytes()).hexdigest(), scope=hashlib.sha256(source[2].read_bytes()).hexdigest()),
+        sort_keys=True).encode()).hexdigest()
+    assert result['input_fingerprint'] == expected
+
+
+def test_incomplete_row_capture_does_not_receive_an_invented_symbol_timestamp(tmp_path):
+    rows = [dict(symbol='005930', date='2026-10-01', open=100, high=110, low=90, close=105, volume=100,
+                 captured_at=''),
+            dict(symbol='005930', date='2026-10-02', open=100, high=110, low=90, close=105, volume=100,
+                 captured_at='2026-10-03T01:00:00+00:00')]
+    result = load_inputs(*inputs(tmp_path, rows), as_of='2026-10-04')
+    assert result['capture_audit'] == {}
     assert result['provenance']['current_cohort_bias'] is True
     assert result['universe']['quality_count'] == 1
     assert result['latest_session'] == '2026-10-02'

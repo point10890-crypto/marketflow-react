@@ -247,6 +247,7 @@ def _add_opportunities(root, report, inputs):
     public['forward'] = store.observe_and_freeze(Path(root)/'opportunities', forward_report,
                                                 inputs['prices_by_symbol'], now=report['decision_at'])
     _add_decision_engine(root, report, inputs, all_discovery)
+    return all_discovery
 
 def _execute(root):
     try:
@@ -261,7 +262,7 @@ def _execute(root):
         core = run_research(inputs['prices_by_symbol'], names=inputs['names'],
                             config=ResearchConfig(as_of=inputs['latest_session']))
         report = normalize_report(core, inputs)
-        _add_opportunities(root, report, inputs)
+        all_discovery = _add_opportunities(root, report, inputs)
         report['forward'] = store.observe_and_freeze(root, report, inputs['prices_by_symbol'])
         # Full replay evidence is private local data; the member API publishes a compact, path-free view.
         report['experiment_hash'] = store._hash(core)
@@ -274,6 +275,15 @@ def _execute(root):
                                   or not inputs['provenance']['analysis_ready'])
         from .monitor import register_report
         register_report(root, report, now=report['decision_at'])
+        # Compare predeclared policies on future observations only. This owns
+        # a separate journal and cannot change the published decision or CIO.
+        try:
+            from .evolution_store import refresh
+            evolution_status = refresh(root, inputs, report, all_discovery)
+            if evolution_status.get('status') == 'held':
+                logging.getLogger(__name__).warning('AlphaLab evolution unavailable (refresh_held)')
+        except Exception:
+            logging.getLogger(__name__).warning('AlphaLab evolution unavailable')
         # A post-publication sidecar cannot change frozen prices, rank, Kelly or
         # approval. Its prospective cohort excludes decisions before enrollment.
         try:
@@ -313,6 +323,13 @@ def _with_agent_desk(status, *, now=None):
             result['catalyst_context'] = context
     except Exception:
         logging.getLogger(__name__).warning('AlphaLab saved news context unavailable')
+    try:
+        from .evolution_store import read_status as read_evolution
+        evolution = read_evolution(ROOT, board, now=now)
+        if evolution is not None:
+            result['evolution'] = evolution
+    except Exception:
+        logging.getLogger(__name__).warning('AlphaLab saved evolution unavailable')
     return result
 
 
