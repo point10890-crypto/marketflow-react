@@ -8,6 +8,7 @@
 - 읽기전용 + 프로브. 스캔·발송·주문을 트리거하지 않고 일반 판단 캐시를 덮어쓰지 않는다.
 - 체커 하나의 예외가 가드 전체를 죽이지 않는다 — 예외는 그 서비스의 fail 로 환산.
 - 알림은 실제 장애(→fail) 진입 때만 보낸다. warn/ok/복구와 동일 fail 지속은 기록만 한다.
+- 판단 조회 가드는 운영자 요청으로 발송하지 않고 점검·장애 기록만 유지한다.
 - 발송 함수는 주입받는다(send_fn). 이 모듈은 텔레그램을 모른다.
 """
 from __future__ import annotations
@@ -33,6 +34,7 @@ KST = timezone(timedelta(hours=9))
 SEVERITY = {'ok': 0, 'warn': 1, 'fail': 2}
 
 SERVICE_LABEL = {'scanner': '알파 스캐너', 'goodrich': 'AI 펀드매니저', 'decision': '판단 조회'}
+SILENT_ALERT_SERVICES = frozenset({'decision'})
 
 
 def _now_kst(now: datetime | None = None) -> datetime:
@@ -372,7 +374,7 @@ def _emit_transitions(services: dict[str, dict[str, Any]],
         prev_status = prev.get('status', 'ok')
         alerted_at = float(prev.get('alerted_at') or 0)
 
-        if status == 'fail' and (prev_status != 'fail' or alerted_at <= 0):
+        if name not in SILENT_ALERT_SERVICES and status == 'fail' and (prev_status != 'fail' or alerted_at <= 0):
             lines_alert.append(_alert_lines(name, result))
             alerted_names.append(name)
             # alerted_at 은 실제 발송 성공 후에만 찍는다 — 무발송(send_fn=None) 실행이나

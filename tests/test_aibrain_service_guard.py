@@ -352,8 +352,8 @@ def test_run_guard_alerts_only_when_failure_starts(guard_paths, monkeypatch):
     assert (guard_paths / 'latest.json').exists() and (guard_paths / 'history.jsonl').exists()
 
 
-def test_warn_is_recorded_without_telegram_until_it_becomes_fail(guard_paths, monkeypatch):
-    """warn 과 ok 는 발송하지 않고, 실제 fail 로 승격될 때만 알린다."""
+def test_decision_guard_is_recorded_without_telegram_even_on_fail(guard_paths, monkeypatch):
+    """판단 조회 가드는 장애 판정과 기록을 유지하지만 메시지는 발송하지 않는다."""
     state = {'v': 'warn'}
     monkeypatch.setattr(sg, 'CHECKERS', {
         'decision': lambda now: {'status': state['v'], 'detail': {'probe_s': 8.1}},
@@ -374,8 +374,28 @@ def test_warn_is_recorded_without_telegram_until_it_becomes_fail(guard_paths, mo
 
     state['v'] = 'fail'
     sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=30))
-    assert len(sent) == 1
-    assert '판단 조회: FAIL' in sent[0]
+    assert sent == []
+    assert sg.read_latest()['services']['decision']['status'] == 'fail'
+    assert json.loads((guard_paths / 'state.json').read_text())['decision']['status'] == 'fail'
+    state['v'] = 'ok'
+    sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=40))
+    state['v'] = 'fail'
+    sg.run_guard(send_fn=sent.append, now=MONDAY_1030 + timedelta(minutes=50))
+    assert sent == []
+
+
+def test_muted_decision_failure_does_not_enter_other_service_alert(guard_paths, monkeypatch):
+    monkeypatch.setattr(sg, 'CHECKERS', {
+        'decision': lambda now: {'status': 'fail', 'detail': {'probe_s': 31.97, 'slowest_source': 'price'}},
+        'scanner': lambda now: {'status': 'fail', 'detail': {'reason': 'stale_run'}},
+    })
+    sent = []
+    result = sg.run_guard(send_fn=sent.append, now=MONDAY_1030)
+    assert result['overall'] == 'fail'
+    assert result['services']['decision']['detail']['probe_s'] == 31.97
+    assert len(sent) == 1 and '알파 스캐너: FAIL' in sent[0]
+    assert '판단 조회' not in sent[0] and 'probe_s' not in sent[0]
+    assert json.loads((guard_paths / 'state.json').read_text())['decision']['alerted_at'] == 0
 
 
 def test_silent_run_does_not_consume_transition_alert(guard_paths, monkeypatch):
@@ -423,7 +443,7 @@ def test_send_failure_does_not_mark_alerted(guard_paths, monkeypatch):
 def test_false_send_result_does_not_mark_alerted(guard_paths, monkeypatch):
     """스케줄러의 텔레그램 발송 실패(False)는 성공 발송으로 기록하지 않는다."""
     monkeypatch.setattr(sg, 'CHECKERS', {
-        'decision': lambda now: {'status': 'fail', 'detail': {'probe_s': 35.69}},
+        'scanner': lambda now: {'status': 'fail', 'detail': {'reason': 'stale_run'}},
     })
 
     assert sg.run_guard(send_fn=lambda msg: False, now=MONDAY_1030)['overall'] == 'fail'
