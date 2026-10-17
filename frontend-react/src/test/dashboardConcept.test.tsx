@@ -28,8 +28,10 @@ describe('dashboard operating concept', () => {
     });
 
     const panelUse = dashboardSource.indexOf('<DashboardConceptPanel />');
-    const desktopHeader = dashboardSource.indexOf('Header + Scrolling Market Ticker');
+    // 주석이 아니라 실제 지수 섹션 컴포넌트를 기준으로 순서를 본다.
+    const desktopHeader = dashboardSource.indexOf('<MarketIndexStrip');
     expect(panelUse).toBeGreaterThan(-1);
+    expect(desktopHeader).toBeGreaterThan(-1);
     expect(panelUse).toBeLessThan(desktopHeader);
   });
 

@@ -43,9 +43,36 @@
 .summary-principle dd { margin-top: 5px; font-size: 12px; line-height: 1.6; color: var(--summary-muted); }
 .summary-section-heading { margin-top: 12px; font-size: 17px; font-weight: 650; letter-spacing: -.025em; color: #f5f5f7; }
 .summary-index-grid { display: flex; flex-wrap: wrap; gap: 1px; margin-top: 16px; border: 1px solid var(--summary-line); border-radius: 12px; overflow: hidden; background: var(--summary-line); }
-.summary-index { flex: 1 1 140px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 18px 20px; background: var(--summary-surface); }
-.summary-index-label { color: var(--summary-muted); font-size: 12px; }
+.summary-index { position: relative; flex: 1 1 140px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 18px 20px 20px; background: var(--summary-surface); transition: background-color .25s ease, transform .25s ease; animation: summary-index-in .55s cubic-bezier(.2,.7,.2,1) backwards; animation-delay: calc(var(--i, 0) * 45ms); }
+.summary-index-label { color: var(--summary-muted); font-size: 12px; transition: color .25s ease; }
 .summary-index-price { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.025em; color: #f5f5f7; }
+
+/* ── 주요 시장 지수: 값이 바뀔 때만 움직인다 ── */
+.summary-indices-heading { display: flex; align-items: center; gap: 10px; }
+.summary-live { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border: 1px solid rgba(52, 211, 153, .28); border-radius: 999px; background: rgba(52, 211, 153, .07); color: #6ee7b7; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; }
+.summary-live-dot { position: relative; width: 6px; height: 6px; border-radius: 999px; background: #34d399; }
+.summary-live-dot::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: #34d399; animation: summary-live-ping 1.8s cubic-bezier(0,0,.2,1) infinite; }
+
+.summary-index:hover { background: #1a1f26; transform: translateY(-2px); z-index: 1; }
+.summary-index:hover .summary-index-label { color: #d5dbe3; }
+/* 틱 플래시는 오버레이로 — 진입 애니메이션과 같은 속성을 다투면 진입이 재생된다 */
+.summary-index::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.summary-index[data-tick="up"]::before { background: rgba(52, 211, 153, .16); animation: summary-index-tick 1.2s ease-out; }
+.summary-index[data-tick="down"]::before { background: rgba(248, 113, 113, .16); animation: summary-index-tick 1.2s ease-out; }
+.summary-index-arrow { display: inline-block; transition: transform .25s ease; }
+.summary-index[data-tick] .summary-index-arrow { animation: summary-index-arrow-pop .6s ease-out; }
+
+/* 트랙 폭을 고정해야 넓은 타일(마지막 줄 단독 타일)에서도 같은 %가 같은 길이로 보인다 */
+.summary-index-track { position: absolute; left: 20px; bottom: 10px; width: min(110px, calc(100% - 40px)); height: 2px; border-radius: 999px; background: rgba(255, 255, 255, .05); overflow: hidden; }
+.summary-index-bar { display: block; height: 100%; border-radius: inherit; transform-origin: left center; animation: summary-index-bar-grow .9s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 45ms + .25s); transition: width .7s cubic-bezier(.2,.7,.2,1); }
+.summary-index-bar.is-up { background: linear-gradient(90deg, rgba(52, 211, 153, .25), #34d399); }
+.summary-index-bar.is-down { background: linear-gradient(90deg, rgba(248, 113, 113, .25), #f87171); }
+
+@keyframes summary-index-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes summary-live-ping { 0% { transform: scale(1); opacity: .7; } 80%, 100% { transform: scale(2.6); opacity: 0; } }
+@keyframes summary-index-tick { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes summary-index-arrow-pop { 0% { transform: scale(1); } 40% { transform: scale(1.45); } 100% { transform: scale(1); } }
+@keyframes summary-index-bar-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .summary-briefing { display: block; position: relative; padding: 12px 8px; background: #151e29; border: 1px solid #354c66; border-left: 3px solid var(--summary-blue); border-radius: 12px; transition: border-color .15s ease; }
 .summary-briefing:hover { border-color: var(--summary-blue); }
 .summary-briefing-title { margin-top: 12px; max-width: 52ch; font-size: clamp(19px, 2vw, 26px); font-weight: 700; line-height: 1.5; letter-spacing: -.03em; color: #f5f5f7; }
