@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { canAccessAiBain } from '@/lib/auth';
 import { useSmartRefresh } from '@/hooks/useAutoRefresh';
 import MiroFishFearIndexCard from '@/components/mirofish/MiroFishFearIndexCard';
+import MarketIndexStrip from './MarketIndexStrip';
 import './summary-dashboard.css';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -685,23 +686,8 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
 
             <DashboardConceptPanel />
 
-            {/* ── Header + Scrolling Market Ticker ── */}
-            <section className="summary-indices hidden md:block" aria-label="주요 시장 지수">
-                <h2 className="summary-section-heading">주요 시장 지수</h2>
-                {marketIndices.length > 0 && (
-                    <div className="summary-index-grid">
-                            {marketIndices.map((idx) => (
-                                <div key={idx.name} className="summary-index">
-                                    <span className="summary-index-label">{idx.name}</span>
-                                    <strong className="summary-index-price">{idx.price}</strong>
-                                    <span className={`text-xs font-semibold tabular-nums ${idx.change_pct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {idx.change_pct >= 0 ? '▲' : '▼'} {idx.change_pct >= 0 ? '+' : ''}{idx.change_pct.toFixed(2)}%
-                                    </span>
-                                </div>
-                            ))}
-                    </div>
-                )}
-            </section>
+            {/* ── 주요 시장 지수 (값이 바뀔 때만 움직이는 라이브 스트립) ── */}
+            <MarketIndexStrip indices={marketIndices} />
 
             {/* ── AI Brain 업그레이드 배너 (활성 Pro/Premium 회원, admin/AI Brain 활성자 제외) ── */}
             {(() => {
