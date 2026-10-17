@@ -75,8 +75,54 @@ def test_slow_scan_gets_full_ttl_from_completion(runs, monkeypatch):
     assert alpha_scanner._latest_scanner_run_paths() == first
     assert len(calls) == 1
     clock["now"] += 2
+    # Expired: the stale snapshot is served while one background refresh rescans.
     assert alpha_scanner._latest_scanner_run_paths() == first
+    assert alpha_scanner._wait_for_run_paths_refresh(timeout=5)
     assert len(calls) == 2
+
+
+def test_expired_cache_serves_stale_without_waiting_for_rescan(runs, monkeypatch):
+    clock = {"now": 0.0}
+    monkeypatch.setattr(alpha_scanner.time_mod, "monotonic", lambda: clock["now"])
+    first = alpha_scanner._latest_scanner_run_paths()
+    newest = runs / "mfas_20261003120000_cccccccccccc"
+    newest.mkdir()
+    (newest / "run.json").write_text("{}", encoding="utf-8")
+    scan = alpha_scanner._scan_latest_run_paths
+    started, release = threading.Event(), threading.Event()
+    calls = []
+
+    def blocked_scan(root):
+        calls.append(root)
+        started.set()
+        assert release.wait(timeout=5)
+        return scan(root)
+
+    monkeypatch.setattr(alpha_scanner, "_scan_latest_run_paths", blocked_scan)
+    clock["now"] += 31
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        stale = [f.result(timeout=2) for f in [pool.submit(alpha_scanner._latest_scanner_run_paths) for _ in range(8)]]
+    assert all(result == first for result in stale)
+    assert started.wait(timeout=5)
+    release.set()
+    assert alpha_scanner._wait_for_run_paths_refresh(timeout=5)
+    assert len(calls) == 1  # concurrent expired callers share one refresh
+    assert alpha_scanner._latest_scanner_run_paths()[0] == str(newest / "run.json")
+
+
+def test_failed_background_refresh_keeps_stale_snapshot(runs, monkeypatch):
+    clock = {"now": 0.0}
+    monkeypatch.setattr(alpha_scanner.time_mod, "monotonic", lambda: clock["now"])
+    first = alpha_scanner._latest_scanner_run_paths()
+
+    def broken_scan(root):
+        raise OSError("unavailable directory")
+
+    monkeypatch.setattr(alpha_scanner, "_scan_latest_run_paths", broken_scan)
+    clock["now"] += 31
+    assert alpha_scanner._latest_scanner_run_paths() == first
+    assert alpha_scanner._wait_for_run_paths_refresh(timeout=5)
+    assert alpha_scanner._latest_scanner_run_paths() == first
 
 
 def test_wall_clock_adjustment_does_not_expire_monotonic_cache(runs, monkeypatch):
