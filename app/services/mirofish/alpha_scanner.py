@@ -595,9 +595,20 @@ def read_scanner_run_artifact(run_id: str, filename: str) -> dict[str, Any] | No
 
 def list_scanner_runs(limit: int = 20) -> list[dict[str, Any]]:
     """Return recent scanner run summaries without loading candidate payloads."""
-    records = _scanner_run_records()
     clean_limit = max(1, min(_clean_limit(limit, default=20), 100))
-    return [_scanner_run_summary(item['run']) for item in records[:clean_limit]]
+    # run.json 전체를 읽지 않고 최신순 경로에서 limit 개만 읽는다.
+    summaries: list[dict[str, Any]] = []
+    for path in _latest_scanner_run_paths():
+        try:
+            run = _read_json(path)
+        except (OSError, json.JSONDecodeError, ValueError):
+            continue
+        if not isinstance(run, dict):
+            continue
+        summaries.append(_scanner_run_summary(run))
+        if len(summaries) >= clean_limit:
+            break
+    return summaries
 
 
 def read_latest_scanner_run() -> dict[str, Any] | None:
@@ -689,10 +700,20 @@ def _invalidate_run_paths_cache() -> None:
         _RUN_PATHS_CACHE.clear()
 
 
+_RUN_ID_STAMP_RE = re.compile(r'mfas_(\d{14})_')
+
+
 def _scan_latest_run_paths(root: str) -> list[str]:
+    """run.json 경로를 최신 생성순으로 반환한다.
+
+    miniPC 실측(2026-10-18): 392,408개 런에서 엔트리당 isfile+getmtime 이 17.1s 였다.
+    `_run_id` 가 generated_at(UTC 14자리)을 id 에 박으므로 그 문자열로 stat 없이 정렬한다.
+    stamped 런은 run.json 존재를 확인하지 않으므로 리더는 OSError 를 건너뛰어야 한다.
+    id 패턴이 아닌 레거시 런만 기존처럼 mtime 을 읽는다.
+    """
     if not os.path.isdir(root):
         return []
-    candidates: list[tuple[float, str, str]] = []
+    candidates: list[tuple[str, str, str]] = []
     try:
         entries = list(os.scandir(root))
     except OSError:
@@ -705,13 +726,18 @@ def _scan_latest_run_paths(root: str) -> list[str]:
         except ValueError:
             continue
         path = os.path.join(root, safe_id, 'run.json')
+        match = _RUN_ID_STAMP_RE.match(safe_id)
+        if match:
+            candidates.append((match.group(1), safe_id, path))
+            continue
         if not os.path.isfile(path):
             continue
         try:
             mtime = os.path.getmtime(path)
         except OSError:
             continue
-        candidates.append((mtime, safe_id, path))
+        stamp = datetime.fromtimestamp(mtime, timezone.utc).strftime('%Y%m%d%H%M%S')
+        candidates.append((stamp, safe_id, path))
     if not candidates:
         return []
     candidates.sort(key=lambda item: (item[0], item[1]), reverse=True)
@@ -725,12 +751,18 @@ def _latest_scanner_run_paths() -> list[str]:
     돌면서 콜드 파일캐시에서 첫 판단 조회가 75초까지 걸렸다. 새 런 저장 시
     create_scanner_run 이 즉시 무효화하므로, TTL(기본 30초) 동안의 신선도 손실은
     관측 경로에만 해당한다. TTL 0 이면 항상 재스캔(킬스위치).
+    만료 후에는 이전 목록을 즉시 반환하고 백그라운드 스레드 하나가 다시 스캔한다
+    (2026-10-18: 만료 요청이 스캔을 기다리며 대시보드 10s 타임아웃을 넘겼다).
     """
     root = SCANNER_RUNS_ROOT
     ttl = _run_paths_ttl_seconds()
     now = time_mod.monotonic()
     hit = _RUN_PATHS_CACHE.get(root)
     if ttl > 0 and hit is not None and now - hit[0] < ttl:
+        return list(hit[1])
+    if ttl > 0 and hit is not None:
+        # 만료: 요청 스레드는 스캔(392k 런에서 ~2s)을 기다리지 않고 이전 목록을 받는다.
+        _start_run_paths_refresh(root, ttl)
         return list(hit[1])
     # Concurrent cold requests share one scan, including requests that missed
     # before another caller acquired the lock and completed the rebuild.
@@ -743,6 +775,49 @@ def _latest_scanner_run_paths() -> list[str]:
         # Cold directory enumeration can exceed the TTL; age starts on completion.
         _RUN_PATHS_CACHE[root] = (time_mod.monotonic(), paths)
         return list(paths)
+
+
+_RUN_PATHS_REFRESH_GUARD = threading.Lock()
+_RUN_PATHS_REFRESH_THREADS: dict[str, threading.Thread] = {}
+
+
+def _start_run_paths_refresh(root: str, ttl: float) -> None:
+    """만료된 경로 목록을 백그라운드 스레드 하나로만 다시 스캔한다."""
+    with _RUN_PATHS_REFRESH_GUARD:
+        running = _RUN_PATHS_REFRESH_THREADS.get(root)
+        if running is not None and running.is_alive():
+            return
+        thread = threading.Thread(
+            target=_refresh_run_paths,
+            args=(root, ttl),
+            name='mirofish-run-paths-refresh',
+            daemon=True,
+        )
+        _RUN_PATHS_REFRESH_THREADS[root] = thread
+        thread.start()
+
+
+def _refresh_run_paths(root: str, ttl: float) -> None:
+    try:
+        # 콜드 빌드·무효화와 같은 락 — 무효화 직후 옛 스냅샷을 다시 게시하지 않는다.
+        with _RUN_PATHS_CACHE_LOCK:
+            hit = _RUN_PATHS_CACHE.get(root)
+            if hit is not None and time_mod.monotonic() - hit[0] < ttl:
+                return
+            paths = _scan_latest_run_paths(root)
+            _RUN_PATHS_CACHE[root] = (time_mod.monotonic(), paths)
+    except Exception:
+        # 실패는 캐시하지 않는다: 이전 목록을 계속 제공하고 다음 만료 요청이 재시도한다.
+        return
+
+
+def _wait_for_run_paths_refresh(timeout: float | None = None) -> bool:
+    """진행 중인 백그라운드 갱신이 끝날 때까지 기다린다 (테스트·진단용)."""
+    with _RUN_PATHS_REFRESH_GUARD:
+        threads = list(_RUN_PATHS_REFRESH_THREADS.values())
+    for thread in threads:
+        thread.join(timeout)
+    return not any(thread.is_alive() for thread in threads)
 
 
 def read_price_chart(symbol: str, limit: int = 120) -> dict[str, Any]:
@@ -4988,31 +5063,6 @@ def _telegram_config_status() -> dict[str, Any]:
         'personal_chat_present': bool(personal_chat),
         'channel_chat_present': bool(channel_chat),
     }
-
-
-def _scanner_run_records() -> list[dict[str, Any]]:
-    if not os.path.isdir(SCANNER_RUNS_ROOT):
-        return []
-    records: list[dict[str, Any]] = []
-    for name in os.listdir(SCANNER_RUNS_ROOT):
-        try:
-            safe_id = _safe_run_id(name)
-        except ValueError:
-            continue
-        path = os.path.join(SCANNER_RUNS_ROOT, safe_id, 'run.json')
-        if not os.path.isfile(path):
-            continue
-        try:
-            run = _read_json(path)
-        except (OSError, json.JSONDecodeError, ValueError):
-            continue
-        if not isinstance(run, dict):
-            continue
-        mtime = datetime.fromtimestamp(os.path.getmtime(path), timezone.utc)
-        sort_dt = _parse_dt(run.get('generated_at') or run.get('created_at')) or mtime
-        records.append({'run': run, 'path': path, 'mtime': mtime, 'sort_dt': sort_dt})
-    records.sort(key=lambda item: (item['sort_dt'], item['mtime']), reverse=True)
-    return records
 
 
 def _scanner_run_summary(run: dict[str, Any]) -> dict[str, Any]:

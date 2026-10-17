@@ -254,13 +254,14 @@ def test_read_latest_scanner_run_reads_only_newest_file(tmp_path, monkeypatch):
     os.utime(old_path, (time.time() - 3600, time.time() - 3600))
     os.utime(new_path, None)
 
-    def fail_full_records_scan():
-        raise AssertionError('latest scanner run should not load every run json')
-
+    reads = []
+    real_read = alpha_scanner._read_json
     monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(root))
-    monkeypatch.setattr(alpha_scanner, '_scanner_run_records', fail_full_records_scan)
+    monkeypatch.setattr(alpha_scanner, '_read_json', lambda path: reads.append(path) or real_read(path))
 
     latest = alpha_scanner.read_latest_scanner_run()
+
+    assert reads == [str(new_path)]  # latest scanner run should not load every run json
 
     assert latest['id'] == new_dir.name
     assert latest['candidate_count'] == 7

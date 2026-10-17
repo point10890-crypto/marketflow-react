@@ -474,10 +474,19 @@ def _count_scanner_runs_today(now_kst: datetime) -> int:
     if not os.path.isdir(SCANNER_RUNS_ROOT):
         return 0
     today_kst = now_kst.astimezone(KST).date()
+    # run id 스탬프는 UTC — KST 하루는 UTC 이틀에 걸친다. 그 두 날짜 접두사만 파싱해
+    # 수십만 개 런 이름 전체를 strptime 하지 않는다 (2026-10-18 miniPC 392k 런).
+    day_start_utc = datetime.combine(today_kst, datetime.min.time(), KST).astimezone(timezone.utc)
+    prefixes = tuple(
+        f"mfas_{(day_start_utc + timedelta(days=offset)).strftime('%Y%m%d')}"
+        for offset in (0, 1)
+    )
     count = 0
     try:
         for name in os.listdir(SCANNER_RUNS_ROOT):
             if not name.startswith('mfas_'):
+                continue
+            if name[5:13].isdigit() and not name.startswith(prefixes):
                 continue
             run_at = _scanner_run_datetime_from_id(name)
             if run_at is None:
