@@ -158,11 +158,21 @@ Invoke-WebRequest -UseBasicParsing -TimeoutSec 10 https://marketflow-api.bit-man
 - Flask launcher: Task `MarketFlow-Flask` → `scripts\start_flask_task.ps1` →
   `FLASK_HOST=127.0.0.1`, `FLASK_PORT=5003`.
 - Flask watchdog: Task `MarketFlow-Flask-Watchdog` →
-  `scripts\flask_watchdog_v2.ps1` → local `/healthz` on 5003.
+  `scripts\flask_watchdog_v2.ps1 -Mode Primary` → local `/healthz` on 5003.
+- Legacy KIS producer watchdog: independent task
+  `MarketFlow-Legacy-Flask-Watchdog` → the same script with `-Mode Legacy`.
+  Legacy 5001 recovery must not delay primary 5003 recovery.
 - Tunnel watchdog: Task `MarketFlow-Tunnel-Watchdog` →
   `scripts\tunnel_watchdog.ps1` → public `/healthz` plus local 5003 isolation.
-- Tunnel connector: Task `MarketFlow-Cloudflared` and its operator-owned,
-  untracked config. Do not print or copy config/credential contents.
+- Tunnel connector: canonical Windows service `Cloudflared`. A Ready
+  `MarketFlow-Cloudflared` task does not imply the service is down. Keep the
+  operator-owned config/credentials untracked and never print or copy them.
+
+Recovery probes use the outer process deadline in `scripts\health_probe.ps1`;
+the ad hoc `Invoke-WebRequest` commands above are not an overall timeout
+guarantee for a stalled body. Runtime log isolation, private slow-request traces,
+recovery tradeoffs and the deployment drill are documented in
+[API availability and bounded recovery](docs/api_availability_recovery.md).
 
 ---
 

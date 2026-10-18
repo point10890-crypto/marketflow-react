@@ -12,6 +12,7 @@ $ErrorActionPreference = 'Continue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $Root = 'C:\bitman_marketfloww'
+. (Join-Path $PSScriptRoot 'health_probe.ps1')
 $LogFile = Join-Path $Root 'logs\tunnel_watchdog.log'
 $StateFile = Join-Path $Root 'logs\tunnel_watchdog.state'
 $RestartRequestFile = Join-Path $Root 'data\tunnel_restart.request'
@@ -32,12 +33,13 @@ if ((Test-Path $LogFile) -and ((Get-Item $LogFile).Length -gt 5MB)) {
 }
 
 function Test-Url([string]$url) {
-    try {
-        $resp = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 15
-        return ($resp.StatusCode -eq 200)
-    } catch {
-        return $false
+    $probe = Invoke-BoundedHealthProbe -Uri $url -TimeoutSeconds 5
+    if ($probe.reason -in @('probe_unavailable', 'cleanup_failed')) {
+        # An unavailable monitor is not evidence of a tunnel failure.
+        Write-Log 'health probe unavailable; refusing tunnel restart'
+        throw 'health_probe_unavailable'
     }
+    return [bool]$probe.healthy
 }
 
 function Get-CloudflaredService {
