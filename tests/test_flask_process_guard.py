@@ -150,3 +150,124 @@ def test_real_launcher_refuses_all_candidates_before_any_kill_or_start(case):
         @{{ code=$LASTEXITCODE; kills=@($global:fixtureKills); starts=$global:fixtureStarts; refused=[bool](@($global:fixtureLogs | Where-Object {{ $_ -like '*startup refused*' }}).Count) }} | ConvertTo-Json -Compress
     """)
     assert result == {'code': 1, 'kills': [], 'starts': 0, 'refused': True}
+
+
+def forwarded_lifecycle(scenario):
+    """Run the real guard; only CIM/port reads and native kill are adapters."""
+    return ps(f"""
+        . '{GUARD.as_posix()}'
+        $Project='C:\\bitman_marketfloww'
+        $script:parentAlive=$true
+        $script:legacyOwner=0
+        $script:kills=[System.Collections.Generic.List[int]]::new()
+        $script:parent=[pscustomobject]@{{ProcessId=41;Name='python.exe';CreationDate=[datetime]'2026-10-19T00:00:00Z';CommandLine='C:\\bitman_marketfloww\\.venv\\Scripts\\python.exe flask_app.py'}}
+        $script:child=[pscustomobject]@{{ProcessId=42;ParentProcessId=41;Name='python.exe';CreationDate=[datetime]'2026-10-19T00:00:01Z';CommandLine='C:\\Python313\\python.exe flask_app.py'}}
+        $snapshot=$script:child.PSObject.Copy()
+        function Get-NetTCPConnection {{param($LocalPort,$State,$ErrorAction)
+            if($LocalPort -ne 5001){{throw 'wrong protection port'}}
+            if($script:legacyOwner){{return [pscustomobject]@{{OwningProcess=$script:legacyOwner}}}}
+        }}
+        function Get-CimInstance {{param($ClassName,$Filter,$OperationTimeoutSec,$ErrorAction)
+            if($Filter -eq 'ProcessId=41' -and $script:parentAlive){{return $script:parent}}
+            if($Filter -eq 'ProcessId=42'){{return $script:child}}
+            return $null
+        }}
+        function taskkill.exe {{
+            if($args.Count -ne 4 -or $args[0] -ne '/F' -or $args[1] -ne '/T' -or $args[2] -ne '/PID'){{throw 'wrong kill invocation'}}
+            $script:kills.Add([int]$args[3])
+        }}
+        $errorReason=$null
+        try{{ {scenario} }}catch{{$errorReason=$_.Exception.Message}}
+        @{{kills=@($script:kills);reason=$errorReason}} | ConvertTo-Json -Compress
+    """)
+
+
+def test_prevalidated_forwarded_child_keeps_ownership_when_parent_exits_first():
+    result = forwarded_lifecycle("""
+        Assert-MarketFlowPrimaryCandidates -Candidates @($script:parent,$snapshot) -Project $Project
+        $script:parentAlive=$false
+        Stop-MarketFlowPrimaryTree -Snapshot $snapshot -Project $Project
+    """)
+    assert result == {'kills': [42], 'reason': None}
+
+
+@pytest.mark.parametrize('mutation', [
+    "$script:child.CreationDate=[datetime]'2026-10-19T01:00:00Z'",
+    "$script:child.CommandLine=''",
+    "$script:child.Name='pythonw.exe'",
+])
+def test_prevalidated_proof_never_accepts_reused_or_dying_process_identity(mutation):
+    result = forwarded_lifecycle(f"""
+        Assert-MarketFlowPrimaryCandidates -Candidates @($snapshot) -Project $Project
+        $script:parentAlive=$false
+        {mutation}
+        Stop-MarketFlowPrimaryTree -Snapshot $snapshot -Project $Project
+    """)
+    assert result == {'kills': [], 'reason': 'process_identity_changed'}
+
+
+@pytest.mark.parametrize('mutation', [
+    "$snapshot.MarketFlowOwnershipProof.Signature='forged'",
+    "$snapshot.MarketFlowOwnershipProof.Binding='forged'",
+    "$snapshot.MarketFlowOwnershipProof=[pscustomobject]@{Binding='forged';Signature='forged'}",
+    "$Project='C:\\other_project'",
+    "$snapshot.CommandLine='C:\\Python313\\python.exe unrelated.py';$script:child.CommandLine=$snapshot.CommandLine",
+    "$snapshot.CreationDate=$snapshot.CreationDate.AddMinutes(1);$script:child.CreationDate=$snapshot.CreationDate",
+    "$snapshot.Name='pythonw.exe';$script:child.Name=$snapshot.Name",
+    "$snapshot.ProcessId=43;$script:child.ProcessId=43;function Get-CimInstance {return $script:child}",
+])
+def test_mutated_or_forged_preflight_proof_cannot_authorize_a_kill(mutation):
+    result = forwarded_lifecycle(f"""
+        Assert-MarketFlowPrimaryCandidates -Candidates @($snapshot) -Project $Project
+        $script:parentAlive=$false
+        {mutation}
+        Stop-MarketFlowPrimaryTree -Snapshot $snapshot -Project $Project
+    """)
+    assert result == {'kills': [], 'reason': 'unverified_process'}
+
+
+def test_current_legacy_listener_is_protected_even_after_successful_preflight():
+    result = forwarded_lifecycle("""
+        Assert-MarketFlowPrimaryCandidates -Candidates @($snapshot) -Project $Project
+        $script:parentAlive=$false
+        $script:legacyOwner=42
+        Stop-MarketFlowPrimaryTree -Snapshot $snapshot -Project $Project
+    """)
+    assert result == {'kills': [], 'reason': 'legacy_5001_protected'}
+
+
+def test_unvalidated_child_still_needs_current_verified_parent():
+    result = forwarded_lifecycle("""
+        $script:parentAlive=$false
+        Stop-MarketFlowPrimaryTree -Snapshot $snapshot -Project $Project
+    """)
+    assert result == {'kills': [], 'reason': 'unverified_process'}
+
+
+def test_failed_candidate_batch_does_not_issue_partial_ownership_proofs():
+    result = forwarded_lifecycle("""
+        $foreign=[pscustomobject]@{ProcessId=43;Name='cmd.exe';CommandLine='unrelated'}
+        try{Assert-MarketFlowPrimaryCandidates -Candidates @($snapshot,$foreign) -Project $Project}catch{}
+        $script:parentAlive=$false
+        Stop-MarketFlowPrimaryTree -Snapshot $snapshot -Project $Project
+    """)
+    assert result == {'kills': [], 'reason': 'unverified_process'}
+
+
+def test_preflight_proof_can_be_attached_to_native_cim_snapshot():
+    result = ps(f"""
+        . '{GUARD.as_posix()}'
+        $Project='C:\\bitman_marketfloww'
+        $snapshot=New-CimInstance -ClassName Win32_Process -ClientOnly -Property @{{
+            ProcessId=[uint32]42;Name='python.exe';CreationDate=[datetime]'2026-10-19T00:00:00Z';
+            CommandLine='C:\\bitman_marketfloww\\.venv\\Scripts\\python.exe flask_app.py'
+        }}
+        function Get-NetTCPConnection {{return @()}}
+        function Get-CimInstance {{return $snapshot}}
+        $script:kills=0
+        function taskkill.exe {{$script:kills++}}
+        Assert-MarketFlowPrimaryCandidates -Candidates @($snapshot) -Project $Project
+        Stop-MarketFlowPrimaryTree -Snapshot $snapshot -Project $Project
+        @{{native=($snapshot -is [Microsoft.Management.Infrastructure.CimInstance]);kills=$script:kills;proof=[bool]$snapshot.MarketFlowOwnershipProof}} | ConvertTo-Json -Compress
+    """)
+    assert result == {'native': True, 'kills': 1, 'proof': True}
