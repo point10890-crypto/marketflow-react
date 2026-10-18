@@ -88,23 +88,47 @@ function Assert-MarketFlowPrimaryCandidates {
     }
 }
 
+function Test-MarketFlowProcessExited {
+    param([int]$ProcessId)
+    $process = $null
+    try {
+        $process = Get-Process -Id $ProcessId -ErrorAction Stop
+        if (-not $process -or $process.Id -ne $ProcessId) { return $false }
+        if ($process.HasExited) { return $true }
+        return [bool]$process.WaitForExit(1000)
+    } catch {
+        # Only the native exact-PID absence record proves it is gone. Access
+        # errors, null inspection results and wait failures cannot authorize it.
+        return [bool]($_.FullyQualifiedErrorId -ceq 'NoProcessFoundForGivenId,Microsoft.PowerShell.Commands.GetProcessCommand' -and
+            $_.CategoryInfo.Category -eq [System.Management.Automation.ErrorCategory]::ObjectNotFound -and
+            $_.Exception -is [Microsoft.PowerShell.Commands.ProcessCommandException] -and
+            $_.TargetObject -is [int] -and $_.TargetObject -eq $ProcessId)
+    } finally {
+        if ($process -is [System.IDisposable]) { $process.Dispose() }
+    }
+}
+
 function Stop-MarketFlowPrimaryTree {
     param($Snapshot, [Parameter(Mandatory = $true)][string]$Project)
     if (-not $Snapshot -or -not $Snapshot.ProcessId) { throw 'missing_process_snapshot' }
     $current = Get-CimInstance Win32_Process -Filter "ProcessId=$($Snapshot.ProcessId)" -OperationTimeoutSec 3 -ErrorAction SilentlyContinue
     if (-not $current) { return }
-    if (-not $Snapshot.CreationDate -or -not $current.CreationDate -or
-        $current.CreationDate -ne $Snapshot.CreationDate -or
-        $current.CommandLine -cne $Snapshot.CommandLine -or $current.Name -cne $Snapshot.Name) {
-        throw 'process_identity_changed'
-    }
+    $binding = Get-MarketFlowOwnershipBinding -Candidate $Snapshot -Project $Project
     if ($Snapshot.PSObject.Properties['MarketFlowOwnershipProof']) {
         $proof = $Snapshot.MarketFlowOwnershipProof
-        $binding = Get-MarketFlowOwnershipBinding -Candidate $Snapshot -Project $Project
         if (-not $proof -or $proof.Binding -cne $binding -or
             $proof.Signature -cne (Get-MarketFlowOwnershipSignature -Binding $binding)) { throw 'unverified_process' }
-    } elseif (-not (Test-MarketFlowFlaskProcess -Candidate $current -Project $Project)) {
+    } elseif (-not (Test-MarketFlowFlaskProcess -Candidate $Snapshot -Project $Project)) {
         throw 'unverified_process'
+    }
+    if (($current.CreationDate -and $current.CreationDate -ne $Snapshot.CreationDate) -or
+        ($current.CommandLine -and $current.CommandLine -cne $Snapshot.CommandLine) -or
+        ($current.Name -and $current.Name -cne $Snapshot.Name)) { throw 'process_identity_changed' }
+    if (-not $current.CreationDate -or -not $current.CommandLine -or -not $current.Name) {
+        # Incomplete CIM metadata cannot authorize a kill. Advance recovery
+        # without termination only when independent inspection proves exit.
+        if (Test-MarketFlowProcessExited -ProcessId ([int]$Snapshot.ProcessId)) { return }
+        throw 'process_identity_changed'
     }
     # Task-stop may already have removed the verified venv parent. The sealed
     # original attribution survives that handoff; current legacy protection

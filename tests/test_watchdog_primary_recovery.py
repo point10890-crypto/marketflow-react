@@ -35,6 +35,7 @@ def run_guard(tmp_path, scenario):
         function Test-FlaskStarting {{ return $false }}
         function Get-FlaskProcesses {{ return @() }}
         function Get-MarketFlowLegacyProtectedPids {{ return @() }}
+        function Get-NetTCPConnection {{ param($LocalPort,$State,$ErrorAction) return @() }}
         function Test-Health {{ $script:events.Add('primary_probe'); $script:probes++; return $script:probes -gt 1 }}
         function Stop-ScheduledTask {{ param($TaskName, $ErrorAction) $script:events.Add("stop:$TaskName") }}
         function Start-ScheduledTask {{ param($TaskName, $ErrorAction) $script:events.Add("start:$TaskName") }}
@@ -118,7 +119,7 @@ def test_probe_cleanup_failure_is_monitor_error_and_never_service_down(name):
 
 
 @pytest.mark.parametrize('current', ['reused', 'gone'])
-def test_primary_revalidates_original_process_identity_after_task_stop(tmp_path, current):
+def test_primary_skips_expired_identity_without_killing_it_and_restarts_on_a_free_port(tmp_path, current):
     result = run_guard(tmp_path, f"""
         function Get-FlaskProcesses {{ return @([pscustomobject]@{{ ProcessId=42; Name='python.exe'; CreationDate='2026-10-19T00:00:00'; CommandLine=((Join-Path $Project '.venv\\Scripts\\python.exe') + ' flask_app.py') }}) }}
         function Get-CimInstance {{ param($ClassName,$Filter,$OperationTimeoutSec,$ErrorAction)
@@ -128,11 +129,8 @@ def test_primary_revalidates_original_process_identity_after_task_stop(tmp_path,
         $code = Invoke-FlaskWatchdog -Mode Primary
     """)
     assert 'kill' not in result['events']
-    if current == 'reused':
-        assert result['code'] == 1
-        assert 'start:MarketFlow-Flask' not in result['events']
-    else:
-        assert result['code'] == 0
+    assert result['code'] == 0
+    assert 'start:MarketFlow-Flask' in result['events']
 
 
 def test_prevalidated_forwarded_child_can_be_recovered_after_task_stop_exits_its_parent(tmp_path):
@@ -170,3 +168,62 @@ def test_primary_failure_logs_only_allowlisted_reason_and_source_line(tmp_path, 
     assert f'reason={expected}' in result['events'][0]
     assert 'line=' in result['events'][0]
     assert 'never_emit' not in result['events'][0]
+
+
+@pytest.mark.parametrize('process_state', ['exited', 'live', 'inspection_error'])
+def test_post_stop_confirmed_exit_proceeds_but_a_bound_port_or_inspection_failure_blocks_start(tmp_path, process_state):
+    result = run_guard(tmp_path, f"""
+        function Get-FlaskProcesses {{ return @([pscustomobject]@{{ProcessId=42;Name='python.exe';CreationDate='2026-10-19T00:00:00';CommandLine=((Join-Path $Project '.venv\\Scripts\\python.exe')+' flask_app.py')}}) }}
+        function Get-CimInstance {{ param($ClassName,$Filter,$OperationTimeoutSec,$ErrorAction)
+            return [pscustomobject]@{{ProcessId=42;Name='python.exe';CreationDate='2026-10-19T00:00:00';CommandLine=$null}}
+        }}
+        function Get-Process {{ param($Id,$ErrorAction)
+            if('{process_state}' -eq 'inspection_error') {{throw 'private_api_key=never_emit'}}
+            $p=[pscustomobject]@{{Id=$Id;HasExited=('{process_state}' -eq 'exited')}}
+            $p|Add-Member ScriptMethod WaitForExit {{param($milliseconds) return $false}}
+            return $p
+        }}
+        function Get-NetTCPConnection {{ param($LocalPort,$State,$ErrorAction)
+            if('{process_state}' -eq 'inspection_error') {{throw 'private_port_probe_error'}}
+            if('{process_state}' -eq 'live') {{return [pscustomobject]@{{LocalPort=5003}}}}
+            return @()
+        }}
+        $code=Invoke-FlaskWatchdog -Mode Primary
+    """)
+    assert 'kill' not in result['events']
+    assert result['code'] == (0 if process_state == 'exited' else 1)
+    assert ('start:MarketFlow-Flask' in result['events']) is (process_state == 'exited')
+
+
+@pytest.mark.parametrize('reason,port,allowed', [
+    ('process_identity_changed', 'free', True), ('unverified_process', 'free', True),
+    ('process_identity_changed', 'occupied', False), ('unverified_process', 'occupied', False),
+    ('process_identity_changed', 'inspection_error', False),
+    ('legacy_5001_protected', 'free', False), ('unknown_failure', 'free', False),
+])
+def test_post_stop_cleanup_refusal_never_kills_and_only_known_reasons_can_restart_on_a_free_port(tmp_path, reason, port, allowed):
+    result = run_guard(tmp_path, f"""
+        function Get-FlaskProcesses {{ return @([pscustomobject]@{{ProcessId=42;Name='python.exe';CreationDate='2026-10-19T00:00:00';CommandLine=((Join-Path $Project '.venv\\Scripts\\python.exe')+' flask_app.py')}}) }}
+        function Stop-MarketFlowPrimaryTree {{param($Snapshot,$Project) throw '{reason}'}}
+        function Get-NetTCPConnection {{param($LocalPort,$State,$ErrorAction)
+            if('{port}' -eq 'inspection_error') {{throw 'private_port_probe_error'}}
+            if('{port}' -eq 'occupied') {{return [pscustomobject]@{{LocalPort=5003}}}}
+            return @()
+        }}
+        $code=Invoke-FlaskWatchdog -Mode Primary
+    """)
+    assert 'kill' not in result['events']
+    assert result['code'] == (0 if allowed else 1)
+    assert ('start:MarketFlow-Flask' in result['events']) is allowed
+
+
+def test_primary_preserves_a_pid_reference_changed_during_task_stop(tmp_path):
+    marker = tmp_path / 'flask_5003.pid'
+    marker.write_text('42', encoding='ascii')
+    result = run_guard(tmp_path, """
+        function Stop-ScheduledTask {param($TaskName,$ErrorAction) $script:events.Add("stop:$TaskName");Set-Content -LiteralPath $PidFile -Value '99' -Encoding ASCII}
+        $code=Invoke-FlaskWatchdog -Mode Primary
+    """)
+    assert result['code'] == 1
+    assert 'start:MarketFlow-Flask' not in result['events']
+    assert marker.read_text(encoding='ascii').strip() == '99'

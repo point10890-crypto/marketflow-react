@@ -229,6 +229,10 @@ function Invoke-PrimaryFlaskWatchdog {
         Write-Log 'Health not ready, but Flask is within startup grace; skipping restart.'
         return 0
     }
+    $pidReferenceBefore = $null
+    if (Test-Path -LiteralPath $PidFile) {
+        $pidReferenceBefore = (Get-Content -LiteralPath $PidFile -Raw -ErrorAction Stop).Trim()
+    }
     $processes = @(Get-FlaskProcesses)
     try { Assert-MarketFlowPrimaryCandidates -Candidates $processes -Project $Project } catch {
         $reason = $_.Exception.Message
@@ -247,8 +251,24 @@ function Invoke-PrimaryFlaskWatchdog {
     Stop-ScheduledTask -TaskName $TaskName -ErrorAction Stop
     Start-Sleep -Seconds 3
     Write-Log 'Primary recovery stage=stop_verified_tree'
-    $processes | ForEach-Object { Stop-MarketFlowPrimaryTree -Snapshot $_ -Project $Project }
-    Remove-Item -LiteralPath $PidFile -Force -ErrorAction SilentlyContinue
+    foreach ($snapshot in $processes) {
+        try { Stop-MarketFlowPrimaryTree -Snapshot $snapshot -Project $Project } catch {
+            $cleanupReason = $_.Exception.Message
+            if ($cleanupReason -notin @('process_identity_changed', 'unverified_process')) { throw }
+            # A stale cleanup target never grants permission to kill its new
+            # owner. Starting our own API is safe only after an authoritative
+            # listener query confirms that its port is free. Query failures
+            # propagate; an empty result is not inferred from suppressed errors.
+            $remaining = @(Get-NetTCPConnection -State Listen -ErrorAction Stop | Where-Object { $_.LocalPort -eq 5003 })
+            if ($remaining.Count -ne 0) { throw }
+            Write-Log "Primary cleanup skipped; reason=$cleanupReason pid=$($snapshot.ProcessId) port5003=free"
+        }
+    }
+    if (Test-Path -LiteralPath $PidFile) {
+        $pidReferenceNow = (Get-Content -LiteralPath $PidFile -Raw -ErrorAction Stop).Trim()
+        if ($null -eq $pidReferenceBefore -or $pidReferenceNow -cne $pidReferenceBefore) { throw 'pid_reference_changed_during_recovery' }
+        Remove-Item -LiteralPath $PidFile -Force -ErrorAction SilentlyContinue
+    }
     Start-Sleep -Seconds 3
     Write-Log 'Primary recovery stage=start_task'
     Start-ScheduledTask -TaskName $TaskName -ErrorAction Stop
@@ -277,7 +297,7 @@ function Invoke-FlaskWatchdog {
     if ($Mode -in @('Primary', 'All')) {
         try { $code = Invoke-PrimaryFlaskWatchdog } catch {
             $reason = 'unexpected_failure'
-            if ($_.Exception.Message -in @('missing_process_snapshot', 'process_identity_changed', 'legacy_5001_protected', 'unverified_process', 'ownership_check_failed', 'primary_health_monitor_error')) {
+            if ($_.Exception.Message -in @('missing_process_snapshot', 'process_identity_changed', 'legacy_5001_protected', 'unverified_process', 'ownership_check_failed', 'primary_health_monitor_error', 'pid_reference_changed_during_recovery')) {
                 $reason = $_.Exception.Message
             }
             # Never copy provider messages, command lines or credential-bearing URLs.

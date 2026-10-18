@@ -82,6 +82,19 @@ Changed identities and unverified or tampered proofs still refuse termination.
 Recovery logs contain fixed stage names and allowlisted failure reasons only,
 so a failed handoff can be diagnosed without copying raw provider exceptions.
 
+A production forced restart also exposed an identity-check refusal after task
+shutdown and before relaunch. The exact changed field was not captured; an
+isolated native Task Scheduler probe did not reproduce the mismatch. Recovery
+must therefore handle an expired cleanup target without assuming its cause.
+The termination guard accepts incomplete metadata only when independent process
+inspection confirms exit, and then performs no kill. The primary supervisor may
+also skip a refused cleanup target after its own task stop, but only for the
+known identity/provenance refusals and only after a successful authoritative
+query proves port 5003 has no listener. It logs the skipped PID, preserves any
+changed PID reference, and lets the launcher perform fresh ownership checks.
+Occupied ports, inspection failures, protected owners and other failures still
+prevent relaunch. This separates safe cleanup refusal from service restoration.
+
 On the elevated MiniPC shell, apply the recovery task definitions with:
 
 ```powershell

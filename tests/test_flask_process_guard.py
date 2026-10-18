@@ -172,6 +172,15 @@ def forwarded_lifecycle(scenario):
             if($Filter -eq 'ProcessId=42'){{return $script:child}}
             return $null
         }}
+        function Get-Process {{param($Id,$ErrorAction)
+            if($Id -ne 42 -or $ErrorAction -ne 'Stop'){{throw 'wrong process inspection'}}
+            $p=[pscustomobject]@{{Id=42;HasExited=$false}}
+            $p | Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {{param($Milliseconds)
+                if($Milliseconds -le 0 -or $Milliseconds -gt 1000){{throw 'unbounded exit wait'}}
+                return $false
+            }}
+            return $p
+        }}
         function taskkill.exe {{
             if($args.Count -ne 4 -or $args[0] -ne '/F' -or $args[1] -ne '/T' -or $args[2] -ne '/PID'){{throw 'wrong kill invocation'}}
             $script:kills.Add([int]$args[3])
@@ -271,3 +280,96 @@ def test_preflight_proof_can_be_attached_to_native_cim_snapshot():
         @{{native=($snapshot -is [Microsoft.Management.Infrastructure.CimInstance]);kills=$script:kills;proof=[bool]$snapshot.MarketFlowOwnershipProof}} | ConvertTo-Json -Compress
     """)
     assert result == {'native': True, 'kills': 1, 'proof': True}
+
+
+@pytest.mark.parametrize('missing', ['CommandLine', 'CreationDate', 'Name', 'all'])
+@pytest.mark.parametrize('exit_state', ['missing', 'exited', 'wait_exited'])
+def test_matching_tombstone_is_skipped_only_after_independent_exit_confirmation(missing, exit_state):
+    result = forwarded_lifecycle(f"""
+        Assert-MarketFlowPrimaryCandidates -Candidates @($snapshot) -Project $Project
+        $script:parentAlive=$false
+        if('{missing}' -eq 'all'){{$script:child.CommandLine=$null;$script:child.CreationDate=$null;$script:child.Name=$null}}
+        else{{$script:child.'{missing}'=$null}}
+        function Get-Process {{param($Id,$ErrorAction)
+            if($Id -ne 42 -or $ErrorAction -ne 'Stop'){{throw 'wrong process inspection'}}
+            if('{exit_state}' -eq 'missing'){{
+                throw [System.Management.Automation.ErrorRecord]::new(
+                    [Microsoft.PowerShell.Commands.ProcessCommandException]::new('fixture missing'),
+                    'NoProcessFoundForGivenId,Microsoft.PowerShell.Commands.GetProcessCommand',
+                    [System.Management.Automation.ErrorCategory]::ObjectNotFound,[int]42)
+            }}
+            $p=[pscustomobject]@{{Id=42;HasExited=('{exit_state}' -eq 'exited')}}
+            $p | Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {{param($Milliseconds)
+                if($Milliseconds -le 0 -or $Milliseconds -gt 1000){{throw 'unbounded exit wait'}}
+                return $true
+            }}
+            return $p
+        }}
+        Stop-MarketFlowPrimaryTree -Snapshot $snapshot -Project $Project
+    """)
+    assert result == {'kills': [], 'reason': None}
+
+
+@pytest.mark.parametrize('inspection', ['alive', 'null_without_error', 'access_denied', 'wait_error', 'wrong_missing_id'])
+def test_tombstone_alive_or_unverifiable_process_never_advances_recovery(inspection):
+    result = forwarded_lifecycle(f"""
+        Assert-MarketFlowPrimaryCandidates -Candidates @($snapshot) -Project $Project
+        $script:parentAlive=$false;$script:child.CommandLine=$null
+        function Get-Process {{param($Id,$ErrorAction)
+            if('{inspection}' -eq 'null_without_error'){{return $null}}
+            if('{inspection}' -eq 'access_denied'){{throw 'inspection unavailable'}}
+            if('{inspection}' -eq 'wrong_missing_id'){{
+                throw [System.Management.Automation.ErrorRecord]::new(
+                    [Microsoft.PowerShell.Commands.ProcessCommandException]::new('fixture missing'),
+                    'NoProcessFoundForGivenId,Microsoft.PowerShell.Commands.GetProcessCommand',
+                    [System.Management.Automation.ErrorCategory]::ObjectNotFound,[int]43)
+            }}
+            $p=[pscustomobject]@{{Id=42;HasExited=$false}}
+            $p | Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {{param($Milliseconds)
+                if($Milliseconds -le 0 -or $Milliseconds -gt 1000){{throw 'unbounded exit wait'}}
+                if('{inspection}' -eq 'wait_error'){{throw 'exit inspection unavailable'}}
+                return $false
+            }}
+            return $p
+        }}
+        Stop-MarketFlowPrimaryTree -Snapshot $snapshot -Project $Project
+    """)
+    assert result == {'kills': [], 'reason': 'process_identity_changed'}
+
+
+@pytest.mark.parametrize('different', ['CommandLine', 'CreationDate', 'Name'])
+def test_nonempty_identity_difference_is_refused_even_when_another_field_is_missing(different):
+    result = forwarded_lifecycle(f"""
+        Assert-MarketFlowPrimaryCandidates -Candidates @($snapshot) -Project $Project
+        $script:parentAlive=$false
+        $script:child.CommandLine=$null;$script:child.Name=$null
+        if('{different}' -eq 'CommandLine'){{$script:child.CommandLine='different.py'}}
+        if('{different}' -eq 'CreationDate'){{$script:child.CreationDate=$script:child.CreationDate.AddMinutes(1)}}
+        if('{different}' -eq 'Name'){{$script:child.Name='foreign.exe'}}
+        function Get-Process {{throw 'must not inspect mismatched identity'}}
+        Stop-MarketFlowPrimaryTree -Snapshot $snapshot -Project $Project
+    """)
+    assert result == {'kills': [], 'reason': 'process_identity_changed'}
+
+
+@pytest.mark.parametrize('ownership', ['forged', 'unvalidated', 'incomplete_snapshot'])
+def test_tombstone_exit_does_not_bypass_original_snapshot_ownership(ownership):
+    result = forwarded_lifecycle(f"""
+        if('{ownership}' -ne 'unvalidated'){{Assert-MarketFlowPrimaryCandidates -Candidates @($snapshot) -Project $Project}}
+        if('{ownership}' -eq 'forged'){{$snapshot.MarketFlowOwnershipProof.Signature='forged'}}
+        if('{ownership}' -eq 'incomplete_snapshot'){{$snapshot.CreationDate=$null}}
+        $script:parentAlive=$false;$script:child.CommandLine=$null
+        function Get-Process {{return [pscustomobject]@{{Id=42;HasExited=$true}}}}
+        Stop-MarketFlowPrimaryTree -Snapshot $snapshot -Project $Project
+    """)
+    assert result['kills'] == []
+    assert result['reason'] is not None
+
+
+def test_unsealed_snapshot_may_skip_exited_tombstone_only_with_current_strict_ownership():
+    result = forwarded_lifecycle("""
+        $script:child.CommandLine=$null
+        function Get-Process {return [pscustomobject]@{Id=42;HasExited=$true}}
+        Stop-MarketFlowPrimaryTree -Snapshot $snapshot -Project $Project
+    """)
+    assert result == {'kills': [], 'reason': None}
