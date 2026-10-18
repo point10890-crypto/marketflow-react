@@ -69,6 +69,9 @@ are an additional backstop, not a substitute for bounded individual probes.
 All three recovery tasks have a four-minute execution limit and `StopExisting`
 on overlap. Installation updates existing actions/settings without unregistering
 their principal or triggers. The separate legacy task is created only if absent.
+Windows PowerShell's public settings enum omits `StopExisting`. The installer
+sets the native CIM `MultipleInstances` property to `uint32` value 3 instead;
+the Windows regression checks verify the exported task XML before registration.
 
 On the elevated MiniPC shell, apply the recovery task definitions with:
 

@@ -21,14 +21,16 @@ foreach ($definition in $definitions) {
         # Preserve principal, triggers, enabled state and other operating policy.
         $settings = $existing.Settings
         $settings.ExecutionTimeLimit = 'PT4M'
-        $settings.MultipleInstances = 3 # TASK_INSTANCES_STOP_EXISTING
+        # The PowerShell enum omits StopExisting; the native CIM policy supports it.
+        $settings.CimInstanceProperties['MultipleInstances'].Value = [uint32]3
         Set-ScheduledTask -TaskName $definition.Name -Action $action -Settings $settings -ErrorAction Stop | Out-Null
     } else {
         $triggers = @(
             (New-ScheduledTaskTrigger -AtStartup),
             (New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 5) -RepetitionDuration (New-TimeSpan -Days 3650))
         )
-        $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 4) -MultipleInstances StopExisting
+        $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 4) -MultipleInstances IgnoreNew
+        $settings.CimInstanceProperties['MultipleInstances'].Value = [uint32]3
         $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
         Register-ScheduledTask -TaskName $definition.Name -Action $action -Trigger $triggers -Settings $settings -Principal $principal -Description ('MarketFlow bounded ' + $definition.Mode + ' health recovery; independent five-minute monitoring.') -ErrorAction Stop | Out-Null
     }
