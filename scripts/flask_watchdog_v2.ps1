@@ -231,7 +231,9 @@ function Invoke-PrimaryFlaskWatchdog {
     }
     $pidReferenceBefore = $null
     if (Test-Path -LiteralPath $PidFile) {
-        $pidReferenceBefore = (Get-Content -LiteralPath $PidFile -Raw -ErrorAction Stop).Trim()
+        # A leading literal normalizes PS 5.1 empty-file/null-string values;
+        # keep $null reserved for a reference that was absent before recovery.
+        $pidReferenceBefore = ('' + (Get-Content -LiteralPath $PidFile -Raw -ErrorAction Stop)).Trim()
     }
     $processes = @(Get-FlaskProcesses)
     try { Assert-MarketFlowPrimaryCandidates -Candidates $processes -Project $Project } catch {
@@ -265,7 +267,7 @@ function Invoke-PrimaryFlaskWatchdog {
         }
     }
     if (Test-Path -LiteralPath $PidFile) {
-        $pidReferenceNow = (Get-Content -LiteralPath $PidFile -Raw -ErrorAction Stop).Trim()
+        $pidReferenceNow = ('' + (Get-Content -LiteralPath $PidFile -Raw -ErrorAction Stop)).Trim()
         if ($null -eq $pidReferenceBefore -or $pidReferenceNow -cne $pidReferenceBefore) { throw 'pid_reference_changed_during_recovery' }
         Remove-Item -LiteralPath $PidFile -Force -ErrorAction SilentlyContinue
     }

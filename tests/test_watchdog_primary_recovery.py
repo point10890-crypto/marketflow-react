@@ -227,3 +227,13 @@ def test_primary_preserves_a_pid_reference_changed_during_task_stop(tmp_path):
     assert result['code'] == 1
     assert 'start:MarketFlow-Flask' not in result['events']
     assert marker.read_text(encoding='ascii').strip() == '99'
+
+
+@pytest.mark.parametrize('contents', ['', ' \n', 'not_a_pid'])
+def test_primary_recovers_with_an_unchanged_empty_or_invalid_owned_pid_reference(tmp_path, contents):
+    marker = tmp_path / 'flask_5003.pid'
+    marker.write_text(contents, encoding='ascii')
+    result = run_guard(tmp_path, '$code=Invoke-FlaskWatchdog -Mode Primary')
+    assert result['code'] == 0
+    assert 'start:MarketFlow-Flask' in result['events']
+    assert not marker.exists()
