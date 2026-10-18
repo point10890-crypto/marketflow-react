@@ -243,19 +243,45 @@ def test_real_os_pipe_on_stderr_cannot_hang_interpreter_final_flush():
         read_fd, write_fd = os.pipe()
         pipe = os.fdopen(write_fd, 'w', buffering=1, encoding='utf-8')
         sys.stderr = pipe
-        entered = threading.Event()
+        state_lock = threading.Lock()
+        state = {'started': 0, 'finished': 0}
         class MarkWrite:
             def write(self, text):
-                entered.set()
-                return pipe.write(text)
+                with state_lock:
+                    state['started'] += 1
+                result = pipe.write(text)
+                with state_lock:
+                    state['finished'] += 1
+                return result
             def flush(self):
                 return pipe.flush()
         logging.getLogger().handlers[:] = [logging.StreamHandler(MarkWrite())]
         runtime = configure_async_logging(queue_size=4)
-        logging.warning('x' * 32768)
-        assert entered.wait(2)
-        time.sleep(.05)
-        assert runtime.queue.unfinished_tasks > 0, 'fixture did not fill the unconsumed OS pipe'
+        # Windows and Linux have different pipe capacities. Fill the real pipe
+        # until a native write actually stays unfinished, instead of assuming
+        # that a single (bounded/redacted) record exceeds the kernel buffer.
+        blocked = False
+        deadline = time.monotonic() + 3
+        for number in range(128):
+            logging.warning('x' * 32768)
+            while time.monotonic() < deadline:
+                with state_lock:
+                    started, finished = state['started'], state['finished']
+                if started > number:
+                    break
+                time.sleep(.001)
+            if started <= number:
+                print({'pipe_started': started, 'pipe_finished': finished, 'attempt': number}, flush=True)
+                raise AssertionError('log writer did not reach the OS pipe')
+            if started > finished:
+                time.sleep(.05)
+                with state_lock:
+                    if state['started'] > state['finished']:
+                        blocked = True
+                        break
+            assert time.monotonic() < deadline, 'pipe fill deadline exceeded'
+        print({'pipe_started': state['started'], 'pipe_finished': state['finished'], 'blocked': blocked}, flush=True)
+        assert blocked and runtime.queue.unfinished_tasks > 0, 'fixture did not fill the unconsumed OS pipe'
         print('main-returned', flush=True)
         # read_fd intentionally stays open and unread: interpreter must not flush pipe.
     ''', timeout=5)
