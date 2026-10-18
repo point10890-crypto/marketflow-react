@@ -73,6 +73,15 @@ Windows PowerShell's public settings enum omits `StopExisting`. The installer
 sets the native CIM `MultipleInstances` property to `uint32` value 3 instead;
 the Windows regression checks verify the exported task XML before registration.
 
+Windows can terminate the venv forwarding parent before its base-Python child.
+Recovery therefore preserves the ownership proof established before stopping
+the task, bound to the project and exact process incarnation. It rechecks that
+identity and current 5001 protection immediately before termination; a vanished
+parent does not invalidate an otherwise unchanged, previously verified child.
+Changed identities and unverified or tampered proofs still refuse termination.
+Recovery logs contain fixed stage names and allowlisted failure reasons only,
+so a failed handoff can be diagnosed without copying raw provider exceptions.
+
 On the elevated MiniPC shell, apply the recovery task definitions with:
 
 ```powershell

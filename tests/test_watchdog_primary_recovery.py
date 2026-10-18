@@ -133,3 +133,40 @@ def test_primary_revalidates_original_process_identity_after_task_stop(tmp_path,
         assert 'start:MarketFlow-Flask' not in result['events']
     else:
         assert result['code'] == 0
+
+
+def test_prevalidated_forwarded_child_can_be_recovered_after_task_stop_exits_its_parent(tmp_path):
+    result = run_guard(tmp_path, """
+        $script:parentAlive=$true
+        $script:parentSnapshot=[pscustomobject]@{ProcessId=41;Name='python.exe';CreationDate='2026-10-19T00:00:00';CommandLine=((Join-Path $Project '.venv\\Scripts\\python.exe')+' flask_app.py')}
+        $script:childSnapshot=[pscustomobject]@{ProcessId=42;ParentProcessId=41;Name='python.exe';CreationDate='2026-10-19T00:00:01';CommandLine='C:\\Python313\\python.exe flask_app.py'}
+        function Get-FlaskProcesses { return @($script:parentSnapshot,$script:childSnapshot) }
+        function Get-CimInstance { param($ClassName,$Filter,$OperationTimeoutSec,$ErrorAction)
+            if($Filter -eq 'ProcessId=41' -and $script:parentAlive) {return $script:parentSnapshot}
+            if($Filter -eq 'ProcessId=42') {return $script:childSnapshot}
+            return $null
+        }
+        function Stop-ScheduledTask { param($TaskName,$ErrorAction) $script:events.Add("stop:$TaskName");$script:parentAlive=$false }
+        $code=Invoke-FlaskWatchdog -Mode Primary
+    """)
+    assert result['code'] == 0
+    assert result['events'] == ['primary_probe', 'stop:MarketFlow-Flask', 'kill',
+                                'start:MarketFlow-Flask', 'primary_probe', 'state:0']
+
+
+@pytest.mark.parametrize('reason,expected', [
+    ('unverified_process', 'unverified_process'),
+    ('process_identity_changed', 'process_identity_changed'),
+    ('private_api_key=never_emit', 'unexpected_failure'),
+])
+def test_primary_failure_logs_only_allowlisted_reason_and_source_line(tmp_path, reason, expected):
+    result = run_guard(tmp_path, f"""
+        function Write-Log($message) {{ $script:events.Add([string]$message) }}
+        function Invoke-PrimaryFlaskWatchdog {{ throw '{reason}' }}
+        $code=Invoke-FlaskWatchdog -Mode Primary
+    """)
+    assert result['code'] == 1
+    assert len(result['events']) == 1
+    assert f'reason={expected}' in result['events'][0]
+    assert 'line=' in result['events'][0]
+    assert 'never_emit' not in result['events'][0]

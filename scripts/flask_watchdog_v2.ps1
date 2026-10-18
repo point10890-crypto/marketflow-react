@@ -243,11 +243,14 @@ function Invoke-PrimaryFlaskWatchdog {
     } else {
         Write-Log 'Health check failed; restarting Flask task.'
     }
+    Write-Log 'Primary recovery stage=stop_task'
     Stop-ScheduledTask -TaskName $TaskName -ErrorAction Stop
     Start-Sleep -Seconds 3
+    Write-Log 'Primary recovery stage=stop_verified_tree'
     $processes | ForEach-Object { Stop-MarketFlowPrimaryTree -Snapshot $_ -Project $Project }
     Remove-Item -LiteralPath $PidFile -Force -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 3
+    Write-Log 'Primary recovery stage=start_task'
     Start-ScheduledTask -TaskName $TaskName -ErrorAction Stop
     $deadline = (Get-Date).AddSeconds(75)
     do {
@@ -273,7 +276,12 @@ function Invoke-FlaskWatchdog {
     $code = 0
     if ($Mode -in @('Primary', 'All')) {
         try { $code = Invoke-PrimaryFlaskWatchdog } catch {
-            Write-Log 'Primary watchdog failed; recovery did not complete.'
+            $reason = 'unexpected_failure'
+            if ($_.Exception.Message -in @('missing_process_snapshot', 'process_identity_changed', 'legacy_5001_protected', 'unverified_process', 'ownership_check_failed', 'primary_health_monitor_error')) {
+                $reason = $_.Exception.Message
+            }
+            # Never copy provider messages, command lines or credential-bearing URLs.
+            Write-Log "Primary watchdog failed; reason=$reason line=$($_.InvocationInfo.ScriptLineNumber)"
             $code = 1
         }
     }
