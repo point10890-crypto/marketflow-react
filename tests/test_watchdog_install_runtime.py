@@ -1,4 +1,4 @@
-"""Run the real installer against in-memory Task Scheduler adapters only."""
+"""Exercise native task settings, with registration/update calls safely adapted."""
 import json
 from pathlib import Path
 import subprocess
@@ -14,27 +14,25 @@ pytestmark = pytest.mark.skipif(not PS51.exists(), reason='Windows PowerShell 5.
 def test_installer_preserves_existing_task_identity_and_triggers_but_bounds_zombies():
     installer = ROOT / 'scripts' / 'install_flask_watchdog.ps1'
     command = f"""
+        Import-Module ScheduledTasks
         $env:COMPUTERNAME='MINIPC-NQYLP'
         $global:updated = [System.Collections.Generic.List[object]]::new()
         $global:created = [System.Collections.Generic.List[object]]::new()
         function Test-Path {{ return $true }}
         function Get-ScheduledTask {{ param($TaskName,$ErrorAction)
             if ($TaskName -eq 'MarketFlow-Legacy-Flask-Watchdog') {{ return $null }}
-            return [pscustomobject]@{{ Settings=[pscustomobject]@{{ ExecutionTimeLimit='PT72H'; MultipleInstances=2 }}; Principal='original-account'; Triggers='original-triggers' }}
+            return [pscustomobject]@{{ Settings=(New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hours 72) -MultipleInstances IgnoreNew); Principal='original-account'; Triggers='original-triggers' }}
         }}
         function Unregister-ScheduledTask {{ throw 'existing identity must not be unregistered' }}
         function New-ScheduledTaskAction {{ param($Execute,$Argument,$WorkingDirectory) return [pscustomobject]@{{ Execute=$Execute; Arguments=$Argument }} }}
         function New-ScheduledTaskTrigger {{ param([switch]$AtStartup,[switch]$Once,$At,$RepetitionInterval,$RepetitionDuration) return 'new-trigger' }}
-        function New-ScheduledTaskSettingsSet {{ param([switch]$AllowStartIfOnBatteries,[switch]$DontStopIfGoingOnBatteries,[switch]$StartWhenAvailable,$ExecutionTimeLimit,$MultipleInstances)
-            return [pscustomobject]@{{ ExecutionTimeLimit='PT4M'; MultipleInstances=3 }}
-        }}
         function New-ScheduledTaskPrincipal {{ param($UserId,$LogonType,$RunLevel) return 'SYSTEM' }}
         function Set-ScheduledTask {{ param($TaskName,$Action,$Settings,$Principal,$Trigger,$ErrorAction)
             if ($Principal -or $Trigger) {{ throw 'existing principal/triggers changed' }}
-            $global:updated.Add([pscustomobject]@{{ name=$TaskName; limit=$Settings.ExecutionTimeLimit; instances=$Settings.MultipleInstances; arguments=$Action.Arguments }})
+            $global:updated.Add([pscustomobject]@{{ name=$TaskName; limit=$Settings.ExecutionTimeLimit; instances=$Settings.CimInstanceProperties['MultipleInstances'].Value; arguments=$Action.Arguments }})
         }}
         function Register-ScheduledTask {{ param($TaskName,$Action,$Trigger,$Settings,$Principal,$Description,$ErrorAction)
-            $global:created.Add([pscustomobject]@{{ name=$TaskName; arguments=$Action.Arguments; principal=$Principal }})
+            $global:created.Add([pscustomobject]@{{ name=$TaskName; arguments=$Action.Arguments; principal=$Principal; instances=$Settings.CimInstanceProperties['MultipleInstances'].Value }})
         }}
         & '{installer.as_posix()}' | Out-Null
         @{{ updated=@($global:updated); created=@($global:created) }} | ConvertTo-Json -Compress -Depth 5
@@ -48,6 +46,23 @@ def test_installer_preserves_existing_task_identity_and_triggers_but_bounds_zomb
     assert '-Mode Primary' in updates['MarketFlow-Flask-Watchdog']['arguments']
     assert payload['created'][0]['name'] == 'MarketFlow-Legacy-Flask-Watchdog'
     assert '-Mode Legacy' in payload['created'][0]['arguments']
+    assert payload['created'][0]['instances'] == 3
+
+
+def test_native_cim_settings_export_stop_existing_without_registering_a_task():
+    command = """
+        $settings=New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 4) -MultipleInstances IgnoreNew
+        $settings.CimInstanceProperties['MultipleInstances'].Value=[uint32]3
+        $action=New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -Command exit 0'
+        $definition=New-ScheduledTask -Action $action -Settings $settings
+        [xml]$xml=Export-ScheduledTask -InputObject $definition
+        @{policy=$xml.SelectSingleNode('//*[local-name()="MultipleInstancesPolicy"]').InnerText;
+          limit=$xml.SelectSingleNode('//*[local-name()="ExecutionTimeLimit"]').InnerText} | ConvertTo-Json -Compress
+    """
+    response = subprocess.run([str(PS51), '-NoProfile', '-NonInteractive', '-Command', command],
+                              capture_output=True, text=True, timeout=8)
+    assert response.returncode == 0, response.stderr[:300]
+    assert json.loads(response.stdout) == {'policy': 'StopExisting', 'limit': 'PT4M'}
 
 
 @pytest.mark.parametrize('reason,healthy,aborted', [
