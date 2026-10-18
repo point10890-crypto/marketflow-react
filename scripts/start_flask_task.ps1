@@ -8,6 +8,8 @@ $PidFile = Join-Path $Root "data\flask_5003.pid"
 $RunStamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $OutLog = Join-Path $LogDir "flask_server.$RunStamp.out.log"
 $ErrLog = Join-Path $LogDir "flask_server.$RunStamp.err.log"
+. (Join-Path $PSScriptRoot 'health_probe.ps1')
+. (Join-Path $PSScriptRoot 'flask_process_guard.ps1')
 
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 Set-Location $Root
@@ -44,19 +46,18 @@ $env:MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART = "true"
 # down an otherwise healthy Flask process.
 $env:MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART_DELAY_SEC = "180"
 
-function Stop-TrackedFlaskTree([int]$TargetProcessId, [string]$Reason) {
+function Stop-TrackedFlaskTree([int]$TargetProcessId, [string]$Reason, $Snapshot) {
     if ($TargetProcessId -le 0) { return }
     try {
-        $candidate = Get-CimInstance Win32_Process -Filter "ProcessId=$TargetProcessId" -ErrorAction SilentlyContinue
-        if (-not $candidate) { return }
         # Never terminate the legacy 5001 producer merely because both entry
         # points are named flask_app.py.  Only the PID recorded by this launcher
         # or the process currently listening on the dedicated 5003 port reaches
         # this helper.
-        & taskkill.exe /F /T /PID $TargetProcessId 2>&1 | Out-Null
+        Stop-MarketFlowPrimaryTree -Snapshot $Snapshot -Project $Root
         Add-Content -Path $OutLog -Encoding UTF8 -Value "$(Get-Date -Format o) stopped $Reason pid=$TargetProcessId"
     } catch {
-        Add-Content -Path $ErrLog -Encoding UTF8 -Value "$(Get-Date -Format o) failed to stop $Reason pid=${TargetProcessId}: $($_.Exception.Message)"
+        Add-Content -Path $ErrLog -Encoding UTF8 -Value "$(Get-Date -Format o) refused or failed to stop $Reason pid=${TargetProcessId}"
+        throw
     }
 }
 
@@ -64,18 +65,22 @@ $trackedProcessId = 0
 if (Test-Path -LiteralPath $PidFile) {
     try { $trackedProcessId = [int](Get-Content -LiteralPath $PidFile -Raw).Trim() } catch {}
 }
-if ($trackedProcessId -gt 0) {
-    Stop-TrackedFlaskTree $trackedProcessId 'tracked flask 5003 tree'
-}
-
-Start-Sleep -Seconds 2
-
 $portOwner = Get-NetTCPConnection -LocalPort 5003 -State Listen -ErrorAction SilentlyContinue |
     Select-Object -ExpandProperty OwningProcess -Unique
-foreach ($ownerPid in $portOwner) {
-    if ($ownerPid -ne $trackedProcessId) {
-        Stop-TrackedFlaskTree $ownerPid 'port 5003 owner'
-    }
+$ownedIds = @(@($trackedProcessId) + @($portOwner) | Where-Object { $_ -gt 0 } | Sort-Object -Unique)
+# Check every candidate before stopping any. A stale PID file or a foreign
+# listener must not terminate an unrelated service or launch over it.
+$candidates = @()
+foreach ($ownerPid in $ownedIds) {
+    $candidate = Get-CimInstance Win32_Process -Filter "ProcessId=$ownerPid" -OperationTimeoutSec 3 -ErrorAction SilentlyContinue
+    if ($candidate) { $candidates += $candidate }
+}
+try { Assert-MarketFlowPrimaryCandidates -Candidates $candidates -Project $Root } catch {
+    Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) startup refused: unverified or protected tracked PID or port 5003 owner"
+    exit 1
+}
+foreach ($snapshot in $candidates) {
+    Stop-TrackedFlaskTree -TargetProcessId $snapshot.ProcessId -Reason 'verified flask 5003 tree' -Snapshot $snapshot
 }
 
 Remove-Item -LiteralPath $PidFile -Force -ErrorAction SilentlyContinue
@@ -96,30 +101,27 @@ $flaskProcess = Start-Process `
 Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) started flask_app.py pid=$($flaskProcess.Id)"
 Set-Content -LiteralPath $PidFile -Encoding ASCII -Value $flaskProcess.Id
 
-$healthy = $false
-for ($attempt = 1; $attempt -le 30; $attempt++) {
-    Start-Sleep -Seconds 2
-
-    $current = Get-Process -Id $flaskProcess.Id -ErrorAction SilentlyContinue
-    if ($null -eq $current) {
-        Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) flask_app.py exited before health check attempt=$attempt"
-        exit 1
+function Wait-FlaskStartup {
+    param([int]$ProcessId, [double]$TimeoutSeconds = 60, [double]$PollSeconds = 2)
+    $clock = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($clock.Elapsed.TotalSeconds -lt $TimeoutSeconds) {
+        if (-not (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue)) { return $false }
+        $remaining = $TimeoutSeconds - $clock.Elapsed.TotalSeconds
+        $probe = Invoke-BoundedHealthProbe -Uri 'http://127.0.0.1:5003/healthz' -TimeoutSeconds ([Math]::Max(0.1, [Math]::Min(3, $remaining)))
+        if ($probe.healthy) { return $true }
+        if ($probe.reason -in @('probe_unavailable', 'cleanup_failed')) { return $false }
+        $sleepMs = [int]([Math]::Min($PollSeconds, [Math]::Max(0, $TimeoutSeconds - $clock.Elapsed.TotalSeconds)) * 1000)
+        if ($sleepMs -gt 0) { Start-Sleep -Milliseconds $sleepMs }
     }
-
-    try {
-        $response = Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 -Uri "http://127.0.0.1:5003/healthz"
-        if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 500) {
-            Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) flask healthz reachable status=$($response.StatusCode)"
-            $healthy = $true
-            break
-        }
-    } catch {
-        if ($attempt -eq 30) {
-            Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) flask healthz failed after attempts: $($_.Exception.Message)"
-            exit 1
-        }
-    }
+    return $false
 }
+
+$healthy = Wait-FlaskStartup -ProcessId $flaskProcess.Id
+if (-not $healthy) {
+    Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) flask healthz failed within startup deadline pid=$($flaskProcess.Id)"
+    exit 1
+}
+Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) flask healthz reachable status=200"
 
 if ($healthy) {
     Wait-Process -Id $flaskProcess.Id

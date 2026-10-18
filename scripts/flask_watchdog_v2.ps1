@@ -1,8 +1,10 @@
+param([ValidateSet('Primary', 'Legacy', 'All')][string]$Mode = 'Primary')
+
 $ErrorActionPreference = 'Continue'
 $Project = 'C:\bitman_marketfloww'
 $ProductionHost = 'MINIPC-NQYLP'
 $TaskName = 'MarketFlow-Flask'
-$HealthUrl = 'http://localhost:5003/healthz'
+$HealthUrl = 'http://127.0.0.1:5003/healthz'
 $LogFile = Join-Path $Project 'logs\flask_watchdog.log'
 $StateFile = Join-Path $Project 'data\flask_watchdog_state.json'
 $RestartRequestFile = Join-Path $Project 'data\flask_restart.request'
@@ -18,23 +20,25 @@ $FailureThreshold = 3
 $StartupGraceSeconds = 120
 
 if ($env:COMPUTERNAME -ne $ProductionHost) { exit 0 }
+. (Join-Path $PSScriptRoot 'health_probe.ps1')
+. (Join-Path $PSScriptRoot 'flask_process_guard.ps1')
 
 function Write-Log($Message) {
     Add-Content $LogFile ((Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + ' | ' + $Message) -Encoding UTF8
 }
 
 function Test-Health {
-    try {
-        $response = Invoke-WebRequest -UseBasicParsing -TimeoutSec 15 -Uri $HealthUrl -ErrorAction Stop
-        return $response.StatusCode -eq 200
-    } catch { return $false }
+    $probe = Invoke-BoundedHealthProbe -Uri $HealthUrl -TimeoutSeconds 5
+    if ($probe.reason -in @('probe_unavailable', 'cleanup_failed')) { throw 'primary_health_monitor_error' }
+    if (-not $probe.healthy) { Write-Log "probe=primary_5003 reason=$($probe.reason) elapsed_ms=$($probe.elapsed_ms)" }
+    return $probe.healthy
 }
 
 function Test-LegacyProducerHealth {
-    try {
-        $response = Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 -Uri $LegacyHealthUrl -ErrorAction Stop
-        return $response.StatusCode -eq 200
-    } catch { return $false }
+    $probe = Invoke-BoundedHealthProbe -Uri $LegacyHealthUrl -TimeoutSeconds 5
+    if ($probe.reason -in @('probe_unavailable', 'cleanup_failed')) { throw 'legacy_health_monitor_error' }
+    if (-not $probe.healthy) { Write-Log "probe=legacy_5001 reason=$($probe.reason) elapsed_ms=$($probe.elapsed_ms)" }
+    return $probe.healthy
 }
 
 function Write-LegacyProducerState(
@@ -78,12 +82,7 @@ function Get-LegacyProducerPortOwners {
 }
 
 function Test-IsMarketFlowLegacyProducer($Candidate) {
-    if (-not $Candidate -or -not $Candidate.CommandLine) { return $false }
-    $expectedPythonPattern = [regex]::Escape((Join-Path $Project '.venv\Scripts\python.exe'))
-    return (
-        $Candidate.CommandLine -match $expectedPythonPattern -and
-        $Candidate.CommandLine -match '(^|[\s"])flask_app\.py([\s"]|$)'
-    )
+    return Test-MarketFlowFlaskProcess -Candidate $Candidate -Project $Project
 }
 
 function Invoke-LegacyProducerWatchdog {
@@ -211,69 +210,80 @@ function Read-Failures {
     return 0
 }
 
-function Write-State([int]$Failures, $RebootAt = $null) {
+function Write-State([int]$Failures, $RebootAt = $null, [string]$Status = 'healthy') {
     @{
         consecutive_failures = $Failures
         updated_at = (Get-Date).ToString('s')
         reboot_requested_at = $RebootAt
+        status = $Status
     } | ConvertTo-Json | Set-Content $StateFile -Encoding UTF8
 }
 
-# Run the legacy KIS producer check before every possible fast exit in the 5003
-# watchdog.  Its result is carried into the final process exit code, while the
-# two service recovery paths remain otherwise independent.
-$LegacyProducerExitCode = Invoke-LegacyProducerWatchdog
-
-$forceRestart = Test-Path -LiteralPath $RestartRequestFile
-
-if ((-not $forceRestart) -and (Test-Health)) {
-    Write-State 0
-    exit $LegacyProducerExitCode
-}
-
-# At boot the Flask task and watchdog share an AtStartup trigger. Give the
-# primary task time to import routes and bind the port instead of killing a
-# healthy startup and creating overlapping launcher/listener processes.
-if ((-not $forceRestart) -and (Test-FlaskStarting)) {
-    Write-Log 'Health not ready, but Flask is within startup grace; skipping restart.'
-    exit $LegacyProducerExitCode
-}
-
-if ($forceRestart) {
-    Write-Log 'Deployment restart requested; restarting Flask task.'
-    # Consume the one-shot request before touching the service.  If recovery
-    # fails, the normal health-failure policy remains in control; a stale
-    # request must not force a fresh restart every five minutes forever.
-    Remove-Item -LiteralPath $RestartRequestFile -Force -ErrorAction SilentlyContinue
-} else {
-    Write-Log 'Health check failed; restarting Flask task.'
-}
-Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
-Start-Sleep -Seconds 3
-Get-FlaskProcesses |
-    ForEach-Object { & taskkill.exe /F /T /PID $_.ProcessId 2>&1 | Out-Null }
-Remove-Item -LiteralPath $PidFile -Force -ErrorAction SilentlyContinue
-Start-Sleep -Seconds 3
-Start-ScheduledTask -TaskName $TaskName
-
-$deadline = (Get-Date).AddSeconds(75)
-do {
-    Start-Sleep -Seconds 5
-    if (Test-Health) {
-        Write-Log 'Flask recovery succeeded.'
+function Invoke-PrimaryFlaskWatchdog {
+    $forceRestart = Test-Path -LiteralPath $RestartRequestFile
+    if ((-not $forceRestart) -and (Test-Health)) {
         Write-State 0
-        if ($forceRestart) { Write-Log 'Deployment restart request completed.' }
-        exit $LegacyProducerExitCode
+        return 0
     }
-} while ((Get-Date) -lt $deadline)
-
-$failures = (Read-Failures) + 1
-Write-State $failures
-Write-Log ("Flask recovery failed; consecutive_failures=$failures")
-
-if ($failures -ge $FailureThreshold) {
-    Write-State $failures
-    Write-Log 'Failure threshold reached; leaving recovery to the MarketFlow operator without rebooting the MiniPC.'
+    if ((-not $forceRestart) -and (Test-FlaskStarting)) {
+        Write-Log 'Health not ready, but Flask is within startup grace; skipping restart.'
+        return 0
+    }
+    $processes = @(Get-FlaskProcesses)
+    try { Assert-MarketFlowPrimaryCandidates -Candidates $processes -Project $Project } catch {
+        $reason = $_.Exception.Message
+        if ($reason -notin @('legacy_5001_protected', 'unverified_process')) { $reason = 'ownership_check_failed' }
+        Write-State ((Read-Failures) + 1) -Status $reason
+        Write-Log "Primary recovery refused: reason=$reason"
+        return 1
+    }
+    if ($forceRestart) {
+        Write-Log 'Deployment restart requested; restarting Flask task.'
+        Remove-Item -LiteralPath $RestartRequestFile -Force -ErrorAction SilentlyContinue
+    } else {
+        Write-Log 'Health check failed; restarting Flask task.'
+    }
+    Stop-ScheduledTask -TaskName $TaskName -ErrorAction Stop
+    Start-Sleep -Seconds 3
+    $processes | ForEach-Object { Stop-MarketFlowPrimaryTree -Snapshot $_ -Project $Project }
+    Remove-Item -LiteralPath $PidFile -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 3
+    Start-ScheduledTask -TaskName $TaskName -ErrorAction Stop
+    $deadline = (Get-Date).AddSeconds(75)
+    do {
+        Start-Sleep -Seconds 5
+        if (Test-Health) {
+            Write-Log 'Flask recovery succeeded.'
+            Write-State 0
+            if ($forceRestart) { Write-Log 'Deployment restart request completed.' }
+            return 0
+        }
+    } while ((Get-Date) -lt $deadline)
+    $failures = (Read-Failures) + 1
+    Write-State $failures -Status 'recovery_failed'
+    Write-Log "Flask recovery failed; consecutive_failures=$failures"
+    if ($failures -ge $FailureThreshold) {
+        Write-Log 'Failure threshold reached; leaving recovery to the MarketFlow operator without rebooting the MiniPC.'
+    }
+    return 1
 }
 
-exit 1
+function Invoke-FlaskWatchdog {
+    param([ValidateSet('Primary', 'Legacy', 'All')][string]$Mode = 'Primary')
+    $code = 0
+    if ($Mode -in @('Primary', 'All')) {
+        try { $code = Invoke-PrimaryFlaskWatchdog } catch {
+            Write-Log 'Primary watchdog failed; recovery did not complete.'
+            $code = 1
+        }
+    }
+    if ($Mode -in @('Legacy', 'All')) {
+        try { $code = [Math]::Max($code, (Invoke-LegacyProducerWatchdog)) } catch {
+            Write-Log 'Legacy watchdog failed; primary recovery remains independent.'
+            $code = 1
+        }
+    }
+    return $code
+}
+
+exit (Invoke-FlaskWatchdog -Mode $Mode)

@@ -61,6 +61,18 @@ from app import create_app
 # Create the Flask app (gunicorn imports this as flask_app:app)
 app = create_app()
 
+# Keep factory/import-time logging policy, then isolate output before serving:
+# Werkzeug logs requests before sending HTTP headers, so sink I/O must be async.
+from app.utils.api_logging import configure_async_logging
+api_logging = configure_async_logging()
+
+# Capture bounded, credential-free function locations if a future request is
+# slow. This worker never logs and performs no file I/O on request threads.
+from app.utils.api_request_diagnostics import install_request_diagnostics
+api_request_diagnostics = install_request_diagnostics(
+    app, os.path.join(BASE_DIR, 'data', 'api_runtime'),
+)
+
 if __name__ == '__main__':
     port = int(os.environ.get('FLASK_PORT', os.environ.get('PORT', 5001)))
     print(f"\n{'='*60}")
