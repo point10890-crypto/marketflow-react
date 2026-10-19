@@ -165,10 +165,12 @@ def test_protocol_is_fixed_on_first_refresh_and_old_decisions_never_enroll(tmp_p
     assert public['validation']['started_at'] == CAPTURE and public['validation']['enrolled_decisions'] == 0
 
 
-def test_new_cohort_freezes_all_same_quality_controls_and_cannot_be_reselected(tmp_path):
+@pytest.mark.parametrize('policy', ['profit-opportunity-v1', 'profit-opportunity-v2'])
+def test_new_cohort_freezes_all_same_quality_controls_and_cannot_be_reselected(tmp_path, policy):
     root = tmp_path/'alpha'; save_board(root); db = make_db(tmp_path/'omni.db')
     module().refresh_context(root, now=CAPTURE, db_path=db)
-    current = save_board(root, board('2026-10-09T12:00:00Z', 'c'))
+    issued = board('2026-10-09T12:00:00Z', 'c'); issued['policy_version'] = policy
+    current = save_board(root, issued)
     universe = {'000660':'SK하이닉스','005930':'삼성전자','035420':'NAVER'}
     result = module().register_cohort(root, current, universe, now='2026-10-09T12:01:00Z')
     assert result['status'] == 'enrolled'
@@ -187,6 +189,53 @@ def test_new_cohort_freezes_all_same_quality_controls_and_cannot_be_reselected(t
     public = module().read_context(root, current, now='2026-10-09T12:03:00Z')
     assert public['validation']['enrolled_decisions'] == 1
     assert public['validation']['matured_decisions'] == 0 and public['validation']['coincidence_rejected'] is False
+
+
+@pytest.mark.parametrize('policy', ['profit-opportunity-v1', 'profit-opportunity-v2'])
+@pytest.mark.parametrize('existing_cohort', [False, True])
+def test_issued_cash_only_board_creates_no_news_cohort_or_first_detection_writes(tmp_path, policy, existing_cohort):
+    root = tmp_path/'alpha'; save_board(root); db = make_db(tmp_path/'omni.db')
+    assert module().refresh_context(root, now=CAPTURE, db_path=db)['status'] == 'ready'
+    selected = save_board(root, board('2026-10-09T12:00:00Z', 'c'))
+    universe = {'000660': 'SK하이닉스', '005930': '삼성전자'}
+    if existing_cohort:
+        assert module().register_cohort(root, selected, universe, now='2026-10-09T12:01:00Z')['status'] == 'enrolled'
+    current = board('2026-10-09T12:10:00Z', 'f', symbols=())
+    current['policy_version'] = policy
+    current = save_board(root, current)
+    before = files(root)
+    assert module().register_cohort(root, current, universe, now='2026-10-09T12:11:00Z') == dict(status='no_candidates')
+    assert files(root) == before
+    registry_path = root/'catalyst-context'/'enrollment.json'
+    if existing_cohort:
+        registry = json.loads(registry_path.read_text(encoding='utf-8'))['data']
+        assert registry['cohort_ids'] == [selected['decision_id']]
+    else:
+        assert not registry_path.exists()
+    assert not (root/'catalyst-context'/'cohorts'/(current['decision_id']+'.json')).exists()
+    assert module().read_context(root, current, now='2026-10-09T12:11:00Z') is None
+
+
+@pytest.mark.parametrize('mutation,expected', [
+    ('not_issued', 'catalyst_journal_unavailable'),
+    ('unknown_policy', 'catalyst_identity_invalid'),
+    ('foreign_source', 'catalyst_journal_unavailable'),
+    ('invalid_universe', 'catalyst_control_universe_invalid'),
+    ('future_clock', 'catalyst_clock_invalid'),
+])
+def test_cash_only_noop_does_not_bypass_normal_identity_universe_or_time_validation(tmp_path, mutation, expected):
+    root = tmp_path/'alpha'; save_board(root); db = make_db(tmp_path/'omni.db')
+    module().refresh_context(root, now=CAPTURE, db_path=db)
+    current = save_board(root, board('2026-10-09T12:10:00Z', 'f', symbols=()))
+    universe = ['000660', '005930']; clock = '2026-10-09T12:11:00Z'
+    if mutation == 'not_issued': current['decision_id'] = 'e'*64
+    elif mutation == 'unknown_policy': current['policy_version'] = 'profit-opportunity-v999'
+    elif mutation == 'foreign_source': current['source_audit_hash'] = 'e'*64
+    elif mutation == 'invalid_universe': universe = []
+    else: clock = '2026-10-09T12:09:00Z'
+    before = files(root)
+    assert module().register_cohort(root, current, universe, now=clock) == dict(status='failed', error=expected)
+    assert files(root) == before
 
 
 def test_expired_window_cannot_be_enrolled_after_its_news_outcome_is_already_known(tmp_path):

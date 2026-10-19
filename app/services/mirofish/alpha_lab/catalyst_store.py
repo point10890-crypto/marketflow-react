@@ -256,7 +256,11 @@ def register_cohort(root, board, symbols, *, now=None):
         _issued(root, board)
         names = _universe(symbols)
         selected = [row['symbol'] for row in board['candidates']]
-        if not selected or not set(selected) <= set(names) or not set(names)-set(selected):
+        if not selected:
+            # A sealed cash decision supplies no treated news cohort. Keep all
+            # existing enrollment and first-detection evidence untouched.
+            return dict(status='no_candidates')
+        if not set(selected) <= set(names) or not set(names)-set(selected):
             raise ValueError('catalyst_control_universe_invalid')
         directory = _directory(root)
         with FileLock(str(directory/'write.lock'), timeout=5):
