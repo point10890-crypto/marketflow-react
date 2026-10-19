@@ -40,7 +40,7 @@ def _result(status, prepared=None):
 
 def _valid_board(value):
     if (not isinstance(value, dict) or type(value.get('schema_version')) is not int or value.get('schema_version') != 1
-            or value.get('policy_version') != decision_engine.POLICY
+            or value.get('policy_version') not in decision_engine.KNOWN_POLICIES
             or value.get('research_only') is not True or value.get('live_orders') is not False
             or value.get('status') not in ('held', 'ready')
             or decision_engine._day(value.get('latest_session')) is None
@@ -60,7 +60,7 @@ def _valid_board(value):
                        ('entry_low', 'entry_high', 'stop_price', 'target_price'))):
             return False
     return decision_engine._stable_identity(value['input_fingerprint'], value['source_audit_hash'],
-               value['latest_session'], rows) == value['decision_id']
+               value['latest_session'], rows, policy=value['policy_version']) == value['decision_id']
 
 
 def _price(value):

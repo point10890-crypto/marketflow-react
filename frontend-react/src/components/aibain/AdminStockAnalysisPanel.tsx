@@ -143,7 +143,7 @@ function AdminStockAnalysisContent() {
     return <section id="admin-stock-analysis" aria-labelledby="admin-stock-analysis-heading" className="my-4 min-w-0 space-y-3 rounded-lg border border-[#365372] bg-[#111922] p-3 text-white sm:p-4">
         <header className="flex min-w-0 flex-wrap items-start justify-between gap-3">
             <div className="min-w-0"><h3 id="admin-stock-analysis-heading" className="text-sm font-semibold text-[#acd3ff]">관리자 전용 종목 검색 분석</h3>
-                <p className="mt-1 max-w-3xl text-xs leading-relaxed text-gray-400">종목을 선택해 재무 품질과 가격 조건을 확인하고, 같은 정책으로 매매 제안과 참고 가격을 계산합니다.</p></div>
+                <p className="mt-1 max-w-3xl text-xs leading-relaxed text-gray-400">종목을 선택해 재무 품질과 가격 조건, 참고 가격을 확인합니다. 이 단일 종목 진단은 위의 검출 2.0 자동 선정과 별도입니다.</p></div>
         </header>
         <section className="min-w-0 rounded-lg border border-[#303f4b] bg-[#121a22] p-3 sm:p-4" aria-label="분석 종목 선택">
             <ChartAnalogueSymbolSearch symbol={code} token={token ?? undefined} onSelect={select}

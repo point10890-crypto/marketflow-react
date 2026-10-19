@@ -1,5 +1,5 @@
 import { fetchAuthAPI, postAuthAPI } from './api';
-import { validateOpportunityEngine, type OpportunityEngine } from './opportunityEngine';
+import { validateOpportunityEngine, type OpportunityEngine, type OpportunityIdentity } from './opportunityEngine';
 import { validateAgentDesk, type AgentDesk } from './agentDeskApi';
 import { validateCatalystContext, type CatalystContext } from './catalystContext';
 import { validateEvolutionContext, type EvolutionContext } from './evolutionContext';
@@ -93,16 +93,22 @@ export interface AlphaLabOpportunityPhase {
     start: string; end: string; last_exit_session: string; t_stat: number | null;
     return_basis?: 'compounded_nonoverlapping_unit_notional_trades_not_account_allocation';
 }
+export type AlphaLabOpportunityPolicy = 'quality-setup-opportunity-v1' | 'quality-setup-opportunity-v2';
+type OpportunityVersion = {
+    policy_version: 'quality-setup-opportunity-v1'; selection_basis: 'calibration_stress_mean_then_confirmation';
+    recent_sessions?: never; recent_minimum_completed?: never;
+} | {
+    policy_version: 'quality-setup-opportunity-v2'; selection_basis: 'causal_recovery_recent_stress_then_confirmation';
+    recent_sessions: 126; recent_minimum_completed: 5;
+};
 export interface AlphaLabOpportunityCandidate extends AlphaLabCandidate {
     evidence: {
-        selection_basis: 'calibration_stress_mean_then_confirmation';
         stronger_evidence: boolean; retrospective: true; independent_validation: false;
         calibration: AlphaLabOpportunityPhase; confirmation: AlphaLabOpportunityPhase;
-    };
+    } & ({ selection_basis: 'calibration_stress_mean_then_confirmation'; recent?: never }
+        | { selection_basis: 'causal_recovery_recent_stress_then_confirmation'; recent: AlphaLabOpportunityPhase });
 }
-export interface AlphaLabOpportunityScan {
-    policy_version: 'quality-setup-opportunity-v1';
-    selection_basis: 'calibration_stress_mean_then_confirmation';
+export type AlphaLabOpportunityScan = OpportunityVersion & {
     status: 'ready' | 'held';
     latest_session: string | null;
     lookback_sessions: 1260; calibration_sessions: 1008; confirmation_sessions: 252; horizon_sessions: 10;
@@ -111,7 +117,12 @@ export interface AlphaLabOpportunityScan {
     audit_hash?: string;
 }
 export interface AlphaLabOpportunitySummary extends Omit<AlphaLabProposalSummary, 'policy_version'> {
-    policy_version: 'quality-setup-opportunity-v1';
+    policy_version: AlphaLabOpportunityPolicy;
+}
+export interface AlphaLabDetectionValidation {
+    policy_version: 'alpha-detection-comparison-v2'; status: 'collecting' | 'waiting' | 'held' | 'window_complete';
+    declared_at: string; earliest_session: string; decision_sessions: 60; enrolled_sessions: number;
+    maturation_sessions: 10; approved_exposure: 0; live_orders: false;
 }
 export interface AlphaLabReport {
     schema_version: 1;
@@ -125,6 +136,9 @@ export interface AlphaLabReport {
     buy_candidates?: AlphaLabOpportunityCandidate[];
     opportunity_scan?: AlphaLabOpportunityScan;
     opportunity_summary?: AlphaLabOpportunitySummary;
+    detection_validation?: AlphaLabDetectionValidation;
+    /** Original sealed v1 experiment identity, separate from the active v2 candidate board. */
+    evolution_control_binding?: OpportunityIdentity;
     universe: { ranked_count: number; quality_count: number; inspected_count: number; scope_date: string | null };
     provenance: {
         price_basis: string;
@@ -205,7 +219,7 @@ const timestamp = (value: unknown): value is string => typeof value === 'string'
     && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value));
 const utcTimestamp = (value: unknown): value is string => timestamp(value) && /(?:Z|\+00:00)$/.test(value);
 const fingerprint = (value: unknown): value is string => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
-const onlyKeys = (value: Record<string, unknown>, keys: string[]) => Object.keys(value).every(key => keys.includes(key));
+const onlyKeys = (value: object, keys: string[]) => Object.keys(value).every(key => keys.includes(key));
 // Server decision/assessment clocks may lead the browser slightly; source freshness and expiry stay strict.
 const maxServerClockAheadMs = 60_000;
 const weight = (value: unknown): value is number => finite(value) && value >= 0 && value <= .2;
@@ -389,12 +403,14 @@ function additionalGuidance(row: AlphaLabCandidate, report: AlphaLabReport): boo
     return (row.analyst_context === undefined || analystContext(row.analyst_context, row, report))
         && (row.entry_guard === undefined || entryGuard(row.entry_guard, row, report));
 }
-const opportunityPolicy = 'quality-setup-opportunity-v1';
-const opportunityBasis = 'calibration_stress_mean_then_confirmation';
+const opportunityBasis = {
+    'quality-setup-opportunity-v1': 'calibration_stress_mean_then_confirmation',
+    'quality-setup-opportunity-v2': 'causal_recovery_recent_stress_then_confirmation',
+} as const;
 const opportunityStrategies = new Set(['momentum', 'liquidity_breakout', 'mean_reversion']);
-function opportunityPhase(value: unknown, minimum: number): value is AlphaLabOpportunityPhase {
+function opportunityPhase(value: unknown, minimum: number, recent = false): value is AlphaLabOpportunityPhase {
     return record(value) && count(value.samples) && value.samples >= minimum
-        && count(value.wins) && value.wins > 0 && count(value.losses) && value.losses > 0 && count(value.zeros)
+        && count(value.wins) && (recent || value.wins > 0) && count(value.losses) && (recent || value.losses > 0) && count(value.zeros)
         && value.wins + value.losses + value.zeros === value.samples && finite(value.win_rate)
         && Math.abs(value.win_rate - value.wins / value.samples) <= 1e-8
         && ['mean_net_return', 'stress_mean_net_return', 'compounded_trade_return', 'stress_compounded_trade_return'].every(key => finite(value[key]) && value[key] > 0)
@@ -406,7 +422,9 @@ function opportunityPhase(value: unknown, minimum: number): value is AlphaLabOpp
 function opportunityCandidate(value: unknown, report: AlphaLabReport): value is AlphaLabOpportunityCandidate {
     if (!candidate(value, opportunityStrategies) || !record(value) || !record(value.evidence) || !additionalGuidance(value, report)) return false;
     const e = value.evidence;
-    if (e.selection_basis !== opportunityBasis || typeof e.stronger_evidence !== 'boolean' || e.retrospective !== true || e.independent_validation !== false
+    const policy = report.opportunity_scan!.policy_version;
+    const v2 = policy === 'quality-setup-opportunity-v2';
+    if (e.selection_basis !== opportunityBasis[policy] || typeof e.stronger_evidence !== 'boolean' || e.retrospective !== true || e.independent_validation !== false
         || !opportunityPhase(e.calibration, 30) || !opportunityPhase(e.confirmation, 10)
         || e.calibration.end >= e.confirmation.start || !report.latest_session || e.confirmation.end !== report.latest_session
         || Math.abs(value.score - e.calibration.stress_mean_net_return) > 1e-8
@@ -418,6 +436,11 @@ function opportunityCandidate(value: unknown, report: AlphaLabReport): value is 
         || !finite(value.risk.quarter_kelly_fraction) || value.risk.quarter_kelly_fraction <= 0
         || Math.abs(value.risk.quarter_kelly_fraction - value.risk.kelly_raw * .25) > 1e-8
         || record(value.risk) && value.risk.planned_account_risk !== undefined && (!finite(value.risk.planned_account_risk) || value.risk.planned_account_risk < 0 || value.risk.planned_account_risk > .01 + 1e-10)) return false;
+    if (v2 ? !opportunityPhase(e.recent, 5, true)
+        || !onlyKeys(e.recent, ['samples', 'wins', 'losses', 'zeros', 'win_rate', 'mean_net_return', 'stress_mean_net_return',
+            'compounded_trade_return', 'stress_compounded_trade_return', 'start', 'end', 'last_exit_session', 't_stat', 'return_basis'])
+        || e.recent.start < e.confirmation.start || e.recent.end !== e.confirmation.end || e.recent.samples > e.confirmation.samples
+        : e.recent !== undefined) return false;
     if (e.stronger_evidence && (e.confirmation.samples < 30 || e.calibration.t_stat === null || e.calibration.t_stat < 2
         || e.confirmation.t_stat === null || e.confirmation.t_stat < 2)) return false;
     const plan = value.plan;
@@ -441,12 +464,16 @@ function validOpportunities(report: AlphaLabReport): boolean {
     if (r.buy_candidates === undefined && r.opportunity_scan === undefined && r.opportunity_summary === undefined) return true;
     if (!Array.isArray(r.buy_candidates) || r.buy_candidates.length > 3 || !record(r.opportunity_scan)) return false;
     const scan = r.opportunity_scan;
-    if (scan.policy_version !== opportunityPolicy || scan.selection_basis !== opportunityBasis || !['ready', 'held'].includes(String(scan.status))
+    if ((scan.policy_version !== 'quality-setup-opportunity-v1' && scan.policy_version !== 'quality-setup-opportunity-v2')
+        || scan.selection_basis !== opportunityBasis[scan.policy_version] || !['ready', 'held'].includes(String(scan.status))
         || scan.latest_session !== report.latest_session || scan.lookback_sessions !== 1260 || scan.calibration_sessions !== 1008
         || scan.confirmation_sessions !== 252 || scan.horizon_sessions !== 10 || !count(scan.inspected_count) || scan.inspected_count > report.universe.quality_count
         || !count(scan.eligible_count) || scan.eligible_count < r.buy_candidates.length || scan.eligible_count > scan.inspected_count
         || !count(scan.active_setup_count) || scan.active_setup_count > scan.inspected_count * 3 || !reasons(scan.reasons)
         || scan.warnings !== undefined && !reasons(scan.warnings)) return false;
+    if (scan.policy_version === 'quality-setup-opportunity-v2'
+        ? scan.recent_sessions !== 126 || scan.recent_minimum_completed !== 5
+        : scan.recent_sessions !== undefined || scan.recent_minimum_completed !== undefined) return false;
     if (scan.audit_hash !== undefined && !fingerprint(scan.audit_hash)) return false;
     if (scan.forward !== undefined && (!record(scan.forward) || !count(scan.forward.decisions) || !count(scan.forward.matured)
         || !nullableRate(scan.forward.win_rate) || !nullableFinite(scan.forward.mean_net_return)
@@ -458,7 +485,17 @@ function validOpportunities(report: AlphaLabReport): boolean {
         symbols.add(row.symbol);
     }
     return r.opportunity_summary === undefined ? !r.buy_candidates.some(row => row.proposal?.action === 'buy')
-        : proposalSummary(r.opportunity_summary, r.buy_candidates, opportunityPolicy);
+        : proposalSummary(r.opportunity_summary, r.buy_candidates, scan.policy_version);
+}
+
+function detectionValidation(value: unknown): value is AlphaLabDetectionValidation {
+    return record(value) && onlyKeys(value, ['policy_version', 'status', 'declared_at', 'earliest_session', 'decision_sessions',
+        'enrolled_sessions', 'maturation_sessions', 'approved_exposure', 'live_orders'])
+        && value.policy_version === 'alpha-detection-comparison-v2'
+        && ['collecting', 'waiting', 'held', 'window_complete'].includes(String(value.status))
+        && utcTimestamp(value.declared_at) && date(value.earliest_session)
+        && value.decision_sessions === 60 && count(value.enrolled_sessions) && value.enrolled_sessions <= 60
+        && value.maturation_sessions === 10 && value.approved_exposure === 0 && value.live_orders === false;
 }
 
 function validReport(value: unknown): value is AlphaLabReport {
@@ -501,6 +538,12 @@ function validReport(value: unknown): value is AlphaLabReport {
     if (value.candidates.some(row => row.proposal?.action === 'buy') && !value.proposal_summary) return false;
     if (!value.candidates.every(row => validBuy(row, value as unknown as AlphaLabReport))) return false;
     if (!validOpportunities(value as unknown as AlphaLabReport)) return false;
+    if (value.detection_validation !== undefined && !detectionValidation(value.detection_validation)) return false;
+    if (value.evolution_control_binding !== undefined
+        && (!record(value.opportunity_scan) || value.opportunity_scan.policy_version !== 'quality-setup-opportunity-v2'
+            || !record(value.evolution_control_binding)
+            || !onlyKeys(value.evolution_control_binding, ['decision_id', 'input_fingerprint', 'source_audit_hash'])
+            || !['decision_id', 'input_fingerprint', 'source_audit_hash'].every(key => fingerprint((value.evolution_control_binding as Record<string, unknown>)[key])))) return false;
     return exposure <= .6 + 1e-8 && value.agents.every(row => record(row) && label(row.id) && label(row.name)
         && label(row.status) && safeText(row.detail));
 }
@@ -625,11 +668,15 @@ export function validateAlphaLabStatus(value: unknown): AlphaLabStatus {
         input_fingerprint: (value.report as AlphaLabReport | null)?.input_fingerprint,
         latest_session: (value.report as AlphaLabReport | null)?.latest_session,
         source_audit_hash: (value.report as AlphaLabReport | null)?.opportunity_scan?.audit_hash,
+        policy_version: (value.report as AlphaLabReport | null)?.opportunity_scan?.policy_version === 'quality-setup-opportunity-v2'
+            ? 'profit-opportunity-v2' : (value.report as AlphaLabReport | null)?.opportunity_scan ? 'profit-opportunity-v1' : undefined,
     });
     if (value.agent_desk !== undefined) validateAgentDesk(value.agent_desk, value.opportunity_engine as OpportunityEngine | undefined);
+    const controlBinding = (value.report as AlphaLabReport | null)?.evolution_control_binding;
+    if (controlBinding !== undefined && (value.opportunity_engine as OpportunityEngine | undefined)?.policy_version !== 'profit-opportunity-v2') throw new Error(invalid);
     const { catalyst_context: rawCatalystContext, evolution: rawEvolution, ...sourceStatus } = value;
     const catalystContext = validateCatalystContext(rawCatalystContext, value.opportunity_engine as OpportunityEngine | undefined);
-    const evolution = validateEvolutionContext(rawEvolution, value.opportunity_engine as OpportunityEngine | undefined);
+    const evolution = validateEvolutionContext(rawEvolution, controlBinding ?? value.opportunity_engine as OpportunityEngine | undefined);
     const status = { ...sourceStatus, ...(catalystContext ? { catalyst_context: catalystContext } : {}), ...(evolution ? { evolution } : {}) } as unknown as AlphaLabStatus;
     if (!status.report) return { ...status, operations: status.operations ? { ...status.operations, monitoring: liveAlphaLabMonitoring(status)! } : undefined };
     const normalizeProposal = (row: AlphaLabCandidate, opportunity = false) => {

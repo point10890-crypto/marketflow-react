@@ -1,5 +1,5 @@
 import { evolutionArmIds, validateEvolutionContext, type EvolutionArmId, type EvolutionContext } from '@/lib/evolutionContext';
-import type { OpportunityEngine } from '@/lib/opportunityEngine';
+import type { OpportunityIdentity } from '@/lib/opportunityEngine';
 
 const arms: Record<EvolutionArmId, { label: string; detail: string }> = {
     control: { label: '기존 선정 · 대조군', detail: '기존 선정 종목을 다음 장 시가로 모의 관측합니다.' },
@@ -61,7 +61,7 @@ const linkClass = 'flex !min-h-11 max-w-full flex-wrap items-center gap-x-2 roun
 const disclosureClass = 'min-h-11 cursor-pointer rounded py-3 font-semibold text-[#acd3ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#72b4fb]';
 
 export default function AlphaLabEvolutionPanel({ context, board, now = Date.now(), onSelectSymbol }: {
-    context?: unknown; board?: OpportunityEngine; now?: number; onSelectSymbol?: (symbol: string) => void;
+    context?: unknown; board?: OpportunityIdentity; now?: number; onSelectSymbol?: (symbol: string) => void;
 }) {
     const value = validateEvolutionContext(context, board, now);
     if (!value) return null;

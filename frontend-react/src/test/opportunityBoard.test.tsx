@@ -38,6 +38,25 @@ function statusFixture(board = opportunityFixture()) {
             protocol: { train_end: '2019-12-31', validation_end: '2022-12-31', test_start: '2023-01-01', horizon_sessions: 10, source_references: [] } },
     };
 }
+function opportunityV2Fixture() {
+    const board = opportunityFixture();
+    return { ...board, policy_version: 'profit-opportunity-v2', candidates: board.candidates.map(row => ({ ...row,
+        ranking: { ...row.ranking, recent_stress_mean_net_return: .01, recent_samples: 5,
+            conservative_score: .01, correlation_penalty: .001, score: .009 } })) };
+}
+function statusV2Fixture() {
+    const value = statusFixture();
+    return { ...value, opportunity_engine: opportunityV2Fixture(), report: { ...value.report,
+        buy_candidates: [], opportunity_scan: { policy_version: 'quality-setup-opportunity-v2',
+            selection_basis: 'causal_recovery_recent_stress_then_confirmation', status: 'ready',
+            latest_session: '2026-10-02', lookback_sessions: 1260, calibration_sessions: 1008, confirmation_sessions: 252,
+            horizon_sessions: 10, recent_sessions: 126, recent_minimum_completed: 5,
+            inspected_count: 100, eligible_count: 7, active_setup_count: 12, reasons: [], audit_hash: 'c'.repeat(64) },
+        detection_validation: { policy_version: 'alpha-detection-comparison-v2', status: 'collecting',
+            declared_at: '2026-10-04T10:00:00Z', earliest_session: '2026-10-05', decision_sessions: 60,
+            enrolled_sessions: 0, maturation_sessions: 10, approved_exposure: 0, live_orders: false },
+    } };
+}
 function leadershipFixture() {
     const board = opportunityFixture();
     const observation = (symbol: string, name: string, rank: number) => ({ symbol, name, rank, status: 'ready',
@@ -55,6 +74,41 @@ beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(now); api.fetchAuthAPI.m
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
 describe('profit opportunity public boundary', () => {
+    it('accepts an identified v2 board whose conservative score is capped at recent costed evidence', () => {
+        const board = validateOpportunityEngine(opportunityV2Fixture());
+        expect(board.policy_version).toBe('profit-opportunity-v2');
+        expect(effectiveOpportunityEngine(board, now).candidates[0].action).toBe('entry_candidate');
+    });
+    it.each([
+        ['unknown policy', (v: any) => { v.policy_version = 'profit-opportunity-v3'; }],
+        ['missing recent evidence', (v: any) => { delete v.candidates[0].ranking.recent_samples; }],
+        ['short recent', (v: any) => { v.candidates[0].ranking.recent_samples = 4; }],
+        ['short calibration', (v: any) => { v.candidates[0].ranking.calibration_samples = 29; }],
+        ['short confirmation', (v: any) => { v.candidates[0].ranking.confirmation_samples = 9; }],
+        ['nonpositive recent', (v: any) => { v.candidates[0].ranking.recent_stress_mean_net_return = 0; }],
+        ['uncapped score', (v: any) => { Object.assign(v.candidates[0].ranking, { conservative_score: .0202, score: .0192 }); }],
+        ['zero final score', (v: any) => { Object.assign(v.candidates[0].ranking, { correlation_penalty: .01, score: 0 }); }],
+        ['negative final score', (v: any) => { Object.assign(v.candidates[0].ranking, { recent_stress_mean_net_return: .009, conservative_score: .009, correlation_penalty: .01, score: -.001 }); }],
+        ['nonpositive base hidden by rounding', (v: any) => { Object.assign(v.candidates[0].ranking, { stress_mean_net_return: .0098, conservative_score: 1e-10, correlation_penalty: 0, score: 1e-10 }); }],
+        ['foreign decision', (v: any) => { v.candidates[0].decision_id = 'f'.repeat(64); }],
+        ['legacy policy', (v: any) => { v.policy_version = 'profit-opportunity-v1'; }],
+    ])('rejects invalid v2 opportunity guidance: %s', (_, mutate) => {
+        const value = opportunityV2Fixture(); mutate(value);
+        expect(() => validateOpportunityEngine(value)).toThrow(/응답 형식/);
+    });
+    it.each(['legacy board', 'legacy scan', 'foreign report input', 'foreign audit'] as const)('rejects mixed v2 report and board binding: %s', kind => {
+        const value = statusV2Fixture();
+        if (kind === 'legacy board') Object.assign(value, { opportunity_engine: opportunityFixture() });
+        if (kind === 'legacy scan') {
+            value.report.opportunity_scan.policy_version = 'quality-setup-opportunity-v1';
+            value.report.opportunity_scan.selection_basis = 'calibration_stress_mean_then_confirmation';
+            Reflect.deleteProperty(value.report.opportunity_scan, 'recent_sessions');
+            Reflect.deleteProperty(value.report.opportunity_scan, 'recent_minimum_completed');
+        }
+        if (kind === 'foreign report input') value.report.input_fingerprint = 'f'.repeat(64);
+        if (kind === 'foreign audit') value.report.opportunity_scan.audit_hash = 'f'.repeat(64);
+        expect(() => validateAlphaLabStatus(value)).toThrow(/응답 형식/);
+    });
     it('accepts an identified finite reference plan and preserves optional board absence', () => {
         expect(validateOpportunityEngine(opportunityFixture()).candidates[0].symbol).toBe('005930');
         const old = statusFixture(); Reflect.deleteProperty(old, 'opportunity_engine');
@@ -124,6 +178,23 @@ describe('profit opportunity public boundary', () => {
     });
 });
 describe('investor opportunity board', () => {
+    it('shows one v2 member header and the separate fixed forward window through the saved status lifecycle', async () => {
+        api.fetchAuthAPI.mockResolvedValue(statusV2Fixture());
+        render(<AlphaLabPanel desk token="member" />); await act(async () => {});
+        expect(screen.getAllByText('검출 2.0 · 회복·상대강도·최근 반기 검증')).toHaveLength(1);
+        expect(screen.getAllByText('전향 검증 수집 중')).toHaveLength(1);
+        expect(screen.getByText(/새 결정 0\/60거래일 · 성숙 대기 10거래일/)).toBeVisible();
+        expect(screen.getByRole('article', { name: /1위.*삼성전자/ })).toHaveTextContent('진입 조건 충족');
+        expect(api.postAuthAPI).not.toHaveBeenCalled();
+    });
+    it('labels v2 recovery and recent evidence while preserving the mobile card stack', () => {
+        render(<OpportunityBoard board={validateOpportunityEngine(opportunityV2Fixture())} now={now} />);
+        expect(screen.getByText('검출 2.0 · 회복·상대강도·최근 반기 검증')).toBeVisible();
+        expect(screen.getByText('전향 검증 수집 중')).toBeVisible();
+        const row = screen.getByRole('article', { name: /1위.*삼성전자/ });
+        expect(row.parentElement).toHaveClass('grid', 'min-w-0', 'gap-3', 'lg:grid-cols-3');
+        expect(row).toHaveTextContent('최근 반기 5건');
+    });
     it('shows ranked stock, entry band and quarter Kelly reference with drilldown', () => {
         const select = vi.fn(); render(<OpportunityBoard board={validateOpportunityEngine(opportunityFixture())} now={now} onSelectSymbol={select} />);
         const row = screen.getByRole('article', { name: /1위.*삼성전자.*005930/ });

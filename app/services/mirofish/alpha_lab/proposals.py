@@ -170,7 +170,14 @@ def present_status(status, *, now=None):
         valid_until = None
     counts = dict(buy=0, wait=0, avoid=0)
     for candidate in candidates:
-        action, reason, next_step, weight = _decision(result, report, candidate, current, decision, valid_until)
+        if _mapping(report.get('opportunity_scan')).get('policy_version') == 'quality-setup-opportunity-v2':
+            # Preserve the original research/forward observation, but do not
+            # expose the retired primary strategy as a second active BUY path.
+            action, reason, next_step, weight = (
+                'wait', '기존 연구 관측입니다. 현재 검출 2.0의 매수 제안이 아닙니다.',
+                '현재 매수 후보와 진입 조건은 위의 검출 2.0 제안을 확인하세요.', 0.)
+        else:
+            action, reason, next_step, weight = _decision(result, report, candidate, current, decision, valid_until)
         candidate['proposal'] = dict(action=action, label=LABELS[action], reason=reason[:300], next_step=next_step[:300],
             proposed_weight=weight, input_session=_session(candidate.get('quote_session')), derived_at=_stamp(current),
             valid_until=_stamp(valid_until) if valid_until else None,

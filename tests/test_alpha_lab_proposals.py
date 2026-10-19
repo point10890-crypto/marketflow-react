@@ -56,6 +56,19 @@ def test_positive_manual_proposal_is_additive_and_keeps_automated_gates_unchange
     assert set(out['report']['proposal_summary']) == SUMMARY_KEYS
 
 
+def test_v2_keeps_old_primary_observation_without_conflicting_buy_proposal():
+    status = evidence()
+    status['report']['opportunity_scan'] = dict(policy_version='quality-setup-opportunity-v2')
+    before = deepcopy(status)
+    out = present(status)
+    proposal = out['report']['candidates'][0]['proposal']
+    assert proposal['action'] == 'wait' and proposal['proposed_weight'] == 0.
+    assert '기존 연구 관측' in proposal['reason']
+    assert out['report']['candidates'][0]['plan'] == before['report']['candidates'][0]['plan']
+    assert out['report']['approval'] == before['report']['approval']
+    assert status == before
+
+
 @pytest.mark.parametrize('phase', ['test', 'stress'])
 def test_negative_matching_strategy_is_avoid_without_champion_or_legacy_quote(phase):
     status = evidence()

@@ -1,6 +1,12 @@
 export type OpportunityAction = 'entry_candidate' | 'wait_next_session' | 'data_check' | 'skip';
 export type OpportunityStrategy = 'momentum' | 'liquidity_breakout' | 'mean_reversion';
 export interface OpportunityIdentity { decision_id: string; input_fingerprint: string; source_audit_hash: string }
+interface OpportunityRanking {
+    stress_mean_net_return: number; standard_error: number; conservative_score: number; correlation_penalty: number;
+    score: number; calibration_samples: number; confirmation_samples: number;
+}
+type LegacyRanking = OpportunityRanking & { recent_stress_mean_net_return?: never; recent_samples?: never };
+type RecoveryRanking = OpportunityRanking & { recent_stress_mean_net_return: number; recent_samples: number };
 export interface LeadershipObservation {
     symbol: string; name: string; rank: number | null; status: 'ready' | 'unavailable';
     reference_price: number | null; ret_21: number | null; ret_63: number | null;
@@ -21,20 +27,23 @@ export interface ProfitOpportunity extends OpportunityIdentity {
     quote_session: string; source_at: string | null; current_price: number | null; quote_at: string | null; fetched_at: string | null;
     quote_source: 'KIS:J:FHKST03010200+FHKST01010100' | null; valid_until: string | null; reference_weight: number;
     plan: { basis: 'last_closed_price_reference' | 'observed_quote_reference'; entry_low: number; entry_high: number; stop_price: number; target_price: number; horizon_sessions: 10 };
-    ranking: { stress_mean_net_return: number; standard_error: number; conservative_score: number; correlation_penalty: number;
-        score: number; calibration_samples: number; confirmation_samples: number };
+    ranking: LegacyRanking | RecoveryRanking;
     kelly: { raw_fraction: number; fraction: .25; cap: .05; account_risk_cap: .01 };
     audit: { status: 'passed' | 'held' | 'unavailable'; reasons: string[]; independent_validation: false }; reasons: string[];
 }
-export interface OpportunityEngine extends OpportunityIdentity {
-    schema_version: 1; policy_version: 'profit-opportunity-v1'; generated_at: string; latest_session: string; entry_session: string | null;
+interface OpportunityEngineFields extends OpportunityIdentity {
+    schema_version: 1; generated_at: string; latest_session: string; entry_session: string | null;
     valid_until: string | null; status: 'ready' | 'held'; research_only: true; live_orders: false;
-    coverage: { inspected: number; eligible: number; selected: number }; candidates: ProfitOpportunity[];
+    coverage: { inspected: number; eligible: number; selected: number };
     alternatives: Array<{ symbol: string; name: string; strategy_id: OpportunityStrategy; score: number | null; reason: string }>;
     stages: Array<{ id: string; status: 'passed' | 'held' | 'unavailable'; detail: string; count: number }>; reasons: string[];
     evaluation?: { basis: 'issued_opportunities_not_fills'; issued: number; pending: number; expired: number; observed: number; unobserved: number };
     leadership_context?: LeadershipContext;
 }
+export type OpportunityEngine = OpportunityEngineFields & (
+    { policy_version: 'profit-opportunity-v1'; candidates: Array<ProfitOpportunity & { ranking: LegacyRanking }> }
+    | { policy_version: 'profit-opportunity-v2'; candidates: Array<ProfitOpportunity & { ranking: RecoveryRanking }> }
+);
 const invalid = '수익 기회 응답 형식이 올바르지 않습니다. 저장 결과를 다시 확인해 주세요.';
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const finite = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
@@ -130,15 +139,23 @@ function validCandidate(value: unknown, board: OpportunityEngine, index: number)
         || value.valid_until !== board.valid_until || !finite(value.reference_weight) || value.reference_weight < 0 || value.reference_weight > .05 + 1e-8
         || !reasons(value.reasons) || !record(value.plan) || !record(value.ranking) || !record(value.kelly) || !record(value.audit)) return false;
     const p = value.plan, r = value.ranking, k = value.kelly, a = value.audit;
+    const v2 = board.policy_version === 'profit-opportunity-v2';
+    const recentKeys = ['recent_stress_mean_net_return', 'recent_samples'];
+    if (v2 && (!positive(r.recent_stress_mean_net_return) || !count(r.recent_samples) || r.recent_samples < 5
+        || !count(r.calibration_samples) || r.calibration_samples < 30
+        || !count(r.confirmation_samples) || r.confirmation_samples < 10 || r.recent_samples > r.confirmation_samples
+        || !finite(r.stress_mean_net_return) || !finite(r.standard_error) || r.stress_mean_net_return - 1.96 * r.standard_error <= 0
+        || !positive(r.conservative_score) || !positive(r.score))) return false;
     if (!keys(p, ['basis', 'entry_low', 'entry_high', 'stop_price', 'target_price', 'horizon_sessions'])
         || !['last_closed_price_reference', 'observed_quote_reference'].includes(String(p.basis)) || p.horizon_sessions !== 10
         || !['entry_low', 'entry_high', 'stop_price', 'target_price'].every(key => positive(p[key]))
         || !((p.stop_price as number) < (p.entry_low as number) && (p.entry_low as number) <= (p.entry_high as number) && (p.entry_high as number) < (p.target_price as number))
-        || !keys(r, ['stress_mean_net_return', 'standard_error', 'conservative_score', 'correlation_penalty', 'score', 'calibration_samples', 'confirmation_samples'])
+        || !keys(r, ['stress_mean_net_return', 'standard_error', 'conservative_score', 'correlation_penalty', 'score', 'calibration_samples', 'confirmation_samples'], v2 ? recentKeys : [])
         || !['stress_mean_net_return', 'standard_error', 'conservative_score', 'correlation_penalty', 'score'].every(key => finite(r[key]))
         || (r.standard_error as number) < 0 || (r.correlation_penalty as number) < 0 || (r.correlation_penalty as number) > .01 + 1e-8
         || !count(r.calibration_samples) || !count(r.confirmation_samples)
-        || !near(r.conservative_score as number, (r.stress_mean_net_return as number) - 1.96 * (r.standard_error as number))
+        || !near(r.conservative_score as number, Math.min((r.stress_mean_net_return as number) - 1.96 * (r.standard_error as number),
+            v2 ? r.recent_stress_mean_net_return as number : Infinity))
         || !near(r.score as number, (r.conservative_score as number) - (r.correlation_penalty as number))
         || !keys(k, ['raw_fraction', 'fraction', 'cap', 'account_risk_cap']) || !finite(k.raw_fraction)
         || k.fraction !== .25 || k.cap !== .05 || k.account_risk_cap !== .01
@@ -151,10 +168,10 @@ function validCandidate(value: unknown, board: OpportunityEngine, index: number)
     return true;
 }
 /** Public projection only: no raw internal fields or unbound guidance crosses this boundary. */
-export function validateOpportunityEngine(value: unknown, binding?: { input_fingerprint?: string; latest_session?: string | null; source_audit_hash?: string }): OpportunityEngine {
+export function validateOpportunityEngine(value: unknown, binding?: { input_fingerprint?: string; latest_session?: string | null; source_audit_hash?: string; policy_version?: OpportunityEngine['policy_version'] }): OpportunityEngine {
     if (!record(value) || !keys(value, ['schema_version', 'policy_version', ...identityKeys, 'generated_at', 'latest_session', 'entry_session', 'valid_until',
         'status', 'research_only', 'live_orders', 'coverage', 'candidates', 'alternatives', 'stages', 'reasons'], ['evaluation', 'leadership_context'])
-        || value.schema_version !== 1 || value.policy_version !== 'profit-opportunity-v1' || !identityKeys.every(key => hash(value[key]))
+        || value.schema_version !== 1 || !['profit-opportunity-v1', 'profit-opportunity-v2'].includes(String(value.policy_version)) || !identityKeys.every(key => hash(value[key]))
         || !timestamp(value.generated_at) || !date(value.latest_session) || !(value.entry_session === null || date(value.entry_session))
         || !nullableTime(value.valid_until) || (value.entry_session === null) !== (value.valid_until === null)
         || value.entry_session !== null && (value.entry_session <= value.latest_session || Date.parse(value.valid_until as string) !== sessionClose(value.entry_session))
@@ -166,6 +183,7 @@ export function validateOpportunityEngine(value: unknown, binding?: { input_fing
         || !Array.isArray(value.alternatives) || value.alternatives.length > 10 || !Array.isArray(value.stages) || value.stages.length > 12 || !reasons(value.reasons)) throw new Error(invalid);
     const board = value as unknown as OpportunityEngine;
     if (binding && (binding.input_fingerprint !== undefined && board.input_fingerprint !== binding.input_fingerprint
+        || binding.policy_version !== undefined && board.policy_version !== binding.policy_version
         || binding.latest_session != null && board.latest_session !== binding.latest_session
         || binding.source_audit_hash !== undefined && board.source_audit_hash !== binding.source_audit_hash)) throw new Error(invalid);
     const symbols = new Set<string>(), opportunities = new Set<string>();
@@ -223,7 +241,7 @@ export function effectiveOpportunityEngine(board: OpportunityEngine, now = Date.
                 why_now: action === 'skip' ? '신규 진입 가격 조건을 충족하지 못했습니다.' : action === 'wait_next_session' ? '공식 다음 거래일의 새 가격 관측을 기다립니다.' : '최신 자료 또는 진입 유효기간을 다시 확인해야 합니다.',
                 next_action: action === 'skip' ? '진입을 보류하고 새 연구 결과에서 조건을 다시 확인하세요.' : '저장 결과의 자료와 가격이 갱신될 때까지 진입을 기다리세요.' } : {}) };
     });
-    return { ...board, status: boardProblems ? 'held' : board.status, candidates };
+    return { ...board, status: boardProblems ? 'held' : board.status, candidates } as OpportunityEngine;
 }
 /** Shares AlphaLabPanel's one local timer; this function never fetches providers or status. */
 export function opportunityClockExpirations(board: OpportunityEngine): number[] {

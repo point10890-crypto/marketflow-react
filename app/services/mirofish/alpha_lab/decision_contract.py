@@ -133,7 +133,7 @@ def _candidate_rows(board):
     """Only the existing projected board can supply identity, never a raw report."""
     candidates = board.get('candidates')
     if (type(board.get('schema_version')) is not int or board['schema_version'] != 1
-            or board.get('policy_version') != 'profit-opportunity-v1'
+            or board.get('policy_version') not in ('profit-opportunity-v1', 'profit-opportunity-v2')
             or not all(_hash_valid(board.get(key)) for key in
                        ('decision_id', 'input_fingerprint', 'source_audit_hash'))
             or not isinstance(candidates, list) or len(candidates) > 3):

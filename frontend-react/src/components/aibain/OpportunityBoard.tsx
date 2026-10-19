@@ -28,14 +28,17 @@ function LeadershipDetails({ row, waiting }: { row: LeadershipObservation; waiti
     </div>;
 }
 
-export default function OpportunityBoard({ board, now, blocked = false, onSelectSymbol }: {
-    board: OpportunityEngine; now: number; blocked?: boolean; onSelectSymbol?: (symbol: string) => void;
+export default function OpportunityBoard({ board, now, blocked = false, onSelectSymbol, showPolicy = true }: {
+    board: OpportunityEngine; now: number; blocked?: boolean; onSelectSymbol?: (symbol: string) => void; showPolicy?: boolean;
 }) {
     const view = effectiveOpportunityEngine(board, now, blocked);
     const weight = view.candidates.reduce((sum, row) => sum + row.reference_weight, 0);
     const leadership = view.leadership_context;
     const leadershipWaiting = blocked || view.status !== 'ready' || !view.candidates.some(row => row.action === 'entry_candidate');
     return <section aria-label="수익 기회 순위" className="mb-5 min-w-0 space-y-3 text-base leading-relaxed [&_button]:!min-h-11 [&_summary]:!min-h-11 sm:text-sm">
+        {showPolicy && view.policy_version === 'profit-opportunity-v2' && <div className="space-y-1 text-xs leading-relaxed text-gray-400">
+            <p className="font-semibold text-[#acd3ff]">검출 2.0 · 회복·상대강도·최근 반기 검증</p><p>전향 검증 수집 중</p>
+        </div>}
         <div className="flex flex-wrap items-start justify-between gap-3 border-y border-[#365372] py-3">
             <div className="min-w-0"><h3 className="text-base font-semibold text-gray-100">수익 기회 순위</h3>
                 <p className="mt-1 leading-relaxed text-gray-300">종목 · 현재 조건 · 다음 행동 순서로 확인하세요.</p></div>
@@ -72,8 +75,9 @@ export default function OpportunityBoard({ board, now, blocked = false, onSelect
                     {leadership?.selected.find(observation => observation.symbol === row.symbol) && <LeadershipDetails row={leadership.selected.find(observation => observation.symbol === row.symbol)!} waiting={leadershipWaiting || row.action !== 'entry_candidate'} />}
                     <p className="tabular-nums">관측 {clock(row.quote_at)} · 저장 {clock(row.fetched_at)}</p>
                     <p className="tabular-nums">비용 2배 과거 평균 {pct(row.ranking.stress_mean_net_return, true)} · 표준오차 {pct(row.ranking.standard_error)}<br />불확실성 차감 점수 {pct(row.ranking.conservative_score, true)} · 상관 차감 {pct(row.ranking.correlation_penalty)} · 최종 {pct(row.ranking.score, true)}</p>
-                    <p>표준오차의 1.96배를 뺀 순위용 점수입니다. 독립 표본의 신뢰구간이나 미래 승률로 해석하지 않습니다.</p>
+                    <p>{view.policy_version === 'profit-opportunity-v2' ? '표준오차의 1.96배를 뺀 점수와 최근 반기 비용 2배 평균 중 낮은 값을 사용합니다.' : '표준오차의 1.96배를 뺀 순위용 점수입니다.'} 독립 표본의 신뢰구간이나 미래 승률로 해석하지 않습니다.</p>
                     <p className="tabular-nums">형성 {row.ranking.calibration_samples}건 · 확인 {row.ranking.confirmation_samples}건 · 최근 입력 거래일 {row.quote_session}</p>
+                    {view.policy_version === 'profit-opportunity-v2' && row.ranking.recent_stress_mean_net_return !== undefined && <p className="tabular-nums">최근 반기 {row.ranking.recent_samples}건 · 비용 2배 과거 평균 {pct(row.ranking.recent_stress_mean_net_return, true)}</p>}
                     <p className="break-words">입력 가격: 저장 공급자 종가 스냅샷 · 수집 {clock(row.source_at)}<br />현재 관측: {row.quote_source ? 'KIS 국내 주식 가격 API' : '조회 근거 확인 대기'}</p>
                     <p>자료 감사 {stateNames[row.audit.status]} · 독립 검증 미인증</p>
                     {row.reasons.length + row.audit.reasons.length > 0 && <p>{explanation([...row.reasons, ...row.audit.reasons])}</p>}

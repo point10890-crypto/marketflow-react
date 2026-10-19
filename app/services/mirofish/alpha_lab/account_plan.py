@@ -314,7 +314,7 @@ def build_account_plan(status, account, *, now=None):
             halts.append('weekly_loss_limit')
     board_candidates = board.get('candidates')
     if (type(board.get('schema_version')) is not int or board.get('schema_version') != 1
-            or board.get('policy_version') != 'profit-opportunity-v1'
+            or board.get('policy_version') not in ('profit-opportunity-v1', 'profit-opportunity-v2')
             or not all(_identity(board.get(key)) for key in ('decision_id', 'input_fingerprint', 'source_audit_hash'))
             or board.get('status') != 'ready' or board.get('research_only') is not True
             or board.get('live_orders') is not False or not isinstance(board_candidates, list)

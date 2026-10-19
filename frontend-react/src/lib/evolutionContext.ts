@@ -1,4 +1,4 @@
-import type { OpportunityEngine, OpportunityIdentity } from './opportunityEngine';
+import type { OpportunityIdentity } from './opportunityEngine';
 
 export type EvolutionArmId = 'control' | 'entry-band-v1' | 'recovery-confirmed-v1' | 'positive-rank-v1';
 export interface EvolutionMetrics {
@@ -79,7 +79,7 @@ function validArm(value: unknown, window: EvolutionContext['window']): value is 
 const nullMetrics = (): EvolutionMetrics => ({ mean_net_return: null, stress_mean_net_return: null, paired_advantage: null, stress_paired_advantage: null, downside_tail_loss: null });
 
 /** Invalid optional evidence disappears; foreign bindings become a visible, non-authorizing hold. */
-export function validateEvolutionContext(value: unknown, board?: OpportunityEngine, now = Date.now()): EvolutionContext | undefined {
+export function validateEvolutionContext(value: unknown, board?: OpportunityIdentity, now = Date.now()): EvolutionContext | undefined {
     if (!Number.isFinite(now) || !record(value) || !keys(value, ['schema_version', 'protocol_version', 'protocol_hash', 'generated_at', 'declared_at', 'status_id', 'status',
         'binding', 'phase', 'next_step', 'research_only', 'live_orders', 'approved_exposure', 'return_basis', 'window', 'nomination', 'review', 'arms', 'reasons'], ['binding_status'])
         || value.schema_version !== 1 || value.protocol_version !== 'alpha-evolution-v1' || !hash(value.protocol_hash) || !hash(value.status_id)

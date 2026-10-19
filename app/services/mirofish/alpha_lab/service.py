@@ -155,14 +155,20 @@ def _held_opportunity_board(report):
         stages=[dict(id='data', status='unavailable', detail='분석 자료를 갱신한 후 다시 확인해 주세요.', count=0)])
 
 
-def _add_decision_engine(root, report, inputs, discovery):
+def _add_decision_engine(root, report, inputs, discovery, *, version='v1'):
     from . import opportunity_store
     try:
-        board = build_opportunity_board(discovery, inputs['prices_by_symbol'], report, now=report['decision_at'])
+        builder = build_opportunity_board
+        if version == 'v2':
+            from .decision_engine import build_opportunity_board_v2
+            builder = build_opportunity_board_v2
+        board = builder(discovery, inputs['prices_by_symbol'], report, now=report['decision_at'])
         report['opportunity_board'] = opportunity_store.register_board(root, board)
         view = opportunity_store.attach_saved(dict(state='held', report=report), root, now=report['decision_at'])
         report['opportunity_board'] = view['report']['opportunity_board']
     except Exception as exc:
+        if version == 'v2':
+            raise
         logging.getLogger(__name__).warning('Opportunity engine held (%s)', type(exc).__name__)
         report['opportunity_board'] = _held_opportunity_board(report)
     _add_leadership_context(root, report, inputs)
@@ -196,16 +202,22 @@ def _add_leadership_context(root, report, inputs):
         logging.getLogger(__name__).warning('Leadership context unavailable (%s)', type(exc).__name__)
 
 
-def _add_opportunities(root, report, inputs):
+def _add_opportunities(root, report, inputs, *, version='v1'):
     from copy import deepcopy
     from .proposals import present_status
-    discovery = discover_opportunities(inputs['prices_by_symbol'], names=inputs['names'],
+    detector = discover_opportunities
+    namespace = 'opportunities'
+    if version == 'v2':
+        from .discovery_v2 import discover_opportunities_v2
+        detector, namespace = discover_opportunities_v2, 'opportunities-v2'
+    discovery = detector(inputs['prices_by_symbol'], names=inputs['names'],
                                       as_of=inputs['latest_session'], candidate_limit=100)
     all_discovery = deepcopy(discovery)
     # The original BUY3 artifact and both old journals keep their exact identity.
-    discovery['candidates'] = discovery['candidates'][:3]
+    if version == 'v1':
+        discovery['candidates'] = discovery['candidates'][:3]
     digest = store._hash(discovery)
-    path = Path(root)/'opportunities'/'runs'/f"{inputs['latest_session']}-{inputs['input_fingerprint'][:12]}-{digest}.json"
+    path = Path(root)/namespace/'runs'/f"{inputs['latest_session']}-{inputs['input_fingerprint'][:12]}-{digest}.json"
     if not path.exists():
         store._write(path, discovery)
     elif store._hash(store._read(path)) != digest:
@@ -222,7 +234,7 @@ def _add_opportunities(root, report, inputs):
                          opportunity_audit_hash=digest, universe=deepcopy(inputs['universe']),
                          provenance=deepcopy(inputs['provenance']), contexts=contexts)
     context_hash = store._hash(context_audit)
-    context_path = Path(root)/'opportunities'/'context-runs'/f"{inputs['latest_session']}-{inputs['input_fingerprint'][:12]}-{context_hash}.json"
+    context_path = Path(root)/namespace/'context-runs'/f"{inputs['latest_session']}-{inputs['input_fingerprint'][:12]}-{context_hash}.json"
     if not context_path.exists():
         store._write(context_path, context_audit)
     elif store._hash(store._read(context_path)) != context_hash:
@@ -241,13 +253,58 @@ def _add_opportunities(root, report, inputs):
     public['audit_hash'] = digest
     public['status'] = inputs['status']
     report['opportunity_scan'] = public
-    view = present_status(dict(state='held', report=report), now=report['decision_at'])['report']
-    forward_report = dict(report, candidates=[row for row in view['buy_candidates']
-                                             if row.get('proposal', {}).get('action') == 'buy'])
-    public['forward'] = store.observe_and_freeze(Path(root)/'opportunities', forward_report,
-                                                inputs['prices_by_symbol'], now=report['decision_at'])
-    _add_decision_engine(root, report, inputs, all_discovery)
+    if version == 'v1':
+        view = present_status(dict(state='held', report=report), now=report['decision_at'])['report']
+        forward_report = dict(report, candidates=[row for row in view['buy_candidates']
+                                                 if row.get('proposal', {}).get('action') == 'buy'])
+        public['forward'] = store.observe_and_freeze(Path(root)/'opportunities', forward_report,
+                                                    inputs['prices_by_symbol'], now=report['decision_at'])
+        _add_decision_engine(root, report, inputs, all_discovery)
+    else:
+        public['forward'] = _empty_detection_forward()
+        _add_decision_engine(root, report, inputs, all_discovery, version='v2')
     return all_discovery
+
+
+def _empty_detection_forward():
+    return dict(decisions=0,matured=0,win_rate=None,mean_net_return=None,
+        counts=dict(pending=0,open=0,unfilled=0,missing_session=0,source_revision=0,closed=0),
+        excluded_revised_closed=0,revision_policy='preserve_terminal_result_exclude_revised_closed_from_statistics',
+        basis='frozen_watchlist_next_open_outcomes_not_account_pnl')
+
+
+def _activate_detection_v2(root, report, inputs, *, control_discovery=None):
+    # v2 was introduced on this source session. Historical reports remain v1;
+    # offline replay explicitly calls the pure v2 function rather than this hook.
+    if report['latest_session'] < '2026-10-19':
+        return report
+    from copy import deepcopy
+    from . import detection_v2_store
+    protocol = detection_v2_store.ensure_protocol(root,now=report['decision_at'])
+    if not detection_v2_store.active_for(protocol,report['latest_session']):
+        return report
+    active = deepcopy(report)
+    control = deepcopy(report)
+    control_board = report['opportunity_board']
+    active['evolution_control_binding'] = {k:control_board[k]
+        for k in ('decision_id','input_fingerprint','source_audit_hash')}
+    # Control cohort for the new comparison follows the actually displayed
+    # legacy board; the original evolution report itself is never modified.
+    control_pool = (control_discovery['candidates'] if control_discovery is not None
+                    else control['buy_candidates'])
+    control_by_symbol = {r['symbol']:r for r in control_pool}
+    if any(r['symbol'] not in control_by_symbol for r in control_board['candidates']):
+        raise ValueError('control_candidate_missing')
+    control['buy_candidates'] = [deepcopy(control_by_symbol[r['symbol']])
+        for r in control_board['candidates']]
+    _add_opportunities(root,active,inputs,version='v2')
+    by_symbol = {r['symbol']:r for r in active['buy_candidates']}
+    active['buy_candidates'] = [by_symbol[r['symbol']]
+        for r in active['opportunity_board']['candidates'] if r['symbol'] in by_symbol]
+    validation = detection_v2_store.refresh(root,inputs,active,control,now=report['decision_at'])
+    active['opportunity_scan']['forward'] = validation.pop('forward',_empty_detection_forward())
+    active['detection_validation'] = validation
+    return active
 
 def _execute(root):
     try:
@@ -271,6 +328,9 @@ def _execute(root):
             store._write(audit_path, core)
         elif store._hash(store._read(audit_path)) != report['experiment_hash']:
             raise ValueError('experiment_integrity')
+        from copy import deepcopy
+        control_report = deepcopy(report)
+        report = _activate_detection_v2(root,report,inputs,control_discovery=all_discovery)
         published = store.publish(root, report, held=inputs['status'] != 'ready' or report['champion']['status'] == 'held'
                                   or not inputs['provenance']['analysis_ready'])
         from .monitor import register_report
@@ -279,7 +339,7 @@ def _execute(root):
         # a separate journal and cannot change the published decision or CIO.
         try:
             from .evolution_store import refresh
-            evolution_status = refresh(root, inputs, report, all_discovery)
+            evolution_status = refresh(root, inputs, control_report, all_discovery)
             if evolution_status.get('status') == 'held':
                 logging.getLogger(__name__).warning('AlphaLab evolution unavailable (refresh_held)')
         except Exception:
@@ -325,7 +385,8 @@ def _with_agent_desk(status, *, now=None):
         logging.getLogger(__name__).warning('AlphaLab saved news context unavailable')
     try:
         from .evolution_store import read_status as read_evolution
-        evolution = read_evolution(ROOT, board, now=now)
+        control_binding = (status.get('report') or {}).get('evolution_control_binding')
+        evolution = read_evolution(ROOT, control_binding or board, now=now)
         if evolution is not None:
             result['evolution'] = evolution
     except Exception:
