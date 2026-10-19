@@ -10,6 +10,8 @@ from .proposals import (_mapping, _number, _timestamp, _stamp, _session,
 
 POLICY = 'quality-setup-opportunity-v1'
 BASIS = 'calibration_stress_mean_then_confirmation'
+POLICY_V2 = 'quality-setup-opportunity-v2'
+BASIS_V2 = 'causal_recovery_recent_stress_then_confirmation'
 SETUPS = {'momentum': '추세 지속', 'liquidity_breakout': '거래량 동반 돌파', 'mean_reversion': '과매도 회복'}
 
 
@@ -17,13 +19,13 @@ def _count(value):
     return isinstance(value, int) and not isinstance(value, bool) and value >= 0
 
 
-def _positive_phase(raw, minimum):
+def _positive_phase(raw, minimum, *, recent=False):
     phase = _mapping(raw)
     numbers = [phase.get(key) for key in ('samples', 'wins', 'losses', 'zeros')]
     if not all(_count(value) for value in numbers):
         return False
     n, wins, losses, zeros = numbers
-    if n < minimum or wins <= 0 or losses <= 0 or wins+losses+zeros != n:
+    if n < minimum or (not recent and (wins <= 0 or losses <= 0)) or wins+losses+zeros != n:
         return False
     rate = _number(phase.get('win_rate'))
     if rate is None or not math.isclose(rate, wins/n, rel_tol=1e-9, abs_tol=1e-10):
@@ -38,10 +40,36 @@ def _positive_phase(raw, minimum):
     return all(dates) and dates[0] <= dates[2] <= dates[1]
 
 
+def _selected_v2(report, row):
+    """A legacy opinion must not resurrect a candidate rejected by the v2 board."""
+    from . import decision_engine
+    board = _mapping(report.get('opportunity_board'))
+    rows = board.get('candidates')
+    if (board.get('schema_version') != 1 or board.get('policy_version') != decision_engine.POLICY_V2
+            or board.get('research_only') is not True or board.get('live_orders') is not False
+            or not isinstance(rows,list) or not 1 <= len(rows) <= 3
+            or not all(decision_engine._hash_valid(board.get(key)) for key in
+                       ('decision_id','input_fingerprint','source_audit_hash'))
+            or board.get('input_fingerprint') != report.get('input_fingerprint')
+            or board.get('source_audit_hash') != _mapping(report.get('opportunity_scan')).get('audit_hash')
+            or board.get('latest_session') != report.get('latest_session')
+            or any(reason in decision_engine.BLOCKERS for reason in decision_engine._codes(board.get('reasons')))
+            or not all(decision_engine._saved_candidate_valid(value,board,rank) for rank,value in enumerate(rows,1))):
+        return False
+    if len({value['symbol'] for value in rows}) != len(rows):
+        return False
+    if decision_engine._stable_identity(board['input_fingerprint'],board['source_audit_hash'],
+            board['latest_session'],rows,policy=decision_engine.POLICY_V2) != board.get('decision_id'):
+        return False
+    return any(value['symbol'] == row.get('symbol') and value['strategy_id'] == row.get('strategy_id') for value in rows)
+
+
 def _decision(status, report, row, now, decision, valid_until):
     wait = ('wait', '매수 근거가 최신 조건과 일치하지 않아 새 검출을 기다립니다.',
             '검출 갱신을 눌러 종목별 근거와 가격 계획을 다시 확인하세요.', 0.)
     scan = _mapping(report.get('opportunity_scan'))
+    v2 = scan.get('policy_version') == POLICY_V2
+    basis = BASIS_V2 if v2 else BASIS
     if status.get('state') not in {'ready', 'held'} or scan.get('status') != 'ready':
         return wait
     if 'proposal_window' in report:
@@ -51,20 +79,25 @@ def _decision(status, report, row, now, decision, valid_until):
         if now >= valid_until:
             return ('wait', '이 제안의 다음 거래일 진입 기간이 종료됐습니다.',
                     '새 장 마감 데이터에서 검출된 다음 제안을 확인하세요. 같은 데이터의 재검출로 기간은 연장되지 않습니다.', 0.)
-    if (scan.get('policy_version') != POLICY or scan.get('selection_basis') != BASIS
+    if (scan.get('policy_version') not in (POLICY, POLICY_V2) or scan.get('selection_basis') != basis
             or scan.get('latest_session') != report.get('latest_session')
             or scan.get('horizon_sessions') != 10 or scan.get('lookback_sessions') != 1260
             or scan.get('calibration_sessions') != 1008 or scan.get('confirmation_sessions') != 252
-            or row.get('strategy_id') not in SETUPS or row.get('setup_active') is not True):
+            or row.get('strategy_id') not in SETUPS or row.get('setup_active') is not True
+            or v2 and scan.get('recent_sessions') != 126):
         return wait
     evidence = _mapping(row.get('evidence'))
     calibration, confirmation = (_mapping(evidence.get(key)) for key in ('calibration', 'confirmation'))
-    if (evidence.get('selection_basis') != BASIS or evidence.get('retrospective') is not True
+    if (evidence.get('selection_basis') != basis or evidence.get('retrospective') is not True
             or evidence.get('independent_validation') is not False
             or not isinstance(evidence.get('stronger_evidence'), bool)
             or not _positive_phase(calibration, 30) or not _positive_phase(confirmation, 10)
             or calibration['end'] >= confirmation['start']
             or confirmation['end'] != report.get('latest_session')):
+        return wait
+    recent = _mapping(evidence.get('recent'))
+    if v2 and (not _positive_phase(recent, 5, recent=True) or recent['start'] < confirmation['start']
+               or recent['end'] != confirmation['end'] or not _selected_v2(report,row)):
         return wait
     if _blocked_source(report, row) or any('refresh_failed' in str(reason) for reason in scan.get('reasons', [])):
         return wait
@@ -87,7 +120,8 @@ def _decision(status, report, row, now, decision, valid_until):
             or _number(row.get('score')) is None
             or not math.isclose(row['score'], calibration['stress_mean_net_return'], rel_tol=1e-9, abs_tol=1e-10)):
         return wait
-    return ('buy', f"{SETUPS[row['strategy_id']]} 조건이 활성화됐습니다. 이 종목의 앞 기간 {calibration['samples']}건·뒤 기간 {confirmation['samples']}건에서 비용 2배 순손익도 양수인 탐색적 매수 제안입니다.",
+    detail = (f" 최근 126세션 {recent['samples']}건도 비용 2배 순손익이 양수입니다." if v2 else '')
+    return ('buy', f"{SETUPS[row['strategy_id']]} 조건이 활성화됐습니다. 이 종목의 앞 기간 {calibration['samples']}건·뒤 기간 {confirmation['samples']}건에서 비용 2배 순손익도 양수인 탐색적 매수 제안입니다."+detail,
             '다음 거래일 시가 진입을 제안합니다. 실제 시가로 ATR 손절·목표를 조정하고 제안 비중을 적용하세요. 최대 10거래일 계획입니다.', weight)
 
 
@@ -149,5 +183,6 @@ def present_opportunities(result, now):
     report['opportunity_summary'] = dict(action=action,
         headline=f"매수 제안 {counts['buy']}종목" if counts['buy'] else '새 매수 후보 검출 대기',
         reason='시총 상위 재무 우량주에서 종목별 진입 조건과 과거 순손익을 검사했습니다. 새로 탐색한 연구 제안이며 미래 수익률이나 통계적 우위 확정이 아닙니다.',
-        buy_count=counts['buy'], wait_count=counts['wait'], avoid_count=counts['avoid'], policy_version=POLICY)
+        buy_count=counts['buy'], wait_count=counts['wait'], avoid_count=counts['avoid'],
+        policy_version=POLICY_V2 if _mapping(report.get('opportunity_scan')).get('policy_version') == POLICY_V2 else POLICY)
     return result

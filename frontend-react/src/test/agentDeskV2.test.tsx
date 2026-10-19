@@ -61,6 +61,7 @@ describe('optional desk v2 boundary', () => {
     });
     it('rejects market checks reordered against their displayed candidates', () => {
         const board = deskBoard(); const desk = v2Desk();
+        if (board.policy_version !== 'profit-opportunity-v1') throw new Error('Expected legacy ranking fixture');
         board.candidates.push({ ...board.candidates[0], rank: 2, symbol: '000660', name: 'SK하이닉스', opportunity_id: '0'.repeat(64) });
         desk.candidates.push({ ...desk.candidates[0], symbol: '000660', name: 'SK하이닉스', opportunity_id: '0'.repeat(64) });
         desk.contract.market_checks.push({ ...desk.contract.market_checks[0], symbol: '000660', opportunity_id: '0'.repeat(64) });

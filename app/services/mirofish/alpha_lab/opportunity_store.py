@@ -16,6 +16,7 @@ from filelock import FileLock
 from . import store
 
 POLICY = 'profit-opportunity-v1'
+KNOWN_POLICIES = (POLICY, 'profit-opportunity-v2')
 CALENDAR_SOURCE = 'KIS:CTCA0903R'
 QUOTE_SOURCE = 'KIS:J:FHKST03010200+FHKST01010100'
 KST = timezone(timedelta(hours=9))
@@ -43,7 +44,7 @@ def _hex(value):
 
 def _binding(board):
     if (not isinstance(board, dict) or board.get('schema_version') != 1
-            or board.get('policy_version') != POLICY
+            or board.get('policy_version') not in KNOWN_POLICIES
             or any(not _hex(board.get(key)) for key in ('decision_id', 'input_fingerprint', 'source_audit_hash'))
             or _time(board.get('generated_at')) is None):
         raise ValueError('opportunity_identity')
@@ -59,7 +60,7 @@ def _binding(board):
 
 def _stable(board):
     # Display state and a later scan clock do not renew the first issued decision.
-    return dict(_binding(board), latest_session=board.get('latest_session'),
+    return dict(_binding(board), policy_version=board['policy_version'], latest_session=board.get('latest_session'),
         candidates=[{key: deepcopy(row.get(key)) for key in
             ('opportunity_id', 'symbol', 'strategy_id', 'rank', 'plan', 'ranking', 'kelly', 'reference_weight')}
             for row in board['candidates']])

@@ -17,6 +17,8 @@ from statistics import fmean, stdev
 from ..kelly_position import two_point_kelly
 
 POLICY = 'profit-opportunity-v1'
+POLICY_V2 = 'profit-opportunity-v2'
+KNOWN_POLICIES = (POLICY, POLICY_V2)
 KST = timezone(timedelta(hours=9))
 CALENDAR_SOURCE = 'KIS:CTCA0903R'
 QUOTE_SOURCE = 'KIS:J:FHKST03010200+FHKST01010100'
@@ -32,6 +34,7 @@ CANDIDATE_KEYS = ('opportunity_id', 'decision_id', 'input_fingerprint', 'source_
 PLAN_KEYS = ('basis','entry_low','entry_high','stop_price','target_price','horizon_sessions')
 RANKING_KEYS = ('stress_mean_net_return','standard_error','conservative_score','correlation_penalty',
                 'score','calibration_samples','confirmation_samples')
+RECENT_RANKING_KEYS = ('recent_stress_mean_net_return', 'recent_samples')
 KELLY_KEYS = ('raw_fraction','fraction','cap','account_risk_cap')
 BLOCKERS = {'opportunity_engine_unavailable','opportunity_store_recovered','opportunity_store_unavailable',
             'entry_window_changed','source_identity_mismatch','source_stale_or_future','source_unavailable',
@@ -129,19 +132,23 @@ def _public_alternatives(value):
     return rows
 
 
-def _stable_identity(fingerprint, audit_hash, latest, candidates):
+def _stable_identity(fingerprint, audit_hash, latest, candidates, *, policy=POLICY):
+    if policy not in KNOWN_POLICIES:
+        raise ValueError('opportunity_policy')
     rows = []
     for row in candidates:
         value = {key:row[key] for key in ('symbol','strategy_id','rank','reference_weight')}
         for key,keys in (('plan',PLAN_KEYS),('ranking',RANKING_KEYS),('kelly',KELLY_KEYS)):
             value[key] = {name:row[key][name] for name in keys}
+        if policy == POLICY_V2:
+            value['ranking'].update({name:row['ranking'][name] for name in RECENT_RANKING_KEYS})
         rows.append(value)
-    return _hash(dict(policy_version=POLICY,input_fingerprint=fingerprint,source_audit_hash=audit_hash,
+    return _hash(dict(policy_version=policy,input_fingerprint=fingerprint,source_audit_hash=audit_hash,
                       latest_session=latest,candidates=rows))
 
 
 def _saved_candidate_valid(row, board, rank):
-    if not isinstance(row,dict):
+    if not isinstance(row,dict) or board.get('policy_version') not in KNOWN_POLICIES:
         return False
     symbol = row.get('symbol')
     if (not isinstance(symbol,str) or re.fullmatch('[0-9]{6}',symbol) is None or symbol == '000000'
@@ -164,8 +171,17 @@ def _saved_candidate_valid(row, board, rank):
             or audit.get('status') != 'passed' or audit.get('independent_validation') is not False):
         return False
     mean,error,conservative,penalty,score = [_number(ranking.get(key)) for key in RANKING_KEYS[:5]]
+    expected_score = mean-1.96*error if mean is not None and error is not None else None
+    if board.get('policy_version') == POLICY_V2:
+        recent = _number(ranking.get('recent_stress_mean_net_return'))
+        samples = ranking.get('recent_samples')
+        if (recent is None or recent <= 0 or isinstance(samples,bool) or not isinstance(samples,int)
+                or not 5 <= samples <= 5000 or expected_score is None or conservative is None
+                or conservative <= 0 or score is None or score <= 0):
+            return False
+        expected_score = min(expected_score,recent)
     if (None in (mean,error,conservative,penalty,score) or mean <= 0 or error < 0 or not 0 <= penalty <= .01+1e-10
-            or not math.isclose(conservative,mean-1.96*error,rel_tol=1e-9,abs_tol=1e-10)
+            or not math.isclose(conservative,expected_score,rel_tol=1e-9,abs_tol=1e-10)
             or not math.isclose(score,conservative-penalty,rel_tol=1e-9,abs_tol=1e-10)):
         return False
     for key,minimum in (('calibration_samples',30),('confirmation_samples',10)):
@@ -175,10 +191,12 @@ def _saved_candidate_valid(row, board, rank):
     return True
 
 
-def _public_candidate(row):
+def _public_candidate(row, *, policy=POLICY):
     result = {key:deepcopy(row[key]) for key in CANDIDATE_KEYS if key in row}
     for key,keys in (('plan',PLAN_KEYS),('ranking',RANKING_KEYS),('kelly',KELLY_KEYS)):
         result[key] = {name:deepcopy(row[key][name]) for name in keys}
+    if policy == POLICY_V2:
+        result['ranking'].update({name:row['ranking'][name] for name in RECENT_RANKING_KEYS})
     result['audit'] = dict(status=row['audit']['status'],reasons=_codes(row['audit'].get('reasons')),independent_validation=False)
     result['reasons'] = _codes(row.get('reasons'))
     action = result.get('action')
@@ -217,7 +235,7 @@ def _source_reasons(report, latest, origin, current):
     return reasons
 
 
-def _phase(value, minimum, latest):
+def _phase(value, minimum, latest, *, recent=False):
     """Recompute qualified completed outcomes, never trust descriptive means."""
     value = _mapping(value)
     summary, trades = _mapping(value.get('summary')), value.get('trades')
@@ -232,12 +250,12 @@ def _phase(value, minimum, latest):
         signal, entry, exit_day = (_day(trade.get(key)) for key in ('signal_date','entry_date','exit_date'))
         normal, doubled = _number(trade.get('net_return')), _number(trade.get('stress_net_return'))
         if (trade.get('status') != 'closed' or None in (signal,entry,exit_day,normal,doubled)
-                or not start <= signal < entry <= exit_day <= end
+                or not signal < entry <= exit_day <= end or (entry if recent else signal) < start
                 or previous is not None and entry <= previous or min(normal,doubled) <= -1
                 or doubled > normal+1e-10):
             return None
         net.append(normal); stress.append(doubled); previous = exit_day
-    if (not any(v > 0 for v in net) or not any(v < 0 for v in net)
+    if ((not recent and (not any(v > 0 for v in net) or not any(v < 0 for v in net)))
             or fmean(net) <= 0 or fmean(stress) <= 0
             or sum(math.log1p(v) for v in net) <= 0 or sum(math.log1p(v) for v in stress) <= 0):
         return None
@@ -316,14 +334,27 @@ def _action(row, action, reason, *, detail=None):
 
 def build_opportunity_board(discovery, prices_by_symbol, report, *, now=None):
     """Rank every qualified survivor on causal calibration evidence only."""
+    return _build_opportunity_board(discovery, prices_by_symbol, report, now=now, policy=POLICY)
+
+
+def build_opportunity_board_v2(discovery, prices_by_symbol, report, *, now=None):
+    """Require recent costed evidence and strictly positive adjusted rankings."""
+    return _build_opportunity_board(discovery, prices_by_symbol, report, now=now, policy=POLICY_V2)
+
+
+def _build_opportunity_board(discovery, prices_by_symbol, report, *, now, policy):
+    v2 = policy == POLICY_V2
     current = _now(now)
     discovery, report, prices_by_symbol = map(_mapping,(discovery,report,prices_by_symbol))
     latest = _day(discovery.get('latest_session'))
     origin = _timestamp(report.get('decision_at'))
     reasons = _source_reasons(report,latest,origin,current)
-    if (discovery.get('policy_version') != 'quality-setup-opportunity-v1'
-            or discovery.get('selection_basis') != 'calibration_stress_mean_then_confirmation'
-            or discovery.get('horizon_sessions') != 10 or discovery.get('cost_stress_multiplier') != 2.):
+    expected_discovery = 'quality-setup-opportunity-v2' if v2 else 'quality-setup-opportunity-v1'
+    expected_basis = 'causal_recovery_recent_stress_then_confirmation' if v2 else 'calibration_stress_mean_then_confirmation'
+    if (discovery.get('policy_version') != expected_discovery
+            or discovery.get('selection_basis') != expected_basis
+            or discovery.get('horizon_sessions') != 10 or discovery.get('cost_stress_multiplier') != 2.
+            or v2 and discovery.get('recent_sessions') != 126):
         reasons.append('discovery_policy_mismatch')
     audit_rows = discovery.get('audit') if isinstance(discovery.get('audit'),list) else []
     audits = {}
@@ -344,6 +375,7 @@ def build_opportunity_board(discovery, prices_by_symbol, report, *, now=None):
         evidence, audit = _mapping(raw.get('evidence')), _mapping(audits.get((symbol,strategy)))
         cal = _phase(audit.get('calibration'),30,latest) if latest else None
         conf = _phase(audit.get('confirmation'),10,latest) if latest else None
+        recent = _phase(audit.get('recent'),5,latest,recent=True) if v2 and latest else None
         plan = _valid_plan(raw)
         returns, close = _price_returns(prices_by_symbol.get(symbol),symbol,latest) if latest else ({},None)
         if (cal is None or conf is None or cal['end'] >= conf['start'] or conf['end'] != latest
@@ -352,6 +384,13 @@ def build_opportunity_board(discovery, prices_by_symbol, report, *, now=None):
                 or close is None or not math.isclose(close,raw['last_close'],rel_tol=1e-9)):
             rejected.append(dict(symbol=symbol,name=name,strategy_id=strategy,score=None,reason='evidence_or_plan_unavailable'))
             continue
+        if v2 and (recent is None or recent['end'] != latest or recent['start'] < conf['start']
+                   or recent['start'] != discovery.get('recent_start_session')
+                   or evidence.get('selection_basis') != expected_basis
+                   or audit['recent']['trades'] != [trade for trade in audit['confirmation']['trades']
+                                                  if trade['entry_date'] >= recent['start']]):
+            rejected.append(dict(symbol=symbol,name=name,strategy_id=strategy,score=None,reason='recent_evidence_unavailable'))
+            continue
         diagnostic = two_point_kelly(cal['net'])
         fraction = _number(diagnostic.get('raw_fraction'))
         if diagnostic.get('status') != 'ready' or fraction is None or fraction <= 0:
@@ -359,7 +398,12 @@ def build_opportunity_board(discovery, prices_by_symbol, report, *, now=None):
             continue
         mean, error = fmean(cal['stress']),stdev(cal['stress'])/math.sqrt(len(cal['stress']))
         score = mean-1.96*error
+        if v2:
+            score = min(score,fmean(recent['stress']))
         if not math.isfinite(score):
+            continue
+        if v2 and score <= 0:
+            rejected.append(dict(symbol=symbol,name=name,strategy_id=strategy,score=score,reason='uncertainty_adjusted_score_nonpositive'))
             continue
         row_reasons = ['retrospective_challenger_not_independent_validation', 'research_reference_not_order_approval',
                        'current_cohort_and_source_vintage_limitations']
@@ -380,6 +424,10 @@ def build_opportunity_board(discovery, prices_by_symbol, report, *, now=None):
             audit=dict(status='passed',reasons=['screened_correlated_outcomes_not_nominal_confidence_interval',
                 *(['uncertainty_adjusted_score_nonpositive'] if score <= 0 else [])],independent_validation=False),
             reasons=row_reasons,_returns=returns))
+        if v2:
+            survivors[-1]['ranking'].update(recent_stress_mean_net_return=fmean(recent['stress']),recent_samples=len(recent['net']))
+            survivors[-1]['why_stock'] = (f"{SETUPS[strategy]} 회복·추세 조건 · 앞 구간 {len(cal['net'])}건, 확인 구간 {len(conf['net'])}건, "
+                f"최근 126세션 {len(recent['net'])}건의 비용 2배 순수익과 불확실성 차감 점수가 양수입니다. 과거 선별 결과이며 미래 수익 우위는 검증되지 않았습니다.")
     remaining, selected = list(survivors), []
     while remaining and len(selected) < 3:
         for row in remaining:
@@ -389,6 +437,10 @@ def build_opportunity_board(discovery, prices_by_symbol, report, *, now=None):
             row['_unknown'] = unknown
         remaining.sort(key=lambda row:(-row['ranking']['score'],row['symbol']))
         row = remaining.pop(0)
+        if v2 and row['ranking']['score'] <= 0:
+            rejected.append(dict(symbol=row['symbol'],name=row['name'],strategy_id=row['strategy_id'],
+                                 score=row['ranking']['score'],reason='diversification_adjusted_score_nonpositive'))
+            continue
         row['rank'] = len(selected)+1
         if row['_unknown']:
             row['reasons'].append('correlation_unavailable')
@@ -400,7 +452,7 @@ def build_opportunity_board(discovery, prices_by_symbol, report, *, now=None):
         _action(row,'data_check','entry_window_unavailable')
     fingerprint = report.get('input_fingerprint','')
     audit_hash = _mapping(report.get('opportunity_scan')).get('audit_hash','')
-    identity = _stable_identity(fingerprint,audit_hash,latest,selected)
+    identity = _stable_identity(fingerprint,audit_hash,latest,selected,policy=policy)
     for row in selected:
         row['decision_id'] = identity
         row['opportunity_id'] = _hash(dict(decision_id=identity,symbol=row['symbol'],strategy_id=row['strategy_id']))
@@ -412,7 +464,9 @@ def build_opportunity_board(discovery, prices_by_symbol, report, *, now=None):
         dict(id='diversification',status='passed' if selected else 'unavailable',detail='관측 가능한 과거 일간 수익 상관 페널티 · 미확인은 별도 표시',count=len(selected)),
         dict(id='risk',status='passed' if selected else 'held',detail='1/4 켈리 참고 · 종목 5%와 계획 손실 1% 상한',count=len(selected)),
         dict(id='entry',status='held',detail='공식 거래일과 저장된 당일 새 시세 확인 대기',count=0)]
-    return dict(schema_version=1,policy_version=POLICY,decision_id=identity,input_fingerprint=fingerprint,source_audit_hash=audit_hash,
+    if v2:
+        stages[2]['detail'] = '최근 126세션 비용 2배 순수익 · 불확실성 차감과 상관 조정 후 점수 양수만 선정'
+    return dict(schema_version=1,policy_version=policy,decision_id=identity,input_fingerprint=fingerprint,source_audit_hash=audit_hash,
         generated_at=_stamp(origin or current),latest_session=latest,entry_session=None,valid_until=None,status='held',
         research_only=True,live_orders=False,coverage=dict(inspected=int(discovery.get('inspected_count',len(prices_by_symbol))),
         eligible=len(survivors),selected=len(selected)),candidates=selected,alternatives=(alternatives+rejected)[:10],
@@ -486,7 +540,7 @@ def project_opportunity_board(status, *, now=None, quote_snapshot=None):
     if not raw:
         return result
     current = _now(now)
-    if (raw.get('schema_version') != 1 or raw.get('policy_version') != POLICY
+    if (raw.get('schema_version') != 1 or raw.get('policy_version') not in KNOWN_POLICIES
             or not all(_hash_valid(raw.get(key)) for key in ('decision_id','input_fingerprint','source_audit_hash'))
             or not isinstance(raw.get('candidates'),list) or len(raw['candidates']) > 3):
         result.pop('opportunity_engine',None)
@@ -501,8 +555,8 @@ def project_opportunity_board(status, *, now=None, quote_snapshot=None):
     valid_rows = all(_saved_candidate_valid(row,raw,i+1) for i,row in enumerate(raw['candidates']))
     valid_rows = valid_rows and len({row['symbol'] for row in raw['candidates']}) == len(raw['candidates'])
     if valid_rows:
-        valid_rows = _stable_identity(raw['input_fingerprint'],raw['source_audit_hash'],raw.get('latest_session'),raw['candidates']) == raw['decision_id']
-    board['candidates'] = [_public_candidate(row) for row in raw['candidates']] if valid_rows else []
+        valid_rows = _stable_identity(raw['input_fingerprint'],raw['source_audit_hash'],raw.get('latest_session'),raw['candidates'],policy=raw['policy_version']) == raw['decision_id']
+    board['candidates'] = [_public_candidate(row,policy=raw['policy_version']) for row in raw['candidates']] if valid_rows else []
     board['coverage'] = {key:value for key in ('inspected','eligible','selected')
         if isinstance((value:=_mapping(raw.get('coverage')).get(key)),int) and not isinstance(value,bool) and 0 <= value <= 100}
     if len(board['coverage']) != 3:

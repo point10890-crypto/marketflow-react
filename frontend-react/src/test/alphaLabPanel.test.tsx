@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AlphaLabPanel from '@/components/aibain/AlphaLabPanel';
 import { fetchAlphaLab, startAlphaLab, validateAlphaLabStatus, type AlphaLabStatus } from '@/lib/alphaLabApi';
+import { evolutionBoardFixture, evolutionFixture, evolutionIdentity } from './fixtures/evolutionFixture';
 
 const api = vi.hoisted(() => ({ fetchAuthAPI: vi.fn(), postAuthAPI: vi.fn() }));
 vi.mock('@/lib/api', () => api);
@@ -95,6 +96,32 @@ function contextualOpportunity() {
         })),
     } };
 }
+function opportunityV2() {
+    const value = opportunity();
+    return { ...value, report: { ...value.report,
+        opportunity_scan: { ...value.report.opportunity_scan, policy_version: 'quality-setup-opportunity-v2',
+            selection_basis: 'causal_recovery_recent_stress_then_confirmation', recent_sessions: 126, recent_minimum_completed: 5 },
+        opportunity_summary: { ...value.report.opportunity_summary, policy_version: 'quality-setup-opportunity-v2' },
+        buy_candidates: value.report.buy_candidates.map(row => ({ ...row, evidence: { ...row.evidence,
+            selection_basis: 'causal_recovery_recent_stress_then_confirmation',
+            recent: { ...row.evidence.confirmation, samples: 5, wins: 3, losses: 2, start: '2026-04-01' } } })),
+        detection_validation: { policy_version: 'alpha-detection-comparison-v2', status: 'collecting',
+            declared_at: '2026-10-04T00:00:00Z', earliest_session: '2026-10-05', decision_sessions: 60,
+            enrolled_sessions: 0, maturation_sessions: 10, approved_exposure: 0, live_orders: false },
+    } };
+}
+function v2WithLegacyEvolution() {
+    const value = opportunityV2();
+    const current = { decision_id: '4'.repeat(64), input_fingerprint: '5'.repeat(64), source_audit_hash: '6'.repeat(64) };
+    const evolution = evolutionFixture();
+    evolution.generated_at = '2026-10-04T00:40:00Z'; evolution.declared_at = '2026-10-04T00:00:00Z';
+    return { ...value, report: { ...value.report, input_fingerprint: current.input_fingerprint,
+        opportunity_scan: { ...value.report.opportunity_scan, audit_hash: current.source_audit_hash },
+        evolution_control_binding: { ...evolutionIdentity } }, evolution,
+        opportunity_engine: { ...evolutionBoardFixture(), ...current, policy_version: 'profit-opportunity-v2',
+            generated_at: value.report.decision_at!, latest_session: value.report.latest_session!,
+            entry_session: '2026-10-05', valid_until: '2026-10-05T06:30:00Z' } };
+}
 const monitorNow = '2026-10-05T00:05:00Z';
 function monitoredOpportunity() {
     const value = contextualOpportunity(); const audit = 'b'.repeat(64);
@@ -128,7 +155,126 @@ beforeEach(() => { api.fetchAuthAPI.mockReset(); api.postAuthAPI.mockReset(); vi
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
 const openOriginal = () => fireEvent.click(screen.getByText('기존 실험 후보 · 제외 근거'));
 
+describe('detection v2 member desk', () => {
+    it('renders original control selections and negative metrics beside the active v2 desk', async () => {
+        api.fetchAuthAPI.mockResolvedValue(v2WithLegacyEvolution());
+        render(<AlphaLabPanel desk />);
+        const evolution = await screen.findByRole('region', { name: '알파 진화 관측' });
+        const control = within(evolution).getByRole('article', { name: '기존 선정 · 대조군' });
+        expect(control).toHaveTextContent('대응 순평균-1.00%');
+        expect(control).toHaveTextContent('비용 2배 순평균-1.40%');
+        expect(within(control).getByRole('link', { name: '삼성전자 005930 상세 분석' })).toBeVisible();
+        expect(evolution).not.toHaveTextContent('현재 선정 연결 보류');
+        expect(screen.getByText('검출 2.0 · 회복·상대강도·최근 반기 검증')).toBeVisible();
+        expect(evolution).toHaveTextContent('승인 노출 0 · 주문 실행 없음');
+    });
+    it('keeps foreign control performance hidden on render when no explicit binding exists', async () => {
+        const value: any = v2WithLegacyEvolution(); delete value.report.evolution_control_binding;
+        api.fetchAuthAPI.mockResolvedValue(value); render(<AlphaLabPanel desk />);
+        const evolution = await screen.findByRole('region', { name: '알파 진화 관측' });
+        expect(evolution).toHaveTextContent('현재 선정 연결 보류');
+        expect(evolution).not.toHaveTextContent('-1.00%');
+        expect(within(evolution).queryByRole('link', { name: '삼성전자 005930 상세 분석' })).not.toBeInTheDocument();
+    });
+    it('describes a filled decision window as waiting for outcome maturity', async () => {
+        const value = opportunityV2();
+        value.report.detection_validation.status = 'window_complete'; value.report.detection_validation.enrolled_sessions = 60;
+        api.fetchAuthAPI.mockResolvedValue(value); render(<AlphaLabPanel desk />);
+        expect(await screen.findByText('60개 결정 등록 완료 · 결과 성숙 대기')).toBeVisible();
+        expect(screen.queryByText('전향 검증 창 완료 · 승인 보류')).not.toBeInTheDocument();
+    });
+    it('shows the recovery policy and separate collecting window without account approval', async () => {
+        api.fetchAuthAPI.mockResolvedValue(opportunityV2());
+        render(<AlphaLabPanel desk />);
+        expect(await screen.findByText('검출 2.0 · 회복·상대강도·최근 반기 검증')).toBeVisible();
+        expect(screen.getByText('전향 검증 수집 중')).toBeVisible();
+        expect(screen.getByText(/새 결정 0\/60거래일 · 성숙 대기 10거래일/)).toBeVisible();
+        expect(screen.queryByRole('button', { name: '매수 후보 검출' })).not.toBeInTheDocument();
+        expect(api.postAuthAPI).not.toHaveBeenCalled();
+    });
+    it('does not label retained legacy research as detection v2', async () => {
+        api.fetchAuthAPI.mockResolvedValue(opportunity()); render(<AlphaLabPanel desk />);
+        await screen.findByText(/저장된 유력 종목 후보가 없습니다/);
+        expect(screen.queryByText('검출 2.0 · 회복·상대강도·최근 반기 검증')).not.toBeInTheDocument();
+    });
+});
+
 describe('AlphaLab evidence boundary', () => {
+    it('binds the original immutable evolution control explicitly without rebinding the active v2 board', () => {
+        const value = v2WithLegacyEvolution(); const original = structuredClone(value);
+        const result = validateAlphaLabStatus(value);
+        expect(result.evolution?.binding_status).toBe('current');
+        expect(result.evolution?.arms[0].metrics.mean_net_return).toBe(-.01);
+        expect(result.evolution?.binding).toEqual(evolutionIdentity);
+        expect(result.opportunity_engine?.decision_id).toBe('4'.repeat(64));
+        expect(result.opportunity_engine?.policy_version).toBe('profit-opportunity-v2');
+        expect(value).toEqual(original);
+    });
+    it('never infers a cross-policy control identity from the raw evolution payload', () => {
+        const value: any = v2WithLegacyEvolution(); delete value.report.evolution_control_binding;
+        const result = validateAlphaLabStatus(value);
+        expect(result.evolution?.binding_status).toBe('mismatch');
+        expect(result.evolution?.arms[0].metrics.mean_net_return).toBeNull();
+    });
+    it.each(['decision_id', 'input_fingerprint', 'source_audit_hash'])('holds evolution when explicit control %s differs', key => {
+        const value: any = v2WithLegacyEvolution(); value.report.evolution_control_binding[key] = '7'.repeat(64);
+        const result = validateAlphaLabStatus(value);
+        expect(result.evolution?.binding_status).toBe('mismatch');
+        expect(result.evolution?.arms[0].metrics.mean_net_return).toBeNull();
+        expect(result.evolution?.live_orders).toBe(false);
+    });
+    it.each([
+        ['missing hash', (v: any) => { delete v.report.evolution_control_binding.source_audit_hash; }],
+        ['invalid hash', (v: any) => { v.report.evolution_control_binding.decision_id = 'old'; }],
+        ['unknown key', (v: any) => { v.report.evolution_control_binding.policy_version = 'profit-opportunity-v1'; }],
+        ['null binding', (v: any) => { v.report.evolution_control_binding = null; }],
+        ['legacy report', (v: any) => { Object.assign(v.report, opportunity().report); v.opportunity_engine.policy_version = 'profit-opportunity-v1'; }],
+        ['missing current board', (v: any) => { delete v.opportunity_engine; }],
+    ])('rejects malformed or non-v2 explicit evolution control: %s', (_, change) => {
+        const value = v2WithLegacyEvolution(); change(value);
+        expect(() => validateAlphaLabStatus(value)).toThrow(/응답 형식/);
+    });
+    it('accepts only the matching v2 recovery policy with a positive recent summary', () => {
+        const result = validateAlphaLabStatus(opportunityV2());
+        expect(result.report?.buy_candidates?.[0].proposal?.action).toBe('buy');
+        expect(result.report?.opportunity_scan?.policy_version).toBe('quality-setup-opportunity-v2');
+    });
+    it('accepts a recent all-winning window without fabricating a loss', () => {
+        const value = opportunityV2();
+        Object.assign(value.report.buy_candidates[0].evidence.recent, { wins: 5, losses: 0, win_rate: 1 });
+        expect(validateAlphaLabStatus(value).report?.buy_candidates).toHaveLength(3);
+    });
+    it.each([
+        ['legacy scan basis', (r: any) => { r.opportunity_scan.selection_basis = 'calibration_stress_mean_then_confirmation'; }],
+        ['legacy row basis', (r: any) => { r.buy_candidates[0].evidence.selection_basis = 'calibration_stress_mean_then_confirmation'; }],
+        ['legacy summary', (r: any) => { r.opportunity_summary.policy_version = 'quality-setup-opportunity-v1'; }],
+        ['unknown policy', (r: any) => { r.opportunity_scan.policy_version = 'quality-setup-opportunity-v3'; }],
+        ['missing recent', (r: any) => { delete r.buy_candidates[0].evidence.recent; }],
+        ['private phase instead of summary', (r: any) => { r.buy_candidates[0].evidence.recent = { summary: r.buy_candidates[0].evidence.recent, trades: [] }; }],
+        ['short recent', (r: any) => { Object.assign(r.buy_candidates[0].evidence.recent, { samples: 4, wins: 3, losses: 1, win_rate: .75 }); }],
+        ['nonpositive recent net mean', (r: any) => { r.buy_candidates[0].evidence.recent.mean_net_return = 0; }],
+        ['negative recent stress mean', (r: any) => { r.buy_candidates[0].evidence.recent.stress_mean_net_return = -.01; }],
+        ['nonpositive recent compound', (r: any) => { r.buy_candidates[0].evidence.recent.compounded_trade_return = 0; }],
+        ['negative recent stress compound', (r: any) => { r.buy_candidates[0].evidence.recent.stress_compounded_trade_return = -.01; }],
+        ['recent before confirmation', (r: any) => { r.buy_candidates[0].evidence.recent.start = '2025-09-30'; }],
+        ['different recent end', (r: any) => { Object.assign(r.buy_candidates[0].evidence.recent, { end: '2026-10-01', last_exit_session: '2026-10-01' }); }],
+        ['wrong recent window', (r: any) => { r.opportunity_scan.recent_sessions = 63; }],
+        ['live exposure', (r: any) => { r.detection_validation.approved_exposure = .01; }],
+        ['live orders', (r: any) => { r.detection_validation.live_orders = true; }],
+        ['unknown comparison policy', (r: any) => { r.detection_validation.policy_version = 'alpha-detection-comparison-v3'; }],
+        ['invalid comparison count', (r: any) => { r.detection_validation.enrolled_sessions = 61; }],
+    ])('rejects a v2 boundary mismatch: %s', (_, mutate) => {
+        const value = opportunityV2(); mutate(value.report);
+        expect(() => validateAlphaLabStatus(value)).toThrow(/응답 형식/);
+    });
+    it('rejects recent v2 evidence attached to a legacy policy', () => {
+        const value = opportunityV2();
+        value.report.opportunity_scan.policy_version = 'quality-setup-opportunity-v1';
+        value.report.opportunity_scan.selection_basis = 'calibration_stress_mean_then_confirmation';
+        value.report.opportunity_summary.policy_version = 'quality-setup-opportunity-v1';
+        value.report.buy_candidates.forEach(row => { row.evidence.selection_basis = 'calibration_stress_mean_then_confirmation'; });
+        expect(() => validateAlphaLabStatus(value)).toThrow(/응답 형식/);
+    });
     it('rejects malformed optional operations even for a structurally valid legacy-expiry report', () => {
         vi.mocked(Date.now).mockReturnValue(Date.parse(monitorNow)); const input = monitoredOpportunity();
         Reflect.deleteProperty(input.report, 'proposal_window');

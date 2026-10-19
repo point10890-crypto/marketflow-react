@@ -72,7 +72,7 @@ def _summarize(trades, start, end):
         t_stat=mean/(deviation/math.sqrt(n)) if deviation > 0 else None)
 
 
-def _collect_phase(rows, strategy, start, end, *, calendar, global_index, cache, policy):
+def _collect_phase(rows, strategy, start, end, *, calendar, global_index, cache, policy, setup_predicate=None):
     # Physical truncation prevents even excluded/open-label diagnostics from
     # reading the later phase. Each phase starts flat with causal warmup only.
     observed = [row for row in rows if row['date'] <= end]
@@ -85,6 +85,12 @@ def _collect_phase(rows, strategy, start, end, *, calendar, global_index, cache,
         bar = observed[index]
         values = _features(observed, index, calendar, global_index, cache, diagnostics)
         if values is None or bar['volume'] <= 0 or not _active_setup(strategy, values):
+            index += 1
+            continue
+        # A versioned policy may narrow the historical signal prefix. None
+        # deliberately preserves the frozen v1 control's labels and output.
+        if setup_predicate is not None and not setup_predicate(observed, index, strategy, values):
+            diagnostics['policy_setup_gate_rejected'] += 1
             index += 1
             continue
         global_at = global_index[bar['date']]
