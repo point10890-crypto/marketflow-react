@@ -11,7 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 
-def main(argv=None, *, provider=None, monitor_module=None, now=None):
+def main(argv=None, *, provider=None, monitor_module=None, candidate_monitor_module=None, now=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('mode', choices=('prime', 'tick', 'calendar-check'))
     parser.add_argument('--root', type=Path, default=Path(os.environ.get('MARKETFLOW_ALPHA_LAB_ROOT', REPO_ROOT/'data/alpha_lab')))
@@ -32,9 +32,25 @@ def main(argv=None, *, provider=None, monitor_module=None, now=None):
             return 0 if opened is True else 10 if opened is False else 2
         result = monitor_module.run_monitor(args.root, provider, now=now)
         cadence, monitoring = result.get('cadence', {}), result.get('monitoring', {})
-        print(json.dumps(dict(mode=args.mode, market_state=cadence.get('market_state'),
-                              calendar_status=cadence.get('calendar_status'), monitor_status=monitoring.get('status'))))
-        return 2 if cadence.get('calendar_status') in ('failed', 'held') or monitoring.get('status') == 'failed' else 0
+        summary = dict(mode=args.mode, market_state=cadence.get('market_state'),
+                       calendar_status=cadence.get('calendar_status'), monitor_status=monitoring.get('status'))
+        candidate_failed = False
+        if (args.root/'candidate-desk'/'current.json').is_file():
+            try:
+                if candidate_monitor_module is None:
+                    from app.services.mirofish.alpha_lab import candidate_monitor as candidate_monitor_module
+                candidate = candidate_monitor_module.tick(args.root, provider, now=now)
+                state = candidate.get('state')
+                if state not in ('waiting', 'closed', 'monitoring', 'held', 'failed', 'stale', 'unavailable'):
+                    state = 'unavailable'
+                summary['candidate_monitor_state'] = state
+                candidate_failed = state in ('failed', 'unavailable')
+            except Exception:
+                summary['candidate_monitor_state'] = 'unavailable'
+                candidate_failed = True
+        print(json.dumps(summary))
+        return 2 if (cadence.get('calendar_status') in ('failed', 'held')
+                     or monitoring.get('status') == 'failed' or candidate_failed) else 0
     except Exception:
         print(json.dumps(dict(mode=args.mode, error='monitor_unavailable')))
         return 2

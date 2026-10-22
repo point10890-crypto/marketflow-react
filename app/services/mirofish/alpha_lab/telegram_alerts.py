@@ -288,7 +288,7 @@ def _send(post, token, chat_id, bot, message, current, attempts, *, realtime=Fal
         return 'uncertain', None, None, received
 
 
-def deliver_latest(root, now=None, enabled=None, request_get=None, request_post=None):
+def deliver_latest(root, now=None, enabled=None, request_get=None, request_post=None, *, prepare=None):
     """Send only the current sealed decision; return a sanitized six-field status.
 
     Default-off via ALPHA_LAB_TELEGRAM_ENABLED. An explicitly authorized one-time
@@ -299,7 +299,8 @@ def deliver_latest(root, now=None, enabled=None, request_get=None, request_post=
         current = decision_engine._now(now)
     except (ValueError, TypeError):
         return _result('invalid_saved_decision')
-    preview, message = _prepare(root, current)
+    prepare = prepare or _prepare
+    preview, message = prepare(root, current)
     active = (os.getenv('ALPHA_LAB_TELEGRAM_ENABLED', 'false').strip().lower() == 'true'
               if enabled is None else enabled is True)
     if not active:
@@ -321,7 +322,7 @@ def deliver_latest(root, now=None, enabled=None, request_get=None, request_post=
             # waited; re-read the saved current decision before any network IO.
             if now is None:
                 current = decision_engine._now(None)
-            latest, latest_message = _prepare(root, current)
+            latest, latest_message = prepare(root, current)
             if latest_message is None:
                 return latest
             if latest['decision_id'] != preview['decision_id'] or latest['digest'] != preview['digest']:
@@ -344,7 +345,7 @@ def deliver_latest(root, now=None, enabled=None, request_get=None, request_post=
             # and receipt comparison; explicitly injected clocks remain fixed.
             if now is None:
                 current = decision_engine._now(None)
-            latest, latest_message = _prepare(root, current)
+            latest, latest_message = prepare(root, current)
             if latest_message is None:
                 return latest
             if latest['decision_id'] != preview['decision_id'] or latest['digest'] != preview['digest']:

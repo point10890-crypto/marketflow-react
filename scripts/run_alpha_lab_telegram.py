@@ -30,7 +30,7 @@ def main(argv=None, *, notifications=None):
     args = parser.parse_args(argv)
     try:
         if notifications is None:
-            from app.services.mirofish.alpha_lab import telegram_alerts as notifications
+            from app.services.mirofish.alpha_lab import candidate_alerts as notifications
         result = (notifications.deliver_latest(args.root, enabled=True if args.send else None)
                   if args.send or args.automatic else notifications.preview_latest(args.root))
         public = {key: value for key, value in result.items() if key in PUBLIC_KEYS}
