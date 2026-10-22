@@ -98,8 +98,11 @@ def _metadata_dirs(root: Path) -> tuple[Path, Path]:
 def _packed_sha(common: Path, wanted: str) -> str:
     found = None
     can_peel = False
-    for line in _read(common / "packed-refs", common, _PACKED_LIMIT).splitlines():
-        if not line or line.startswith("#"):
+    for raw_line in _read(common / "packed-refs", common, _PACKED_LIMIT).splitlines(keepends=True):
+        if raw_line in ("\n", "\r\n"):
+            continue
+        line = _line(raw_line)
+        if line.startswith("#"):
             continue
         if len(line) > _SMALL_LIMIT:
             raise ValueError("oversize packed reference")

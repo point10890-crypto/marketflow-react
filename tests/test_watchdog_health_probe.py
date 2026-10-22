@@ -15,6 +15,9 @@ ROOT = Path(__file__).resolve().parents[1]
 PROBE = ROOT / 'scripts' / 'health_probe.py'
 SUPERVISOR = ROOT / 'scripts' / 'health_probe.ps1'
 PS51 = Path(r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe')
+CONTROL_PYTHON = Path(getattr(sys, '_base_executable', sys.executable))
+if not CONTROL_PYTHON.is_file():
+    CONTROL_PYTHON = Path(sys.executable)
 
 
 @pytest.fixture
@@ -145,7 +148,7 @@ def test_supervisor_kills_hung_or_lying_child_without_stopping_other_process(tmp
     fake.write_text('import subprocess,sys\n'
                     f'child=subprocess.Popen([sys.executable,"-c",{worker_code!r}])\n'
                     'print(\'{"healthy":true,"status":200,"reason":"healthy"}\',flush=True)\nchild.wait()\n', encoding='utf-8')
-    unrelated = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(30)'])
+    unrelated = subprocess.Popen([str(CONTROL_PYTHON), '-c', 'import time; time.sleep(30)'])
     try:
         body = ps_json(f"""
             . {quote(SUPERVISOR)}
@@ -166,3 +169,116 @@ def test_supervisor_kills_hung_or_lying_child_without_stopping_other_process(tmp
             subprocess.run(['taskkill.exe', '/PID', worker_pid.read_text().strip(), '/T', '/F'], capture_output=True, timeout=3)
         unrelated.kill()
         unrelated.wait(timeout=3)
+
+
+@pytest.mark.skipif(not PS51.exists(), reason='Windows PowerShell 5.1 runtime')
+def test_supervisor_reaps_descendant_even_when_its_parent_already_exited(tmp_path):
+    fake = tmp_path / 'exiting_parent.py'
+    worker_pid = tmp_path / 'detached_worker.pid'
+    worker_code = f'import os,pathlib,time;pathlib.Path({str(worker_pid)!r}).write_text(str(os.getpid()));time.sleep(30)'
+    fake.write_text('import pathlib,subprocess,sys,time\n'
+                    f'child=subprocess.Popen([sys.executable,"-c",{worker_code!r}])\n'
+                    'deadline=time.monotonic()+.5\n'
+                    f'while not pathlib.Path({str(worker_pid)!r}).exists() and time.monotonic()<deadline: time.sleep(.005)\n'
+                    'print(\'{"healthy":true,"status":200,"reason":"healthy"}\',flush=True)\n', encoding='utf-8')
+    unrelated = subprocess.Popen([str(CONTROL_PYTHON), '-c', 'import time;time.sleep(30)'])
+    try:
+        body = ps_json(f"""
+            . {quote(SUPERVISOR)}
+            $r = Invoke-BoundedHealthProbe -Uri 'http://127.0.0.1:1/healthz' -TimeoutSeconds 1.5 -PythonPath {quote(sys.executable)} -ProbeScript {quote(fake)}
+            $r | ConvertTo-Json -Compress
+        """)
+        assert body['healthy'] is False
+        assert body['elapsed_ms'] < 3500
+        assert worker_pid.exists()
+        actual_pid = int(worker_pid.read_text())
+        assert ps_json(f"[bool](Get-Process -Id {actual_pid} -ErrorAction SilentlyContinue) | ConvertTo-Json") is False
+        assert unrelated.poll() is None
+    finally:
+        if worker_pid.exists():
+            subprocess.run(['taskkill.exe', '/PID', worker_pid.read_text().strip(), '/T', '/F'], capture_output=True, timeout=3)
+        unrelated.kill()
+        unrelated.wait(timeout=3)
+
+
+@pytest.mark.skipif(not PS51.exists(), reason='Windows PowerShell 5.1 runtime')
+@pytest.mark.parametrize('oversize', [False, True])
+def test_supervisor_bounds_stdout_and_does_not_return_private_stderr(tmp_path, oversize):
+    fake = tmp_path / 'output_probe.py'
+    fake.write_text('import sys\n'
+                    'print("private /botPRIVATE/sendMessage",file=sys.stderr)\n'
+                    + ('print("x"*6000)\n' if oversize else '')
+                    + 'print(\'{"healthy":true,"status":200,"reason":"healthy"}\')\n', encoding='utf-8')
+    body = ps_json(f"""
+        . {quote(SUPERVISOR)}
+        Invoke-BoundedHealthProbe -Uri 'http://127.0.0.1:1/healthz' -TimeoutSeconds 1.5 -PythonPath {quote(sys.executable)} -ProbeScript {quote(fake)} | ConvertTo-Json -Compress
+    """)
+    assert body['healthy'] is (not oversize)
+    assert body['elapsed_ms'] < 3500
+    assert 'PRIVATE' not in json.dumps(body)
+    assert len(json.dumps(body)) < 300
+
+
+@pytest.mark.skipif(not PS51.exists(), reason='Windows PowerShell 5.1 runtime')
+def test_supervisor_creation_failure_is_closed_and_does_not_leak_handles(tmp_path):
+    invalid_exe = tmp_path / 'invalid.exe'
+    invalid_exe.write_bytes(b'not a Windows executable')
+    fake = tmp_path / 'unused.py'
+    fake.write_text('raise AssertionError("must not run")', encoding='utf-8')
+    body = ps_json(f"""
+        . {quote(SUPERVISOR)}
+        $warm = Invoke-BoundedHealthProbe -Uri 'http://127.0.0.1:1/healthz' -TimeoutSeconds 1.5 -PythonPath {quote(invalid_exe)} -ProbeScript {quote(fake)}
+        $before = (Get-Process -Id $PID).HandleCount
+        $failedClosed = $true
+        1..20 | ForEach-Object {{
+            $r = Invoke-BoundedHealthProbe -Uri 'http://127.0.0.1:1/healthz' -TimeoutSeconds 1.5 -PythonPath {quote(invalid_exe)} -ProbeScript {quote(fake)}
+            if ($r.healthy -or $r.child_pid -ne 0 -or $r.reason -ne 'probe_unavailable') {{ $failedClosed = $false }}
+        }}
+        @{{ closed=$failedClosed; delta=((Get-Process -Id $PID).HandleCount - $before) }} | ConvertTo-Json -Compress
+    """)
+    assert body['closed'] is True
+    assert body['delta'] <= 4
+
+
+@pytest.mark.skipif(not PS51.exists(), reason='Windows PowerShell 5.1 runtime')
+def test_probe_inherits_only_its_own_standard_pipe_handles(tmp_path):
+    import ctypes
+    from ctypes import wintypes
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.CreateEventW.argtypes = [ctypes.c_void_p, wintypes.BOOL, wintypes.BOOL, wintypes.LPCWSTR]
+    kernel.CreateEventW.restype = wintypes.HANDLE
+    kernel.SetHandleInformation.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.DWORD]
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+    kernel.WaitForSingleObject.restype = wintypes.DWORD
+    event = kernel.CreateEventW(None, False, False, None)
+    assert event
+    try:
+        assert kernel.SetHandleInformation(event, 1, 1)
+        fake = tmp_path / 'inherited_handle.py'
+        fake.write_text('import ctypes,json\n'
+                        f'ctypes.windll.kernel32.SetEvent(ctypes.c_void_p({event}))\n'
+                        'print(json.dumps({"healthy":True,"status":200,"reason":"healthy"}))\n', encoding='utf-8')
+        script = f"""
+            Add-Type 'using System;using System.Runtime.InteropServices;public class ProbeHandleCheck {{ [DllImport("kernel32.dll")] public static extern bool GetHandleInformation(IntPtr handle,out uint flags); }}'
+            $flags = 0
+            $inherited = [ProbeHandleCheck]::GetHandleInformation([IntPtr]{event},[ref]$flags)
+            . {quote(SUPERVISOR)}
+            $r = Invoke-BoundedHealthProbe -Uri 'http://127.0.0.1:1/healthz' -TimeoutSeconds 1.5 -PythonPath {quote(sys.executable)} -ProbeScript {quote(fake)}
+            $r | Add-Member -NotePropertyName parent_inherited -NotePropertyValue $inherited
+            $r | ConvertTo-Json -Compress
+        """
+        startup = subprocess.STARTUPINFO()
+        startup.lpAttributeList = {'handle_list': [event]}
+        result = subprocess.run([str(PS51), '-NoProfile', '-NonInteractive', '-Command', script],
+                                capture_output=True, text=True, timeout=12, close_fds=True,
+                                startupinfo=startup)
+        assert result.returncode == 0
+        body = json.loads(result.stdout)
+        assert body['parent_inherited'] is True
+        assert body['healthy'] is True
+        # Handle numbers may be reused in the child; shared event state proves
+        # object identity rather than mistaking a reused number for inheritance.
+        assert kernel.WaitForSingleObject(event, 0) == 0x102, 'probe inherited an unrelated parent handle'
+    finally:
+        kernel.CloseHandle(event)

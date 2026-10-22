@@ -1,29 +1,9 @@
 # Windows PowerShell 5.1 supervisor. Never rely on IWR's stream/DNS timeout.
 function Stop-BoundedHealthProbeTree {
-    param([System.Diagnostics.Process]$Process)
-    $killer = $null
+    param($Process)
     try {
-        $start = [System.Diagnostics.ProcessStartInfo]::new()
-        $start.FileName = Join-Path ([Environment]::GetFolderPath('System')) 'taskkill.exe'
-        $start.Arguments = "/PID $($Process.Id) /T /F"
-        $start.UseShellExecute = $false
-        $start.CreateNoWindow = $true
-        $start.RedirectStandardOutput = $true
-        $start.RedirectStandardError = $true
-        $killer = [System.Diagnostics.Process]::new()
-        $killer.StartInfo = $start
-        if (-not $killer.Start()) { return $false }
-        $out = $killer.StandardOutput.ReadToEndAsync()
-        $err = $killer.StandardError.ReadToEndAsync()
-        if (-not $killer.WaitForExit(1000)) {
-            $killer.Kill()
-            [void]$killer.WaitForExit(200)
-            return $false
-        }
-        return $Process.WaitForExit(300)
-    } catch { return $false } finally {
-        if ($killer) { $killer.Dispose() }
-    }
+        return $Process.Stop(300)
+    } catch { return $false }
 }
 
 function Invoke-BoundedHealthProbe {
@@ -39,23 +19,18 @@ function Invoke-BoundedHealthProbe {
     try {
         if (-not (Test-Path -LiteralPath $PythonPath -PathType Leaf) -or
             -not (Test-Path -LiteralPath $ProbeScript -PathType Leaf)) { return [pscustomobject]$result }
+        if (-not ('MarketFlowOwnedHealthProbe' -as [type])) {
+            Add-Type -Path (Join-Path $PSScriptRoot 'health_probe_native.cs') -ErrorAction Stop
+        }
         $timeoutText = $TimeoutSeconds.ToString('0.###', [System.Globalization.CultureInfo]::InvariantCulture)
         $arguments = @($ProbeScript, '--url', $Uri, '--timeout', $timeoutText)
-        # ProcessStartInfo invokes Python directly (no cmd/PowerShell evaluation).
+        # Native CreateProcess invokes Python directly, initially suspended so
+        # the forwarding launcher cannot create any child outside our own job.
         if (@($arguments | Where-Object { $_ -match '["\r\n]' }).Count -gt 0) { return [pscustomobject]$result }
-        $start = [System.Diagnostics.ProcessStartInfo]::new()
-        $start.FileName = $PythonPath
-        $start.Arguments = ($arguments | ForEach-Object { '"' + $_ + '"' }) -join ' '
-        $start.UseShellExecute = $false
-        $start.CreateNoWindow = $true
-        $start.RedirectStandardOutput = $true
-        $start.RedirectStandardError = $true
-        $process = [System.Diagnostics.Process]::new()
-        $process.StartInfo = $start
-        if (-not $process.Start()) { return [pscustomobject]$result }
+        $argumentText = ($arguments | ForEach-Object { '"' + $_ + '"' }) -join ' '
+        $process = [MarketFlowOwnedHealthProbe]::Start([IO.Path]::GetFullPath($PythonPath), $argumentText)
         $result.child_pid = $process.Id
-        $stdout = $process.StandardOutput.ReadToEndAsync()
-        $stderr = $process.StandardError.ReadToEndAsync()
+        $stdout = $process.Output
         $remainingMs = [Math]::Max(1, [int]($TimeoutSeconds * 1000 - $clock.ElapsedMilliseconds))
         if (-not $process.WaitForExit($remainingMs)) {
             $result.reason = 'deadline_exceeded'
@@ -75,9 +50,9 @@ function Invoke-BoundedHealthProbe {
     } finally {
         if ($process) {
             try {
-                # venv python.exe can forward to a base-Python child. Kill the
-                # exact created tree, including an import-time stalled worker.
-                if (-not $process.HasExited -and -not (Stop-BoundedHealthProbeTree -Process $process)) {
+                # Always close the owned tree, even when its immediate parent
+                # already exited while a forwarding worker remains alive.
+                if (-not (Stop-BoundedHealthProbeTree -Process $process)) {
                     $result.healthy = $false
                     $result.reason = 'cleanup_failed'
                 }

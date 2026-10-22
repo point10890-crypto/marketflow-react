@@ -129,8 +129,10 @@ def test_corrupt_loose_ref_does_not_fall_back_to_packed_value(tmp_path, loose):
     "garbage\n", "bad refs/heads/main\n", SHA + " refs/heads/main extra\n",
     SHA + " refs/heads/main\n" + OTHER_SHA + " refs/heads/main\n",
     SHA + " refs/heads/main\n" + SHA + " refs/heads/main\n",
+    SHA + " refs/heads/main\v", SHA + " refs/heads/main\r",
     "#" + "x" * (1024 * 1024),
-], ids=["invalid", "invalid-sha", "extra-field", "conflicting", "duplicate", "oversize"])
+], ids=["invalid", "invalid-sha", "extra-field", "conflicting", "duplicate",
+        "vertical-tab", "bare-cr", "oversize"])
 def test_malformed_duplicate_or_oversize_packed_refs_is_unknown(tmp_path, packed):
     root = _repo(tmp_path, "ref: refs/heads/main\n")
     _write(root / ".git" / "packed-refs", packed)
