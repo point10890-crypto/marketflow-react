@@ -21,8 +21,9 @@ from .candidate_execution import build_candidate_reference_plan, simulate_candid
 POLICY_VERSION = 'cross-sectional-candidates-v3'
 LOOKBACK, FORMATION, EMBARGO, CONFIRMATION = 756, 504, 10, 126
 MIN_TRADED_VALUE = 1_000_000_000.
-SCORE_WEIGHTS = {'relative_return20': .45, 'momentum60': .30,
-                 'prior_high_proximity': .15, 'volume_ratio': .10}
+SCORE_WEIGHT_POINTS = {'relative_return20': 45, 'momentum60': 30,
+                       'prior_high_proximity': 15, 'volume_ratio': 10}
+SCORE_WEIGHTS = {key: value/100 for key, value in SCORE_WEIGHT_POINTS.items()}
 WARNINGS = ['retrospective_current_quality_cohort_not_point_in_time_universe',
             'historical_vintage_and_corporate_actions_unverified',
             'cohort_median_is_not_an_official_market_benchmark',
@@ -128,13 +129,19 @@ def _valid(row):
     return not row.get('quality_flags') and row['volume'] > 0
 
 
-def _percentile(values, value):
-    """Midrank percentile; all ties share a score and a singleton is neutral."""
-    if len(values) <= 1:
-        return .5
-    lower = sum(other < value for other in values)
-    equal = sum(other == value for other in values)
-    return (lower + (equal-1)/2)/(len(values)-1)
+def _strength_score(item, cohort):
+    """Accumulate exact integer midrank points before one final division.
+
+    This is the declared 45/30/15/10 percentile score on a 0..100 scale.
+    Integer accumulation makes mathematically equal factor-rank combinations
+    exact ties across Python's different floating summation implementations.
+    """
+    if len(cohort) <= 1:
+        return 50.
+    numerator = sum(weight*(2*sum(other[key] < item[key] for other in cohort)
+                           + sum(other[key] == item[key] for other in cohort)-1)
+                    for key, weight in SCORE_WEIGHT_POINTS.items())
+    return numerator/(2*(len(cohort)-1))
 
 
 class _Snapshots:
@@ -201,8 +208,7 @@ class _Snapshots:
         # profits never enter these same-date, prefix-valid cohort percentiles.
         rank_cohort = [item for item in metric_items if item['relative_return20'] is not None]
         for item in rank_cohort:
-            item['strength_score'] = 100*sum(weight*_percentile([other[key] for other in rank_cohort], item[key])
-                                             for key, weight in SCORE_WEIGHTS.items())
+            item['strength_score'] = _strength_score(item, rank_cohort)
         ranked = sorted((item for item in metric_items if item['qualified']),
                         key=lambda item: (-item['strength_score'], item['symbol']))
         for rank, item in enumerate(ranked, 1):

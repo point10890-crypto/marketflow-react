@@ -75,8 +75,10 @@ def _scales(events):
 
 
 def _distance(left, right, scales):
-    return math.sqrt(sum(((a-b)/scale['standard_deviation'])**2
-                         for a, b, scale in zip(left, right, scales) if scale['standard_deviation'] > 0))
+    # Explicit accurate accumulation keeps the same norm and neighbor audits
+    # reproducible across Python's different builtin floating sum algorithms.
+    return math.sqrt(math.fsum(((a-b)/scale['standard_deviation'])**2
+                              for a, b, scale in zip(left, right, scales) if scale['standard_deviation'] > 0))
 
 
 def _proposal(item, plan, evidence, neighbors, names, latest):

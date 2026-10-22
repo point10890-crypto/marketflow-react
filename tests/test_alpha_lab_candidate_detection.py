@@ -152,12 +152,17 @@ def test_negative_economics_returns_no_candidates_and_names_exact_pool_rejection
 
 def test_current_rank_uses_fixed_percentiles_without_padding_failed_stocks():
     prices = cohort()
-    # Only one candidate remains above the dated median at the final close.
+    # Fail only the peers' current liquidity setup. A last-bar price crash
+    # would also change realized confirmation exits, mixing this cardinality
+    # assertion with the independent economic-pool gates.
     for symbol, rows in prices.items():
         if symbol != '000001':
-            row = rows[-1]; close = row['close']*.80
-            row.update(open=close, high=close*1.003, low=close*.997, close=close)
+            for row in rows[-20:]:
+                row['traded_value'] = 0.
     result = module().discover_candidates(prices)
+    assert all(result['evidence'][key]['stress_mean_net_return'] > 0 for key in ('formation', 'confirmation'))
+    assert all('insufficient_average_traded_value' in row['reasons']
+               for row in result['audit']['current'] if row['symbol'] != '000001')
     assert [row['symbol'] for row in result['audit']['current_ranking']] == ['000001']
     assert [row['symbol'] for row in result['candidates']] == ['000001']
     assert result['candidates'][0]['strength_score'] <= 100
@@ -228,6 +233,19 @@ def test_rank_matches_hand_computed_weighted_percentiles_and_volume_cap():
     assert ranked[0]['strength_score'] == pytest.approx(91.66666666666667)
     assert ranked[1]['strength_score'] == pytest.approx(70.)
     assert ranked[1]['volume_ratio'] == 3.
+
+
+def test_equal_weighted_rank_points_are_exact_ties_before_symbol_ordering():
+    result = module().discover_candidates(cohort(count=159))
+    ranked = result['audit']['current_ranking']
+    scores = {row['symbol']: row['strength_score'] for row in ranked}
+    # At this prefix the two different factor-rank combinations each earn
+    # 1,640 weighted midrank points over denominator 22: exactly 820/11.
+    # Floating .45/.30/.15/.10 products previously broke this tie by an ULP
+    # differently under Python 3.11 and compensated-sum Python 3.12+.
+    assert scores['000003'] == scores['000006'] == 820/11
+    order = [row['symbol'] for row in ranked]
+    assert order.index('000003') < order.index('000006')
 
 
 @pytest.mark.parametrize('mutation', ['out_of_order', 'duplicate', 'identity', 'flags'])

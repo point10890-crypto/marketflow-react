@@ -152,3 +152,12 @@ def test_target_training_outcome_mutation_cannot_leak_through_prior_or_scaling()
 def test_standardized_distance_ignores_zero_variance_and_uses_training_scale():
     scales = [dict(standard_deviation=2.), dict(standard_deviation=0.), dict(standard_deviation=4.)]
     assert api()._distance((1., 999., 2.), (7., -999., 18.), scales) == 5.
+
+
+def test_euclidean_distance_is_exactly_invariant_to_feature_accumulation_order():
+    scales = [dict(standard_deviation=1.) for _ in range(8)]
+    large_first = (1e8, 1., 1., 1., 1., 1., 1., 1.)
+    large_last = tuple(reversed(large_first))
+    origin = (0.,)*8
+    assert api()._distance(large_first, origin, scales) == api()._distance(large_last, origin, scales)
+    assert api()._distance(large_first, origin, scales) == 100000000.00000004
