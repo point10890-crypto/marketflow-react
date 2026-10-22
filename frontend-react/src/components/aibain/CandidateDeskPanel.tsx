@@ -107,7 +107,7 @@ export default function CandidateDeskPanel({ desk, now, blocked = false, onSelec
                 <div className="mt-3 space-y-1 border-t border-[#30363f] pt-3 text-sm tabular-nums text-gray-400">
                     {entry.state === 'within_band' && entry.quote && <><p className="text-gray-200">현재 관측 {money(entry.quote.price!)} · 시가 {money(entry.quote.opening_price!)}</p><p>시세 시각 {clock(entry.quote.quote_at!)}</p></>}
                     <p>KIS · KRX · {row.quote_session} 종가</p>
-                    <p>자료 수집 {clock(view.source.captured_at)}</p>
+                    <p>전체 자료 수집 완료 {clock(view.source.captured_at)}</p>
                     <p>진입 거래일 {view.entry_session ?? '확인 대기'}</p><p>유효기한 {clock(view.valid_until)}</p>
                 </div>
                 <p className="mt-2 break-words text-xs text-gray-400">상한 초과·손절선 이하 시 진입하지 않습니다. 실제 시가로 가격을 다시 계산합니다. 저장 종가는 실제 체결가가 아닙니다.</p>

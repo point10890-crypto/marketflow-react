@@ -427,15 +427,9 @@ def create_app(config=None):
     # Health check endpoint (자세한 상태 — 운영 진단용)
     @app.route('/api/health')
     def health_check():
-        import subprocess
         from flask import jsonify as _jsonify
-        try:
-            git_hash = subprocess.check_output(
-                ['git', 'rev-parse', '--short', 'HEAD'],
-                stderr=subprocess.DEVNULL, timeout=3
-            ).decode().strip()
-        except Exception:
-            git_hash = 'unknown'
+        from app.utils.release_version import get_release_version
+        git_hash = get_release_version(os.path.dirname(os.path.dirname(__file__)))
         vcp_exists = os.path.exists(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'signals_log.csv'))
         return _jsonify({
             'status': 'ok',

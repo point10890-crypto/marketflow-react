@@ -5,9 +5,42 @@ import json
 from pathlib import Path
 import sys
 
+from filelock import FileLock, Timeout
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.services.mirofish.alpha_lab.candidate_service import ROOT, scan_once
+from app.services.mirofish.alpha_lab import candidate_service
+
+ROOT = candidate_service.ROOT
+
+
+def scan_once(root, *, desk_only=False):
+    """Own the complete CLI lifecycle, including failures before candidate work."""
+    root = Path(root)
+    lock = FileLock(str(root/'candidate-compose.lock'), thread_local=False)
+    try:
+        lock.acquire(timeout=0)
+    except Timeout:
+        return dict(candidate_service.store.read_status(root), state='running')
+    try:
+        candidates = candidate_service.candidate_store
+        directory = root/'candidate-desk'
+        candidates.set_attempt(directory, 'running')
+        owned_attempt = candidates._load(directory/'attempt.json')
+        try:
+            previous = (candidate_service.store.read_status(root) if desk_only
+                        else candidate_service.legacy.scan_once(root))
+            if previous.get('state') in ('ready', 'held'):
+                desk = candidate_service.refresh_desk(root)
+                return (dict(previous, candidate_desk=desk) if desk is not None
+                        else dict(previous, candidate_desk_unavailable=True))
+        except Exception:
+            previous = dict(state='failed', error='analysis_unavailable', report=None)
+        if candidates._load(directory/'attempt.json') == owned_attempt:
+            candidates.set_attempt(directory, 'failed', error='analysis_unavailable')
+        return previous
+    finally:
+        lock.release()
 
 
 def main(argv=None):
