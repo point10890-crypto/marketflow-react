@@ -21,7 +21,7 @@ admin_mirofish_bp = Blueprint('admin_mirofish', __name__)
 
 
 def _alpha_lab_service():
-    from app.services.mirofish.alpha_lab import service
+    from app.services.mirofish.alpha_lab import candidate_service as service
     return service
 
 

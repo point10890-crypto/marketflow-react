@@ -4,7 +4,9 @@ import OpportunityBoard from './OpportunityBoard';
 import AgentDesk from './AgentDesk';
 import CatalystContext from './CatalystContext';
 import AlphaLabEvolutionPanel from './AlphaLabEvolutionPanel';
+import CandidateDeskPanel from './CandidateDeskPanel';
 import { opportunityClockExpirations } from '@/lib/opportunityEngine';
+import { candidateDeskClockExpirations } from '@/lib/candidateDesk';
 import { fetchAlphaLab, liveAlphaLabMonitoring, startAlphaLab, type AlphaLabAnalystId, type AlphaLabCandidate, type AlphaLabMonitorQuote, type AlphaLabOperations, type AlphaLabOpportunityCandidate, type AlphaLabOpportunityPhase, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
 
 const numberPct = (value: number | null, signed = false) => value === null ? '대기' : `${signed && value > 0 ? '+' : ''}${(value * 100).toFixed(1)}%`;
@@ -318,6 +320,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false, 
     const accept = (next: AlphaLabStatus) => setSnapshot(old => ({ ...next,
         report: next.report ?? (['running', 'failed'].includes(next.state) ? old?.report ?? null : null),
         opportunity_engine: next.opportunity_engine ?? (['running', 'failed'].includes(next.state) ? old?.opportunity_engine : undefined),
+        candidate_desk: next.candidate_desk ?? (!next.candidate_desk_unavailable && ['running', 'failed'].includes(next.state) ? old?.candidate_desk : undefined),
     }));
     useEffect(() => {
         mounted.current = true;
@@ -345,13 +348,13 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false, 
     }, []);
     useEffect(() => {
         const report = visibleSnapshot?.report;
-        if (!report) return;
+        if (!report && !visibleSnapshot?.candidate_desk) return;
         const now = Date.now();
-        const expiryCandidates = [...report.candidates, ...report.buy_candidates ?? []];
+        const expiryCandidates = [...report?.candidates ?? [], ...report?.buy_candidates ?? []];
         const expirations = expiryCandidates.flatMap(row => row.proposal?.action === 'buy' && row.proposal.valid_until
-            ? [Date.parse(row.proposal.valid_until), ...(report.provenance.captured_at ? [sourceExpiry(report.provenance.captured_at)] : []),
-                ...(report.latest_session ? [sourceExpiry(`${report.latest_session}T00:00:00+09:00`)] : []),
-                ...(report.universe.scope_date ? [sourceExpiry(`${report.universe.scope_date}T00:00:00+09:00`)] : [])] : []);
+            ? [Date.parse(row.proposal.valid_until), ...(report?.provenance.captured_at ? [sourceExpiry(report.provenance.captured_at)] : []),
+                ...(report?.latest_session ? [sourceExpiry(`${report.latest_session}T00:00:00+09:00`)] : []),
+                ...(report?.universe.scope_date ? [sourceExpiry(`${report.universe.scope_date}T00:00:00+09:00`)] : [])] : []);
         for (const quote of visibleSnapshot?.operations?.monitoring.quotes ?? []) {
             if (quote.price === null) continue;
             for (const time of [quote.quote_at, quote.fetched_at]) if (time) expirations.push(Date.parse(time) + 420000);
@@ -360,6 +363,7 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false, 
         if (visibleSnapshot?.opportunity_engine) expirations.push(...opportunityClockExpirations(visibleSnapshot.opportunity_engine));
         for (const row of visibleSnapshot?.agent_desk?.candidates ?? []) if (row.invalidation.valid_until) expirations.push(Date.parse(row.invalidation.valid_until));
         if (visibleSnapshot?.agent_desk) expirations.push(Date.parse(visibleSnapshot.agent_desk.generated_at) + 420000);
+        if (visibleSnapshot?.candidate_desk) expirations.push(...candidateDeskClockExpirations(visibleSnapshot.candidate_desk));
         const next = Math.min(...expirations.filter(value => value > now));
         if (!Number.isFinite(next)) return;
         const timer = setTimeout(() => setCurrentTime(Date.now()), Math.min(next - now, 2147483647));
@@ -401,6 +405,8 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false, 
     const blocked = reading || posting || !['ready', 'held'].includes(state ?? '') || !!error;
     const now = Math.max(currentTime, Date.now());
     const monitoring = visibleSnapshot ? liveAlphaLabMonitoring(visibleSnapshot, now, blocked) : null;
+    const showCandidateDesk = !!visibleSnapshot?.candidate_desk || visibleSnapshot?.candidate_desk_unavailable === true;
+    const legacyBlocked = blocked || showCandidateDesk;
     const recoveryPolicy = visibleSnapshot?.opportunity_engine
         ? visibleSnapshot.opportunity_engine.policy_version === 'profit-opportunity-v2'
         : visibleSnapshot?.report?.opportunity_scan?.policy_version === 'quality-setup-opportunity-v2';
@@ -409,29 +415,36 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false, 
         collecting: '전향 검증 수집 중', waiting: '전향 검증 시작 대기', held: '전향 검증 보류',
         window_complete: '60개 결정 등록 완료 · 결과 성숙 대기',
     }[detectionValidation.status] : '전향 검증 수집 중';
+    const legacyContent = <>
+        {showCandidateDesk && !desk && visibleSnapshot?.operations && <OperationsBand snapshot={visibleSnapshot} monitoring={monitoring} now={now} />}
+        {visibleSnapshot?.opportunity_engine && <OpportunityBoard board={visibleSnapshot.opportunity_engine} now={now} blocked={legacyBlocked} onSelectSymbol={onSelectSymbol} showPolicy={false} />}
+        {visibleSnapshot?.evolution && <AlphaLabEvolutionPanel context={visibleSnapshot.evolution}
+            board={recoveryPolicy ? visibleSnapshot.report?.evolution_control_binding ?? visibleSnapshot.opportunity_engine : visibleSnapshot.opportunity_engine}
+            now={now} onSelectSymbol={onSelectSymbol} />}
+        {visibleSnapshot?.opportunity_engine && <CatalystContext context={visibleSnapshot.catalyst_context} board={visibleSnapshot.opportunity_engine} now={now} />}
+        {visibleSnapshot?.opportunity_engine && <AgentDesk desk={visibleSnapshot.agent_desk} board={visibleSnapshot.opportunity_engine} now={now} blocked={legacyBlocked || polling} token={token} />}
+        {(!desk || showCandidateDesk) && visibleSnapshot?.report && (visibleSnapshot.opportunity_engine ? <details className="min-w-0 border-t border-[#30363f] pt-2"><summary className={disclosureClass}>이전 연구 제안 · 근거 펼치기</summary><div className="mt-3"><Evidence report={visibleSnapshot.report} previous={state === 'running' || state === 'failed' || !!error}
+            blocked={legacyBlocked} now={now} monitoring={monitoring} operations={visibleSnapshot.operations} onSelectSymbol={onSelectSymbol} /></div></details>
+            : <Evidence report={visibleSnapshot.report} previous={state === 'running' || state === 'failed' || !!error}
+            blocked={legacyBlocked} now={now} monitoring={monitoring} operations={visibleSnapshot.operations} onSelectSymbol={onSelectSymbol} />)}
+    </>;
     return <section aria-labelledby={heading} className="ai-panel min-w-0 border border-[#30363f] p-4 text-white [&_a]:!min-h-11 [&_button]:!min-h-11 [&_summary]:!min-h-11 sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h2 id={heading} className="ai-section-title text-lg">{desk ? '유력 종목 데스크' : '에이전트 매매 제안'}</h2><p className="mt-2 text-xs leading-relaxed text-gray-400">{desk ? '저장된 분석에서 선별한 최대 세 종목의 가격 조건과 참고 비중을 확인하세요.' : visibleSnapshot?.opportunity_engine ? '종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 저장 종가 또는 새 시세로 계산한 참고 계획입니다.' : '종목별 판단과 다음 행동을 먼저 확인하세요. 가격·비중은 마지막 종가로 계산한 참고 제안입니다.'}</p></div><span className="rounded border border-[#365372] bg-[#1b2c40] px-2 py-1 text-[11px] font-semibold text-[#acd3ff]">직접 판단용 · 주문 실행 없음</span></div>
-        {recoveryPolicy && <div className="mt-3 min-w-0 space-y-1 text-xs leading-relaxed">
+        {!showCandidateDesk && recoveryPolicy && <div className="mt-3 min-w-0 space-y-1 text-xs leading-relaxed">
             <p className="w-fit max-w-full rounded border border-[#365372] px-2 py-1 font-semibold text-[#acd3ff]">검출 2.0 · 회복·상대강도·최근 반기 검증</p>
             <p className="text-gray-400">{validationLabel}</p>
             {detectionValidation && <p className="tabular-nums text-gray-400">새 결정 {detectionValidation.enrolled_sessions}/60거래일 · 성숙 대기 10거래일 · 실투자 승인 없음</p>}
         </div>}
         <div className="my-4 flex flex-wrap gap-2">{!desk && <button type="button" onClick={start} disabled={reading || posting || polling || state === 'running'} className={`${buttonClass} bg-[#1b2c40]`}>매수 후보 검출</button>}<button type="button" onClick={() => { if (inFlight.current === null) { setReading(true); setRevision(value => value + 1); } }} disabled={reading || posting || polling} className={buttonClass}>저장 결과 새로고침</button></div>
-        {!desk && visibleSnapshot?.operations && <OperationsBand snapshot={visibleSnapshot} monitoring={monitoring} now={now} />}
+        {!showCandidateDesk && !desk && visibleSnapshot?.operations && <OperationsBand snapshot={visibleSnapshot} monitoring={monitoring} now={now} />}
         {reading && <p role="status" className="min-h-16 py-4 text-xs text-gray-400">매수 후보 검출 결과 확인 중…</p>}
         {!reading && (posting || state === 'running') && <p role="status" className="mb-4 rounded-lg border border-[#365372] bg-[#1b2c40] p-3 text-xs text-[#acd3ff]">{desk ? '분석 결과를 저장하는 중입니다. 완료 후 저장 결과 새로고침으로 확인해 주세요.' : '매수 후보 검출 진행 중 · 완료된 저장 결과를 자동 확인합니다.'}</p>}
-        {!desk && isAdmin && <AdminStockAnalysisPanel />}
+        {!showCandidateDesk && !desk && isAdmin && <AdminStockAnalysisPanel />}
         {problem && <p role="alert" className="mb-4 rounded-lg border border-amber-400/25 p-3 text-xs leading-relaxed text-amber-200">{problem}</p>}
-        {!reading && (desk ? !visibleSnapshot?.opportunity_engine : !visibleSnapshot?.report) && !problem && state !== 'running' && !posting && <p className="py-4 text-xs leading-relaxed text-gray-400">{desk ? '저장된 유력 종목 후보가 없습니다. 결과가 준비되면 저장 결과 새로고침으로 확인해 주세요.' : '저장된 매수 후보 검출 결과가 없습니다. 매수 후보 검출 버튼으로 새 검사를 시작해 주세요.'}</p>}
-        {visibleSnapshot?.opportunity_engine && <OpportunityBoard board={visibleSnapshot.opportunity_engine} now={now} blocked={blocked} onSelectSymbol={onSelectSymbol} showPolicy={false} />}
-        {visibleSnapshot?.evolution && <AlphaLabEvolutionPanel context={visibleSnapshot.evolution}
-            board={recoveryPolicy ? visibleSnapshot.report?.evolution_control_binding ?? visibleSnapshot.opportunity_engine : visibleSnapshot.opportunity_engine}
-            now={now} onSelectSymbol={onSelectSymbol} />}
-        {visibleSnapshot?.opportunity_engine && <CatalystContext context={visibleSnapshot.catalyst_context} board={visibleSnapshot.opportunity_engine} now={now} />}
-        {visibleSnapshot?.opportunity_engine && <AgentDesk desk={visibleSnapshot.agent_desk} board={visibleSnapshot.opportunity_engine} now={now} blocked={blocked || polling} token={token} />}
-        {!desk && visibleSnapshot?.report && (visibleSnapshot.opportunity_engine ? <details className="min-w-0 border-t border-[#30363f] pt-2"><summary className={disclosureClass}>이전 연구 제안 · 근거 펼치기</summary><div className="mt-3"><Evidence report={visibleSnapshot.report} previous={state === 'running' || state === 'failed' || !!error}
-            blocked={blocked} now={now} monitoring={monitoring} operations={visibleSnapshot.operations} onSelectSymbol={onSelectSymbol} /></div></details>
-            : <Evidence report={visibleSnapshot.report} previous={state === 'running' || state === 'failed' || !!error}
-            blocked={blocked} now={now} monitoring={monitoring} operations={visibleSnapshot.operations} onSelectSymbol={onSelectSymbol} />)}
+        {!reading && !showCandidateDesk && (desk ? !visibleSnapshot?.opportunity_engine : !visibleSnapshot?.report) && !problem && state !== 'running' && !posting && <p className="py-4 text-xs leading-relaxed text-gray-400">{desk ? '저장된 유력 종목 후보가 없습니다. 결과가 준비되면 저장 결과 새로고침으로 확인해 주세요.' : '저장된 매수 후보 검출 결과가 없습니다. 매수 후보 검출 버튼으로 새 검사를 시작해 주세요.'}</p>}
+        {showCandidateDesk && <CandidateDeskPanel desk={visibleSnapshot?.candidate_desk} now={now}
+            blocked={blocked || visibleSnapshot?.candidate_desk_unavailable === true} onSelectSymbol={onSelectSymbol} />}
+        {showCandidateDesk && !desk && isAdmin && <AdminStockAnalysisPanel />}
+        {showCandidateDesk ? <details className="min-w-0 border-t border-[#30363f] pt-2"><summary className={disclosureClass}>기존 실험 · 관측 근거</summary><div className="mt-3">{legacyContent}</div></details> : legacyContent}
     </section>;
 }

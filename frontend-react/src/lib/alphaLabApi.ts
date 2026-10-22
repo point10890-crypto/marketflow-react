@@ -3,6 +3,7 @@ import { validateOpportunityEngine, type OpportunityEngine, type OpportunityIden
 import { validateAgentDesk, type AgentDesk } from './agentDeskApi';
 import { validateCatalystContext, type CatalystContext } from './catalystContext';
 import { validateEvolutionContext, type EvolutionContext } from './evolutionContext';
+import { validateCandidateDesk, type CandidateDesk } from './candidateDesk';
 
 export interface AlphaLabPerformance {
     net_total_return: number | null;
@@ -174,6 +175,9 @@ export interface AlphaLabStatus {
     agent_desk?: AgentDesk;
     catalyst_context?: CatalystContext;
     evolution?: EvolutionContext;
+    candidate_desk?: CandidateDesk;
+    /** Browser-derived hold for an invalid optional desk; the legacy status remains usable. */
+    candidate_desk_unavailable?: true;
 }
 export interface AlphaLabProposalWindow {
     policy_version: 'next-session-proposal-v1'; input_fingerprint: string; opportunity_audit_hash: string;
@@ -674,10 +678,14 @@ export function validateAlphaLabStatus(value: unknown): AlphaLabStatus {
     if (value.agent_desk !== undefined) validateAgentDesk(value.agent_desk, value.opportunity_engine as OpportunityEngine | undefined);
     const controlBinding = (value.report as AlphaLabReport | null)?.evolution_control_binding;
     if (controlBinding !== undefined && (value.opportunity_engine as OpportunityEngine | undefined)?.policy_version !== 'profit-opportunity-v2') throw new Error(invalid);
-    const { catalyst_context: rawCatalystContext, evolution: rawEvolution, ...sourceStatus } = value;
+    const { catalyst_context: rawCatalystContext, evolution: rawEvolution, candidate_desk: rawCandidateDesk,
+        candidate_desk_unavailable: rawCandidateUnavailable, ...sourceStatus } = value;
     const catalystContext = validateCatalystContext(rawCatalystContext, value.opportunity_engine as OpportunityEngine | undefined);
     const evolution = validateEvolutionContext(rawEvolution, controlBinding ?? value.opportunity_engine as OpportunityEngine | undefined);
-    const status = { ...sourceStatus, ...(catalystContext ? { catalyst_context: catalystContext } : {}), ...(evolution ? { evolution } : {}) } as unknown as AlphaLabStatus;
+    const candidateDesk = validateCandidateDesk(rawCandidateDesk);
+    const candidateUnavailable = rawCandidateUnavailable === true || rawCandidateDesk !== undefined && !candidateDesk;
+    const status = { ...sourceStatus, ...(catalystContext ? { catalyst_context: catalystContext } : {}), ...(evolution ? { evolution } : {}),
+        ...(candidateDesk ? { candidate_desk: candidateDesk } : {}), ...(candidateUnavailable ? { candidate_desk_unavailable: true } : {}) } as unknown as AlphaLabStatus;
     if (!status.report) return { ...status, operations: status.operations ? { ...status.operations, monitoring: liveAlphaLabMonitoring(status)! } : undefined };
     const normalizeProposal = (row: AlphaLabCandidate, opportunity = false) => {
         const p = row.proposal;
