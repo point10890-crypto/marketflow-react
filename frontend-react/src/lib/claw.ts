@@ -6,6 +6,33 @@ import { createElement, type ReactNode } from 'react';
 
 export type ClawLoopState = 'running' | 'idle' | 'halt' | 'dead';
 
+/** Server projection metadata describes the cached payload, never a new scan. */
+export interface ClawProjection {
+    state: string;
+    stale: boolean;
+    refreshing: boolean;
+    cached_at: string | null;
+    age_seconds: number | null;
+    last_attempt_at: string | null;
+    last_error: string | null;
+    retry_after_seconds: number;
+}
+
+export function isClawProjectionStale(data: { projection?: ClawProjection } | null | undefined): boolean {
+    return data?.projection?.stale === true || data?.projection?.state === 'stale';
+}
+
+/** Age starts at source generation; receiving the same cache cannot reset it. */
+export function clawSnapshotAgeSeconds(data: { generated_at: string; projection?: ClawProjection }, receivedAt: number, now = Date.now()): number {
+    const generatedAt = Date.parse(data.generated_at);
+    if (Number.isFinite(generatedAt)) return Math.max(0, Math.round((now - generatedAt) / 1000));
+    return Math.max(0, Math.round((data.projection?.age_seconds ?? 0) + (now - receivedAt) / 1000));
+}
+
+export function clawAgeSeconds(data: { generated_at: string; projection?: ClawProjection }, age: number | null, receivedAt: number, now = Date.now()): number | null {
+    return age == null ? null : age + clawSnapshotAgeSeconds(data, receivedAt, now);
+}
+
 export interface ClawLeaderRow {
     code: string;
     name: string;
@@ -40,6 +67,7 @@ export interface ClawBrief {
 
 export interface ClawOverview {
     generated_at: string;
+    projection?: ClawProjection;
     errors: Record<string, string>;
     loop: {
         state: ClawLoopState;
@@ -128,6 +156,7 @@ export type ClawOutcomeStatus = 'pending' | 'complete' | 'missing' | 'not_compar
 export interface ClawScorecards {
     schema_version: string;
     generated_at: string;
+    projection?: ClawProjection;
     data_as_of: string | null;
     window: { start: string | null; end: string | null };
     coverage: {
@@ -179,6 +208,7 @@ export interface ClawScorecards {
 export interface ClawQuality {
     schema_version: string;
     generated_at: string;
+    projection?: ClawProjection;
     status: 'ok' | 'degraded' | 'unavailable' | string;
     database: { path_exists: boolean; bytes: number; foreign_keys: boolean; schema_version: number };
     ledger: {

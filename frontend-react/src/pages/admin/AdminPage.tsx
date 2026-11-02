@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { adminAPI, AdminDashboard } from '@/lib/api';
 import DashboardTab from './tabs/DashboardTab';
@@ -21,30 +21,49 @@ export default function AdminPage() {
     const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
     const [dashData, setDashData] = useState<AdminDashboard | null>(null);
     const [pendingCount, setPendingCount] = useState(0);
+    const [dashLoading, setDashLoading] = useState(true);
+    const [dashError, setDashError] = useState('');
+    const dashRequest = useRef(0);
+
+    const loadDashboard = useCallback(async () => {
+        const requestId = ++dashRequest.current;
+        setDashLoading(true);
+        try {
+            const data = await adminAPI.getDashboard(apiToken);
+            const requiredCounts = ['total_users', 'pro_users', 'premium_users', 'no_tier_users',
+                'admin_users', 'pending_users', 'approved_users', 'suspended_users', 'pending_subscriptions'] as const;
+            if (!data || !requiredCounts.every(key => Number.isFinite(data[key]) && data[key] >= 0)) {
+                throw new Error('Invalid dashboard response');
+            }
+            if (requestId !== dashRequest.current) return;
+            setDashData(data);
+            setPendingCount(data.pending_subscriptions);
+            setDashError('');
+        } catch {
+            if (requestId === dashRequest.current) setDashError('대시보드 데이터를 불러오지 못했습니다.');
+        } finally {
+            if (requestId === dashRequest.current) setDashLoading(false);
+        }
+    }, [apiToken]);
 
     // 대시보드 카운트는 승인/입금이 실시간으로 들어오므로 60초 주기 + 탭 복귀 시 갱신.
     // 백그라운드 탭에서는 폴링을 멈춰 불필요한 요청을 막는다.
     useEffect(() => {
-        let cancelled = false;
-        const load = () => {
-            adminAPI.getDashboard(apiToken).then(d => {
-                if (cancelled) return;
-                setDashData(d);
-                setPendingCount(d?.pending_subscriptions || 0);
-            }).catch(() => {});
-        };
-        load();
+        setDashData(null);
+        setPendingCount(0);
+        setDashError('');
+        loadDashboard();
         const timer = setInterval(() => {
-            if (document.visibilityState === 'visible') load();
+            if (document.visibilityState === 'visible') loadDashboard();
         }, 60_000);
-        const onVisible = () => { if (document.visibilityState === 'visible') load(); };
+        const onVisible = () => { if (document.visibilityState === 'visible') loadDashboard(); };
         document.addEventListener('visibilitychange', onVisible);
         return () => {
-            cancelled = true;
+            dashRequest.current++;
             clearInterval(timer);
             document.removeEventListener('visibilitychange', onVisible);
         };
-    }, [apiToken]);
+    }, [loadDashboard]);
 
     return (
         <div className="space-y-5">
@@ -87,7 +106,7 @@ export default function AdminPage() {
             </div>
 
             {/* Tab Content */}
-            {activeTab === 'dashboard' && <DashboardTab data={dashData} onNavigate={setActiveTab} apiToken={apiToken} />}
+            {activeTab === 'dashboard' && <DashboardTab data={dashData} loading={dashLoading} error={dashError} onRetry={loadDashboard} onNavigate={setActiveTab} apiToken={apiToken} />}
             {activeTab === 'users' && <UsersTab apiToken={apiToken} currentUserId={authUser?.id} />}
             {activeTab === 'subscriptions' && <SubscriptionsTab apiToken={apiToken} onCountChange={setPendingCount} />}
             {activeTab === 'purchases' && <PurchaseAdminPage onBack={() => setActiveTab('dashboard')} />}

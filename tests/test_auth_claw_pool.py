@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import threading
 
 import pytest
-from flask import request
+from flask import has_request_context, request
 from sqlalchemy import inspect
 
 from app import create_app
@@ -12,10 +12,23 @@ import app.auth.decorators as auth
 from app.models import db
 from app.models.user import User
 from marketflow_claw import observation, overview
+import app.routes.kr_claw as claw_routes
 
 
 @pytest.fixture
-def claw_app(tmp_path):
+def claw_app(tmp_path, monkeypatch):
+    # The production factory supplies the real global gate, but this fixture
+    # must never load local credentials or import unrelated operational routes.
+    monkeypatch.setattr('dotenv.load_dotenv', lambda *args, **kwargs: False)
+
+    def register_test_blueprints(application):
+        from app.routes.auth import auth_bp
+
+        application.register_blueprint(auth_bp, url_prefix='/api/auth')
+        application.register_blueprint(claw_routes.kr_claw_bp, url_prefix='/api/kr/claw')
+        application.add_url_rule('/api/data-version', view_func=lambda: {})
+
+    monkeypatch.setattr('app.routes.register_blueprints', register_test_blueprints)
     application = create_app({
         'TESTING': True,
         'SECRET_KEY': 'claw-pool-test-secret',
@@ -73,30 +86,49 @@ def test_claw_service_has_no_auth_connection_and_reuses_verified_identity(claw_a
 
     monkeypatch.setattr(db.session, 'get', track_get)
 
-    def project(*args, **kwargs):
+    def auth_state():
         user = request.current_user
         assert auth._get_current_user() is user
         assert auth._get_current_user() is user
         return {'checked_out': engine.pool.checkedout(), 'detached': inspect(user).detached}
 
+    checked = []
+    dispatch = claw_routes._project
+
+    def check_before_dispatch(*args, **kwargs):
+        checked.append(auth_state())
+        return dispatch(*args, **kwargs)
+
+    monkeypatch.setattr(claw_routes, '_project', check_before_dispatch)
+
+    def project(*args, **kwargs):
+        if endpoint == 'close-leaders':
+            return auth_state()
+        assert not has_request_context()
+        return {'checked_out': engine.pool.checkedout(), 'detached': checked[0]['detached']}
+
     target = overview if endpoint in {'overview', 'close-leaders'} else observation
     monkeypatch.setattr(target, service, project)
     response = application.test_client().get('/api/kr/claw/' + endpoint, headers=headers(identities, name))
     assert response.status_code == 200
-    assert response.get_json() == {'checked_out': 0, 'detached': True}
+    payload = response.get_json()
+    payload.pop('projection', None)
+    assert payload == {'checked_out': 0, 'detached': True}
     assert len(lookups) == 1
     assert engine.pool.checkedout() == 0
 
 
 def test_slow_claw_requests_cannot_starve_unrelated_authentication(claw_app, monkeypatch):
     application, identities, engine = claw_app
-    entered = threading.Barrier(3)
+    entered = threading.Event()
     release = threading.Event()
+    finished = threading.Event()
     results = []
 
     def slow_projection():
-        entered.wait(timeout=3)
+        entered.set()
         assert release.wait(timeout=3)
+        finished.set()
         return {'ok': True}
 
     monkeypatch.setattr(overview, 'build_overview', slow_projection)
@@ -111,15 +143,24 @@ def test_slow_claw_requests_cannot_starve_unrelated_authentication(claw_app, mon
     for worker in workers:
         worker.start()
     try:
-        entered.wait(timeout=3)
+        assert entered.wait(timeout=3)
+        for worker in workers:
+            worker.join(timeout=1)
+        assert results == [503, 503]
+        # The second request may still authenticate when the first builder
+        # enters. Measure released checkouts after both HTTP requests finish,
+        # while their shared source I/O is demonstrably still blocked.
+        assert not finished.is_set()
+        assert not release.is_set()
         assert engine.pool.checkedout() == 0
         response = application.test_client().get('/api/auth/me', headers=headers(identities, 'pro'))
         assert response.status_code == 200
+        assert engine.pool.checkedout() == 0
     finally:
         release.set()
         for worker in workers:
             worker.join(timeout=3)
-    assert results == [200, 200]
+        assert finished.wait(timeout=1)
     assert engine.pool.checkedout() == 0
 
 

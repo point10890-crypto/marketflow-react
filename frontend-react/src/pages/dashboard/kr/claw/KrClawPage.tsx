@@ -25,6 +25,9 @@ import {
     isClawOverview,
     isClawQuality,
     isClawScorecards,
+    isClawProjectionStale,
+    clawAgeSeconds,
+    clawSnapshotAgeSeconds,
 } from '@/lib/claw';
 import { ClawHero } from '@/components/claw/ClawHero';
 import ClawLeadersCard from './ClawLeadersCard';
@@ -57,6 +60,7 @@ export default function KrClawPage() {
     const [scorecards, setScorecards] = useState<ClawScorecards | null>(null);
     const [quality, setQuality] = useState<ClawQuality | null>(null);
     const [observationLoading, setObservationLoading] = useState(true);
+    const [observationError, setObservationError] = useState(false);
     const [tick, setTick] = useState(0); // "n초 전" 1초 갱신용
     const fetchedAt = useRef<number>(Date.now());
     const inFlight = useRef(false);
@@ -85,6 +89,7 @@ export default function KrClawPage() {
         ]);
         if (scorecardResult.status === 'fulfilled' && isClawScorecards(scorecardResult.value)) setScorecards(scorecardResult.value);
         if (qualityResult.status === 'fulfilled' && isClawQuality(qualityResult.value)) setQuality(qualityResult.value);
+        setObservationError([scorecardResult, qualityResult].some(result => result.status === 'rejected' && result.reason?.status !== 401 && result.reason?.status !== 403));
         setObservationLoading(false);
     }, [token]);
 
@@ -92,12 +97,17 @@ export default function KrClawPage() {
     useAutoRefresh(load, data?.loop.market_open ? 5000 : 60000, true);
     useEffect(() => { const t = setInterval(() => setTick(v => v + 1), 1000); return () => clearInterval(t); }, []);
 
+    void tick;
+    const stale = !!data && (!!error || isClawProjectionStale(data));
+    const heartbeat = data ? clawAgeSeconds(data, data.loop.heartbeat_age_s, fetchedAt.current) : null;
+    const sourceAge = data ? clawAgeSeconds(data, data.loop.source_age_s, fetchedAt.current) : null;
+
     return (
         <div className="market-workspace min-h-full px-0 py-1 text-white">
             <div className="mx-auto max-w-[1200px] space-y-4">
-                <ClawHero data={data} heartbeatAge={heartbeatAge(data, tick, fetchedAt.current)} />
+                <ClawHero data={data} heartbeatAge={heartbeat} sourceAge={sourceAge} stale={stale} unavailable={!loading && !!error && !data} />
                 <div className="dash-toolbar market-toolbar flex min-h-9 flex-wrap items-center justify-end gap-2 px-1" aria-live="polite">
-                    <span className="text-[11px] text-gray-400">{data ? `화면 갱신 ${fmtAge(Math.max(0, Math.round((Date.now() - fetchedAt.current) / 1000)))} 전` : '데이터 연결 확인 중'}</span>
+                    <span className="text-[11px] text-gray-400">{data ? `스냅샷 ${fmtAge(clawSnapshotAgeSeconds(data, fetchedAt.current))} 전` : '데이터 연결 확인 중'}</span>
                     <button type="button" onClick={() => { void load(); void loadObservation(); }} disabled={refreshing}
                         className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-[11px] font-bold text-gray-300 transition-colors hover:bg-white/[0.08] disabled:cursor-wait disabled:opacity-50">
                         <i className={`fas fa-rotate-right ${refreshing ? 'animate-spin' : ''}`} />새로고침
@@ -105,28 +115,32 @@ export default function KrClawPage() {
                 </div>
                 {loading && <Skeleton />}
                 {!loading && error && !data && (
-                    <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 text-center">
+                    <div role="alert" className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 text-center">
                         <p className="mb-4 text-sm text-red-300">{error}</p>
-                        <button type="button" onClick={load} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-gray-300 hover:bg-white/10">
+                        <button type="button" onClick={() => { void load(); void loadObservation(); }} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-gray-300 hover:bg-white/10">
                             <i className="fas fa-rotate-right" />다시 시도
                         </button>
                     </div>
                 )}
                 {!loading && data && (
                     <>
-                        {error && (
+                        {stale && (
                             <div role="status" className="flex items-center gap-2 rounded-xl border border-amber-400/20 bg-amber-400/[0.05] px-3 py-2 text-[12px] text-amber-200">
                                 <i className="fas fa-triangle-exclamation text-[11px]" />
-                                최신 응답이 지연되어 마지막 정상 데이터를 표시합니다.
+                                {isClawProjectionStale(data) ? '오래된 캐시 데이터입니다. 최신 루프 상태를 확인하지 못했습니다.' : '최신 응답이 지연되어 마지막 정상 데이터를 표시합니다.'}
                             </div>
                         )}
-                        <StatusStrip data={data} />
+                        <StatusStrip data={data} heartbeatAge={heartbeat} stale={stale} />
+                        {observationError && <div role="alert" className="flex items-center justify-between gap-2 rounded-xl border border-amber-400/20 px-3 py-2 text-xs text-amber-200">
+                            <p>관측 원장의 최신 데이터를 확인하지 못했습니다. 이전에 받은 기록은 유지됩니다.</p>
+                            <button type="button" onClick={() => { void loadObservation(); }} className="shrink-0 rounded border border-white/10 px-2 py-1">관측 다시 시도</button>
+                        </div>}
                         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
                             <ClawObservationCard scorecards={scorecards} quality={quality} loading={observationLoading} />
                             <ClawLeadersCard data={data} />
                             <ClawEventsCard data={data} />
                             <ClawBriefsCard data={data} />
-                            <SystemCard data={data} />
+                            <SystemCard data={data} heartbeatAge={heartbeat} sourceAge={sourceAge} />
                         </div>
                     </>
                 )}
@@ -135,13 +149,7 @@ export default function KrClawPage() {
     );
 }
 
-function heartbeatAge(data: ClawOverview | null, tick: number, fetchedAt: number): number | null {
-    // 서버 age + 마지막 fetch 이후 경과초(tick 으로 1초마다 재계산) → 살아있음을 보여준다
-    void tick;
-    return data?.loop.heartbeat_age_s != null ? data.loop.heartbeat_age_s + Math.max(0, Math.round((Date.now() - fetchedAt) / 1000)) : null;
-}
-
-function StatusStrip({ data }: { data: ClawOverview }) {
+function StatusStrip({ data, heartbeatAge, stale }: { data: ClawOverview; heartbeatAge: number | null; stale: boolean }) {
     const L = data.loop, R = data.regime;
     const loop = LOOP_LABEL[L.state] ?? LOOP_LABEL.idle;
     const reg = REGIME_LABEL[R.regime] ?? REGIME_LABEL.UNKNOWN;
@@ -154,16 +162,16 @@ function StatusStrip({ data }: { data: ClawOverview }) {
     const d = 'flex flex-wrap items-center gap-1.5 text-[12px] text-gray-400';
     return (
         <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
-            <section className={tile(L.state === 'dead' ? 'bad' : halted ? 'warn' : 'none')}>
+            <section className={tile(L.state === 'dead' ? 'bad' : halted || stale ? 'warn' : 'none')}>
                 <div className={k}>루프 · 시장</div>
                 <div className={v}>
-                    <span className={halted ? 'text-amber-300' : L.state === 'dead' ? 'text-red-400' : 'text-white'}>{loop.label}</span>
-                    <small className="text-[12px] font-semibold text-gray-400">{L.state === 'running' ? `틱 ${hhmm(L.last_tick_ts)}` : loop.sub}</small>
+                    <span className={halted || stale ? 'text-amber-300' : L.state === 'dead' ? 'text-red-400' : 'text-white'}>{stale ? '상태 확인 필요' : loop.label}</span>
+                    <small className="text-[12px] font-semibold text-gray-400">{stale ? `마지막 기록: ${loop.label}` : L.state === 'running' ? `틱 ${hhmm(L.last_tick_ts)}` : loop.sub}</small>
                 </div>
                 <div className={d}>
                     {halted ? <><span className="rounded bg-amber-500/15 px-1.5 text-[11px] font-bold text-amber-300">HALT</span>{R.reasons[0]}</>
-                        : L.state === 'dead' ? `하트비트 ${fmtAge(L.heartbeat_age_s)} 전 · 워치독 재기동 대기`
-                        : `하트비트 ${fmtAge(L.heartbeat_age_s)} 전 · 소스 ${L.source ?? '-'}`}
+                        : L.state === 'dead' ? `하트비트 ${fmtAge(heartbeatAge)} 전 · 워치독 재기동 대기`
+                        : `하트비트 ${fmtAge(heartbeatAge)} 전 · 소스 ${L.source ?? '-'}`}
                 </div>
             </section>
             <section className={tile()}>
@@ -185,11 +193,11 @@ function StatusStrip({ data }: { data: ClawOverview }) {
     );
 }
 
-function SystemCard({ data }: { data: ClawOverview }) {
+function SystemCard({ data, heartbeatAge, sourceAge }: { data: ClawOverview; heartbeatAge: number | null; sourceAge: number | null }) {
     const [open, setOpen] = useState(false);
     const s = data.system;
     const rows: [string, string][] = [
-        ['하트비트', `${fmtAge(data.loop.heartbeat_age_s)} 전`], ['소스', `${data.loop.source ?? '-'} · ${fmtAge(data.loop.source_age_s)}`],
+        ['하트비트', `${fmtAge(heartbeatAge)} 전`], ['소스', `${data.loop.source ?? '-'} · ${fmtAge(sourceAge)}`],
         ['오늘 스냅샷', s.snapshots_today.toLocaleString('ko-KR')], ['오늘 KIS 직접호출', String(s.kis_calls_today)],
         ['DB', `${(s.db_bytes / 1024).toFixed(0)} KB`], ['DROP 확정', `${s.drop_confirm_ticks} 틱`],
         ['발송 경로', `${s.delivery.mode} · ${s.delivery.token_key}`],

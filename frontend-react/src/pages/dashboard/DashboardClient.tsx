@@ -1,6 +1,6 @@
 
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI, briefingAPI, commonAPI, communityAPI, type AIBriefing, type MarketIndexItem, type KRAIChartAnalysisResponse, type USAIChartAnalysisResponse, type CommunitySummary } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
@@ -20,9 +20,9 @@ interface InitialData {
 }
 
 interface VCPSummary {
-    kr: number;
-    us: number;
-    crypto: number;
+    kr: number | null;
+    us: number | null;
+    crypto: number | null;
     topSignals: Array<{ name: string; market: string; score: number }>;
 }
 
@@ -100,6 +100,15 @@ const SUMMARY_WATCH_FILES = [
     'vcp_crypto_latest.json',
 ];
 
+const DASHBOARD_SOURCES = {
+    briefing: '미국 시장', gate: '한국 시장', dominance: '가상자산',
+    vcpKr: 'KR VCP', vcpUs: 'US VCP', vcpCrypto: 'Crypto VCP',
+    jongga: '종가베팅', leading: '주도주', wave: 'W 패턴', aiBriefing: 'AI 브리핑',
+    indices: '시장 지수', aiChart: 'KR AI 차트', usAiChart: 'US AI 차트', community: '커뮤니티',
+} as const;
+type DashboardSource = keyof typeof DASHBOARD_SOURCES;
+type SourceStatus = Record<DashboardSource, { loading: boolean; error: boolean }>;
+
 function isPayloadFresh(data: any): boolean {
     const freshness = data?.metadata?.freshness ?? data?.freshness;
     return !freshness?.is_stale;
@@ -129,11 +138,11 @@ function buildVcpSummary(vcpKr: any, vcpUs: any, vcpCrypto: any): VCPSummary {
         ['US', vcpUs],
         ['CRYPTO', vcpCrypto],
     ];
-    const counts: Record<string, number> = { KR: 0, US: 0, CRYPTO: 0 };
+    const counts: Record<string, number | null> = { KR: null, US: null, CRYPTO: null };
     const allSignals: Array<{ name: string; market: string; score: number }> = [];
 
     marketPayloads.forEach(([market, data]) => {
-        if (!isPayloadFresh(data)) return;
+        if (!data || !isPayloadFresh(data)) return;
         const unique = dedupSignals(Array.isArray(data?.signals) ? data.signals : []);
         counts[market] = unique.length;
         unique.slice(0, 3).forEach((s: any) => {
@@ -240,9 +249,10 @@ function VCPMiniRow({ name, market, score, accent }: { name: string; market: str
 // ── Opportunity Score Card ────────────────────────────────────────────────────
 
 function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
-    score: number; krScore: number; usScore: number; cryptoScore: number;
+    score: number | null; krScore: number | null; usScore: number | null; cryptoScore: number | null;
 }) {
-    const getLevel = (s: number) => {
+    const getLevel = (s: number | null) => {
+        if (s == null) return { label: '데이터 확인 필요', color: '#9ca3af' };
         if (s >= 80) return { label: '관찰 최우선', color: '#10b981' };
         if (s >= 60) return { label: '관찰 강화', color: '#22c55e' };
         if (s >= 40) return { label: '균형 관찰', color: '#f59e0b' };
@@ -251,10 +261,10 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
     };
     const current = getLevel(score);
     const color = current.color;
-    const arc = Math.min(score / 100, 1);
-    const markets: [string, number][] = [['KR', krScore], ['US', usScore], ['Crypto', cryptoScore]];
+    const arc = score == null ? 0 : Math.min(score / 100, 1);
+    const markets: [string, number | null][] = [['KR', krScore], ['US', usScore], ['Crypto', cryptoScore]];
     return (
-        <div className="flex flex-col gap-3 rounded-2xl border border-white/[0.07] bg-[#15191e] p-4 sm:p-5">
+        <div role="region" aria-label="관찰 강도 지수" className="flex flex-col gap-3 rounded-2xl border border-white/[0.07] bg-[#15191e] p-4 sm:p-5">
             {/* Top: gauge + title */}
             <div className="flex items-center gap-4">
                 <div className="flex flex-col items-center gap-1.5 shrink-0">
@@ -267,7 +277,7 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
                                 style={{ transition: 'stroke-dasharray 0.6s ease' }} />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-xl font-extrabold tabular-nums leading-none" style={{ color }}>{Math.round(score)}</span>
+                            <span className="text-xl font-extrabold tabular-nums leading-none" style={{ color }}>{score == null ? '—' : Math.round(score)}</span>
                             <span className="text-[10px] text-gray-400 font-semibold">/100</span>
                         </div>
                     </div>
@@ -279,7 +289,7 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
                     <div className="flex items-center gap-3 mt-0.5">
                         {markets.map(([m, s]) => (
                             <span key={m} className="text-[13px] font-semibold" style={{ color: getLevel(s).color }}>
-                                {m} {Math.round(s)}
+                                {m} {s == null ? '—' : Math.round(s)}
                             </span>
                         ))}
                     </div>
@@ -293,8 +303,8 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
                         <div key={m} className="flex items-center gap-2">
                             <span className="text-[12px] text-gray-400 w-10 text-right font-medium">{m}</span>
                             <div className="relative flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'linear-gradient(to right, #ef4444, #f97316, #f59e0b, #22c55e, #10b981)' }}>
-                                <div className="absolute top-0 h-full w-1 bg-white rounded-full shadow-[0_0_4px_rgba(255,255,255,0.9)]"
-                                    style={{ left: `${Math.min(Math.max(s, 2), 98)}%`, transform: 'translateX(-50%)', transition: 'left 0.6s ease' }} />
+                                {s != null && <div className="absolute top-0 h-full w-1 bg-white rounded-full shadow-[0_0_4px_rgba(255,255,255,0.9)]"
+                                    style={{ left: `${Math.min(Math.max(s, 2), 98)}%`, transform: 'translateX(-50%)', transition: 'left 0.6s ease' }} />}
                             </div>
                             <span className="w-20 whitespace-nowrap text-right text-[12px] font-bold" style={{ color: lv.color }}>{lv.label}</span>
                         </div>
@@ -347,7 +357,7 @@ function TopSignalCard({ summary, leadingData }: { summary: any; leadingData: an
                         </span>
                     </div>
                 ) : (
-                    <p className="text-[12px] text-gray-400 px-1">아직 시그널 없음</p>
+                    <p className="text-[12px] text-gray-400 px-1">{summary ? '아직 시그널 없음' : '종가베팅 데이터 확인 필요'}</p>
                 )}
             </Link>
 
@@ -475,14 +485,14 @@ function MobileDashboardConsole({
     aiBriefing,
     marketIndices,
 }: {
-    opportunityScore: number;
-    krScore: number;
-    usScore: number;
-    cryptoScore: number;
+    opportunityScore: number | null;
+    krScore: number | null;
+    usScore: number | null;
+    cryptoScore: number | null;
     gateLabel: string;
     vixVal: string;
     fgScore: number | null;
-    totalVCP: number;
+    totalVCP: number | null;
     todaySummary: any;
     leadingData: any;
     aiBriefing: AIBriefing | null;
@@ -493,9 +503,9 @@ function MobileDashboardConsole({
     const topSignal = todaySummary?.top_signal;
     const leadingTop = leadingData?.results?.[0];
     const topName = topSignal?.name ?? leadingTop?.name ?? '스캔 대기';
-    const topGrade = topSignal?.grade ?? leadingTop?.grade ?? 'LIVE';
+    const topGrade = topSignal?.grade ?? leadingTop?.grade ?? '—';
     const briefingTitle = aiBriefing?.title ?? '시장 데이터 동기화 중';
-    const score = Math.round(opportunityScore);
+    const score = opportunityScore == null ? '—' : Math.round(opportunityScore);
     const kospi = marketIndices.find((item) => /kospi|코스피/i.test(item.name)) ?? marketIndices[0];
     const kosdaq = marketIndices.find((item) => /kosdaq|코스닥/i.test(item.name));
 
@@ -514,9 +524,9 @@ function MobileDashboardConsole({
                 </div>
 
                 <div className="mt-4 grid grid-cols-3 gap-2">
-                    <MobileMetricTile label="KR" value={String(Math.round(krScore))} tone="text-sky-300" />
-                    <MobileMetricTile label="US" value={String(Math.round(usScore))} tone="text-emerald-300" />
-                    <MobileMetricTile label="Crypto" value={String(Math.round(cryptoScore))} tone="text-amber-300" />
+                    <MobileMetricTile label="KR" value={krScore == null ? '—' : String(Math.round(krScore))} tone="text-sky-300" />
+                    <MobileMetricTile label="US" value={usScore == null ? '—' : String(Math.round(usScore))} tone="text-emerald-300" />
+                    <MobileMetricTile label="Crypto" value={cryptoScore == null ? '—' : String(Math.round(cryptoScore))} tone="text-amber-300" />
                 </div>
 
                 <div className="mt-3 grid grid-cols-2 gap-2 text-[13px] font-bold">
@@ -538,7 +548,7 @@ function MobileDashboardConsole({
                         {kospi && <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[12px] font-black text-slate-300">{kospi.name} {kospi.change_pct >= 0 ? '+' : ''}{kospi.change_pct.toFixed(2)}%</span>}
                         {kosdaq && <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[12px] font-black text-slate-300">{kosdaq.name} {kosdaq.change_pct >= 0 ? '+' : ''}{kosdaq.change_pct.toFixed(2)}%</span>}
                         {fgScore != null && <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[12px] font-black text-slate-300">F&G {fgScore}</span>}
-                        <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[12px] font-black text-slate-300">VCP {totalVCP}</span>
+                        <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[12px] font-black text-slate-300">VCP {totalVCP ?? '—'}</span>
                     </div>
                 )}
             </div>
@@ -561,7 +571,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
     const [briefing, setBriefing] = useState<any>(initialData.briefing);
     const [krGate, setKrGate] = useState<any>(initialData.krGate);
     const [cryptoDom, setCryptoDom] = useState<any>(initialData.cryptoDom);
-    const [vcpData, setVcpData] = useState<VCPSummary>({ kr: 0, us: 0, crypto: 0, topSignals: [] });
+    const [vcpSources, setVcpSources] = useState<{ kr: any; us: any; crypto: any }>({ kr: null, us: null, crypto: null });
     const [todaySummary, setTodaySummary] = useState<any>(null);
     const [leadingData, setLeadingData] = useState<any>(null);
     const [waveData, setWaveData] = useState<any>(null);
@@ -570,55 +580,76 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
     const [aiChart, setAiChart] = useState<KRAIChartAnalysisResponse | null>(null);
     const [usAiChart, setUsAiChart] = useState<USAIChartAnalysisResponse | null>(null);
     const [communitySummary, setCommunitySummary] = useState<CommunitySummary | null>(null);
+    const [sourceStatus, setSourceStatus] = useState<SourceStatus>(() => Object.fromEntries(
+        Object.keys(DASHBOARD_SOURCES).map(key => [key, { loading: true, error: false }]),
+    ) as SourceStatus);
+    const inFlightRefresh = useRef<Promise<void> | null>(null);
 
-    const loadData = useCallback(async () => {
-        try {
-            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga, leading, wave, aiBrf, indices, aiChartRes, usAiChartRes, communitySum] = await Promise.all([
-                usAPI.getMarketBriefing().catch(() => null),
-                krAPI.getMarketGate().catch(() => null),
-                cryptoAPI.getDominance().catch(() => null),
-                krAPI.getVCPEnhanced().catch(() => null),
-                usAPI.getVCPEnhanced().catch(() => null),
-                cryptoAPI.getVCPEnhanced().catch(() => null),
-                jonggaAPI.getTodaySummary().catch(() => null),
-                krAPI.getLeadingStocks().catch(() => null),
-                waveAPI.getDashboard().catch(() => null),
-                briefingAPI.getLatest().catch(() => null),
-                commonAPI.getMarketIndices().catch(() => null),
-                krAPI.getAIChartAnalysis().catch(() => null),
-                usAPI.getAIChartAnalysis().catch(() => null),
-                communityAPI.getSummary().catch(() => null),
-            ]);
-            setBriefing(b);
-            setKrGate(kr);
-            setCryptoDom(crypto);
-            setTodaySummary(jongga);
-            setLeadingData(isPayloadFresh(leading) ? leading : null);
-            setWaveData(wave);
-            setAiBriefing(aiBrf);
-            if (indices?.indices) setMarketIndices(indices.indices);
-            if (aiChartRes) setAiChart(aiChartRes);
-            if (usAiChartRes) setUsAiChart(usAiChartRes);
-            if (communitySum) setCommunitySummary(communitySum);
+    const loadData = useCallback((): Promise<void> => {
+        // Pull-to-refresh and file-version refresh share one set of GET requests.
+        if (inFlightRefresh.current) return inFlightRefresh.current;
+        setSourceStatus(previous => Object.fromEntries(
+            Object.entries(previous).map(([key, status]) => [key, { ...status, loading: true }]),
+        ) as SourceStatus);
 
-            setVcpData(buildVcpSummary(vcpKr, vcpUs, vcpCrypto));
-        } catch { /* ignore */ }
+        async function loadSource<T>(key: DashboardSource, fetcher: () => Promise<T>, apply: (data: T) => void) {
+            try {
+                const data = await fetcher();
+                if (data == null) throw new Error('Missing dashboard payload');
+                apply(data);
+                setSourceStatus(previous => ({ ...previous, [key]: { loading: false, error: false } }));
+            } catch {
+                // A failed source must never clear the last confirmed value.
+                setSourceStatus(previous => ({ ...previous, [key]: { loading: false, error: true } }));
+            }
+        }
+        const updateVcp = (market: 'kr' | 'us' | 'crypto', data: any) => {
+            if (!Array.isArray(data.signals)) throw new Error('Invalid VCP payload');
+            setVcpSources(previous => ({ ...previous, [market]: data }));
+            if (!isPayloadFresh(data)) throw new Error('Stale VCP payload');
+        };
+
+        // Commit each successful source immediately; the aggregate promise only
+        // tracks completion and prevents overlapping refreshes.
+        const refresh = Promise.all([
+            loadSource('briefing', usAPI.getMarketBriefing, setBriefing),
+            loadSource('gate', krAPI.getMarketGate, setKrGate),
+            loadSource('dominance', cryptoAPI.getDominance, setCryptoDom),
+            loadSource('vcpKr', krAPI.getVCPEnhanced, data => updateVcp('kr', data)),
+            loadSource('vcpUs', usAPI.getVCPEnhanced, data => updateVcp('us', data)),
+            loadSource('vcpCrypto', cryptoAPI.getVCPEnhanced, data => updateVcp('crypto', data)),
+            loadSource('jongga', jonggaAPI.getTodaySummary, setTodaySummary),
+            loadSource('leading', krAPI.getLeadingStocks, data => {
+                if (!isPayloadFresh(data)) {
+                    setLeadingData(null);
+                    throw new Error('Stale leading payload');
+                }
+                if (!Array.isArray(data.results)) throw new Error('Invalid leading payload');
+                setLeadingData(data);
+            }),
+            loadSource('wave', waveAPI.getDashboard, setWaveData),
+            loadSource('aiBriefing', briefingAPI.getLatest, setAiBriefing),
+            loadSource('indices', commonAPI.getMarketIndices, data => {
+                if (!Array.isArray(data.indices)) throw new Error('Invalid indices payload');
+                setMarketIndices(data.indices);
+            }),
+            loadSource('aiChart', krAPI.getAIChartAnalysis, data => {
+                if (!Array.isArray(data.signals)) throw new Error('Invalid chart payload');
+                setAiChart(data);
+            }),
+            loadSource('usAiChart', usAPI.getAIChartAnalysis, data => {
+                if (!Array.isArray(data.signals)) throw new Error('Invalid chart payload');
+                setUsAiChart(data);
+            }),
+            loadSource('community', communityAPI.getSummary, setCommunitySummary),
+        ]).then(() => {}).finally(() => { inFlightRefresh.current = null; });
+        inFlightRefresh.current = refresh;
+        return refresh;
     }, []);
 
     useEffect(() => {
-        if (!initialData.briefing && !initialData.krGate && !initialData.cryptoDom) {
-            loadData();
-        } else {
-            // Load VCP data even if initial data exists
-            Promise.all([
-                krAPI.getVCPEnhanced().catch(() => null),
-                usAPI.getVCPEnhanced().catch(() => null),
-                cryptoAPI.getVCPEnhanced().catch(() => null),
-            ]).then(([vcpKr, vcpUs, vcpCrypto]) => {
-                setVcpData(buildVcpSummary(vcpKr, vcpUs, vcpCrypto));
-            });
-        }
-    }, [initialData, loadData]);
+        void loadData();
+    }, [loadData]);
 
     usePullToRefreshRegister(loadData);
     useSmartRefresh(loadData, SUMMARY_WATCH_FILES, 15000, true);
@@ -644,31 +675,46 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
         ? (krGate.score >= 70 ? 'text-emerald-400' : krGate.score >= 45 ? 'text-yellow-400' : 'text-red-400')
         : 'text-gray-400';
 
-    const krSignalLabel = krGate?.label ?? 'Live';
-    const usGateLabel = briefing?.vix?.level ?? 'Live';
+    const krSignalLabel = krGate?.label ?? '확인 중';
+    const usGateLabel = briefing?.vix?.level ?? '확인 중';
     const usVixOk = briefing?.vix?.value != null && Number(briefing.vix.value) < 20;
-    const btcSentiment = cryptoDom?.sentiment ?? 'Tracking';
+    const btcSentiment = cryptoDom?.sentiment ?? '확인 중';
 
-    const totalVCP = vcpData.kr + vcpData.us + vcpData.crypto;
+    const vcpData = buildVcpSummary(vcpSources.kr, vcpSources.us, vcpSources.crypto);
+    const totalVCP = vcpData.kr != null && vcpData.us != null && vcpData.crypto != null
+        ? vcpData.kr + vcpData.us + vcpData.crypto : null;
+    const pendingSources = (Object.keys(DASHBOARD_SOURCES) as DashboardSource[]).filter(key => sourceStatus[key].loading);
+    const failedSources = (Object.keys(DASHBOARD_SOURCES) as DashboardSource[]).filter(key => sourceStatus[key].error);
 
     // ── Opportunity Score ───────────────────────────────────────────────────────
-    const krScore = krGate?.score ?? 0;
+    const krScore = krGate?.score ?? null;
     // US score: derived from VIX (lower = better) + F&G
-    const vixNum = briefing?.vix?.value != null ? Number(briefing.vix.value) : 20;
-    const fgNum = fgScore ?? 50;
-    const usScore = Math.max(0, Math.min(100, (100 - vixNum * 2.5) * 0.6 + (fgNum) * 0.4));
+    const vixNum = briefing?.vix?.value != null ? Number(briefing.vix.value) : null;
+    const usScore = vixNum != null && fgScore != null
+        ? Math.max(0, Math.min(100, (100 - vixNum * 2.5) * 0.6 + fgScore * 0.4)) : null;
     // Crypto score: derived from BTC RSI + sentiment
-    const btcRsi = cryptoDom?.btc_rsi != null ? Number(cryptoDom.btc_rsi) : 50;
-    const cryptoScore = Math.max(0, Math.min(100, btcRsi > 70 ? 40 : btcRsi < 30 ? 35 : btcRsi));
+    const btcRsi = cryptoDom?.btc_rsi != null ? Number(cryptoDom.btc_rsi) : null;
+    const cryptoScore = btcRsi != null ? Math.max(0, Math.min(100, btcRsi > 70 ? 40 : btcRsi < 30 ? 35 : btcRsi)) : null;
     // Signal bonus: top jongga grade
     const topGrade = todaySummary?.top_signal?.grade;
     const signalBonus = topGrade === 'S' ? 100 : topGrade === 'A' ? 70 : 40;
-    const opportunityScore = krScore * 0.40 + usScore * 0.35 + cryptoScore * 0.15 + signalBonus * 0.10;
+    const opportunityScore = krScore != null && usScore != null && cryptoScore != null && todaySummary != null
+        ? krScore * 0.40 + usScore * 0.35 + cryptoScore * 0.15 + signalBonus * 0.10 : null;
 
     // ── Render ────────────────────────────────────────────────────────────────
 
     return (
         <div className="summary-dashboard">
+            {(pendingSources.length > 0 || failedSources.length > 0) && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-gray-300">
+                    {pendingSources.length > 0 && <p role="status">{pendingSources.map(key => DASHBOARD_SOURCES[key]).join(' · ')} 데이터를 불러오는 중…</p>}
+                    {failedSources.length > 0 && <div role="alert" className="flex items-center justify-between gap-3 text-amber-300">
+                        <p>{failedSources.map(key => DASHBOARD_SOURCES[key]).join(' · ')}의 최신 데이터를 확인하지 못했습니다. 이전에 받은 값은 유지됩니다.</p>
+                        <button type="button" onClick={() => { void loadData(); }} disabled={pendingSources.length > 0}
+                            className="shrink-0 rounded border border-amber-400/30 px-2 py-1 font-semibold disabled:opacity-50">다시 시도</button>
+                    </div>}
+                </div>
+            )}
             <MobileDashboardConsole
                 opportunityScore={opportunityScore}
                 krScore={krScore}
@@ -765,7 +811,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 {/* Title */}
                 <div className="px-4 pb-2 relative z-10">
                     <h3 className="summary-briefing-title">
-                        {aiBriefing?.title || 'AI 브리핑을 불러오는 중...'}
+                        {aiBriefing?.title || (sourceStatus.aiBriefing.error ? 'AI 브리핑 확인 필요' : 'AI 브리핑을 불러오는 중...')}
                     </h3>
                 </div>
 
@@ -809,7 +855,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     usScore={usScore}
                     cryptoScore={cryptoScore}
                 />
-                {todaySummary && <TopSignalCard summary={todaySummary} leadingData={leadingData} />}
+                {(todaySummary || leadingData) && <TopSignalCard summary={todaySummary} leadingData={leadingData} />}
             </div>
 
             {/* ── Wave Pattern Section ── */}
@@ -942,7 +988,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/10 text-cyan-400 tabular-nums">
-                            {totalVCP}
+                            {totalVCP ?? '—'}
                         </span>
                         <i className="fas fa-chevron-right text-[12px] text-gray-400 group-hover:text-cyan-400 transition-colors" />
                     </div>
@@ -953,17 +999,17 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                         <span className="w-2 h-2 rounded-full bg-blue-400" />
                         <span className="text-gray-400">KR</span>
-                        <span className="text-blue-400 tabular-nums">{vcpData.kr}</span>
+                        <span className="text-blue-400 tabular-nums">{vcpData.kr ?? '—'}</span>
                     </span>
                     <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                         <span className="w-2 h-2 rounded-full bg-emerald-400" />
                         <span className="text-gray-400">US</span>
-                        <span className="text-emerald-400 tabular-nums">{vcpData.us}</span>
+                        <span className="text-emerald-400 tabular-nums">{vcpData.us ?? '—'}</span>
                     </span>
                     <span className="flex items-center gap-1.5 text-[12px] font-semibold">
                         <span className="w-2 h-2 rounded-full bg-amber-400" />
                         <span className="text-gray-400">Crypto</span>
-                        <span className="text-amber-400 tabular-nums">{vcpData.crypto}</span>
+                        <span className="text-amber-400 tabular-nums">{vcpData.crypto ?? '—'}</span>
                     </span>
                 </div>
 
@@ -1246,7 +1292,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     label="커뮤니티"
                     sublabel="게시판 · 수식마켓 · 토론"
                     accent="#06b6d4"
-                    status={communitySummary?.today_posts ? `+${communitySummary.today_posts} today` : 'Active'}
+                    status={communitySummary ? (communitySummary.today_posts ? `+${communitySummary.today_posts} today` : 'Active') : '확인 중'}
                     statusColor="text-cyan-400"
                     metric={communitySummary ? String(communitySummary.total_posts) : '—'}
                     metricLabel="Posts"

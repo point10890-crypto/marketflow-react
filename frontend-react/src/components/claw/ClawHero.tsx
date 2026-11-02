@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ClawMascot from '@/components/claw/ClawMascot';
 import ClawAsciiBackdrop from '@/components/claw/ClawAsciiBackdrop';
-import { ClawOverview, fmtAge } from '@/lib/claw';
+import { ClawOverview, fmtAge, isClawProjectionStale } from '@/lib/claw';
 
 const MOOD: Record<string, { line: string; sub: string }> = {
     running: { line: '지금 장을 5초마다 보고 있어요.', sub: '주도주 등급이 바뀌는 순간만 알립니다.' },
@@ -41,21 +41,23 @@ export function Headline({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
     );
 }
 
-function LiveBadge({ state }: { state: string | null }) {
+function LiveBadge({ state, stale = false }: { state: string | null; stale?: boolean }) {
     return (
         <span className="inline-flex items-center gap-1.5 rounded-full border border-[#ff5a3c]/30 bg-[#ff5a3c]/10 px-3 py-1 text-[11px] font-bold text-[#ffb4a3]">
             <span className="relative grid h-2 w-2 place-items-center">
                 <span className={`absolute inline-flex h-2 w-2 rounded-full ${state === 'running' ? 'bg-[#ff5a3c]/60 animate-ping' : ''}`} />
                 <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${dotOf(state)}`} />
             </span>
-            Claw LIVE · {badgeOf(state)}
+            Claw LIVE · {stale ? 'STALE' : badgeOf(state)}
         </span>
     );
 }
 
-export function ClawHero({ data, heartbeatAge }: { data: ClawOverview | null; heartbeatAge: number | null }) {
-    const state = data?.loop.state ?? null;
-    const mood = MOOD[state ?? 'idle'];
+export function ClawHero({ data, heartbeatAge, sourceAge, stale = isClawProjectionStale(data), unavailable = false }: {
+    data: ClawOverview | null; heartbeatAge: number | null; sourceAge?: number | null; stale?: boolean; unavailable?: boolean;
+}) {
+    const state = stale ? null : data?.loop.state ?? null;
+    const mood = stale ? { line: '마지막 확인 데이터입니다. 최신 상태를 확인 중이에요.', sub: '캐시된 기록이며 현재 가동 상태를 보장하지 않습니다.' } : MOOD[state ?? 'idle'];
     return (
         <section className="relative overflow-hidden rounded-3xl border border-[#ff5a3c]/15 bg-[#0a0709]">
             <ClawAsciiBackdrop live={state === 'running'} tone={toneOf(state)} />
@@ -67,14 +69,14 @@ export function ClawHero({ data, heartbeatAge }: { data: ClawOverview | null; he
                 <h1 className="mt-3"><Headline size="lg" /></h1>
 
                 <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
-                    <LiveBadge state={state} />
-                    <span className="text-[14px] font-semibold text-gray-100">{data ? mood.line : '불러오는 중이에요…'}</span>
+                    <LiveBadge state={state} stale={stale} />
+                    <span className="text-[14px] font-semibold text-gray-100">{data ? mood.line : unavailable ? '데이터 연결을 확인하지 못했습니다.' : '불러오는 중이에요…'}</span>
                     {data && <span className="hidden text-[12px] text-gray-400 sm:inline">{mood.sub}</span>}
                 </div>
                 {data && (
                     <p className="mt-2 text-[11px] text-gray-500">
                         {data.loop.last_tick_ts ? `마지막 틱 ${data.loop.last_tick_ts.slice(5, 16).replace('T', ' ')}` : '아직 틱 없음'}
-                        {data.loop.source && ` · ${data.loop.source} ${fmtAge(data.loop.source_age_s)} 전`}
+                        {data.loop.source && ` · ${data.loop.source} ${fmtAge(sourceAge === undefined ? data.loop.source_age_s : sourceAge)} 전`}
                         {heartbeatAge != null && ` · 하트비트 ${fmtAge(heartbeatAge)} 전`}
                     </p>
                 )}
@@ -96,8 +98,9 @@ export function ClawHero({ data, heartbeatAge }: { data: ClawOverview | null; he
  *   - 임계값에 히스테리시스를 둬(배너가 거의 다 올라간 뒤 접고, 맨 위 근처에서만 펼침) 짧은 페이지에서의 진동을 막는다.
  *  링크는 Claw LIVE 전체 화면. */
 export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
-    const state = data?.loop.state ?? null;
-    const mood = MOOD[state ?? 'idle'];
+    const stale = isClawProjectionStale(data);
+    const state = stale ? null : data?.loop.state ?? null;
+    const mood = stale ? { line: '마지막 확인 데이터 · 최신 상태 확인 중' } : MOOD[state ?? 'idle'];
     const bannerRef = useRef<HTMLAnchorElement | null>(null);
     const [compact, setCompact] = useState(false);
 
@@ -155,7 +158,7 @@ export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
                         <>
                             <ClawMascot state={state} size={40} className="shrink-0 drop-shadow-[0_6px_16px_rgba(255,90,60,.35)]" />
                             <div className="min-w-0 flex-1 truncate"><Headline size="sm" /></div>
-                            <LiveBadge state={state} />
+                            <LiveBadge state={state} stale={stale} />
                         </>
                     )}
                 </Link>
@@ -178,7 +181,7 @@ export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
                                 <div className="claw-brand-cap font-mono text-[10px] tracking-[0.26em] text-gray-400">관찰 전용 · 사용자 PC에서 실행 · 매매 없음</div>
                                 <div className="claw-brand-headline truncate"><Headline size="sm" /></div>
                                 <div className="claw-brand-mood mt-1 flex flex-wrap items-center justify-center gap-2">
-                                    <LiveBadge state={state} />
+                                    <LiveBadge state={state} stale={stale} />
                                     <span className="truncate text-[11px] text-gray-400">{data ? mood.line : '불러오는 중이에요…'}</span>
                                 </div>
                             </div>

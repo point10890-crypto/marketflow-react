@@ -53,4 +53,12 @@ describe('ClawObservationCard', () => {
     const { container } = render(<ClawObservationCard quality={null} scorecards={null} loading={false} />);
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('marks cached quality and scorecards delayed even when the embedded ledger was healthy', () => {
+    const projection = { state: 'stale', stale: true, refreshing: true, cached_at: null, age_seconds: 30, last_attempt_at: null, last_error: null, retry_after_seconds: 5 };
+    render(<ClawObservationCard quality={{ ...quality, projection }} scorecards={{ ...scorecards, insufficient: false, projection }} loading={false} />);
+    expect(screen.getByText('일부 지연')).toBeInTheDocument();
+    expect(screen.queryByText('관측 정상')).not.toBeInTheDocument();
+    expect(screen.getByText(/캐시 기록/)).toBeInTheDocument();
+  });
 });
