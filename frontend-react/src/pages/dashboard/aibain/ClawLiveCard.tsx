@@ -6,32 +6,44 @@
  * 전체 화면은 /dashboard/kr/claw 로 보낸다. 자체 폴링(장중 5s / 장외 60s).
  * 응답 형태가 계약과 다르면(구 백엔드·모킹) 조용히 '준비 중' 한 줄만 렌더한다.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI } from '@/lib/api';
 import ClawMascot from '@/components/claw/ClawMascot';
 import {
     CLAW_OVERVIEW_ENDPOINT, ClawOverview, GRADE_CHIP, LOOP_LABEL, REGIME_LABEL,
-    chgClass, eventChip, fmtEok, fmtHeld, fmtPct, hhmm, isClawOverview,
+    chgClass, eventChip, fmtEok, fmtHeld, fmtPct, fmtAge, hhmm, isClawOverview,
+    isClawProjectionStale, clawAgeSeconds, clawSnapshotAgeSeconds,
 } from '@/lib/claw';
 
 export default function ClawLiveCard() {
     const { token } = useAuth();
     const [data, setData] = useState<ClawOverview | null>(null);
     const [failed, setFailed] = useState(false);
+    const [invalid, setInvalid] = useState(false);
+    const [, setTick] = useState(0);
+    const receivedAt = useRef(Date.now());
+    const inFlight = useRef(false);
 
     const load = useCallback(async () => {
+        if (inFlight.current) return;
+        inFlight.current = true;
         try {
             const res = await fetchAuthAPI<unknown>(CLAW_OVERVIEW_ENDPOINT, token ?? undefined);
-            if (isClawOverview(res)) { setData(res); setFailed(false); } else { setFailed(true); }
+            if (isClawOverview(res)) { setData(res); setFailed(false); setInvalid(false); receivedAt.current = Date.now(); }
+            else { setFailed(true); setInvalid(true); }
         } catch {
             setFailed(true);
+            setInvalid(false);
+        } finally {
+            inFlight.current = false;
         }
     }, [token]);
 
     // 최초 1회 로드, 이후 폴링(장중 5s / 장외 60s). 보이는 탭에서만 재호출.
     useEffect(() => { void load(); }, [load]);
+    useEffect(() => { const timer = setInterval(() => setTick(value => value + 1), 1000); return () => clearInterval(timer); }, []);
     const marketOpen = data?.loop.market_open ?? false;
     useEffect(() => {
         const timer = setInterval(() => { if (document.visibilityState === 'visible') void load(); }, marketOpen ? 5000 : 60000);
@@ -42,7 +54,10 @@ export default function ClawLiveCard() {
         return (
             <section className="ai-panel rounded-2xl border border-teal-400/15 bg-[#13151f] p-5">
                 <Header state={null} />
-                <p className="text-sm text-gray-500">{failed ? 'Claw LIVE 데이터가 아직 없습니다 (백엔드 준비 중)' : '불러오는 중...'}</p>
+                {failed ? <div role="alert" className="text-sm text-amber-300">
+                    <p>{invalid ? 'Claw 응답을 확인하지 못했습니다 (백엔드 준비 중).' : 'Claw LIVE 데이터를 불러오지 못했습니다. 연결 상태를 확인해 주세요.'}</p>
+                    <button type="button" onClick={() => { void load(); }} className="mt-2 rounded border border-white/10 px-3 py-1 text-xs">다시 시도</button>
+                </div> : <p className="text-sm text-gray-500">불러오는 중...</p>}
             </section>
         );
     }
@@ -53,16 +68,23 @@ export default function ClawLiveCard() {
     const events = data.events.items.slice(-4).reverse();
     const halted = data.loop.state === 'halt';
     const evCount = data.events.items.length;
+    const stale = failed || isClawProjectionStale(data);
+    const heartbeat = clawAgeSeconds(data, data.loop.heartbeat_age_s, receivedAt.current);
 
     return (
         <section className={`rounded-2xl border bg-[#13151f] p-5 ${halted ? 'border-amber-400/40' : 'border-teal-400/15'}`}>
-            <Header state={data.loop.state} />
+            <Header state={stale ? null : data.loop.state} stale={stale} />
+            {stale && <div role="status" className="mb-3 flex items-center justify-between gap-2 text-xs text-amber-300">
+                <p>{isClawProjectionStale(data) ? '오래된 캐시 데이터입니다.' : '최신 응답을 확인하지 못했습니다.'} 마지막 확인 값을 표시합니다.</p>
+                <button type="button" onClick={() => { void load(); }} className="shrink-0 rounded border border-amber-400/20 px-2 py-1">다시 시도</button>
+            </div>}
+            <p className="mb-2 text-[11px] text-gray-400">스냅샷 {fmtAge(clawSnapshotAgeSeconds(data, receivedAt.current))} 전 · 하트비트 {fmtAge(heartbeat)} 전</p>
 
             {/* 상태 한 줄: 루프 · 레짐 · 이벤트 · 발송 */}
             <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-gray-400">
                 <span className="inline-flex items-center gap-1.5">
-                    <span className={`h-2 w-2 rounded-full ${loop.dot}`} />
-                    <b className={`font-bold ${halted ? 'text-amber-300' : 'text-gray-200'}`}>{loop.label}</b>
+                    <span className={`h-2 w-2 rounded-full ${stale ? 'bg-amber-400' : loop.dot}`} />
+                    <b className={`font-bold ${halted || stale ? 'text-amber-300' : 'text-gray-200'}`}>{stale ? `마지막 기록: ${loop.label}` : loop.label}</b>
                     <span className="text-gray-500">{data.loop.state === 'running' ? `틱 ${hhmm(data.loop.last_tick_ts)}` : loop.sub}</span>
                 </span>
                 <span>레짐 <b className={`font-bold ${reg.cls}`}>{reg.label}</b>{data.regime.gate_score != null && <span className="text-gray-500"> · gate {data.regime.gate_score}</span>}</span>
@@ -82,7 +104,7 @@ export default function ClawLiveCard() {
                 <div className={`md:col-span-3 ${halted ? 'opacity-50' : ''}`}>
                     <div className="mb-2 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-gray-500">
                         <span>주도주 S/A</span>
-                        <span className="font-medium normal-case tracking-normal">{data.loop.market_open ? '실시간' : '전 세션 기준'} · {hhmm(data.leaders.snapshot_ts)}</span>
+                        <span className="font-medium normal-case tracking-normal">{stale ? '캐시 기록' : data.loop.market_open ? '실시간' : '전 세션 기준'} · {hhmm(data.leaders.snapshot_ts)}</span>
                     </div>
                     {leaders.length === 0 ? (
                         <p className="py-3 text-sm text-gray-500">{data.leaders.rows.length ? '현재 S/A 주도주 없음' : '아직 스냅샷 없음'}</p>
@@ -141,8 +163,8 @@ export default function ClawLiveCard() {
     );
 }
 
-function Header({ state }: { state: ClawOverview['loop']['state'] | null }) {
-    const label = state === 'running' ? 'LIVE' : state === 'halt' ? 'HOLD' : state === 'dead' ? 'OFFLINE' : 'REST';
+function Header({ state, stale = false }: { state: ClawOverview['loop']['state'] | null; stale?: boolean }) {
+    const label = stale ? 'STALE' : state === 'running' ? 'LIVE' : state === 'halt' ? 'HOLD' : state === 'dead' ? 'OFFLINE' : 'REST';
     return (
         <h2 className="ai-section-title mb-3 flex items-center gap-2.5 text-base font-bold text-white">
             <ClawMascot state={state} size={34} className="-my-1 shrink-0" />

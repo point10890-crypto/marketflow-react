@@ -30,43 +30,69 @@ function notiTimeAgo(dateStr: string) {
     return `${d}일 전`;
 }
 
-export default function DashboardTab({ data, onNavigate, apiToken }: {
+export default function DashboardTab({ data, onNavigate, apiToken, loading = false, error = '', onRetry }: {
     data: AdminDashboard | null;
     onNavigate: (tab: AdminTabKey) => void;
     apiToken?: string;
+    loading?: boolean;
+    error?: string;
+    onRetry?: () => void;
 }) {
     const [notifications, setNotifications] = useState<AdminNotification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [notiLoading, setNotiLoading] = useState(true);
     const [funnel, setFunnel] = useState<FunnelSummary | null>(null);
+    const [funnelLoading, setFunnelLoading] = useState(true);
+    const [funnelError, setFunnelError] = useState('');
+    const [funnelRetry, setFunnelRetry] = useState(0);
+    const [notiError, setNotiError] = useState('');
+    const [notiLoaded, setNotiLoaded] = useState(false);
+    const [notiRetry, setNotiRetry] = useState(0);
 
     useEffect(() => {
         let cancelled = false;
+        setFunnelLoading(true);
         (async () => {
             try {
                 const res = await adminAPI.getFunnelSummary(30, apiToken);
-                if (!cancelled && res && res.counts) setFunnel(res);
-            } catch { /* 퍼널 집계 실패는 대시보드를 막지 않는다 */ }
+                if (!res?.counts || !res.users || !res.conversion
+                    || !['registered', 'requested', 'approved'].every(key => Number.isFinite(res.users[key as keyof typeof res.users]))) {
+                    throw new Error('Invalid funnel response');
+                }
+                if (!cancelled) { setFunnel(res); setFunnelError(''); }
+            } catch {
+                if (!cancelled) setFunnelError('전환 퍼널을 불러오지 못했습니다.');
+            } finally {
+                if (!cancelled) setFunnelLoading(false);
+            }
         })();
         return () => { cancelled = true; };
-    }, [apiToken]);
+    }, [apiToken, funnelRetry]);
 
     useEffect(() => {
         let cancelled = false;
+        setNotiLoading(true);
         (async () => {
             try {
                 const [listRes, countRes] = await Promise.all([
                     adminAPI.getNotifications(apiToken),
                     adminAPI.getUnreadCount(apiToken),
                 ]);
+                if (!Array.isArray(listRes?.notifications) || !Number.isFinite(countRes?.unread_count)) {
+                    throw new Error('Invalid notification response');
+                }
                 if (cancelled) return;
-                setNotifications(listRes.notifications || []);
-                setUnreadCount(countRes.unread_count || 0);
-            } catch { /* */ }
+                setNotifications(listRes.notifications);
+                setUnreadCount(countRes.unread_count);
+                setNotiLoaded(true);
+                setNotiError('');
+            } catch {
+                if (!cancelled) setNotiError('알림을 불러오지 못했습니다.');
+            }
             if (!cancelled) setNotiLoading(false);
         })();
         return () => { cancelled = true; };
-    }, [apiToken]);
+    }, [apiToken, notiRetry]);
 
     const handleMarkRead = async (id: number) => {
         try {
@@ -149,13 +175,13 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
     // ── 2c. 전환 퍼널 (30일) — 가입 → 구독 신청 → 승인 (고유 회원 기준) ──
     const pct = (v: number | null | undefined) => (v == null ? '-' : `${Math.round(v * 100)}%`);
     const funnelStats = [
-        { label: '가입', value: funnel?.users.registered ?? 0, sub: '30일 신규', color: 'text-blue-300', icon: 'fa-user-plus' },
-        { label: '구독 신청', value: funnel?.users.requested ?? 0, sub: `가입→신청 ${pct(funnel?.conversion.register_to_request)}`, color: 'text-amber-300', icon: 'fa-credit-card' },
-        { label: '승인', value: funnel?.users.approved ?? 0, sub: `신청→승인 ${pct(funnel?.conversion.request_to_approve)}`, color: 'text-emerald-300', icon: 'fa-check' },
+        { label: '가입', value: funnel?.users.registered ?? '-', sub: '30일 신규', color: 'text-blue-300', icon: 'fa-user-plus' },
+        { label: '구독 신청', value: funnel?.users.requested ?? '-', sub: `가입→신청 ${pct(funnel?.conversion.register_to_request)}`, color: 'text-amber-300', icon: 'fa-credit-card' },
+        { label: '승인', value: funnel?.users.approved ?? '-', sub: `신청→승인 ${pct(funnel?.conversion.request_to_approve)}`, color: 'text-emerald-300', icon: 'fa-check' },
         {
             label: '신청→승인 소요',
             value: funnel?.median_request_to_approve_hours == null ? '-' : `${funnel.median_request_to_approve_hours}h`,
-            sub: `중앙값 · 표본 ${funnel?.approved_requests_sampled ?? 0}`,
+            sub: `중앙값 · 표본 ${funnel?.approved_requests_sampled ?? '-'}`,
             color: 'text-purple-300', icon: 'fa-stopwatch',
         },
     ];
@@ -168,8 +194,12 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
                     <i className="fas fa-filter text-blue-400 text-xs" />
                     <span className="text-xs font-semibold text-white">전환 퍼널 (30일)</span>
                     <span className="text-[9px] text-gray-600">가입 → 구독 신청 → 승인 · 고유 회원 기준</span>
-                    {!funnel && <span className="ml-auto text-[9px] text-gray-600">집계 대기</span>}
+                    {funnelLoading && <span role="status" className="ml-auto text-[9px] text-gray-500">집계 불러오는 중...</span>}
                 </div>
+                {funnelError && <div role="alert" className="flex items-center justify-between gap-3 px-4 py-3 text-xs text-red-400">
+                    <span>{funnelError} {funnel && '이전 조회 결과를 표시하고 있습니다.'}</span>
+                    <button aria-label="전환 퍼널 다시 시도" disabled={funnelLoading} onClick={() => setFunnelRetry(n => n + 1)} className="shrink-0 px-2 py-1 rounded bg-white/5 disabled:opacity-50">다시 시도</button>
+                </div>}
                 <div className="grid grid-cols-4 divide-x divide-white/[0.06]">
                     {funnelStats.map(s => (
                         <div key={s.label} className="px-3 py-3 text-center">
@@ -198,6 +228,12 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
                 ))}
             </nav>
 
+            {error ? <div role="alert" className="flex items-center justify-between gap-3 p-3 rounded-lg text-sm bg-red-500/10 border border-red-500/20 text-red-400">
+                <span>{error} {data ? '이전 조회 결과를 표시하고 있습니다.' : '현재 회원 수와 처리 대기 건수를 확인할 수 없습니다.'}</span>
+                {onRetry && <button aria-label="대시보드 다시 시도" onClick={onRetry} disabled={loading} className="shrink-0 px-3 py-1.5 rounded bg-white/5 disabled:opacity-50">다시 시도</button>}
+            </div> : (!data || loading) && <div role="status" className="text-sm text-gray-400">대시보드 데이터를 불러오는 중...</div>}
+
+            {data && <>
             {/* 1. 처리 대기 큐 */}
             <div className="apple-glass rounded-xl overflow-hidden">
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06]">
@@ -306,6 +342,8 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
                 </div>
             </div>
 
+            </>}
+
             {/* 4. 최근 알림 */}
             <div className="apple-glass rounded-xl overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
@@ -328,11 +366,15 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
                     )}
                 </div>
 
-                {notiLoading ? (
+                {notiError && <div role="alert" className="flex items-center justify-between gap-3 px-4 py-3 text-xs text-red-400">
+                    <span>{notiError} {notiLoaded && '이전 조회 결과를 표시하고 있습니다.'}</span>
+                    <button aria-label="알림 다시 시도" disabled={notiLoading} onClick={() => setNotiRetry(n => n + 1)} className="shrink-0 px-2 py-1 rounded bg-white/5 disabled:opacity-50">다시 시도</button>
+                </div>}
+                {notiLoading && !notiLoaded ? (
                     <div className="p-6 text-center text-gray-500 text-sm">
                         <i className="fas fa-spinner fa-spin mr-1" /> 로딩 중...
                     </div>
-                ) : notifications.length === 0 ? (
+                ) : !notiLoaded ? null : notifications.length === 0 ? (
                     <div className="p-6 text-center text-gray-600 text-sm">
                         <i className="fas fa-bell-slash mr-1" /> 알림이 없습니다
                     </div>

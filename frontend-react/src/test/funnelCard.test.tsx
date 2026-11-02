@@ -40,7 +40,8 @@ describe('DashboardTab 전환 퍼널 카드', () => {
     it('places the funnel and seven working shortcuts before the action queue', async () => {
         mocks.getFunnelSummary.mockResolvedValue(null);
         const onNavigate = vi.fn();
-        render(<MemoryRouter><DashboardTab data={null} onNavigate={onNavigate} /></MemoryRouter>);
+        render(<MemoryRouter><DashboardTab data={{ total_users: 0, pro_users: 0, premium_users: 0, no_tier_users: 0,
+            admin_users: 0, pending_users: 0, approved_users: 0, suspended_users: 0, pending_subscriptions: 0 }} onNavigate={onNavigate} /></MemoryRouter>);
         const nav = screen.getByRole('navigation', { name: '관리 바로가기' });
         const buttons = within(nav).getAllByRole('button');
         expect(buttons.map(button => button.textContent)).toEqual([
@@ -78,12 +79,13 @@ describe('DashboardTab 전환 퍼널 카드', () => {
         expect(mocks.getFunnelSummary).toHaveBeenCalledWith(30, 'tok');
     });
 
-    it('집계 실패 시에도 카드는 0 과 "-" 로 렌더되고 대시보드가 깨지지 않는다', async () => {
+    it('집계 실패를 0으로 표시하지 않고 재시도할 수 있다', async () => {
         mocks.getFunnelSummary.mockRejectedValue(new Error('offline'));
         renderTab();
 
         const card = await screen.findByTestId('funnel-card');
-        expect(card).toHaveTextContent('집계 대기');
+        await waitFor(() => expect(within(card).getByRole('alert')).toHaveTextContent('불러오지 못했습니다'));
+        expect(within(card).getByRole('button', { name: '전환 퍼널 다시 시도' })).toBeInTheDocument();
         expect(card).toHaveTextContent('가입→신청 -');
         expect(card).toHaveTextContent('신청→승인 -');
     });

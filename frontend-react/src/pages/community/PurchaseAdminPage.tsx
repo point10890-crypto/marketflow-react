@@ -1,5 +1,5 @@
 import './community-design.css';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchAuthAPI, putAuthAPI, deleteAuthAPI } from '@/lib/api';
 
@@ -66,36 +66,65 @@ export default function PurchaseAdminPage({ onBack }: { onBack?: () => void } = 
     const [statusFilter, setStatusFilter] = useState('');
     const [search, setSearch] = useState('');
     const [summary, setSummary] = useState<PurchaseSummary | null>(null);
+    const [hasLoaded, setHasLoaded] = useState(false);
+    const [loadError, setLoadError] = useState('');
+    const [summaryError, setSummaryError] = useState('');
+    const [summaryLoading, setSummaryLoading] = useState(true);
+    const listRequest = useRef(0);
+    const summaryRequest = useRef(0);
 
     const fetchData = useCallback(async (p: number) => {
+        const requestId = ++listRequest.current;
         setLoading(true);
         try {
             const params = new URLSearchParams({ page: String(p) });
             if (statusFilter) params.set('status', statusFilter);
             if (search.trim()) params.set('search', search.trim());
             const data = await fetchAuthAPI<PurchaseListResponse>(`/api/community/purchases?${params}`);
+            if (!data || !Array.isArray(data.purchases)
+                || ![data.total, data.page, data.total_pages, data.per_page].every(n => Number.isFinite(n) && n >= 0)
+                || data.page < 1 || data.per_page < 1) {
+                throw new Error('Invalid purchase list response');
+            }
+            if (requestId !== listRequest.current) return;
             setPurchases(data.purchases);
             setPage(data.page);
             setTotalPages(data.total_pages);
             setTotal(data.total);
+            setHasLoaded(true);
+            setLoadError('');
         } catch {
-            /* ignore */
+            if (requestId === listRequest.current) setLoadError('구매 신청 내역을 불러오지 못했습니다.');
         } finally {
-            setLoading(false);
+            if (requestId === listRequest.current) setLoading(false);
         }
     }, [statusFilter, search]);
 
     const fetchSummary = useCallback(async () => {
+        const requestId = ++summaryRequest.current;
+        setSummaryLoading(true);
         try {
             const s = await fetchAuthAPI<PurchaseSummary>('/api/community/purchases/summary');
+            if (!s || ![s.today, s.month, s.all].every(period => period
+                && Number.isFinite(period.count) && period.count >= 0
+                && Number.isFinite(period.total) && period.total >= 0)
+                || !Number.isFinite(s.pending_count) || s.pending_count < 0) {
+                throw new Error('Invalid purchase summary response');
+            }
+            if (requestId !== summaryRequest.current) return;
             setSummary(s);
+            setSummaryError('');
         } catch {
-            /* ignore */
+            if (requestId === summaryRequest.current) setSummaryError('매출 요약을 불러오지 못했습니다.');
+        } finally {
+            if (requestId === summaryRequest.current) setSummaryLoading(false);
         }
     }, []);
 
-    useEffect(() => { fetchData(1); }, [fetchData]);
-    useEffect(() => { fetchSummary(); }, [fetchSummary]);
+    useEffect(() => { fetchData(1); return () => { listRequest.current++; }; }, [fetchData]);
+    useEffect(() => { fetchSummary(); return () => { summaryRequest.current++; }; }, [fetchSummary]);
+
+    const refresh = () => { fetchData(page); fetchSummary(); };
 
     const handleStatusChange = async (purchaseId: number, newStatus: string) => {
         // Optimistic update — 즉시 UI 반영 (스피너 없음)
@@ -144,38 +173,50 @@ export default function PurchaseAdminPage({ onBack }: { onBack?: () => void } = 
                     <i className="fas fa-arrow-left text-sm" />
                 </button>
                 <h1 className="text-xl md:text-2xl font-bold text-yellow-400">구매 신청 내역</h1>
-                <span className="text-[#a6afbb] text-sm ml-2">총 {total}건</span>
+                <span className="text-[#a6afbb] text-sm ml-2">{hasLoaded ? `총 ${total}건` : '건수 확인 중'}</span>
+                <button onClick={refresh} disabled={loading || summaryLoading} className="ml-auto text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded bg-white/5 disabled:opacity-50">새로고침</button>
             </div>
 
+            {loadError && <div role="alert" className="flex items-center justify-between gap-3 p-3 mb-4 rounded-lg text-sm bg-red-500/10 border border-red-500/20 text-red-400">
+                <span>{loadError} {hasLoaded ? '이전 조회 결과를 표시하고 있습니다.' : '현재 구매 건수를 확인할 수 없습니다.'}</span>
+                <button onClick={refresh} disabled={loading || summaryLoading} className="shrink-0 px-3 py-1.5 rounded bg-white/5 disabled:opacity-50">다시 시도</button>
+            </div>}
+            {summaryError && <div role="alert" className="flex items-center justify-between gap-3 p-3 mb-4 rounded-lg text-sm bg-red-500/10 border border-red-500/20 text-red-400">
+                <span>{summaryError} {summary && '이전 조회 결과를 표시하고 있습니다.'}</span>
+                <button onClick={refresh} disabled={loading || summaryLoading} className="shrink-0 px-3 py-1.5 rounded bg-white/5 disabled:opacity-50">다시 시도</button>
+            </div>}
+            {(loading || summaryLoading) && <div role="status" className="text-xs text-gray-400 mb-3">구매 내역과 매출 요약을 불러오는 중...{hasLoaded && ' 이전 조회 결과를 표시하고 있습니다.'}</div>}
+
             {/* 매출 합산 카드 */}
-            {summary && (
+            {(
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
                     <div className="bg-[#1c1c1e]/80 border border-emerald-500/20 rounded-xl p-4">
                         <div className="flex items-center gap-2 mb-2">
                             <i className="fas fa-won-sign text-emerald-400 text-xs" />
                             <span className="text-[11px] text-gray-400 uppercase tracking-wider font-bold">오늘 매출</span>
                         </div>
-                        <div className="text-lg md:text-xl font-bold text-white">{formatKRW(summary.today.total)}</div>
-                        <div className="text-[11px] text-[#a6afbb] mt-1">승인 {summary.today.count}건</div>
+                        <div className="text-lg md:text-xl font-bold text-white">{summary ? formatKRW(summary.today.total) : '-'}</div>
+                        <div className="text-[11px] text-[#a6afbb] mt-1">{summary ? `승인 ${summary.today.count}건` : '확인 필요'}</div>
                     </div>
                     <div className="bg-[#1c1c1e]/80 border border-blue-500/20 rounded-xl p-4">
                         <div className="flex items-center gap-2 mb-2">
                             <i className="fas fa-calendar-alt text-blue-400 text-xs" />
                             <span className="text-[11px] text-gray-400 uppercase tracking-wider font-bold">이번 달 매출</span>
                         </div>
-                        <div className="text-lg md:text-xl font-bold text-white">{formatKRW(summary.month.total)}</div>
-                        <div className="text-[11px] text-[#a6afbb] mt-1">승인 {summary.month.count}건</div>
+                        <div className="text-lg md:text-xl font-bold text-white">{summary ? formatKRW(summary.month.total) : '-'}</div>
+                        <div className="text-[11px] text-[#a6afbb] mt-1">{summary ? `승인 ${summary.month.count}건` : '확인 필요'}</div>
                     </div>
                     <div className="bg-[#1c1c1e]/80 border border-yellow-500/20 rounded-xl p-4">
                         <div className="flex items-center gap-2 mb-2">
                             <i className="fas fa-chart-line text-yellow-400 text-xs" />
                             <span className="text-[11px] text-gray-400 uppercase tracking-wider font-bold">누적 매출</span>
                         </div>
-                        <div className="text-lg md:text-xl font-bold text-white">{formatKRW(summary.all.total)}</div>
-                        <div className="text-[11px] text-[#a6afbb] mt-1">승인 {summary.all.count}건</div>
+                        <div className="text-lg md:text-xl font-bold text-white">{summary ? formatKRW(summary.all.total) : '-'}</div>
+                        <div className="text-[11px] text-[#a6afbb] mt-1">{summary ? `승인 ${summary.all.count}건` : '확인 필요'}</div>
                     </div>
                     <button
                         type="button"
+                        disabled={!summary}
                         onClick={() => { setStatusFilter('pending'); setSearch(''); }}
                         className={`text-left bg-[#1c1c1e]/80 border rounded-xl p-4 transition-colors cursor-pointer ${
                             statusFilter === 'pending'
@@ -189,7 +230,7 @@ export default function PurchaseAdminPage({ onBack }: { onBack?: () => void } = 
                             <span className="text-[11px] text-gray-400 uppercase tracking-wider font-bold">승인 대기</span>
                             <i className="fas fa-arrow-right text-orange-400/60 text-[10px] ml-auto" />
                         </div>
-                        <div className="text-lg md:text-xl font-bold text-white">{summary.pending_count}건</div>
+                        <div className="text-lg md:text-xl font-bold text-white">{summary ? `${summary.pending_count}건` : '-'}</div>
                         <div className="text-[11px] text-[#a6afbb] mt-1">클릭하여 미처리 보기</div>
                     </button>
                 </div>
@@ -224,11 +265,11 @@ export default function PurchaseAdminPage({ onBack }: { onBack?: () => void } = 
 
             {/* Table */}
             <div className="dash-panel bg-[#15191e] border border-[#30363f] rounded-xl overflow-hidden">
-                {loading ? (
+                {loading && !hasLoaded ? (
                     <div className="flex items-center justify-center py-20">
                         <div className="w-8 h-8 border-2 border-[#2997ff] border-t-transparent rounded-full animate-spin" />
                     </div>
-                ) : (
+                ) : !hasLoaded ? <div className="p-6 text-center text-sm text-gray-400">구매 내역 확인이 필요합니다.</div> : (
                     <>
                         {/* Desktop Table */}
                         <div className="hidden md:block overflow-x-auto">

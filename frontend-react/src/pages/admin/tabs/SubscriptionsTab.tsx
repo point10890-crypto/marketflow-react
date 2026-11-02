@@ -6,6 +6,9 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
     const [pendingSignups, setPendingSignups] = useState<PendingSignup[]>([]);
     const [expiredMembers, setExpiredMembers] = useState<ExpiredMember[]>([]);
     const [loading, setLoading] = useState(true);
+    const [hasLoaded, setHasLoaded] = useState(false);
+    const [loadError, setLoadError] = useState('');
+    const requestSequence = useRef(0);
     const [actionMsg, setActionMsg] = useState('');
     // 처리 중인 request id 추적 — 같은 row 더블클릭 방지 + 이미 처리된 row 보호
     const [processing, setProcessing] = useState<Set<number>>(new Set());
@@ -13,16 +16,28 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
 
     // silent=true 이면 스피너를 띄우지 않음 (refresh 버튼용 기본은 스피너 O)
     const loadRequests = useCallback(async (silent = false) => {
+        const requestId = ++requestSequence.current;
         if (!silent) setLoading(true);
         try {
             const res = await adminAPI.getSubscriptions(apiToken);
-            const reqs = res.requests || [];
+            if (!res || !Array.isArray(res.requests)
+                || (res.pending_signups != null && !Array.isArray(res.pending_signups))
+                || (res.expired_members != null && !Array.isArray(res.expired_members))) {
+                throw new Error('Invalid subscriptions response');
+            }
+            if (requestId !== requestSequence.current) return;
+            const reqs = res.requests;
             setRequests(reqs);
             setPendingSignups(res.pending_signups || []);
             setExpiredMembers(res.expired_members || []);
             onCountChange(reqs.filter((r: SubscriptionRequest) => r.status === 'pending').length);
-        } catch { /* */ }
-        if (!silent) setLoading(false);
+            setHasLoaded(true);
+            setLoadError('');
+        } catch {
+            if (requestId === requestSequence.current) setLoadError('구독 내역을 불러오지 못했습니다.');
+        } finally {
+            if (requestId === requestSequence.current) setLoading(false);
+        }
     }, [apiToken, onCountChange]);
 
     // 승인/거절/부여 진행 중에는 자동 갱신을 미룬다 (optimistic UI 를 폴링이 덮어쓰는 것 방지)
@@ -39,6 +54,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
         const timer = setInterval(refresh, 60_000);
         document.addEventListener('visibilitychange', refresh);
         return () => {
+            requestSequence.current++;
             clearInterval(timer);
             document.removeEventListener('visibilitychange', refresh);
         };
@@ -150,13 +166,21 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
         }
     };
 
-    if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500" /></div>;
+    const errorNotice = loadError && (
+        <div role="alert" className="flex items-center justify-between gap-3 p-3 rounded-lg text-sm bg-red-500/10 border border-red-500/20 text-red-400">
+            <span>{loadError} {hasLoaded ? '이전 조회 결과를 표시하고 있습니다.' : '현재 대기 내역을 확인할 수 없습니다.'}</span>
+            <button onClick={() => loadRequests()} disabled={loading} className="shrink-0 px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 disabled:opacity-50">다시 시도</button>
+        </div>
+    );
+    if (!hasLoaded) return loadError ? errorNotice : <div role="status" className="flex justify-center gap-2 py-12 text-sm text-gray-400"><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-500" />구독 내역을 불러오는 중...</div>;
 
     const pending = requests.filter(r => r.status === 'pending');
     const processed = requests.filter(r => r.status !== 'pending');
 
     return (
         <>
+            {errorNotice}
+            {loading && <div role="status" className="text-xs text-gray-400">구독 내역을 새로고침하는 중...</div>}
             {actionMsg && (
                 <div className={`p-3 rounded-lg text-sm font-medium ${actionMsg.startsWith('❌') ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
                     {actionMsg}

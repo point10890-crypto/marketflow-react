@@ -1,4 +1,4 @@
-import { ClawQuality, ClawScorecards, fmtAge, fmtPct, hhmm } from '@/lib/claw';
+import { ClawQuality, ClawScorecards, fmtAge, fmtPct, hhmm, isClawProjectionStale, clawAgeSeconds } from '@/lib/claw';
 
 interface Props {
     scorecards: ClawScorecards | null;
@@ -8,14 +8,14 @@ interface Props {
 
 function tone(quality: ClawQuality | null, scorecards: ClawScorecards | null): string {
     if (quality?.status === 'unavailable') return 'border-red-500/30 bg-red-500/[0.05]';
-    if (quality?.status === 'degraded' || quality?.freshness.stale || scorecards?.stale) return 'border-amber-400/30 bg-amber-400/[0.04]';
+    if (quality?.status === 'degraded' || quality?.freshness.stale || scorecards?.stale || isClawProjectionStale(quality) || isClawProjectionStale(scorecards)) return 'border-amber-400/30 bg-amber-400/[0.04]';
     return 'border-white/[0.06] bg-[#13151f]';
 }
 
 function stateLabel(quality: ClawQuality | null, scorecards: ClawScorecards | null): { text: string; cls: string } {
     if (!quality) return { text: '준비 중', cls: 'bg-white/[0.06] text-gray-400' };
     if (quality.status === 'unavailable') return { text: '원장 확인 필요', cls: 'bg-red-500/15 text-red-300' };
-    if (quality.status === 'degraded' || quality.freshness.stale || scorecards?.stale) return { text: '일부 지연', cls: 'bg-amber-500/15 text-amber-300' };
+    if (quality.status === 'degraded' || quality.freshness.stale || scorecards?.stale || isClawProjectionStale(quality) || isClawProjectionStale(scorecards)) return { text: '일부 지연', cls: 'bg-amber-500/15 text-amber-300' };
     if (scorecards?.insufficient) return { text: '표본 축적 중', cls: 'bg-blue-500/15 text-blue-300' };
     return { text: '관측 정상', cls: 'bg-teal-500/15 text-teal-300' };
 }
@@ -42,7 +42,8 @@ export default function ClawObservationCard({ scorecards, quality, loading }: Pr
                 <span className={`rounded-full px-2 py-1 text-[12px] font-extrabold ${state.cls}`}>{state.text}</span>
                 <span className="ml-auto text-[11px] text-gray-400">
                     원장 {quality?.ledger.instances ?? scorecards?.coverage.instances ?? 0}건
-                    {quality?.freshness.age_seconds != null && ` · ${fmtAge(quality.freshness.age_seconds)} 전`}
+                    {quality?.freshness.age_seconds != null && ` · ${fmtAge(clawAgeSeconds(quality, quality.freshness.age_seconds, Date.now()))} 전`}
+                    {(isClawProjectionStale(quality) || isClawProjectionStale(scorecards)) && ' · 캐시 기록'}
                 </span>
             </div>
 
