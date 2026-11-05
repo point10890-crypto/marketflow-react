@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { adminAPI, AdminDashboard } from '@/lib/api';
+import { adminAPI, AdminDashboard, fetchAuthAPI } from '@/lib/api';
 import DashboardTab from './tabs/DashboardTab';
 import { UsersTab } from './tabs/UsersTab';
 import SubscriptionsTab from './tabs/SubscriptionsTab';
@@ -24,6 +24,45 @@ export default function AdminPage() {
     const [dashLoading, setDashLoading] = useState(true);
     const [dashError, setDashError] = useState('');
     const dashRequest = useRef(0);
+    const [purchasePendingCount, setPurchasePendingCount] = useState<number | null>(null);
+    const [purchaseCountError, setPurchaseCountError] = useState(false);
+    const purchaseRequest = useRef(0);
+    const purchaseToken = useRef(apiToken);
+    purchaseToken.current = apiToken;
+
+    const loadPurchaseCount = useCallback(async () => {
+        if (apiToken !== purchaseToken.current) return;
+        const requestId = ++purchaseRequest.current;
+        try {
+            const data = await fetchAuthAPI<{ pending_count: number }>('/api/community/purchases/summary', apiToken);
+            if (!Number.isSafeInteger(data?.pending_count) || data.pending_count < 0) throw new Error('Invalid purchase count');
+            if (requestId !== purchaseRequest.current || apiToken !== purchaseToken.current) return;
+            setPurchasePendingCount(data.pending_count);
+            setPurchaseCountError(false);
+        } catch {
+            if (requestId === purchaseRequest.current && apiToken === purchaseToken.current) setPurchaseCountError(true);
+        }
+    }, [apiToken]);
+
+    useEffect(() => {
+        setPurchasePendingCount(null);
+        setPurchaseCountError(false);
+        loadPurchaseCount();
+        const onVisible = () => { if (document.visibilityState === 'visible') loadPurchaseCount(); };
+        const timer = setInterval(onVisible, 60_000);
+        document.addEventListener('visibilitychange', onVisible);
+        window.addEventListener('focus', onVisible);
+        return () => {
+            purchaseRequest.current++;
+            clearInterval(timer);
+            document.removeEventListener('visibilitychange', onVisible);
+            window.removeEventListener('focus', onVisible);
+        };
+    }, [loadPurchaseCount]);
+
+    const purchaseBadgeLabel = purchasePendingCount === null
+        ? `구매 승인 대기 ${purchaseCountError ? '확인 실패 · 구매 탭에서 다시 확인' : '확인 중'}`
+        : `구매 승인 대기 ${purchasePendingCount}건${purchaseCountError ? ' · 갱신 실패, 이전 조회 결과' : ''}`;
 
     const loadDashboard = useCallback(async () => {
         const requestId = ++dashRequest.current;
@@ -81,7 +120,7 @@ export default function AdminPage() {
                     <button
                         key={tab.key}
                         aria-pressed={activeTab === tab.key}
-                        onClick={() => setActiveTab(tab.key)}
+                        onClick={() => { setActiveTab(tab.key); if (tab.key === 'purchases') loadPurchaseCount(); }}
                         className={`flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                             activeTab === tab.key
                                 ? 'bg-red-500/15 text-red-400 border border-red-500/20'
@@ -90,6 +129,14 @@ export default function AdminPage() {
                     >
                         <i className={`fas ${tab.icon} text-xs`} />
                         <span>{tab.label}</span>
+                        {tab.key === 'purchases' && (
+                            <span role="status" aria-live="polite" aria-label={purchaseBadgeLabel} title={purchaseBadgeLabel}
+                                className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${purchaseCountError
+                                    ? 'bg-orange-500/20 text-orange-400'
+                                    : purchasePendingCount === 0 ? 'bg-white/10 text-gray-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                                {purchasePendingCount ?? (purchaseCountError ? '?' : '…')}
+                            </span>
+                        )}
                         {tab.key === 'subscriptions' && pendingCount > 0 && (
                             <span className="px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-[10px] font-bold">
                                 {pendingCount}
@@ -109,7 +156,7 @@ export default function AdminPage() {
             {activeTab === 'dashboard' && <DashboardTab data={dashData} loading={dashLoading} error={dashError} onRetry={loadDashboard} onNavigate={setActiveTab} apiToken={apiToken} />}
             {activeTab === 'users' && <UsersTab apiToken={apiToken} currentUserId={authUser?.id} />}
             {activeTab === 'subscriptions' && <SubscriptionsTab apiToken={apiToken} onCountChange={setPendingCount} />}
-            {activeTab === 'purchases' && <PurchaseAdminPage onBack={() => setActiveTab('dashboard')} />}
+            {activeTab === 'purchases' && <PurchaseAdminPage onBack={() => setActiveTab('dashboard')} onPurchasesChanged={loadPurchaseCount} />}
             {activeTab === 'pro' && <ProExpiryTab apiToken={apiToken} />}
             {activeTab === 'system' && <SystemTab token={token} />}
             {activeTab === 'jobs' && <JobsTab token={token} />}
