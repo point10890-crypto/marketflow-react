@@ -64,6 +64,7 @@ export default function PlanSelectPage() {
     const isExpired = isBaseSubscriptionExpired(user, now) || isResubscribe;
     const isPending = user?.status === 'pending';
     const hasActiveBase = hasActiveBaseSubscription(user, now);
+    const isUpgrade = allowChange && hasActiveBase;
     const expiredAt = user?.pro_expires_at ? new Date(user.pro_expires_at) : null;
 
     const select = (plan: BillingPlan) => {
@@ -120,15 +121,22 @@ export default function PlanSelectPage() {
 
                 <div className="text-center mb-8">
                     <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight mb-4">
-                        {isExpired ? '재구독 플랜 선택' : '플랜을 선택해 주세요'}
+                        {isExpired ? '재구독 플랜 선택' : isUpgrade ? (user?.tier === 'premium' ? '플랜 · AI Brain 관리' : '등급 업그레이드') : '플랜을 선택해 주세요'}
                     </h1>
                     <p className="text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
                         {isExpired
                             ? '서비스 재개를 위해 다시 이용할 플랜을 선택하세요.'
+                            : isUpgrade && user?.tier === 'premium'
+                            ? (user.is_aibain_active ? '최상위 등급과 AI Brain을 이용 중입니다. 추가 등급 업그레이드가 필요하지 않습니다.' : 'Ultra Pro는 최상위 평생 이용 플랜입니다. 기존 등급을 유지하고 AI Brain만 추가할 수 있습니다.')
+                            : isUpgrade
+                            ? '현재 플랜은 승인 전까지 유지됩니다. 상위 등급 또는 AI Brain 추가를 선택하세요.'
                             : isPending
                             ? '계정 생성이 끝났습니다. 이제 이용할 플랜을 선택하면 됩니다.'
                             : '구독 신청을 진행할 플랜을 선택하세요.'}
                     </p>
+                    {isUpgrade && <p className="mt-3 text-sm font-semibold text-purple-200">
+                        현재 이용: {user?.tier === 'premium' ? 'Ultra Pro' : 'Pro'}{user?.is_aibain_active && ' + AI Brain'}
+                    </p>}
                     {user && (
                         <p className="text-gray-600 text-xs mt-2">
                             로그인 계정: <span className="text-gray-400">{user.email}</span>

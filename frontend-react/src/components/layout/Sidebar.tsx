@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { canAccessAiBain } from '@/lib/auth';
+import { canAccessAiBain, isBaseSubscriptionExpired } from '@/lib/auth';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { InstallGuide } from './InstallPrompt';
 
@@ -118,6 +118,16 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     const isLocked = false;
     const userRole = user?.role || 'user';
     const isLoggedIn = !!user;
+    const tierLabel = userRole === 'admin' ? '관리자' : userTier === 'pro' ? 'Pro' : userTier === 'premium' ? 'Ultra Pro' : '미구독';
+    const expired = isBaseSubscriptionExpired(user);
+    const pending = user?.has_pending_subscription === true
+        || user?.has_pending_subscription !== false && user?.pending_subscription_request?.status === 'pending';
+    const membershipAction = userRole === 'admin' ? { label: '관리자 페이지', href: '/admin' }
+        : ['suspended', 'rejected'].includes(user?.status || '') ? { label: '계정 상태 확인', href: '/pending-approval' }
+        : pending ? { label: '신청 상태 확인', href: '/pending-approval' }
+        : expired ? { label: '재구독 신청', href: '/plan-select?resubscribe=1&from=expired' }
+        : !['pro', 'premium'].includes(userTier || '') ? { label: '구독 신청', href: '/plan-select' }
+        : { label: userTier === 'premium' ? '플랜 · AI Brain 관리' : '등급 업그레이드', href: '/plan-select?change=1' };
     const showAiBain = canAccessAiBain(user);
     const visibleGlobalTools = globalTools.filter((item) => !item.aibainOnly || showAiBain);
 
@@ -379,31 +389,39 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             {/* Profile */}
             <div className="p-4 border-t border-white/5">
                 {isLoggedIn ? (
-                    <div className="flex items-center gap-3 p-2.5 rounded-xl">
-                        <div className={`w-9 h-9 rounded-full ring-2 ring-white/10 flex items-center justify-center text-white text-sm font-bold ${userTier === 'pro' || userTier === 'premium' ? 'bg-gradient-to-tr from-indigo-500 to-purple-500' : 'bg-gradient-to-tr from-gray-600 to-gray-500'}`}>
-                            {userName.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex flex-col flex-1 min-w-0">
-                            <span className="text-sm font-bold text-white truncate">{userName}</span>
-                            <span className={`text-[11px] ${userTier === 'pro' || userTier === 'premium' ? 'text-purple-400' : 'text-gray-400'}`}>
-                                {userTier === 'pro' ? 'Pro Plan' : userTier === 'premium' ? 'Ultra Pro' : 'Admin'}
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            {(userTier === 'pro' || userTier === 'premium') && (
-                                <span className="text-[11px] px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-400 font-bold">
-                                    {userTier === 'pro' ? 'Pro' : 'Ultra Pro'}
+                    <div>
+                        <div className="flex items-center gap-3 p-2.5 rounded-xl">
+                            <div className={`w-9 h-9 rounded-full ring-2 ring-white/10 flex items-center justify-center text-white text-sm font-bold ${userTier === 'pro' || userTier === 'premium' ? 'bg-gradient-to-tr from-indigo-500 to-purple-500' : 'bg-gradient-to-tr from-gray-600 to-gray-500'}`}>
+                                {userName.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex flex-col flex-1 min-w-0">
+                                <span className="text-sm font-bold text-white truncate">{userName}</span>
+                                <span className={`text-[11px] ${userTier === 'pro' || userTier === 'premium' ? 'text-purple-400' : 'text-gray-400'}`}>
+                                    {tierLabel}{userRole !== 'admin' && user?.is_aibain_active && ' · AI Brain'}{userRole !== 'admin' && expired && ' · 만료'}
                                 </span>
-                            )}
-                            <button
-                                onClick={() => logout()}
-                                className="text-[11px] px-2.5 py-1.5 rounded-md bg-white/5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                                title="Sign Out"
-                            >
-                                <i className="fas fa-sign-out-alt"></i>
-                            </button>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <Link to={membershipAction.href} onClick={onNavigate}
+                                    aria-label={`현재 등급 ${tierLabel}, ${membershipAction.label}`}
+                                    title={membershipAction.label}
+                                    className="text-[11px] px-2.5 py-2 rounded-md bg-purple-500/10 text-purple-300 font-bold hover:bg-purple-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400">
+                                    {tierLabel}
+                                </Link>
+                                <button
+                                    onClick={() => logout()}
+                                    className="text-[11px] px-2.5 py-1.5 rounded-md bg-white/5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                    title="Sign Out"
+                                >
+                                    <i className="fas fa-sign-out-alt"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                        <Link to={membershipAction.href} onClick={onNavigate}
+                            className="mt-1 flex min-h-[44px] items-center justify-between gap-2 rounded-lg border border-purple-400/20 bg-purple-500/10 px-3 py-2.5 text-xs font-semibold text-purple-200 hover:bg-purple-500/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400">
+                            <span>{membershipAction.label}</span>
+                            <i aria-hidden="true" className="fas fa-arrow-right text-[10px]" />
+                        </Link>
+                        </div>
                 ) : (
                     <Link
                         to="/login"
