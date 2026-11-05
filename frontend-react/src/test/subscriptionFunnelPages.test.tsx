@@ -74,12 +74,13 @@ describe('subscription acquisition funnel', () => {
         expect(mocks.requestUpgrade).not.toHaveBeenCalled();
     });
 
-    it('returns a cancelled Ultra applicant from approval to their plan automatically', async () => {
+    it('keeps a declined Ultra application visible and offers its previous plan directly', async () => {
         mocks.auth.user={id:294,name:'취소회원',email:'cancel@example.test',role:'user',status:'pending',tier:null,requested_tier:'premium',has_pending_subscription:false};
         mocks.auth.token='cancel-token';
         mocks.getStatus.mockResolvedValue({requests:[{id:301,status:'rejected',to_tier:'premium'}]});
         renderAt('/pending-approval',<PendingApprovalPage />,'/pending-approval');
-        expect(await screen.findByTestId('location')).toHaveTextContent('/plan-select?plan=premium');
+        expect(await screen.findByRole('heading', { name: '구독 신청이 거절되었습니다' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: '다시 신청' })).toHaveAttribute('href', '/payment-request?plan=premium');
         expect(nextPathForUser(mocks.auth.user,null)).toBe('/plan-select');
     });
 

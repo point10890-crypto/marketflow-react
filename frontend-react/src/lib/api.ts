@@ -1049,6 +1049,8 @@ export const adminAPI = {
     extendPro: (id: number, days: number, token?: string) => postAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/extend`, { days }, token),
     setExpiry: (id: number, pro_expires_at: string, token?: string) => putAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/expiry`, { pro_expires_at }, token),
     revokeSubscription: (id: number, note: string | undefined, token?: string) => postAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/revoke`, { note: note || '' }, token),
+    expireSubscription: (id: number, note: string | undefined, token?: string) =>
+        postAuthAPI<{ user: AdminUser; message: string }>(`/api/admin/users/${id}/expire`, { note: note || '' }, token),
     // AI Brain 알파 스캐너 애드온 관리 (별도 30일 갱신 구독)
     enableAibain: (id: number, days?: number, note?: string, token?: string) =>
         postAuthAPI<{ user: AdminUser; message: string }>(`/api/admin/users/${id}/aibain/enable`, { days: days ?? 30, note }, token),

@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { adminAPI, AdminUser } from '@/lib/api';
+import MemberSubscriptionActions from './MemberSubscriptionActions';
 
 /**
  * Pro 관리 탭 — Pro 구독자 만료일 중심 뷰.
@@ -24,20 +26,27 @@ interface ProUser extends AdminUser {
 export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
     const [users, setUsers] = useState<ProUser[]>([]);
     const [loading, setLoading] = useState(true);
+    const [hasLoaded, setHasLoaded] = useState(false);
+    const [loadError, setLoadError] = useState('');
     const [extendingId, setExtendingId] = useState<number | null>(null);
-    const [revokingId, setRevokingId] = useState<number | null>(null);
+    const [manageTarget, setManageTarget] = useState<ProUser | null>(null);
+    const [managementBusy, setManagementBusy] = useState(false);
+    const mutationBusy = useRef(false);
+    const loadSequence = useRef(0);
     const [msg, setMsg] = useState<string>('');
     const [filter, setFilter] = useState<'all' | 'expired' | 'd3' | 'd1'>('all');
 
     const load = async () => {
+        const sequence = ++loadSequence.current;
         setLoading(true);
         try {
             const res = await adminAPI.getUsers(apiToken);
-            setUsers((res.users || []) as ProUser[]);
-        } catch { /* */ }
-        setLoading(false);
+            if (!Array.isArray(res?.users)) throw new Error('Invalid users response');
+            if (sequence === loadSequence.current) { setUsers(res.users as ProUser[]); setHasLoaded(true); setLoadError(''); }
+        } catch { if (sequence === loadSequence.current) setLoadError('회원 목록을 불러오지 못했습니다.'); }
+        if (sequence === loadSequence.current) setLoading(false);
     };
-    useEffect(() => { load(); }, [apiToken]);
+    useEffect(() => { load(); return () => { loadSequence.current++; }; }, [apiToken]);
 
     const showMsg = (text: string, isErr = false) => {
         setMsg(isErr ? `error:${text}` : `ok:${text}`);
@@ -106,49 +115,45 @@ export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
     };
 
     const handleExtend = async (u: ProUser, days: number) => {
+        if (mutationBusy.current) return;
+        mutationBusy.current = true;
+        loadSequence.current++;
         setExtendingId(u.id);
         try {
+            const subscriptions = await adminAPI.getSubscriptions(apiToken);
+            if (!Array.isArray(subscriptions?.requests)) throw new Error('대기 구독 요청을 확인할 수 없습니다. 다시 시도해 주세요.');
+            if (subscriptions.requests.some(request => request.user_id === u.id && request.status === 'pending')) {
+                setManageTarget(u);
+                return;
+            }
             const res = await adminAPI.extendPro(u.id, days, apiToken);
+            if (!res?.user) throw new Error('연장 결과를 확인할 수 없습니다.');
             setUsers(prev => prev.map(x => x.id === u.id ? (res.user as ProUser) : x));
             showMsg(`${u.name} +${days}일 연장 완료`);
         } catch (err: any) {
             showMsg(err?.message || '연장 실패', true);
-        }
-        setExtendingId(null);
+        } finally { mutationBusy.current = false; setExtendingId(null); }
     };
 
     const handleRevoke = async (u: ProUser) => {
-        const ok = window.confirm(
-            `정말 "${u.name}" (${u.email}) 님의 Pro 구독을 즉시 만료 처리하시겠습니까?\n\n` +
-            `- 대시보드 접근 차단 (재구독 페이지로 자동 이동)\n` +
-            `- 로그인은 계속 가능 (환불/재구독 협의용)\n` +
-            `- 이력은 보존, 복구는 "+30일 연장" 으로 가능`
-        );
-        if (!ok) return;
-
-        const note = window.prompt('해제 사유 (감사로그에 기록, 공란 가능):', '') || '';
-
-        setRevokingId(u.id);
-        try {
-            const res = await adminAPI.revokeSubscription(u.id, note || undefined, apiToken);
-            setUsers(prev => prev.map(x => x.id === u.id ? (res.user as ProUser) : x));
-            showMsg(`${u.name} 구독 즉시 만료 처리 완료`);
-        } catch (err: any) {
-            showMsg(err?.message || '해제 실패', true);
-        }
-        setRevokingId(null);
+        setManageTarget(u);
     };
 
-    if (loading) {
+    const loadErrorNotice = loadError && <div role="alert" className="flex items-center justify-between gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400">
+        <span>{loadError} {hasLoaded && '이전 조회 결과를 표시하고 있습니다.'}</span><button disabled={loading} onClick={() => void load()} className="px-3 py-2 rounded-lg bg-white/5 shrink-0 disabled:opacity-40">다시 시도</button>
+    </div>;
+    if (loading && !hasLoaded) {
         return (
             <div className="flex items-center justify-center py-16">
                 <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
             </div>
         );
     }
+    if (!hasLoaded && loadError) return loadErrorNotice;
 
     return (
         <div className="space-y-3 sm:space-y-5">
+            {loadErrorNotice}
             {/* 통계 — 모바일: 1줄 compact, 데스크톱: 5개 큰 카드 */}
             {/* 모바일 (sm 미만): 1줄 요약 */}
             <div className="sm:hidden flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[#141416] border border-white/[0.06] text-xs">
@@ -236,20 +241,18 @@ export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
                                 <div className="flex flex-col gap-1 shrink-0">
                                     <button
                                         onClick={() => handleExtend(u, 30)}
-                                        disabled={extendingId === u.id || revokingId === u.id}
+                                        disabled={extendingId !== null || managementBusy}
                                         className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors disabled:opacity-50 whitespace-nowrap"
                                     >
                                         {extendingId === u.id ? <i className="fas fa-spinner fa-spin" /> : '+30일'}
                                     </button>
-                                    {b !== 'expired' && (
                                         <button
                                             onClick={() => handleRevoke(u)}
-                                            disabled={extendingId === u.id || revokingId === u.id}
+                                            disabled={extendingId !== null || managementBusy}
                                             className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-red-500/10 text-red-400 hover:bg-red-500/25 transition-colors disabled:opacity-50 border border-red-500/20 whitespace-nowrap"
                                         >
-                                            {revokingId === u.id ? <i className="fas fa-spinner fa-spin" /> : '해제'}
+                                            구독 관리
                                         </button>
-                                    )}
                                 </div>
                             </div>
                         </div>
@@ -328,7 +331,7 @@ export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
                                             <div className="inline-flex items-center gap-1">
                                                 <button
                                                     onClick={() => handleExtend(u, 30)}
-                                                    disabled={extendingId === u.id || revokingId === u.id}
+                                                    disabled={extendingId !== null || managementBusy}
                                                     className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors disabled:opacity-50"
                                                     title="+30일 연장"
                                                 >
@@ -336,22 +339,20 @@ export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
                                                 </button>
                                                 <button
                                                     onClick={() => handleExtend(u, 7)}
-                                                    disabled={extendingId === u.id || revokingId === u.id}
+                                                    disabled={extendingId !== null || managementBusy}
                                                     className="px-2 py-1 rounded-lg text-[10px] text-gray-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors disabled:opacity-50"
                                                     title="+7일 연장"
                                                 >
                                                     +7d
                                                 </button>
-                                                {b !== 'expired' && (
                                                     <button
                                                         onClick={() => handleRevoke(u)}
-                                                        disabled={extendingId === u.id || revokingId === u.id}
+                                                        disabled={extendingId !== null || managementBusy}
                                                         className="px-2 py-1 rounded-lg text-[10px] font-bold bg-red-500/10 text-red-400 hover:bg-red-500/25 transition-colors disabled:opacity-50 ml-1 border border-red-500/20"
-                                                        title="구독 즉시 만료 처리 (confirm 필요)"
+                                                        title="구독 관리 · 대기 요청 승인 및 전체 구독 만료"
                                                     >
-                                                        {revokingId === u.id ? <i className="fas fa-spinner fa-spin" /> : '해제'}
+                                                        구독 관리
                                                     </button>
-                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -366,6 +367,14 @@ export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
                     )}
                 </div>
             </div>
+            {manageTarget && createPortal(<div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 p-3" onClick={() => { if (!managementBusy) setManageTarget(null); }}>
+                <div role="dialog" aria-modal="true" aria-label="회원 구독 관리" className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 bg-[#1c1c1e] p-3 space-y-3" onClick={event => event.stopPropagation()}>
+                    <div className="flex justify-end"><button disabled={managementBusy} onClick={() => setManageTarget(null)} className="text-xs p-2 text-gray-400 disabled:opacity-40">닫기</button></div>
+                    <MemberSubscriptionActions key={manageTarget.id} user={manageTarget} apiToken={apiToken}
+                        onMutationStart={() => { loadSequence.current++; setLoading(false); }} onBusyChange={setManagementBusy}
+                        onUpdated={user => { setUsers(previous => previous.map(item => item.id === user.id ? user : item)); setManageTarget(user); }} />
+                </div>
+            </div>, document.getElementById('modal-root') || document.body)}
         </div>
     );
 }

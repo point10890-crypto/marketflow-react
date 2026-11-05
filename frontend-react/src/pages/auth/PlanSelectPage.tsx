@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { subscriptionFunnelTarget } from '@/lib/auth';
+import { hasActiveBaseSubscription, isBaseSubscriptionExpired, subscriptionFunnelTarget } from '@/lib/auth';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { useSeo } from '@/lib/seo';
 import {
@@ -23,15 +23,18 @@ export default function PlanSelectPage() {
     const preferredPlan = planFromQuery(searchParams.get('plan'), searchParams.get('aibain'));
     const preferredQuery = preferredPlan ? planToQuery(preferredPlan) : '';
     const signupPath = preferredQuery ? `/signup?${preferredQuery}` : '/signup';
+    const [now, setNow] = useState(Date.now);
 
     // 이 페이지에 머무는 동안 관리자가 tier 를 직접 부여하면 (CLAUDE.md §12-A) stale user 로
     // 계속 플랜 선택에 갇힌다 → 마운트 + 창 포커스 시 /api/auth/me 재조회로 즉시 반영.
     // (refreshUser 는 AuthContext 재렌더마다 새 참조라 deps 에 넣으면 무한 루프 — 마운트 1회 고정)
     useEffect(() => {
         refreshUser().catch(() => {});
-        const onFocus = () => { refreshUser().catch(() => {}); };
+        const tick = () => { if (document.visibilityState !== 'hidden') setNow(Date.now()); };
+        const onFocus = () => { tick(); refreshUser().catch(() => {}); };
+        const timer = window.setInterval(tick, 60_000);
         window.addEventListener('focus', onFocus);
-        return () => window.removeEventListener('focus', onFocus);
+        return () => { window.clearInterval(timer); window.removeEventListener('focus', onFocus); };
     }, []);
 
     useEffect(() => {
@@ -44,13 +47,11 @@ export default function PlanSelectPage() {
             navigate('/dashboard', { replace: true });
             return;
         }
-        const isActive = (user.tier === 'pro' || user.tier === 'premium')
-            && user.status === 'approved'
-            && !user.is_pro_expired;
+        const isActive = hasActiveBaseSubscription(user, now);
         if (isActive && !allowChange) {
             navigate('/dashboard', { replace: true });
         }
-    }, [user, token, loading, navigate, allowChange, signupPath]);
+    }, [user, token, loading, navigate, allowChange, signupPath, now]);
 
     if (loading) {
         return (
@@ -60,11 +61,9 @@ export default function PlanSelectPage() {
         );
     }
 
-    const isExpired = !!user?.is_pro_expired || user?.status === 'expired' || isResubscribe;
+    const isExpired = isBaseSubscriptionExpired(user, now) || isResubscribe;
     const isPending = user?.status === 'pending';
-    const hasActiveBase = (user?.tier === 'pro' || user?.tier === 'premium')
-        && user.status === 'approved'
-        && !user.is_pro_expired;
+    const hasActiveBase = hasActiveBaseSubscription(user, now);
     const expiredAt = user?.pro_expires_at ? new Date(user.pro_expires_at) : null;
 
     const select = (plan: BillingPlan) => {

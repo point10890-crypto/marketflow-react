@@ -1,4 +1,4 @@
-import { subscriptionFunnelTarget, type AuthUserData } from './auth';
+import { hasActiveBaseSubscription, isBaseSubscriptionExpired, subscriptionExpiryTime, subscriptionFunnelTarget, type AuthUserData } from './auth';
 import { planToQuery, type BillingPlan } from './billingInfo';
 
 export const SUBSCRIPTION_REMINDER_MS = 30 * 60 * 1000;
@@ -8,12 +8,13 @@ export type SubscriptionJourney = {
     plan: BillingPlan; payment: string; fingerprint: string;
 };
 
-export function subscriptionJourney(user: AuthUserData | null): SubscriptionJourney | null {
+export function subscriptionJourney(user: AuthUserData | null, now = Date.now()): SubscriptionJourney | null {
     if (!user || user.role === 'admin' || user.status === 'unknown') return null;
-    const expired = !!user.is_pro_expired || user.status === 'expired';
-    const activeBase = user.status === 'approved' && ['pro', 'premium'].includes(user.tier || '') && !expired;
-    const aibainExpired = activeBase && !!user.is_aibain_expired;
-    if (!expired && !aibainExpired && !subscriptionFunnelTarget(user)) return null;
+    const expired = isBaseSubscriptionExpired(user, now);
+    const activeBase = hasActiveBaseSubscription(user, now);
+    const addonExpiry = subscriptionExpiryTime(user.aibain_expires_at);
+    const aibainExpired = activeBase && (!!user.is_aibain_expired || Number.isFinite(addonExpiry) && addonExpiry <= now);
+    if (!expired && !aibainExpired && !subscriptionFunnelTarget(user, now)) return null;
     const preferred = user.tier === 'premium' || (!user.tier && user.requested_tier === 'premium');
     const plan: BillingPlan = aibainExpired ? (preferred ? 'premium_aibain' : 'pro_aibain') : preferred ? 'premium' : 'pro';
     const kind = aibainExpired ? 'aibain-expired' : expired ? 'base-expired' : 'subscribe';

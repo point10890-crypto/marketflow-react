@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
 import { subscriptionJourney, reminderDue } from '@/lib/subscriptionJourney';
@@ -16,19 +16,22 @@ export default function SubscriptionEntry() {
     refresh.current = refreshUser;
     const [now, setNow] = useState(Date.now);
     const { pathname } = useLocation();
+    const navigate = useNavigate();
     const [bannerHost, setBannerHost] = useState<HTMLElement | null>(null);
     useLayoutEffect(() => { setBannerHost(document.getElementById('subscription-entry-dashboard')); }, [pathname, loading, user?.id]);
-    const journey = subscriptionJourney(user);
+    const journey = subscriptionJourney(user, now);
     const eligible = !loading && !!user && !!token && !!journey
         && !['/payment-request', '/pending-approval', '/login', '/signup'].includes(pathname);
     const expired = journey?.kind === 'base-expired';
     const brain = journey?.kind === 'aibain-expired';
     const key = `subscription-entry:v2:${journey?.fingerprint}`;
-    const [lookup, setLookup] = useState<{ key: string; state: 'ready' | 'pending' | 'error' } | null>(null);
+    const [lookup, setLookup] = useState<{ key: string; state: 'ready' | 'pending' | 'active' | 'blocked' | 'error' } | null>(null);
+    const refreshedStatus = useRef('');
     const [retry, setRetry] = useState(0);
     const [dismissedAt, setDismissedAt] = useState<{ key: string; at: string } | null>(null);
     const dialog = useRef<HTMLDialogElement>(null);
-    const lookupKey = `${key}:${token}:${pathname}:${retry}`;
+    const pendingSignature = `${user?.has_pending_subscription ?? 'unknown'}:${user?.pending_subscription_request?.id ?? ''}:${user?.pending_subscription_request?.status ?? ''}:${user?.pending_subscription_request?.request_type ?? ''}`;
+    const lookupKey = `${key}:${token}:${pathname}:${pendingSignature}:${retry}`;
     useEffect(() => {
         if (!user || !token || loading || user.role === 'admin') return;
         const tick = () => {
@@ -52,11 +55,35 @@ export default function SubscriptionEntry() {
         if (!eligible || !token) return;
         let current = true;
         subscriptionAPI.getStatus(token).then(data => {
-            if (current) setLookup({ key: lookupKey, state: hasPendingSubscription(data) ? 'pending' : 'ready' });
+            if (!current) return;
+            if (!Array.isArray(data?.requests)) throw new Error('Invalid subscription status');
+            const latest = data.user;
+            if (latest?.id != null && String(latest.id) !== String(user.id)
+                || latest?.status != null && latest.id == null) throw new Error('Subscription identity mismatch');
+            let next: 'ready' | 'pending' | 'active' | 'blocked' = hasPendingSubscription(data) ? 'pending' : 'ready';
+            if (latest?.id != null) {
+                if (['suspended', 'rejected'].includes(latest.status)) next = 'blocked';
+                else if (next !== 'pending' && !subscriptionJourney({ ...user, ...latest }, Date.now())) next = 'active';
+            }
+            setLookup({ key: lookupKey, state: next });
+            if (next === 'active' || next === 'blocked') {
+                const confirmed = `${user.id}:${token}:${next}:${latest?.pro_expires_at}:${latest?.aibain_expires_at}`;
+                if (refreshedStatus.current !== confirmed) {
+                    refreshedStatus.current = confirmed;
+                    refresh.current?.().catch(() => {});
+                }
+            }
         }).catch(() => { if (current) setLookup({ key: lookupKey, state: 'error' }); });
         return () => { current = false; };
     }, [eligible, token, lookupKey, retry]);
-    const state = user?.has_pending_subscription === true ? 'pending' : lookup?.key === lookupKey ? lookup.state : null;
+    // A successful status lookup is newer than cached /me flags, including an old pending=true.
+    const cachedPending = user?.has_pending_subscription === true || user?.pending_subscription_request?.status === 'pending';
+    const state = lookup?.key === lookupKey ? lookup.state : cachedPending ? 'pending' : null;
+    useEffect(() => {
+        if (!eligible || !expired || !pathname.startsWith('/dashboard')) return;
+        if (state === 'pending') navigate('/pending-approval', { replace: true });
+        else if (state === 'ready') navigate('/plan-select?resubscribe=1&from=expired', { replace: true });
+    }, [eligible, expired, pathname, state, navigate]);
     const lastDismissal = dismissedAt?.key === key ? dismissedAt.at : safeGetItem('session', key);
     const open = eligible && state === 'ready' && reminderDue(lastDismissal, now);
     const close = () => {
@@ -73,7 +100,7 @@ export default function SubscriptionEntry() {
         else element.setAttribute('open', '');
         return () => { element.close?.(); previous?.focus(); };
     }, [open]);
-    if (!eligible || !journey) return null;
+    if (!eligible || !journey || state === 'active' || state === 'blocked') return null;
     const meta = PLAN_PAYMENT_META[journey.plan];
     const payment = journey.payment;
     const destination = journey.destination;
@@ -81,7 +108,7 @@ export default function SubscriptionEntry() {
             <div><strong>{state === 'pending' ? '구독 신청을 확인하고 있습니다' : journey.title}</strong>
                 <p>{state === 'pending' ? '추가 입금 없이 신청 상태를 확인하세요.' : state === 'error' ? '신청 내역을 불러오지 못했습니다. 다시 확인해 주세요.' : journey.message}</p></div>
             {state === 'error' ? <button onClick={() => setRetry(v => v + 1)}>다시 확인</button>
-                : state ? <Link to={state === 'pending' ? '/pending-approval' : destination}>{state === 'pending' ? '신청 상태 확인' : journey.cta}</Link>
+                : state ? <Link to={state === 'pending' ? '/pending-approval' : expired ? payment : destination}>{state === 'pending' ? '신청 상태 확인' : expired ? '재구독 신청' : journey.cta}</Link>
                 : <span role="status">신청 내역 확인 중…</span>}
         </aside>;
     return <>
