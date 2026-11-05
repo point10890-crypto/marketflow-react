@@ -147,6 +147,29 @@ export interface FunnelUser {
     is_pro_expired?: boolean | null;
     requested_tier?: string | null;
     has_pending_subscription?: boolean;
+    pro_expires_at?: string | null;
+    is_pro_paused?: boolean;
+}
+
+/** The API's timezone-less ISO dates are UTC; the browser's local timezone must not move expiry. */
+export function subscriptionExpiryTime(value?: string | null): number {
+    if (!value) return NaN;
+    const iso = value.trim().replace(' ', 'T');
+    return Date.parse(iso.includes('T') && !/(?:Z|[+-]\d{2}:?\d{2})$/i.test(iso) ? `${iso}Z` : iso);
+}
+
+export function isBaseSubscriptionExpired(user: FunnelUser | null | undefined, now = Date.now()): boolean {
+    if (!user) return false;
+    if (user.status === 'expired' || user.is_pro_expired === true) return true;
+    // Lifetime plans retain historic dates, and a paused Pro clock does not advance.
+    if (user.tier !== 'pro' || user.is_pro_paused) return false;
+    const expiry = subscriptionExpiryTime(user.pro_expires_at);
+    return Number.isFinite(expiry) && expiry <= now;
+}
+
+export function hasActiveBaseSubscription(user: FunnelUser | null | undefined, now = Date.now()): boolean {
+    return !!user && user.status === 'approved' && ['pro', 'premium'].includes(user.tier || '')
+        && !isBaseSubscriptionExpired(user, now);
 }
 
 /**
@@ -162,15 +185,16 @@ export interface FunnelUser {
  * ApprovedGuard/ProGuard(보호 라우트), FunnelGate(공개 라우트), 404 CTA 가 전부
  * 이 한 함수를 본다 — 분기 기준이 갈라지면 "비구독 회원이 머무는 페이지"가 생긴다.
  */
-export function subscriptionFunnelTarget(user: FunnelUser | null | undefined): string | null {
+export function subscriptionFunnelTarget(user: FunnelUser | null | undefined, now = Date.now()): string | null {
     if (!user) return null;
     // 'unknown' = 토큰만 있고 /api/auth/me 응답 전 합성 유저 — 판정 보류 (가드가 별도 처리)
     if (user.status === 'unknown') return null;
     if (user.role === 'admin') return null;
-    const activeBase = user.status === 'approved' && ['pro', 'premium'].includes(user.tier || '') && !user.is_pro_expired;
+    const activeBase = hasActiveBaseSubscription(user, now);
     if (activeBase) return null;
     if (user.has_pending_subscription === true) return '/pending-approval';
-    if (user.status === 'expired' || user.is_pro_expired) return '/plan-select?resubscribe=1&from=expired';
+    if (isBaseSubscriptionExpired(user, now)) return '/plan-select?resubscribe=1&from=expired';
+    if (['rejected', 'cancelled', 'canceled'].includes(user.status || '')) return '/plan-select';
     // Old clients retain compatibility; explicit server false always overrides historical intent.
     if (!user.tier && user.has_pending_subscription === undefined && user.requested_tier) return '/pending-approval';
     if (!user.tier || user.has_pending_subscription === false) return '/plan-select';

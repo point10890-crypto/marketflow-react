@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import {
     getToken,
     setToken,
@@ -18,7 +18,8 @@ import { postAPI, API_BASE, fetchWithTimeout } from '@/lib/api';
 // 2) /api/auth/me 검증은 백그라운드 best-effort. 실패해도 user 를 절대 null 로
 //    되돌리지 않는다 (네트워크 오류로 로그아웃 금지).
 // 3) /api/auth/me 가 성공하면 진짜 값으로 덮어쓰고 캐시도 갱신.
-// 4) logout() 은 사용자 명시적 액션에서만 호출.
+// 4) 현재 세션의 확정된 401 또는 명시적 로그아웃만 세션을 종료한다.
+//    이전 계정/이전 조회 응답은 현재 구독 상태를 덮어쓰지 않는다.
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface AuthUser {
@@ -30,7 +31,7 @@ interface AuthUser {
     role: string;
     status: string;
     pro_expires_at?: string | null;
-    // 만료 여부 (backend 계산값). 프런트 가드가 직접 비교하지 않고 이 값을 본다.
+    // 서버 만료 판정. 공유 구독 helper가 열린 화면의 Pro 만료 시각도 보완한다.
     is_pro_expired?: boolean;
     // 가입 시 유저가 선택한 플랜. pending 유저 안내용.
     requested_tier?: 'pro' | 'premium' | null;
@@ -134,17 +135,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AuthUser | null>(null);
     const [token, setTokenState] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const sessionEpoch = useRef(0);
+    const readSequence = useRef(0);
+    const mounted = useRef(true);
+
+    const logout = useCallback(() => {
+        sessionEpoch.current++;
+        readSequence.current++;
+        clearToken();
+        setTokenState(null);
+        setUser(null);
+        setLoading(false);
+        // 방문 이력은 유지하므로 재방문 시 로그인으로 연결한다.
+    }, []);
+
+    const readUser = useCallback(async (currentToken: string, signal?: AbortSignal) => {
+        const epoch = sessionEpoch.current;
+        const sequence = ++readSequence.current;
+        const current = () => mounted.current && !signal?.aborted
+            && epoch === sessionEpoch.current && sequence === readSequence.current
+            && getToken() === currentToken;
+        try {
+            const res = await fetchWithTimeout(`${API_BASE}/api/auth/me`, {
+                headers: { Authorization: `Bearer ${currentToken}` }, signal,
+            }, 10000);
+            if (!current()) return;
+            if (res.status === 401) {
+                logout();
+                return;
+            }
+            if (!res.ok) return;
+            const data = await res.json();
+            if (current() && data?.user) {
+                setUser(toAuthUser(data.user));
+                saveUser(data.user);
+            }
+        } catch {
+            // 연결 장애는 마지막 확인 세션을 유지한다. 401과 구분한다.
+        }
+    }, [logout]);
 
     useEffect(() => {
+        mounted.current = true;
         if (!isAuthenticated()) {
             setLoading(false);
-            return;
+            return () => { mounted.current = false; };
         }
 
         const storedToken = getToken();
         if (!storedToken) {
             setLoading(false);
-            return;
+            return () => { mounted.current = false; };
         }
         setTokenState(storedToken);
 
@@ -155,88 +196,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // (2) 백그라운드 검증 — 실패해도 user 보존
         const controller = new AbortController();
-        fetchWithTimeout(`${API_BASE}/api/auth/me`, {
-            headers: { Authorization: `Bearer ${storedToken}` },
-            signal: controller.signal,
-        }, 10000)
-            .then((r) => {
-                if (r.status === 401) {
-                    clearToken();
-                    setTokenState(null);
-                    setUser(null);
-                    return null;
-                }
-                return r.ok ? r.json() : null;
-            })
-            .then((data) => {
-                if (data?.user) {
-                    setUser(toAuthUser(data.user));
-                    saveUser(data.user);
-                }
-            })
-            .catch((err) => {
-                if (err instanceof DOMException && err.name === 'AbortError') return;
-                console.warn('[Auth] background /me failed (offline-tolerant):', err?.message || err);
-            })
-            .finally(() => setLoading(false));
-        return () => controller.abort();
-    }, []);
+        void readUser(storedToken, controller.signal).finally(() => {
+            if (mounted.current && !controller.signal.aborted) setLoading(false);
+        });
+        return () => { mounted.current = false; controller.abort(); };
+    }, [readUser]);
 
     // "이 기기에서 한번이라도 로그인/가입한 적 있음" 영구 플래그.
     // logout 에서는 지우지 않는다 → 방문 이력 있는 기기는 로그아웃 후 재접속 시
     // /login 으로, 없는 기기는 랜딩(/) 으로 분기해 비가입자에게 가입 유도.
-    const markHasLoggedInBefore = () => {
+    const markHasLoggedInBefore = useCallback(() => {
         try { localStorage.setItem('auth_has_logged_in_before', 'true'); } catch { /* quota/private mode */ }
-    };
+    }, []);
 
-    const login = async (email: string, password: string, remember?: boolean): Promise<void> => {
-        const data = await postAPI<{ token: string; user?: AuthUserData }>('/api/auth/login', { email, password });
-        if (!data.token) throw new Error('No token received from server');
-
-        setToken(data.token, remember);
-        setTokenState(data.token);
-
-        if (data.user) {
-            setUser(toAuthUser(data.user));
-            saveUser(data.user);
-        }
-        markHasLoggedInBefore();
-    };
-
-    const setSession = (tok: string, userData: AuthUserData, remember?: boolean) => {
+    const setSession = useCallback((tok: string, userData: AuthUserData, remember?: boolean) => {
         if (!tok) return;
+        sessionEpoch.current++;
+        readSequence.current++;
         setToken(tok, remember);
         setTokenState(tok);
         setUser(toAuthUser(userData));
         saveUser(userData);
+        setLoading(false);
         markHasLoggedInBefore();
-    };
+    }, [markHasLoggedInBefore]);
 
-    const logout = () => {
-        clearToken();
-        setTokenState(null);
-        setUser(null);
-        // auth_has_logged_in_before 플래그는 일부러 유지 → 재접속 시 /login 분기
-    };
+    const login = useCallback(async (email: string, password: string, remember?: boolean): Promise<void> => {
+        const epoch = ++sessionEpoch.current;
+        readSequence.current++;
+        const data = await postAPI<{ token: string; user?: AuthUserData }>('/api/auth/login', { email, password });
+        if (!mounted.current || epoch !== sessionEpoch.current) throw new Error('로그인 요청이 변경되었습니다. 다시 확인해 주세요.');
+        if (!data.token) throw new Error('No token received from server');
+        if (data.user) {
+            setSession(data.token, data.user, remember);
+        } else {
+            setToken(data.token, remember);
+            setTokenState(data.token);
+            setUser(synthesizeUserFromToken(data.token));
+            setLoading(false);
+            markHasLoggedInBefore();
+        }
+    }, [setSession, markHasLoggedInBefore]);
 
-    const refreshUser = async () => {
+    const refreshUser = useCallback(async () => {
         const currentToken = getToken();
         if (!currentToken) return;
-        try {
-            const res = await fetchWithTimeout(`${API_BASE}/api/auth/me`, {
-                headers: { Authorization: `Bearer ${currentToken}` },
-            }, 10000);
-            if (res.ok) {
-                const data = await res.json();
-                if (data.user) {
-                    setUser(toAuthUser(data.user));
-                    saveUser(data.user);
-                }
-            }
-        } catch {
-            /* 오프라인 — 캐시 유지 */
-        }
-    };
+        await readUser(currentToken);
+    }, [readUser]);
 
     const isAdminFn = () => checkIsAdmin() || user?.role === 'admin';
 

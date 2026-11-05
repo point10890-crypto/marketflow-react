@@ -74,7 +74,7 @@ describe('LlmRoutingCostCard', () => {
 
         const card = await screen.findByRole('region', { name: 'LLM 라우팅 비용' });
         expect(mockApi.getLlmUsage).toHaveBeenCalledWith({ days: 1, limit: 20 });
-        expect(within(card).getByText('880')).toBeInTheDocument();
+        expect(await within(card).findByText('880')).toBeInTheDocument();
         expect(within(card).getByText('$0.5')).toBeInTheDocument();
         expect(within(card).getByText('호출 33.3%')).toBeInTheDocument();
         expect(within(card).getByText('토큰 25.0%')).toBeInTheDocument();

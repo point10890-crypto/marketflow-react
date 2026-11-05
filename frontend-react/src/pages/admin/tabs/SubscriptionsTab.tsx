@@ -9,6 +9,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
     const [hasLoaded, setHasLoaded] = useState(false);
     const [loadError, setLoadError] = useState('');
     const requestSequence = useRef(0);
+    const mutationLocks = useRef(new Set<string>());
     const [actionMsg, setActionMsg] = useState('');
     // 처리 중인 request id 추적 — 같은 row 더블클릭 방지 + 이미 처리된 row 보호
     const [processing, setProcessing] = useState<Set<number>>(new Set());
@@ -16,6 +17,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
 
     // silent=true 이면 스피너를 띄우지 않음 (refresh 버튼용 기본은 스피너 O)
     const loadRequests = useCallback(async (silent = false) => {
+        if (mutationLocks.current.size > 0) return;
         const requestId = ++requestSequence.current;
         if (!silent) setLoading(true);
         try {
@@ -74,71 +76,66 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
 
     const handleApprove = async (id: number) => {
         // 이미 처리 중이거나 pending 이 아닌 row 는 무시 (중복 클릭 차단)
-        if (processing.has(id)) return;
+        if (mutationLocks.current.has(`request:${id}`)) return;
         const current = requests.find(r => r.id === id);
         if (!current || current.status !== 'pending') return;
 
+        mutationLocks.current.add(`request:${id}`);
+        requestSequence.current++;
+        setLoading(false);
         setProcessing(prev => { const n = new Set(prev); n.add(id); return n; });
-        // 1) Optimistic UI: 즉시 approved 로 전환
-        setRequests(prev => {
-            const next = prev.map(r => r.id === id ? { ...r, status: 'approved' as const, processed_at: new Date().toISOString() } : r);
-            onCountChange(next.filter(r => r.status === 'pending').length);
-            return next;
-        });
-        showAction('✅ 구독 승인 완료');
         try {
-            // 2) 서버 확정. 응답의 request 객체로 로컬 상태 merge (loadRequests 호출 X → 스피너 X)
             const res = await adminAPI.approveSubscription(id, apiToken);
-            if (res?.request) {
-                setRequests(prev => prev.map(r => r.id === id ? res.request : r));
-            }
-        } catch (err: any) {
-            // 실패 시에만 롤백
+            if (res?.request?.id !== id || res.request.status !== 'approved') throw new Error('승인 결과를 확인할 수 없습니다.');
             setRequests(prev => {
-                const next = prev.map(r => r.id === id ? { ...r, status: 'pending' as const, processed_at: null } : r);
+                const next = prev.map(r => r.id === id ? res.request : r);
                 onCountChange(next.filter(r => r.status === 'pending').length);
                 return next;
             });
+            showAction('✅ 구독 승인 완료');
+        } catch (err: any) {
             showAction(`❌ ${err.message}`);
         } finally {
+            mutationLocks.current.delete(`request:${id}`);
             setProcessing(prev => { const n = new Set(prev); n.delete(id); return n; });
         }
     };
 
     const handleReject = async (id: number) => {
-        if (processing.has(id)) return;
+        if (mutationLocks.current.has(`request:${id}`)) return;
         const current = requests.find(r => r.id === id);
         if (!current || current.status !== 'pending') return;
 
         const note = prompt('거절 사유 (선택):');
+        if (note === null) return;
+        mutationLocks.current.add(`request:${id}`);
+        requestSequence.current++;
+        setLoading(false);
         setProcessing(prev => { const n = new Set(prev); n.add(id); return n; });
-        // Optimistic UI
-        setRequests(prev => {
-            const next = prev.map(r => r.id === id ? { ...r, status: 'rejected' as const, admin_note: note || '', processed_at: new Date().toISOString() } : r);
-            onCountChange(next.filter(r => r.status === 'pending').length);
-            return next;
-        });
-        showAction('구독 요청 거절됨');
         try {
             const res = await adminAPI.rejectSubscription(id, note || undefined, apiToken);
-            if (res?.request) {
-                setRequests(prev => prev.map(r => r.id === id ? res.request : r));
-            }
-        } catch (err: any) {
+            if (res?.request?.id !== id || res.request.status !== 'rejected') throw new Error('거절 결과를 확인할 수 없습니다.');
             setRequests(prev => {
-                const next = prev.map(r => r.id === id ? { ...r, status: 'pending' as const, processed_at: null, admin_note: null } : r);
+                const next = prev.map(r => r.id === id ? res.request : r);
                 onCountChange(next.filter(r => r.status === 'pending').length);
                 return next;
             });
+            showAction('구독 요청 거절됨');
+        } catch (err: any) {
             showAction(`❌ ${err.message}`);
         } finally {
+            mutationLocks.current.delete(`request:${id}`);
             setProcessing(prev => { const n = new Set(prev); n.delete(id); return n; });
         }
     };
 
     // 플랜 미선택 pending 가입자 — tier 부여 (status=approved 자동 승격)
     const handleGrantTier = async (userId: number, tier: 'pro' | 'premium') => {
-        if (grantingUser.has(userId)) return;
+        if (mutationLocks.current.has(`user:${userId}`)) return;
+        if (requests.some(request => request.user_id === userId && request.status === 'pending')) { showAction('❌ 대기 중인 구독 요청을 먼저 승인해 주세요.'); return; }
+        mutationLocks.current.add(`user:${userId}`);
+        requestSequence.current++;
+        setLoading(false);
         setGrantingUser(prev => { const n = new Set(prev); n.add(userId); return n; });
         try {
             await adminAPI.setUserTier(userId, tier, apiToken);
@@ -147,13 +144,18 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
         } catch (err: any) {
             showAction(`❌ ${err.message}`);
         } finally {
+            mutationLocks.current.delete(`user:${userId}`);
             setGrantingUser(prev => { const n = new Set(prev); n.delete(userId); return n; });
         }
     };
 
     // 만료 회원 — 원클릭 재활성화 (tier 재부여 = status approved 승격 + 30일)
     const handleReactivate = async (member: ExpiredMember, tier: 'pro' | 'premium') => {
-        if (grantingUser.has(member.id)) return;
+        if (mutationLocks.current.has(`user:${member.id}`)) return;
+        if (requests.some(request => request.user_id === member.id && request.status === 'pending')) { showAction('❌ 대기 중인 구독 요청을 먼저 승인해 주세요.'); return; }
+        mutationLocks.current.add(`user:${member.id}`);
+        requestSequence.current++;
+        setLoading(false);
         setGrantingUser(prev => { const n = new Set(prev); n.add(member.id); return n; });
         try {
             await adminAPI.setUserTier(member.id, tier, apiToken);
@@ -162,6 +164,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
         } catch (err: any) {
             showAction(`❌ ${err.message}`);
         } finally {
+            mutationLocks.current.delete(`user:${member.id}`);
             setGrantingUser(prev => { const n = new Set(prev); n.delete(member.id); return n; });
         }
     };
@@ -206,6 +209,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                     <div className="space-y-3">
                         {pending.map(req => {
                             const isAibainRenewal = req.request_type === 'aibain_renewal';
+                            const isBaseRenewal = req.request_type.includes('renewal') && !isAibainRenewal;
                             const isAibainOnly = req.request_type === 'aibain_addon' || isAibainRenewal;
                             const includesAibain = isAibainOnly || !!(req.admin_note && req.admin_note.includes('AI Brain'));
                             const cardBorder = isAibainOnly ? 'border-cyan-500/30' : 'border-yellow-500/20';
@@ -214,6 +218,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                             const iconClass = isAibainOnly ? 'fa-robot' : 'fa-arrow-up';
                             // 승인 버튼 색상/라벨 분기
                             let btnLabel = req.to_tier === 'premium' ? 'Ultra Pro 승인' : 'Pro 승인';
+                            if (isBaseRenewal) btnLabel = req.to_tier === 'premium' ? 'Ultra Pro 재구독 승인' : 'Pro 재구독 승인';
                             let btnIcon = req.to_tier === 'premium' ? 'fa-gem' : 'fa-crown';
                             let btnColor = req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30';
                             if (isAibainOnly) {
@@ -235,6 +240,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                             <div>
                                                 <div className="text-white font-medium flex items-center gap-2 flex-wrap">
                                                     {req.user_name || `User #${req.user_id}`}
+                                                    {isBaseRenewal && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300">재구독</span>}
                                                     {isAibainOnly && (
                                                         <span className="text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 uppercase">
                                                             <i className="fas fa-robot text-[8px] mr-0.5" />
@@ -435,7 +441,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                             ) : req.request_type === 'aibain_renewal' ? (
                                                 <span className="text-cyan-300"><i className="fas fa-robot text-[10px] mr-1" />AI Brain 재구독</span>
                                             ) : (
-                                                <>{req.from_tier} &rarr; {req.to_tier}</>
+                                                <>{req.request_type.includes('renewal') ? '재구독 · ' : ''}{req.from_tier} &rarr; {req.to_tier}</>
                                             )}
                                         </td>
                                         <td className="px-4 py-3">

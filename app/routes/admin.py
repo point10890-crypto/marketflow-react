@@ -41,8 +41,9 @@ def _admin_user():
     return getattr(request, 'current_user', None)
 
 
-def _record_audit(action: str, target_user: User | None, before: dict | None, after: dict | None, note: str = ''):
-    """감사 로그 기록 (best-effort — 실패해도 메인 트랜잭션에 영향 X)"""
+def _record_audit(action: str, target_user: User | None, before: dict | None, after: dict | None,
+                  note: str = '', *, commit: bool = True):
+    """기본은 best-effort 기록. commit=False면 호출자의 원자적 트랜잭션에 참여한다."""
     try:
         admin = _admin_user()
         log = AdminAuditLog(
@@ -56,8 +57,11 @@ def _record_audit(action: str, target_user: User | None, before: dict | None, af
             note=note or None,
         )
         db.session.add(log)
-        db.session.commit()
+        if commit:
+            db.session.commit()
     except Exception as e:
+        if not commit:
+            raise
         print(f"[AuditLog] failed: {type(e).__name__}: {e}")
         try:
             db.session.rollback()
@@ -709,6 +713,50 @@ def revoke_subscription(user_id):
     })
 
 
+@admin_bp.route('/users/<int:user_id>/expire', methods=['POST'])
+@admin_required
+def expire_subscription(user_id):
+    """베이스/AI Brain 이용을 모두 만료하고 계정·신청·구매 이력은 보존한다."""
+    user = db.session.get(User, user_id)
+    if user is None:
+        return jsonify({'error': 'User not found'}), 404
+    if user.is_admin:
+        return jsonify({'error': 'Cannot expire an admin account'}), 400
+    if user.status in {'suspended', 'rejected'}:
+        return jsonify({'error': 'Blocked accounts cannot be changed to expired'}), 409
+
+    data = request.get_json(silent=True)
+    if data is None and not request.get_data(cache=True):
+        data = {}
+    if not isinstance(data, dict):
+        return jsonify({'error': 'JSON object required'}), 400
+    note = data.get('note', '')
+    if not isinstance(note, str) or len(note) > 500:
+        return jsonify({'error': 'note must be a string of at most 500 characters'}), 400
+    note = note.strip()
+
+    try:
+        before = user.to_dict()
+        expired_at = datetime.now(timezone.utc) - timedelta(minutes=1)
+        user.status = 'expired'
+        user.pro_expires_at = expired_at
+        user.pro_expiry_alert_stage = 'expired'
+        user.pro_paused_at = None
+        user.aibain_enabled = False
+        user.aibain_expires_at = expired_at
+        user.aibain_alert_stage = 'expired'
+        after = user.to_dict()
+        _record_audit('expire_subscription', user, before, after, note=note, commit=False)
+        db.session.commit()
+    except Exception as exc:
+        db.session.rollback()
+        current_app.logger.error('Subscription expiry failed (%s)', type(exc).__name__)
+        return jsonify({'error': 'Failed to expire subscription'}), 500
+
+    _notify_admin('구독 전체 만료 처리', user, f'사유: {note}' if note else '')
+    return jsonify({'message': f'{user.email} 구독 전체 만료 처리됨', 'user': after})
+
+
 # ── AI Brain 알파 스캐너 애드온 (별도 30일 갱신 구독) ────────────────────────
 
 @admin_bp.route('/users/<int:user_id>/aibain/enable', methods=['POST'])
@@ -917,7 +965,7 @@ def reset_password(user_id):
 @admin_bp.route('/users/<int:user_id>', methods=['DELETE'])
 @admin_required
 def delete_user(user_id):
-    """유저 삭제 — 커뮤니티 게시글/댓글/구매요청까지 연쇄 제거."""
+    """회원 및 종속 행을 삭제한다. 관리자 감사 이력과 업로드 파일은 보존한다."""
     from app.models.community import Post, PostImage, Comment, PurchaseRequest
 
     user = db.session.get(User, user_id)
@@ -933,12 +981,20 @@ def delete_user(user_id):
 
     try:
         user_post_ids = [p.id for p in Post.query.filter_by(author_id=user_id).all()]
+        removed_comment_ids = db.session.query(Comment.id).filter(or_(
+            Comment.author_id == user_id,
+            Comment.post_id.in_(user_post_ids),
+        ))
+        # 다른 회원의 답글은 남긴다. 삭제 대상끼리의 참조도 먼저 끊어
+        # 즉시 FK 검사 및 게시글을 넘나드는 레거시 답글을 모두 처리한다.
+        Comment.query.filter(Comment.parent_id.in_(removed_comment_ids)).update(
+            {Comment.parent_id: None}, synchronize_session=False,
+        )
+        Comment.query.filter(Comment.id.in_(removed_comment_ids)).delete(synchronize_session=False)
         if user_post_ids:
             PostImage.query.filter(PostImage.post_id.in_(user_post_ids)).delete(synchronize_session=False)
-            Comment.query.filter(Comment.post_id.in_(user_post_ids)).delete(synchronize_session=False)
             PurchaseRequest.query.filter(PurchaseRequest.post_id.in_(user_post_ids)).delete(synchronize_session=False)
 
-        Comment.query.filter_by(author_id=user_id).delete(synchronize_session=False)
         PurchaseRequest.query.filter_by(user_id=user_id).delete(synchronize_session=False)
 
         if user_post_ids:
@@ -946,28 +1002,15 @@ def delete_user(user_id):
 
         SubscriptionRequest.query.filter_by(user_id=user_id).delete(synchronize_session=False)
 
+        _record_audit('delete_user', user, snapshot, None,
+                      note='membership and dependent rows deleted; administrative audit retained',
+                      commit=False)
         db.session.delete(user)
         db.session.commit()
-    except Exception as e:
+    except Exception as exc:
         db.session.rollback()
-        return jsonify({'error': f'Failed to delete user: {e}'}), 500
-
-    # 감사 로그 (user 객체는 삭제됨 → snapshot 사용)
-    try:
-        log = AdminAuditLog(
-            admin_id=admin.id if admin else None,
-            admin_email=admin.email if admin else None,
-            action='delete_user',
-            target_user_id=user_id,
-            target_email=email,
-            before=json.dumps(snapshot, default=str),
-            after=None,
-            note='hard delete with cascade',
-        )
-        db.session.add(log)
-        db.session.commit()
-    except Exception as e:
-        print(f"[AuditLog] delete_user log failed: {e}")
+        current_app.logger.error('Member deletion failed (%s)', type(exc).__name__)
+        return jsonify({'error': 'Failed to delete user'}), 500
 
     return jsonify({'message': f'User {email} deleted'})
 
@@ -1355,10 +1398,23 @@ def reject_subscription(req_id):
     admin = _admin_user()
     data = request.get_json() or {}
 
-    sub_req.status = 'rejected'
-    sub_req.admin_note = data.get('note') or data.get('admin_note') or ''
-    sub_req.processed_at = datetime.now(timezone.utc)
-    sub_req.processed_by = admin.id if admin else None
+    # Approval uses the same pending-only claim. A stale pending snapshot must
+    # never overwrite a request another administrator has already approved.
+    claimed = SubscriptionRequest.query.filter(
+        SubscriptionRequest.id == req_id,
+        SubscriptionRequest.status == 'pending',
+    ).update({
+        SubscriptionRequest.status: 'rejected',
+        SubscriptionRequest.admin_note: data.get('note') or data.get('admin_note') or '',
+        SubscriptionRequest.processed_at: datetime.now(timezone.utc),
+        SubscriptionRequest.processed_by: admin.id if admin else None,
+    }, synchronize_session=False)
+    if claimed != 1:
+        db.session.rollback()
+        current = db.session.get(SubscriptionRequest, req_id)
+        return jsonify({'error': f'Request already {current.status if current else "processed"}'}), 400
+    db.session.expire_all()
+    sub_req = db.session.get(SubscriptionRequest, req_id)
 
     user = db.session.get(User, sub_req.user_id)
     before = {'requested_tier': user.requested_tier} if user else None

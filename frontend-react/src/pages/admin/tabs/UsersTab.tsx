@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { adminAPI, AdminUser, fetchAuthAPI } from '@/lib/api';
+import MemberSubscriptionActions from '../MemberSubscriptionActions';
 
 const TIER_STYLES: Record<string, { label: string; cls: string }> = {
     none: { label: 'No Tier', cls: 'bg-gray-500/20 text-gray-400' },
@@ -11,6 +12,8 @@ const TIER_STYLES: Record<string, { label: string; cls: string }> = {
 export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserId?: number | string }) {
     const [users, setUsers] = useState<AdminUser[]>([]);
     const [loading, setLoading] = useState(true);
+    const [hasLoaded, setHasLoaded] = useState(false);
+    const [loadError, setLoadError] = useState('');
     const [actionMsg, setActionMsg] = useState('');
     const [filterTier, setFilterTier] = useState('all');
     const [filterStatus, setFilterStatus] = useState('all');
@@ -32,6 +35,15 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
     const [duplicates, setDuplicates] = useState<Array<{ reason: string; key: string; accounts: Array<{ id: number; email: string; name: string; tier: string | null; status: string; created_at: string | null; last_login_at: string | null }> }>>([]);
     const [showDuplicates, setShowDuplicates] = useState(false);
     const [mobileMenuId, setMobileMenuId] = useState<number | null>(null);
+    const [manageTarget, setManageTarget] = useState<AdminUser | null>(null);
+    const [managementBusy, setManagementBusy] = useState(false);
+    const [deleteBusy, setDeleteBusy] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
+    const deleteBusyRef = useRef(false);
+    const bulkBusyRef = useRef(false);
+    const [bulkBusy, setBulkBusy] = useState(false);
+    const detailSequence = useRef(0);
+    useEffect(() => { setDeleteError(''); }, [deleteTarget?.id]);
 
     // Search debounce (300ms)
     useEffect(() => {
@@ -50,12 +62,15 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
     };
 
     const openUserDetail = async (userId: number) => {
+        const sequence = ++detailSequence.current;
+        setDetailUser(null);
         setDetailLoading(true);
         try {
             const data = await fetchAuthAPI<any>(`/api/admin/users/${userId}`, apiToken);
-            setDetailUser(data);
-        } catch { /* */ }
-        setDetailLoading(false);
+            if (data?.id !== userId) throw new Error('회원 상세 정보의 대상을 확인할 수 없습니다.');
+            if (sequence === detailSequence.current) setDetailUser(data);
+        } catch (err) { if (sequence === detailSequence.current) showAction(err instanceof Error ? err.message : '회원 상세 정보를 불러오지 못했습니다.', true); }
+        if (sequence === detailSequence.current) setDetailLoading(false);
     };
 
     const loadUsers = useCallback(async () => {
@@ -69,16 +84,19 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                 page,
                 per_page: 50,
             });
+            if (!Array.isArray(res?.users)) throw new Error('Invalid user list response');
             if (sequence === loadSequence.current) {
-                setUsers(res.users || []);
+                setUsers(res.users);
                 setTotal(res.total ?? res.users?.length ?? 0);
                 setTotalPages(Math.max(1, res.total_pages ?? 1));
+                setHasLoaded(true);
+                setLoadError('');
             }
-        } catch { /* */ }
+        } catch { if (sequence === loadSequence.current) setLoadError('회원 목록을 불러오지 못했습니다.'); }
         if (sequence === loadSequence.current) setLoading(false);
     }, [apiToken, filterStatus, filterTier, page, searchDebounced]);
 
-    useEffect(() => { void loadUsers(); }, [loadUsers]);
+    useEffect(() => { void loadUsers(); return () => { loadSequence.current++; }; }, [loadUsers]);
     useEffect(() => { void loadDuplicates(); }, [apiToken]);
     useEffect(() => { setSelectedIds(new Set()); }, [filterStatus, filterTier, page, searchDebounced]);
 
@@ -87,12 +105,15 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
         setTimeout(() => setActionMsg(''), 3000);
     };
 
-    const handleTierChange = async (userId: number, name: string, newTier: string) => {
-        try {
-            const res = await adminAPI.setUserTier(userId, newTier, apiToken);
-            setUsers(prev => prev.map(u => u.id === userId ? res.user : u));
-            showAction(`${name} → ${TIER_STYLES[newTier]?.label || newTier}`);
-        } catch (err: any) { showAction(err.message, true); }
+    const beginUserMutation = () => {
+        loadSequence.current++;
+        detailSequence.current++;
+        setLoading(false);
+    };
+    const updateMember = (user: AdminUser) => {
+        setUsers(previous => previous.map(item => item.id === user.id ? user : item));
+        setDetailUser((previous: any) => previous?.id === user.id ? { ...previous, ...user } : previous);
+        setManageTarget(previous => previous?.id === user.id ? user : previous);
     };
 
     const handleSuspend = async (userId: number, name: string, currentStatus: string) => {
@@ -105,25 +126,18 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
     };
 
     const handleApprove = async (user: AdminUser) => {
+        beginUserMutation();
         try {
-            await adminAPI.setUserStatus(user.id, 'approved', apiToken);
-            setUsers(prev => prev.map(u => u.id === user.id ? { ...u, status: 'approved' } : u));
+            const response = await adminAPI.setUserStatus(user.id, 'approved', apiToken);
+            if (!response?.user) throw new Error('승인 결과를 확인할 수 없습니다.');
+            updateMember(response.user);
             showAction(`${user.name} 승인 완료`);
         } catch (err: any) { showAction(err.message, true); }
     };
 
-    // 가입 시 요청한 플랜으로 원클릭 승인 — tier 부여 + status=approved + 만료일 세팅 일괄 처리.
-    // setUserTier 는 백엔드에서 상기 3개를 원자적으로 처리한다 (admin.py:267).
+    // 요청 플랜 승인은 패널에서 실제 대기 요청 번호를 확인한 뒤 처리한다.
     const handleApproveWithRequestedTier = async (user: AdminUser) => {
-        const tier = user.requested_tier;
-        if (!tier) return;
-        const tierLabel = tier === 'pro' ? 'Pro (30일)' : 'Ultra Pro (무기한)';
-        if (!confirm(`${user.name} (${user.email}) 을 ${tierLabel} 로 승인하시겠습니까?\n입금 확인 후 클릭하세요.`)) return;
-        try {
-            const res = await adminAPI.setUserTier(user.id, tier, apiToken);
-            setUsers(prev => prev.map(u => u.id === user.id ? res.user : u));
-            showAction(`${user.name} → ${tierLabel} 승인 완료`);
-        } catch (err: any) { showAction(err.message, true); }
+        setManageTarget(user);
     };
 
     // 중복 그룹 — user_id → 그룹 사유/키 매핑 (렌더링 시 O(1) 조회용)
@@ -148,42 +162,56 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
     };
 
     const handleDelete = async () => {
-        if (!deleteTarget) return;
+        if (!deleteTarget || deleteBusyRef.current) return;
+        const target = deleteTarget;
+        deleteBusyRef.current = true;
+        setDeleteBusy(true);
+        setDeleteError('');
+        beginUserMutation();
         try {
-            await adminAPI.deleteUser(deleteTarget.id, apiToken);
-            setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
+            await adminAPI.deleteUser(target.id, apiToken);
+            setUsers(prev => prev.filter(u => u.id !== target.id));
+            setTotal(previous => Math.max(0, previous - 1));
+            setSelectedIds(previous => { const next = new Set(previous); next.delete(target.id); return next; });
+            setDetailUser((previous: any) => previous?.id === target.id ? null : previous);
+            setManageTarget(previous => previous?.id === target.id ? null : previous);
             setDuplicates(prev => prev
-                .map(g => ({ ...g, accounts: g.accounts.filter(a => a.id !== deleteTarget.id) }))
+                .map(g => ({ ...g, accounts: g.accounts.filter(a => a.id !== target.id) }))
                 .filter(g => g.accounts.length >= 2));
-            showAction(`${deleteTarget.name} 삭제 완료`);
+            showAction(`${target.name} 삭제 완료`);
             setDeleteTarget(null);
-        } catch (err: any) { showAction(err.message, true); }
+        } catch (err: any) { setDeleteError(err.message || '삭제에 실패했습니다.'); }
+        finally { deleteBusyRef.current = false; setDeleteBusy(false); }
     };
 
     // 중복 그룹 일괄 삭제 (주 계정/본인 제외)
     const handleDeleteDuplicates = async (ids: number[], groupKey: string) => {
-        if (ids.length === 0) return;
-        if (!confirm(`"${groupKey}" 그룹의 중복 계정 ${ids.length}개를 일괄 삭제합니다.\n이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?`)) return;
-        let ok = 0, fail = 0;
+        if (ids.length === 0 || deleteBusyRef.current) return;
+        if (!confirm(`"${groupKey}" 그룹의 중복 계정 ${ids.length}개를 일괄 삭제합니다.\n대상 회원 ID: ${ids.join(', ')}\n계정, 게시글, 댓글, 구매 내역, 구독 요청은 영구 삭제됩니다. 관리자 감사 이력은 보존됩니다.\n이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?`)) return;
+        deleteBusyRef.current = true;
+        setDeleteBusy(true);
+        beginUserMutation();
+        const deletedIds: number[] = [];
+        let fail = 0;
         for (const id of ids) {
             try {
                 await adminAPI.deleteUser(id, apiToken);
-                ok++;
+                deletedIds.push(id);
             } catch { fail++; }
         }
-        setUsers(prev => prev.filter(u => !ids.includes(u.id)));
+        setUsers(prev => prev.filter(u => !deletedIds.includes(u.id)));
+        setTotal(previous => Math.max(0, previous - deletedIds.length));
+        setSelectedIds(previous => new Set([...previous].filter(id => !deletedIds.includes(id))));
         setDuplicates(prev => prev
-            .map(g => ({ ...g, accounts: g.accounts.filter(a => !ids.includes(a.id)) }))
+            .map(g => ({ ...g, accounts: g.accounts.filter(a => !deletedIds.includes(a.id)) }))
             .filter(g => g.accounts.length >= 2));
-        showAction(fail === 0 ? `${ok}개 중복 계정 삭제 완료` : `삭제 ${ok}건, 실패 ${fail}건`, fail > 0);
+        deleteBusyRef.current = false;
+        setDeleteBusy(false);
+        showAction(fail === 0 ? `${deletedIds.length}개 중복 계정 삭제 완료` : `삭제 ${deletedIds.length}건, 실패 ${fail}건`, fail > 0);
     };
 
-    const handleExtend = async (user: AdminUser, days: number) => {
-        try {
-            const res = await adminAPI.extendPro(user.id, days, apiToken);
-            setUsers(prev => prev.map(u => u.id === user.id ? res.user : u));
-            showAction(`${user.name} +${days}일 연장`);
-        } catch (err: any) { showAction(err.message, true); }
+    const handleExtend = async (user: AdminUser, _days: number) => {
+        setManageTarget(user);
     };
 
     const handleSetExpiry = async () => {
@@ -198,26 +226,39 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
     };
 
     // Bulk actions
+    const checkBulkPending = async (ids: number[]) => {
+        const response = await adminAPI.getSubscriptions(apiToken);
+        if (!Array.isArray(response?.requests)) throw new Error('대기 구독 요청을 확인할 수 없습니다. 다시 시도해 주세요.');
+        if (response.requests.some(request => ids.includes(request.user_id) && request.status === 'pending')) {
+            throw new Error('선택 회원에 대기 중인 구독 요청이 있습니다. 구독 관리에서 해당 요청을 먼저 승인해 주세요.');
+        }
+    };
     const handleBulkApprove = async () => {
         const ids = Array.from(selectedIds);
-        if (ids.length === 0) return;
+        if (ids.length === 0 || bulkBusyRef.current) return;
+        bulkBusyRef.current = true; setBulkBusy(true); beginUserMutation();
         try {
+            await checkBulkPending(ids);
             await adminAPI.bulkApprove(ids, apiToken);
             setUsers(prev => prev.map(u => ids.includes(u.id) ? { ...u, status: 'approved' } : u));
             showAction(`${ids.length}명 일괄 승인 완료`);
             setSelectedIds(new Set());
         } catch (err: any) { showAction(err.message, true); }
+        finally { bulkBusyRef.current = false; setBulkBusy(false); }
     };
 
     const handleBulkTier = async (tier: string) => {
         const ids = Array.from(selectedIds);
-        if (ids.length === 0) return;
+        if (ids.length === 0 || bulkBusyRef.current) return;
+        bulkBusyRef.current = true; setBulkBusy(true); beginUserMutation();
         try {
+            await checkBulkPending(ids);
             await adminAPI.bulkTier(ids, tier, apiToken);
             setUsers(prev => prev.map(u => ids.includes(u.id) ? { ...u, tier } : u));
             showAction(`${ids.length}명 일괄 ${TIER_STYLES[tier]?.label || tier} 부여`);
             setSelectedIds(new Set());
         } catch (err: any) { showAction(err.message, true); }
+        finally { bulkBusyRef.current = false; setBulkBusy(false); }
     };
 
     const toggleSelect = (id: number) => {
@@ -279,10 +320,17 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
 
     const pwValid = newPassword.length >= 8 && /[A-Za-z]/.test(newPassword) && /\d/.test(newPassword);
 
+    const loadErrorNotice = loadError && <div role="alert" className="flex items-center justify-between gap-3 p-3 rounded-lg text-sm text-red-400 bg-red-500/10 border border-red-500/20">
+        <span>{loadError} {hasLoaded && '이전 조회 결과를 표시하고 있습니다.'}</span>
+        <button disabled={loading} onClick={() => void loadUsers()} className="shrink-0 px-3 py-2 rounded-lg bg-white/5 disabled:opacity-40">다시 시도</button>
+    </div>;
+
     if (loading && users.length === 0) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" /></div>;
+    if (!hasLoaded && loadError) return loadErrorNotice;
 
     return (
         <>
+            {loadErrorNotice}
             {/* 요약 바 */}
             <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
                 <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
@@ -317,8 +365,8 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                 </div>
             </div>
 
-            {actionMsg && (
-                <div className={`p-3 rounded-lg text-sm font-medium ${actionMsg.startsWith('error:') ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
+            {actionMsg && !detailUser && !deleteTarget && (
+                <div role={actionMsg.startsWith('error:') ? 'alert' : 'status'} className={`p-3 rounded-lg text-sm font-medium ${actionMsg.startsWith('error:') ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
                     {actionMsg.replace(/^(error:|ok:)/, '')}
                 </div>
             )}
@@ -379,7 +427,7 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                             <span className="ml-2 text-gray-600">({group.accounts.length}개)</span>
                                         </div>
                                         {deletableIds.length >= 2 && (
-                                            <button onClick={() => handleDeleteDuplicates(deletableIds, group.key)}
+                                            <button disabled={deleteBusy} onClick={() => handleDeleteDuplicates(deletableIds, group.key)}
                                                 className="shrink-0 px-2 py-1 rounded text-[10px] font-bold bg-red-500/15 text-red-400 hover:bg-red-500/30 border border-red-500/30 transition-colors"
                                                 title="주 계정 제외한 중복 계정 모두 삭제">
                                                 <i className="fas fa-trash-alt mr-1" />중복 {deletableIds.length}개 일괄 삭제
@@ -420,7 +468,7 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                                             <i className="fas fa-eye text-[10px]" />
                                                         </button>
                                                         {!isProtected && (
-                                                            <button onClick={() => setDeleteTarget({ id: acc.id, name: acc.name, email: acc.email } as AdminUser)}
+                                                            <button disabled={deleteBusy} onClick={() => setDeleteTarget({ id: acc.id, name: acc.name, email: acc.email } as AdminUser)}
                                                                 className="p-1 rounded text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors" title="삭제">
                                                                 <i className="fas fa-trash-alt text-[10px]" />
                                                             </button>
@@ -442,15 +490,15 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
                     <span className="text-sm text-amber-400 font-bold">{selectedIds.size}명 선택</span>
                     <div className="flex gap-1.5">
-                        <button onClick={handleBulkApprove}
+                        <button disabled={bulkBusy} onClick={handleBulkApprove}
                             className="px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 text-xs font-bold hover:bg-emerald-500/25 transition-colors">
                             일괄 승인
                         </button>
-                        <button onClick={() => handleBulkTier('pro')}
+                        <button disabled={bulkBusy} onClick={() => handleBulkTier('pro')}
                             className="px-3 py-1.5 rounded-lg bg-amber-500/15 text-amber-400 text-xs font-bold hover:bg-amber-500/25 transition-colors">
                             일괄 Pro
                         </button>
-                        <button onClick={() => handleBulkTier('premium')}
+                        <button disabled={bulkBusy} onClick={() => handleBulkTier('premium')}
                             className="px-3 py-1.5 rounded-lg bg-purple-500/15 text-purple-400 text-xs font-bold hover:bg-purple-500/25 transition-colors">
                             일괄 Ultra
                         </button>
@@ -543,7 +591,7 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                                 className="rounded border-gray-600 bg-white/5 text-amber-500 focus:ring-amber-500/50 cursor-pointer" />
                                         ) : <div className="w-4" />}
                                     </td>
-                                    <td className="px-4 py-3">
+                                    <td className="px-2 sm:px-4 py-3 max-w-[170px] sm:max-w-none">
                                         <div className="flex items-center gap-3">
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${isAdmin ? 'bg-red-500' : 'bg-white/10'}`}>
                                                 {user.name.charAt(0).toUpperCase()}
@@ -599,13 +647,7 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                         {isAdmin ? (
                                             <span className="text-[10px] px-2 py-1 rounded bg-red-500/20 text-red-400 font-bold">Admin</span>
                                         ) : (
-                                            <select value={user.tier || ''} onChange={e => handleTierChange(user.id, user.name, e.target.value)}
-                                                className={`text-[11px] px-2 py-1 rounded font-bold border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-amber-500/50 ${tier.cls}`}
-                                                style={{ background: 'transparent' }}>
-                                                <option value="" disabled className="bg-[#1c1c1e] text-gray-300">No Tier</option>
-                                                <option value="pro" className="bg-[#1c1c1e] text-amber-400">Pro</option>
-                                                <option value="premium" className="bg-[#1c1c1e] text-purple-400">Ultra Pro</option>
-                                            </select>
+                                            <span className={`text-[11px] px-2 py-1 rounded font-bold ${tier.cls}`}>{tier.label}</span>
                                         )}
                                     </td>
                                     <td className="px-4 py-3 hidden lg:table-cell">
@@ -622,7 +664,8 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                             <span className="text-xs text-gray-700">—</span>
                                         )}
                                     </td>
-                                    <td className="px-4 py-3">
+                                    <td className="px-2 sm:px-4 py-3">
+                                        {!isAdmin && <button aria-label={`${user.name} 구독 관리`} onClick={() => { setManageTarget(user); setMobileMenuId(null); }} className="block ml-auto mb-1 px-2 py-2 rounded-lg bg-amber-500/10 text-amber-300 text-[11px] font-semibold whitespace-nowrap hover:bg-amber-500/20">구독 관리</button>}
                                         {/* Desktop: inline buttons */}
                                         <div className="hidden md:flex items-center justify-end gap-1">
                                             {/* 요청 플랜 원클릭 승인 — pending + requested_tier 있을 때만 */}
@@ -664,7 +707,7 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                                 <i className="fas fa-key" />
                                             </button>
                                             {!isAdmin && (
-                                                <button onClick={() => setDeleteTarget(user)}
+                                                <button disabled={deleteBusy} onClick={() => setDeleteTarget(user)}
                                                     className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 text-xs transition-colors" title="삭제">
                                                     <i className="fas fa-trash-alt" />
                                                 </button>
@@ -707,7 +750,7 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                                         <i className="fas fa-key mr-2 text-amber-400" />비밀번호 리셋
                                                     </button>
                                                     {!isAdmin && (
-                                                        <button onClick={() => setDeleteTarget(user)}
+                                                        <button disabled={deleteBusy} onClick={() => setDeleteTarget(user)}
                                                             className="w-full px-4 py-2.5 text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white">
                                                             <i className="fas fa-trash-alt mr-2 text-red-400" />삭제
                                                         </button>
@@ -810,23 +853,34 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
 
             {/* 삭제 확인 모달 */}
             {deleteTarget && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" style={{ backdropFilter: 'blur(4px)' }} onClick={() => setDeleteTarget(null)}>
-                    <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/60" style={{ backdropFilter: 'blur(4px)' }} onClick={() => { if (!deleteBusyRef.current) setDeleteTarget(null); }}>
+                    <div role="dialog" aria-modal="true" aria-label="회원 삭제 확인" className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
                         <h3 className="text-lg font-bold text-white mb-1">회원 삭제</h3>
                         <p className="text-sm text-gray-400 mb-2"><span className="text-white font-bold">{deleteTarget.name}</span> ({deleteTarget.email})</p>
-                        <p className="text-sm text-red-400 mb-4">삭제하면 복구할 수 없습니다.</p>
+                        <p className="text-xs text-gray-500 mb-2">회원 ID #{deleteTarget.id}</p>
+                        <p className="text-sm text-red-400 mb-2">계정, 게시글, 댓글, 구매 내역과 구독 요청을 영구 삭제합니다. 삭제하면 복구할 수 없습니다.</p>
+                        <p className="text-xs text-gray-400 mb-4">관리자 감사 이력은 보존됩니다.</p>
+                        {deleteError && <p role="alert" className="text-sm text-red-400 mb-3">{deleteError}</p>}
                         <div className="flex gap-2">
-                            <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 text-sm font-medium transition-colors">취소</button>
-                            <button onClick={handleDelete} className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-400 text-white text-sm font-bold transition-colors">삭제</button>
+                            <button disabled={deleteBusy} onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 text-sm font-medium transition-colors disabled:opacity-40">취소</button>
+                            <button disabled={deleteBusy} onClick={handleDelete} className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-400 text-white text-sm font-bold transition-colors disabled:opacity-40">{deleteBusy ? '삭제 중...' : '회원 영구 삭제'}</button>
                         </div>
                     </div>
                 </div>,
             document.getElementById('modal-root') || document.body)}
 
+            {manageTarget && createPortal(
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 p-3" onClick={() => { if (!managementBusy) setManageTarget(null); }}>
+                    <div role="dialog" aria-modal="true" aria-label="회원 구독 관리" className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-[#1c1c1e] border border-white/10 rounded-xl p-3 space-y-3" onClick={event => event.stopPropagation()}>
+                        <div className="flex items-center justify-between"><h3 className="text-sm font-bold text-white">회원 구독 관리</h3><button disabled={managementBusy} onClick={() => setManageTarget(null)} className="text-xs text-gray-400 p-2 disabled:opacity-40">닫기</button></div>
+                        <MemberSubscriptionActions key={manageTarget.id} user={manageTarget} apiToken={apiToken} onUpdated={updateMember} onMutationStart={beginUserMutation} onBusyChange={setManagementBusy} />
+                    </div>
+                </div>, document.getElementById('modal-root') || document.body)}
+
             {/* 회원 상세 정보 모달 */}
             {(detailUser || detailLoading) && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" style={{ backdropFilter: 'blur(4px)' }} onClick={() => setDetailUser(null)}>
-                    <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto mx-4" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" style={{ backdropFilter: 'blur(4px)' }} onClick={() => { if (!managementBusy) { detailSequence.current++; setDetailUser(null); setDetailLoading(false); } }}>
+                    <div role="dialog" aria-modal="true" aria-label="회원 상세 정보" className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto mx-4" onClick={e => e.stopPropagation()}>
                         {detailLoading && !detailUser ? (
                             <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" /></div>
                         ) : detailUser ? (
@@ -838,7 +892,7 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                             <span className="text-xs text-gray-500">가입 {daysSince(detailUser.created_at)}</span>
                                         )}
                                     </div>
-                                    <button onClick={() => setDetailUser(null)} className="text-gray-500 hover:text-white transition-colors">
+                                    <button disabled={managementBusy} onClick={() => { detailSequence.current++; setDetailUser(null); setDetailLoading(false); }} className="text-gray-500 hover:text-white transition-colors disabled:opacity-40" aria-label="회원 상세 닫기">
                                         <i className="fas fa-times" />
                                     </button>
                                 </div>
@@ -854,6 +908,7 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                 )}
 
                                 {/* 기본 정보 */}
+                                {actionMsg && <p role={actionMsg.startsWith('error:') ? 'alert' : 'status'} className={`text-sm mb-3 ${actionMsg.startsWith('error:') ? 'text-red-400' : 'text-emerald-400'}`}>{actionMsg.replace(/^(error:|ok:)/, '')}</p>}
                                 <div className="grid grid-cols-2 gap-3 mb-4">
                                     {[
                                         { label: '이름', value: detailUser.name },
@@ -885,13 +940,15 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                             {detailUser.status === 'suspended' ? '복원' : '정지'}
                                         </button>
                                         {detailUser.status === 'pending' && (
-                                            <button onClick={() => { handleApprove(detailUser); setDetailUser({ ...detailUser, status: 'approved' }); }}
+                                            <button onClick={() => handleApprove(detailUser)}
                                                 className="flex-1 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-colors">
                                                 <i className="fas fa-check mr-1.5" />승인
                                             </button>
                                         )}
                                     </div>
                                 )}
+
+                                {detailUser.role !== 'admin' && <div className="mb-4"><MemberSubscriptionActions key={detailUser.id} user={detailUser} apiToken={apiToken} onUpdated={updateMember} onMutationStart={beginUserMutation} onBusyChange={setManagementBusy} /></div>}
 
                                 {/* 구독 이력 */}
                                 {detailUser.subscription_history?.length > 0 && (
