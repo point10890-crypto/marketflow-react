@@ -56,7 +56,7 @@ function statusLabel(status: string) {
     return { text: '대기', cls: 'text-yellow-400' };
 }
 
-export default function PurchaseAdminPage({ onBack }: { onBack?: () => void } = {}) {
+export default function PurchaseAdminPage({ onBack, onPurchasesChanged }: { onBack?: () => void; onPurchasesChanged?: () => void } = {}) {
     const navigate = useNavigate();
     const [purchases, setPurchases] = useState<PurchaseItem[]>([]);
     const [page, setPage] = useState(1);
@@ -124,7 +124,7 @@ export default function PurchaseAdminPage({ onBack }: { onBack?: () => void } = 
     useEffect(() => { fetchData(1); return () => { listRequest.current++; }; }, [fetchData]);
     useEffect(() => { fetchSummary(); return () => { summaryRequest.current++; }; }, [fetchSummary]);
 
-    const refresh = () => { fetchData(page); fetchSummary(); };
+    const refresh = () => { fetchData(page); fetchSummary(); onPurchasesChanged?.(); };
 
     const handleStatusChange = async (purchaseId: number, newStatus: string) => {
         // Optimistic update — 즉시 UI 반영 (스피너 없음)
@@ -139,6 +139,7 @@ export default function PurchaseAdminPage({ onBack }: { onBack?: () => void } = 
             // 서버 응답으로 해당 row만 갱신 (전체 재로드 X)
             setPurchases(ps => ps.map(p => p.id === purchaseId ? updated : p));
             fetchSummary(); // 매출 합산 갱신
+            onPurchasesChanged?.();
         } catch {
             // 실패 시 롤백
             setPurchases(prev);
@@ -154,6 +155,7 @@ export default function PurchaseAdminPage({ onBack }: { onBack?: () => void } = 
         try {
             await deleteAuthAPI(`/api/community/purchases/${purchaseId}`);
             fetchSummary(); // 매출 합산 갱신
+            onPurchasesChanged?.();
         } catch {
             fetchData(page);
             alert('삭제에 실패했습니다.');
