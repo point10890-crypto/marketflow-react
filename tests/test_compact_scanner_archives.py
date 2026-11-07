@@ -95,6 +95,93 @@ def test_already_compressed_files_are_skipped(compact, tmp_path, monkeypatch):
     assert compact.discover_files(_options(compact, root)) == []
 
 
+def test_compressed_runs_never_read_headers_or_repeat_full_ancestor_validation(compact, tmp_path, monkeypatch):
+    root = _root(tmp_path)
+    older = _run(root)
+    compressed = _run(root, '20260913')
+    monkeypatch.setattr(compact, '_physical_size',
+                        lambda p: p.stat().st_size // 4 if p.parent == compressed else p.stat().st_size)
+    header_reads = []
+    validations = []
+    original_header = compact._read_run_header
+    original_validate = compact.validate_target
+    def read_header(path):
+        header_reads.append(path)
+        return original_header(path)
+    def validate(path, archive):
+        validations.append(path)
+        return original_validate(path, archive)
+    monkeypatch.setattr(compact, '_read_run_header', read_header)
+    monkeypatch.setattr(compact, 'validate_target', validate)
+    files = compact.discover_files(_options(compact, root, max_runs=1))
+    assert files and all(path.parent == older for path in files)
+    assert header_reads == [older / 'run.json']
+    assert compressed not in validations
+    assert not any(path.parent == compressed for path in validations)
+
+
+@pytest.mark.parametrize('target_kind', ['run', 'file'])
+def test_metadata_skip_still_rejects_reparse_targets(compact, tmp_path, monkeypatch, target_kind):
+    root = _root(tmp_path)
+    cold = _run(root)
+    target = cold if target_kind == 'run' else cold / 'run.json'
+    original = compact._is_reparse
+    monkeypatch.setattr(compact, '_is_reparse', lambda path: path == target or original(path))
+    monkeypatch.setattr(compact, '_physical_size', lambda path: path.stat().st_size // 4)
+    monkeypatch.setattr(compact, '_read_run_header', lambda path: pytest.fail('unsafe header read'))
+    with pytest.raises(compact.SafetyError, match='reparse_target_rejected'):
+        compact.discover_files(_options(compact, root))
+
+
+def test_metadata_skip_still_rejects_hardlinked_compressed_file(compact, tmp_path, monkeypatch):
+    root = _root(tmp_path)
+    cold = _run(root)
+    os.link(cold / 'run.json', root / 'outside_archive_link.json')
+    monkeypatch.setattr(compact, '_physical_size', lambda path: path.stat().st_size // 4)
+    monkeypatch.setattr(compact, '_read_run_header', lambda path: pytest.fail('unsafe header read'))
+    with pytest.raises(compact.SafetyError, match='hardlinked_target_rejected'):
+        compact.discover_files(_options(compact, root))
+
+
+def test_metadata_prefilter_does_not_read_recently_written_run_header(compact, tmp_path, monkeypatch):
+    root = _root(tmp_path)
+    cold = _run(root)
+    stamp = datetime(2026, 10, 7).timestamp()
+    os.utime(cold / 'feature_vectors.json', (stamp, stamp))
+    monkeypatch.setattr(compact, '_read_run_header', lambda path: pytest.fail('recent header read'))
+    assert compact.discover_files(_options(compact, root)) == []
+
+
+@pytest.mark.parametrize('change', ['recent_write', 'reparse', 'hardlink'])
+def test_positive_metadata_prefilter_never_bypasses_full_revalidation(compact, tmp_path, monkeypatch, change):
+    root = _root(tmp_path)
+    cold = _run(root)
+    target = cold / 'run.json'
+    original_filter = compact._has_compactable_metadata
+    original_reparse = compact._is_reparse
+    changed = []
+    monkeypatch.setattr(compact, '_is_reparse',
+                        lambda path: (change == 'reparse' and bool(changed) and path == target)
+                        or original_reparse(path))
+    def filter_then_change(run, options):
+        eligible = original_filter(run, options)
+        if eligible and run == cold:
+            if change == 'recent_write':
+                stamp = datetime(2026, 10, 7).timestamp()
+                os.utime(target, (stamp, stamp))
+            elif change == 'hardlink':
+                os.link(target, root / 'new_hardlink.json')
+            changed.append(target)
+        return eligible
+    monkeypatch.setattr(compact, '_has_compactable_metadata', filter_then_change)
+    monkeypatch.setattr(compact, '_read_run_header', lambda path: pytest.fail('changed target header read'))
+    if change == 'recent_write':
+        assert compact.discover_files(_options(compact, root)) == []
+    else:
+        with pytest.raises(compact.SafetyError, match='target_rejected'):
+            compact.discover_files(_options(compact, root))
+
+
 def test_tiny_rerank_files_do_not_starve_older_uncompressed_runs(compact, tmp_path, monkeypatch):
     root = _root(tmp_path)
     older = _run(root)

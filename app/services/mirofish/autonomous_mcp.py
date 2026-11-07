@@ -640,16 +640,34 @@ def refresh_learning_feedback_trusted(*, limit: int = 20) -> dict[str, Any]:
     refreshed: list[dict[str, Any]] = []
     all_items: list[dict[str, Any]] = []
     errors: list[dict[str, str]] = []
+    records: list[tuple[str, dict[str, Any]]] = []
+    symbols: set[str] = set()
 
     for summary in workflows:
         workflow_id = str(summary.get('id') or '')
         if not workflow_id:
             continue
-        record = workflow.read_workflow(workflow_id)
-        if not isinstance(record, dict) or record.get('status') != 'completed':
-            continue
         try:
-            outcomes = outcome_tracker.refresh_workflow_outcomes(workflow_id, workflow=record)
+            record = workflow.read_workflow(workflow_id)
+            if not isinstance(record, dict) or record.get('status') != 'completed':
+                continue
+            symbols.update(outcome_tracker.workflow_price_symbols(record))
+            records.append((workflow_id, record))
+        except Exception as exc:
+            errors.append({'workflow_id': workflow_id, 'error': f'{type(exc).__name__}: {exc}'})
+
+    # Preserve the selected workflow set/order and every replay rule. Share only
+    # this cycle's union of price rows, instead of parsing the full CSV 50 times.
+    snapshot = outcome_tracker.load_price_history_snapshot(sorted(symbols)) if records else None
+    for workflow_id, record in records:
+        try:
+            outcomes = outcome_tracker.refresh_workflow_outcomes(
+                workflow_id, workflow=record, price_history_snapshot=snapshot,
+            )
+        except outcome_tracker.PriceHistoryChangedError:
+            # This invalidates the batch, not one workflow. Keep the previous
+            # feedback and surface an error instead of publishing empty success.
+            raise
         except Exception as exc:
             errors.append({'workflow_id': workflow_id, 'error': f'{type(exc).__name__}: {exc}'})
             continue

@@ -312,31 +312,53 @@ class KRXCollector:
     async def get_supply_data(self, code: str) -> Optional[SupplyData]:
         """수급 데이터 조회 (Local CSV - all_institutional_trend_data.csv)"""
         try:
-            # CSV가 로드되어 있지 않으면 로드
-            if not hasattr(self, 'supply_df') or self.supply_df is None:
-                # 절대 경로: engine/ → project root → data/
-                csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'all_institutional_trend_data.csv')
-                
-                if os.path.exists(csv_path):
-                    self.supply_df = pd.read_csv(csv_path, dtype={'ticker': str})
-                    self.supply_df.set_index('ticker', inplace=True)
-                else:
-                    print(f"Warning: Supply data CSV not found at {csv_path}")
-                    self.supply_df = pd.DataFrame()
+            csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'all_institutional_trend_data.csv')
+            if not os.path.isfile(csv_path):
+                return None
+            stat = os.stat(csv_path)
+            snapshot = (stat.st_mtime_ns, stat.st_size)
+            if getattr(self, '_supply_snapshot', None) != snapshot:
+                self.supply_df = pd.read_csv(csv_path, dtype={'ticker': str})
+                self.supply_df['ticker'] = self.supply_df['ticker'].str.strip().str.zfill(6)
+                self.supply_df.set_index('ticker', inplace=True)
+                self._supply_snapshot = snapshot
 
             if self.supply_df.empty or code not in self.supply_df.index:
                 return None
                 
             row = self.supply_df.loc[code]
-            
+            if not isinstance(row, pd.Series):
+                return None  # Duplicate source rows cannot prove a single observation.
+            source = str(row.get('data_source') or '')
+            if source not in {'naver_finance_enhanced', 'naver_finance_trend_api'} or int(row.get('total_days', 0)) < 5:
+                return None
+            scraped = date.fromisoformat(str(row['scrape_date']))
+            raw_day = row.get('data_date', row['scrape_date'])
+            if pd.isna(raw_day) or raw_day == '':
+                raw_day = row['scrape_date']  # Legacy row retained without an invented source date.
+            source_day = date.fromisoformat(str(raw_day))
+            today = date.today()
+            from app.services.kis_screener import _is_kr_trading_day
+            previous = today - timedelta(days=1)
+            while previous.weekday() >= 5 or not _is_kr_trading_day(previous):
+                previous -= timedelta(days=1)
+            if (source_day < previous or source_day > today or scraped > today or scraped < source_day
+                    or source_day.weekday() >= 5 or not _is_kr_trading_day(source_day)):
+                return None
+            quantities = [float(row['foreign_net_buy_5d']), float(row['institutional_net_buy_5d'])]
+            if not all(value.is_integer() for value in quantities):
+                return None
+            foreign, institution = map(int, quantities)
             # 5일 누적 순매수 데이터 사용
             return SupplyData(
                 code=code,
-                date=date.today(), # 실제 데이터 날짜는 row['scrape_date']에 있음
-                foreign_net=int(row['foreign_net_buy_5d']), # 여기선 5일치를 net으로 매핑하거나 별도 필드 사용
-                inst_net=int(row['institutional_net_buy_5d']),
-                foreign_buy_5d=int(row['foreign_net_buy_5d']),
-                inst_buy_5d=int(row['institutional_net_buy_5d'])
+                date=source_day,
+                data_source=source,
+                scrape_date=scraped,
+                foreign_net=foreign, # 기존 계약: 단일일 필드에도 5일 누적값을 전달
+                inst_net=institution,
+                foreign_buy_5d=foreign,
+                inst_buy_5d=institution
             )
         except Exception as e:
             # print(f"Error supply (CSV): {e}")
