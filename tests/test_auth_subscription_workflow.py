@@ -29,6 +29,8 @@ def _user(email: str, name: str, password: str, *, status='pending', tier=None, 
 @pytest.mark.parametrize('tier,status,with_ai,amount,request_type', [
     (None, 'pending', False, '50,000원', 'upgrade'),
     (None, 'pending', True, '100,000원', 'upgrade'),
+    ('pro', 'pending', False, '50,000원', 'upgrade'),
+    ('pro', 'pending', True, '100,000원', 'upgrade'),
     ('pro', 'approved', True, '50,000원', 'aibain_addon'),
     ('premium', 'approved', True, '50,000원', 'aibain_addon'),
     ('pro', 'expired', True, '100,000원', 'renewal'),

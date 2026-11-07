@@ -508,18 +508,15 @@ def request_subscription():
         and to_tier == 'pro'
         and user.pro_expires_at is not None
     )
-    if to_tier == user.tier and not includes_aibain and not is_expired_resubscribe \
+    if to_tier == user.tier and has_active_base and not includes_aibain and not is_expired_resubscribe \
             and not is_early_renewal:
         return jsonify({'error': f'Already on {to_tier} tier'}), 400
 
     # AI Brain 단독 추가/재구독은 활성 베이스 구독이 있어야 한다. 만료된 Pro가
     # AI Brain 포함으로 신청한 경우에는 단독 애드온이 아니라 베이스 재구독으로
     # 처리해야 50,000원 구독 기간까지 함께 정상 복구된다.
-    if to_tier == user.tier and includes_aibain and not has_active_base and not is_expired_resubscribe:
-        return jsonify({'error': 'AI Brain 재구독에는 활성 Pro 또는 Ultra Pro 구독이 필요합니다.'}), 400
-
     # premium(Ultra Pro)은 최상위 — 베이스 다운그레이드 불가 (AI Brain 추가는 같은 tier 라 위 체크에서 통과)
-    if user.tier == 'premium' and to_tier == 'pro' and not is_expired_resubscribe:
+    if has_active_base and user.tier == 'premium' and to_tier == 'pro':
         return jsonify({'error': 'Ultra Pro는 최상위 플랜입니다. 다운그레이드할 수 없습니다.'}), 400
 
     # 이미 pending 요청이 있는지 확인
@@ -550,7 +547,7 @@ def request_subscription():
         req_type = 'early_renewal'
     elif is_expired_resubscribe:
         req_type = 'renewal'
-    elif user.tier is None or (user.tier == 'pro' and to_tier == 'premium'):
+    elif not has_active_base or (user.tier == 'pro' and to_tier == 'premium'):
         req_type = 'upgrade'
     else:
         req_type = 'downgrade'
