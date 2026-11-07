@@ -17,10 +17,10 @@ Rulings:
 | UI | Dense desktop-first supplied screen | Preserve MarketFlow layout, prioritize mobile portrait, admin-only route and stale/error states |
 
 Tasks:
-- [ ] Review/fix runner, storage, incident lifecycle and admin API; meaningful failure/concurrency regression tests.
-- [ ] Review/fix HTTP, provider, local checks and inventory; authentication, secret redaction and no-side-effect tests.
-- [ ] Review/refine frontend route/menu and mobile states; focused then full Vitest/lint/build.
-- [ ] Reconcile runtime contracts and task registration with actual MiniPC read-only evidence.
+- [x] Review/fix runner, storage, incident lifecycle and admin API; meaningful failure/concurrency regression tests.
+- [x] Review/fix HTTP, provider, local checks and inventory; authentication, secret redaction and no-side-effect tests.
+- [x] Review/refine frontend route/menu and mobile states; focused then full Vitest/lint/build.
+- [x] Reconcile runtime contracts and task registration with actual MiniPC read-only evidence.
 - [ ] Independent whole-branch review, focused backend regressions, full CI, commit/push/merge.
 - [ ] Deploy verified source; bounded first no-alert run; inspect failures honestly; register safe recurring tasks; verify scheduled run and production admin API/bundles.
 

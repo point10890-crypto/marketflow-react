@@ -315,7 +315,7 @@ function ControlCenterView({ apiToken }: { apiToken?: string }) {
                         {FAMILY_ORDER.filter(f => snap.families[f]).map(f => (
                             <span key={f} className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${STATUS_META[snap.families[f].status]?.cls ?? ''}`}>
                                 {FAMILY_LABEL[f]} · {STATUS_META[snap.families[f].status]?.label}
-                                <span className="text-gray-400 tabular-nums">{(snap.families[f].counts.fail ?? 0) + (snap.families[f].counts.warn ?? 0)}/{Object.values(snap.families[f].counts).reduce((a, b) => a + b, 0)}</span>
+                                <span className="text-gray-400 tabular-nums">장애·주의 {(snap.families[f].counts.fail ?? 0) + (snap.families[f].counts.warn ?? 0)} / 전체 {Object.values(snap.families[f].counts).reduce((a, b) => a + b, 0)}</span>
                             </span>
                         ))}
                     </section>

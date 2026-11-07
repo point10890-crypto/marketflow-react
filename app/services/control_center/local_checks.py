@@ -174,14 +174,21 @@ def check_data(items: list[dict[str, Any]], now: datetime | None = None) -> list
         path = resolve_path(it['path'])
         sev = it.get('severity', 'standard')
         cid = f"data:{it['id']}"
+        metadata = {'path': it['path'], 'pages': it.get('pages', [])}
         if not os.path.exists(path):
             out.append(CheckResult(cid, 'data', it.get('label', it['id']),
                                    'skipped' if it.get('optional') else 'fail', '파일 없음', severity=sev,
-                                   data={'path': it['path'], 'pages': it.get('pages', [])}))
+                                   data=metadata))
             continue
         field = it.get('field')
+        if field or path.lower().endswith('.json'):
+            payload = _read_json(path)
+            if not isinstance(payload, (dict, list)) or not payload:
+                out.append(CheckResult(cid, 'data', it.get('label', it['id']), 'unknown',
+                                       '유효한 JSON 데이터 없음', severity=sev, data=metadata))
+                continue
         if field:
-            cur: Any = _read_json(path)
+            cur = payload
             for key in field.split('.'):
                 cur = cur.get(key) if isinstance(cur, dict) else None
             basis = _parse_ts(cur)
@@ -193,7 +200,7 @@ def check_data(items: list[dict[str, Any]], now: datetime | None = None) -> list
         if basis is None or basis > now + timedelta(seconds=5):
             out.append(CheckResult(cid, 'data', it.get('label', it['id']), 'unknown',
                                    '유효한 데이터 시각 없음', severity=sev,
-                                   data={'path': it['path'], 'pages': it.get('pages', [])}))
+                                   data=metadata))
             continue
         age_h = max(0, (now - basis).total_seconds()) / 3600
         limit = float(it.get('max_age_hours', 26)) + _calendar_allowance(it.get('calendar', ''), now)
@@ -203,10 +210,11 @@ def check_data(items: list[dict[str, Any]], now: datetime | None = None) -> list
             st = 'warn'
         else:
             st = 'fail'
-        basis_name = '내용 시각' if field else '파일 수정 시각'
+        basis_name = '내용 시각' if field else '파일 수정 시각(메타데이터)'
+        metadata['freshness_basis'] = 'content' if field else 'mtime'
         out.append(CheckResult(cid, 'data', it.get('label', it['id']), st,
                                f'{basis_name} 기준 {_age_text(age_h * 3600)} 전 (허용 {limit:.0f}시간)', severity=sev,
-                               value=round(age_h, 2), data={'path': it['path'], 'pages': it.get('pages', [])}))
+                               value=round(age_h, 2), data=metadata))
     return out
 
 

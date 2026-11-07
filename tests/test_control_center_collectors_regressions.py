@@ -184,3 +184,20 @@ def test_incidents_contract_checks_field_presence(monkeypatch, body, status):
     })
     c = {'path': '/api/admin/control-center/incidents', 'expect_keys': ['state', 'incidents']}
     assert http_checks.probe_contract('http://127.0.0.1:5003', c, 'test').status == status
+
+
+@pytest.mark.parametrize('content', ['broken json', '', '{}', '[]', 'true', 'null', '"text"'])
+def test_metadata_only_freshness_requires_nonempty_json(tmp_path, content):
+    artifact = tmp_path / 'us-decision.JSON'
+    artifact.write_text(content, encoding='utf-8')
+    cfg = [{'id': 'decision', 'path': str(artifact)}]
+    assert local_checks.check_data(cfg)[0].status == 'unknown'
+
+
+def test_valid_json_without_timestamp_uses_file_metadata(tmp_path):
+    artifact = tmp_path / 'us-decision.json'
+    artifact.write_text('{"signal": "neutral"}', encoding='utf-8')
+    cfg = [{'id': 'decision', 'path': str(artifact)}]
+    result = local_checks.check_data(cfg)[0]
+    assert result.status == 'ok'
+    assert result.data['freshness_basis'] == 'mtime'
