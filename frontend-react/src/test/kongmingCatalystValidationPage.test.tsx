@@ -1,4 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import KongmingCatalystValidationPage from '@/pages/dashboard/aibain/KongmingCatalystValidationPage';
 
@@ -8,6 +9,7 @@ vi.mock('@/contexts/AuthContext', () => ({
 
 const endpoint = '/api/admin/mirofish/kongming/catalyst-validation';
 const candidatesEndpoint = '/api/admin/mirofish/kongming/article-candidates';
+const route = '/dashboard/ai-bain/catalyst-validation';
 const articleUrl = 'https://www.businesspost.co.kr/BP?command=article_view&num=123';
 const filingUrl = 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261106000123';
 const checked = '2026-11-07T10:00:00+09:00';
@@ -61,6 +63,7 @@ const articleCandidates = {
 
 function network() {
     let data: unknown = status;
+    let historyData: unknown = history;
     let statusError = 0;
     let historyError = 0;
     let dashboardPending: Promise<void> | undefined;
@@ -74,7 +77,7 @@ function network() {
         if (path === endpoint && dashboardPending) await dashboardPending;
         const errorCode = path === endpoint ? statusError : historyError;
         return new Response(JSON.stringify(errorCode ? { error: 'Fixture request failure' }
-            : path === endpoint ? data : history), { status: errorCode || 200 });
+            : path === endpoint ? data : historyData), { status: errorCode || 200 });
     });
     const candidateFetch = vi.fn(async (_input: string, init?: RequestInit) => {
         expect(init?.method ?? 'GET').toBe('GET');
@@ -90,6 +93,7 @@ function network() {
         setCandidates: (value: typeof articleCandidates) => { candidateData = value; },
         setCandidateError: (status: number) => { candidateError = status; },
         setData: (value: unknown) => { data = value; },
+        setHistory: (value: unknown) => { historyData = value; },
         setError: (status: number, history = status) => { statusError = status; historyError = history; },
         pauseDashboard() {
             let release!: () => void;
@@ -97,6 +101,26 @@ function network() {
             return () => { dashboardPending = undefined; release(); };
         },
     };
+}
+
+function renderKongming(initialEntry = route) {
+    return render(<MemoryRouter initialEntries={[initialEntry]}><KongmingCatalystValidationPage /></MemoryRouter>);
+}
+
+function independentDashboard() {
+    const base = status.items[0];
+    const verified = {
+        ...base, article_id: '123',
+        primary: { ...base.primary, source: 'OpenDART', checked_at: checked, query_start: '2026-11-03', query_end: '2026-11-07' },
+        price: { status: 'verified', source: 'kis', market: 'KRX', close: 70000,
+            latest_close: 71400, change_pct: 2, reference_at: checked,
+            observed_at: '2026-11-07T10:01:00+09:00', latest_observed_at: '2026-11-07T10:02:00+09:00',
+            fetched_at: '2026-11-07T10:03:00+09:00', refresh_status: 'source_unavailable' },
+    };
+    return { ...status, source: 'marketflow', swing_watch: null, live: { ...status.live, worker_interval_seconds: 60 },
+        operation: { ...status.operation, pending_count: 1, disclosure_checked: 2, price_checked: 1 },
+        items: [verified, { ...base, task_id: 'article-2', article_id: '121', article_title: '이전 후보 기사 검증',
+            price: { status: 'awaiting_session' } }] };
 }
 
 function eligibleDashboard() {
@@ -119,7 +143,7 @@ beforeEach(() => {
 describe('Independent Kongming article candidates', () => {
     it('displays article-level candidates, official publisher links and expandable older articles', async () => {
         network();
-        render(<KongmingCatalystValidationPage />);
+        renderKongming();
         const region = within(await screen.findByRole('region', { name: '검출된 후보 리스트 · 기사 재료' }));
         expect(await region.findByRole('heading', { name: '최근 72시간 발행 · 2건' })).toBeInTheDocument();
         expect(region.getByRole('link', { name: recentCandidate.title })).toHaveAttribute('href', articleUrl);
@@ -135,7 +159,7 @@ describe('Independent Kongming article candidates', () => {
     it('refreshes every 30 seconds, retains good results on failure and clears them on access denial', async () => {
         vi.useFakeTimers();
         const gateway = network();
-        await act(async () => { render(<KongmingCatalystValidationPage />); });
+        await act(async () => { renderKongming(); });
         const region = within(screen.getByRole('region', { name: '검출된 후보 리스트 · 기사 재료' }));
         expect(region.getByText(recentCandidate.title)).toBeInTheDocument();
         gateway.setCandidateError(503);
@@ -160,6 +184,50 @@ describe('Independent Kongming article candidates', () => {
         expect(gateway.candidateFetch).toHaveBeenCalledTimes(4);
         expect(screen.getByText(articleTitle)).toBeInTheDocument();
     });
+
+    it('shows separate article verification for the same ticker and opens the selected article with both reads scoped', async () => {
+        const gateway = network();
+        gateway.setData(independentDashboard());
+        renderKongming();
+        const region = within(screen.getByRole('region', { name: '새 종목과 재료 검증 대시보드' }));
+        expect(await region.findByRole('heading', { name: '기사 재료 검증 2건' })).toBeInTheDocument();
+        expect(region.getByRole('link', { name: articleTitle })).toBeInTheDocument();
+        expect(region.getByRole('link', { name: '이전 후보 기사 검증' })).toBeInTheDocument();
+        expect(region.getByText(/기준 분봉 종가 70000원.*비교 분봉 종가 71400원.*변동 \+2.00%/)).toBeInTheDocument();
+        expect(region.getByText(/한국투자증권 KIS · KRX/)).toBeInTheDocument();
+        expect(region.getByText('공시 검색 범위 2026-11-03 ~ 2026-11-07')).toBeInTheDocument();
+        expect(region.getByText('시세 갱신 · 시세 자료 수신 실패 · 이전 근거 표시 중')).toBeInTheDocument();
+        expect(region.getByText(/공시 처리 2건 · 시세 처리 1건 · 첫 확인 대기 1건/)).toBeInTheDocument();
+        expect(region.getByText(/출처 MarketFlow.*서버 60초마다 자동 검증/)).toBeInTheDocument();
+        expect(region.queryByText(/텔레그램|현재 매수 적격/)).toBeNull();
+
+        const candidateLink = await screen.findByRole('link', { name: `${recentCandidate.title} 공시·시세 검증 보기` });
+        expect(candidateLink).toHaveAttribute('href', `${route}?article_id=123#catalyst-validation`);
+        fireEvent.click(candidateLink);
+        const selected = within(screen.getByRole('region', { name: '새 종목과 재료 검증 대시보드' }));
+        expect(await selected.findByRole('heading', { name: '기사 재료 검증 1건' })).toBeInTheDocument();
+        expect(selected.getByRole('link', { name: articleTitle })).toBeInTheDocument();
+        expect(selected.queryByText('이전 후보 기사 검증')).toBeNull();
+        expect(gateway.fetch.mock.calls.slice(-2).map(([input]) => new URL(input, 'http://localhost').search)).toEqual([
+            '?article_id=123', '?article_id=123',
+        ]);
+    });
+
+    it('loads the selected earlier article and its verification history directly from the URL', async () => {
+        const gateway = network();
+        gateway.setData(independentDashboard());
+        gateway.setHistory({ items: [
+            { id: 'prev', article_id: '121', article_title: '이전 후보 확인 이력', price: { status: 'awaiting_session' } },
+            { id: 'other', article_id: '123', article_title: '다른 기사 확인 이력' },
+        ] });
+        renderKongming(`${route}?article_id=121#catalyst-validation`);
+        const region = within(screen.getByRole('region', { name: '새 종목과 재료 검증 대시보드' }));
+        expect(await region.findByRole('link', { name: '이전 후보 기사 검증' })).toBeInTheDocument();
+        expect(region.getAllByText(/정규장 대기/)).toHaveLength(2);
+        expect(region.getByText(/이전 후보 확인 이력/)).toBeInTheDocument();
+        expect(region.queryByText(/다른 기사 확인 이력/)).toBeNull();
+        expect(region.queryByRole('link', { name: articleTitle })).toBeNull();
+    });
 });
 afterEach(() => {
     cleanup();
@@ -172,7 +240,7 @@ afterEach(() => {
 describe('Kongming catalyst validation', () => {
     it('renders saved swing, article verification and history fields with safe official links', async () => {
         const gateway = network();
-        render(<KongmingCatalystValidationPage />);
+        renderKongming();
         const headline = await screen.findByRole('heading', { name: '새 스윙 검토 후보 · 1종목' });
         expect(headline).toBeInTheDocument();
         const region = screen.getByRole('region', { name: '새 종목과 재료 검증 대시보드' });
@@ -193,7 +261,7 @@ describe('Kongming catalyst validation', () => {
         const gateway = network();
         const { live: _unused, ...legacy } = status;
         gateway.setData({ ...legacy, items: [{ ...status.items[0], article_url: 'https://www.businesspost.co.kr.evil.test/BP' }] });
-        render(<KongmingCatalystValidationPage />);
+        renderKongming();
         expect(await screen.findByText(/자동검증 상태 확인할 수 없음/)).toBeInTheDocument();
         expect(screen.queryByText(/자동검증 작동 중/)).toBeNull();
         expect(screen.getByText(articleTitle).closest('a')).toBeNull();
@@ -202,13 +270,13 @@ describe('Kongming catalyst validation', () => {
     it('renders an unknown status as text even when it matches a prototype property', async () => {
         const gateway = network();
         gateway.setData({ ...status, items: [{ ...status.items[0], primary: { ...status.items[0].primary, status: '__proto__' } }] });
-        render(<KongmingCatalystValidationPage />);
+        renderKongming();
         expect(await screen.findByText('__proto__')).toBeInTheDocument();
     });
 
     it('keeps expanded evidence through a transient failure and same-content recovery', async () => {
         const gateway = network();
-        render(<KongmingCatalystValidationPage />);
+        renderKongming();
         const details = (await screen.findByText('공식 근거·미충족·시각')).closest('details')!;
         details.open = true;
         gateway.setError(502);
@@ -226,7 +294,7 @@ describe('Kongming catalyst validation', () => {
     it.each([401, 403])('stops 15-second polling and clears retained data on HTTP %s', async (error) => {
         vi.useFakeTimers();
         const gateway = network();
-        await act(async () => { render(<KongmingCatalystValidationPage />); });
+        await act(async () => { renderKongming(); });
         expect(screen.getByText(articleTitle)).toBeInTheDocument();
         gateway.setError(error);
         await act(async () => { await vi.advanceTimersByTimeAsync(14_999); });
@@ -241,7 +309,7 @@ describe('Kongming catalyst validation', () => {
 
     it('gives the history authorization denial priority over a dashboard transport failure', async () => {
         const gateway = network();
-        render(<KongmingCatalystValidationPage />);
+        renderKongming();
         await screen.findByText(articleTitle);
         gateway.setError(502, 403);
         fireEvent.click(screen.getByRole('button', { name: '저장 상태 갱신' }));
@@ -262,7 +330,7 @@ describe('Kongming catalyst validation', () => {
                 ...watch.watch_rows[0], setups: { ...watch.watch_rows[0].setups, breakout: null },
             }] },
         });
-        render(<KongmingCatalystValidationPage />);
+        renderKongming();
         expect(await screen.findByText(articleTitle)).toBeInTheDocument();
         expect(screen.getByText(/고점 조건/)).toBeInTheDocument();
     });
@@ -272,7 +340,7 @@ describe('Kongming catalyst validation', () => {
         vi.setSystemTime(new Date('2026-11-07T10:00:59+09:00'));
         const gateway = network();
         gateway.setData(eligibleDashboard());
-        await act(async () => { render(<KongmingCatalystValidationPage />); });
+        await act(async () => { renderKongming(); });
         expect(screen.getByRole('heading', { name: /현재 매수 적격 1건/ })).toBeInTheDocument();
         expect(screen.getByText('· 현재 매수 적격')).toBeInTheDocument();
         await act(async () => { await vi.advanceTimersByTimeAsync(1001); });
@@ -297,7 +365,7 @@ describe('Kongming catalyst validation', () => {
             } },
         };
         gateway.setData({ ...dashboard, items: [newer, older], current_eligible_count: 2 });
-        await act(async () => { render(<KongmingCatalystValidationPage />); });
+        await act(async () => { renderKongming(); });
         expect(screen.getByText(articleTitle)).toBeInTheDocument();
         expect(screen.queryByText(olderTitle)).toBeNull();
 
@@ -331,7 +399,7 @@ describe('Kongming catalyst validation', () => {
                 ...row.styles.swing, quote: { ...row.styles.swing.quote, plan: { valid_until: validUntil } },
             } },
         }] });
-        await act(async () => { render(<KongmingCatalystValidationPage />); });
+        await act(async () => { renderKongming(); });
         expect(screen.getByText('· 현재 매수 적격')).toBeInTheDocument();
         await act(async () => { await vi.advanceTimersByTimeAsync(501); });
         expect(screen.queryByText('· 현재 매수 적격')).toBeNull();
@@ -353,7 +421,7 @@ describe('Kongming catalyst validation', () => {
                 ...row.styles.swing, currently_eligible: current, quote: { ...row.styles.swing.quote, observed_at: observed },
             } },
         }] });
-        await act(async () => { render(<KongmingCatalystValidationPage />); });
+        await act(async () => { renderKongming(); });
         expect(screen.queryByText('· 현재 매수 적격')).toBeNull();
         expect(screen.getByRole('heading', { name: /현재 매수 적격 0건/ })).toBeInTheDocument();
     });
@@ -364,7 +432,7 @@ describe('Kongming catalyst validation', () => {
         const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
         const gateway = network();
         gateway.setData(eligibleDashboard());
-        await act(async () => { render(<KongmingCatalystValidationPage />); });
+        await act(async () => { renderKongming(); });
         expect(screen.getByText('· 현재 매수 적격')).toBeInTheDocument();
         const release = gateway.pauseDashboard();
         visibility.mockReturnValue('hidden');
@@ -380,7 +448,7 @@ describe('Kongming catalyst validation', () => {
 
     it('clears both snapshots on access denial even when the other request is pending', async () => {
         const gateway = network();
-        render(<KongmingCatalystValidationPage />);
+        renderKongming();
         await screen.findByText(articleTitle);
         const release = gateway.pauseDashboard();
         gateway.setError(0, 403);
