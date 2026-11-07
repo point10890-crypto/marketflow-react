@@ -334,15 +334,21 @@ def check_jobs(cfg: dict[str, Any], now: datetime | None = None) -> list[CheckRe
         return [CheckResult('job:_registry', 'job', '스케줄러 잡 목록', 'unknown', detail)]
     if len({job['key'] for job in jobs}) != len(jobs):
         return [CheckResult('job:_registry', 'job', '스케줄러 잡 목록', 'unknown', '중복된 잡 키가 있음')]
+    results = [CheckResult('job:_registry', 'job', '스케줄러 잡 목록', 'ok',
+                           f'잡 목록 {len(jobs)}개 확인', severity='info', value=len(jobs))]
     last_runs = _read_json(os.path.join(DATA_DIR, 'scheduler_last_run.json'))
     if (not isinstance(last_runs, dict) or not last_runs
             or any(not key.strip() or _parse_ts(value) is None for key, value in last_runs.items())):
-        return [CheckResult('job:_baseline', 'job', '스케줄러 성공 기록', 'unknown',
-                            '유효한 스케줄러 성공 기록 없음')]
+        results.append(CheckResult('job:_baseline', 'job', '스케줄러 성공 기록', 'unknown',
+                                   '유효한 스케줄러 성공 기록 없음'))
+        return results
+    results.append(CheckResult('job:_baseline', 'job', '스케줄러 성공 기록', 'ok',
+                               f'실행 시각 기록 {len(last_runs)}개 확인', severity='info', value=len(last_runs)))
     critical = set(cfg.get('critical', []))
     grace = int(cfg.get('grace_minutes', 45))
     ignore = set(cfg.get('ignore', []))
-    return [evaluate_job(job, last_runs, now, grace, critical) for job in jobs if job['key'] not in ignore]
+    results.extend(evaluate_job(job, last_runs, now, grace, critical) for job in jobs if job['key'] not in ignore)
+    return results
 
 
 # ─────────────────────────── Windows 작업 스케줄러 · 이벤트 로그 ───────────────────────────

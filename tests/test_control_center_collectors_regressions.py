@@ -213,7 +213,9 @@ def test_scheduler_job_registry_reads_writer_shape(tmp_path, monkeypatch, wrappe
     (tmp_path / 'scheduler_jobs.json').write_text(json.dumps(registry), encoding='utf-8')
     (tmp_path / 'scheduler_last_run.json').write_text('{"sample_record": "2026-11-07T10:01:00"}', encoding='utf-8')
     now = datetime(2026, 11, 7, 10, 5, tzinfo=KST)
-    assert [(row.id, row.status) for row in local_checks.check_jobs({}, now)] == [('job:scheduler_sample', 'ok')]
+    assert [(row.id, row.status) for row in local_checks.check_jobs({}, now)] == [
+        ('job:_registry', 'ok'), ('job:_baseline', 'ok'), ('job:scheduler_sample', 'ok'),
+    ]
 
 
 @pytest.mark.parametrize('registry', [{}, {'jobs': {}}, {'jobs': []}, {'jobs': [{'schedule': '매 5분'}]},
@@ -231,4 +233,35 @@ def test_invalid_scheduler_success_baseline_remains_unknown(tmp_path, monkeypatc
     monkeypatch.setattr(local_checks, 'DATA_DIR', str(tmp_path))
     (tmp_path / 'scheduler_jobs.json').write_text('{"jobs": [{"key": "test"}]}', encoding='utf-8')
     (tmp_path / 'scheduler_last_run.json').write_text(json.dumps(baseline), encoding='utf-8')
-    assert [(row.id, row.status) for row in local_checks.check_jobs({})] == [('job:_baseline', 'unknown')]
+    assert [(row.id, row.status) for row in local_checks.check_jobs({})] == [
+        ('job:_registry', 'ok'), ('job:_baseline', 'unknown'),
+    ]
+
+
+def test_valid_scheduler_files_replace_persisted_unknown_states(tmp_path, monkeypatch):
+    from app.services.control_center import incidents, store
+
+    monkeypatch.setattr(local_checks, 'DATA_DIR', str(tmp_path))
+    registry = tmp_path / 'scheduler_jobs.json'
+    baseline = tmp_path / 'scheduler_last_run.json'
+    now = datetime(2026, 11, 7, 10, 5, tzinfo=KST)
+
+    with store.connect(str(tmp_path)) as conn:
+        registry.write_text('{"jobs": []}', encoding='utf-8')
+        for result in local_checks.check_jobs({}, now):
+            incidents.apply(conn, result, 'standard')
+        assert store.get_state(conn, 'job:_registry')['status'] == 'unknown'
+
+        registry.write_text('{"jobs": [{"key": "test", "schedule": "unknown"}]}', encoding='utf-8')
+        baseline.write_text('{"test": "malformed"}', encoding='utf-8')
+        for result in local_checks.check_jobs({}, now):
+            incidents.apply(conn, result, 'standard')
+        assert store.get_state(conn, 'job:_registry')['status'] == 'ok'
+        assert store.get_state(conn, 'job:_baseline')['status'] == 'unknown'
+
+        baseline.write_text('{"test": "2026-11-07T10:01:00"}', encoding='utf-8')
+        for result in local_checks.check_jobs({}, now):
+            incidents.apply(conn, result, 'standard')
+        assert store.get_state(conn, 'job:_registry')['status'] == 'ok'
+        assert store.get_state(conn, 'job:_baseline')['status'] == 'ok'
+        assert store.get_state(conn, 'job:test')['status'] == 'unknown'
