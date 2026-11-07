@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { adminAPI, SubscriptionRequest, PendingSignup, ExpiredMember } from '@/lib/api';
 import { isAiBundleRequest, subscriptionNote, isKongmingSubscriptionRequest, PLAN_PAYMENT_META } from '@/lib/billingInfo';
+import SubscriptionMemberDesk from '../SubscriptionMemberDesk';
 
 const kongmingPlanLabel = PLAN_PAYMENT_META.aibain_kongming.label;
 
@@ -17,6 +18,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
     // 처리 중인 request id 추적 — 같은 row 더블클릭 방지 + 이미 처리된 row 보호
     const [processing, setProcessing] = useState<Set<number>>(new Set());
     const [grantingUser, setGrantingUser] = useState<Set<number>>(new Set());
+    const [memberBusy, setMemberBusy] = useState(false);
 
     // silent=true 이면 스피너를 띄우지 않음 (refresh 버튼용 기본은 스피너 O)
     const loadRequests = useCallback(async (silent = false) => {
@@ -78,6 +80,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
     };
 
     const handleApprove = async (id: number) => {
+        if (mutationLocks.current.has('member')) return;
         // 이미 처리 중이거나 pending 이 아닌 row 는 무시 (중복 클릭 차단)
         if (mutationLocks.current.has(`request:${id}`)) return;
         const current = requests.find(r => r.id === id);
@@ -105,6 +108,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
     };
 
     const handleReject = async (id: number) => {
+        if (mutationLocks.current.has('member')) return;
         if (mutationLocks.current.has(`request:${id}`)) return;
         const current = requests.find(r => r.id === id);
         if (!current || current.status !== 'pending') return;
@@ -132,8 +136,28 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
         }
     };
 
+    const handleRequestAction = async (req: SubscriptionRequest, action: 'withdraw' | 'delete') => {
+        if (mutationLocks.current.has('member')) return;
+        if (mutationLocks.current.has(`request:${req.id}`)) return;
+        const message = action === 'withdraw' ? '대기 신청을 철회합니다. 기존 이용권은 유지되며 회원은 다시 신청할 수 있습니다.' : '신청 내역을 목록에서 삭제합니다. 승인된 이용권은 유지되며 원본·관리자 감사 이력은 보존됩니다.';
+        if (!window.confirm(`${req.user_name} · 요청 #${req.id}\n${message}`)) return;
+        mutationLocks.current.add(`request:${req.id}`); requestSequence.current++;
+        setProcessing(prev => new Set(prev).add(req.id));
+        try {
+            const result = action === 'withdraw' ? await adminAPI.withdrawSubscription(req.id, undefined, apiToken) : await adminAPI.deleteSubscription(req.id, apiToken);
+            if (result.request?.id !== req.id || (action === 'withdraw' ? result.request.status !== 'withdrawn' : !result.request.archived_at)) throw new Error('처리 결과를 확인하지 못했습니다.');
+            setRequests(previous => {
+                const next = action === 'delete' ? previous.filter(item => item.id !== req.id) : previous.map(item => item.id === req.id ? result.request : item);
+                onCountChange(next.filter(item => item.status === 'pending').length); return next;
+            });
+            showAction(action === 'withdraw' ? '신청 철회 완료 · 재신청 가능' : '신청 내역 삭제 완료 · 이용권 유지');
+        } catch (err) { showAction(`❌ ${err instanceof Error ? err.message : '처리 실패'}`); }
+        finally { mutationLocks.current.delete(`request:${req.id}`); setProcessing(prev => { const next = new Set(prev); next.delete(req.id); return next; }); }
+    };
+
     // 플랜 미선택 pending 가입자 — tier 부여 (status=approved 자동 승격)
     const handleGrantTier = async (userId: number, tier: 'pro' | 'premium') => {
+        if (mutationLocks.current.has('member')) return;
         if (mutationLocks.current.has(`user:${userId}`)) return;
         if (requests.some(request => request.user_id === userId && request.status === 'pending')) { showAction('❌ 대기 중인 구독 요청을 먼저 승인해 주세요.'); return; }
         mutationLocks.current.add(`user:${userId}`);
@@ -154,6 +178,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
 
     // 만료 회원 — 원클릭 재활성화 (tier 재부여 = status approved 승격 + 30일)
     const handleReactivate = async (member: ExpiredMember, tier: 'pro' | 'premium') => {
+        if (mutationLocks.current.has('member')) return;
         if (mutationLocks.current.has(`user:${member.id}`)) return;
         if (requests.some(request => request.user_id === member.id && request.status === 'pending')) { showAction('❌ 대기 중인 구독 요청을 먼저 승인해 주세요.'); return; }
         mutationLocks.current.add(`user:${member.id}`);
@@ -186,6 +211,11 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
     return (
         <>
             {errorNotice}
+            <fieldset disabled={processing.size > 0 || grantingUser.size > 0} className="min-w-0"><SubscriptionMemberDesk apiToken={apiToken} onBusyChange={busy => {
+                setMemberBusy(busy);
+                if (busy) { mutationLocks.current.add('member'); requestSequence.current++; setLoading(false); }
+                else { mutationLocks.current.delete('member'); void loadRequests(true); }
+            }} /></fieldset>
             {loading && <div role="status" className="text-xs text-gray-400">구독 내역을 새로고침하는 중...</div>}
             {actionMsg && (
                 <div className={`p-3 rounded-lg text-sm font-medium ${actionMsg.startsWith('❌') ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
@@ -299,18 +329,20 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="flex gap-2">
+                                        <div className="flex flex-wrap gap-2">
                                             <button onClick={() => handleApprove(req.id)}
-                                                disabled={processing.has(req.id)}
+                                                disabled={memberBusy || processing.has(req.id)}
                                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${btnColor}`}>
                                                 <i className={`fas ${processing.has(req.id) ? 'fa-spinner fa-spin' : btnIcon} mr-1`} />
                                                 {btnLabel}
                                             </button>
                                             <button onClick={() => handleReject(req.id)}
-                                                disabled={processing.has(req.id)}
+                                                disabled={memberBusy || processing.has(req.id)}
                                                 className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                                 <i className="fas fa-times mr-1" /> 거절
                                             </button>
+                                            <button disabled={memberBusy || processing.has(req.id)} onClick={() => void handleRequestAction(req, 'withdraw')} className="px-3 py-2 rounded-lg text-sm text-orange-300 bg-orange-500/10 disabled:opacity-40">신청 철회</button>
+                                            <button disabled={memberBusy || processing.has(req.id)} onClick={() => void handleRequestAction(req, 'delete')} className="px-3 py-2 rounded-lg text-sm text-gray-400 bg-white/5 disabled:opacity-40">내역 삭제</button>
                                         </div>
                                     </div>
                                 </div>
@@ -358,13 +390,13 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                     </div>
                                     <div className="flex gap-2">
                                         <button onClick={() => handleReactivate(m, 'pro')}
-                                            disabled={grantingUser.has(m.id)}
+                                            disabled={memberBusy || grantingUser.has(m.id)}
                                             className="px-4 py-2 rounded-lg text-sm font-medium bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                             <i className={`fas ${grantingUser.has(m.id) ? 'fa-spinner fa-spin' : 'fa-rotate-right'} mr-1`} />
                                             Pro 재활성화
                                         </button>
                                         <button onClick={() => handleReactivate(m, 'premium')}
-                                            disabled={grantingUser.has(m.id)}
+                                            disabled={memberBusy || grantingUser.has(m.id)}
                                             className="px-4 py-2 rounded-lg text-sm font-medium bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                             <i className={`fas ${grantingUser.has(m.id) ? 'fa-spinner fa-spin' : 'fa-gem'} mr-1`} />
                                             Ultra Pro
@@ -407,13 +439,13 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                     </div>
                                     <div className="flex gap-2">
                                         <button onClick={() => handleGrantTier(u.id, 'pro')}
-                                            disabled={grantingUser.has(u.id)}
+                                            disabled={memberBusy || grantingUser.has(u.id)}
                                             className="px-4 py-2 rounded-lg text-sm font-medium bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                             <i className={`fas ${grantingUser.has(u.id) ? 'fa-spinner fa-spin' : 'fa-crown'} mr-1`} />
                                             Pro 부여
                                         </button>
                                         <button onClick={() => handleGrantTier(u.id, 'premium')}
-                                            disabled={grantingUser.has(u.id)}
+                                            disabled={memberBusy || grantingUser.has(u.id)}
                                             className="px-4 py-2 rounded-lg text-sm font-medium bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                             <i className={`fas ${grantingUser.has(u.id) ? 'fa-spinner fa-spin' : 'fa-gem'} mr-1`} />
                                             Ultra Pro 부여
@@ -441,6 +473,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                     <th className="text-left text-xs font-semibold text-gray-400 uppercase px-4 py-3">상태</th>
                                     <th className="text-left text-xs font-semibold text-gray-400 uppercase px-4 py-3">날짜</th>
                                     <th className="text-left text-xs font-semibold text-gray-400 uppercase px-4 py-3">메모</th>
+                                    <th className="text-left text-xs font-semibold text-gray-400 px-4 py-3">관리</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -463,6 +496,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                         </td>
                                         <td className="px-4 py-3 text-xs text-gray-500">{req.processed_at ? new Date(req.processed_at).toLocaleDateString() : '-'}</td>
                                         <td className="px-4 py-3 text-xs text-gray-500">{subscriptionNote(req.admin_note) || '-'}</td>
+                                        <td className="px-4 py-3"><button disabled={memberBusy || processing.has(req.id)} onClick={() => void handleRequestAction(req, 'delete')} className="px-3 py-2 rounded text-xs bg-white/5 text-red-300 whitespace-nowrap disabled:opacity-40">내역 삭제</button></td>
                                     </tr>
                                 ))}
                             </tbody>

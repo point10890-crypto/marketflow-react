@@ -201,6 +201,9 @@ def create_app(config=None):
         except Exception:
             pass  # table may not exist yet (create_all handles it)
 
+        from app.services.subscription_lifecycle import ensure_archive_column
+        ensure_archive_column(db.engine)
+
         # Existing SQLite databases are not altered by db.create_all(), so the
         # model's partial unique index must also be installed explicitly.  It
         # protects the check-then-insert purchase route across processes while
@@ -690,31 +693,11 @@ def _apply_aibain_expiry_state(user, now):
     반환값은 Pro 카운터가 일시정지됐던 기간(timedelta)이며, 베이스 tier/status와
     AI Brain 만료 이력(aibain_expires_at)은 변경하지 않는다.
     """
-    from datetime import timezone
+    from app.services.subscription_lifecycle import resume_pro_clock
 
+    elapsed = resume_pro_clock(user, now) if user.pro_paused_at is not None else None
     user.aibain_enabled = False
     user.aibain_alert_stage = 'expired'
-
-    if user.pro_paused_at is None:
-        return None
-
-    elapsed = None
-    if user.tier == 'pro' and user.pro_expires_at is not None:
-        paused_at = user.pro_paused_at
-        if paused_at.tzinfo is None:
-            paused_at = paused_at.replace(tzinfo=timezone.utc)
-        normalized_now = now if now.tzinfo is not None else now.replace(tzinfo=timezone.utc)
-        candidate_elapsed = normalized_now - paused_at
-        if candidate_elapsed.total_seconds() > 0:
-            pro_existing = user.pro_expires_at
-            if pro_existing.tzinfo is None:
-                pro_existing = pro_existing.replace(tzinfo=timezone.utc)
-            user.pro_expires_at = pro_existing + candidate_elapsed
-            elapsed = candidate_elapsed
-
-    # Pro는 새 만료일로 카운터 재개. Ultra Pro/비정상 레거시 marker도 안전하게 정리.
-    user.pro_paused_at = None
-    user.pro_expiry_alert_stage = None
     return elapsed
 
 

@@ -991,7 +991,7 @@ def test_pro_aibain_expiry_resumes_preserved_base_period_without_downgrade():
     elapsed = _apply_aibain_expiry_state(member, now)
 
     assert elapsed is not None
-    assert abs((elapsed - timedelta(days=30)).total_seconds()) < 1
+    assert abs((elapsed - (timedelta(days=30) - timedelta(minutes=1))).total_seconds()) < 1
     assert member.aibain_enabled is False
     assert member.aibain_alert_stage == 'expired'
     assert member.aibain_expires_at == now - timedelta(minutes=1)
@@ -999,7 +999,7 @@ def test_pro_aibain_expiry_resumes_preserved_base_period_without_downgrade():
     assert member.status == 'approved'
     assert member.pro_paused_at is None
     assert member.pro_expiry_alert_stage is None
-    assert abs((member.pro_expires_at - (original_pro_expiry + timedelta(days=30))).total_seconds()) < 1
+    assert abs((member.pro_expires_at - (original_pro_expiry + timedelta(days=30) - timedelta(minutes=1))).total_seconds()) < 1
 
 
 def test_ultra_pro_returns_to_ultra_after_aibain_expiry_and_can_renew(monkeypatch):

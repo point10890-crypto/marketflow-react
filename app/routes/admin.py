@@ -28,6 +28,7 @@ from app.models.funnel import (
 from app.auth.decorators import admin_required
 from app.services import member_telegram
 from app.services.subscription_plans import is_ai_bundle_request
+from app.services.subscription_lifecycle import lifecycle_summary, resume_pro_clock, effective_pro_expiry, utc
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -224,10 +225,7 @@ def _has_active_same_tier(user: User | None, tier: str | None) -> bool:
         return True
     if tier != 'pro' or user.pro_expires_at is None:
         return False
-    expires = user.pro_expires_at
-    if expires.tzinfo is None:
-        expires = expires.replace(tzinfo=timezone.utc)
-    return expires > datetime.now(timezone.utc)
+    return not user.is_pro_expired
 
 
 def _pro_expiry_needs_refresh(user: User) -> bool:
@@ -236,18 +234,17 @@ def _pro_expiry_needs_refresh(user: User) -> bool:
     만료일이 없거나 이미 지난 경우 True. AI Brain pause 중(pro_paused_at 세팅)이면
     저장된 날짜가 과거여도 pause 해제 시 보정되므로 건드리지 않는다.
     """
-    if user.pro_paused_at is not None:
+    if user.is_pro_paused:
         return False
     if user.pro_expires_at is None:
         return True
-    expires = user.pro_expires_at
-    if expires.tzinfo is None:
-        expires = expires.replace(tzinfo=timezone.utc)
-    return expires <= datetime.now(timezone.utc)
+    return user.is_pro_expired
 
 
 def _extend_aibain_expiry(user: User, days: int = 30) -> None:
     """Enable AI Brain and extend from the later of now or current expiry."""
+    if user.pro_paused_at is not None and not user.is_aibain_active:
+        resume_pro_clock(user)
     user.aibain_enabled = True
     base = datetime.now(timezone.utc)
     if user.aibain_expires_at:
@@ -262,6 +259,8 @@ def _extend_aibain_expiry(user: User, days: int = 30) -> None:
 
 def _extend_ai_bundle(user: User, now: datetime) -> None:
     """Unify the paid AI services; keep already-paid time and freeze the Pro clock."""
+    if user.pro_paused_at is not None and not user.is_aibain_active:
+        resume_pro_clock(user, now)
     anchor = now
     expiries = [user.kongming_expires_at]
     if user.aibain_enabled:
@@ -430,10 +429,17 @@ def list_users():
 
     q = q.order_by(User.created_at.desc())
 
+    lifecycle_filter = request.args.get('subscription_state', '')
+    # Clock-aware filtering must include expired paused clocks even before the hourly job.
+    # This admin-only scan performs no external calls; only the selected page is serialized.
+    lifecycle_users = None
+    if lifecycle_filter in {'expired', 'expiring', 'active', 'none'}:
+        lifecycle_users = [u for u in q.all() if lifecycle_summary(u)['state'] == lifecycle_filter]
+
     page_arg = request.args.get('page')
     if page_arg is None:
         # backward-compatible: 페이지 미지정 시 전체 반환 (기존 프론트 호환)
-        users = q.all()
+        users = lifecycle_users if lifecycle_users is not None else q.all()
         return jsonify({'users': [u.to_dict() for u in users], 'total': len(users)})
 
     try:
@@ -445,8 +451,8 @@ def list_users():
     except (TypeError, ValueError):
         per_page = 50
 
-    total = q.count()
-    users = q.limit(per_page).offset((page - 1) * per_page).all()
+    total = len(lifecycle_users) if lifecycle_users is not None else q.count()
+    users = lifecycle_users[(page - 1) * per_page:page * per_page] if lifecycle_users is not None else q.limit(per_page).offset((page - 1) * per_page).all()
     return jsonify({
         'users': [u.to_dict() for u in users],
         'total': total,
@@ -473,7 +479,7 @@ def get_user(user_id):
 
     # 구독 요청 이력
     sub_reqs = SubscriptionRequest.query.filter_by(user_id=user_id) \
-        .order_by(SubscriptionRequest.created_at.desc()).limit(10).all()
+        .filter(SubscriptionRequest.archived_at.is_(None)).order_by(SubscriptionRequest.created_at.desc()).limit(10).all()
     data['subscription_history'] = [s.to_dict() for s in sub_reqs]
 
     return jsonify(data)
@@ -786,6 +792,129 @@ def expire_subscription(user_id):
 
 # ── AI Brain 알파 스캐너 애드온 (별도 30일 갱신 구독) ────────────────────────
 
+def _lifecycle_note():
+    data = request.get_json(silent=True)
+    if data is None and not request.get_data(cache=True):
+        data = {}
+    if not isinstance(data, dict):
+        raise ValueError('JSON object required')
+    note = data.get('note', '')
+    if not isinstance(note, str) or len(note) > 500:
+        raise ValueError('note must be a string of at most 500 characters')
+    return note.strip()
+
+
+@admin_bp.route('/users/<int:user_id>/ai-bundle/<action>', methods=['POST'])
+@admin_required
+def manage_ai_bundle(user_id, action):
+    if action not in ('grant', 'revoke'):
+        return jsonify({'error': 'Unknown action'}), 404
+    user = db.session.get(User, user_id)
+    if user is None:
+        return jsonify({'error': 'User not found'}), 404
+    if user.is_admin:
+        return jsonify({'error': '관리자 전체 이용 권한은 구독 처리 대상이 아닙니다.'}), 400
+    if user.status in ('suspended', 'rejected'):
+        return jsonify({'error': '이용 정지·가입 거절 상태를 먼저 확인하세요.'}), 409
+    try:
+        note = _lifecycle_note()
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    if action == 'grant':
+        if user.get_pending_subscription_request() is not None:
+            return jsonify({'error': '대기 중인 구독 요청을 먼저 승인하거나 철회하세요.'}), 409
+        if user.status != 'approved' or user.tier not in ('pro', 'premium') or user.is_pro_expired:
+            return jsonify({'error': '활성 PRO·Ultra PRO 기본 구독을 먼저 부여하세요.'}), 409
+    now = datetime.now(timezone.utc)
+    before = user.to_dict()
+    try:
+        # Resolve an old expired pause before granting a new cycle, without
+        # crediting the gap between the old paid expiry and today's new grant.
+        if user.pro_paused_at is not None and not user.is_aibain_active:
+            resume_pro_clock(user, now)
+        if action == 'grant':
+            _extend_ai_bundle(user, now)
+        else:
+            if user.pro_paused_at is not None:
+                resume_pro_clock(user, now)
+            user.aibain_enabled = False
+            expired = now - timedelta(seconds=1)
+            user.aibain_expires_at = min(utc(user.aibain_expires_at), expired) if user.aibain_expires_at else expired
+            if user.kongming_expires_at:
+                k_expiry = user.kongming_expires_at
+                if k_expiry.tzinfo is None:
+                    k_expiry = k_expiry.replace(tzinfo=timezone.utc)
+                user.kongming_expires_at = min(k_expiry, expired)
+            user.aibain_alert_stage = 'expired'
+        after = user.to_dict()
+        _record_audit(f'{action}_ai_bundle', user, before, after, note=note, commit=False)
+        db.session.commit()
+    except Exception as exc:
+        db.session.rollback()
+        current_app.logger.error('AI bundle action failed (%s)', type(exc).__name__)
+        return jsonify({'error': 'AI·제갈공명 구독 처리에 실패했습니다.'}), 500
+    _notify_admin('AI·제갈공명 30일 부여' if action == 'grant' else 'AI·제갈공명 철회', user, note)
+    return jsonify({'user': after, 'message': 'AI·제갈공명 구독 처리 완료'})
+
+
+@admin_bp.route('/subscriptions/<int:req_id>/withdraw', methods=['PUT'])
+@admin_required
+def withdraw_subscription_request(req_id):
+    return _change_subscription_request(req_id, 'withdrawn')
+
+
+@admin_bp.route('/subscriptions/<int:req_id>', methods=['DELETE'])
+@admin_required
+def delete_subscription_request(req_id):
+    # Administrative removal from the working list, with the original financial
+    # record and audit retained. Removing history never changes paid access.
+    return _change_subscription_request(req_id, 'deleted')
+
+
+def _change_subscription_request(req_id, target_status):
+    sub = db.session.get(SubscriptionRequest, req_id)
+    if sub is None:
+        return jsonify({'error': 'Request not found'}), 404
+    if (target_status == 'deleted' and sub.archived_at is not None) or (target_status == 'withdrawn' and sub.status == 'withdrawn' and sub.archived_at is None):
+        return jsonify({'request': sub.to_dict(), 'already_processed': True})
+    if sub.archived_at is not None or (target_status == 'withdrawn' and sub.status != 'pending'):
+        return jsonify({'error': '처리된 승인 건은 회원 구독 관리에서 이용권 범위를 선택해 철회하세요.'}), 409
+    try:
+        note = _lifecycle_note()
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    before = sub.to_dict()
+    user = sub.user
+    admin = _admin_user()
+    try:
+        values = {}
+        if target_status == 'deleted':
+            values[SubscriptionRequest.archived_at] = datetime.now(timezone.utc)
+        if sub.status == 'pending':
+            values.update({SubscriptionRequest.status: 'withdrawn',
+                           SubscriptionRequest.processed_at: datetime.now(timezone.utc),
+                           SubscriptionRequest.processed_by: admin.id})
+        changed = SubscriptionRequest.query.filter_by(id=req_id, status=sub.status).filter(
+            SubscriptionRequest.archived_at.is_(None)).update(values, synchronize_session=False)
+        if changed != 1:
+            db.session.rollback()
+            return jsonify({'error': '다른 관리자가 먼저 처리했습니다. 새로고침하세요.'}), 409
+        db.session.expire_all()
+        sub = db.session.get(SubscriptionRequest, req_id)
+        if target_status == 'withdrawn' and note:
+            sub.admin_note = f'{sub.admin_note or ""}\n철회 사유: {note}'.strip()
+        if user.status == 'pending' and user.tier is None and user.get_pending_subscription_request() is None:
+            user.requested_tier = None
+        after = sub.to_dict()
+        _record_audit('withdraw_subscription_request' if target_status == 'withdrawn' else 'delete_subscription_request',
+                      user, before, after, note=note, commit=False)
+        db.session.commit()
+    except Exception as exc:
+        db.session.rollback()
+        current_app.logger.error('Subscription request action failed (%s)', type(exc).__name__)
+        return jsonify({'error': '구독 신청 처리에 실패했습니다.'}), 500
+    return jsonify({'request': after, 'user': user.to_dict()})
+
 @admin_bp.route('/users/<int:user_id>/aibain/enable', methods=['POST'])
 @admin_required
 def enable_aibain(user_id):
@@ -880,24 +1009,13 @@ def revoke_aibain(user_id):
         'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
     }
 
-    user.aibain_enabled = False
     now_utc = datetime.now(timezone.utc)
+    if user.pro_paused_at is not None:
+        resume_pro_clock(user, now_utc)
+    user.aibain_enabled = False
     user.aibain_expires_at = now_utc - timedelta(minutes=1)
     user.aibain_alert_stage = 'expired'
 
-    # Pro 일시정지 재개 — paused 기간만큼 pro_expires_at 연장 후 NULL 처리
-    if user.pro_paused_at is not None and user.tier == 'pro' and user.pro_expires_at is not None:
-        paused_at = user.pro_paused_at
-        if paused_at.tzinfo is None:
-            paused_at = paused_at.replace(tzinfo=timezone.utc)
-        elapsed = now_utc - paused_at
-        if elapsed.total_seconds() > 0:
-            pro_expires = user.pro_expires_at
-            if pro_expires.tzinfo is None:
-                pro_expires = pro_expires.replace(tzinfo=timezone.utc)
-            user.pro_expires_at = pro_expires + elapsed
-        user.pro_paused_at = None
-        user.pro_expiry_alert_stage = None
     db.session.commit()
 
     after = {
@@ -1205,7 +1323,7 @@ def list_subscriptions():
     관리자 사각지대 제거 — 가입만 하고 /payment-request 단계에서 이탈한 유저도
     목록에 함께 노출해 팔로업(카톡 안내 등) 가능하게 한다.
     """
-    reqs = SubscriptionRequest.query.order_by(
+    reqs = SubscriptionRequest.query.filter(SubscriptionRequest.archived_at.is_(None)).order_by(
         SubscriptionRequest.created_at.desc()
     ).all()
     pending_req_user_ids = {r.user_id for r in reqs if r.status == 'pending'}
@@ -1403,14 +1521,7 @@ def approve_subscription(req_id):
             if sub_req.to_tier == 'pro':
                 base = processed_at
                 if is_ai_bundle and user.pro_expires_at and user.status == 'approved':
-                    expiry = user.pro_expires_at
-                    if expiry.tzinfo is None:
-                        expiry = expiry.replace(tzinfo=timezone.utc)
-                    if user.pro_paused_at:
-                        paused = user.pro_paused_at
-                        if paused.tzinfo is None:
-                            paused = paused.replace(tzinfo=timezone.utc)
-                        expiry += max(processed_at - paused, timedelta(0))
+                    expiry = effective_pro_expiry(user, processed_at)
                     base = max(base, expiry)
                 user.pro_expires_at = base + timedelta(days=30)
                 user.pro_paused_at = None

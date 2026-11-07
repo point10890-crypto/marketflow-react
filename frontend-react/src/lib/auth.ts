@@ -59,6 +59,7 @@ export interface AuthUserData {
     role: string;
     status: string;
     pro_expires_at?: string | null;
+    pro_effective_expires_at?: string | null;
     is_pro_expired?: boolean;
     requested_tier?: 'pro' | 'premium' | null;
     has_pending_subscription?: boolean;
@@ -153,6 +154,7 @@ export interface FunnelUser {
     requested_tier?: string | null;
     has_pending_subscription?: boolean;
     pro_expires_at?: string | null;
+    pro_effective_expires_at?: string | null;
     is_pro_paused?: boolean;
     kongming_expires_at?: string | null;
     is_kongming_active?: boolean | null;
@@ -179,7 +181,7 @@ export function isBaseSubscriptionExpired(user: FunnelUser | null | undefined, n
     if (user.status === 'expired' || user.is_pro_expired === true) return true;
     // Lifetime plans retain historic dates, and a paused Pro clock does not advance.
     if (user.tier !== 'pro' || user.is_pro_paused) return false;
-    const expiry = subscriptionExpiryTime(user.pro_expires_at);
+    const expiry = subscriptionExpiryTime(user.pro_effective_expires_at || user.pro_expires_at);
     return Number.isFinite(expiry) && expiry <= now;
 }
 

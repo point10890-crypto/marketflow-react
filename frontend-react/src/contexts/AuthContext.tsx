@@ -31,6 +31,7 @@ interface AuthUser {
     role: string;
     status: string;
     pro_expires_at?: string | null;
+    pro_effective_expires_at?: string | null;
     // 서버 만료 판정. 공유 구독 helper가 열린 화면의 Pro 만료 시각도 보완한다.
     is_pro_expired?: boolean;
     // 가입 시 유저가 선택한 플랜. pending 유저 안내용.
@@ -86,7 +87,8 @@ function toAuthUser(d: AuthUserData): AuthUser {
         tier: d.tier,
         role: d.role,
         status: d.status || 'approved',
-        pro_expires_at: d.pro_expires_at || null,
+        pro_expires_at: (d.is_pro_paused ? d.pro_expires_at : d.pro_effective_expires_at || d.pro_expires_at) || null,
+        pro_effective_expires_at: d.pro_effective_expires_at || null,
         is_pro_expired: d.is_pro_expired ?? false,
         requested_tier: d.requested_tier ?? null,
         has_pending_subscription: d.has_pending_subscription,

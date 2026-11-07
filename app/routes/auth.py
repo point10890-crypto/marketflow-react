@@ -702,7 +702,7 @@ def subscription_status():
 
     requests_list = SubscriptionRequest.query.filter_by(
         user_id=user.id
-    ).order_by(SubscriptionRequest.created_at.desc()).limit(10).all()
+    ).filter(SubscriptionRequest.archived_at.is_(None)).order_by(SubscriptionRequest.created_at.desc()).limit(10).all()
 
     # 최근 10건은 표시용 이력이다. 실제 대기 요청은 이력 범위와 무관하게 조회한다.
     pending_request = user.get_pending_subscription_request()

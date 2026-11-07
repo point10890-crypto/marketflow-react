@@ -58,7 +58,7 @@ export default function PendingApprovalPage() {
     const hasPending = currentSnapshot?.hasPending
         ?? (user?.has_pending_subscription === true || user?.pending_subscription_request?.status === 'pending');
     const subReqLoaded = currentSnapshot !== null;
-    const cancelled = ['cancelled', 'canceled'].includes(rejectedSubReq?.status || '');
+    const cancelled = ['cancelled', 'canceled', 'withdrawn'].includes(rejectedSubReq?.status || '');
     const confirmedUser = currentSnapshot?.confirmedUser ?? null;
     const decisionUser = confirmedUser ?? user;
     const blockedAccount = !!confirmedUser && ['suspended', 'rejected'].includes(confirmedUser.status);
@@ -78,7 +78,7 @@ export default function PendingApprovalPage() {
             const reqs = resp.requests;
             const pending = pendingSubscriptionRequest(resp);
             const pendingExists = hasPendingSubscription(resp);
-            const declined = !pendingExists && ['rejected', 'cancelled', 'canceled'].includes(reqs[0]?.status) ? reqs[0] : null;
+            const declined = !pendingExists && ['rejected', 'cancelled', 'canceled', 'withdrawn'].includes(reqs[0]?.status) ? reqs[0] : null;
             setSnapshot({ identity, pending, hasPending: pendingExists, declined, confirmedUser: confirmed });
             setMessage(''); setStatusError(false);
             if (confirmed && (hasActiveBaseSubscription(confirmed) || hasActiveKongmingSubscription(confirmed)

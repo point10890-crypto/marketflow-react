@@ -6,7 +6,7 @@ import SubscriptionsTab from '@/pages/admin/tabs/SubscriptionsTab';
 import PurchaseAdminPage from '@/pages/community/PurchaseAdminPage';
 
 const mocks = vi.hoisted(() => ({
-    getDashboard: vi.fn(), getSubscriptions: vi.fn(), getFunnelSummary: vi.fn(),
+    getDashboard: vi.fn(), getSubscriptions: vi.fn(), getFunnelSummary: vi.fn(), getUsers: vi.fn(),
     getNotifications: vi.fn(), getUnreadCount: vi.fn(), fetchAuthAPI: vi.fn(),
 }));
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ token: 'test-token', user: { id: 1 } }) }));
@@ -42,6 +42,7 @@ const show = (element: React.ReactElement) => render(<MemoryRouter>{element}</Me
 beforeEach(() => {
     vi.resetAllMocks();
     mocks.getDashboard.mockResolvedValue(dashboard);
+    mocks.getUsers.mockResolvedValue({ users: [], total: 0, total_pages: 0 });
     mocks.getFunnelSummary.mockResolvedValue({ days: 30, since: '2026-10-04', counts: {}, users: { registered: 4, requested: 2, approved: 1 }, conversion: { register_to_request: 0.5, request_to_approve: 0.5, register_to_approve: 0.25 }, median_request_to_approve_hours: 1, approved_requests_sampled: 1 });
     mocks.getNotifications.mockResolvedValue({ notifications: [], total: 0, page: 1, total_pages: 1 });
     mocks.getUnreadCount.mockResolvedValue({ unread_count: 0 });
