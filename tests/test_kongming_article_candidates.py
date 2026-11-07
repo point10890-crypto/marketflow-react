@@ -128,3 +128,23 @@ def test_malformed_source_cannot_overwrite_the_last_valid_view(data_dir, monkeyp
     assert view['operation']['state'] == 'error'
     assert view['operation']['last_body_received_at'] == NOW.isoformat()
     assert view['items'][0]['id'] == '11'
+
+
+def test_interrupted_poll_is_not_replayed_by_the_next_scheduler_tick(data_dir, monkeypatch):
+    first, second = service.FEEDS
+
+    def interrupt(feed, _):
+        assert feed == first
+        raise SystemExit(1)
+
+    monkeypatch.setattr(service, '_fetch', interrupt)
+    with pytest.raises(SystemExit):
+        service.run_once(data_dir, NOW)
+
+    def recover_other_feed(feed, _):
+        assert feed == second
+        return _feed(_item('11', '삼성전자 실적', NOW))
+
+    monkeypatch.setattr(service, '_fetch', recover_other_feed)
+    assert service.run_once(data_dir, NOW + timedelta(minutes=1))['candidate_article_count'] == 1
+    assert service.read_view(data_dir, now=NOW + timedelta(minutes=3))['operation']['state'] == 'partial'

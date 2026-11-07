@@ -265,12 +265,15 @@ def _view(state, now):
     published = [r['latest_published_at'] for r in receipts.values() if r.get('latest_published_at')]
     next_poll = min(_due(receipts.get(feed), now) for feed in FEEDS) if polled else None
     errors = sum(receipt['state'] == 'error' for receipt in receipts.values())
+    interrupted = any(receipt['state'] == 'polling'
+                      and now - _timestamp(receipt['last_poll_at']) > timedelta(minutes=2)
+                      for receipt in receipts.values())
     if errors == len(FEEDS):
         status = 'error'
-    elif errors or (polled and len(receipts) < len(FEEDS)) or (next_poll and now > next_poll + timedelta(minutes=2)):
+    elif errors or interrupted or (next_poll and now > next_poll + timedelta(minutes=2)):
         status = 'partial'
     else:
-        status = 'ready' if polled else 'waiting'
+        status = 'ready' if received else 'waiting'
     return {
         'items': items, 'candidate_article_count': len(items),
         'recent_candidate_article_count': sum(row['freshness'] == 'recent' for row in items),
@@ -314,7 +317,11 @@ def run_once(data_dir=ROOT, now=None):
         items = {row['id']: row for row in state['items']}
         seen_this_run = set()
         for feed in due:
-            receipt = {**feeds.get(feed, {}), 'last_poll_at': current.isoformat()}
+            receipt = {**feeds.get(feed, {}), 'last_poll_at': current.isoformat(), 'state': 'polling'}
+            feeds[feed] = receipt
+            # Reserve the poll before touching the provider. A killed task can
+            # recover the other due feed without replaying this request window.
+            write_json_atomic(data_dir / SNAPSHOT, state)
             try:
                 raw = _fetch(feed, current)
                 received = _now(now)
@@ -348,7 +355,6 @@ def run_once(data_dir=ROOT, now=None):
                              issuer_source_as_of=as_of)
             except (requests.RequestException, OSError, ET.ParseError, ValueError, TypeError, OverflowError):
                 receipt['state'] = 'error'
-            feeds[feed] = receipt
             write_json_atomic(data_dir / SNAPSHOT, state)
         return _view(state, _now(now))
 
