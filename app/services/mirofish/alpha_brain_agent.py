@@ -132,11 +132,14 @@ def run_agent_cycle(
     dry_run: bool | None = None,
     llm_call: Callable[[str], str | None] | None = None,
     now: datetime | None = None,
+    maintenance_only: bool = False,
 ) -> dict[str, Any]:
     """Run one Sense -> Think -> Act -> Learn cycle.
 
     Failures are journaled and returned as structured results so the scheduler
     can retry/alert without crashing the process.
+    ``maintenance_only`` explicitly skips all LLM calls and proposals while
+    retaining deterministic upkeep and the existing rollback safety guard.
     """
     now_dt = now or datetime.now(timezone.utc)
     state = _read_state()
@@ -151,15 +154,38 @@ def run_agent_cycle(
         return entry
 
     actual_dry_run = _env_bool('MIROFISH_AGENT_DRY_RUN', True) if dry_run is None else bool(dry_run)
+    stage = 'observation'
+    maintenance_results: list[dict[str, Any]] = []
+    rollbacks: list[dict[str, Any]] = []
     try:
         observation = build_agent_observation(now_iso=now_dt.isoformat())
+        stage = 'maintenance'
+        maintenance_results = run_maintenance(observation, dry_run=actual_dry_run)
+        failed_maintenance = [item for item in maintenance_results if item.get('status') != 'applied']
+        if failed_maintenance:
+            actions = ', '.join(str(item.get('action') or '?') for item in failed_maintenance)
+            raise RuntimeError(f'Required maintenance failed: {actions}')
+        if maintenance_results:
+            # Upkeep changes the evidence. Rollbacks and paid decisions must
+            # use the refreshed metrics, never the stale pre-maintenance view.
+            observation = build_agent_observation(now_iso=now_dt.isoformat())
         backtest = observation.get('backtest') if isinstance(observation.get('backtest'), dict) else {}
+        if backtest.get('stale', True):
+            raise RuntimeError('Required backtest remains stale after maintenance')
+        if any(item.get('action') == 'refresh_intelligence' for item in maintenance_results):
+            top3 = observation.get('top3_metrics') or {}
+            if top3.get('stale', True):
+                raise RuntimeError('Required intelligence artifact remains stale after maintenance')
+        stage = 'rollback'
         rollbacks = agent_actions.enforce_rollbacks(
             backtest_metrics=backtest,
             backtest_generated_at=str(backtest.get('generated_at') or ''),
         )
-        maintenance_results = run_maintenance(observation, dry_run=actual_dry_run)
-        llm_outcome = _decide(observation, cycle, llm_call or _default_llm_call)
+        stage = 'decision'
+        llm_outcome = ({
+            'status': 'skipped_maintenance_only', 'decisions': [], 'rejected_count': 0,
+            'note': 'deterministic maintenance recovery; LLM not requested',
+        } if maintenance_only else _decide(observation, cycle, llm_call or _default_llm_call))
         llm_results = (
             agent_actions.execute_decisions(
                 llm_outcome['decisions'],
@@ -175,6 +201,7 @@ def run_agent_cycle(
             'cycle': cycle,
             'status': 'completed',
             'dry_run': actual_dry_run,
+            'maintenance_only': bool(maintenance_only),
             'kpi': {
                 'evaluated_count': outcome.get('evaluated_count'),
                 'hit_rate_recent': outcome.get('hit_rate_recent'),
@@ -216,6 +243,12 @@ def run_agent_cycle(
             'status': 'failed',
             'error': f'{type(exc).__name__}: {exc}',
             'consecutive_failures': failures,
+            'failed_stage': stage,
+            'dry_run': actual_dry_run,
+            'maintenance_only': bool(maintenance_only),
+            'maintenance': maintenance_results,
+            'rollbacks': rollbacks,
+            'llm': {'status': 'skipped_maintenance_failed' if stage == 'maintenance' else 'not_completed'},
         }
         _append_journal(entry)
         return entry
@@ -417,9 +450,16 @@ def _intelligence_summary(*, allow_dataset_build: bool = True) -> dict[str, Any]
     try:
         from app.services.mirofish.intelligence import top3_metrics as _top3_metrics
 
-        summary = _top3_metrics.top3_metrics_summary()
-        if isinstance(summary, dict):
-            top3_metrics = summary
+        # The generic summary can return an in-memory rebuild even when its
+        # write failed. Only persisted evidence may unblock an agent decision.
+        persisted = _top3_metrics.read_top3_metrics()
+        if not isinstance(persisted, dict):
+            top3_metrics = {'stale': True, 'artifact_status': 'missing_or_invalid'}
+        else:
+            summary = _top3_metrics.top3_metrics_summary()
+            if isinstance(summary, dict):
+                top3_metrics = dict(summary)
+                top3_metrics['stale'] = _top3_metrics._is_stale(persisted.get('generated_at'))
     except Exception as exc:
         logger.warning('[alpha_brain_agent] top3 metrics unavailable: %s', exc)
     return {

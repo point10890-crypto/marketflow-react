@@ -156,6 +156,7 @@ def _register_core_routes(app):
 
     # ── 데이터 freshness 확인 (GitHub Actions용) ──
     @app.route('/api/system/last-update')
+    @_status_admin_required
     def system_last_update():
         from flask import jsonify as _jsonify
         from datetime import datetime, timezone
@@ -420,6 +421,8 @@ def create_app(config=None):
         '/api/auth/',
         '/api/community/',
         '/api/stripe/',
+        '/api/system/data-status',
+        '/api/system/last-update',
     )
     _ETAG_MAX_BYTES = 4 * 1024 * 1024
 

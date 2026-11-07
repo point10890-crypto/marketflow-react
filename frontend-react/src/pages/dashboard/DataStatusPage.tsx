@@ -1,7 +1,8 @@
 
 
 import { useEffect, useState, useCallback } from 'react';
-import { API_BASE } from '@/lib/api';
+import { API_BASE, fetchAuthAPI } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
@@ -79,6 +80,7 @@ const UPDATE_TYPE_MAP: Record<string, string> = {
 };
 
 export default function DataStatusPage() {
+    const { token } = useAuth();
     const isMobile = useIsMobile();
     const [dataFiles, setDataFiles] = useState<DataStatus[]>([]);
 
@@ -90,13 +92,12 @@ export default function DataStatusPage() {
     const loadStatus = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/api/system/data-status`);
-            if (res.ok) {
-                const data = await res.json();
+            if (token) {
+                const data = await fetchAuthAPI<{ files: DataStatus[] }>('/api/system/data-status', token);
                 // Add updateType to each file
                 const filesWithType = (data.files || []).map((f: DataStatus) => ({
                     ...f,
-                    updateType: UPDATE_TYPE_MAP[f.name] || null
+                    updateType: UPDATE_TYPE_MAP[f.name] || undefined
                 }));
                 setDataFiles(filesWithType);
 
@@ -106,7 +107,7 @@ export default function DataStatusPage() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [token]);
 
     const triggerUpdate = () => {
         if (updating || updatingItem) return;
