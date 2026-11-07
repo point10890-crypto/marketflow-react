@@ -21,7 +21,7 @@ export default function SubscriptionEntry() {
     useLayoutEffect(() => { setBannerHost(document.getElementById('subscription-entry-dashboard')); }, [pathname, loading, user?.id]);
     const journey = subscriptionJourney(user, now);
     const eligible = !loading && !!user && !!token && !!journey
-        && !['/payment-request', '/pending-approval', '/login', '/signup'].includes(pathname);
+        && !['/plan-select', '/payment-request', '/pending-approval', '/login', '/signup'].includes(pathname);
     const expired = journey?.kind === 'base-expired';
     const brain = journey?.kind === 'aibain-expired';
     const kongming = journey?.kind === 'kongming-expired';
