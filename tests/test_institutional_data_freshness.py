@@ -27,6 +27,7 @@ def frozen_producer_clock(monkeypatch):
 
 @pytest.fixture
 def csv_source(tmp_path, monkeypatch):
+    (tmp_path / 'engine').mkdir()
     monkeypatch.setattr(collectors, '__file__', str(tmp_path / 'engine/collectors.py'))
     monkeypatch.setattr(collectors, 'date', Today)
     path = tmp_path / 'data/all_institutional_trend_data.csv'
