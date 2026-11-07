@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { adminAPI, type AdminUser, type SubscriptionRequest } from '@/lib/api';
-import { isKongmingSubscriptionRequest, PLAN_PAYMENT_META } from '@/lib/billingInfo';
+import { AI_BUNDLE_CONVERSION, conversionApprovalDetails, formatConversionExpiry, isKongmingSubscriptionRequest, PLAN_PAYMENT_META } from '@/lib/billingInfo';
 
 const kongmingPlanLabel = PLAN_PAYMENT_META.aibain_kongming.label;
 
@@ -81,7 +81,9 @@ export default function MemberSubscriptionActions({ user, apiToken, onUpdated, o
         if (pending.length) throw new Error('새 대기 요청이 있습니다. 해당 구독 요청을 먼저 승인해 주세요.');
     };
     const approve = (request: SubscriptionRequest) => {
-        if (!window.confirm(`${user.name} (${user.email})\n요청 #${request.id}의 입금을 확인하고 승인하시겠습니까?`)) return;
+        const isConversion = request.request_type === AI_BUNDLE_CONVERSION.plan;
+        const detail = isConversion ? conversionApprovalDetails(request.conversion_expires_at) : '입금을 확인하고 승인하시겠습니까?';
+        if (!window.confirm(`${user.name} (${user.email})\n요청 #${request.id}\n${detail}`)) return;
         void run(async () => {
             const response = await adminAPI.approveSubscription(request.id, apiToken);
             if (response?.request?.id !== request.id || response.request.status !== 'approved') throw new Error('승인 결과를 확인할 수 없습니다. 다시 조회해 주세요.');
@@ -139,7 +141,12 @@ export default function MemberSubscriptionActions({ user, apiToken, onUpdated, o
                     : requests.length ? <div className="space-y-2">
                         <p className="text-xs text-amber-300">대기 요청을 승인하면 해당 요청과 구독 상태가 함께 처리됩니다.</p>
                         {requests.map(request => <div key={request.id} className="flex flex-wrap gap-2"><button disabled={busy} onClick={() => approve(request)} className={`${buttonClass} flex-1 text-left text-amber-300`}>
-                            {request.request_type.includes('renewal') ? '재구독' : '구독'} 요청 #{request.id} 승인 · {isKongmingSubscriptionRequest(request.request_type) ? kongmingPlanLabel : request.request_type.startsWith('aibain') ? 'AI Brain' : request.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
+                            {request.request_type === AI_BUNDLE_CONVERSION.plan ? <>
+                                제갈공명 전환 승인 · {request.amount || AI_BUNDLE_CONVERSION.amount}
+                                <span className="block">제갈공명 이용 종료 {formatConversionExpiry(request.conversion_expires_at)}</span>
+                            </> : <>
+                                {request.request_type.includes('renewal') ? '재구독' : '구독'} 요청 #{request.id} 승인 · {isKongmingSubscriptionRequest(request.request_type) ? kongmingPlanLabel : request.request_type.startsWith('aibain') ? 'AI Brain' : request.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
+                            </>}
                         </button><button disabled={busy} className={`${buttonClass} text-red-300`} onClick={() => {
                             if (!window.confirm(`대기 요청 #${request.id}을 철회합니까? 기존 이용권은 유지되며 회원은 다시 신청할 수 있습니다.`)) return;
                             void run(async () => {

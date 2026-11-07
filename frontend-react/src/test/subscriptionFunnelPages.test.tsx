@@ -23,6 +23,7 @@ const mocks = vi.hoisted(() => ({
     fetch: vi.fn(),
     getStatus: vi.fn(async () => ({ requests: [] as any[] })),
     requestUpgrade: vi.fn(async () => ({})),
+    requestConversion: vi.fn(async () => ({})),
     requestKongming: vi.fn(async () => ({})),
 }));
 
@@ -36,6 +37,7 @@ vi.mock('@/lib/api', () => ({
         getStatus: mocks.getStatus,
         requestUpgrade: mocks.requestUpgrade,
         requestKongming: mocks.requestKongming,
+        requestConversion: mocks.requestConversion,
     },
 }));
 
@@ -64,6 +66,134 @@ describe('subscription acquisition funnel', () => {
         mocks.getStatus.mockResolvedValue({ requests: [] });
         mocks.requestUpgrade.mockResolvedValue({});
         vi.stubGlobal('fetch', mocks.fetch);
+    });
+
+    const conversionPath = '/payment-request?plan=aibain_kongming_conversion';
+    const conversionUser = {
+        id: 135, name: '기존회원', email: 'legacy@example.test', role: 'user', tier: 'pro',
+        status: 'approved', is_pro_expired: false, is_aibain_active: true,
+    };
+    const conversionQuote = () => ({
+        eligible: true, amount: 10000, expires_at: new Date(Date.now() + 7 * 86_400_000).toISOString(), reason: '',
+    });
+
+    it('shows a separate 10,000 won offer next to the regular 50,000 won renewal', async () => {
+        mocks.auth.user = { ...conversionUser, ai_bundle_conversion: conversionQuote() };
+        mocks.auth.token = 'conversion-token';
+        renderAt('/plan-select?change=1', <PlanSelectPage />, '/plan-select');
+        expect(screen.getByRole('link', { name: /제갈공명 전환 신청/ })).toHaveAttribute('href', conversionPath);
+        expect(screen.getByText('10,000원')).toBeInTheDocument();
+        expect(within(screen.getByRole('button', { name: /AI Brain \+ 제갈공명/ })).getByText('50,000원')).toBeInTheDocument();
+    });
+
+    it.each(['ineligible', 'missing user', 'different member', 'expired quote'])('keeps bank details hidden for a %s fresh status', async condition => {
+        const quote = conversionQuote();
+        mocks.auth.user = { ...conversionUser, ai_bundle_conversion: quote };
+        mocks.auth.token = 'conversion-token';
+        const latest = condition === 'missing user' ? undefined : {
+            ...conversionUser,
+            id: condition === 'different member' ? 136 : conversionUser.id,
+            ai_bundle_conversion: { ...quote, eligible: condition !== 'ineligible',
+                expires_at: condition === 'expired quote' ? '2020-01-01T00:00:00Z' : quote.expires_at },
+        };
+        mocks.getStatus.mockResolvedValue({ requests: [], user: latest } as any);
+        renderAt(conversionPath, <PaymentRequestPage />, '/payment-request');
+        expect(await screen.findByText(/전환 신청 자격을 확인할 수 없습니다/)).toBeInTheDocument();
+        expect(screen.queryByText('국민은행')).not.toBeInTheDocument();
+        expect(mocks.requestConversion).not.toHaveBeenCalled();
+    });
+
+    it('quotes conversion from the current server even if cached eligibility is absent', async () => {
+        mocks.auth.user = conversionUser;
+        mocks.auth.token = 'conversion-token';
+        mocks.getStatus.mockResolvedValue({ requests: [], user: { ...conversionUser, ai_bundle_conversion: conversionQuote() } } as any);
+        renderAt(conversionPath, <PaymentRequestPage />, '/payment-request');
+        expect(await screen.findByText('10,000원')).toBeInTheDocument();
+        expect(screen.getByText(/제갈공명 이용 종료/)).toBeInTheDocument();
+        expect(screen.getByText('국민은행')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /승인 신청/ }));
+        expect(await screen.findByTestId('location')).toHaveTextContent('/pending-approval');
+        expect(mocks.requestConversion).toHaveBeenCalledWith('conversion-token', '기존회원');
+        expect(mocks.requestUpgrade).not.toHaveBeenCalled();
+    });
+
+    it('keeps a pending conversion in the existing queue and shows its captured expiry', async () => {
+        mocks.auth.user = conversionUser;
+        mocks.auth.token = 'conversion-token';
+        mocks.getStatus.mockResolvedValue({ requests: [{
+            id: 10, status: 'pending', request_type: 'aibain_kongming_conversion',
+            amount: '10,000원', conversion_expires_at: conversionQuote().expires_at,
+        }] });
+        const payment = renderAt(conversionPath, <PaymentRequestPage />, '/payment-request');
+        expect(await screen.findByTestId('location')).toHaveTextContent('/pending-approval');
+        expect(screen.queryByText('국민은행')).not.toBeInTheDocument();
+        payment.unmount();
+        renderAt('/pending-approval', <PendingApprovalPage />, '/pending-approval');
+        expect(await screen.findByRole('heading', { name: '제갈공명 전환 승인 대기 중' })).toBeInTheDocument();
+        expect(screen.getByText('10,000원')).toBeInTheDocument();
+        expect(screen.getByText('제갈공명 이용 종료')).toBeInTheDocument();
+        expect(screen.queryByText(/30일 이용합니다/)).not.toBeInTheDocument();
+    });
+
+    it.each(['current', 'inactive AI', 'changed expiry', 'prior Kongming', 'missing user'])(
+        'only displays pending transfer instructions with current AI terms: %s', async condition => {
+            const expiry = conversionQuote().expires_at;
+            mocks.auth.user = conversionUser;
+            mocks.auth.token = 'conversion-token';
+            const latest = condition === 'missing user' ? undefined : {
+                ...conversionUser,
+                is_aibain_active: condition !== 'inactive AI',
+                aibain_expires_at: condition === 'changed expiry' ? new Date(Date.now() + 86_400_000).toISOString() : expiry,
+                kongming_expires_at: condition === 'prior Kongming' ? '2020-01-01T00:00:00Z' : null,
+            };
+            mocks.getStatus.mockResolvedValue({ user: latest, requests: [{
+                id: 10, status: 'pending', request_type: 'aibain_kongming_conversion',
+                amount: '10,000원', conversion_expires_at: expiry,
+            }] } as any);
+            renderAt('/pending-approval', <PendingApprovalPage />, '/pending-approval');
+            expect(await screen.findByRole('heading', { name: '제갈공명 전환 승인 대기 중' })).toBeInTheDocument();
+            if (condition === 'current') {
+                expect(screen.getByText('입금 계좌를 다시 확인하려면')).toBeInTheDocument();
+            } else {
+                expect(screen.getByText(/추가 입금 전에 관리자에게 문의/)).toBeInTheDocument();
+                expect(screen.queryByText('입금 계좌를 다시 확인하려면')).not.toBeInTheDocument();
+                expect(screen.queryByText('국민은행')).not.toBeInTheDocument();
+            }
+        },
+    );
+
+    it('refreshes current auth before opening AI Brain after conversion approval', async () => {
+        mocks.auth.user = conversionUser;
+        mocks.auth.token = 'conversion-token';
+        const approved = {
+            ...conversionUser, is_kongming_active: true, kongming_expires_at: conversionQuote().expires_at,
+        };
+        mocks.getStatus.mockResolvedValue({ user: approved, requests: [
+            { id: 10, status: 'approved', request_type: 'aibain_kongming_conversion' },
+        ] } as any);
+        const page = <MemoryRouter initialEntries={['/pending-approval']}>
+            <Routes>
+                <Route path="/pending-approval" element={<PendingApprovalPage />} />
+                <Route path="*" element={<LocationProbe />} />
+            </Routes>
+        </MemoryRouter>;
+        const view = render(page);
+        expect(await screen.findByRole('heading', { name: '승인이 확인되었습니다' })).toBeInTheDocument();
+        expect(mocks.auth.refreshUser).toHaveBeenCalled();
+        expect(screen.queryByTestId('location')).not.toBeInTheDocument();
+        mocks.auth.user = approved;
+        view.rerender(<MemoryRouter initialEntries={['/pending-approval']}>
+            <Routes>
+                <Route path="/pending-approval" element={<PendingApprovalPage />} />
+                <Route path="*" element={<LocationProbe />} />
+            </Routes>
+        </MemoryRouter>);
+        expect(await screen.findByTestId('location')).toHaveTextContent('/dashboard/ai-bain');
+    });
+
+    it('returns the existing member to the conversion link after login', () => {
+        expect(nextPathForUser(conversionUser, conversionPath)).toBe(conversionPath);
+        expect(nextPathForUser({ ...conversionUser, has_pending_subscription: true }, conversionPath)).toBe('/pending-approval');
     });
 
     it('routes an expired member with an existing request away from bank details', async () => {

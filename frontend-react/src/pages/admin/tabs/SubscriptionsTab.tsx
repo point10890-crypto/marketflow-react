@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { adminAPI, SubscriptionRequest, PendingSignup, ExpiredMember } from '@/lib/api';
-import { isAiBundleRequest, subscriptionNote, isKongmingSubscriptionRequest, PLAN_PAYMENT_META } from '@/lib/billingInfo';
+import { AI_BUNDLE_CONVERSION, conversionApprovalDetails, formatConversionExpiry, isAiBundleRequest, subscriptionNote, isKongmingSubscriptionRequest, PLAN_PAYMENT_META } from '@/lib/billingInfo';
 import SubscriptionMemberDesk from '../SubscriptionMemberDesk';
 
 const kongmingPlanLabel = PLAN_PAYMENT_META.aibain_kongming.label;
@@ -85,6 +85,10 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
         if (mutationLocks.current.has(`request:${id}`)) return;
         const current = requests.find(r => r.id === id);
         if (!current || current.status !== 'pending') return;
+        const isConversion = current.request_type === AI_BUNDLE_CONVERSION.plan;
+        if (isConversion && !window.confirm(
+            `${current.user_name} · 요청 #${id}\n${conversionApprovalDetails(current.conversion_expires_at)}`
+        )) return;
 
         mutationLocks.current.add(`request:${id}`);
         requestSequence.current++;
@@ -98,7 +102,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                 onCountChange(next.filter(r => r.status === 'pending').length);
                 return next;
             });
-            showAction('✅ 구독 승인 완료');
+            showAction(isConversion ? '✅ 제갈공명 전환 승인 완료' : '✅ 구독 승인 완료');
         } catch (err: any) {
             showAction(`❌ ${err.message}`);
         } finally {
@@ -241,25 +245,26 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                 ) : (
                     <div className="space-y-3">
                         {pending.map(req => {
+                            const isConversion = req.request_type === AI_BUNDLE_CONVERSION.plan;
                             const isAibainRenewal = req.request_type === 'aibain_renewal';
                             const isKongmingPlan = isKongmingSubscriptionRequest(req.request_type);
                             const isKongmingRenewal = req.request_type === 'aibain_kongming_renewal';
                             const isBaseRenewal = req.request_type.includes('renewal') && !isAibainRenewal && !isKongmingPlan;
                             const isAibainOnly = req.request_type === 'aibain_addon' || isAibainRenewal;
-                            const isAiOnly = isAibainOnly || isKongmingPlan;
+                            const isAiOnly = isAibainOnly || isKongmingPlan || isConversion;
                             const includesAibain = isAibainOnly || !!(req.admin_note && req.admin_note.includes('AI Brain'));
                             const aiBundle = isAiBundleRequest(req);
                             const cardBorder = isAiOnly ? 'border-cyan-500/30' : 'border-yellow-500/20';
                             const iconBg = isAiOnly ? 'bg-cyan-500/15' : 'bg-yellow-500/10';
                             const iconColor = isAiOnly ? 'text-cyan-300' : 'text-yellow-400';
-                            const iconClass = isKongmingPlan ? 'fa-newspaper' : isAibainOnly ? 'fa-robot' : 'fa-arrow-up';
+                            const iconClass = isKongmingPlan || isConversion ? 'fa-newspaper' : isAibainOnly ? 'fa-robot' : 'fa-arrow-up';
                             // 승인 버튼 색상/라벨 분기
                             let btnLabel = req.to_tier === 'premium' ? 'Ultra Pro 승인' : 'Pro 승인';
                             if (isBaseRenewal) btnLabel = req.to_tier === 'premium' ? 'Ultra Pro 재구독 승인' : 'Pro 재구독 승인';
                             let btnIcon = req.to_tier === 'premium' ? 'fa-gem' : 'fa-crown';
                             let btnColor = req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30';
-                            if (isKongmingPlan) {
-                                btnLabel = `${kongmingPlanLabel}${isKongmingRenewal ? ' 갱신' : ''} 승인`;
+                            if (isKongmingPlan || isConversion) {
+                                btnLabel = isConversion ? '제갈공명 전환 승인' : `${kongmingPlanLabel}${isKongmingRenewal ? ' 갱신' : ''} 승인`;
                                 btnIcon = 'fa-newspaper';
                                 btnColor = 'bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30';
                             } else if (isAibainOnly) {
@@ -301,7 +306,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                                     <span className={`px-1.5 py-0.5 rounded ${req.from_tier === 'none' ? 'bg-gray-500/20 text-gray-400' : 'bg-amber-500/20 text-amber-400'}`}>{req.from_tier}</span>
                                                     <span className="mx-1">&rarr;</span>
                                                     <span className={`px-1.5 py-0.5 rounded font-bold ${isAiOnly ? 'bg-cyan-500/20 text-cyan-300' : req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                                                        {isKongmingPlan ? kongmingPlanLabel : isAibainOnly ? (isAibainRenewal ? 'AI Brain 재구독' : '+AI Brain') : req.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
+                                                        {isConversion ? AI_BUNDLE_CONVERSION.label : isKongmingPlan ? kongmingPlanLabel : isAibainOnly ? (isAibainRenewal ? 'AI Brain 재구독' : '+AI Brain') : req.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
                                                     </span>
                                                     {req.depositor_name && (
                                                         <button
@@ -321,6 +326,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                                     )}
                                                     <span className="ml-2 text-gray-600">{new Date(req.created_at).toLocaleString()}</span>
                                                 </div>
+                                                {isConversion && <p className="text-xs text-cyan-300 mt-1.5">제갈공명 이용 종료 {formatConversionExpiry(req.conversion_expires_at)}</p>}
                                                 {req.admin_note && (
                                                     <p className="text-[11px] text-cyan-300/80 mt-1.5 leading-relaxed">
                                                         <i className="fas fa-info-circle text-cyan-400/70 mr-1" />
@@ -481,7 +487,12 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                     <tr key={req.id} className="border-b border-white/5">
                                         <td className="px-4 py-3 text-sm text-white">{req.user_name || `#${req.user_id}`}</td>
                                         <td className="px-4 py-3 text-xs text-gray-400">
-                                            {isKongmingSubscriptionRequest(req.request_type) ? (
+                                            {req.request_type === AI_BUNDLE_CONVERSION.plan ? (
+                                                <div className="text-cyan-300">
+                                                    <p>{AI_BUNDLE_CONVERSION.label} · {req.amount || AI_BUNDLE_CONVERSION.amount}</p>
+                                                    <p>이용 종료 {formatConversionExpiry(req.conversion_expires_at)}</p>
+                                                </div>
+                                            ) : isKongmingSubscriptionRequest(req.request_type) ? (
                                                 <span className="text-cyan-300"><i className="fas fa-newspaper text-[10px] mr-1" />{kongmingPlanLabel}{req.request_type === 'aibain_kongming_renewal' ? ' 갱신' : ''}</span>
                                             ) : req.request_type === 'aibain_addon' ? (
                                                 <span className="text-cyan-300"><i className="fas fa-robot text-[10px] mr-1" />+AI Brain</span>

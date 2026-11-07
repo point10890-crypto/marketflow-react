@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { getUser, isKongmingOnlyUser, subscriptionFunnelTarget, type FunnelUser } from '@/lib/auth';
+import { AI_BUNDLE_CONVERSION } from '@/lib/billingInfo';
 import { useSeo } from '@/lib/seo';
 
 export type LoginUser = FunnelUser;
@@ -35,6 +36,9 @@ export function nextPathForUser(user: LoginUser, nextPath: string | null): strin
     const planned = planSelectNext(nextPath);
     if (user.role === 'admin') {
         return nextPath?.startsWith('/admin') ? nextPath : '/admin';
+    }
+    if (nextPath === AI_BUNDLE_CONVERSION.payment && ['approved', 'expired'].includes(user.status || '')) {
+        return user.has_pending_subscription ? '/pending-approval' : nextPath;
     }
     if (isKongmingOnlyUser(user)) {
         if (planned) return planned;

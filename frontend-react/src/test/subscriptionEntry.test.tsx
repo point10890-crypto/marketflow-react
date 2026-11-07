@@ -43,3 +43,19 @@ it('moves the banner into the dashboard host after authentication hydrates',asyn
  try {m.auth.loading=false;view.rerender(<MemoryRouter initialEntries={['/dashboard']}><SubscriptionEntry /></MemoryRouter>);await waitFor(()=>expect(within(host).getByLabelText('구독 안내')).toBeInTheDocument());}
  finally {view.unmount();host.remove();}
 });
+
+it('promotes the conversion on the dashboard only for eligible members', () => {
+    m.auth.user = { ...m.auth.user, tier: 'pro', ai_bundle_conversion: {
+        eligible: false, amount: 10000, expires_at: new Date(Date.now() + 86_400_000).toISOString(),
+    }};
+    const hidden = show('/dashboard');
+    expect(screen.queryByLabelText('제갈공명 전환 안내')).not.toBeInTheDocument();
+    hidden.unmount();
+    m.auth.user.ai_bundle_conversion.eligible = true;
+    show('/dashboard');
+    const banner = screen.getByLabelText('제갈공명 전환 안내');
+    expect(banner).toHaveTextContent('10,000원');
+    expect(within(banner).getByRole('link', { name: '제갈공명 전환 신청' }))
+        .toHaveAttribute('href', '/payment-request?plan=aibain_kongming_conversion');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+});

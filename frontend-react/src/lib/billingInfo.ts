@@ -1,4 +1,4 @@
-import { hasActiveBaseSubscription } from './auth';
+import { hasActiveBaseSubscription, subscriptionExpiryTime, type AuthUserData } from './auth';
 
 /**
  * 청구/구독 메타데이터.
@@ -13,6 +13,36 @@ import { hasActiveBaseSubscription } from './auth';
 export type BillingPlanTier = 'pro' | 'premium';
 
 export type BillingPlan = 'pro' | 'pro_aibain' | 'premium' | 'premium_aibain' | 'aibain_kongming';
+
+export const AI_BUNDLE_CONVERSION = {
+    plan: 'aibain_kongming_conversion',
+    payment: '/payment-request?plan=aibain_kongming_conversion',
+    label: '제갈공명 전환',
+    amount: '10,000원',
+    amountNumber: 10_000,
+} as const;
+
+export function aiBundleConversionExpiry(
+    user: Pick<AuthUserData, 'ai_bundle_conversion' | 'role' | 'status'> | null | undefined,
+    now = Date.now(),
+): string | null {
+    const quote = user?.ai_bundle_conversion;
+    if (!user || user.role === 'admin' || !['approved', 'expired'].includes(user.status)
+        || quote?.eligible !== true || quote.amount !== AI_BUNDLE_CONVERSION.amountNumber
+        || typeof quote.expires_at !== 'string' || !(subscriptionExpiryTime(quote.expires_at) > now)) return null;
+    return quote.expires_at;
+}
+
+export function formatConversionExpiry(value?: string | null): string {
+    const expiry = subscriptionExpiryTime(value);
+    return Number.isFinite(expiry) ? new Intl.DateTimeFormat('ko-KR', {
+        dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Seoul',
+    }).format(expiry) + ' (한국시간)' : '확인 필요';
+}
+
+export function conversionApprovalDetails(expiry?: string | null): string {
+    return `제갈공명 전환 ${AI_BUNDLE_CONVERSION.amount} 입금을 확인했나요?\n제갈공명 이용 종료 ${formatConversionExpiry(expiry)}\n기존 AI Brain과 기본 구독 기간은 유지됩니다.`;
+}
 
 export const BANK_ACCOUNT = {
     bank: '국민은행',

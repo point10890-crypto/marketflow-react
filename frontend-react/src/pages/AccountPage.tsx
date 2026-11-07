@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI, telegramAPI, type TelegramLinkInfo } from '@/lib/api';
 import { hasActiveKongmingSubscription, isKongmingOnlyUser, subscriptionExpiryTime } from '@/lib/auth';
-import { aiBundleOffer, isKongmingSubscriptionRequest } from '@/lib/billingInfo';
+import { AI_BUNDLE_CONVERSION, aiBundleOffer, formatConversionExpiry, isKongmingSubscriptionRequest } from '@/lib/billingInfo';
 import { pendingSubscriptionRequest } from '@/lib/subscriptionStatus';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { InstallGuide } from '@/components/layout/InstallPrompt';
@@ -749,7 +749,10 @@ export default function AccountPage() {
                                 <div className="flex items-center gap-3">
                                     {statusBadge(r.status)}
                                     <span className="text-gray-400 text-sm">
-                                        {isKongmingSubscriptionRequest(r.request_type) ? kongmingMeta.label : `${r.from_tier} → ${r.to_tier}`}
+                                        {r.request_type === AI_BUNDLE_CONVERSION.plan ? <>
+                                            {AI_BUNDLE_CONVERSION.label} · {r.amount || AI_BUNDLE_CONVERSION.amount}
+                                            <span className="block text-xs">제갈공명 이용 종료 {formatConversionExpiry(r.conversion_expires_at)}</span>
+                                        </> : isKongmingSubscriptionRequest(r.request_type) ? kongmingMeta.label : `${r.from_tier} → ${r.to_tier}`}
                                     </span>
                                 </div>
                                 <span className="text-[#a6afbb] text-xs">
