@@ -103,20 +103,21 @@ class User(db.Model):
         if self.pro_expires_at is None:
             return False
         # Pro 일시정지 중 (AI Brain 활성) → 만료 처리 안 함
-        if self.pro_paused_at is not None:
+        if self.is_pro_paused:
             return False
         # SQLAlchemy stores naive datetimes; normalize both sides to naive UTC for comparison.
-        expires = self.pro_expires_at
+        from app.services.subscription_lifecycle import effective_pro_expiry
+        expires = effective_pro_expiry(self)
         if expires.tzinfo is not None:
             expires = expires.astimezone(timezone.utc).replace(tzinfo=None)
-        return datetime.utcnow() > expires
+        return datetime.utcnow() >= expires
 
     @property
     def is_pro_paused(self) -> bool:
         """Pro 만료 카운터가 AI Brain 활성으로 일시정지 상태인지."""
         # Ultra Pro는 무기한이므로 만료 카운터/일시정지 개념이 없다. 과거 Pro에서
         # 등급 변경된 레거시 행에 marker가 남아 있어도 Ultra Pro UI를 오염시키지 않는다.
-        return self.tier == 'pro' and self.pro_paused_at is not None
+        return self.tier == 'pro' and self.pro_paused_at is not None and self.is_aibain_active
 
     @property
     def is_aibain_active(self) -> bool:
@@ -170,7 +171,9 @@ class User(db.Model):
         ).order_by(SubscriptionRequest.created_at.desc(), SubscriptionRequest.id.desc()).first()
 
     def to_dict(self):
+        from app.services.subscription_lifecycle import effective_pro_expiry, lifecycle_summary
         pending_request = self.get_pending_subscription_request()
+        effective_expiry = effective_pro_expiry(self)
         return {
             'id': self.id,
             'email': self.email,
@@ -179,6 +182,8 @@ class User(db.Model):
             'tier': self.tier,
             'status': self.status,
             'pro_expires_at': self.pro_expires_at.isoformat() if self.pro_expires_at else None,
+            'pro_effective_expires_at': effective_expiry.isoformat() if effective_expiry else None,
+            'subscription_lifecycle': lifecycle_summary(self),
             'is_pro_expired': self.is_pro_expired,
             'requested_tier': self.requested_tier,
             'has_pending_subscription': pending_request is not None,
@@ -283,6 +288,7 @@ class SubscriptionRequest(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     processed_at = db.Column(db.DateTime, nullable=True)
     processed_by = db.Column(db.Integer, nullable=True)  # admin user id
+    archived_at = db.Column(db.DateTime, nullable=True)
 
     # Relationship
     user = db.relationship('User', backref=db.backref('subscription_requests', lazy=True))
@@ -303,4 +309,5 @@ class SubscriptionRequest(db.Model):
             'amount': self.amount,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'processed_at': self.processed_at.isoformat() if self.processed_at else None,
+            'archived_at': self.archived_at.isoformat() if self.archived_at else None,
         }

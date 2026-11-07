@@ -816,6 +816,10 @@ export interface AdminUser {
     tier: string;
     status: string;
     pro_expires_at: string | null;
+    pro_effective_expires_at?: string | null;
+    pro_paused_at?: string | null;
+    is_pro_paused?: boolean;
+    subscription_lifecycle?: { state: string; label: string; base_expired: boolean; ai_expired: boolean; next_expiry: string | null };
     is_pro_expired?: boolean;
     requested_tier?: 'pro' | 'premium' | null;
     created_at: string;
@@ -896,6 +900,7 @@ export interface SubscriptionRequest {
     amount: string | null;
     created_at: string;
     processed_at: string | null;
+    archived_at?: string | null;
 }
 
 export interface AibainSubscriptionStatus {
@@ -1032,9 +1037,10 @@ export interface FunnelSummary {
 export const adminAPI = {
     getDashboard: (token?: string) => fetchAuthAPI<AdminDashboard>('/api/admin/dashboard', token),
     getFunnelSummary: (days = 30, token?: string) => fetchAuthAPI<FunnelSummary>(`/api/admin/funnel/summary?days=${days}`, token),
-    getUsers: (token?: string, params?: { status?: string; tier?: string; q?: string; page?: number; per_page?: number }) => {
+    getUsers: (token?: string, params?: { status?: string; tier?: string; q?: string; page?: number; per_page?: number; subscription_state?: string }) => {
         const qs = new URLSearchParams();
         if (params?.status) qs.set('status', params.status);
+        if (params?.subscription_state) qs.set('subscription_state', params.subscription_state);
         if (params?.tier) qs.set('tier', params.tier);
         if (params?.q) qs.set('q', params.q);
         if (params?.page) qs.set('page', String(params.page));
@@ -1054,6 +1060,11 @@ export const adminAPI = {
     revokeSubscription: (id: number, note: string | undefined, token?: string) => postAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/revoke`, { note: note || '' }, token),
     expireSubscription: (id: number, note: string | undefined, token?: string) =>
         postAuthAPI<{ user: AdminUser; message: string }>(`/api/admin/users/${id}/expire`, { note: note || '' }, token),
+    manageAiBundle: (id: number, action: 'grant' | 'revoke', note?: string, token?: string) =>
+        postAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/ai-bundle/${action}`, { note: note || '' }, token),
+    withdrawSubscription: (id: number, note?: string, token?: string) =>
+        putAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}/withdraw`, { note: note || '' }, token),
+    deleteSubscription: (id: number, token?: string) => deleteAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}`, token),
     // AI Brain 알파 스캐너 애드온 관리 (별도 30일 갱신 구독)
     enableAibain: (id: number, days?: number, note?: string, token?: string) =>
         postAuthAPI<{ user: AdminUser; message: string }>(`/api/admin/users/${id}/aibain/enable`, { days: days ?? 30, note }, token),

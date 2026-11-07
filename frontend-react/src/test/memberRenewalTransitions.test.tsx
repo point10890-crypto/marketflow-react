@@ -33,7 +33,9 @@ describe('member renewal state transitions', () => {
         for (const user of [{ ...base, is_pro_paused: true }, { ...base, tier: 'premium' }]) {
             expect(subscriptionJourney({ ...user, pro_expires_at: '2026-01-01T00:00:00Z' })).toBeNull();
         }
-        expect(subscriptionJourney({ ...expired, tier: 'premium' })?.payment).toBe('/payment-request?plan=premium&resubscribe=1');
+        // A forcibly expired lifetime membership is no longer an active base;
+        // lead with the current PRO renewal offer rather than another lifetime purchase.
+        expect(subscriptionJourney({ ...expired, tier: 'premium' })?.payment).toBe('/payment-request?plan=pro&resubscribe=1');
     });
     it('offers only the expired AI Brain add-on when the paused Pro base is still active', () => {
         vi.spyOn(Date, 'now').mockReturnValue(now);

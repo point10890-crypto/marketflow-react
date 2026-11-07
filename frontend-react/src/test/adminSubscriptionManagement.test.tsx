@@ -7,7 +7,7 @@ import ProExpiryTab from '@/pages/admin/ProExpiryTab';
 const api = vi.hoisted(() => ({ getUsers: vi.fn(), getDuplicates: vi.fn(), getSubscriptions: vi.fn(),
     getUser: vi.fn(), expireSubscription: vi.fn(), setUserTier: vi.fn(), extendPro: vi.fn(),
     enableAibain: vi.fn(), extendAibain: vi.fn(), revokeAibain: vi.fn(),
-    approveSubscription: vi.fn(), rejectSubscription: vi.fn(), deleteUser: vi.fn(), setUserStatus: vi.fn(), fetchAuthAPI: vi.fn(), bulkTier: vi.fn(), bulkApprove: vi.fn() }));
+    approveSubscription: vi.fn(), rejectSubscription: vi.fn(), withdrawSubscription: vi.fn(), deleteSubscription: vi.fn(), manageAiBundle: vi.fn(), deleteUser: vi.fn(), setUserStatus: vi.fn(), fetchAuthAPI: vi.fn(), bulkTier: vi.fn(), bulkApprove: vi.fn() }));
 vi.mock('@/lib/api', () => ({ adminAPI: api, fetchAuthAPI: api.fetchAuthAPI }));
 const member = { id: 7, name: '관리대상', email: 'member@example.test', role: 'user', tier: 'pro', status: 'approved', pro_expires_at: '2026-12-05T00:00:00Z', created_at: '2026-01-01', approved_at: '2026-01-01', last_login_at: null, is_aibain_active: true };
 const pending = { id: 77, user_id: 7, user_name: '관리대상', user_email: member.email, request_type: 'renewal', from_tier: 'pro', to_tier: 'pro', status: 'pending', payment_id: null, admin_note: null, depositor_name: '입금자', amount: '50,000원', created_at: '2026-11-05', processed_at: null };
@@ -33,6 +33,47 @@ async function openManagement() {
 }
 
 describe('admin member subscription management', () => {
+    it('revokes AI and Kongming together while keeping the base membership', async () => {
+        api.manageAiBundle.mockResolvedValue({ user: { ...member, is_aibain_active: false, is_kongming_active: false } });
+        const panel = await openManagement();
+        fireEvent.click(await within(panel).findByRole('button', { name: 'AI·제갈공명 철회' }));
+        await waitFor(() => expect(api.manageAiBundle).toHaveBeenCalledWith(7, 'revoke', undefined, 'admin-token'));
+        expect(api.expireSubscription).not.toHaveBeenCalled();
+    });
+    it('withdraws a pending application without revoking existing access', async () => {
+        api.getSubscriptions.mockResolvedValue({ requests: [pending] });
+        api.withdrawSubscription.mockResolvedValue({ request: { ...pending, status: 'withdrawn' } });
+        const panel = await openManagement();
+        fireEvent.click(await within(panel).findByRole('button', { name: '신청 철회' }));
+        await waitFor(() => expect(api.withdrawSubscription).toHaveBeenCalledWith(77, undefined, 'admin-token'));
+        expect(await within(panel).findByText('대기 신청 철회 완료 · 재신청 가능')).toBeInTheDocument();
+        expect(api.expireSubscription).not.toHaveBeenCalled();
+    });
+    it('manages expired members and verifies email before account deletion inside the subscription tab', async () => {
+        api.getUsers.mockResolvedValue({ users: [expired], total: 1, total_pages: 1 });
+        api.deleteUser.mockResolvedValue({ message: 'deleted' });
+        render(<SubscriptionsTab apiToken="admin-token" onCountChange={() => {}} />);
+        fireEvent.change(await screen.findByLabelText('구독 상태 필터'), { target: { value: 'expired' } });
+        await waitFor(() => expect(api.getUsers).toHaveBeenLastCalledWith('admin-token', expect.objectContaining({ subscription_state: 'expired' })));
+        fireEvent.click(await screen.findByRole('button', { name: '관리대상 직권 처리' }));
+        const panel = await screen.findByRole('region', { name: '관리대상 구독 관리' });
+        await within(panel).findByRole('button', { name: /선택 플랜.*부여/ });
+        fireEvent.click(within(panel).getByRole('button', { name: '회원 계정 삭제' }));
+        expect(api.deleteUser).not.toHaveBeenCalled();
+        vi.mocked(window.prompt).mockReturnValueOnce(member.email);
+        api.getUsers.mockResolvedValue({ users: [], total: 0, total_pages: 0 });
+        fireEvent.click(within(panel).getByRole('button', { name: '회원 계정 삭제' }));
+        await waitFor(() => expect(api.deleteUser).toHaveBeenCalledWith(7, 'admin-token'));
+    });
+    it('removes approved history without ending the paid entitlement', async () => {
+        api.getSubscriptions.mockResolvedValue({ requests: [{ ...pending, status: 'approved' }] });
+        api.deleteSubscription.mockResolvedValue({ request: { ...pending, status: 'approved', archived_at: '2026-11-07T00:00:00Z' } });
+        render(<SubscriptionsTab apiToken="admin-token" onCountChange={() => {}} />);
+        fireEvent.click(await screen.findByRole('button', { name: '내역 삭제' }));
+        await waitFor(() => expect(api.deleteSubscription).toHaveBeenCalledWith(77, 'admin-token'));
+        expect(api.expireSubscription).not.toHaveBeenCalled();
+        expect(screen.queryByText('approved')).not.toBeInTheDocument();
+    });
     it('does not offer grant or expiry actions for a rejected member without pending requests', async () => {
         api.getUsers.mockResolvedValue({ users: [{ ...member, status: 'rejected' }], total: 1 });
         const panel = await openManagement();

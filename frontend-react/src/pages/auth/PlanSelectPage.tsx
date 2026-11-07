@@ -67,7 +67,8 @@ export default function PlanSelectPage() {
     const isPending = user?.status === 'pending';
     const hasActiveBase = hasActiveBaseSubscription(user, now);
     const isUpgrade = allowChange && hasActiveBase;
-    const expiredAt = user?.pro_expires_at ? new Date(user.pro_expires_at) : null;
+    const effectiveExpiry = user?.pro_effective_expires_at || user?.pro_expires_at;
+    const expiredAt = effectiveExpiry ? new Date(effectiveExpiry) : null;
 
     const select = (plan: BillingPlan) => {
         navigate(`/payment-request?${planToQuery(plan)}${isExpired ? '&resubscribe=1' : ''}`);

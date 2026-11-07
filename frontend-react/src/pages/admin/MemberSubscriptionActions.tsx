@@ -4,12 +4,13 @@ import { isKongmingSubscriptionRequest, PLAN_PAYMENT_META } from '@/lib/billingI
 
 const kongmingPlanLabel = PLAN_PAYMENT_META.aibain_kongming.label;
 
-export default function MemberSubscriptionActions({ user, apiToken, onUpdated, onMutationStart, onBusyChange }: {
+export default function MemberSubscriptionActions({ user, apiToken, onUpdated, onMutationStart, onBusyChange, onDeleted }: {
     user: AdminUser;
     apiToken?: string;
     onUpdated: (user: AdminUser) => void;
     onMutationStart?: () => void;
     onBusyChange?: (busy: boolean) => void;
+    onDeleted?: (id: number) => void;
 }) {
     const [requests, setRequests] = useState<SubscriptionRequest[] | null>(null);
     const [lookupError, setLookupError] = useState('');
@@ -109,15 +110,15 @@ export default function MemberSubscriptionActions({ user, apiToken, onUpdated, o
         });
     };
     const aiAction = (action: 'enable' | 'extend' | 'revoke') => {
-        const reason = window.prompt('AI Brain 처리 사유 (선택):', '');
+        const detail = action === 'revoke' ? 'AI Brain과 제갈공명 이용권을 함께 철회합니다. PRO 잔여기간은 다시 차감되고 Ultra PRO는 유지됩니다.' : 'AI Brain과 제갈공명을 함께 30일 부여·연장합니다. PRO 잔여기간은 일시정지됩니다.';
+        if (!window.confirm(`${user.name} (${user.email})\n${detail}`)) return;
+        const reason = window.prompt('AI·제갈공명 처리 사유 (선택):', '');
         if (reason === null) return;
         void run(async () => {
             await verifyNoPending();
-            const response = action === 'revoke' ? await adminAPI.revokeAibain(user.id, reason || undefined, apiToken)
-                : action === 'extend' ? await adminAPI.extendAibain(user.id, 30, reason || undefined, apiToken)
-                    : await adminAPI.enableAibain(user.id, 30, reason || undefined, apiToken);
+            const response = await adminAPI.manageAiBundle(user.id, action === 'revoke' ? 'revoke' : 'grant', reason || undefined, apiToken);
             updateUser(response.user);
-            setMessage('AI Brain 구독 처리 완료');
+            setMessage('AI Brain·제갈공명 구독 처리 완료');
         });
     };
 
@@ -125,6 +126,8 @@ export default function MemberSubscriptionActions({ user, apiToken, onUpdated, o
         <div className="text-sm font-semibold text-white">구독 관리 · {user.name}</div>
         <p className="text-xs text-gray-400 break-all">{user.email} · 회원 #{user.id}</p>
         <p className="text-xs text-gray-400">{user.tier === 'premium' ? 'Ultra Pro (무기한)' : user.tier === 'pro' ? 'Pro' : 'No Tier'} · {statusLabel} · AI Brain {user.is_aibain_active ? '활성' : '비활성'}</p>
+        {user.subscription_lifecycle && <p className="text-sm text-amber-300">{user.subscription_lifecycle.label}</p>}
+        {user.tier === 'pro' && <p className="text-xs text-gray-400">PRO {user.is_pro_paused ? '잔여기간 보존 중 · AI 종료 후 재개' : `만료일 ${(user.pro_effective_expires_at || user.pro_expires_at) ? new Date(user.pro_effective_expires_at || user.pro_expires_at!).toLocaleString('ko-KR') : '미설정'}`}</p>}
         {user.kongming_expires_at && <p className="text-xs text-cyan-300">{kongmingPlanLabel} · {user.is_kongming_active ? '이용 중' : '만료'} · {new Date(user.kongming_expires_at).toLocaleDateString('ko-KR')}</p>}
         {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
         {refreshNeeded && <button disabled={busy} onClick={() => void run(async () => { updateUser(await adminAPI.getUser(user.id, apiToken)); setRefreshNeeded(false); })} className={buttonClass}>회원 상태 다시 조회</button>}
@@ -135,9 +138,18 @@ export default function MemberSubscriptionActions({ user, apiToken, onUpdated, o
                 : requests === null ? <p role="status" className="text-xs text-gray-400">대기 구독 요청 확인 중...</p>
                     : requests.length ? <div className="space-y-2">
                         <p className="text-xs text-amber-300">대기 요청을 승인하면 해당 요청과 구독 상태가 함께 처리됩니다.</p>
-                        {requests.map(request => <button key={request.id} disabled={busy} onClick={() => approve(request)} className={`${buttonClass} w-full text-left text-amber-300`}>
+                        {requests.map(request => <div key={request.id} className="flex flex-wrap gap-2"><button disabled={busy} onClick={() => approve(request)} className={`${buttonClass} flex-1 text-left text-amber-300`}>
                             {request.request_type.includes('renewal') ? '재구독' : '구독'} 요청 #{request.id} 승인 · {isKongmingSubscriptionRequest(request.request_type) ? kongmingPlanLabel : request.request_type.startsWith('aibain') ? 'AI Brain' : request.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
-                        </button>)}
+                        </button><button disabled={busy} className={`${buttonClass} text-red-300`} onClick={() => {
+                            if (!window.confirm(`대기 요청 #${request.id}을 철회합니까? 기존 이용권은 유지되며 회원은 다시 신청할 수 있습니다.`)) return;
+                            void run(async () => {
+                                const result = await adminAPI.withdrawSubscription(request.id, undefined, apiToken);
+                                if (result.request?.status !== 'withdrawn') throw new Error('철회 결과를 확인하지 못했습니다.');
+                                setRequests(items => items?.filter(item => item.id !== request.id) ?? []);
+                                setMessage('대기 신청 철회 완료 · 재신청 가능');
+                                updateUser(await adminAPI.getUser(user.id, apiToken));
+                            });
+                        }}>신청 철회</button></div>)}
                     </div> : <div className="flex flex-wrap gap-2 items-center">
                         <label className="sr-only" htmlFor={`grant-tier-${user.id}`}>부여할 플랜</label>
                         <select id={`grant-tier-${user.id}`} value={tier} disabled={busy} onChange={event => setTier(event.target.value as 'pro' | 'premium')} className="bg-[#242426] border border-white/10 rounded-lg px-2 py-2 text-xs">
@@ -147,10 +159,15 @@ export default function MemberSubscriptionActions({ user, apiToken, onUpdated, o
                     </div>}
             {requests !== null && !requests.length && !lookupError && <div className="flex flex-wrap gap-2">
                 {user.tier === 'pro' && <button disabled={busy} onClick={extend} className={`${buttonClass} text-emerald-300`}>Pro +30일 연장</button>}
-                <button disabled={busy} onClick={() => aiAction(user.is_aibain_active ? 'extend' : 'enable')} className={`${buttonClass} text-cyan-300`}>AI Brain {user.is_aibain_active ? '+30일 연장' : '30일 활성화'}</button>
-                {(user.is_aibain_active || user.aibain_enabled) && <button disabled={busy} onClick={() => aiAction('revoke')} className={`${buttonClass} text-cyan-300`}>AI Brain만 해제</button>}
+                <button disabled={busy || !['pro', 'premium'].includes(user.tier) || user.status !== 'approved' || !!user.is_pro_expired} onClick={() => aiAction(user.is_aibain_active ? 'extend' : 'enable')} className={`${buttonClass} text-cyan-300`}>AI Brain·제갈공명 {user.is_aibain_active || user.is_kongming_active ? '+30일 연장' : '30일 활성화'}</button>
+                {(user.is_aibain_active || user.aibain_enabled || user.is_kongming_active) && <button disabled={busy} onClick={() => aiAction('revoke')} className={`${buttonClass} text-red-300`}>AI·제갈공명 철회</button>}
             </div>}
             <button disabled={busy} onClick={() => setConfirmExpiry(true)} className={`${buttonClass} text-red-400 border border-red-500/20`}>전체 구독 만료</button>
+            {onDeleted && <button disabled={busy} className={`${buttonClass} text-red-400`} onClick={() => {
+                const email = window.prompt(`${user.name}의 회원 계정과 작성 글·댓글·구매 및 구독 신청을 삭제합니다. 감사 이력은 보존됩니다. 삭제하려면 회원 이메일을 정확히 입력하세요.`);
+                if (email !== user.email) return;
+                void run(async () => { await adminAPI.deleteUser(user.id, apiToken); onDeleted(user.id); });
+            }}>회원 계정 삭제</button>}
             {confirmExpiry && <div role="dialog" aria-label="전체 구독 만료 확인" className="rounded-lg border border-red-500/30 bg-red-500/5 p-3 space-y-3">
                 <p className="text-xs text-red-300">{user.name} ({user.email})의 Pro · Ultra Pro · AI Brain · 제갈공명 구독을 모두 즉시 만료합니다. 회원 계정, 구매·구독 요청 및 관리자 감사 이력은 보존됩니다.</p>
                 <label className="block text-xs">만료 사유 (선택)<textarea aria-label="만료 사유 (선택)" value={note} disabled={busy} onChange={event => setNote(event.target.value)} className="mt-1 block w-full bg-black/20 border border-white/10 rounded-lg p-2" /></label>
