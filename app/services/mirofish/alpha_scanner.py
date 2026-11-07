@@ -26,6 +26,7 @@ import app.services.mirofish.sector_rs as sector_rs_service
 import app.services.mirofish.tradingview_provider as tradingview_provider
 from app.utils.atomic_json import write_json_atomic
 from app.utils import storage_guard
+from app.services.institutional_freshness import institutional_row_is_usable
 
 # 종가베팅 V2 total 을 alpha 10점으로 환산할 때의 포화점.
 # engine.models.ScoreDetail.total 의 이론 최대는 20점(news3+volume3+chart2+candle1
@@ -4307,6 +4308,9 @@ def _authoritative_source_packets(
         if not payload:
             missing.append(source)
             continue
+        if source == 'all_institutional_trend_data.csv' and not institutional_row_is_usable(payload, as_of=ceiling):
+            missing.append(source)
+            continue
         artifact_key = _SOURCE_ARTIFACT_KEYS.get(source)
         artifact = artifacts.get(artifact_key) if artifact_key else None
         parsed = _source_available_at(
@@ -4372,20 +4376,25 @@ def _source_available_at(
         return _daily_bar_available_at(payload)
     if source == 'all_institutional_trend_data.csv':
         observation = _precise_resource_observed_at(payload)
-        if observation is None:
-            scrape_date = str(payload.get('scrape_date') or '').strip()
-            if re.fullmatch(r'\d{4}-\d{2}-\d{2}', scrape_date):
-                session_date = datetime.fromisoformat(scrape_date).date()
-                observation = datetime.combine(
-                    session_date, dt_time(15, 30), tzinfo=KST,
-                ).astimezone(timezone.utc)
+        try:
+            session_date = datetime.fromisoformat(str(payload['data_date'])).date()
+            scraped_date = datetime.fromisoformat(str(payload['scrape_date'])).date()
+        except (KeyError,TypeError,ValueError):
+            return None
+        session_close = datetime.combine(session_date, dt_time(15, 30), tzinfo=KST).astimezone(timezone.utc)
         envelope = _source_envelope_available_at(
             payload,
             artifact=artifact,
             file_observed_at=file_observed_at,
         )
-        available = [value for value in (observation, envelope) if value is not None]
-        return max(available) if available else None
+        acquired = [value for value in (observation, envelope) if value is not None]
+        # A later collection day (including weekend recovery) needs an actual
+        # acquisition envelope; do not invent a market-close time on that day.
+        if scraped_date > session_date and not acquired:
+            return None
+        if acquired and max(acquired).astimezone(KST).date() < scraped_date:
+            return None
+        return max([session_close, *acquired])
 
     observation = _precise_resource_observed_at(payload)
     envelope = _source_envelope_available_at(
@@ -4432,6 +4441,9 @@ def _normalize_scoring_source(
     """Normalize a source-owned instant and reject data unavailable at scoring time."""
     if not isinstance(payload, dict) or not payload:
         return payload, None
+    cutoff = _parse_dt(cutoff_ceiling)
+    if source == 'all_institutional_trend_data.csv' and not institutional_row_is_usable(payload, as_of=cutoff):
+        return None, {'source': source, 'reason': 'institutional_row_unverified_or_stale', 'available_at': None}
     artifact_key = _SOURCE_ARTIFACT_KEYS.get(source)
     artifact = artifacts.get(artifact_key) if artifact_key else None
     available_at = _source_available_at(
@@ -4440,7 +4452,6 @@ def _normalize_scoring_source(
         artifact=artifact,
         file_observed_at=file_observed_at,
     )
-    cutoff = _parse_dt(cutoff_ceiling)
     if available_at is None:
         return None, {
             'source': source,

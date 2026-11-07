@@ -248,7 +248,9 @@ def test_daily_bar_date_only_update_field_does_not_bypass_session_close(date_onl
 def test_institutional_date_only_flow_is_available_at_korean_close():
     payload = {
         'scrape_date': '2026-09-03',
+        'data_date': '2026-09-03', 'data_source': 'naver_finance_trend_api', 'total_days': 60,
         'foreign_net_buy_5d': '1000',
+        'institutional_net_buy_5d': '2000',
         'institutional_net_buy_20d': '2000',
     }
 
@@ -276,7 +278,9 @@ def test_institutional_date_only_flow_is_available_at_korean_close():
 def test_institutional_date_only_flow_uses_later_precise_file_availability(monkeypatch):
     payload = {
         'scrape_date': '2026-09-03',
+        'data_date': '2026-09-03', 'data_source': 'naver_finance_trend_api', 'total_days': 60,
         'foreign_net_buy_5d': '1000',
+        'institutional_net_buy_5d': '2000',
         'institutional_net_buy_20d': '2000',
     }
     monkeypatch.setattr(
@@ -517,6 +521,7 @@ def _availability_gate_artifacts(*, envelope_time: str) -> dict:
         'tradingview': {'signals_by_symbol': {}},
         'institutional_trend': {symbol: {
             'scrape_date': '2026-09-03',
+            'data_date': '2026-09-03', 'data_source': 'naver_finance_trend_api', 'total_days': 60,
             'foreign_net_buy_5d': 1000,
             'institutional_net_buy_5d': 1000,
         }},
@@ -988,10 +993,14 @@ def test_alpha_scanner_plan_a_blocks_kind_blacklist(tmp_path, monkeypatch):
 
 def test_alpha_scanner_plan_a_adds_dual_flow_confirmation(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
+    from app.services.institutional_collection_status import _required_session
+    collected_at = datetime.now(alpha_scanner.KST)
+    collected_date = collected_at.date()
+    source_date = _required_session(collected_at)
     (tmp_path / 'all_institutional_trend_data.csv').write_text(
         '\n'.join([
-            'ticker,scrape_date,institutional_net_buy_20d,institutional_net_buy_5d,foreign_net_buy_20d,foreign_net_buy_5d',
-            '000001,2026-05-03,200000000,80000000,300000000,90000000',
+            'ticker,scrape_date,data_date,data_source,total_days,institutional_net_buy_20d,institutional_net_buy_5d,foreign_net_buy_20d,foreign_net_buy_5d',
+            f'000001,{collected_date},{source_date},naver_finance_trend_api,60,200000000,80000000,300000000,90000000',
         ]),
         encoding='utf-8',
     )

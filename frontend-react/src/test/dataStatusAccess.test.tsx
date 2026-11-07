@@ -30,7 +30,7 @@ it.each([false, true])('shows partial source coverage instead of OK (mobile=%s)'
     const card = within(await screen.findByRole('article', { name: 'Institutional Trend 데이터 상태' }));
     expect(card.getByText('부분 실패')).toBeInTheDocument();
     expect(card.getByText('2,383 / 2,760종목')).toBeInTheDocument();
-    expect(card.getByText('실패 377 · 제외 0')).toBeInTheDocument();
+    expect(card.getByText('실패 377 · 이력 부족 0')).toBeInTheDocument();
     expect(card.getByText('2026-11-06')).toBeInTheDocument();
     expect(card.getByText('2026-11-08 01:42:00 KST')).toBeInTheDocument();
     expect(card.queryByText('OK')).not.toBeInTheDocument();

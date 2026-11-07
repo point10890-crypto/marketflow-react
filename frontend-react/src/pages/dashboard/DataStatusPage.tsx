@@ -53,12 +53,12 @@ function CollectionDetails({ file }: { file: DataStatus }) {
                     <dt className="text-gray-400">유효 수집 / 요청</dt>
                     <dd className="font-semibold text-white tabular-nums">{collection.successful != null && collection.requested != null ? `${collection.successful.toLocaleString()} / ${collection.requested.toLocaleString()}종목` : '미확인'}</dd>
                 </div>
-                {collection.failed != null && collection.skipped != null && <div className="text-amber-300">실패 {collection.failed.toLocaleString()} · 제외 {collection.skipped.toLocaleString()}</div>}
+                {collection.failed != null && collection.skipped != null && <div className="text-amber-300">실패 {collection.failed.toLocaleString()} · 이력 부족 {collection.skipped.toLocaleString()}</div>}
                 <div className="flex flex-wrap justify-between gap-x-3 gap-y-1"><dt className="text-gray-400">원본 거래일</dt><dd className="text-white tabular-nums">{collection.source_date || '미확인'}</dd></div>
                 <div className="flex flex-wrap justify-between gap-x-3 gap-y-1"><dt className="text-gray-400">수집 시각</dt><dd className="text-gray-200 tabular-nums break-words">{collectionTime(collection.collected_at)}</dd></div>
             </dl>
             <p className="mt-3 text-gray-300">{collection.detail}</p>
-            <p className="mt-2 text-gray-400">저장 행 수에는 이전 결과가 포함될 수 있습니다. 검증된 최신 수급만 분석에 사용합니다.</p>
+            <p className="mt-2 text-gray-400">저장 행 수에는 이전 결과가 포함될 수 있습니다. 분석 시 원본 거래일과 취득 시각을 검증합니다.</p>
         </div>
     );
 }

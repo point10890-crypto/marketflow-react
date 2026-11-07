@@ -162,8 +162,20 @@ class SignalTracker:
             logger.error("❌ 수급 데이터 파일이 없습니다")
             return pd.DataFrame()
         
-        df = pd.read_csv(inst_path, encoding='utf-8-sig')
+        df = pd.read_csv(inst_path, encoding='utf-8-sig', dtype={'ticker': str})
         df['ticker'] = df['ticker'].astype(str).str.zfill(6)
+        from app.services.institutional_freshness import KST, institutional_row_is_available
+        as_of = datetime.now(KST)
+        observed = datetime.fromtimestamp(os.path.getmtime(inst_path),KST)
+        usable = df.apply(lambda row: institutional_row_is_available(
+            row.to_dict(), as_of=as_of, file_observed_at=observed), axis=1)
+        unique = ~df['ticker'].duplicated(keep=False)
+        df = df.loc[usable & unique].copy()
+        if df.empty:
+            logger.info('No verified current institutional rows for a new signal scan')
+            return pd.DataFrame()
+        for column in ('foreign_net_buy_5d', 'institutional_net_buy_5d', 'supply_demand_index'):
+            df[column] = pd.to_numeric(df[column], errors='coerce')
         
         # 기본 필터: 외인 매수 + 연속 매수
         signals = df[
