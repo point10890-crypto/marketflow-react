@@ -49,6 +49,7 @@ const AiBainPage = lazy(() => import('@/pages/dashboard/AiBainPage'));
 const GoodrichFundManagerPage = lazy(() => import('@/pages/dashboard/aibain/GoodrichFundManagerPage'));
 const DecisionBriefPage = lazy(() => import('@/pages/dashboard/aibain/DecisionBriefPage'));
 const ChartAnaloguePage = lazy(() => import('@/pages/dashboard/aibain/ChartAnaloguePage'));
+const KongmingCatalystValidationPage = lazy(() => import('@/pages/dashboard/aibain/KongmingCatalystValidationPage'));
 const CryptoOverviewPage = lazy(() => import('@/pages/dashboard/crypto/CryptoOverviewPage'));
 const CryptoSignalsPage = lazy(() => import('@/pages/dashboard/crypto/CryptoSignalsPage'));
 const StockAnalyzerPage = lazy(() => import('@/pages/dashboard/StockAnalyzerPage'));
@@ -243,6 +244,7 @@ export default function App() {
                         <Route path="us/ai-chart" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsAIChartPage /></Suspense></ProGuard>} />
                         <Route path="ai-bain/decision" element={<ProGuard><AiBainGuard><Suspense fallback={<LoadingFallback />}><DecisionBriefPage /></Suspense></AiBainGuard></ProGuard>} />
                         <Route path="ai-bain/chart-predict" element={<ProGuard><AiBainGuard><Suspense fallback={<LoadingFallback />}><ChartAnaloguePage /></Suspense></AiBainGuard></ProGuard>} />
+                        <Route path="ai-bain/catalyst-validation" element={<AdminGuard><Suspense fallback={<LoadingFallback />}><KongmingCatalystValidationPage /></Suspense></AdminGuard>} />
                         <Route path="ai-bain/goodrich" element={<ProGuard><AiBainGuard><Suspense fallback={<LoadingFallback />}><GoodrichFundManagerPage /></Suspense></AiBainGuard></ProGuard>} />
                         <Route path="ai-bain" element={<ProGuard><Suspense fallback={<LoadingFallback />}><AiBainPage /></Suspense></ProGuard>} />
                         <Route path="crypto" element={<ProGuard><Suspense fallback={<LoadingFallback />}><CryptoOverviewPage /></Suspense></ProGuard>} />

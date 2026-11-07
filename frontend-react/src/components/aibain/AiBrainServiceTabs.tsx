@@ -1,4 +1,6 @@
-type AiBrainService = 'scanner' | 'goodrich' | 'decision' | 'chart-predict';
+import { useAuth } from '@/contexts/AuthContext';
+
+type AiBrainService = 'scanner' | 'goodrich' | 'decision' | 'chart-predict' | 'kongming';
 
 interface AiBrainServiceTabsProps {
     active: AiBrainService;
@@ -41,29 +43,43 @@ const services = [
         description: '닮은 과거 구간의 이후 결과',
         iconClass: 'bg-sky-400/15 text-sky-300',
     },
+    {
+        id: 'kongming' as const,
+        href: '/dashboard/ai-bain/catalyst-validation',
+        icon: 'fa-newspaper',
+        eyebrow: '제갈공명',
+        title: '뉴스·재료 검증',
+        description: '기사와 공식 근거 대조',
+        iconClass: 'bg-amber-400/15 text-amber-300',
+    },
 ];
 
 export default function AiBrainServiceTabs({ active }: AiBrainServiceTabsProps) {
+    const { user } = useAuth();
+    const showKongming = user?.role === 'admin';
+    const availableServices = showKongming ? services : services.filter(service => service.id !== 'kongming');
+
     return (
-        <nav aria-label="AI Brain 서비스" className="grid w-full grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4 md:max-w-5xl">
-            {services.map((service) => {
+        <nav aria-label="AI Brain 서비스" className={`grid w-full grid-cols-2 gap-2 sm:gap-3 md:max-w-5xl ${showKongming ? 'sm:grid-cols-3 lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
+            {availableServices.map((service) => {
                 const selected = service.id === active;
                 return (
                     <a
                         key={service.id}
                         href={service.href}
                         aria-current={selected ? 'page' : undefined}
-                        className={`group flex min-h-[76px] flex-col justify-center items-center gap-1.5 rounded-xl border px-2 py-2.5 transition-colors sm:flex-row sm:justify-start sm:min-h-24 sm:gap-3 sm:px-4 sm:py-4 ${
+                        className={`group flex min-h-[76px] min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 transition-colors
+                            sm:min-h-24 sm:flex-row sm:justify-start sm:gap-3 sm:px-4 sm:py-4 ${showKongming ? 'lg:gap-2 lg:px-3' : ''} ${
                             selected
                                 ? 'border-[#365372] bg-[#1b2c40] text-[#acd3ff]'
                                 : 'border-[#30363f] bg-[#15191e] text-gray-300 hover:border-[#526a83] hover:bg-[#1d232b]'
                         }`}
                     >
                         <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-lg sm:h-10 sm:w-10 ${service.iconClass}`}>
-                            <i className={`fas ${service.icon} text-base sm:text-lg`} />
+                            <i className={`fas ${service.icon} text-base sm:text-lg`} aria-hidden="true" />
                         </span>
                         <span className="min-w-0 text-center sm:text-left">
-                            <span className="hidden sm:block text-[11px] font-medium tracking-[0.06em] text-gray-400">{service.eyebrow}</span>
+                            <span className={`${service.id === 'kongming' ? 'block' : 'hidden sm:block'} text-[11px] font-medium tracking-[0.06em] text-gray-400`}>{service.eyebrow}</span>
                             <span className="mt-0.5 block text-xs font-semibold tracking-tight text-current sm:text-base">{service.title}</span>
                             <span className="mt-0.5 hidden sm:block font-medium text-gray-400 sm:mt-1 sm:text-xs">{service.description}</span>
                         </span>

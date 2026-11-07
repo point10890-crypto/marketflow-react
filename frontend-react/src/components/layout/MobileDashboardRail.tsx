@@ -22,6 +22,7 @@ const pageTitles: Array<[RegExp, string, string]> = [
     [/^\/dashboard\/ai-bain\/goodrich/, 'Goodrich TOP 3', 'AI 펀드매니저'],
     [/^\/dashboard\/ai-bain\/decision/, '종목 판단', '근거 비교'],
     [/^\/dashboard\/ai-bain\/chart-predict/, '차트 유사 사례', '과거 사례 분포'],
+    [/^\/dashboard\/ai-bain\/catalyst-validation/, '뉴스·재료 검증', '제갈공명'],
     [/^\/dashboard\/ai-bain/, 'AI Brain', 'GraphRAG'],
     [/^\/dashboard\/manual-stock-analysis/, 'AI 분석 목록', '루프 스크래퍼'],
     [/^\/dashboard\/vcp-enhanced/, 'VCP Enhanced', '거래량 수축'],

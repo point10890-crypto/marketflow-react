@@ -25,6 +25,7 @@ const PAGE_NAMES: Record<string, string> = {
     '/dashboard/ai-bain/goodrich': 'Goodrich TOP 3',
     '/dashboard/ai-bain/decision': '종목 판단',
     '/dashboard/ai-bain/chart-predict': '차트 유사 사례',
+    '/dashboard/ai-bain/catalyst-validation': '뉴스·재료 검증',
     '/dashboard/kr/leading-stocks': '주도주 LIVE',
     '/dashboard/kr/claw': 'Claw LIVE',
     '/dashboard/kr/ai-chart': 'KR AI Chart',
