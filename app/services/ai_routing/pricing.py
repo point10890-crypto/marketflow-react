@@ -31,6 +31,12 @@ class CostEstimate:
 
 
 PROVIDER_MODEL_RATES: Mapping[tuple[str, str], PricingRate] = {
+    ("anthropic", "claude-haiku-5-5"): PricingRate(
+        Decimal("0.10"), Decimal("0.50"), Decimal("0.01"), "anthropic-official-2026-11-08"
+    ),
+    ("anthropic", "claude-sonnet-5-5"): PricingRate(
+        Decimal("2"), Decimal("10"), Decimal("0.10"), "anthropic-official-2026-11-08"
+    ),
     ("deepseek", "deepseek-v4-flash"): PricingRate(
         Decimal("0.44"), Decimal("1.32"), Decimal("0.014"), _DEEPSEEK_VERSION
     ),
@@ -160,6 +166,10 @@ def estimate_cost_details(
     rate: PricingRate | None = None,
     event_ts_utc: str | datetime | None = None,
 ) -> CostEstimate:
+    if (provider.lower() == "anthropic" and model.lower() == "claude-haiku-5-5"
+            and usage.input_tokens is not None and usage.input_tokens > 100_000):
+        # This model's configured rate only covers its <=100k input tier.
+        return CostEstimate(None, "anthropic-long-context-unpriced")
     if usage.mapping_status == "quarantined":
         selected = rate or pricing_rate(provider, model, event_ts_utc=event_ts_utc)
         return CostEstimate(None, selected.version if selected else None)

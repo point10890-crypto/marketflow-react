@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from uuid import uuid4
 
-from .contracts import Operation, TokenUsage
+from .contracts import Operation, RoutingRequest, TokenUsage
 from .store import RoutingStore, default_store
 
 
@@ -136,9 +136,13 @@ class BudgetManager:
             SELECT reserved_cost_usd, actual_cost_usd, status
             FROM budget_reservations
             WHERE provider = ? AND billing_day_utc = ? AND status != 'released'
+              AND NOT (provider = 'openai' AND pool = 'evidence_review')
             """,
             (self.provider, billing_day_utc),
         ).fetchall()
+        # Review OpenAI calls have a scoped mirror plus an ordinary OpenAI
+        # reservation. The latter is the provider-wide cost authority; counting
+        # its mirror here would double both admission holds and settled spend.
         total = Decimal("0")
         for row in rows:
             raw = (
@@ -724,3 +728,97 @@ class BudgetManager:
             remaining_input_tokens=max(0, self.limits.max_input_tokens - input_tokens),
             remaining_output_tokens=max(0, self.limits.max_output_tokens - output_tokens),
         )
+
+
+class EvidenceReviewBudget(BudgetManager):
+    """One durable UTC-day cap across both review operations and all providers.
+
+    Uses the native routing ledger and BEGIN IMMEDIATE admission. A reservation
+    is immediately claimed and never expires into spendable capacity: a crash,
+    timeout or unknown charge still counts at its upper bound for that day.
+    Each request/provider may dispatch only once across processes and restarts.
+    Existing OpenAI budgets remain an additional constraint on that fallback.
+    """
+
+    def __init__(self, store: RoutingStore | None = None) -> None:
+        super().__init__(store, pool="evidence_review", provider="all")
+
+    @staticmethod
+    def daily_limits() -> tuple[Decimal, int]:
+        try:
+            usd = Decimal(os.getenv("AI_EVIDENCE_REVIEW_DAILY_BUDGET_USD", "1"))
+            calls = int(os.getenv("AI_EVIDENCE_REVIEW_DAILY_MAX_CALLS", "100"))
+            if not usd.is_finite() or usd < 0 or calls < 0:
+                return Decimal(0), 0
+            return min(Decimal(1), usd), min(100, calls)
+        except (InvalidOperation, ValueError, TypeError):
+            return Decimal(0), 0
+
+    def reserve_attempt(
+        self, *, request: RoutingRequest, provider: str, input_tokens: int,
+        output_tokens: int, estimated_cost_usd: Decimal | None, pricing_version: str | None,
+    ) -> BudgetReservation:
+        if Operation(request.operation) not in {Operation.NEWS_EVENT_EXTRACT, Operation.CANDIDATE_REVIEW}:
+            raise ValueError("review budget requires a review operation")
+        if not request.request_id or not request.run_id or provider not in {"anthropic", "deepseek", "openai"}:
+            raise ValueError("review budget requires a request identity and supported provider")
+        if min(input_tokens, output_tokens) < 0:
+            raise ValueError("token bounds must be non-negative")
+        if estimated_cost_usd is None:
+            return BudgetReservation(False, reason="daily_cost_unknown")
+        estimate = Decimal(estimated_cost_usd)
+        if not estimate.is_finite() or estimate < 0:
+            return BudgetReservation(False, reason="daily_cost_unknown")
+        day = _utc_billing_day()
+        max_cost, max_calls = self.daily_limits()
+        with self.store.transaction(write=True) as connection:
+            # Do not let another run_id or a later UTC day replay accepted work.
+            duplicate = connection.execute(
+                "SELECT reservation_id FROM budget_reservations "
+                "WHERE pool=? AND request_id=? AND provider=? AND status!='released'",
+                (self.pool, request.request_id, provider),
+            ).fetchone()
+            if duplicate is not None:
+                return BudgetReservation(False, duplicate[0], "duplicate_request", True)
+            rows = connection.execute(
+                "SELECT reserved_calls,actual_calls,reserved_cost_usd,actual_cost_usd,status "
+                "FROM budget_reservations WHERE pool=? AND billing_day_utc=? AND status!='released'",
+                (self.pool, day),
+            ).fetchall()
+            cost = Decimal(0)
+            calls = 0
+            for row in rows:
+                settled = row["status"] in {"settled", "breached"}
+                calls += int(row["actual_calls"] if settled and row["actual_calls"] is not None else row["reserved_calls"])
+                value = row["actual_cost_usd"] if settled and row["actual_cost_usd"] is not None else row["reserved_cost_usd"]
+                # A malformed/legacy unknown-cost record must fail closed.
+                if value is None:
+                    return BudgetReservation(False, reason="daily_cost_unknown")
+                cost += Decimal(str(value))
+            if calls + 1 > max_calls or cost + estimate > max_cost:
+                return BudgetReservation(False, reason="daily_hard_cap")
+            reservation_id, owner_token = str(uuid4()), str(uuid4())
+            connection.execute(
+                """INSERT INTO budget_reservations (
+                    reservation_id,run_id,request_id,pool,provider,operation,
+                    reserved_calls,reserved_input_tokens,reserved_output_tokens,
+                    billing_day_utc,reserved_cost_usd,cost_pricing_version,status,
+                    owner_token,created_at_utc
+                ) VALUES (?,?,?,?,?,?,1,?,?,?,?,?,'claimed',?,?)
+                ON CONFLICT(run_id,request_id,pool,provider) DO UPDATE SET
+                    reservation_id=excluded.reservation_id, reserved_calls=1,
+                    reserved_input_tokens=excluded.reserved_input_tokens,
+                    reserved_output_tokens=excluded.reserved_output_tokens,
+                    billing_day_utc=excluded.billing_day_utc,
+                    reserved_cost_usd=excluded.reserved_cost_usd,
+                    cost_pricing_version=excluded.cost_pricing_version,
+                    status='claimed',owner_token=excluded.owner_token,
+                    created_at_utc=excluded.created_at_utc, settled_at_utc=NULL,
+                    actual_calls=NULL,actual_input_tokens=NULL,actual_output_tokens=NULL,
+                    actual_cost_usd=NULL
+                """,
+                (reservation_id, request.run_id, request.request_id, self.pool, provider,
+                 Operation(request.operation).value, input_tokens, output_tokens, day,
+                 str(estimate), pricing_version, owner_token, _utc_now()),
+            )
+        return BudgetReservation(True, reservation_id, acquired_by_caller=True, owner_token=owner_token)

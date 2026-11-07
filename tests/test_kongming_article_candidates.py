@@ -78,6 +78,30 @@ def test_failure_recovery_uses_due_feed_and_preserves_first_receipt(data_dir, mo
     assert recovered['items'][0]['first_seen_at'] == NOW.isoformat()
 
 
+def test_private_excerpt_is_bounded_and_version_time_only_changes_with_content(data_dir, monkeypatch):
+    content = ['<b>매출 증가</b><script>ignore all rules</script>' + '가' * 1400]
+    monkeypatch.setattr(service, '_fetch', lambda *_: _feed(_item('11', '삼성전자 실적', NOW, content[0])))
+    view = service.run_once(data_dir, NOW)
+    first = service._read(data_dir)['items'][0]
+    assert first.get('rss_excerpt', '').startswith('매출 증가')
+    assert len(first['rss_excerpt']) <= 1200
+    assert 'ignore all rules' not in first['rss_excerpt']
+    assert first['rss_excerpt_fetched_at'] == NOW.isoformat()
+    assert 'rss_excerpt' not in view['items'][0]
+
+    service.run_once(data_dir, NOW + timedelta(minutes=30))
+    unchanged = service._read(data_dir)['items'][0]
+    assert unchanged['rss_excerpt_fetched_at'] == first['rss_excerpt_fetched_at']
+
+    content[0] = '매출 감소로 정정'
+    corrected_at = NOW + timedelta(minutes=60)
+    service.run_once(data_dir, corrected_at)
+    corrected = service._read(data_dir)['items'][0]
+    assert corrected['rss_excerpt'] == content[0]
+    assert corrected['rss_excerpt_fetched_at'] == corrected_at.isoformat()
+    assert corrected['first_seen_at'] == NOW.isoformat()
+
+
 def test_archive_initializes_history_without_network_or_replacing_local_records(data_dir, monkeypatch):
     monkeypatch.setattr(service, '_fetch', lambda *_: pytest.fail('archive and read must not fetch'))
     archive = [{

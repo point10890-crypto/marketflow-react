@@ -4,14 +4,17 @@ from __future__ import annotations
 
 import os
 import base64
+import json
 from dataclasses import dataclass, field
 from typing import Any, Callable, Mapping, Protocol
 
-from .contracts import ProviderErrorClass, RoutingRequest, TokenUsage, VisionImage
+from .contracts import Operation, ProviderErrorClass, RoutingRequest, TokenUsage, VisionImage
 
 
 OPENAI_COMPATIBLE_REQUEST_TIMEOUT_SECONDS = 90
 GEMINI_REQUEST_TIMEOUT_SECONDS = 90
+ANTHROPIC_REQUEST_TIMEOUT_SECONDS = 60
+EVIDENCE_REVIEW_REQUEST_TIMEOUT_SECONDS = 30
 MAX_PROVIDER_REQUEST_TIMEOUT_SECONDS = max(
     OPENAI_COMPATIBLE_REQUEST_TIMEOUT_SECONDS,
     GEMINI_REQUEST_TIMEOUT_SECONDS,
@@ -96,6 +99,28 @@ def normalize_gemini_usage(raw: Any) -> TokenUsage:
     )
 
 
+def normalize_anthropic_usage(raw: Any) -> TokenUsage:
+    """Anthropic's input count excludes both cache reads and cache writes.
+
+    We never request prompt caching. Unexpected writes are quarantined rather
+    than pricing them as ordinary input (5-minute and 1-hour writes differ).
+    """
+    if raw is None:
+        return TokenUsage.unknown()
+    ordinary = _field(raw, "input_tokens")
+    cached = _field(raw, "cache_read_input_tokens", 0) or 0
+    created = _field(raw, "cache_creation_input_tokens", 0) or 0
+    output = _field(raw, "output_tokens")
+    return TokenUsage(
+        input_tokens=ordinary + cached + created if ordinary is not None else None,
+        cached_input_tokens=cached,
+        output_tokens=output,
+        reasoning_tokens=0,
+        mapping_version="anthropic-no-cache-v1",
+        mapping_status="quarantined" if created else "valid",
+    )
+
+
 def classify_exception(exc: Exception) -> ProviderErrorClass:
     if isinstance(exc, ProviderCallError):
         return exc.error_class
@@ -105,6 +130,13 @@ def classify_exception(exc: Exception) -> ProviderErrorClass:
         return ProviderErrorClass.AUTHENTICATION
     if status == 402:
         return ProviderErrorClass.INSUFFICIENT_BALANCE
+    if status == 400:
+        # Anthropic returns invalid_request_error/400 when prepaid credit is
+        # exhausted. Inspect only to classify; never return/log the raw body.
+        body = getattr(exc, "body", None)
+        message = str(_field(_field(body, "error", body), "message", "")).lower()
+        if "credit balance is too low" in message or "insufficient credit" in message:
+            return ProviderErrorClass.INSUFFICIENT_BALANCE
     if status == 429:
         return ProviderErrorClass.RATE_LIMIT
     if status in (404, 410):
@@ -144,6 +176,18 @@ class CallableAdapter:
         return AdapterResponse(text=result, endpoint=self.endpoint)
 
 
+def _review_preinference_usage(
+    request: RoutingRequest, error_class: ProviderErrorClass,
+) -> TokenUsage | None:
+    """Known unbilled rejection for opt-in reviews; legacy usage is unchanged."""
+    if request.operation in {Operation.NEWS_EVENT_EXTRACT, Operation.CANDIDATE_REVIEW} and error_class in {
+        ProviderErrorClass.CLIENT_UNAVAILABLE, ProviderErrorClass.AUTHENTICATION,
+        ProviderErrorClass.INSUFFICIENT_BALANCE, ProviderErrorClass.MODEL_UNAVAILABLE,
+    }:
+        return TokenUsage(input_tokens=0, output_tokens=0)
+    return None
+
+
 class OpenAICompatibleAdapter:
     endpoint = "chat.completions"
 
@@ -163,10 +207,18 @@ class OpenAICompatibleAdapter:
     def generate(self, request: RoutingRequest, *, model: str, max_output_tokens: int) -> AdapterResponse:
         client = self.client_factory()
         if client is None:
-            raise ProviderCallError(ProviderErrorClass.CLIENT_UNAVAILABLE)
+            raise ProviderCallError(ProviderErrorClass.CLIENT_UNAVAILABLE,
+                usage=_review_preinference_usage(request, ProviderErrorClass.CLIENT_UNAVAILABLE))
         messages: list[dict[str, Any]] = []
-        if request.system:
-            messages.append({"role": "system", "content": request.system})
+        system = request.system or ""
+        if (request.response_schema is not None and request.operation in
+                {Operation.NEWS_EVENT_EXTRACT, Operation.CANDIDATE_REVIEW}):
+            # JSON-object mode alone cannot convey the domain shape to a fallback.
+            # This schema is already included in review admission's token bound.
+            system += "\n\nReturn JSON conforming exactly to this schema:\n" + json.dumps(
+                dict(request.response_schema), ensure_ascii=False, separators=(",", ":"))
+        if system:
+            messages.append({"role": "system", "content": system})
         prompt = request.prompt
         if request.json_mode and "json" not in prompt.lower():
             prompt = f"{prompt}\n\nRespond only in valid JSON."
@@ -190,6 +242,8 @@ class OpenAICompatibleAdapter:
             user_content = [{"type": "text", "text": prompt}, *image_parts]
         messages.append({"role": "user", "content": user_content})
         kwargs: dict[str, Any] = {"model": model, "messages": messages}
+        if request.operation in {Operation.NEWS_EVENT_EXTRACT, Operation.CANDIDATE_REVIEW}:
+            kwargs["timeout"] = EVIDENCE_REVIEW_REQUEST_TIMEOUT_SECONDS
         if model.startswith(("gpt-5", "o1", "o3", "o4")):
             kwargs["max_completion_tokens"] = max_output_tokens
         else:
@@ -208,7 +262,66 @@ class OpenAICompatibleAdapter:
                 endpoint=self.endpoint,
             )
         except Exception as exc:
-            raise ProviderCallError(classify_exception(exc)) from None
+            error_class = classify_exception(exc)
+            raise ProviderCallError(error_class,
+                usage=_review_preinference_usage(request, error_class)) from None
+
+
+class AnthropicAdapter:
+    endpoint = "https://api.anthropic.com/v1/messages"
+    request_timeout_seconds = ANTHROPIC_REQUEST_TIMEOUT_SECONDS
+
+    def __init__(self, client_factory: Callable[[], Any]) -> None:
+        self.client_factory = client_factory
+
+    def generate(self, request: RoutingRequest, *, model: str, max_output_tokens: int) -> AdapterResponse:
+        try:
+            client = self.client_factory()
+            if client is None:
+                raise ProviderCallError(ProviderErrorClass.CLIENT_UNAVAILABLE,
+                    usage=_review_preinference_usage(request, ProviderErrorClass.CLIENT_UNAVAILABLE))
+            prompt = request.prompt
+            if request.json_mode and request.response_schema is None:
+                prompt += "\n\nRespond only in valid JSON."
+            kwargs: dict[str, Any] = {
+                "model": model,
+                "max_tokens": max_output_tokens,
+                "messages": [{"role": "user", "content": prompt}],
+                "thinking": {"type": "disabled"},
+            }
+            if request.operation in {Operation.NEWS_EVENT_EXTRACT, Operation.CANDIDATE_REVIEW}:
+                kwargs["timeout"] = EVIDENCE_REVIEW_REQUEST_TIMEOUT_SECONDS
+            if model.startswith("claude-sonnet-5-5"):
+                # Sonnet 5.5 rejects `disabled`. With no tools and effort at or
+                # below high, between_tools produces text without thinking.
+                kwargs["thinking"] = {"type": "between_tools"}
+                kwargs["output_config"] = {"effort": "low"}
+            if request.system:
+                kwargs["system"] = request.system
+            if request.response_schema is not None:
+                kwargs.setdefault("output_config", {})["format"] = {
+                    "type": "json_schema", "schema": dict(request.response_schema),
+                }
+            response = client.messages.create(**kwargs)
+            usage = normalize_anthropic_usage(_field(response, "usage"))
+            if _field(response, "stop_reason") in {"refusal", "max_tokens"}:
+                raise ProviderCallError(
+                    ProviderErrorClass.REFUSAL if _field(response, "stop_reason") == "refusal"
+                    else ProviderErrorClass.INVALID_JSON, usage=usage,
+                )
+            text = "".join(
+                str(_field(block, "text", "")) for block in _field(response, "content", [])
+                if _field(block, "type") == "text"
+            ).strip()
+            return AdapterResponse(text or None, usage, self.endpoint)
+        except ProviderCallError:
+            raise
+        except Exception as exc:
+            error_class = classify_exception(exc)
+            # These are definitive pre-inference rejections. All uncertain
+            # transport/server failures keep their full cost reservation.
+            usage = _review_preinference_usage(request, error_class)
+            raise ProviderCallError(error_class, usage=usage) from None
 
 
 class GeminiAdapter:
@@ -283,6 +396,19 @@ class GeminiAdapter:
 
 def build_default_adapters() -> dict[str, ProviderAdapter]:
     """Build lazy SDK adapters without making network calls."""
+    def anthropic_client():
+        key = os.getenv("ANTHROPIC_API_KEY")
+        if not key:
+            return None
+        from anthropic import Anthropic, DefaultHttpxClient
+        return Anthropic(
+            api_key=key,
+            base_url="https://api.anthropic.com",
+            timeout=ANTHROPIC_REQUEST_TIMEOUT_SECONDS,
+            max_retries=0,
+            http_client=DefaultHttpxClient(follow_redirects=False, trust_env=False),
+        )
+
     def openai_client():
         key = os.getenv("OPENAI_API_KEY")
         if not key:
@@ -328,6 +454,7 @@ def build_default_adapters() -> dict[str, ProviderAdapter]:
         return types.Part.from_bytes(data=data, mime_type=mime_type)
 
     return {
+        "anthropic": AnthropicAdapter(anthropic_client),
         "deepseek": OpenAICompatibleAdapter(
             deepseek_client,
             provider="deepseek",

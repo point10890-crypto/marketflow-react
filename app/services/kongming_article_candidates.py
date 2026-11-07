@@ -193,11 +193,14 @@ def _parse_feed(raw, now, issuers):
             (entity for name, pattern, entity in issuers if name in title and pattern.search(title)),
             key=lambda entity: entity['symbol'],
         )
-        event = _event(title, _plain(entry.findtext('description'), 1200))
+        excerpt = _plain(entry.findtext('description'), 1200)
+        event = _event(title, excerpt)
         candidates[identifier] = {
             'id': identifier, 'title': title, 'url': url, 'entities': entities,
             'published_at': published.isoformat(), 'first_seen_at': now.isoformat(),
             'provenance': 'marketflow_rss', 'event': event,
+            # Private bounded evidence for AI review; not part of ARTICLE_FIELDS.
+            'rss_excerpt': excerpt, 'rss_excerpt_fetched_at': now.isoformat(),
         }
     return candidates, max(published_times)
 
@@ -346,6 +349,12 @@ def run_once(data_dir=ROOT, now=None):
                     if previous:
                         row['first_seen_at'] = previous['first_seen_at']
                         row['provenance'] = previous['provenance']
+                        if (row['title'] == previous['title']
+                                and row['rss_excerpt'] == previous.get('rss_excerpt')
+                                and previous.get('rss_excerpt_fetched_at')):
+                            # Repeated polls are not new evidence or a reason to
+                            # pay for another interpretation of identical text.
+                            row['rss_excerpt_fetched_at'] = previous['rss_excerpt_fetched_at']
                     row['source_feed'] = feed
                     items[identifier] = row
                 seen_this_run.update(candidates)

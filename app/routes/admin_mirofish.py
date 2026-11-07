@@ -8,7 +8,7 @@ from functools import wraps
 from flask import Blueprint, Response, jsonify, make_response, request
 
 from app.auth.decorators import admin_required, admin_or_aibain_required
-from app.routes.kongming_catalyst import article_candidates_response, catalyst_response
+from app.routes.kongming_catalyst import article_candidates_response, catalyst_response, evidence_review_response
 from app.services import mirofish
 from app.services.ai_routing.reporting import (
     get_llm_routing_status,
@@ -126,6 +126,12 @@ def alpha_lab():
         return jsonify(status), code
     except Exception:
         return jsonify({'error': 'alpha_lab_unavailable'}), 503
+
+
+@admin_mirofish_bp.get('/alpha-lab/candidate-review')
+@admin_or_aibain_required
+def alpha_lab_candidate_review():
+    return evidence_review_response(candidate=True)
 
 
 def _account_plan_body():
@@ -886,6 +892,12 @@ def kongming_catalyst_validation_history():
 @admin_or_aibain_required
 def kongming_article_candidates():
     return article_candidates_response()
+
+
+@admin_mirofish_bp.get('/kongming/article-evidence-reviews')
+@admin_or_aibain_required
+def kongming_article_evidence_reviews():
+    return evidence_review_response()
 
 
 @admin_mirofish_bp.route('/targets/resolve', methods=['GET'])
