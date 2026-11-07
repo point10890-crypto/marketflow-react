@@ -214,6 +214,15 @@ def check_data(items: list[dict[str, Any]], now: datetime | None = None) -> list
         sev = it.get('severity', 'standard')
         cid = f"data:{it['id']}"
         metadata = {'path': it['path'], 'pages': it.get('pages', [])}
+        if it.get('check') == 'institutional_collection':
+            from app.services.institutional_collection_status import read_institutional_collection
+            collection = read_institutional_collection(os.path.dirname(path), now=now)
+            status = {'ok': 'ok', 'partial': 'warn', 'failed': 'fail',
+                      'stale': 'fail', 'unknown': 'unknown'}[collection['status']]
+            metadata.update(collection=collection, freshness_basis='source_session')
+            out.append(CheckResult(cid, 'data', it.get('label', it['id']), status,
+                                   collection['detail'], severity=sev, data=metadata))
+            continue
         if not os.path.exists(path):
             out.append(CheckResult(cid, 'data', it.get('label', it['id']),
                                    'skipped' if it.get('optional') else 'fail', '파일 없음', severity=sev,
