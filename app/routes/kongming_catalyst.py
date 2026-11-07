@@ -7,6 +7,8 @@ from contextlib import closing
 
 from flask import jsonify, request
 
+from app.services import kongming_article_candidates
+
 
 _MAX_BODY_BYTES = 8 * 1024 * 1024
 _SOCKET_TIMEOUT_SECONDS = 4
@@ -128,4 +130,16 @@ def catalyst_response(*, history=False):
             payload = _project(_read('/api/catalyst-validation'), _VALIDATION_FIELDS)
     except (OSError, http.client.HTTPException, ValueError, RecursionError):
         return _response({'error': 'kongming_catalyst_unavailable'}, 502)
+    return _response(payload, 200)
+
+
+def article_candidates_response():
+    """Read only MarketFlow's own article snapshot using the bundle entitlement."""
+    user = request.current_user
+    if not (user.is_admin or getattr(user, 'is_kongming_active', False)):
+        return _response({'error': 'kongming_catalyst_forbidden'}, 403)
+    try:
+        payload = kongming_article_candidates.read_view()
+    except (OSError, ValueError, KeyError, TypeError):
+        return _response({'error': 'kongming_article_candidates_unavailable'}, 503)
     return _response(payload, 200)

@@ -8,7 +8,7 @@ from functools import wraps
 from flask import Blueprint, Response, jsonify, make_response, request
 
 from app.auth.decorators import admin_required, admin_or_aibain_required
-from app.routes.kongming_catalyst import catalyst_response
+from app.routes.kongming_catalyst import article_candidates_response, catalyst_response
 from app.services import mirofish
 from app.services.ai_routing.reporting import (
     get_llm_routing_status,
@@ -880,6 +880,12 @@ def kongming_catalyst_validation():
 @admin_or_aibain_required
 def kongming_catalyst_validation_history():
     return catalyst_response(history=True)
+
+
+@admin_mirofish_bp.get('/kongming/article-candidates')
+@admin_or_aibain_required
+def kongming_article_candidates():
+    return article_candidates_response()
 
 
 @admin_mirofish_bp.route('/targets/resolve', methods=['GET'])

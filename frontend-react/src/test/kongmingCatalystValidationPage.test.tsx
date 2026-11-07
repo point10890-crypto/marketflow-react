@@ -7,6 +7,7 @@ vi.mock('@/contexts/AuthContext', () => ({
 }));
 
 const endpoint = '/api/admin/mirofish/kongming/catalyst-validation';
+const candidatesEndpoint = '/api/admin/mirofish/kongming/article-candidates';
 const articleUrl = 'https://www.businesspost.co.kr/BP?command=article_view&num=123';
 const filingUrl = 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261106000123';
 const checked = '2026-11-07T10:00:00+09:00';
@@ -40,11 +41,31 @@ const status = {
 const history = { items: [{ id: 'history-1', name: '이전 검증 종목', symbol: '000660', checked_at: checked,
     primary: { status: 'no_matching_filing' }, market_state: 'closed_or_unverified', buy_eligible: false }] };
 
+const recentCandidate = {
+    id: '123', title: '최근 후보 기사', url: articleUrl, published_at: checked, first_seen_at: checked,
+    entities: [{ symbol: '005930', name: '삼성전자' }, { symbol: '000660', name: 'SK하이닉스' }],
+    event: { type: 'contract', certainty: 'reported_unverified' }, freshness: 'recent',
+};
+const articleCandidates = {
+    items: [
+        recentCandidate,
+        { ...recentCandidate, id: '124', title: '같은 종목의 또 다른 후보', url: 'https://www.businesspost.co.kr/unrelated' },
+        { ...recentCandidate, id: '121', title: '이전 후보 기사', freshness: 'older_context',
+            published_at: '2026-10-30T10:00:00+09:00', first_seen_at: '2026-10-30T10:05:00+09:00', provenance: 'kongming_archive' },
+    ],
+    candidate_article_count: 3,
+    recent_candidate_article_count: 2,
+    computed_at: checked,
+    operation: { state: 'ready', last_poll_at: checked, latest_published_at: checked },
+};
+
 function network() {
     let data: unknown = status;
     let statusError = 0;
     let historyError = 0;
     let dashboardPending: Promise<void> | undefined;
+    let candidateData = articleCandidates;
+    let candidateError = 0;
     const fetch = vi.fn(async (input: string, init?: RequestInit) => {
         const path = new URL(input, 'http://localhost').pathname;
         expect(init?.method ?? 'GET').toBe('GET');
@@ -55,9 +76,19 @@ function network() {
         return new Response(JSON.stringify(errorCode ? { error: 'Fixture request failure' }
             : path === endpoint ? data : history), { status: errorCode || 200 });
     });
-    vi.stubGlobal('fetch', fetch);
+    const candidateFetch = vi.fn(async (_input: string, init?: RequestInit) => {
+        expect(init?.method ?? 'GET').toBe('GET');
+        expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer fixture-token');
+        return new Response(JSON.stringify(candidateError ? { error: 'Fixture candidate failure' } : candidateData),
+            { status: candidateError || 200 });
+    });
+    vi.stubGlobal('fetch', (input: string, init?: RequestInit) =>
+        (new URL(input, 'http://localhost').pathname === candidatesEndpoint ? candidateFetch : fetch)(input, init));
     return {
         fetch,
+        candidateFetch,
+        setCandidates: (value: typeof articleCandidates) => { candidateData = value; },
+        setCandidateError: (status: number) => { candidateError = status; },
         setData: (value: unknown) => { data = value; },
         setError: (status: number, history = status) => { statusError = status; historyError = history; },
         pauseDashboard() {
@@ -83,6 +114,52 @@ function eligibleDashboard() {
 beforeEach(() => {
     sessionStorage.setItem('auth_token', 'fixture-token');
     vi.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+describe('Independent Kongming article candidates', () => {
+    it('displays article-level candidates, official publisher links and expandable older articles', async () => {
+        network();
+        render(<KongmingCatalystValidationPage />);
+        const region = within(await screen.findByRole('region', { name: '검출된 후보 리스트 · 기사 재료' }));
+        expect(await region.findByRole('heading', { name: '최근 72시간 발행 · 2건' })).toBeInTheDocument();
+        expect(region.getByRole('link', { name: recentCandidate.title })).toHaveAttribute('href', articleUrl);
+        expect(region.getByText('같은 종목의 또 다른 후보').closest('a')).toBeNull();
+        expect(region.getAllByText('000660').length).toBeGreaterThan(0);
+        const archive = region.getByText('이전 기사 · 1건').closest('details')!;
+        expect(archive).not.toHaveAttribute('open');
+        fireEvent.click(region.getByText('이전 기사 · 1건'));
+        expect(region.getByText('이전 후보 기사')).toBeVisible();
+        expect(region.getByText('원본 최초 수신')).toBeVisible();
+    });
+
+    it('refreshes every 30 seconds, retains good results on failure and clears them on access denial', async () => {
+        vi.useFakeTimers();
+        const gateway = network();
+        await act(async () => { render(<KongmingCatalystValidationPage />); });
+        const region = within(screen.getByRole('region', { name: '검출된 후보 리스트 · 기사 재료' }));
+        expect(region.getByText(recentCandidate.title)).toBeInTheDocument();
+        gateway.setCandidateError(503);
+        await act(async () => { await vi.advanceTimersByTimeAsync(29_999); });
+        expect(gateway.candidateFetch).toHaveBeenCalledTimes(1);
+        await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+        expect(region.getByRole('alert')).toHaveTextContent('이전 목록 표시 중');
+        expect(region.getByText(recentCandidate.title)).toBeInTheDocument();
+        expect(screen.getByText(articleTitle)).toBeInTheDocument();
+
+        const refreshedTitle = '자동으로 반영된 기사';
+        gateway.setCandidateError(0);
+        gateway.setCandidates({ ...articleCandidates, items: [{ ...recentCandidate, title: refreshedTitle }] });
+        await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+        expect(region.getByText(refreshedTitle)).toBeInTheDocument();
+        expect(region.queryByRole('alert')).toBeNull();
+
+        gateway.setCandidateError(403);
+        await act(async () => { await vi.advanceTimersByTimeAsync(60_000); });
+        expect(region.getByRole('alert')).toHaveTextContent('접근 권한');
+        expect(region.queryByText(refreshedTitle)).toBeNull();
+        expect(gateway.candidateFetch).toHaveBeenCalledTimes(4);
+        expect(screen.getByText(articleTitle)).toBeInTheDocument();
+    });
 });
 afterEach(() => {
     cleanup();
