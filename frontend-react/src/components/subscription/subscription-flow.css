@@ -1,0 +1,69 @@
+.subscription-flow{background:#0d1014;color:#f2f4f7;padding:28px 20px 48px;line-height:1.6}
+.subscription-flow-inner{width:100%;max-width:560px;margin:auto}
+.subscription-flow-wide{max-width:860px}
+.subscription-flow-eyebrow{color:#aab7c5;font-size:13px;letter-spacing:.02em;margin:0 0 20px}
+.subscription-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;list-style:none;padding:0;margin:0 0 32px}
+.subscription-steps li{display:flex;align-items:center;gap:8px;color:#9aa7b7;font-size:13px;border-bottom:2px solid #303844;padding:0 0 12px}
+.subscription-steps li>span{display:grid;place-items:center;flex-shrink:0;width:25px;height:25px;border-radius:50%;background:#252d38;font-size:12px;font-weight:700}
+.subscription-steps li[aria-current=step]{border-color:#73d8ee;color:#bef2fc}
+.subscription-steps li[aria-current=step]>span{background:#73d8ee;color:#10222a}
+.subscription-steps li[data-complete=true]{color:#b5d8cc}
+.subscription-flow-header{margin-bottom:24px}
+.subscription-flow-header h1{font-size:30px;line-height:1.3;letter-spacing:-.035em;font-weight:750;margin:0 0 12px;word-break:keep-all}
+.subscription-flow-header>p{color:#b5c0cc;font-size:15px;line-height:1.75;margin:0;word-break:keep-all}
+.subscription-status-box{padding:16px 18px;border-left:3px solid #73d8ee;background:#17232c;border-radius:0 12px 12px 0;margin-bottom:24px;font-size:14px}
+.subscription-status-box strong{display:block;color:#e5f5fa}
+.subscription-status-box p{color:#b8c8d4;margin:4px 0 0}
+.subscription-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.subscription-plan{display:flex;flex-direction:column;align-items:stretch;text-align:left;min-width:0;padding:24px;background:#171d25;border:1px solid #394351;border-radius:16px;color:#eef4fa;transition:border-color .15s,background .15s}
+.subscription-plan:hover:not(:disabled){background:#1b2530;border-color:#91c8da}
+.subscription-plan[data-featured=true]{border-color:#5ca5ba}
+.subscription-plan[aria-pressed=true]{outline:2px solid #73d8ee;outline-offset:3px}
+.subscription-plan:disabled{cursor:default;background:#13191f}
+.subscription-plan-badge{font-size:12px;color:#b7c9d8;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.subscription-plan-badge em{font-style:normal;color:#9de8f7}
+.subscription-plan h3{font-size:21px;line-height:1.4;margin:0 0 12px;font-weight:750}
+.subscription-plan-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.subscription-plan-heading h3{margin:0;min-width:0}
+.subscription-plan-price{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0}
+.subscription-plan-price .subscription-price{font-size:25px;line-height:1.4;margin:0}
+.subscription-price-label{font-size:12px;color:#b4c0cf}
+.subscription-price{font-size:30px;letter-spacing:-.025em;font-weight:800;font-variant-numeric:tabular-nums;margin:0 0 4px}
+.subscription-plan-summary{font-size:14px;color:#bfccd8;margin:0 0 16px;line-height:1.7}
+.subscription-plan ul{padding:0;list-style:none;margin:0 0 22px;color:#e0e6ed;font-size:14px}
+.subscription-plan li{padding:5px 0;display:flex;gap:9px}
+.subscription-plan li:before{content:'✓';color:#8ad7c6}
+.subscription-plan-cta{display:block;margin-top:auto;padding:13px 10px;border-radius:9px;text-align:center;background:#d8f2fa;color:#14232d;font-size:14px;font-weight:750}
+.subscription-plan:disabled .subscription-plan-cta{background:#252f39;color:#b7c7d5}
+.subscription-note{margin:20px 0;padding:17px 18px;border:1px solid #34414c;border-radius:12px;color:#c1cfdb;font-size:14px;line-height:1.8}
+.subscription-note strong{color:#eaf5fc}
+.subscription-note p{margin:5px 0 0}
+.subscription-details{margin:20px 0;border-top:1px solid #333d48;border-bottom:1px solid #333d48;padding:16px 0}
+.subscription-details summary{cursor:pointer;font-size:14px;color:#d0dce7;min-height:28px}
+.subscription-details[open]>summary{margin-bottom:16px}
+.subscription-actions{display:grid;gap:10px;margin-top:22px}
+.subscription-button-primary,.subscription-button-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:12px 16px;border-radius:10px;font-size:15px;font-weight:700;text-align:center;line-height:1.5}
+.subscription-button-primary{background:#79d4e9;color:#11252e;border:1px solid #79d4e9}
+.subscription-button-primary:hover:not(:disabled){background:#a2e5f3}
+.subscription-button-secondary{background:#19232d;color:#d5e2ed;border:1px solid #40505e}
+.subscription-button-primary:disabled,.subscription-button-secondary:disabled{opacity:.5;cursor:wait}
+.subscription-help{font-size:13px;line-height:1.7;color:#aebdcc;margin:12px 0}
+.subscription-flow-footer{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-top:24px;font-size:13px;color:#b3c1ce}
+.subscription-order{border:1px solid #3b4d5b;background:#17232c;border-radius:14px;padding:20px;margin:0 0 20px}
+.subscription-order .subscription-price{font-size:34px;color:#bcf2ff;margin:8px 0}
+.subscription-order p{margin:5px 0;color:#c0d0de;font-size:14px}
+.subscription-order dl,.subscription-receipt{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:20px;row-gap:12px;font-size:14px}
+.subscription-order dt,.subscription-receipt dt{color:#a9bdcc}
+.subscription-order dd,.subscription-receipt dd{text-align:right;margin:0;overflow-wrap:anywhere;color:#edf4f9}
+.subscription-bank{border:1px solid #3b4652;border-radius:12px;padding:18px;background:#171d25}
+.subscription-bank-owner,.subscription-bank-number{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.subscription-bank-owner{font-size:14px;color:#c1ced9;margin-bottom:12px}
+.subscription-bank-owner strong{color:#f2f6fa;font-size:16px}
+.subscription-bank-number>span{font-size:20px;font-weight:700;letter-spacing:.01em;font-variant-numeric:tabular-nums;user-select:all}
+.subscription-bank-number button{font-size:13px;padding:8px 12px}
+.subscription-field{display:block;margin:22px 0 0;font-size:15px;font-weight:650}
+.subscription-field input{display:block;width:100%;margin-top:9px;background:#171d25;color:#fff;border:1px solid #607184;border-radius:10px;padding:14px;font-size:16px}
+.subscription-error{color:#ffcbcb;background:#391f25;border:1px solid #8d505b;border-radius:10px;padding:14px;font-size:14px;margin:16px 0}
+.subscription-flow :is(a,button,input,summary):focus-visible{outline:3px solid #b4eeff;outline-offset:3px}
+@media(max-width:600px){.subscription-flow{padding:22px 16px 40px}.subscription-flow-header h1{font-size:27px}.subscription-plan-grid{grid-template-columns:1fr}.subscription-plan{padding:18px}.subscription-plan ul{margin-bottom:16px}.subscription-plan li{padding:2px 0}.subscription-steps{gap:6px;margin-bottom:26px}.subscription-steps li{gap:6px;font-size:12px}.subscription-plan h3{font-size:18px}.subscription-bank-number>span{font-size:19px}.subscription-order{padding:18px}}
+@media(prefers-reduced-motion:reduce){.subscription-plan{transition:none}}

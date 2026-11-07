@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
 import { hasPendingSubscription } from '@/lib/subscriptionStatus';
-import { BANK_ACCOUNT, PLAN_PAYMENT_META, AIBAIN_ADDON_META, resolveBillingPlan, planFromQuery, planToQuery, type BillingPlan } from '@/lib/billingInfo';
+import { PLAN_PAYMENT_META, AIBAIN_ADDON_META, resolveBillingPlan, planFromQuery, planToQuery, type BillingPlan } from '@/lib/billingInfo';
+import SubscriptionFlow, { BankTransferDetails } from '@/components/subscription/SubscriptionFlow';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { hasActiveBaseSubscription } from '@/lib/auth';
 import { useSeo } from '@/lib/seo';
@@ -129,14 +130,8 @@ export default function PaymentRequestPage() {
     const displayPeriod = isAiBrainAddonOnly ? 'AI Brain·제갈공명 30일 · 기존 이용 중이면 만료일부터 연장'
         : isEarlyRenewal || (isKongmingPlan && user.is_kongming_active) ? '승인 시 기존 만료일부터 +30일' : meta.period;
 
-    const colorMap = {
-        amber:    { ring: 'ring-amber-500/30',    bg: 'bg-amber-500/10',    text: 'text-amber-400',   btn: 'from-amber-500 to-orange-500',          btnText: 'text-black',  icon: 'fas fa-crown' },
-        cyan:     { ring: 'ring-cyan-500/30',     bg: 'bg-cyan-500/10',     text: 'text-cyan-300',    btn: 'from-cyan-500 to-sky-500',              btnText: 'text-black',  icon: 'fas fa-robot' },
-        purple:   { ring: 'ring-purple-500/30',   bg: 'bg-purple-500/10',   text: 'text-purple-400',  btn: 'from-purple-500 to-fuchsia-500',        btnText: 'text-white',  icon: 'fas fa-gem' },
-        fuchsia:  { ring: 'ring-fuchsia-500/30',  bg: 'bg-fuchsia-500/10',  text: 'text-fuchsia-300', btn: 'from-fuchsia-500 via-purple-500 to-cyan-500', btnText: 'text-white',  icon: 'fas fa-crown' },
-    }[meta.color];
-
     const handleSubmit = async () => {
+        if (submitting) return;
         setError('');
         if (!depositorName.trim()) {
             setError('입금자명을 입력해 주세요.');
@@ -169,156 +164,41 @@ export default function PaymentRequestPage() {
         }
     };
 
-    return (
-        <div className="fixed inset-0 bg-[#09090b] flex flex-col items-center overflow-y-auto p-4 sm:p-8">
-            <div className="w-full max-w-md mt-4 sm:mt-12">
-                {/* Header */}
-                <div className="text-center mb-6">
-                    <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full ${colorMap.bg} ${colorMap.text} text-xs font-bold mb-3`}>
-                        <i className={colorMap.icon} />
-                        선택한 플랜: {displayLabel}
-                    </div>
-                    <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">
-                        입금 안내
-                    </h1>
-                    <p className="text-gray-500 text-sm">
-                        아래 계좌로 <span className={`font-bold ${colorMap.text}`}>{displayAmount}</span> 입금 후<br />
-                        승인 신청 버튼을 눌러주세요.
-                    </p>
-                </div>
-
-                {/* AI Brain 포함 시 가격 분해 안내 */}
-                {isAiBrainAddonOnly ? (
-                    <div className={`p-4 rounded-2xl ${colorMap.bg} border border-cyan-400/15 mb-4`}>
-                        <h4 className="text-cyan-300 font-bold text-xs mb-2 flex items-center gap-1.5">
-                            <i className="fas fa-robot" />
-                            AI Brain + 제갈공명 추가 신청
-                        </h4>
-                        <div className="text-xs text-gray-300 space-y-1">
-                            <div className="flex justify-between">
-                                <span>기존 {user.tier === 'premium' ? 'Ultra Pro' : 'Pro'} 구독은 유지</span>
-                            </div>
-                            <div className="flex justify-between font-bold text-white">
-                                <span>AI Brain + 제갈공명 30일</span>
-                                <span className={`font-mono ${colorMap.text}`}>50,000원</span>
-                            </div>
-                        </div>
-                    </div>
-                ) : meta.includesAibain && meta.baseAmount && meta.aibainAmount && (
-                    <div className={`p-4 rounded-2xl ${colorMap.bg} border border-cyan-400/15 mb-4`}>
-                        <h4 className="text-cyan-300 font-bold text-xs mb-2 flex items-center gap-1.5">
-                            <i className="fas fa-receipt" />
-                            요금 분해
-                        </h4>
-                        <div className="text-xs text-gray-300 space-y-1">
-                            <div className="flex justify-between">
-                                <span>{meta.baseAmount}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>{meta.aibainAmount}</span>
-                            </div>
-                            <div className="h-px bg-cyan-400/20 my-2" />
-                            <div className="flex justify-between font-bold text-white">
-                                <span>이번 신청 합계</span>
-                                <span className={`font-mono ${colorMap.text}`}>{meta.amount}</span>
-                            </div>
-                        </div>
-                        <p className="mt-2 text-[10px] text-gray-500">
-                            <i className="fas fa-info-circle mr-1" />
-                            AI Brain과 제갈공명을 30일 함께 이용합니다. AI 이용 중 PRO 잔여기간은 일시정지되고, AI 만료 후 다시 차감됩니다. Ultra Pro는 무기한 유지됩니다.
-                        </p>
-                    </div>
-                )}
-
-                {isAiBrainAddonOnly && <p className="mb-4 text-sm leading-6 text-cyan-200">
-                    {user.tier === 'pro' ? 'AI 이용 중 PRO 잔여기간은 일시정지되며, AI 만료 후 다시 차감됩니다.' : 'Ultra Pro 무기한 이용권은 그대로 유지됩니다.'}
-                </p>}
-                {/* 계좌 박스 */}
-                <div className={`p-5 rounded-2xl bg-[#1c1c1e] ring-1 ${colorMap.ring} mb-4 space-y-3`}>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 rounded-lg bg-white/[0.03]">
-                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">은행</span>
-                            <p className="text-white font-bold mt-0.5">{BANK_ACCOUNT.bank}</p>
-                        </div>
-                        <div className="p-3 rounded-lg bg-white/[0.03]">
-                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">예금주</span>
-                            <p className="text-white font-bold mt-0.5">{BANK_ACCOUNT.holder}</p>
-                        </div>
-                    </div>
-                    <div className="p-3 rounded-lg bg-white/[0.03]">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">계좌번호</span>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    navigator.clipboard?.writeText(BANK_ACCOUNT.account.replace(/-/g, ''));
-                                }}
-                                className="text-[10px] text-gray-400 hover:text-white"
-                            >
-                                <i className="fas fa-copy mr-1" />복사
-                            </button>
-                        </div>
-                        <p className="text-white font-bold mt-0.5 font-mono text-lg tracking-wider">{BANK_ACCOUNT.account}</p>
-                    </div>
-                    <div className={`p-3 rounded-lg ${colorMap.bg}`}>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider">입금 금액</span>
-                        <div className="flex items-baseline justify-between mt-0.5">
-                            <p className={`font-black text-2xl ${colorMap.text}`}>{displayAmount}</p>
-                            <span className="text-xs text-gray-500">{displayPeriod}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* 입금자명 */}
-                <div className="p-5 rounded-2xl bg-[#1c1c1e] border border-white/10 mb-4">
-                    <label className="block text-xs font-medium text-gray-400 mb-2">입금자명 *</label>
-                    <input
-                        type="text"
-                        value={depositorName}
-                        onChange={(e) => setDepositorName(e.target.value)}
-                        placeholder="입금자명 (가입 이름과 동일)"
-                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#2997ff]"
-                    />
-                    <p className="text-[11px] text-gray-500 mt-2">
-                        <i className="fas fa-info-circle mr-1" />
-                        입금자명이 가입 이름과 다르면 관리자 확인이 지연될 수 있습니다.
-                    </p>
-                </div>
-
-                {error && (
-                    <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm mb-4">
-                        {error}
-                    </div>
-                )}
-
-                {/* 승인 신청 버튼 */}
-                <button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={submitting || !depositorName.trim()}
-                    className={`w-full py-4 rounded-xl bg-gradient-to-r ${colorMap.btn} ${colorMap.btnText} font-bold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
-                >
-                    {submitting ? (
-                        <><i className="fas fa-spinner fa-spin" />처리 중...</>
-                    ) : (
-                        <><i className="fas fa-paper-plane" />{displayLabel} 승인 신청</>
-                    )}
+    return <SubscriptionFlow step={2} title="입금 안내" intro="금액을 확인해 직접 이체한 뒤, 입금자명으로 승인 신청을 마쳐 주세요.">
+        <section className="subscription-order" aria-label="이번 신청 내용">
+            <p>선택한 플랜: {displayLabel}</p>
+            <div className="subscription-price">{displayAmount}</div>
+            <p>{displayPeriod}</p>
+            {isAiBrainAddonOnly ? <p>기존 {user.tier === 'premium' ? 'Ultra Pro' : 'Pro'} 구독은 유지합니다.</p>
+                : meta.includesAibain && meta.baseAmount && <p>{meta.baseAmount} + {meta.aibainAmount}</p>}
+        </section>
+        <form onSubmit={event => { event.preventDefault(); void handleSubmit(); }}>
+            <h2 className="text-base font-semibold mb-3">1. 아래 계좌로 입금해 주세요</h2>
+            <BankTransferDetails />
+            <label className="subscription-field">2. 입금자명을 확인해 주세요
+                <input type="text" aria-label="입금자명" value={depositorName} disabled={submitting}
+                    onChange={event => setDepositorName(event.target.value)} placeholder="이체할 때 사용한 입금자명"
+                    autoComplete="name" required />
+            </label>
+            <p className="subscription-help">은행 이체 화면의 입금자명과 같게 입력하세요. 가입 이름과 달라도 실제 입금자명을 쓰면 됩니다.</p>
+            {meta.includesAibain && <aside className="subscription-note">
+                <strong>승인 후 어떻게 이용하나요?</strong>
+                <p>AI 브레인과 제갈공명을 30일 함께 이용합니다.
+                    {meta.tier === 'premium' ? ' Ultra PRO 평생 이용권은 유지됩니다.' : ' 이 기간에는 PRO 잔여기간이 줄어들지 않고, AI 이용이 끝나면 다시 시작됩니다.'}</p>
+                {(isAiBrainAddonOnly && user.is_aibain_active) && <p>이용 중인 AI 기간이 남아 있으면 기존 만료일부터 30일을 더합니다.</p>}
+            </aside>}
+            {error && <p role="alert" className="subscription-error">{error}</p>}
+            <div className="subscription-actions">
+                <button type="submit" className="subscription-button-primary" disabled={submitting || !depositorName.trim()}>
+                    {submitting ? '신청을 보내고 있습니다…' : '입금했어요 · 승인 신청'}
                 </button>
-
-                <button
-                    type="button"
-                    onClick={() => navigate(isKongmingPlan ? `/plan-select?change=1&${selectedQuery}` : '/plan-select')}
-                    className="w-full mt-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 font-medium text-sm transition-all"
-                >
+                <p className="subscription-help !m-0 text-center">이 버튼으로 자동 결제되지는 않습니다. 관리자 입금 확인 후 이용할 수 있습니다.</p>
+                <button type="button" className="subscription-button-secondary" disabled={submitting}
+                    onClick={() => navigate(`/plan-select?${hasActiveBaseSubscription(user) ? 'change=1&' : ''}${selectedQuery}`)}>
                     다른 플랜 선택
                 </button>
-
-                <KakaoSupportLink className="mt-3 py-2.5" label="카카오톡 문의" />
-
-                <p className="text-gray-600 text-[11px] text-center mt-4">
-                    승인 신청 후 관리자 확인까지 최대 24시간 소요됩니다.
-                </p>
             </div>
-        </div>
-    );
+        </form>
+        <div className="mt-5"><KakaoSupportLink label="입금·신청 문의" /></div>
+    </SubscriptionFlow>;
 }
