@@ -111,13 +111,13 @@ describe('subscription acquisition funnel', () => {
         expect(mocks.fetch).not.toHaveBeenCalled();
     });
 
-    it('lists the combined plan at 50,000 won per 30 days and carries it to signup', async () => {
+    it('lists the Pro and AI bundle at 100,000 won and carries it to signup', async () => {
         renderAt('/pricing', <PricingPage />, '/pricing');
-        const card = screen.getByRole('heading', { name: 'AI 브레인 + 제갈공명' }).closest('article')!;
-        expect(within(card).getByText('50,000원')).toBeInTheDocument();
-        expect(within(card).getByText('30일 이용권')).toBeInTheDocument();
+        const card = screen.getByRole('heading', { name: 'Pro + AI Brain' }).closest('article')!;
+        expect(within(card).getByText('100,000원')).toBeInTheDocument();
+        expect(within(card).getByText('AI·제갈공명 30일 + 보존되는 Pro 30일')).toBeInTheDocument();
         fireEvent.click(within(card).getByRole('button', { name: /선택하기/ }));
-        expect(await screen.findByTestId('location')).toHaveTextContent('/signup?plan=aibain_kongming');
+        expect(await screen.findByTestId('location')).toHaveTextContent('/signup?plan=pro&aibain=1');
         expect(mocks.requestKongming).not.toHaveBeenCalled();
     });
 
@@ -125,23 +125,39 @@ describe('subscription acquisition funnel', () => {
         mocks.auth.user = { id: 54, name: '신규 회원', role: 'user', tier: null, status: 'pending' };
         mocks.auth.token = 'combined-token';
         renderAt('/plan-select?plan=aibain_kongming', <PlanSelectPage />, '/plan-select');
-        fireEvent.click(screen.getByRole('button', { name: /AI 브레인 \+ 제갈공명.*선택/ }));
-        expect(await screen.findByTestId('location')).toHaveTextContent('/payment-request?plan=aibain_kongming');
+        fireEvent.click(screen.getByRole('heading', { name: 'Pro + AI Brain' }).closest('button')!);
+        expect(await screen.findByTestId('location')).toHaveTextContent('/payment-request?plan=pro&aibain=1');
     });
 
-    it('submits the combined plan for active Pro without substituting the legacy AI Brain add-on', async () => {
+    it('resolves a retired standalone link to the 50,000 won active Pro bundle', async () => {
         mocks.auth.user = {
             id: 54, name: '기존 회원', role: 'user', tier: 'pro', status: 'approved', is_aibain_active: true,
         };
         mocks.auth.token = 'combined-token';
         renderAt('/payment-request?plan=aibain_kongming', <PaymentRequestPage />, '/payment-request');
-        expect(await screen.findByText('선택한 플랜: AI 브레인 + 제갈공명')).toBeInTheDocument();
+        expect(await screen.findByText('선택한 플랜: AI Brain + 제갈공명')).toBeInTheDocument();
         expect(screen.getAllByText('50,000원').length).toBeGreaterThan(0);
         expect(screen.queryByText('40,000원')).not.toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: /승인 신청/ }));
         expect(await screen.findByTestId('location')).toHaveTextContent('/pending-approval');
-        expect(mocks.requestKongming).toHaveBeenCalledWith('combined-token', '기존 회원');
-        expect(mocks.requestUpgrade).not.toHaveBeenCalled();
+        expect(mocks.requestUpgrade).toHaveBeenCalledWith('pro', 'combined-token', '기존 회원', true, 50000);
+        expect(mocks.requestKongming).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        [null, 'pending', 'pro', '100,000원'],
+        ['pro', 'expired', 'pro', '100,000원'],
+        ['pro', 'approved', 'pro', '50,000원'],
+        ['premium', 'approved', 'premium', '50,000원'],
+    ])('quotes the retired bundle link from current membership: %s %s', async (tier, status, target, price) => {
+        mocks.auth.user = { id: 80, name: '금액 검증', role: 'user', tier, status };
+        mocks.auth.token = 'quote-token';
+        renderAt('/payment-request?plan=aibain_kongming', <PaymentRequestPage />, '/payment-request');
+        expect((await screen.findAllByText(price)).length).toBeGreaterThan(0);
+        expect(screen.getByText(/PRO 잔여기간.*일시정지|Ultra Pro 무기한 이용권/)).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /승인 신청/ }));
+        await waitFor(() => expect(mocks.requestUpgrade).toHaveBeenCalledWith(target, 'quote-token', '금액 검증', true, Number(price.replace(/[^0-9]/g, ''))));
+        expect(mocks.requestKongming).not.toHaveBeenCalled();
     });
 
     it('sends a signed-in visitor to change mode without submitting a subscription', async () => {
@@ -240,7 +256,7 @@ describe('subscription acquisition funnel', () => {
         expect(await screen.findByTestId('location')).toHaveTextContent('/payment-request?plan=premium&aibain=1');
     });
 
-    it('shows an active Pro member the actual 40,000 won AI Brain add-on amount', async () => {
+    it('shows an active Pro member the actual 50,000 won AI Brain add-on amount', async () => {
         mocks.auth.user = {
             id: 51,
             email: 'active-pro@example.test',
@@ -255,10 +271,10 @@ describe('subscription acquisition funnel', () => {
 
         renderAt('/plan-select?change=1&plan=pro&aibain=1', <PlanSelectPage />, '/plan-select');
 
-        const addon = screen.getByRole('button', { name: /AI Brain 애드온/ });
-        expect(within(addon).getByText('40,000')).toBeInTheDocument();
-        expect(within(addon).queryByText('90,000')).not.toBeInTheDocument();
-        expect(within(addon).getByText('AI Brain 40,000원으로 추가')).toBeInTheDocument();
+        const addon = screen.getByRole('button', { name: /AI Brain \+ 제갈공명/ });
+        expect(within(addon).getByText('50,000')).toBeInTheDocument();
+        expect(within(addon).queryByText('100,000')).not.toBeInTheDocument();
+        expect(within(addon).getByText('AI Brain·제갈공명 50,000원으로 추가')).toBeInTheDocument();
 
         const currentPro = screen.getByRole('heading', { name: 'Pro' }).closest('button');
         expect(currentPro).toBeDisabled();
@@ -282,14 +298,12 @@ describe('subscription acquisition funnel', () => {
 
         renderAt('/plan-select?change=1', <PlanSelectPage />, '/plan-select');
 
-        const proCard = screen.getByRole('heading', { name: 'Pro' }).closest('button');
+        expect(screen.queryByRole('heading', { name: 'Pro' })).not.toBeInTheDocument();
         const ultraCard = screen.getByRole('heading', { name: 'Ultra Pro' }).closest('button');
-        const addon = screen.getByRole('button', { name: /AI Brain 애드온/ });
+        const addon = screen.getByRole('button', { name: /AI Brain \+ 제갈공명/ });
 
-        expect(proCard).toBeDisabled();
-        expect(proCard).toHaveTextContent('Ultra Pro에서는 하향 변경 불가');
         expect(ultraCard).toBeDisabled();
-        expect(within(addon).getByText('40,000')).toBeInTheDocument();
+        expect(within(addon).getByText('50,000')).toBeInTheDocument();
         expect(addon).toBeEnabled();
     });
 
@@ -349,7 +363,7 @@ describe('subscription acquisition funnel', () => {
 
         fireEvent.click(await screen.findByRole('button', { name: /승인 신청/ }));
         expect(await screen.findByTestId('location')).toHaveTextContent('/pending-approval');
-        expect(mocks.requestUpgrade).toHaveBeenCalledWith('pro', 'active-token', '활성회원', false);
+        expect(mocks.requestUpgrade).toHaveBeenCalledWith('pro', 'active-token', '활성회원', false, 50000);
     });
 
     it('still bounces an active Pro from the payment page without renew=1', async () => {

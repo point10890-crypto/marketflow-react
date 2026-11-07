@@ -27,6 +27,7 @@ from app.models.funnel import (
 )
 from app.auth.decorators import admin_required
 from app.services import member_telegram
+from app.services.subscription_plans import is_ai_bundle_request
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -257,6 +258,27 @@ def _extend_aibain_expiry(user: User, days: int = 30) -> None:
             base = existing
     user.aibain_expires_at = base + timedelta(days=days)
     user.aibain_alert_stage = None
+
+
+def _extend_ai_bundle(user: User, now: datetime) -> None:
+    """Unify the paid AI services; keep already-paid time and freeze the Pro clock."""
+    anchor = now
+    expiries = [user.kongming_expires_at]
+    if user.aibain_enabled:
+        expiries.append(user.aibain_expires_at)
+    for expiry in expiries:
+        if expiry is not None:
+            normalized = expiry.replace(tzinfo=timezone.utc) if expiry.tzinfo is None else expiry
+            anchor = max(anchor, normalized)
+    user.aibain_enabled = True
+    user.aibain_expires_at = user.kongming_expires_at = anchor + timedelta(days=30)
+    user.aibain_alert_stage = None
+    if user.tier == 'pro' and user.pro_expires_at is not None:
+        if user.pro_paused_at is None:
+            user.pro_paused_at = now
+        user.pro_expiry_alert_stage = None
+    elif user.tier == 'premium':
+        user.pro_paused_at = None
 
 
 @admin_bp.route('/dashboard')
@@ -1279,15 +1301,22 @@ def approve_subscription(req_id):
     sub_req = db.session.get(SubscriptionRequest, req_id)
     is_aibain_addon = sub_req.request_type in ('aibain_addon', 'aibain_renewal')
     is_kongming = sub_req.request_type in AIBAIN_KONGMING_REQUEST_TYPES
+    is_ai_bundle = is_ai_bundle_request(sub_req)
 
     user = db.session.get(User, sub_req.user_id)
-    if is_kongming:
+    if is_kongming or is_ai_bundle:
         if user is None:
             db.session.rollback()
             return jsonify({'error': 'User not found'}), 404
         if user.status not in ('pending', 'approved', 'expired'):
             db.session.rollback()
             return jsonify({'error': 'Account access denied'}), 409
+    if is_ai_bundle and is_aibain_addon and (
+        user.status != 'approved' or user.tier != sub_req.to_tier
+        or user.tier not in ('pro', 'premium') or user.is_pro_expired
+    ):
+        db.session.rollback()
+        return jsonify({'error': '기본 구독이 변경되거나 만료되었습니다. 기본 구독을 확인한 뒤 승인해 주세요.'}), 409
     before = None
     after = None
     audit_action = 'approve_subscription'
@@ -1303,7 +1332,7 @@ def approve_subscription(req_id):
             'kongming_expires_at': user.kongming_expires_at.isoformat() if user.kongming_expires_at else None,
         }
 
-        if sub_req.request_type == 'renewal' and _has_active_same_tier(user, sub_req.to_tier):
+        if sub_req.request_type == 'renewal' and not is_ai_bundle and _has_active_same_tier(user, sub_req.to_tier):
             db.session.commit()
             _record_audit(
                 'approve_subscription_duplicate_ignored',
@@ -1352,7 +1381,10 @@ def approve_subscription(req_id):
         elif is_aibain_addon:
             # AI Brain 만 활성화 — 베이스 tier 그대로
             user.aibain_enabled = True
-            _extend_aibain_expiry(user, 30)
+            if is_ai_bundle:
+                _extend_ai_bundle(user, processed_at)
+            else:
+                _extend_aibain_expiry(user, 30)
             # ── Pro 만료 카운터 일시정지 (Pro tier 회원만, premium 은 무기한이라 영향 X) ──
             # Pro 회원이 AI Brain 추가 시 AI Brain 기간 동안 Pro 카운터 freeze.
             # AI Brain 만료/해제 시 흐른 paused 기간만큼 pro_expires_at 연장 후 NULL 처리.
@@ -1364,12 +1396,24 @@ def approve_subscription(req_id):
                 user.pro_paused_at = None
             audit_action = 'renew_aibain' if sub_req.request_type == 'aibain_renewal' else 'activate_aibain'
             action_label = '재구독' if sub_req.request_type == 'aibain_renewal' else '활성화'
-            summary_text = f"AI Brain {action_label} (+30d, base={user.tier} 유지, Pro 카운터 일시정지)"
+            summary_text = f"AI Brain {'+ 제갈공명 ' if is_ai_bundle else ''}{action_label} (+30d, base={user.tier} 유지, Pro 카운터 일시정지)"
         else:
             # 기존 동작 — 베이스 tier 변경
             user.tier = sub_req.to_tier
             if sub_req.to_tier == 'pro':
-                user.pro_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+                base = processed_at
+                if is_ai_bundle and user.pro_expires_at and user.status == 'approved':
+                    expiry = user.pro_expires_at
+                    if expiry.tzinfo is None:
+                        expiry = expiry.replace(tzinfo=timezone.utc)
+                    if user.pro_paused_at:
+                        paused = user.pro_paused_at
+                        if paused.tzinfo is None:
+                            paused = paused.replace(tzinfo=timezone.utc)
+                        expiry += max(processed_at - paused, timedelta(0))
+                    base = max(base, expiry)
+                user.pro_expires_at = base + timedelta(days=30)
+                user.pro_paused_at = None
             elif sub_req.to_tier == 'premium':
                 user.pro_expires_at = None
                 user.pro_paused_at = None
@@ -1381,8 +1425,12 @@ def approve_subscription(req_id):
 
             # 신규 가입자가 AI Brain 포함 신청한 경우 (admin_note 마커로 판단)
             if sub_req.admin_note and 'AI Brain' in sub_req.admin_note and 'aibain_addon' not in (sub_req.request_type or ''):
-                _extend_aibain_expiry(user, 30)
-                summary_text += " + AI Brain 활성화 (+30d)"
+                if is_ai_bundle:
+                    _extend_ai_bundle(user, processed_at)
+                    summary_text += " + AI Brain·제갈공명 30일 (PRO 잔여기간 보존)"
+                else:
+                    _extend_aibain_expiry(user, 30)
+                    summary_text += " + AI Brain 활성화 (+30d)"
 
         after = {
             'tier': user.tier,

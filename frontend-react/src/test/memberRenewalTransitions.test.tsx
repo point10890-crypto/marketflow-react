@@ -16,7 +16,7 @@ const base = { id: 1, name: '테스트회원', email: 'member@example.test', rol
     tier: 'pro', is_pro_expired: false, has_pending_subscription: false };
 const expired = { ...base, status: 'expired', is_pro_expired: true, pro_expires_at: '2026-11-04T00:00:00Z' };
 const ready = { requests: [], pending_request: null, user: { has_pending_subscription: false } };
-const showEntry = () => render(<MemoryRouter initialEntries={['/plan-select']}><SubscriptionEntry /></MemoryRouter>);
+const showEntry = () => render(<MemoryRouter initialEntries={['/community']}><SubscriptionEntry /></MemoryRouter>);
 beforeEach(() => { vi.clearAllMocks(); m.status.mockReset(); sessionStorage.clear(); localStorage.clear(); m.auth.user = { ...base };
     m.auth.token = 'member-token'; m.auth.loading = false; m.status.mockResolvedValue(ready); });
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
@@ -70,7 +70,7 @@ describe('member renewal state transitions', () => {
         m.status.mockReturnValue(new Promise(() => {}));
         m.auth.user = { ...expired, has_pending_subscription: true,
             pending_subscription_request: { id: 21, status: 'pending', request_type: 'resubscription' } };
-        view.rerender(<MemoryRouter initialEntries={['/plan-select']}><SubscriptionEntry /></MemoryRouter>);
+        view.rerender(<MemoryRouter initialEntries={['/community']}><SubscriptionEntry /></MemoryRouter>);
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(screen.queryByRole('link', { name: '재구독 신청' })).not.toBeInTheDocument();
         expect(screen.getByRole('link', { name: '신청 상태 확인' })).toBeInTheDocument();
@@ -84,7 +84,7 @@ describe('member renewal state transitions', () => {
             .mockReturnValue(new Promise(() => {}));
         const view = showEntry();
         m.auth.user = { ...m.auth.user, pending_subscription_request: { id: 22, status: 'pending', request_type: 'resubscription' } };
-        view.rerender(<MemoryRouter initialEntries={['/plan-select']}><SubscriptionEntry /></MemoryRouter>);
+        view.rerender(<MemoryRouter initialEntries={['/community']}><SubscriptionEntry /></MemoryRouter>);
         await act(async () => resolveOld(ready));
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(screen.getByRole('link', { name: '신청 상태 확인' })).toBeInTheDocument();
@@ -101,7 +101,7 @@ describe('member renewal state transitions', () => {
         expect(screen.getByRole('link', { name: '신청 상태 확인' })).toBeInTheDocument();
         m.auth.user = { ...expired, has_pending_subscription: false,
             pending_subscription_request: { id: 21, status: 'rejected', request_type: 'resubscription' } };
-        view.rerender(<MemoryRouter initialEntries={['/plan-select']}><SubscriptionEntry /></MemoryRouter>);
+        view.rerender(<MemoryRouter initialEntries={['/community']}><SubscriptionEntry /></MemoryRouter>);
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(screen.queryByRole('link', { name: '재구독 신청' })).not.toBeInTheDocument();
         await act(async () => resolveCurrent(ready));

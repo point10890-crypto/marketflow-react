@@ -84,7 +84,7 @@ describe('AI Brain expired subscription workflow', () => {
     expect(await screen.findByRole('heading', { name: 'AI Brain 재구독 신청' })).toBeInTheDocument();
     expect(screen.getByText(/이전 이용 만료일/)).toBeInTheDocument();
     expect(screen.getByText(/Pro 잔여기간 카운터는 자동으로 재개됩니다/)).toBeInTheDocument();
-    expect(screen.getAllByText('40,000원').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('50,000원').length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole('button', { name: /AI Brain 재구독 신청/ }));
 

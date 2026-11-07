@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI, telegramAPI, type TelegramLinkInfo } from '@/lib/api';
 import { hasActiveKongmingSubscription, isKongmingOnlyUser, subscriptionExpiryTime } from '@/lib/auth';
-import { isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
+import { aiBundleOffer, isKongmingSubscriptionRequest } from '@/lib/billingInfo';
 import { pendingSubscriptionRequest } from '@/lib/subscriptionStatus';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { InstallGuide } from '@/components/layout/InstallPrompt';
@@ -158,13 +158,12 @@ export default function AccountPage() {
     const pendingAibain = pendingRequest?.status === 'pending'
         && ['aibain_addon', 'aibain_renewal'].includes(pendingRequest.request_type) ? pendingRequest : null;
     const pendingKongming = pendingRequest?.status === 'pending' && isKongmingSubscriptionRequest(pendingRequest.request_type);
-    const kongmingPlan = 'aibain_kongming';
-    const kongmingMeta = PLAN_PAYMENT_META[kongmingPlan];
+    const kongmingMeta = aiBundleOffer(user);
     const kongmingActive = hasActiveKongmingSubscription(user);
     const kongmingExpiry = subscriptionExpiryTime(user?.kongming_expires_at);
     const kongmingExpired = Number.isFinite(kongmingExpiry) && kongmingExpiry <= Date.now();
     const kongmingStandalone = isKongmingOnlyUser(user);
-    const kongmingPayment = `/payment-request?${planToQuery(kongmingPlan)}${kongmingActive ? '&renew=1' : kongmingExpired ? '&resubscribe=1' : ''}`;
+    const kongmingPayment = kongmingMeta.payment;
     const isAibainExpired = !!user?.is_aibain_expired || (!!user?.aibain_expires_at && !user?.is_aibain_active);
 
     useEffect(() => {
@@ -551,7 +550,7 @@ export default function AccountPage() {
             </section>
 
             {/* AI Brain 애드온과 결합 이용권은 별도 구독 상태다. */}
-            {isPro && (!kongmingActive || user.is_aibain_active || pendingAibain) && (
+            {isPro && (!kongmingActive || pendingAibain) && (
                 <div className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-cyan-500/20 bg-[#15191e]">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
@@ -634,7 +633,7 @@ export default function AccountPage() {
                             className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 text-black font-bold text-center text-sm transition-all flex items-center justify-center gap-2"
                         >
                             <i className={`fas ${isAibainExpired ? 'fa-redo' : 'fa-paper-plane'} text-xs`} />
-                            AI Brain {isAibainExpired ? '재구독' : '구독'} 신청 (+40,000원/30일)
+                            AI Brain {isAibainExpired ? '재구독' : '구독'} 신청 (+50,000원/30일)
                         </Link>
                     )}
                 </div>

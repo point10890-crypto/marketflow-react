@@ -19,6 +19,7 @@ from app.models.user import (
 from app.models.funnel import record_funnel_event, EVENT_REGISTER, EVENT_SUBSCRIPTION_REQUEST
 from app.auth.decorators import generate_token, login_required
 from app.services import member_telegram
+from app.services.subscription_plans import AI_BUNDLE_AMOUNT, BASE_PLAN_AMOUNTS, AI_BUNDLE_POLICY_MARKER
 
 
 # ═══════════════════════════════════════════════════════
@@ -458,46 +459,6 @@ def _insert_pending_subscription_request(user_id: int, **values) -> Subscription
     return db.session.get(SubscriptionRequest, request_id)
 
 
-def _request_kongming_subscription(user, data):
-    if user.status not in ('pending', 'approved', 'expired'):
-        return jsonify({'error': '계정 상태를 확인해 주세요.'}), 403
-
-    depositor_name = data.get('depositor_name')
-    if not isinstance(depositor_name, str) or not 1 <= len(depositor_name.strip()) <= 100:
-        return jsonify({'error': '입금자 이름을 1자 이상 100자 이하로 입력해 주세요.'}), 400
-    renewing = user.kongming_expires_at is not None
-    label = 'AI Brain + 제갈공명 재구독' if renewing else 'AI Brain + 제갈공명'
-    sub_request = _insert_pending_subscription_request(
-        user.id,
-        request_type=AIBAIN_KONGMING_RENEWAL if renewing else AIBAIN_KONGMING_PLAN,
-        from_tier=user.tier or 'none',
-        to_tier=AIBAIN_KONGMING_PLAN,
-        depositor_name=depositor_name.strip(),
-        amount='50,000원',
-        admin_note=f'{label} 신청 (30일)',
-    )
-    if sub_request is None:
-        return jsonify({'error': 'You already have a pending subscription request'}), 409
-    db.session.commit()
-
-    record_funnel_event(EVENT_SUBSCRIPTION_REQUEST, user.id, {
-        'request_id': sub_request.id,
-        'request_type': sub_request.request_type,
-        'to_tier': AIBAIN_KONGMING_PLAN,
-    })
-    _notify_admin_telegram(
-        f"🤖 <b>구독 요청</b>\n\n👤 {escape(user.name)} ({escape(user.email)})\n"
-        f"📋 {label}\n💰 {sub_request.amount} / 30일",
-        target_email=user.email,
-    )
-    from app.routes.admin import create_admin_notification
-    create_admin_notification(
-        'subscription_request', f'구독 요청: {label}',
-        f'{user.name} ({user.email}) — {sub_request.amount} / 30일', related_id=sub_request.id,
-    )
-    return jsonify({'request': sub_request.to_dict()}), 201
-
-
 @auth_bp.route('/subscription/request', methods=['POST'])
 @login_required
 def request_subscription():
@@ -511,11 +472,18 @@ def request_subscription():
         return jsonify({'error': 'JSON object required'}), 400
     plan = data.get('plan')
     if plan == AIBAIN_KONGMING_PLAN:
-        return _request_kongming_subscription(user, data)
+        # Retired standalone checkout must never silently charge a different amount.
+        return jsonify({
+            'error': '구독 플랜이 개편되었습니다. 최신 플랜에서 금액을 확인하고 다시 신청해 주세요.',
+            'code': 'subscription_plan_changed',
+            'redirect': '/plan-select?change=1',
+        }), 409
     if plan is not None:
         return jsonify({'error': 'Invalid subscription plan'}), 400
+    if user.status not in ('pending', 'approved', 'expired'):
+        return jsonify({'error': '계정 상태를 확인해 주세요.'}), 403
     to_tier = (data.get('to_tier') or '').strip().lower()
-    # AI Brain 알파 스캐너 애드온 포함 여부 (별도 30일 갱신 구독 +40,000원/30일)
+    # AI Brain + 제갈공명 애드온 포함 여부 (별도 30일 갱신 구독 +50,000원/30일)
     includes_aibain = bool(data.get('includes_aibain'))
 
     # 'free' 플랜은 폐지 — 구독 가능한 tier는 pro / premium 뿐
@@ -540,18 +508,15 @@ def request_subscription():
         and to_tier == 'pro'
         and user.pro_expires_at is not None
     )
-    if to_tier == user.tier and not includes_aibain and not is_expired_resubscribe \
+    if to_tier == user.tier and has_active_base and not includes_aibain and not is_expired_resubscribe \
             and not is_early_renewal:
         return jsonify({'error': f'Already on {to_tier} tier'}), 400
 
     # AI Brain 단독 추가/재구독은 활성 베이스 구독이 있어야 한다. 만료된 Pro가
     # AI Brain 포함으로 신청한 경우에는 단독 애드온이 아니라 베이스 재구독으로
     # 처리해야 50,000원 구독 기간까지 함께 정상 복구된다.
-    if to_tier == user.tier and includes_aibain and not has_active_base and not is_expired_resubscribe:
-        return jsonify({'error': 'AI Brain 재구독에는 활성 Pro 또는 Ultra Pro 구독이 필요합니다.'}), 400
-
     # premium(Ultra Pro)은 최상위 — 베이스 다운그레이드 불가 (AI Brain 추가는 같은 tier 라 위 체크에서 통과)
-    if user.tier == 'premium' and to_tier == 'pro' and not is_expired_resubscribe:
+    if has_active_base and user.tier == 'premium' and to_tier == 'pro':
         return jsonify({'error': 'Ultra Pro는 최상위 플랜입니다. 다운그레이드할 수 없습니다.'}), 400
 
     # 이미 pending 요청이 있는지 확인
@@ -582,7 +547,7 @@ def request_subscription():
         req_type = 'early_renewal'
     elif is_expired_resubscribe:
         req_type = 'renewal'
-    elif user.tier is None or (user.tier == 'pro' and to_tier == 'premium'):
+    elif not has_active_base or (user.tier == 'pro' and to_tier == 'premium'):
         req_type = 'upgrade'
     else:
         req_type = 'downgrade'
@@ -590,33 +555,43 @@ def request_subscription():
     depositor_name = (data.get('depositor_name') or '').strip() or None
 
     # 입금 금액 계산
-    # - aibain_addon: 40,000원 (AI Brain 만)
-    # - else + aibain: 베이스 + 40,000 (전체)
+    # - aibain_addon: 50,000원 (AI Brain 만)
+    # - else + aibain: 베이스 + 50,000 (전체)
     # - else:         베이스 (50k 또는 1.2M)
-    base_amount_map = {'pro': 50_000, 'premium': 1_200_000}
+    base_amount_map = BASE_PLAN_AMOUNTS
     if is_aibain_only:
-        total_amount = 40_000
+        total_amount = AI_BUNDLE_AMOUNT
     else:
         base_amount = base_amount_map.get(to_tier, 0)
-        aibain_amount = 40_000 if includes_aibain else 0
+        aibain_amount = AI_BUNDLE_AMOUNT if includes_aibain else 0
         total_amount = base_amount + aibain_amount
     amount = f"{total_amount:,}원" if total_amount else None
 
+    expected_amount = data.get('expected_amount')
+    if expected_amount is not None and (type(expected_amount) is not int or expected_amount != total_amount):
+        return jsonify({
+            'error': '회원 등급 또는 이용기간이 변경되어 신청 금액이 달라졌습니다. 새로고침 후 금액을 다시 확인해 주세요.',
+            'code': 'subscription_price_changed',
+        }), 409
+
     # admin 패널 비고 (DB 신규 column 없이 admin_note 활용)
     if is_aibain_renewal:
-        admin_note = 'AI Brain 알파 스캐너 재구독 신청 (+40,000원/30일, 베이스 tier 유지)'
+        admin_note = 'AI Brain + 제갈공명 재구독 신청 (+50,000원/30일, 베이스 tier 유지)'
     elif is_aibain_only:
-        admin_note = 'AI Brain 알파 스캐너 애드온 신청 (+40,000원/30일, 베이스 tier 유지)'
+        admin_note = 'AI Brain + 제갈공명 애드온 신청 (+50,000원/30일, 베이스 tier 유지)'
     elif is_expired_resubscribe and includes_aibain:
-        admin_note = '만료 회원 재구독 신청 + AI Brain 알파 스캐너 포함 요청 (+40,000원/30일)'
+        admin_note = '만료 회원 재구독 신청 + AI Brain + 제갈공명 포함 요청 (+50,000원/30일)'
     elif is_expired_resubscribe:
         admin_note = '만료 회원 재구독 신청'
     elif is_early_renewal:
         admin_note = '만료 전 갱신 신청 — 승인 시 기존 만료일 기준 +30일 연장'
     elif includes_aibain:
-        admin_note = 'AI Brain 알파 스캐너 포함 요청 (+40,000원/30일)'
+        admin_note = 'AI Brain + 제갈공명 포함 요청 (+50,000원/30일)'
     else:
         admin_note = None
+
+    if includes_aibain:
+        admin_note = f'{AI_BUNDLE_POLICY_MARKER} {admin_note}'
 
     sub_request = _insert_pending_subscription_request(
         user.id,
@@ -662,7 +637,7 @@ def request_subscription():
         f"👤 {user.name} ({user.email})\n"
         f"📋 {user.tier or 'none'} → {full_label}\n"
         f"💰 {amount or '-'}" +
-        (f"\n🤖 <b>AI Brain 알파 스캐너 포함</b> (+40,000원/30일)" if includes_aibain else ''),
+        (f"\n🤖 <b>AI Brain + 제갈공명 포함</b> (+50,000원/30일)" if includes_aibain else ''),
         target_email=user.email,
     )
     from app.routes.admin import create_admin_notification

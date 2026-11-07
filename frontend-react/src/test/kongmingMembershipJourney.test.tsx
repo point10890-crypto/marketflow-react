@@ -91,18 +91,18 @@ describe('standalone AI Brain and Kongming membership', () => {
         expect(nextPathForUser(activeCombo, '/dashboard/account')).toBe('/dashboard/account');
         expect(nextPathForUser(expiredCombo, null)).toBe('/plan-select?plan=aibain_kongming&resubscribe=1&from=expired');
         expect(subscriptionJourney(activeCombo)).toBeNull();
-        expect(subscriptionJourney(expiredCombo)?.payment).toBe('/payment-request?plan=aibain_kongming&resubscribe=1');
+        expect(subscriptionJourney(expiredCombo)?.payment).toBe('/payment-request?plan=pro&aibain=1');
     });
 
-    it('uses the exact 50,000 won renewal on the account page and before expiry', async () => {
+    it('preserves legacy access but quotes the new 100,000 won base bundle on renewal', async () => {
         state.user = { ...activeCombo, kongming_expires_at: new Date(Date.now() + 2 * 86_400_000).toISOString() };
         state.getStatus.mockResolvedValue({ requests: [] });
         render(<MemoryRouter><RenewalBanner /><AccountPage /></MemoryRouter>);
-        expect(screen.getByRole('heading', { name: 'AI 브레인 + 제갈공명' })).toBeInTheDocument();
-        expect(screen.getByText('50,000원 / 30일 · 계좌이체')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Pro + AI Brain + 제갈공명' })).toBeInTheDocument();
+        expect(screen.getByText('100,000원 / 30일 · 계좌이체')).toBeInTheDocument();
         expect(screen.getByRole('link', { name: '제갈공명 열기' })).toHaveAttribute('href', '/dashboard/ai-bain/catalyst-validation');
         for (const label of ['갱신 신청', '30일 연장 신청']) {
-            expect(screen.getByRole('link', { name: label })).toHaveAttribute('href', '/payment-request?plan=aibain_kongming&renew=1');
+            expect(screen.getByRole('link', { name: label })).toHaveAttribute('href', '/payment-request?plan=pro&aibain=1');
         }
         await waitFor(() => expect(state.getStatus).toHaveBeenCalled());
     });

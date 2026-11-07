@@ -1,5 +1,5 @@
 import { hasActiveBaseSubscription, hasActiveKongmingSubscription, isBaseSubscriptionExpired, subscriptionExpiryTime, subscriptionFunnelTarget, type AuthUserData } from './auth';
-import { PLAN_PAYMENT_META, planToQuery, type BillingPlan } from './billingInfo';
+import { aiBundleOffer, planToQuery, type BillingPlan } from './billingInfo';
 
 export const SUBSCRIPTION_REMINDER_MS = 30 * 60 * 1000;
 export type SubscriptionJourney = {
@@ -13,13 +13,11 @@ export function subscriptionJourney(user: AuthUserData | null, now = Date.now())
     if (hasActiveKongmingSubscription(user, now)) return null;
     const kongmingExpiry = subscriptionExpiryTime(user.kongming_expires_at);
     if (['approved', 'expired'].includes(user.status) && Number.isFinite(kongmingExpiry) && kongmingExpiry <= now) {
-        const plan = 'aibain_kongming';
-        const { label, amount } = PLAN_PAYMENT_META[plan];
-        const payment = `/payment-request?${planToQuery(plan)}&resubscribe=1`;
+        const { plan, label, amount, payment } = aiBundleOffer(user);
         return {
             kind: 'kongming-expired',
             title: `${label}이 만료되었습니다`,
-            message: `${amount}에 두 서비스를 30일 다시 이용할 수 있습니다.`,
+            message: `${label} ${amount} 신청으로 서비스를 다시 이용할 수 있습니다.`,
             cta: '재구독 신청하기',
             destination: payment,
             plan, payment,

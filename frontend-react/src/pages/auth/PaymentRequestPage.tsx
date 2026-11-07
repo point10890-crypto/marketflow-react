@@ -3,8 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
 import { hasPendingSubscription } from '@/lib/subscriptionStatus';
-import { BANK_ACCOUNT, PLAN_PAYMENT_META, planFromQuery, planToQuery, type BillingPlan } from '@/lib/billingInfo';
+import { BANK_ACCOUNT, PLAN_PAYMENT_META, AIBAIN_ADDON_META, resolveBillingPlan, planFromQuery, planToQuery, type BillingPlan } from '@/lib/billingInfo';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
+import { hasActiveBaseSubscription } from '@/lib/auth';
 import { useSeo } from '@/lib/seo';
 
 /**
@@ -29,7 +30,7 @@ export default function PaymentRequestPage() {
     const rawAibain = searchParams.get('aibain');
     // renew=1: 활성 Pro 의 만료 전 갱신 (RenewalBanner 경로) — 백엔드 early_renewal 접수
     const isRenewal = searchParams.get('renew') === '1';
-    const plan: BillingPlan | null = planFromQuery(rawPlan, rawAibain);
+    const plan: BillingPlan | null = resolveBillingPlan(planFromQuery(rawPlan, rawAibain), user);
     const selectedMeta = plan ? PLAN_PAYMENT_META[plan] : null;
     const isKongmingPlan = plan === 'aibain_kongming';
     const selectedQuery = plan ? planToQuery(plan) : '';
@@ -80,12 +81,10 @@ export default function PaymentRequestPage() {
             return;
         }
         const meta = PLAN_PAYMENT_META[plan];
-        const isActive = (user.tier === 'pro' || user.tier === 'premium')
-            && user.status === 'approved'
-            && !user.is_pro_expired;
+        const isActive = hasActiveBaseSubscription(user);
         if (isActive && !isKongmingPlan) {
             const sameBaseTier = meta.tier === user.tier;
-            const aiBrainAddonOnly = sameBaseTier && meta.includesAibain && !user.is_aibain_active;
+            const aiBrainAddonOnly = sameBaseTier && meta.includesAibain;
             const tierUpgrade = user.tier === 'pro' && meta.tier === 'premium';
             // 만료 전 갱신: 활성 Pro + 같은 tier + renew=1 (premium 은 무기한이라 해당 없음)
             const earlyRenewal = isRenewal && sameBaseTier && meta.tier === 'pro' && !meta.includesAibain;
@@ -115,21 +114,19 @@ export default function PaymentRequestPage() {
         </main>;
     }
     const meta = selectedMeta;
-    const isAiBrainAddonOnly = !isKongmingPlan && user.status === 'approved'
-        && !user.is_pro_expired
+    const isAiBrainAddonOnly = !isKongmingPlan && hasActiveBaseSubscription(user)
         && meta.includesAibain
-        && meta.tier === user.tier
-        && !user.is_aibain_active;
+        && meta.tier === user.tier;
     const isEarlyRenewal = isRenewal
         && user.status === 'approved'
         && !user.is_pro_expired
         && meta.tier === user.tier
         && meta.tier === 'pro'
         && !meta.includesAibain;
-    const displayLabel = isAiBrainAddonOnly ? 'AI Brain 애드온'
+    const displayLabel = isAiBrainAddonOnly ? AIBAIN_ADDON_META.label
         : isEarlyRenewal ? 'Pro 갱신 (만료 전)' : meta.label;
-    const displayAmount = isAiBrainAddonOnly ? '40,000원' : meta.amount;
-    const displayPeriod = isAiBrainAddonOnly ? 'AI Brain 30일 갱신'
+    const displayAmount = isAiBrainAddonOnly ? AIBAIN_ADDON_META.amount : meta.amount;
+    const displayPeriod = isAiBrainAddonOnly ? 'AI Brain·제갈공명 30일 · 기존 이용 중이면 만료일부터 연장'
         : isEarlyRenewal || (isKongmingPlan && user.is_kongming_active) ? '승인 시 기존 만료일부터 +30일' : meta.period;
 
     const colorMap = {
@@ -150,7 +147,7 @@ export default function PaymentRequestPage() {
             if (isKongmingPlan) {
                 await subscriptionAPI.requestKongming(token, depositorName.trim());
             } else {
-                await subscriptionAPI.requestUpgrade(meta.tier, token, depositorName.trim(), meta.includesAibain);
+                await subscriptionAPI.requestUpgrade(meta.tier, token, depositorName.trim(), meta.includesAibain, isAiBrainAddonOnly ? AIBAIN_ADDON_META.amountNumber : meta.amountNumber);
             }
             navigate('/pending-approval', { replace: true });
         } catch (err: any) {
@@ -167,7 +164,7 @@ export default function PaymentRequestPage() {
                 navigate('/dashboard', { replace: true });
                 return;
             }
-            setError('승인 신청 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+            setError(msg || '승인 신청 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
             setSubmitting(false);
         }
     };
@@ -195,15 +192,15 @@ export default function PaymentRequestPage() {
                     <div className={`p-4 rounded-2xl ${colorMap.bg} border border-cyan-400/15 mb-4`}>
                         <h4 className="text-cyan-300 font-bold text-xs mb-2 flex items-center gap-1.5">
                             <i className="fas fa-robot" />
-                            AI Brain 추가 신청
+                            AI Brain + 제갈공명 추가 신청
                         </h4>
                         <div className="text-xs text-gray-300 space-y-1">
                             <div className="flex justify-between">
                                 <span>기존 {user.tier === 'premium' ? 'Ultra Pro' : 'Pro'} 구독은 유지</span>
                             </div>
                             <div className="flex justify-between font-bold text-white">
-                                <span>AI Brain 30일</span>
-                                <span className={`font-mono ${colorMap.text}`}>40,000원</span>
+                                <span>AI Brain + 제갈공명 30일</span>
+                                <span className={`font-mono ${colorMap.text}`}>50,000원</span>
                             </div>
                         </div>
                     </div>
@@ -222,17 +219,20 @@ export default function PaymentRequestPage() {
                             </div>
                             <div className="h-px bg-cyan-400/20 my-2" />
                             <div className="flex justify-between font-bold text-white">
-                                <span>합계 (30일)</span>
+                                <span>이번 신청 합계</span>
                                 <span className={`font-mono ${colorMap.text}`}>{meta.amount}</span>
                             </div>
                         </div>
                         <p className="mt-2 text-[10px] text-gray-500">
                             <i className="fas fa-info-circle mr-1" />
-                            AI Brain 은 30일 갱신 구독 — 만료 시 별도 갱신 없으면 자동으로 베이스 플랜으로 회귀합니다.
+                            AI Brain과 제갈공명을 30일 함께 이용합니다. AI 이용 중 PRO 잔여기간은 일시정지되고, AI 만료 후 다시 차감됩니다. Ultra Pro는 무기한 유지됩니다.
                         </p>
                     </div>
                 )}
 
+                {isAiBrainAddonOnly && <p className="mb-4 text-sm leading-6 text-cyan-200">
+                    {user.tier === 'pro' ? 'AI 이용 중 PRO 잔여기간은 일시정지되며, AI 만료 후 다시 차감됩니다.' : 'Ultra Pro 무기한 이용권은 그대로 유지됩니다.'}
+                </p>}
                 {/* 계좌 박스 */}
                 <div className={`p-5 rounded-2xl bg-[#1c1c1e] ring-1 ${colorMap.ring} mb-4 space-y-3`}>
                     <div className="grid grid-cols-2 gap-3">

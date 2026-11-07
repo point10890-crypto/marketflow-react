@@ -6,6 +6,8 @@ import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { useSeo } from '@/lib/seo';
 import {
     PLAN_PAYMENT_META,
+    AIBAIN_ADDON_META,
+    resolveBillingPlan,
     planFromQuery,
     planToQuery,
     type BillingPlan,
@@ -20,7 +22,7 @@ export default function PlanSelectPage() {
     const [searchParams] = useSearchParams();
     const isResubscribe = searchParams.get('resubscribe') === '1' || searchParams.get('from') === 'expired';
     const allowChange = searchParams.get('change') === '1';
-    const preferredPlan = planFromQuery(searchParams.get('plan'), searchParams.get('aibain'));
+    const preferredPlan = resolveBillingPlan(planFromQuery(searchParams.get('plan'), searchParams.get('aibain')), user);
     const preferredQuery = preferredPlan ? planToQuery(preferredPlan) : '';
     const signupPath = preferredQuery ? `/signup?${preferredQuery}` : '/signup';
     const [now, setNow] = useState(Date.now);
@@ -48,7 +50,7 @@ export default function PlanSelectPage() {
             return;
         }
         const isActive = hasActiveBaseSubscription(user, now);
-        if (isActive && !allowChange && preferredPlan !== 'aibain_kongming') {
+        if (isActive && !allowChange && !preferredPlan) {
             navigate('/dashboard', { replace: true });
         }
     }, [user, token, loading, navigate, allowChange, signupPath, preferredPlan, now]);
@@ -128,7 +130,7 @@ export default function PlanSelectPage() {
                             ? '서비스 재개를 위해 다시 이용할 플랜을 선택하세요.'
                             : isUpgrade && user?.tier === 'premium'
                             ? (user.is_aibain_active
-                                ? '추가 등급 업그레이드가 필요하지 않습니다. 제갈공명 결합 플랜은 아래에서 선택할 수 있습니다.'
+                                ? '기존 등급은 유지됩니다. AI Brain·제갈공명 30일 연장을 신청할 수 있습니다.'
                                 : 'Ultra Pro는 최상위 평생 이용 플랜입니다. 기존 등급을 유지하고 AI 분석 구독을 선택할 수 있습니다.')
                             : isUpgrade
                             ? '현재 플랜은 승인 전까지 유지됩니다. 상위 등급 또는 AI Brain 추가를 선택하세요.'
@@ -153,21 +155,33 @@ export default function PlanSelectPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <PlanCard plan="aibain_kongming" onSelect={select} badgeIcon="fa-newspaper" badgeText="AI 분석 · 재료 검증"
-                              isPreferred={preferredPlan === 'aibain_kongming'} isRenewal={!!user?.kongming_expires_at} />
-                    <PlanCard plan="pro" onSelect={select} badgeIcon="fa-crown" badgeText="기본"
-                              isPrevious={isExpired && user?.tier === 'pro'} isPreferred={preferredPlan === 'pro'}
-                              hasActiveBase={hasActiveBase} currentTier={user?.tier} isAiBrainActive={!!user?.is_aibain_active} />
-                    <PlanCard plan="pro_aibain" onSelect={select} badgeIcon="fa-robot" badgeText="AI 확장" highlighted
-                              isPreferred={preferredPlan === 'pro_aibain'} hasActiveBase={hasActiveBase}
-                              currentTier={user?.tier} isAiBrainActive={!!user?.is_aibain_active} />
-                    <PlanCard plan="premium" onSelect={select} badgeIcon="fa-gem" badgeText="평생 이용"
-                              isPrevious={isExpired && user?.tier === 'premium'} isPreferred={preferredPlan === 'premium'}
-                              hasActiveBase={hasActiveBase} currentTier={user?.tier} isAiBrainActive={!!user?.is_aibain_active} />
-                    <PlanCard plan="premium_aibain" onSelect={select} badgeIcon="fa-crown" badgeText="평생 + AI Brain"
-                              isPreferred={preferredPlan === 'premium_aibain'} hasActiveBase={hasActiveBase}
-                              currentTier={user?.tier} isAiBrainActive={!!user?.is_aibain_active} />
+                    {(!hasActiveBase || user?.tier === 'pro') && <>
+                        <PlanCard plan="pro" onSelect={select} badgeIcon="fa-crown" badgeText="기본"
+                                  isPrevious={isExpired && user?.tier === 'pro'} isPreferred={preferredPlan === 'pro'}
+                                  hasActiveBase={hasActiveBase} currentTier={user?.tier} />
+                        <PlanCard plan="pro_aibain" onSelect={select} badgeIcon="fa-robot" badgeText="AI + 제갈공명" highlighted
+                                  isPreferred={preferredPlan === 'pro_aibain'} hasActiveBase={hasActiveBase}
+                                  currentTier={user?.tier} isAiBrainActive={!!user?.is_aibain_active} />
+                    </>}
+                    {hasActiveBase && user?.tier === 'premium' && <>
+                        <PlanCard plan="premium" onSelect={select} badgeIcon="fa-gem" badgeText="현재 기본 등급"
+                                  hasActiveBase currentTier={user.tier} />
+                        <PlanCard plan="premium_aibain" onSelect={select} badgeIcon="fa-robot" badgeText="AI + 제갈공명"
+                                  isPreferred={preferredPlan === 'premium_aibain'} hasActiveBase
+                                  currentTier={user.tier} isAiBrainActive={!!user.is_aibain_active} />
+                    </>}
                 </div>
+
+                <p className="mt-5 text-sm leading-6 text-cyan-100">
+                    AI Brain 추가에는 제갈공명이 포함됩니다. PRO 이용기간은 AI 구독 중 일시정지되고, AI 만료 후 다시 시작됩니다.
+                </p>
+                {user?.tier !== 'premium' && <details className="mt-5 rounded-xl border border-white/10 p-4 text-gray-300">
+                    <summary className="cursor-pointer font-bold">Ultra Pro 평생 이용 플랜 보기</summary>
+                    <div className="mt-4 grid gap-5 sm:grid-cols-2">
+                        <PlanCard plan="premium" onSelect={select} badgeIcon="fa-gem" badgeText="평생 이용" isPreferred={preferredPlan === 'premium'} />
+                        <PlanCard plan="premium_aibain" onSelect={select} badgeIcon="fa-robot" badgeText="평생 + AI·제갈공명" isPreferred={preferredPlan === 'premium_aibain'} />
+                    </div>
+                </details>}
 
                 <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-gray-400 leading-relaxed">
                     <div className="flex items-start gap-3">
@@ -219,7 +233,7 @@ interface PlanCardProps {
     isRenewal?: boolean;
     /** 공개 요금 페이지에서 사용자가 미리 선택한 플랜 */
     isPreferred?: boolean;
-    /** 활성 베이스 회원은 같은 tier의 AI Brain만 40,000원 애드온으로 신청한다. */
+    /** 활성 베이스 회원은 같은 tier의 AI Brain만 50,000원 애드온으로 신청한다. */
     hasActiveBase?: boolean;
     currentTier?: string | null;
     isAiBrainActive?: boolean;
@@ -309,14 +323,14 @@ function PlanCard({
     const meta = PLAN_PAYMENT_META[plan];
     const c = COLOR_STYLES[plan];
     const sameBaseTier = !!hasActiveBase && meta.tier === currentTier;
-    const isAddonOnly = sameBaseTier && meta.includesAibain && !isAiBrainActive;
-    const isCurrent = sameBaseTier && (!meta.includesAibain || !!isAiBrainActive);
+    const isAddonOnly = sameBaseTier && meta.includesAibain;
+    const isCurrent = sameBaseTier && !meta.includesAibain;
     const isBlockedDowngrade = !!hasActiveBase && currentTier === 'premium' && meta.tier === 'pro';
     const isDisabled = isCurrent || isBlockedDowngrade;
-    const priceMajor = isAddonOnly ? '40,000' : meta.amountNumber.toLocaleString();
+    const priceMajor = isAddonOnly ? AIBAIN_ADDON_META.amountNumber.toLocaleString() : meta.amountNumber.toLocaleString();
     const isThirtyDayPlan = plan === 'pro' || plan === 'pro_aibain' || plan === 'aibain_kongming';
     const priceUnit = isAddonOnly || isThirtyDayPlan ? '원 / 30일' : '원';
-    const displayTitle = isAddonOnly ? 'AI Brain 애드온' : meta.label;
+    const displayTitle = isAddonOnly ? AIBAIN_ADDON_META.label : meta.label;
     const displayPeriod = isAddonOnly ? `기존 ${currentTier === 'premium' ? 'Ultra Pro' : 'Pro'} 유지 · AI Brain 30일` : meta.period;
     const displayedFeatures = isAddonOnly
         ? meta.features.filter((feature) => !feature.includes('전체') && !feature.includes('평생'))
@@ -357,7 +371,7 @@ function PlanCard({
             <p className="mb-2 text-[11px] font-semibold text-gray-500">{displayPeriod}</p>
             {isAddonOnly ? (
                 <p className={`${c.accent} text-[11px] font-semibold mb-5 leading-tight`}>
-                    베이스 플랜은 그대로 유지하고 <strong className="text-white">AI Brain만 추가</strong>합니다.
+                    베이스 플랜은 그대로 유지하고 <strong className="text-white">AI Brain과 제갈공명을 추가</strong>합니다.
                 </p>
             ) : meta.includesAibain && meta.baseAmount && meta.aibainAmount ? (
                 <p className={`${c.accent} text-[11px] font-semibold mb-5 leading-tight`}>
@@ -380,7 +394,7 @@ function PlanCard({
                 ) : isCurrent ? (
                     <><i className="fas fa-check mr-1.5" />현재 이용 중</>
                 ) : isAddonOnly ? (
-                    <>AI Brain 40,000원으로 추가</>
+                    <>AI Brain·제갈공명 {AIBAIN_ADDON_META.amount}으로 {isAiBrainActive ? '연장' : '추가'}</>
                 ) : isPrevious ? (
                     <><i className="fas fa-rotate-right mr-1.5" />{meta.label} 다시 시작하기</>
                 ) : isRenewal ? (

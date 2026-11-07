@@ -1,6 +1,6 @@
 import { reminderDue } from '@/lib/subscriptionJourney';
 import { hasActiveKongmingSubscription, subscriptionExpiryTime } from '@/lib/auth';
-import { PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
+import { aiBundleOffer } from '@/lib/billingInfo';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -65,16 +65,16 @@ export default function RenewalBanner() {
         if (hasActiveKongmingSubscription(user, now)) {
             const days = Math.ceil((subscriptionExpiryTime(user.kongming_expires_at) - now) / 86_400_000);
             if (days > 5) return null;
-            const plan = 'aibain_kongming';
+            const offer = aiBundleOffer(user);
             return {
                 key: `kongming-${days}`,
                 icon: 'fa-brain',
                 tone: 'border-cyan-400/30 bg-cyan-500/[0.10] text-cyan-100',
                 accent: 'text-cyan-300',
-                message: `${PLAN_PAYMENT_META[plan].label} 이용 기간이 ${days}일 뒤 만료됩니다.`,
-                sub: '지금 갱신 신청하면 승인 시 만료일부터 30일이 이어집니다.',
+                message: `AI Brain + 제갈공명 이용 기간이 ${days}일 뒤 만료됩니다.`,
+                sub: `갱신 신청 ${offer.amount} · 최신 플랜과 보존 기간을 확인하세요.`,
                 cta: '갱신 신청',
-                to: `/payment-request?${planToQuery(plan)}&renew=1`,
+                to: offer.payment,
             };
         }
 
@@ -92,7 +92,7 @@ export default function RenewalBanner() {
                         : `AI Brain 애드온이 ${d}일 뒤 만료됩니다.`,
                     sub: '만료되면 알파 스캐너 · TOP 3 · 성과 검증 화면 접근이 중단됩니다.',
                     cta: 'AI Brain 갱신',
-                    to: '/dashboard/ai-bain',
+                    to: aiBundleOffer(user).payment,
                 };
             }
         }
