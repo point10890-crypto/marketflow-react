@@ -13,7 +13,7 @@ from app.routes.admin_mirofish import admin_mirofish_bp
 PREFIX = '/api/admin/mirofish/kongming'
 STATUS = PREFIX + '/catalyst-validation'
 HISTORY = PREFIX + '/catalyst-validation-history'
-ALLOWLIST = 'KONGMING_CATALYST_ALLOWED_USER_IDS'
+LEGACY_ALLOWLIST = 'KONGMING_CATALYST_ALLOWED_USER_IDS'
 AT = '2026-11-07T09:00:00+09:00'
 
 
@@ -67,17 +67,17 @@ def gateway(monkeypatch):
     upstream = Upstream()
     monkeypatch.setattr(auth, '_get_current_user', lambda: caller.user)
     monkeypatch.setattr(http.client, 'HTTPConnection', upstream.connect)
-    monkeypatch.setenv(ALLOWLIST, ' 7, 42 ')
+    monkeypatch.delenv(LEGACY_ALLOWLIST, raising=False)
     return app.test_client(use_cookies=False), caller, upstream
 
 
 @pytest.mark.parametrize(('case', 'status'), [
     ('anonymous', 401), ('member', 403), ('suspended', 403),
     ('legacy_aibain', 403), ('expired_bundle', 403), ('pending_bundle', 403),
-    ('unapproved_admin', 403), ('missing_allowlist', 403),
+    ('rejected_admin', 403),
 ])
 @pytest.mark.parametrize('path', [STATUS, HISTORY])
-def test_requires_admin_and_an_explicitly_allowed_id(gateway, monkeypatch, case, status, path):
+def test_denies_anonymous_blocked_or_unentitled_users(gateway, case, status, path):
     client, caller, upstream = gateway
     if case == 'anonymous':
         caller.user = None
@@ -89,21 +89,33 @@ def test_requires_admin_and_an_explicitly_allowed_id(gateway, monkeypatch, case,
     elif case in ('legacy_aibain', 'expired_bundle', 'pending_bundle'):
         caller.user.is_admin = False
         caller.user.is_aibain_active = case != 'pending_bundle'
-    elif case == 'unapproved_admin':
-        caller.user.id = 43
-    else:
-        monkeypatch.delenv(ALLOWLIST)
+    elif case == 'rejected_admin':
+        caller.user.status = 'rejected'
 
     assert client.get(path).status_code == status
     assert not upstream.connections
 
 
 @pytest.mark.parametrize('path', [STATUS, HISTORY])
-def test_bundle_member_can_read_without_base_tier_or_admin_allowlist(gateway, monkeypatch, path):
+@pytest.mark.parametrize('admin_id,legacy_allowlist', [(42, None), (73, '7,42')])
+def test_admin_can_read_without_bundle_or_matching_legacy_allowlist(gateway, monkeypatch, path, admin_id, legacy_allowlist):
+    client, caller, upstream = gateway
+    caller.user.id = admin_id
+    if legacy_allowlist is not None:
+        monkeypatch.setenv(LEGACY_ALLOWLIST, legacy_allowlist)
+
+    response = client.get(path)
+
+    assert response.status_code == 200
+    assert 'no-store' in response.headers['Cache-Control']
+    assert upstream.connections
+
+
+@pytest.mark.parametrize('path', [STATUS, HISTORY])
+def test_bundle_member_can_read_without_base_tier(gateway, path):
     client, caller, upstream = gateway
     caller.user.is_admin = False
     caller.user.is_kongming_active = True
-    monkeypatch.delenv(ALLOWLIST)
     response = client.get(path)
     assert response.status_code == 200
     assert 'no-store' in response.headers['Cache-Control']

@@ -3,13 +3,11 @@
 import http.client
 import json
 import math
-import os
 from contextlib import closing
 
 from flask import jsonify, request
 
 
-_ALLOWLIST = 'KONGMING_CATALYST_ALLOWED_USER_IDS'
 _MAX_BODY_BYTES = 8 * 1024 * 1024
 _SOCKET_TIMEOUT_SECONDS = 4
 _NO_STORE = 'private, no-store, no-cache, must-revalidate, max-age=0'
@@ -119,10 +117,9 @@ def _response(payload, status):
 
 
 def catalyst_response(*, history=False):
-    """Require an active bundle or explicit administrator access."""
+    """Allow authenticated administrators and active bundle subscribers."""
     user = request.current_user
-    approved = {value.strip() for value in os.environ.get(_ALLOWLIST, '').split(',') if value.strip()}
-    if not (getattr(user, 'is_kongming_active', False) or (user.is_admin and str(user.id) in approved)):
+    if not (user.is_admin or getattr(user, 'is_kongming_active', False)):
         return _response({'error': 'kongming_catalyst_forbidden'}, 403)
     try:
         if history:
