@@ -1,4 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext';
+import { canAccessKongming } from '@/lib/auth';
 
 type AiBrainService = 'scanner' | 'goodrich' | 'decision' | 'chart-predict' | 'kongming';
 
@@ -56,7 +57,7 @@ const services = [
 
 export default function AiBrainServiceTabs({ active }: AiBrainServiceTabsProps) {
     const { user } = useAuth();
-    const showKongming = user?.role === 'admin';
+    const showKongming = canAccessKongming(user);
     const availableServices = showKongming ? services : services.filter(service => service.id !== 'kongming');
 
     return (

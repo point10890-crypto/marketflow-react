@@ -62,6 +62,7 @@ def gateway(monkeypatch):
     app.register_blueprint(admin_mirofish_bp, url_prefix='/api/admin/mirofish')
     caller = SimpleNamespace(user=SimpleNamespace(
         id=42, email='fixture@example.test', status='approved', is_admin=True,
+        is_aibain_active=False, is_kongming_active=False,
     ))
     upstream = Upstream()
     monkeypatch.setattr(auth, '_get_current_user', lambda: caller.user)
@@ -72,6 +73,7 @@ def gateway(monkeypatch):
 
 @pytest.mark.parametrize(('case', 'status'), [
     ('anonymous', 401), ('member', 403), ('suspended', 403),
+    ('legacy_aibain', 403), ('expired_bundle', 403), ('pending_bundle', 403),
     ('unapproved_admin', 403), ('missing_allowlist', 403),
 ])
 @pytest.mark.parametrize('path', [STATUS, HISTORY])
@@ -83,6 +85,10 @@ def test_requires_admin_and_an_explicitly_allowed_id(gateway, monkeypatch, case,
         caller.user.is_admin = False
     elif case == 'suspended':
         caller.user.status = 'suspended'
+        caller.user.is_kongming_active = True
+    elif case in ('legacy_aibain', 'expired_bundle', 'pending_bundle'):
+        caller.user.is_admin = False
+        caller.user.is_aibain_active = case != 'pending_bundle'
     elif case == 'unapproved_admin':
         caller.user.id = 43
     else:
@@ -90,6 +96,28 @@ def test_requires_admin_and_an_explicitly_allowed_id(gateway, monkeypatch, case,
 
     assert client.get(path).status_code == status
     assert not upstream.connections
+
+
+@pytest.mark.parametrize('path', [STATUS, HISTORY])
+def test_bundle_member_can_read_without_base_tier_or_admin_allowlist(gateway, monkeypatch, path):
+    client, caller, upstream = gateway
+    caller.user.is_admin = False
+    caller.user.is_kongming_active = True
+    monkeypatch.delenv(ALLOWLIST)
+    response = client.get(path)
+    assert response.status_code == 200
+    assert 'no-store' in response.headers['Cache-Control']
+    assert upstream.connections
+
+
+def test_bundle_does_not_grant_general_mirofish_run_creation(gateway):
+    client, caller, _ = gateway
+    caller.user.is_admin = False
+    caller.user.is_kongming_active = True
+
+    response = client.post('/api/admin/mirofish/runs', json={})
+
+    assert response.status_code == 403
 
 
 def test_validation_projects_only_the_displayed_fields_and_uses_fixed_loopback(gateway):

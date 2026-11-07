@@ -247,4 +247,16 @@ describe('subscription request mutations', () => {
         expect(api.rejectSubscription).not.toHaveBeenCalled();
         expect(screen.getByRole('button', { name: /Pro 재구독 승인/ })).toBeInTheDocument();
     });
+
+    it('shows a combined plan renewal and approves that request by ID', async () => {
+        const combined = { ...pending, request_type: 'aibain_kongming_renewal', to_tier: 'aibain_kongming', amount: '50,000원' };
+        api.getSubscriptions.mockResolvedValue({ requests: [combined] });
+        api.approveSubscription.mockResolvedValue({ request: { ...combined, status: 'approved' } });
+        render(<SubscriptionsTab apiToken="admin-token" onCountChange={() => {}} />);
+
+        expect(await screen.findByText('50,000원')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'AI 브레인 + 제갈공명 갱신 승인' }));
+        await waitFor(() => expect(api.approveSubscription).toHaveBeenCalledWith(combined.id, 'admin-token'));
+        expect(await screen.findByText('AI 브레인 + 제갈공명 갱신')).toBeInTheDocument();
+    });
 });

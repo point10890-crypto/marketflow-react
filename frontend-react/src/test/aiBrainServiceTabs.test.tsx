@@ -2,11 +2,11 @@ import { render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 
-const auth = vi.hoisted(() => ({ role: 'admin' }));
-vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user: { role: auth.role } }) }));
+const auth = vi.hoisted(() => ({ role: 'admin', is_kongming_active: false, kongming_expires_at: null as string | null }));
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user: { ...auth, status: 'approved' } }) }));
 
 describe('AI Brain service cards', () => {
-    beforeEach(() => { auth.role = 'admin'; });
+    beforeEach(() => { Object.assign(auth, { role: 'admin', is_kongming_active: false, kongming_expires_at: null }); });
 
     it('opens and selects the Kongming validation page inside AI Brain for admins', () => {
         render(<AiBrainServiceTabs active="kongming" />);
@@ -20,6 +20,15 @@ describe('AI Brain service cards', () => {
         expect(links).toHaveLength(5);
         expect(links[3]).toHaveAccessibleName(/차트 유사 사례/);
         expect(links[4]).toBe(kongming);
+    });
+
+    it('shows the Kongming card to an active bundle member and hides it after expiration', () => {
+        Object.assign(auth, { role: 'user', is_kongming_active: true, kongming_expires_at: '2099-01-01T00:00:00Z' });
+        const { rerender } = render(<AiBrainServiceTabs active="scanner" />);
+        expect(screen.getByRole('link', { name: /뉴스·재료 검증/ })).toBeInTheDocument();
+        auth.kongming_expires_at = '2000-01-01T00:00:00Z';
+        rerender(<AiBrainServiceTabs active="scanner" />);
+        expect(screen.queryByRole('link', { name: /뉴스·재료 검증/ })).not.toBeInTheDocument();
     });
 
     it('keeps the Kongming card out of the subscriber navigation', () => {

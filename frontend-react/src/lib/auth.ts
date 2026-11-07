@@ -69,6 +69,8 @@ export interface AuthUserData {
     is_aibain_active?: boolean;
     is_aibain_expired?: boolean;
     aibain_days_remaining?: number | null;
+    kongming_expires_at?: string | null;
+    is_kongming_active?: boolean;
     // Pro 만료 일시정지 (AI Brain 활성 중)
     pro_paused_at?: string | null;
     is_pro_paused?: boolean;
@@ -134,9 +136,12 @@ export function isAdmin(): boolean {
  * 내비/Summary 카드/라우트 가드가 전부 이 한 곳을 본다 (백엔드 admin_or_aibain_required 와 동일 기준).
  * 만료·미구독 Pro 유저는 false → 섹션 자체가 보이지 않고, Summary 의 업그레이드 배너만 남는다.
  */
-export function canAccessAiBain(user: { role?: string | null; is_aibain_active?: boolean | null } | null | undefined): boolean {
-    if (!user) return false;
-    return user.role === 'admin' || !!user.is_aibain_active;
+export function canAccessAiBain(user: (FunnelUser & { is_aibain_active?: boolean | null }) | null | undefined): boolean {
+    return !!user && (canAccessKongming(user) || !!user.is_aibain_active);
+}
+
+export function canAccessKongming(user: FunnelUser | null | undefined): boolean {
+    return !!user && (user.role === 'admin' || hasActiveKongmingSubscription(user));
 }
 
 /** subscriptionFunnelTarget 이 판정에 쓰는 최소 유저 형태 (AuthContext.AuthUser 부분집합). */
@@ -149,6 +154,8 @@ export interface FunnelUser {
     has_pending_subscription?: boolean;
     pro_expires_at?: string | null;
     is_pro_paused?: boolean;
+    kongming_expires_at?: string | null;
+    is_kongming_active?: boolean | null;
 }
 
 /** The API's timezone-less ISO dates are UTC; the browser's local timezone must not move expiry. */
@@ -156,6 +163,15 @@ export function subscriptionExpiryTime(value?: string | null): number {
     if (!value) return NaN;
     const iso = value.trim().replace(' ', 'T');
     return Date.parse(iso.includes('T') && !/(?:Z|[+-]\d{2}:?\d{2})$/i.test(iso) ? `${iso}Z` : iso);
+}
+
+export function hasActiveKongmingSubscription(user: FunnelUser | null | undefined, now = Date.now()): boolean {
+    return user?.is_kongming_active === true && ['approved', 'expired'].includes(user.status || '')
+        && subscriptionExpiryTime(user.kongming_expires_at) > now;
+}
+
+export function isKongmingOnlyUser(user: FunnelUser | null | undefined, now = Date.now()): boolean {
+    return user?.role !== 'admin' && hasActiveKongmingSubscription(user, now) && !hasActiveBaseSubscription(user, now);
 }
 
 export function isBaseSubscriptionExpired(user: FunnelUser | null | undefined, now = Date.now()): boolean {
@@ -191,8 +207,11 @@ export function subscriptionFunnelTarget(user: FunnelUser | null | undefined, no
     if (user.status === 'unknown') return null;
     if (user.role === 'admin') return null;
     const activeBase = hasActiveBaseSubscription(user, now);
-    if (activeBase) return null;
+    if (activeBase || hasActiveKongmingSubscription(user, now)) return null;
     if (user.has_pending_subscription === true) return '/pending-approval';
+    if (['approved', 'expired'].includes(user.status || '') && subscriptionExpiryTime(user.kongming_expires_at) <= now) {
+        return '/plan-select?plan=aibain_kongming&resubscribe=1&from=expired';
+    }
     if (isBaseSubscriptionExpired(user, now)) return '/plan-select?resubscribe=1&from=expired';
     if (['rejected', 'cancelled', 'canceled'].includes(user.status || '')) return '/plan-select';
     // Old clients retain compatibility; explicit server false always overrides historical intent.

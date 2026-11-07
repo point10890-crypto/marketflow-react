@@ -871,13 +871,13 @@ def aibain_overview():
 
 
 @admin_mirofish_bp.get('/kongming/catalyst-validation')
-@admin_required
+@admin_or_aibain_required
 def kongming_catalyst_validation():
     return catalyst_response()
 
 
 @admin_mirofish_bp.get('/kongming/catalyst-validation-history')
-@admin_required
+@admin_or_aibain_required
 def kongming_catalyst_validation_history():
     return catalyst_response(history=True)
 

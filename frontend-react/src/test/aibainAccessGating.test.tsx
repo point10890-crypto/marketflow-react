@@ -5,9 +5,10 @@
  * - canAccessAiBain() 단일 기준.
  */
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ApprovedGuard } from '@/App';
 import { canAccessAiBain } from '@/lib/auth';
 import Sidebar from '@/components/layout/Sidebar';
 import BottomTabBar from '@/components/layout/BottomTabBar';
@@ -98,5 +99,36 @@ describe('AI Brain navigation gating', () => {
     renderAt('/dashboard', <MobileDashboardRail />);
     expect(screen.queryAllByText('AI Brain').length).toBeGreaterThan(0);
     expect(screen.getByText('Goodrich TOP 3')).toBeInTheDocument();
+  });
+});
+
+describe('standalone AI Brain and Kongming plan', () => {
+  const bundle = { ...proNoAiBain, tier: null, is_kongming_active: true, kongming_expires_at: '2099-12-31T00:00:00Z' };
+
+  it('opens AI Brain without a Pro tier and redirects Pro routes to AI Brain', async () => {
+    authState.user = bundle;
+    const { unmount } = renderAt('/dashboard/ai-bain/chart-predict', <Routes>
+      <Route path="/dashboard/ai-bain/chart-predict" element={<ApprovedGuard><p>Chart evidence</p></ApprovedGuard>} />
+      <Route path="/plan-select" element={<p>Plan selection</p>} />
+    </Routes>);
+    expect(await screen.findByText('Chart evidence')).toBeInTheDocument();
+    unmount();
+
+    renderAt('/dashboard/kr', <Routes>
+      <Route path="/dashboard/kr" element={<ApprovedGuard><p>Pro only content</p></ApprovedGuard>} />
+      <Route path="/dashboard/ai-bain" element={<p>AI Brain home</p>} />
+      <Route path="/plan-select" element={<p>Plan selection</p>} />
+    </Routes>);
+    expect(await screen.findByText('AI Brain home')).toBeInTheDocument();
+    expect(screen.queryByText('Pro only content')).not.toBeInTheDocument();
+  });
+
+  it('shows entitled navigation and omits unrelated Pro menu items', () => {
+    authState.user = bundle;
+    renderAt('/dashboard/ai-bain', <><Sidebar /><BottomTabBar /><MobileDashboardRail /></>);
+    expect(screen.getAllByRole('link', { name: /AI Brain/ }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('link', { name: 'KR' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Summary' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: '내 계정' }).length).toBeGreaterThan(0);
   });
 });

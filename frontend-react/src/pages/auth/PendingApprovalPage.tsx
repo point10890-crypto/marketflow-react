@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { BANK_ACCOUNT } from '@/lib/billingInfo';
+import { BANK_ACCOUNT, isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
 import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
-import { hasActiveBaseSubscription, isBaseSubscriptionExpired, type AuthUserData } from '@/lib/auth';
+import { hasActiveBaseSubscription, hasActiveKongmingSubscription, isBaseSubscriptionExpired, subscriptionFunnelTarget, type AuthUserData } from '@/lib/auth';
 import { hasPendingSubscription, pendingSubscriptionRequest } from '@/lib/subscriptionStatus';
 import { useSeo } from '@/lib/seo';
 
 const FLOW_STEPS = ['계정 생성', '플랜 선택', '입금 정보', '승인 대기'];
+const KONGMING_PLAN = 'aibain_kongming';
 
 /** Legacy status responses may omit user facts; only a complete same-member user can confirm access. */
 function confirmedStatusUser(raw: unknown, memberId: number | string | undefined): AuthUserData | null {
@@ -61,8 +62,10 @@ export default function PendingApprovalPage() {
     const confirmedUser = currentSnapshot?.confirmedUser ?? null;
     const decisionUser = confirmedUser ?? user;
     const blockedAccount = !!confirmedUser && ['suspended', 'rejected'].includes(confirmedUser.status);
-    const awaitingAuth = !!confirmedUser && hasActiveBaseSubscription(confirmedUser, now)
-        && !hasActiveBaseSubscription(user, now);
+    const awaitingAuth = !!confirmedUser && (
+        (hasActiveBaseSubscription(confirmedUser, now) && !hasActiveBaseSubscription(user, now))
+        || (hasActiveKongmingSubscription(confirmedUser, now) && !hasActiveKongmingSubscription(user, now))
+    );
 
     const fetchSubReq = useCallback(async () => {
         if (!token) return undefined;
@@ -78,8 +81,9 @@ export default function PendingApprovalPage() {
             const declined = !pendingExists && ['rejected', 'cancelled', 'canceled'].includes(reqs[0]?.status) ? reqs[0] : null;
             setSnapshot({ identity, pending, hasPending: pendingExists, declined, confirmedUser: confirmed });
             setMessage(''); setStatusError(false);
-            if (confirmed && (hasActiveBaseSubscription(confirmed) || ['suspended', 'rejected'].includes(confirmed.status))) {
-                const fingerprint = `${identity}:${confirmed.status}:${confirmed.tier}:${confirmed.pro_expires_at}:${confirmed.aibain_expires_at}`;
+            if (confirmed && (hasActiveBaseSubscription(confirmed) || hasActiveKongmingSubscription(confirmed)
+                || ['suspended', 'rejected'].includes(confirmed.status))) {
+                const fingerprint = `${identity}:${confirmed.status}:${confirmed.tier}:${confirmed.pro_expires_at}:${confirmed.aibain_expires_at}:${confirmed.kongming_expires_at}`;
                 if (refreshedStatus.current !== fingerprint) {
                     refreshedStatus.current = fingerprint;
                     refreshRef.current().catch(() => {});
@@ -115,7 +119,13 @@ export default function PendingApprovalPage() {
         const isActive = hasActiveBaseSubscription(decisionUser, now);
         if (!hasPending && !rejectedSubReq) {
             if (isActive) navigate('/dashboard', { replace: true });
+            else if (hasActiveKongmingSubscription(decisionUser, now)) navigate('/dashboard/ai-bain', { replace: true });
             else {
+                const funnel = subscriptionFunnelTarget(decisionUser, now);
+                if (funnel?.startsWith(`/plan-select?${planToQuery(KONGMING_PLAN)}`)) {
+                    navigate(funnel, { replace: true });
+                    return;
+                }
                 const expired = isBaseSubscriptionExpired(decisionUser, now);
                 const tier = user.requested_tier || user.tier;
                 const query = new URLSearchParams();
@@ -166,24 +176,32 @@ export default function PendingApprovalPage() {
     // sub_req 로부터 표시 정보 도출
     const isAibainRenewal = pendingSubReq?.request_type === 'aibain_renewal';
     const isAibainAddon = pendingSubReq?.request_type === 'aibain_addon' || isAibainRenewal;
+    const isKongming = isKongmingSubscriptionRequest(pendingSubReq?.request_type);
+    const isKongmingRenewal = pendingSubReq?.request_type === 'aibain_kongming_renewal';
+    const rejectedKongming = isKongmingSubscriptionRequest(rejectedSubReq?.request_type);
+    const kongmingLabel = PLAN_PAYMENT_META[KONGMING_PLAN].label;
     const includesAibain = !!pendingSubReq?.admin_note?.includes('AI Brain');
     const subReqAmount = pendingSubReq?.amount || null;
 
     // 색상 테마 — AI Brain 포함이면 cyan, 아니면 amber
-    const themeColor = includesAibain
+    const themeColor = isKongming || includesAibain
         ? { border: 'border-cyan-500/30', bg: 'bg-cyan-500/10', text: 'text-cyan-300', accentBg: 'bg-cyan-500/[0.06]', accentBorder: 'border-cyan-500/20' }
         : { border: 'border-amber-500/20', bg: 'bg-amber-500/10', text: 'text-amber-400', accentBg: 'bg-amber-500/[0.06]', accentBorder: 'border-amber-500/20' };
 
     // 헤더 / 안내 문구 분기 — 만료 Pro 재구독은 "활성 업그레이드"가 아니다 (is_pro_expired 체크)
     const isUpgradeFromActive = hasActiveBaseSubscription(decisionUser, now);
+    const hasExistingAccess = isUpgradeFromActive || hasActiveKongmingSubscription(decisionUser, now);
+    const dashboardPath = isUpgradeFromActive ? '/dashboard' : '/dashboard/ai-bain';
     const expired = isBaseSubscriptionExpired(decisionUser, now);
     const reapplyTier = rejectedSubReq?.to_tier === 'premium' || (!rejectedSubReq && (user?.tier === 'premium' || user?.requested_tier === 'premium')) ? 'premium' : 'pro';
     const reapplyAibain = ['aibain_addon', 'aibain_renewal'].includes(rejectedSubReq?.request_type || '')
         || !!rejectedSubReq?.admin_note?.includes('AI Brain');
-    const reapplyPath = `/payment-request?plan=${reapplyTier}${reapplyAibain ? '&aibain=1' : ''}${expired ? '&resubscribe=1' : ''}`;
+    const reapplyRenewal = rejectedKongming ? rejectedSubReq?.request_type === 'aibain_kongming_renewal' : expired;
+    const reapplyQuery = rejectedKongming ? planToQuery(KONGMING_PLAN) : `plan=${reapplyTier}${reapplyAibain ? '&aibain=1' : ''}`;
+    const reapplyPath = `/payment-request?${reapplyQuery}${reapplyRenewal ? '&resubscribe=1' : ''}`;
     let headerTitle = '승인 대기 중';
     let headerSubtitle = '구독 신청이 접수되었습니다. 입금 확인 후 관리자가 서비스를 활성화합니다.';
-    if (!hasPending && (!isUpgradeFromActive || rejectedSubReq)) {
+    if (!hasPending && (!hasExistingAccess || rejectedSubReq)) {
         if (rejectedSubReq) {
             headerTitle = cancelled ? '구독 신청이 취소되었습니다' : '구독 신청이 거절되었습니다';
             headerSubtitle = '아래 사유를 확인한 뒤 다시 신청하거나 카카오톡으로 문의해 주세요.';
@@ -192,7 +210,10 @@ export default function PendingApprovalPage() {
             headerSubtitle = '계정은 만들어졌지만 아직 구독 신청이 접수되지 않았습니다. 플랜을 선택하면 입금 안내와 승인 신청이 이어집니다.';
         }
     }
-    if (isAibainAddon) {
+    if (isKongming) {
+        headerTitle = `${kongmingLabel}${isKongmingRenewal ? ' 재구독' : ''} 승인 대기 중`;
+        headerSubtitle = '입금 확인 후 관리자가 30일 이용권을 승인합니다.';
+    } else if (isAibainAddon) {
         headerTitle = isAibainRenewal ? 'AI Brain 재구독 승인 대기 중' : 'AI Brain 활성화 대기 중';
         headerSubtitle = `입금 확인 후 관리자가 AI Brain 알파 스캐너를 ${isAibainRenewal ? '30일 재활성화' : '활성화'}합니다. 그 동안 기존 구독은 그대로 이용 가능합니다.`;
     } else if (isUpgradeFromActive && !rejectedSubReq) {
@@ -228,7 +249,7 @@ export default function PendingApprovalPage() {
                 </div>
                 <div className={`p-8 rounded-2xl bg-[#1c1c1e] border ${themeColor.border}`}>
                     <div className={`w-16 h-16 mx-auto mb-6 ${themeColor.bg} rounded-full flex items-center justify-center`}>
-                        <i className={`${!pendingSubReq && !isUpgradeFromActive ? 'fas fa-credit-card' : isAibainAddon ? 'fas fa-robot' : 'fas fa-hourglass-half'} text-2xl ${themeColor.text}`}></i>
+                        <i className={`${!pendingSubReq && !hasExistingAccess ? 'fas fa-credit-card' : isKongming || isAibainAddon ? 'fas fa-robot' : 'fas fa-hourglass-half'} text-2xl ${themeColor.text}`}></i>
                     </div>
 
                     <h1 className="text-2xl font-bold text-white mb-2">{headerTitle}</h1>
@@ -244,7 +265,7 @@ export default function PendingApprovalPage() {
                                 </span>
                             </div>
                             <div className="text-xs text-gray-400">
-                                요청 플랜: {rejectedSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
+                                요청 플랜: {rejectedKongming ? kongmingLabel : rejectedSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
                             </div>
                             <p className="text-xs text-gray-300 mt-1.5 leading-relaxed">
                                 {rejectedSubReq.admin_note
@@ -267,8 +288,8 @@ export default function PendingApprovalPage() {
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <span className="text-[10px] text-gray-500">요청:</span>
                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${themeColor.bg} ${themeColor.text}`}>
-                                            <i className={`${isAibainAddon ? 'fas fa-robot' : pendingSubReq.to_tier === 'premium' ? 'fas fa-gem' : 'fas fa-crown'} mr-1`} />
-                                            {isAibainAddon
+                                            <i className={`${isKongming || isAibainAddon ? 'fas fa-robot' : pendingSubReq.to_tier === 'premium' ? 'fas fa-gem' : 'fas fa-crown'} mr-1`} />
+                                            {isKongming ? kongmingLabel : isAibainAddon
                                                 ? `${pendingSubReq.from_tier === 'premium' ? 'Ultra Pro' : 'Pro'} → ${isAibainRenewal ? 'AI Brain 재구독' : '+AI Brain 애드온'}`
                                                 : includesAibain
                                                 ? `${pendingSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'} + AI Brain`
@@ -294,7 +315,7 @@ export default function PendingApprovalPage() {
                             <div>
                                 <h2 className="text-white font-bold text-sm">입금 계좌 정보</h2>
                                 <p className="text-gray-400 text-xs mt-0.5">
-                                    {isAibainAddon
+                                    {isKongming ? '입금 확인 후 두 서비스를 30일 동안 이용할 수 있습니다.' : isAibainAddon
                                         ? '입금 확인 후 AI Brain 알파 스캐너가 30일간 활성화됩니다.'
                                         : '입금 확인 후 관리자가 구독을 활성화합니다.'}
                                 </p>
@@ -328,8 +349,8 @@ export default function PendingApprovalPage() {
                                 <p className={`font-bold mt-1 text-base ${themeColor.text}`}>
                                     {subReqAmount || '플랜 선택 후 확정'}
                                 </p>
-                                {isAibainAddon && (
-                                    <p className="text-[10px] text-gray-500 mt-0.5">AI Brain 30일 갱신</p>
+                                {(isKongming || isAibainAddon) && (
+                                    <p className="text-[10px] text-gray-500 mt-0.5">{isKongming ? '30일 이용권' : 'AI Brain 30일 갱신'}</p>
                                 )}
                             </div>
                             <div className="p-3 rounded-lg bg-black/20 border border-white/[0.06]">
@@ -342,7 +363,7 @@ export default function PendingApprovalPage() {
 
                         <p className="mt-3 text-[11px] leading-relaxed text-gray-400">
                             입금자명은 가입 이름과 동일하게 보내 주세요.
-                            {isAibainAddon
+                            {isKongming ? '' : isAibainAddon
                                 ? ' AI Brain 만료 시 별도 갱신 없으면 자동으로 기존 베이스 플랜으로 회귀합니다.'
                                 : pendingSubReq && includesAibain
                                 ? ' AI Brain 알파 스캐너 알림이 30일간 활성화됩니다.'
@@ -360,9 +381,9 @@ export default function PendingApprovalPage() {
 
                     <div className="space-y-3">
                         {rejectedSubReq && !hasPending && !statusError && !blockedAccount && !awaitingAuth && <Link to={reapplyPath} className="block w-full py-3 rounded-xl bg-amber-400 text-black font-bold">
-                            {expired ? '재구독 신청' : '다시 신청'}
+                            {reapplyRenewal ? '재구독 신청' : '다시 신청'}
                         </Link>}
-                        {!hasPending && !isUpgradeFromActive && !rejectedSubReq && subReqLoaded && !blockedAccount && !awaitingAuth && (
+                        {!hasPending && !hasExistingAccess && !rejectedSubReq && subReqLoaded && !blockedAccount && !awaitingAuth && (
                             <button
                                 onClick={() => navigate('/plan-select')}
                                 className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-bold transition-all flex items-center justify-center gap-2"
@@ -371,9 +392,9 @@ export default function PendingApprovalPage() {
                                 플랜 선택하기
                             </button>
                         )}
-                        {isUpgradeFromActive && !awaitingAuth && !blockedAccount && (
+                        {hasExistingAccess && !awaitingAuth && !blockedAccount && (
                             <button
-                                onClick={() => navigate('/dashboard')}
+                                onClick={() => navigate(dashboardPath)}
                                 className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-medium transition-all"
                             >
                                 <i className="fas fa-arrow-left mr-2" />
@@ -387,7 +408,7 @@ export default function PendingApprovalPage() {
                         >
                             {checking ? '확인 중...' : '승인 상태 확인'}
                         </button>
-                        {!isUpgradeFromActive && (
+                        {!hasExistingAccess && (
                             <button
                                 onClick={handleLogout}
                                 className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 font-medium transition-all"

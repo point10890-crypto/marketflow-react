@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
 import { hasPendingSubscription } from '@/lib/subscriptionStatus';
-import { BANK_ACCOUNT, PLAN_PAYMENT_META, planFromQuery, type BillingPlan } from '@/lib/billingInfo';
+import { BANK_ACCOUNT, PLAN_PAYMENT_META, planFromQuery, planToQuery, type BillingPlan } from '@/lib/billingInfo';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { useSeo } from '@/lib/seo';
 
@@ -31,6 +31,8 @@ export default function PaymentRequestPage() {
     const isRenewal = searchParams.get('renew') === '1';
     const plan: BillingPlan | null = planFromQuery(rawPlan, rawAibain);
     const selectedMeta = plan ? PLAN_PAYMENT_META[plan] : null;
+    const isKongmingPlan = plan === 'aibain_kongming';
+    const selectedQuery = plan ? planToQuery(plan) : '';
 
     const [depositorName, setDepositorName] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -66,7 +68,7 @@ export default function PaymentRequestPage() {
     useEffect(() => {
         if (loading) return;
         if (!user || !token) {
-            navigate('/signup', { replace: true });
+            navigate(isKongmingPlan ? `/signup?${selectedQuery}` : '/signup', { replace: true });
             return;
         }
         if (user.role === 'admin') {
@@ -81,7 +83,7 @@ export default function PaymentRequestPage() {
         const isActive = (user.tier === 'pro' || user.tier === 'premium')
             && user.status === 'approved'
             && !user.is_pro_expired;
-        if (isActive) {
+        if (isActive && !isKongmingPlan) {
             const sameBaseTier = meta.tier === user.tier;
             const aiBrainAddonOnly = sameBaseTier && meta.includesAibain && !user.is_aibain_active;
             const tierUpgrade = user.tier === 'pro' && meta.tier === 'premium';
@@ -91,7 +93,7 @@ export default function PaymentRequestPage() {
                 navigate('/dashboard', { replace: true });
             }
         }
-    }, [user, token, plan, loading, navigate, isRenewal]);
+    }, [user, token, plan, loading, navigate, isRenewal, isKongmingPlan, selectedQuery]);
 
     // 입금자명 프리필 = 가입 이름
     useEffect(() => {
@@ -113,7 +115,7 @@ export default function PaymentRequestPage() {
         </main>;
     }
     const meta = selectedMeta;
-    const isAiBrainAddonOnly = user.status === 'approved'
+    const isAiBrainAddonOnly = !isKongmingPlan && user.status === 'approved'
         && !user.is_pro_expired
         && meta.includesAibain
         && meta.tier === user.tier
@@ -128,7 +130,7 @@ export default function PaymentRequestPage() {
         : isEarlyRenewal ? 'Pro 갱신 (만료 전)' : meta.label;
     const displayAmount = isAiBrainAddonOnly ? '40,000원' : meta.amount;
     const displayPeriod = isAiBrainAddonOnly ? 'AI Brain 30일 갱신'
-        : isEarlyRenewal ? '승인 시 기존 만료일부터 +30일' : meta.period;
+        : isEarlyRenewal || (isKongmingPlan && user.is_kongming_active) ? '승인 시 기존 만료일부터 +30일' : meta.period;
 
     const colorMap = {
         amber:    { ring: 'ring-amber-500/30',    bg: 'bg-amber-500/10',    text: 'text-amber-400',   btn: 'from-amber-500 to-orange-500',          btnText: 'text-black',  icon: 'fas fa-crown' },
@@ -145,7 +147,11 @@ export default function PaymentRequestPage() {
         }
         setSubmitting(true);
         try {
-            await subscriptionAPI.requestUpgrade(meta.tier, token, depositorName.trim(), meta.includesAibain);
+            if (isKongmingPlan) {
+                await subscriptionAPI.requestKongming(token, depositorName.trim());
+            } else {
+                await subscriptionAPI.requestUpgrade(meta.tier, token, depositorName.trim(), meta.includesAibain);
+            }
             navigate('/pending-approval', { replace: true });
         } catch (err: any) {
             const msg = err?.message || '';
@@ -301,7 +307,7 @@ export default function PaymentRequestPage() {
 
                 <button
                     type="button"
-                    onClick={() => navigate('/plan-select')}
+                    onClick={() => navigate(isKongmingPlan ? `/plan-select?change=1&${selectedQuery}` : '/plan-select')}
                     className="w-full mt-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 font-medium text-sm transition-all"
                 >
                     다른 플랜 선택

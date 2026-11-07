@@ -8,9 +8,14 @@ import time
 import threading
 import requests as http_requests
 from datetime import datetime, timezone
+from html import escape
 from flask import Blueprint, request, jsonify, current_app, has_app_context
+from sqlalchemy import insert, literal, select
 from app.models import db
-from app.models.user import User, SubscriptionRequest
+from app.models.user import (
+    AIBAIN_KONGMING_PLAN, AIBAIN_KONGMING_RENEWAL, AIBAIN_KONGMING_REQUEST_TYPES,
+    User, SubscriptionRequest,
+)
 from app.models.funnel import record_funnel_event, EVENT_REGISTER, EVENT_SUBSCRIPTION_REQUEST
 from app.auth.decorators import generate_token, login_required
 from app.services import member_telegram
@@ -435,6 +440,64 @@ def change_password():
     })
 
 
+def _insert_pending_subscription_request(user_id: int, **values) -> SubscriptionRequest | None:
+    """Queue at most one pending request per member using one SQLite statement."""
+    table = SubscriptionRequest.__table__
+    pending = select(table.c.id).where(
+        table.c.user_id == user_id, table.c.status == 'pending',
+    ).exists()
+    request_values = {'user_id': user_id, 'status': 'pending', **values}
+    statement = insert(table).from_select(
+        list(request_values),
+        select(*(literal(value) for value in request_values.values())).where(~pending),
+    ).returning(table.c.id)
+    request_id = db.session.execute(statement).scalar_one_or_none()
+    if request_id is None:
+        db.session.rollback()
+        return None
+    return db.session.get(SubscriptionRequest, request_id)
+
+
+def _request_kongming_subscription(user, data):
+    if user.status not in ('pending', 'approved', 'expired'):
+        return jsonify({'error': '계정 상태를 확인해 주세요.'}), 403
+
+    depositor_name = data.get('depositor_name')
+    if not isinstance(depositor_name, str) or not 1 <= len(depositor_name.strip()) <= 100:
+        return jsonify({'error': '입금자 이름을 1자 이상 100자 이하로 입력해 주세요.'}), 400
+    renewing = user.kongming_expires_at is not None
+    label = 'AI Brain + 제갈공명 재구독' if renewing else 'AI Brain + 제갈공명'
+    sub_request = _insert_pending_subscription_request(
+        user.id,
+        request_type=AIBAIN_KONGMING_RENEWAL if renewing else AIBAIN_KONGMING_PLAN,
+        from_tier=user.tier or 'none',
+        to_tier=AIBAIN_KONGMING_PLAN,
+        depositor_name=depositor_name.strip(),
+        amount='50,000원',
+        admin_note=f'{label} 신청 (30일)',
+    )
+    if sub_request is None:
+        return jsonify({'error': 'You already have a pending subscription request'}), 409
+    db.session.commit()
+
+    record_funnel_event(EVENT_SUBSCRIPTION_REQUEST, user.id, {
+        'request_id': sub_request.id,
+        'request_type': sub_request.request_type,
+        'to_tier': AIBAIN_KONGMING_PLAN,
+    })
+    _notify_admin_telegram(
+        f"🤖 <b>구독 요청</b>\n\n👤 {escape(user.name)} ({escape(user.email)})\n"
+        f"📋 {label}\n💰 {sub_request.amount} / 30일",
+        target_email=user.email,
+    )
+    from app.routes.admin import create_admin_notification
+    create_admin_notification(
+        'subscription_request', f'구독 요청: {label}',
+        f'{user.name} ({user.email}) — {sub_request.amount} / 30일', related_id=sub_request.id,
+    )
+    return jsonify({'request': sub_request.to_dict()}), 201
+
+
 @auth_bp.route('/subscription/request', methods=['POST'])
 @login_required
 def request_subscription():
@@ -443,7 +506,14 @@ def request_subscription():
     if not user:
         return jsonify({'error': 'Authentication required'}), 401
 
-    data = request.get_json() or {}
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({'error': 'JSON object required'}), 400
+    plan = data.get('plan')
+    if plan == AIBAIN_KONGMING_PLAN:
+        return _request_kongming_subscription(user, data)
+    if plan is not None:
+        return jsonify({'error': 'Invalid subscription plan'}), 400
     to_tier = (data.get('to_tier') or '').strip().lower()
     # AI Brain 알파 스캐너 애드온 포함 여부 (별도 30일 갱신 구독 +40,000원/30일)
     includes_aibain = bool(data.get('includes_aibain'))
@@ -517,9 +587,6 @@ def request_subscription():
     else:
         req_type = 'downgrade'
 
-    if user.status == 'pending':
-        user.requested_tier = to_tier
-
     depositor_name = (data.get('depositor_name') or '').strip() or None
 
     # 입금 금액 계산
@@ -551,8 +618,8 @@ def request_subscription():
     else:
         admin_note = None
 
-    sub_request = SubscriptionRequest(
-        user_id=user.id,
+    sub_request = _insert_pending_subscription_request(
+        user.id,
         request_type=req_type,
         # from_tier NOT NULL — None 유저는 'none' 문자열로 기록
         from_tier=user.tier or 'none',
@@ -561,7 +628,10 @@ def request_subscription():
         amount=amount,
         admin_note=admin_note,
     )
-    db.session.add(sub_request)
+    if sub_request is None:
+        return jsonify({'error': 'You already have a pending subscription request'}), 409
+    if user.status == 'pending':
+        user.requested_tier = to_tier
     db.session.commit()
 
     # 퍼널 계측: 구독 신청 생성 (best-effort)
@@ -675,6 +745,20 @@ def subscription_status():
     else:
         aibain_state = 'unavailable'
 
+    pending_kongming = pending_request if (
+        pending_request and pending_request.request_type in AIBAIN_KONGMING_REQUEST_TYPES
+    ) else None
+    if pending_kongming:
+        kongming_state = (
+            'renewal_pending' if pending_kongming.request_type == AIBAIN_KONGMING_RENEWAL else 'activation_pending'
+        )
+    elif user.is_kongming_active:
+        kongming_state = 'active'
+    elif user.kongming_expires_at is not None:
+        kongming_state = 'expired'
+    else:
+        kongming_state = 'available'
+
     return jsonify({
         'user': user.to_dict(),
         'requests': [r.to_dict() for r in requests_list],
@@ -693,6 +777,12 @@ def subscription_status():
             'expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
             'pending_request': pending_aibain.to_dict() if pending_aibain else None,
             'has_other_pending_request': bool(pending_request and pending_aibain is None),
+        },
+        'kongming_subscription': {
+            'state': kongming_state,
+            'is_active': user.is_kongming_active,
+            'expires_at': user.kongming_expires_at.isoformat() if user.kongming_expires_at else None,
+            'pending_request': pending_kongming.to_dict() if pending_kongming else None,
         },
     })
 

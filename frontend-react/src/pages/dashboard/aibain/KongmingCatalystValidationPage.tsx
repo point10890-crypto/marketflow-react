@@ -4,6 +4,7 @@ import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { ApiError, fetchAPI } from '@/lib/api';
+import { canAccessKongming } from '@/lib/auth';
 
 const endpoint = '/api/admin/mirofish/kongming/catalyst-validation';
 const legacyQuoteExpirySeconds = 60;
@@ -405,7 +406,7 @@ function CatalystPanel({ canRead }: { canRead: boolean }) {
 
 export default function KongmingCatalystValidationPage() {
     const { token, user } = useAuth();
-    const canRead = Boolean(token && user?.role === 'admin');
+    const canRead = Boolean(token && canAccessKongming(user));
     return (
         <div className="ai-design min-h-full bg-[#101318] p-3 text-sm text-slate-100 sm:p-6">
             <div className="mx-auto max-w-5xl space-y-4">

@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { canAccessAiBain } from '@/lib/auth';
+import { canAccessAiBain, canAccessKongming, isKongmingOnlyUser } from '@/lib/auth';
 
 const primaryItems = [
     { name: 'Summary', href: '/dashboard', icon: 'fas fa-tachometer-alt' },
@@ -15,6 +15,8 @@ const primaryItems = [
     { name: 'AI 분석', href: '/dashboard/manual-stock-analysis', icon: 'fa-table-list' },
     { name: '커뮤니티', href: '/dashboard/community', icon: 'fa-comments' },
 ];
+
+const kongmingItem = { name: '뉴스·재료 검증', href: '/dashboard/ai-bain/catalyst-validation', icon: 'fa-newspaper' };
 
 const pageTitles: Array<[RegExp, string, string]> = [
     [/^\/dashboard$/, 'Summary', '시장 요약'],
@@ -60,7 +62,12 @@ export default function MobileDashboardRail() {
     const pathname = location.pathname ?? '';
     const { user } = useAuth();
     const showAiBain = canAccessAiBain(user);
-    const visibleItems = primaryItems.filter((item) => !('aibainOnly' in item && item.aibainOnly) || showAiBain);
+    const kongmingOnly = isKongmingOnlyUser(user);
+    const aiOnlyItems = primaryItems.filter(item => item.aibainOnly);
+    const visibleItems = kongmingOnly
+        ? [...aiOnlyItems, kongmingItem, { name: '내 계정', href: '/dashboard/account', icon: 'fa-user-circle' }]
+        : primaryItems.flatMap(item => item.href === '/dashboard/ai-bain/chart-predict' && canAccessKongming(user)
+            ? [item, kongmingItem] : !item.aibainOnly || showAiBain ? [item] : []);
     if (!pathname.startsWith('/dashboard')) return null;
 
     const current = pageTitles.find(([pattern]) => pattern.test(pathname));

@@ -1,15 +1,31 @@
-import { hasActiveBaseSubscription, isBaseSubscriptionExpired, subscriptionExpiryTime, subscriptionFunnelTarget, type AuthUserData } from './auth';
-import { planToQuery, type BillingPlan } from './billingInfo';
+import { hasActiveBaseSubscription, hasActiveKongmingSubscription, isBaseSubscriptionExpired, subscriptionExpiryTime, subscriptionFunnelTarget, type AuthUserData } from './auth';
+import { PLAN_PAYMENT_META, planToQuery, type BillingPlan } from './billingInfo';
 
 export const SUBSCRIPTION_REMINDER_MS = 30 * 60 * 1000;
 export type SubscriptionJourney = {
-    kind: 'subscribe' | 'base-expired' | 'aibain-expired';
+    kind: 'subscribe' | 'base-expired' | 'aibain-expired' | 'kongming-expired';
     title: string; message: string; cta: string; destination: string;
     plan: BillingPlan; payment: string; fingerprint: string;
 };
 
 export function subscriptionJourney(user: AuthUserData | null, now = Date.now()): SubscriptionJourney | null {
     if (!user || user.role === 'admin' || user.status === 'unknown') return null;
+    if (hasActiveKongmingSubscription(user, now)) return null;
+    const kongmingExpiry = subscriptionExpiryTime(user.kongming_expires_at);
+    if (['approved', 'expired'].includes(user.status) && Number.isFinite(kongmingExpiry) && kongmingExpiry <= now) {
+        const plan = 'aibain_kongming';
+        const { label, amount } = PLAN_PAYMENT_META[plan];
+        const payment = `/payment-request?${planToQuery(plan)}&resubscribe=1`;
+        return {
+            kind: 'kongming-expired',
+            title: `${label}이 만료되었습니다`,
+            message: `${amount}에 두 서비스를 30일 다시 이용할 수 있습니다.`,
+            cta: '재구독 신청하기',
+            destination: payment,
+            plan, payment,
+            fingerprint: `${user.id}:kongming-expired:${user.kongming_expires_at}`,
+        };
+    }
     const expired = isBaseSubscriptionExpired(user, now);
     const activeBase = hasActiveBaseSubscription(user, now);
     const addonExpiry = subscriptionExpiryTime(user.aibain_expires_at);

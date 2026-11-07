@@ -2,14 +2,17 @@ import './community/community-design.css';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { subscriptionAPI, telegramAPI, type SubscriptionRequest, type TelegramLinkInfo } from '@/lib/api';
+import { subscriptionAPI, telegramAPI, type TelegramLinkInfo } from '@/lib/api';
+import { hasActiveKongmingSubscription, isKongmingOnlyUser, subscriptionExpiryTime } from '@/lib/auth';
+import { isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
+import { pendingSubscriptionRequest } from '@/lib/subscriptionStatus';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { InstallGuide } from '@/components/layout/InstallPrompt';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 
 export default function AccountPage() {
     const { user, token, refreshUser, setSession } = useAuth();
-    const [requests, setRequests] = useState<SubscriptionRequest[]>([]);
+    const [requestStatus, setRequestStatus] = useState<Awaited<ReturnType<typeof subscriptionAPI.getStatus>> | null>(null);
     const [loading, setLoading] = useState(true);
     const [requesting, setRequesting] = useState(false);
     const [showBank, setShowBank] = useState(false);
@@ -147,21 +150,34 @@ export default function AccountPage() {
     };
 
     const isPro = user?.tier === 'pro' || user?.tier === 'premium';
-    const hasPending = requests.some(r => r.status === 'pending');
-    const pendingAibain = requests.find(r =>
-        r.status === 'pending' && (r.request_type === 'aibain_addon' || r.request_type === 'aibain_renewal')
-    );
+    const requests = requestStatus?.requests ?? [];
+    const pendingRequest = requestStatus ? pendingSubscriptionRequest(requestStatus)
+        : user?.has_pending_subscription === false ? null : user?.pending_subscription_request;
+    const hasPending = pendingRequest?.status === 'pending'
+        || (requestStatus ? requestStatus.user?.has_pending_subscription : user?.has_pending_subscription) === true;
+    const pendingAibain = pendingRequest?.status === 'pending'
+        && ['aibain_addon', 'aibain_renewal'].includes(pendingRequest.request_type) ? pendingRequest : null;
+    const pendingKongming = pendingRequest?.status === 'pending' && isKongmingSubscriptionRequest(pendingRequest.request_type);
+    const kongmingPlan = 'aibain_kongming';
+    const kongmingMeta = PLAN_PAYMENT_META[kongmingPlan];
+    const kongmingActive = hasActiveKongmingSubscription(user);
+    const kongmingExpiry = subscriptionExpiryTime(user?.kongming_expires_at);
+    const kongmingExpired = Number.isFinite(kongmingExpiry) && kongmingExpiry <= Date.now();
+    const kongmingStandalone = isKongmingOnlyUser(user);
+    const kongmingPayment = `/payment-request?${planToQuery(kongmingPlan)}${kongmingActive ? '&renew=1' : kongmingExpired ? '&resubscribe=1' : ''}`;
     const isAibainExpired = !!user?.is_aibain_expired || (!!user?.aibain_expires_at && !user?.is_aibain_active);
 
     useEffect(() => {
         if (!token) return;
+        let current = true;
         (async () => {
             try {
                 const data = await subscriptionAPI.getStatus(token);
-                setRequests(data.requests || []);
+                if (current) setRequestStatus(data);
             } catch { /* ignore */ }
-            setLoading(false);
+            if (current) setLoading(false);
         })();
+        return () => { current = false; };
     }, [token]);
 
     const handleRequest = async () => {
@@ -171,7 +187,7 @@ export default function AccountPage() {
             await subscriptionAPI.requestUpgrade('pro', token, depositorName || undefined);
             setShowBank(true);
             const data = await subscriptionAPI.getStatus(token);
-            setRequests(data.requests || []);
+            setRequestStatus(data);
         } catch {
             alert('구독 신청 중 오류가 발생했습니다.');
         }
@@ -183,7 +199,7 @@ export default function AccountPage() {
         try {
             await refreshUser();
             const data = await subscriptionAPI.getStatus(token);
-            setRequests(data.requests || []);
+            setRequestStatus(data);
         } catch {
             console.error('Failed to refresh account status');
         }
@@ -257,7 +273,9 @@ export default function AccountPage() {
                     <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                         <span className="text-[10px] text-[#a6afbb] uppercase tracking-wider">플랜</span>
                         <div className="flex items-center gap-2 mt-1">
-                            {user.tier === 'premium' ? (
+                            {kongmingStandalone ? (
+                                <span className="text-cyan-300 font-bold">{kongmingMeta.label}</span>
+                            ) : user.tier === 'premium' ? (
                                 <span className="text-purple-400 font-bold flex items-center gap-1.5">
                                     <i className="fas fa-gem text-xs" /> Ultra Pro
                                 </span>
@@ -274,7 +292,7 @@ export default function AccountPage() {
                         <span className="text-[10px] text-[#a6afbb] uppercase tracking-wider">상태</span>
                         <p className="text-green-400 font-bold mt-1 flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-green-400" />
-                            {user.status === 'approved' ? '활성' : user.status}
+                            {kongmingStandalone || user.status === 'approved' ? '활성' : user.status}
                         </p>
                     </div>
                 </div>
@@ -500,8 +518,40 @@ export default function AccountPage() {
                 </div>
             )}
 
-            {/* AI Brain 알파 스캐너 (애드온) 상태 — 활성 Pro/Premium 회원에게만 노출 */}
-            {isPro && (
+            <section className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-cyan-500/20 bg-[#15191e]">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 shrink-0 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+                        <i className="fas fa-robot text-cyan-300" aria-hidden />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="dash-section-title text-white font-bold">{kongmingMeta.label}</h3>
+                            {kongmingActive && <span className="text-xs font-bold text-cyan-300">이용 중</span>}
+                            {pendingKongming && <span className="text-xs font-bold text-yellow-300">승인 대기</span>}
+                            {kongmingExpired && !pendingKongming && <span className="text-xs font-bold text-rose-300">만료</span>}
+                        </div>
+                        <p className="mt-1 text-xs text-[#a6afbb]">{kongmingMeta.amount} / 30일 · 계좌이체</p>
+                        {Number.isFinite(kongmingExpiry) && (
+                            <p className="mt-1 text-xs text-cyan-300">
+                                이용 만료일 {new Date(kongmingExpiry).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}
+                            </p>
+                        )}
+                    </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                    {kongmingActive && (
+                        <Link to="/dashboard/ai-bain/catalyst-validation" className="rounded-xl bg-cyan-500/15 px-4 py-3 text-sm font-bold text-cyan-300">
+                            제갈공명 열기
+                        </Link>
+                    )}
+                    <Link to={hasPending ? '/pending-approval' : kongmingPayment} className="rounded-xl bg-white/5 px-4 py-3 text-sm font-bold text-cyan-300 hover:bg-white/10">
+                        {hasPending ? '승인 상태 확인' : kongmingActive ? '30일 연장 신청' : kongmingExpired ? '재구독 신청' : '구독 신청'}
+                    </Link>
+                </div>
+            </section>
+
+            {/* AI Brain 애드온과 결합 이용권은 별도 구독 상태다. */}
+            {isPro && (!kongmingActive || user.is_aibain_active || pendingAibain) && (
                 <div className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-cyan-500/20 bg-[#15191e]">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
@@ -629,7 +679,7 @@ export default function AccountPage() {
             )}
 
             {/* Bank Transfer Info */}
-            {!isPro && (showBank || hasPending) && (
+            {!isPro && !pendingKongming && (showBank || hasPending) && (
                 <div className="account-panel dash-panel p-5 md:p-6 rounded-xl border border-white/[0.07] bg-[#15191e]">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
@@ -700,7 +750,7 @@ export default function AccountPage() {
                                 <div className="flex items-center gap-3">
                                     {statusBadge(r.status)}
                                     <span className="text-gray-400 text-sm">
-                                        {r.from_tier} → {r.to_tier}
+                                        {isKongmingSubscriptionRequest(r.request_type) ? kongmingMeta.label : `${r.from_tier} → ${r.to_tier}`}
                                     </span>
                                 </div>
                                 <span className="text-[#a6afbb] text-xs">

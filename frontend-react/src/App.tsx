@@ -1,7 +1,7 @@
 import SubscriptionEntry from '@/components/subscription/SubscriptionEntry';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { canAccessAiBain, subscriptionFunnelTarget } from '@/lib/auth';
+import { canAccessAiBain, canAccessKongming, isKongmingOnlyUser, subscriptionFunnelTarget } from '@/lib/auth';
 import { useSeo } from '@/lib/seo';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -98,6 +98,11 @@ function unauthRedirect(): string {
     }
 }
 
+const kongmingPlanDashboardPaths = new Set([
+    '/dashboard/ai-bain', '/dashboard/ai-bain/decision', '/dashboard/ai-bain/chart-predict',
+    '/dashboard/ai-bain/goodrich', '/dashboard/ai-bain/catalyst-validation', '/dashboard/account',
+]);
+
 export function ApprovedGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     const location = useLocation();
@@ -108,6 +113,9 @@ export function ApprovedGuard({ children }: { children: React.ReactNode }) {
     // 리다이렉트하지 않고 로딩만 보여준다. 유효 토큰 유저를 /login 으로 튕기면 안 된다.
     if (user.status === 'unknown') return <LoadingFallback />;
     if (user.role === 'admin') return <>{children}</>;
+    if (isKongmingOnlyUser(user) && !kongmingPlanDashboardPaths.has(location.pathname.replace(/\/$/, ''))) {
+        return <Navigate to="/dashboard/ai-bain" replace />;
+    }
     // 만료 → 재구독 / 노티어 → 플랜 선택 / 승인 대기 → pending-approval.
     // 판정 기준은 subscriptionFunnelTarget 한 곳 (FunnelGate·404 CTA 와 공유).
     const funnel = subscriptionFunnelTarget(user);
@@ -137,6 +145,13 @@ function AiBainGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     if (loading) return <LoadingFallback />;
     if (canAccessAiBain(user)) return <>{children}</>;
+    return <Navigate to="/dashboard/ai-bain" replace />;
+}
+
+function KongmingGuard({ children }: { children: React.ReactNode }) {
+    const { user, loading } = useAuth();
+    if (loading) return <LoadingFallback />;
+    if (canAccessKongming(user)) return <>{children}</>;
     return <Navigate to="/dashboard/ai-bain" replace />;
 }
 
@@ -244,7 +259,7 @@ export default function App() {
                         <Route path="us/ai-chart" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsAIChartPage /></Suspense></ProGuard>} />
                         <Route path="ai-bain/decision" element={<ProGuard><AiBainGuard><Suspense fallback={<LoadingFallback />}><DecisionBriefPage /></Suspense></AiBainGuard></ProGuard>} />
                         <Route path="ai-bain/chart-predict" element={<ProGuard><AiBainGuard><Suspense fallback={<LoadingFallback />}><ChartAnaloguePage /></Suspense></AiBainGuard></ProGuard>} />
-                        <Route path="ai-bain/catalyst-validation" element={<AdminGuard><Suspense fallback={<LoadingFallback />}><KongmingCatalystValidationPage /></Suspense></AdminGuard>} />
+                        <Route path="ai-bain/catalyst-validation" element={<KongmingGuard><Suspense fallback={<LoadingFallback />}><KongmingCatalystValidationPage /></Suspense></KongmingGuard>} />
                         <Route path="ai-bain/goodrich" element={<ProGuard><AiBainGuard><Suspense fallback={<LoadingFallback />}><GoodrichFundManagerPage /></Suspense></AiBainGuard></ProGuard>} />
                         <Route path="ai-bain" element={<ProGuard><Suspense fallback={<LoadingFallback />}><AiBainPage /></Suspense></ProGuard>} />
                         <Route path="crypto" element={<ProGuard><Suspense fallback={<LoadingFallback />}><CryptoOverviewPage /></Suspense></ProGuard>} />

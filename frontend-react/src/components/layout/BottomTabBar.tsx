@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { canAccessAiBain } from '@/lib/auth';
+import { canAccessAiBain, isKongmingOnlyUser } from '@/lib/auth';
 
 const tabs = [
     { name: 'Summary', href: '/dashboard', icon: 'fas fa-tachometer-alt', color: 'purple' },
@@ -13,6 +13,8 @@ const tabs = [
     { name: 'Briefing', href: '/dashboard/briefing', icon: 'fa-newspaper', color: 'blue' },
     { name: '커뮤니티', href: '/dashboard/community', icon: 'fa-comments', color: 'cyan' },
 ];
+
+const accountTab = { name: '내 계정', href: '/dashboard/account', icon: 'fa-user-circle', color: 'purple' };
 
 const activeColors: Record<string, string> = {
     purple: 'text-purple-300',
@@ -47,9 +49,12 @@ export default function BottomTabBar() {
     const location = useLocation();
     const pathname = location.pathname ?? '';
     const { user } = useAuth();
-    const isLocked = !!user && user.tier !== 'pro' && user.tier !== 'premium' && user.role !== 'admin';
+    const kongmingOnly = isKongmingOnlyUser(user);
+    const isLocked = !kongmingOnly && !!user && user.tier !== 'pro' && user.tier !== 'premium' && user.role !== 'admin';
     const showAiBain = canAccessAiBain(user);
-    const visibleTabs = tabs.filter((tab) => !('aibainOnly' in tab && tab.aibainOnly) || showAiBain);
+    const visibleTabs = kongmingOnly
+        ? [...tabs.filter(tab => tab.aibainOnly), accountTab]
+        : tabs.filter(tab => !tab.aibainOnly || showAiBain);
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-safe-bottom">

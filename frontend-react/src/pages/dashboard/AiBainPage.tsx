@@ -3,7 +3,12 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
+import { canAccessAiBain, hasActiveKongmingSubscription, subscriptionExpiryTime } from '@/lib/auth';
+import { isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
+import { pendingSubscriptionRequest } from '@/lib/subscriptionStatus';
 import AiBainDashboard from '@/pages/dashboard/aibain/AiBainDashboard';
+
+const KONGMING_PLAN = 'aibain_kongming';
 
 /**
  * Pro + AI Brain 구독자 전용 페이지.
@@ -25,7 +30,7 @@ export default function AiBainPage() {
     const hasProBase = tier === 'pro' || tier === 'premium';
     const isAibainActive = !!user?.is_aibain_active;
     // admin 또는 AI Brain 활성 구독자 → 심플 대시보드
-    const showFullDashboard = isAdmin || isAibainActive;
+    const showFullDashboard = canAccessAiBain(user);
     // Pro/Premium 인데 AI Brain 미활성 → 업그레이드 신청 폼
     const showUpgradeFlow = !isAdmin && hasProBase && !isAibainActive;
 
@@ -33,13 +38,13 @@ export default function AiBainPage() {
     if (showFullDashboard) {
         return (
             <div>
-                {isAdmin && (
+                {(isAdmin || !hasActiveKongmingSubscription(user)) && (
                     <div className="bg-[#09090b] px-4 pt-4 sm:px-6 lg:px-8">
                         <div className="mx-auto flex max-w-3xl justify-end">
-                            <Link to="/admin/endpoints"
+                            {isAdmin ? <Link to="/admin/endpoints"
                                   className="text-[11px] text-gray-600 transition-colors hover:text-cyan-300">
                                 <i className="fas fa-terminal mr-1" />운영 콘솔 열기
-                            </Link>
+                            </Link> : <KongmingPlanLink />}
                         </div>
                     </div>
                 )}
@@ -111,6 +116,20 @@ function FeatureCard({ icon, title, desc }: { icon: string; title: string; desc:
     );
 }
 
+function KongmingPlanLink() {
+    const { user } = useAuth();
+    const { amount, label } = PLAN_PAYMENT_META[KONGMING_PLAN];
+    const expires = subscriptionExpiryTime(user?.kongming_expires_at);
+    const renewal = Number.isFinite(expires) && expires <= Date.now();
+    const query = `${planToQuery(KONGMING_PLAN)}${renewal ? '&resubscribe=1' : ''}`;
+    return <Link
+        to={user ? `/payment-request?${query}` : '/pricing'}
+        className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-500/10 px-4 py-2.5 text-sm font-bold text-cyan-200 hover:bg-cyan-500/20"
+    >
+        {label} {renewal ? '재구독' : '신청'} · {amount}/30일
+    </Link>;
+}
+
 function UpgradePrompt({ tier }: { tier: string | null }) {
     const { user, token } = useAuth();
     const navigate = useNavigate();
@@ -133,7 +152,7 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
         subscriptionAPI.getStatus(token)
             .then(data => {
                 if (!active) return;
-                setPendingRequest(data.requests.find(req => req.status === 'pending') || null);
+                setPendingRequest(pendingSubscriptionRequest(data));
             })
             .catch(() => {})
             .finally(() => { if (active) setCheckingStatus(false); });
@@ -178,6 +197,7 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
 
     if (pendingRequest) {
         const renewalPending = pendingRequest.request_type === 'aibain_renewal';
+        const kongmingPending = isKongmingSubscriptionRequest(pendingRequest.request_type);
         return (
             <PageShell>
                 <div className="rounded-2xl border border-yellow-500/25 bg-gradient-to-br from-yellow-500/[0.07] to-[#13151f] p-6 sm:p-8 text-center">
@@ -185,7 +205,8 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
                         <i className="fas fa-hourglass-half" />
                     </div>
                     <h3 className="text-xl sm:text-2xl font-black text-white">
-                        {pendingIsAibain ? (renewalPending ? 'AI Brain 재구독 승인 대기 중' : 'AI Brain 활성화 승인 대기 중') : '다른 구독 신청 승인 대기 중'}
+                        {kongmingPending ? `${PLAN_PAYMENT_META[KONGMING_PLAN].label} 승인 대기 중`
+                            : pendingIsAibain ? (renewalPending ? 'AI Brain 재구독 승인 대기 중' : 'AI Brain 활성화 승인 대기 중') : '다른 구독 신청 승인 대기 중'}
                     </h3>
                     <p className="mt-2 text-sm text-gray-300">
                         입금 확인 후 관리자가 처리합니다. 중복 신청 없이 현재 요청 상태를 바로 확인할 수 있습니다.
@@ -208,6 +229,7 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
 
     return (
         <PageShell>
+            <KongmingPlanLink />
             {/* 메인 업그레이드 신청 카드 */}
             <div className="rounded-2xl border border-cyan-500/40 bg-gradient-to-br from-cyan-500/[0.08] via-[#13151f] to-[#1c1c1e] p-6 sm:p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-cyan-500/15 to-transparent rounded-bl-full pointer-events-none" />
@@ -341,15 +363,9 @@ function SubscribePrompt() {
                     구독 안내
                 </h3>
                 <p className="text-sm text-gray-300 mb-4">
-                    Pro + AI Brain 구독자만 이용 가능합니다. 가격 페이지에서 구독을 신청해 주세요.
+                    AI Brain 이용권을 신청하면 알파 스캐너와 분석 도구를 이용할 수 있습니다.
                 </p>
-                <Link
-                    to="/pricing"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 text-black font-bold text-sm hover:from-cyan-400 hover:to-sky-400 transition-all"
-                >
-                    <i className="fas fa-receipt" />
-                    구독 신청
-                </Link>
+                <KongmingPlanLink />
             </div>
         </PageShell>
     );

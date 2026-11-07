@@ -179,7 +179,7 @@ const FAQS = [
     },
 ];
 
-const PRICING_PLANS: BillingPlan[] = ['pro', 'pro_aibain', 'premium', 'premium_aibain'];
+const PRICING_PLANS: BillingPlan[] = ['aibain_kongming', 'pro', 'pro_aibain', 'premium', 'premium_aibain'];
 
 function AccountActionLink({ action, className = '' }: { action: PublicAccountAction; className?: string }) {
     if (action.disabled) {
@@ -567,7 +567,7 @@ export default function LandingPage() {
                         title="플랜을 고르면 바로 시작 단계로 이어져요"
                         description="카드를 선택하면 계정 생성 → 플랜 확인 → 입금 안내 → 승인 대기까지 한 흐름으로 연결됩니다."
                     />
-                    <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-5">
                         {PRICING_PLANS.map((plan) => {
                             const meta = PLAN_PAYMENT_META[plan];
                             const highlighted = plan === 'pro_aibain';
@@ -587,7 +587,7 @@ export default function LandingPage() {
                                         </span>
                                     )}
                                     <div className={`text-[11px] font-bold ${meta.includesAibain ? 'text-cyan-300' : 'text-[#ffab8f]'}`}>
-                                        {meta.includesAibain ? 'AI Brain 포함' : '베이스 플랜'}
+                                        {plan === 'aibain_kongming' ? '뉴스·재료 검증 포함' : meta.includesAibain ? 'AI Brain 포함' : '베이스 플랜'}
                                     </div>
                                     <h3 className="mt-1.5 text-base font-black text-white">{meta.label}</h3>
                                     <div className="mt-3 text-2xl font-black tracking-tight text-white">{meta.amount}</div>

@@ -150,7 +150,16 @@ def approved_required(f):
 
 
 def pro_required(f):
-    """Pro 구독 유저 전용 — 승인 + Pro tier"""
+    """Pro 구독 유저 전용 — 승인 + Pro tier."""
+    return _pro_required(f, allow_kongming=False)
+
+
+def pro_or_kongming_required(f):
+    """Pro 또는 제갈공명 묶음 구독자에게 제공하는 조회 기능."""
+    return _pro_required(f, allow_kongming=True)
+
+
+def _pro_required(f, *, allow_kongming):
     @wraps(f)
     def decorated(*args, **kwargs):
         user = _get_current_user()
@@ -158,13 +167,13 @@ def pro_required(f):
             return jsonify({'error': 'Authentication required'}), 401
         if _is_account_blocked(user):
             return jsonify({'error': 'Account access denied', 'status': user.status}), 403
-        if not user.is_approved and not user.is_admin:
-            return jsonify({'error': 'Account not approved'}), 403
-        if user.tier not in ('pro', 'premium') and not user.is_admin:
-            return jsonify({'error': 'Pro subscription required'}), 403
-        # Pro 만료 체크 (premium은 무기한)
-        if user.is_pro_expired:
-            return jsonify({'error': 'Pro subscription expired', 'expired': True}), 403
+        if not (allow_kongming and getattr(user, 'is_kongming_active', False)):
+            if not user.is_approved and not user.is_admin:
+                return jsonify({'error': 'Account not approved'}), 403
+            if user.tier not in ('pro', 'premium') and not user.is_admin:
+                return jsonify({'error': 'Pro subscription required'}), 403
+            if user.is_pro_expired:
+                return jsonify({'error': 'Pro subscription expired', 'expired': True}), 403
         request.current_user = user
         _release_claw_auth_session(user)
         return f(*args, **kwargs)
@@ -197,13 +206,23 @@ def admin_required(f):
     return decorated
 
 
+_KONGMING_ANALYSIS_POSTS = frozenset({
+    'admin_mirofish.alpha_lab',
+    'admin_mirofish.alpha_lab_account_plan',
+    'admin_mirofish.chart_analogue_kelly',
+    'admin_mirofish.chart_analogue_top3',
+    'admin_mirofish_goodrich.run_fund_manager_research',
+    'kr.kr_decision_deep_analysis',
+})
+
+
 def admin_or_aibain_required(f):
-    """관리자 OR AI Brain 활성 구독자 허용 — read-only 분석 데이터 전용.
+    """관리자 또는 AI Brain·제갈공명 묶음 활성 구독자 허용 — 읽기 전용.
 
     토큰 검증 후 다음 둘 중 하나여야 통과:
       1) user.is_admin == True
-      2) user.is_aibain_active == True (aibain_enabled + 미만료)
-    그 외 403. mutation/제어 엔드포인트에는 사용 금지.
+      2) 기존 AI Brain 또는 AI Brain + 제갈공명 이용권이 활성 상태
+    결합 플랜은 조회와 화면에서 요청하는 분석만 허용한다.
     """
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -212,7 +231,11 @@ def admin_or_aibain_required(f):
             return jsonify({'error': 'Authentication required'}), 401
         if _is_account_blocked(user):
             return jsonify({'error': 'Account access denied', 'status': user.status}), 403
-        if not (user.is_admin or user.is_aibain_active):
+        bundle_access = getattr(user, 'is_kongming_active', False) and (
+            request.method in ('GET', 'HEAD')
+            or (request.method == 'POST' and request.endpoint in _KONGMING_ANALYSIS_POSTS)
+        )
+        if not (user.is_admin or user.is_aibain_active or bundle_access):
             return jsonify({
                 'error': 'AI Brain 구독자 또는 관리자만 접근 가능합니다.'
             }), 403

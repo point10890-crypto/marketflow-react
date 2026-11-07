@@ -119,10 +119,10 @@ def _response(payload, status):
 
 
 def catalyst_response(*, history=False):
-    """Apply the Kongming access list after MarketFlow's admin authentication."""
-    user_id = getattr(request, 'current_user_id', None)
+    """Require an active bundle or explicit administrator access."""
+    user = request.current_user
     approved = {value.strip() for value in os.environ.get(_ALLOWLIST, '').split(',') if value.strip()}
-    if user_id is None or str(user_id) not in approved:
+    if not (getattr(user, 'is_kongming_active', False) or (user.is_admin and str(user.id) in approved)):
         return _response({'error': 'kongming_catalyst_forbidden'}, 403)
     try:
         if history:

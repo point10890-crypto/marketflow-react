@@ -3,15 +3,14 @@
  *
  * 백엔드 tier 차원 (BillingPlanTier) 과 UI 플랜 차원 (BillingPlan) 을 분리:
  *  - BillingPlanTier: 백엔드가 인식하는 tier = 'pro' | 'premium'
- *  - BillingPlan:     UI 가 노출하는 4종 옵션 (베이스 × AI Brain on/off)
+ *  - BillingPlan:     기본 플랜과 AI 구독을 포함한 신청 옵션
  *
  * AI Brain 은 별도 30일 갱신 구독제. tier 만료와는 별도 차원.
  */
 
 export type BillingPlanTier = 'pro' | 'premium';
 
-/** UI 플랜 키 — 4종 (베이스 × AI Brain 토글) */
-export type BillingPlan = 'pro' | 'pro_aibain' | 'premium' | 'premium_aibain';
+export type BillingPlan = 'pro' | 'pro_aibain' | 'premium' | 'premium_aibain' | 'aibain_kongming';
 
 export const BANK_ACCOUNT = {
     bank: '국민은행',
@@ -21,7 +20,7 @@ export const BANK_ACCOUNT = {
 
 export interface PlanMeta {
     label: string;
-    tier: BillingPlanTier;       // 백엔드로 전송할 tier
+    tier: BillingPlanTier | 'aibain_kongming'; // 구독 신청 대상
     includesAibain: boolean;     // AI Brain 포함 여부
     amount: string;              // 표시용 (예: "90,000원")
     amountNumber: number;        // 비교/계산용 (예: 90000)
@@ -102,11 +101,27 @@ export const PLAN_PAYMENT_META: Record<BillingPlan, PlanMeta> = {
             'AI Brain 만료 시 자동 회귀',
         ],
     },
+    aibain_kongming: {
+        label: 'AI 브레인 + 제갈공명',
+        tier: 'aibain_kongming',
+        includesAibain: true,
+        amount: '50,000원',
+        amountNumber: 50_000,
+        color: 'cyan',
+        period: '30일 이용권',
+        description: 'AI 분석과 뉴스·재료 검증을 함께 이용하는 독립 플랜',
+        features: [
+            'AI 브레인 알파 스캐너와 Goodrich TOP 3',
+            'AI 종목 판단과 차트 유사 사례',
+            '제갈공명 뉴스·공시 근거 대조',
+            '재료 판정과 검증 이력',
+        ],
+    },
 };
 
 /**
  * AI Brain 애드온 단독 요금 — 활성 Pro/Ultra Pro 회원이 AI Brain 만 추가할 때.
- * 신규 가입 플랜이 아니므로 PLAN_PAYMENT_META 4종과 별도로 노출용 메타만 둔다.
+ * 기존 구독에 추가하는 옵션이므로 PLAN_PAYMENT_META와 별도로 노출한다.
  * (실제 금액 계산은 백엔드 aibain_addon/aibain_renewal 경로가 40,000원으로 고정)
  */
 export const AIBAIN_ADDON_META = {
@@ -131,14 +146,20 @@ export function planFromQuery(
     const aibain = rawAibain === '1' || rawAibain === 'true';
     if (rawPlan === 'pro') return aibain ? 'pro_aibain' : 'pro';
     if (rawPlan === 'premium') return aibain ? 'premium_aibain' : 'premium';
+    if (rawPlan === 'aibain_kongming') return 'aibain_kongming';
     return null;
 }
 
 /** BillingPlan → URL 쿼리 fragment */
 export function planToQuery(plan: BillingPlan): string {
+    if (plan === 'aibain_kongming') return 'plan=aibain_kongming';
     const meta = PLAN_PAYMENT_META[plan];
     const base = `plan=${meta.tier}`;
     return meta.includesAibain ? `${base}&aibain=1` : base;
+}
+
+export function isKongmingSubscriptionRequest(type?: string | null): boolean {
+    return type === 'aibain_kongming' || type === 'aibain_kongming_renewal';
 }
 
 /** 하위호환 — 기존 'pro' / 'premium' 만 받던 normalize (PaymentRequestPage 기존 호출) */

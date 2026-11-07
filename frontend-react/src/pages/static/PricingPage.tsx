@@ -10,7 +10,7 @@ import {
     type BillingPlan,
 } from '@/lib/billingInfo';
 
-const PLAN_ORDER: BillingPlan[] = ['pro', 'pro_aibain', 'premium', 'premium_aibain'];
+const PLAN_ORDER: BillingPlan[] = ['aibain_kongming', 'pro', 'pro_aibain', 'premium', 'premium_aibain'];
 
 const PLAN_STYLE: Record<BillingPlan, {
     badge: string;
@@ -20,6 +20,14 @@ const PLAN_STYLE: Record<BillingPlan, {
     surface: string;
     button: string;
 }> = {
+    aibain_kongming: {
+        badge: 'AI 분석 · 재료 검증',
+        icon: 'fa-newspaper',
+        accent: 'text-cyan-300',
+        border: 'border-cyan-400/40',
+        surface: 'from-cyan-500/[0.14] via-sky-500/[0.035] to-transparent',
+        button: 'bg-cyan-300 text-slate-950 hover:bg-cyan-200',
+    },
     pro: {
         badge: '기본 분석',
         icon: 'fa-chart-line',
@@ -87,8 +95,8 @@ export default function PricingPage() {
     const navigate = useNavigate();
 
     useSeo({
-        title: '요금제 — Pro · Ultra Pro · AI Brain | MarketFlow',
-        description: 'MarketFlow 구독 요금제 안내 — Pro(30일), Ultra Pro(무기한), AI Brain 애드온의 기능과 가격, 계좌이체 결제·승인 절차를 확인하세요.',
+        title: '요금제 — AI 브레인 + 제갈공명 · Pro · Ultra Pro | MarketFlow',
+        description: 'AI 브레인 + 제갈공명은 30일 50,000원입니다. MarketFlow 구독별 기능과 계좌이체 신청 절차를 확인하세요.',
         path: '/pricing',
     });
 

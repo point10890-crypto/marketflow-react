@@ -18,7 +18,9 @@ from datetime import datetime, timezone, timedelta
 from flask import Blueprint, request, jsonify, current_app
 from sqlalchemy import or_
 from app.models import db
-from app.models.user import User, SubscriptionRequest, AdminAuditLog, AdminNotification
+from app.models.user import (
+    AIBAIN_KONGMING_REQUEST_TYPES, User, SubscriptionRequest, AdminAuditLog, AdminNotification,
+)
 from app.models.funnel import (
     FunnelEvent, record_funnel_event,
     EVENT_REGISTER, EVENT_SUBSCRIPTION_REQUEST, EVENT_APPROVE, EVENT_REJECT, EVENT_TIER_GRANT,
@@ -263,10 +265,10 @@ def dashboard():
     """관리자 대시보드 통계"""
     users = User.query.all()
     pending_subs = SubscriptionRequest.query.filter_by(status='pending').count()
-    # AI Brain 애드온 전용 pending 카운트 (sub_req.request_type 기반)
+    # AI Brain 관련 대기 신청 (기존 애드온과 제갈공명 이용권).
     pending_aibain_subs = SubscriptionRequest.query.filter(
         SubscriptionRequest.status == 'pending',
-        SubscriptionRequest.request_type.in_(('aibain_addon', 'aibain_renewal')),
+        SubscriptionRequest.request_type.in_(('aibain_addon', 'aibain_renewal', *AIBAIN_KONGMING_REQUEST_TYPES)),
     ).count()
 
     # AI Brain 활성 유저 + 만료 임박 (D-3 이내)
@@ -716,7 +718,7 @@ def revoke_subscription(user_id):
 @admin_bp.route('/users/<int:user_id>/expire', methods=['POST'])
 @admin_required
 def expire_subscription(user_id):
-    """베이스/AI Brain 이용을 모두 만료하고 계정·신청·구매 이력은 보존한다."""
+    """베이스와 AI Brain 이용권을 모두 만료하고 계정·신청·구매 이력을 보존한다."""
     user = db.session.get(User, user_id)
     if user is None:
         return jsonify({'error': 'User not found'}), 404
@@ -738,6 +740,9 @@ def expire_subscription(user_id):
     try:
         before = user.to_dict()
         expired_at = datetime.now(timezone.utc) - timedelta(minutes=1)
+        kongming_expiry = _to_naive_utc(user.kongming_expires_at)
+        if kongming_expiry is not None and kongming_expiry > _to_naive_utc(expired_at):
+            user.kongming_expires_at = expired_at
         user.status = 'expired'
         user.pro_expires_at = expired_at
         user.pro_expiry_alert_stage = 'expired'
@@ -1237,6 +1242,7 @@ def approve_subscription(req_id):
     request_type 별로 처리 분기:
       - 'aibain_addon': 베이스 tier 유지 + AI Brain 활성화 (+30일). 활성 회원이 AI Brain 만 추가.
       - 'aibain_renewal': 만료된 AI Brain 재활성화 (+30일). 베이스 tier 유지.
+      - 'aibain_kongming' / 'aibain_kongming_renewal': 독립 이용권 활성화 및 연장 (+30일).
       - 'early_renewal': 활성 Pro 의 만료 전 갱신 — 만료일 기준 +30일 연장 (남은 기간 보존).
       - 'upgrade' / 'downgrade': 기존 동작 — tier 변경 + 만료일 재설정 + status 승급.
 
@@ -1272,8 +1278,16 @@ def approve_subscription(req_id):
     db.session.expire_all()
     sub_req = db.session.get(SubscriptionRequest, req_id)
     is_aibain_addon = sub_req.request_type in ('aibain_addon', 'aibain_renewal')
+    is_kongming = sub_req.request_type in AIBAIN_KONGMING_REQUEST_TYPES
 
     user = db.session.get(User, sub_req.user_id)
+    if is_kongming:
+        if user is None:
+            db.session.rollback()
+            return jsonify({'error': 'User not found'}), 404
+        if user.status not in ('pending', 'approved', 'expired'):
+            db.session.rollback()
+            return jsonify({'error': 'Account access denied'}), 409
     before = None
     after = None
     audit_action = 'approve_subscription'
@@ -1286,6 +1300,7 @@ def approve_subscription(req_id):
             'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
             'aibain_enabled': user.aibain_enabled,
             'aibain_expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
+            'kongming_expires_at': user.kongming_expires_at.isoformat() if user.kongming_expires_at else None,
         }
 
         if sub_req.request_type == 'renewal' and _has_active_same_tier(user, sub_req.to_tier):
@@ -1305,7 +1320,19 @@ def approve_subscription(req_id):
                 'user': user.to_dict(),
             }), 200
 
-        if sub_req.request_type == 'early_renewal':
+        if is_kongming:
+            current_expiry = user.kongming_expires_at
+            if current_expiry is not None and current_expiry.tzinfo is None:
+                current_expiry = current_expiry.replace(tzinfo=timezone.utc)
+            user.kongming_expires_at = max(processed_at, current_expiry or processed_at) + timedelta(days=30)
+            if user.status == 'pending':
+                user.status = 'approved'
+                user.approved_at = processed_at
+                user.approved_by = admin.id if admin else None
+            audit_action = 'approve_aibain_kongming'
+            kst_expiry = user.kongming_expires_at.astimezone(timezone(timedelta(hours=9)))
+            summary_text = f'AI Brain + 제갈공명 30일 이용권 승인 (만료 {kst_expiry:%Y-%m-%d %H:%M} KST)'
+        elif sub_req.request_type == 'early_renewal':
             # 만료 전 갱신 — 남은 기간을 잃지 않게 '만료일 기준' +30일.
             # (now 리셋이면 D-7 에 갱신한 회원이 7일을 잃는다 — RenewalBanner 약속 위반)
             base_dt = user.pro_expires_at
@@ -1363,6 +1390,7 @@ def approve_subscription(req_id):
             'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
             'aibain_enabled': user.aibain_enabled,
             'aibain_expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
+            'kongming_expires_at': user.kongming_expires_at.isoformat() if user.kongming_expires_at else None,
         }
 
     db.session.commit()
@@ -1376,7 +1404,10 @@ def approve_subscription(req_id):
             'to_tier': sub_req.to_tier,
         })
         # 회원 본인 알림 (텔레그램 연결된 회원만, best-effort)
-        _notify_member(user, member_telegram.build_approval_message(user, summary=summary_text))
+        if is_kongming:
+            _notify_member(user, f'✅ {summary_text}\n\nhttps://bit-man.net/dashboard/ai-bain')
+        else:
+            _notify_member(user, member_telegram.build_approval_message(user, summary=summary_text))
 
     return jsonify({
         'message': f'Subscription approved: {summary_text}',
