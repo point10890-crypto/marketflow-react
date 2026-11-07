@@ -44,6 +44,150 @@ class SafeJSONProvider(DefaultJSONProvider):
         return super().dumps(_sanitize_nan(obj), **kwargs)
 
 
+
+# Pro 데이터 게이트 경로 — create_app 의 _enforce_pro_access 와 운영 관제 센터(control_center)가
+# 같은 목록을 쓰도록 모듈 상수로 둔다.
+PRO_GATED_PREFIXES = (
+    '/api/kr/',
+    '/api/us/',
+    '/api/crypto/',
+    '/api/wave/',
+    '/api/briefing/',
+    '/api/stock-analyzer/',
+    '/api/econ/',
+)
+PRO_GATE_EXEMPT_PREFIXES = (
+    '/api/kr/ai-chart-image/',
+    '/api/us/ai-chart-image/',
+    # 공개(비로그인) 읽기 API — 커뮤니티 공개 보드, 지연·마스킹 Track Record.
+    # 프리픽스 자체는 _GATED_PREFIXES 밖이지만, 게이트 목록이 넓어져도 공개 영역이
+    # 우연히 잠기지 않도록 명시적으로 예외에 둔다 (tests/test_public_track_record.py).
+    '/api/public/',
+)
+
+
+def create_route_inventory_app():
+    """Build the route map without initializing runtime services."""
+    from app.routes import register_blueprints
+
+    app = Flask(__name__)
+    register_blueprints(app)
+    _register_core_routes(app)
+    return app
+
+
+def _register_core_routes(app):
+    # ── Liveness probe (watchdog 전용, 최소 응답시간) ──
+    # 외부 의존성 없음. DB/디스크 ping 안 함 → Flask 프로세스 자체가 살아 있는지만 확인.
+    # Flask watchdog (scripts/flask_watchdog.ps1) 가 5분 주기로 호출.
+    # 응답시간 목표: < 50ms.
+    @app.route('/healthz')
+    def healthz():
+        from flask import jsonify as _jsonify
+        return _jsonify({'ok': True}), 200
+
+    # Health check endpoint (자세한 상태 — 운영 진단용)
+    @app.route('/api/health')
+    def health_check():
+        from flask import jsonify as _jsonify
+        from app.utils.release_version import get_release_version
+        git_hash = get_release_version(os.path.dirname(os.path.dirname(__file__)))
+        vcp_exists = os.path.exists(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'signals_log.csv'))
+        return _jsonify({
+            'status': 'ok',
+            'service': 'MarketFlow API',
+            'version': git_hash,
+            'data': {'signals_log': vcp_exists},
+        })
+
+    # ── 스케줄러 상태 API ──
+    # 내부 스케줄 구성(작업 목록/실행 시각)이 그대로 노출되므로 관리자 전용.
+    from app.auth.decorators import admin_required as _status_admin_required
+
+    @app.route('/api/scheduler/status')
+    @_status_admin_required
+    def scheduler_status():
+        from flask import jsonify as _jsonify
+        from app.utils.scheduler import get_scheduler_status
+        return _jsonify(get_scheduler_status())
+
+    # ── 스케줄러 수동 트리거 API ──
+    # C2(2026-09-03): 데몬이 기록한 data/scheduler_jobs.json 의 잡 키를 검증하고
+    # data/scheduler_trigger_requests.json 큐에 넣는다 → 데몬(scheduler.py)이 30초 내 소비.
+    # 잡 파일이 없으면(데몬 미기동/구버전) 기존 Flask 내부 5개 태스크 맵으로 폴백 — 회귀 없음.
+    from app.auth.decorators import admin_required as _admin_required
+    @app.route('/api/scheduler/trigger/<job_key>', methods=['POST'])
+    @_admin_required
+    def scheduler_trigger(job_key):
+        from flask import jsonify as _jsonify, request as _request
+        import threading
+        from app.utils.scheduler import read_daemon_jobs, enqueue_trigger_request
+
+        daemon_keys = [j['key'] for j in read_daemon_jobs()]
+        if daemon_keys:
+            if job_key not in daemon_keys:
+                return _jsonify({'error': f'Unknown job_key: {job_key}', 'available': daemon_keys}), 400
+            user = getattr(_request, 'current_user', None)
+            try:
+                req = enqueue_trigger_request(job_key, requested_by=getattr(user, 'email', None))
+            except Exception as e:  # noqa: BLE001 — 큐 파일 잠금/디스크 오류
+                return _jsonify({'error': f'enqueue failed: {e}', 'job_key': job_key}), 500
+            return _jsonify({'status': 'queued', 'id': req['id'], 'job_key': job_key})
+
+        # 폴백: 기존 5개 Flask 내부 태스크
+        from app.utils.scheduler import (
+            _run_jongga_v2, _run_round2, _run_us_update, _run_crypto_pipeline,
+            _run_all_update
+        )
+        tasks_map = {
+            'jongga-v2': _run_jongga_v2,
+            'round2': _run_round2,
+            'us-update': _run_us_update,
+            'crypto': _run_crypto_pipeline,
+            'all-update': _run_all_update,
+        }
+        func = tasks_map.get(job_key)
+        if not func:
+            return _jsonify({'error': f'Unknown task: {job_key}', 'available': list(tasks_map.keys())}), 400
+
+        # 백그라운드 스레드에서 실행
+        threading.Thread(target=func, daemon=True, name=f'trigger-{job_key}').start()
+        return _jsonify({'status': 'triggered', 'task': job_key})
+
+    # ── 데이터 freshness 확인 (GitHub Actions용) ──
+    @app.route('/api/system/last-update')
+    def system_last_update():
+        from flask import jsonify as _jsonify
+        from datetime import datetime, timezone
+        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        files_to_check = {
+            'kr_jongga': os.path.join(base, 'data', 'jongga_v2_latest.json'),
+            'us_briefing': os.path.join(base, 'us_market', 'output', 'market_briefing.json'),
+            'us_market_data': os.path.join(base, 'us_market', 'output', 'market_data.json'),
+            'us_top_picks': os.path.join(base, 'us_market', 'output', 'top_picks.json'),
+        }
+        result = {}
+        for key, path in files_to_check.items():
+            if os.path.exists(path):
+                mtime = os.path.getmtime(path)
+                result[key] = {
+                    'timestamp': datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat(),
+                    'age_seconds': int(datetime.now(timezone.utc).timestamp() - mtime),
+                }
+            else:
+                result[key] = {'timestamp': None, 'age_seconds': -1}
+        return _jsonify(result)
+
+    # ── 자가진단 API ──
+    # 내부 호스트/포트/경로와 에러 상세가 포함되므로 관리자 전용 (info disclosure).
+    @app.route('/api/system/diagnostics')
+    @_status_admin_required
+    def system_diagnostics():
+        from flask import jsonify as _jsonify
+        from app.utils.diagnostics import get_cached_or_run
+        return _jsonify(get_cached_or_run(max_age=120))
+
+
 def create_app(config=None):
     """Flask 앱 팩토리 함수"""
     app = Flask(__name__)
@@ -336,25 +480,10 @@ def create_app(config=None):
     #
     # 전략: DENYLIST 방식 — 데이터성 prefix만 게이트. auth/admin/stripe/
     # system/scheduler/community 는 각자 이미 데코레이터로 보호 중.
-    _GATED_PREFIXES = (
-        '/api/kr/',
-        '/api/us/',
-        '/api/crypto/',
-        '/api/wave/',
-        '/api/briefing/',
-        '/api/stock-analyzer/',
-        '/api/econ/',
-    )
+    _GATED_PREFIXES = PRO_GATED_PREFIXES
     # 게이트 내에서도 허용할 정적/공개 엔드포인트 (<img> 태그는 Authorization 헤더 불가)
     _GATE_EXEMPT = set()
-    _GATE_EXEMPT_PREFIXES = (
-        '/api/kr/ai-chart-image/',
-        '/api/us/ai-chart-image/',
-        # 공개(비로그인) 읽기 API — 커뮤니티 공개 보드, 지연·마스킹 Track Record.
-        # 프리픽스 자체는 _GATED_PREFIXES 밖이지만, 게이트 목록이 넓어져도 공개 영역이
-        # 우연히 잠기지 않도록 명시적으로 예외에 둔다 (tests/test_public_track_record.py).
-        '/api/public/',
-    )
+    _GATE_EXEMPT_PREFIXES = PRO_GATE_EXEMPT_PREFIXES
     _KONGMING_BUNDLE_ENDPOINTS = {
         ('GET', 'kr.kr_rag_status'),
         ('GET', 'kr.kr_decision_search'),
@@ -442,115 +571,7 @@ def create_app(config=None):
         _req.current_user = user
         return None
 
-    # ── Liveness probe (watchdog 전용, 최소 응답시간) ──
-    # 외부 의존성 없음. DB/디스크 ping 안 함 → Flask 프로세스 자체가 살아 있는지만 확인.
-    # Flask watchdog (scripts/flask_watchdog.ps1) 가 5분 주기로 호출.
-    # 응답시간 목표: < 50ms.
-    @app.route('/healthz')
-    def healthz():
-        from flask import jsonify as _jsonify
-        return _jsonify({'ok': True}), 200
-
-    # Health check endpoint (자세한 상태 — 운영 진단용)
-    @app.route('/api/health')
-    def health_check():
-        from flask import jsonify as _jsonify
-        from app.utils.release_version import get_release_version
-        git_hash = get_release_version(os.path.dirname(os.path.dirname(__file__)))
-        vcp_exists = os.path.exists(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'signals_log.csv'))
-        return _jsonify({
-            'status': 'ok',
-            'service': 'MarketFlow API',
-            'version': git_hash,
-            'data': {'signals_log': vcp_exists},
-        })
-
-    # ── 스케줄러 상태 API ──
-    # 내부 스케줄 구성(작업 목록/실행 시각)이 그대로 노출되므로 관리자 전용.
-    from app.auth.decorators import admin_required as _status_admin_required
-
-    @app.route('/api/scheduler/status')
-    @_status_admin_required
-    def scheduler_status():
-        from flask import jsonify as _jsonify
-        from app.utils.scheduler import get_scheduler_status
-        return _jsonify(get_scheduler_status())
-
-    # ── 스케줄러 수동 트리거 API ──
-    # C2(2026-09-03): 데몬이 기록한 data/scheduler_jobs.json 의 잡 키를 검증하고
-    # data/scheduler_trigger_requests.json 큐에 넣는다 → 데몬(scheduler.py)이 30초 내 소비.
-    # 잡 파일이 없으면(데몬 미기동/구버전) 기존 Flask 내부 5개 태스크 맵으로 폴백 — 회귀 없음.
-    from app.auth.decorators import admin_required as _admin_required
-    @app.route('/api/scheduler/trigger/<job_key>', methods=['POST'])
-    @_admin_required
-    def scheduler_trigger(job_key):
-        from flask import jsonify as _jsonify, request as _request
-        import threading
-        from app.utils.scheduler import read_daemon_jobs, enqueue_trigger_request
-
-        daemon_keys = [j['key'] for j in read_daemon_jobs()]
-        if daemon_keys:
-            if job_key not in daemon_keys:
-                return _jsonify({'error': f'Unknown job_key: {job_key}', 'available': daemon_keys}), 400
-            user = getattr(_request, 'current_user', None)
-            try:
-                req = enqueue_trigger_request(job_key, requested_by=getattr(user, 'email', None))
-            except Exception as e:  # noqa: BLE001 — 큐 파일 잠금/디스크 오류
-                return _jsonify({'error': f'enqueue failed: {e}', 'job_key': job_key}), 500
-            return _jsonify({'status': 'queued', 'id': req['id'], 'job_key': job_key})
-
-        # 폴백: 기존 5개 Flask 내부 태스크
-        from app.utils.scheduler import (
-            _run_jongga_v2, _run_round2, _run_us_update, _run_crypto_pipeline,
-            _run_all_update
-        )
-        tasks_map = {
-            'jongga-v2': _run_jongga_v2,
-            'round2': _run_round2,
-            'us-update': _run_us_update,
-            'crypto': _run_crypto_pipeline,
-            'all-update': _run_all_update,
-        }
-        func = tasks_map.get(job_key)
-        if not func:
-            return _jsonify({'error': f'Unknown task: {job_key}', 'available': list(tasks_map.keys())}), 400
-
-        # 백그라운드 스레드에서 실행
-        threading.Thread(target=func, daemon=True, name=f'trigger-{job_key}').start()
-        return _jsonify({'status': 'triggered', 'task': job_key})
-
-    # ── 데이터 freshness 확인 (GitHub Actions용) ──
-    @app.route('/api/system/last-update')
-    def system_last_update():
-        from flask import jsonify as _jsonify
-        from datetime import datetime, timezone
-        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        files_to_check = {
-            'kr_jongga': os.path.join(base, 'data', 'jongga_v2_latest.json'),
-            'us_briefing': os.path.join(base, 'us_market', 'output', 'market_briefing.json'),
-            'us_market_data': os.path.join(base, 'us_market', 'output', 'market_data.json'),
-            'us_top_picks': os.path.join(base, 'us_market', 'output', 'top_picks.json'),
-        }
-        result = {}
-        for key, path in files_to_check.items():
-            if os.path.exists(path):
-                mtime = os.path.getmtime(path)
-                result[key] = {
-                    'timestamp': datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat(),
-                    'age_seconds': int(datetime.now(timezone.utc).timestamp() - mtime),
-                }
-            else:
-                result[key] = {'timestamp': None, 'age_seconds': -1}
-        return _jsonify(result)
-
-    # ── 자가진단 API ──
-    # 내부 호스트/포트/경로와 에러 상세가 포함되므로 관리자 전용 (info disclosure).
-    @app.route('/api/system/diagnostics')
-    @_status_admin_required
-    def system_diagnostics():
-        from flask import jsonify as _jsonify
-        from app.utils.diagnostics import get_cached_or_run
-        return _jsonify(get_cached_or_run(max_age=120))
+    _register_core_routes(app)
 
     # ── 라우트 등록 검증: 핵심 라우트 누락 시 즉시 중단 ──
     registered = {r.rule for r in app.url_map.iter_rules()}
