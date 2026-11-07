@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 import pytest
@@ -201,3 +202,33 @@ def test_valid_json_without_timestamp_uses_file_metadata(tmp_path):
     result = local_checks.check_data(cfg)[0]
     assert result.status == 'ok'
     assert result.data['freshness_basis'] == 'mtime'
+
+
+@pytest.mark.parametrize('wrapped', [True, False])
+def test_scheduler_job_registry_reads_writer_shape(tmp_path, monkeypatch, wrapped):
+    monkeypatch.setattr(local_checks, 'DATA_DIR', str(tmp_path))
+    jobs = [{'key': 'scheduler_sample', 'label': 'Sample job', 'schedule': '매 5분',
+             'market': 'System', 'record_key': 'sample_record', 'record_keys': ['sample_record']}]
+    registry = {'generated_at': '2026-11-07T10:00:00', 'pid': 42, 'jobs': jobs} if wrapped else jobs
+    (tmp_path / 'scheduler_jobs.json').write_text(json.dumps(registry), encoding='utf-8')
+    (tmp_path / 'scheduler_last_run.json').write_text('{"sample_record": "2026-11-07T10:01:00"}', encoding='utf-8')
+    now = datetime(2026, 11, 7, 10, 5, tzinfo=KST)
+    assert [(row.id, row.status) for row in local_checks.check_jobs({}, now)] == [('job:scheduler_sample', 'ok')]
+
+
+@pytest.mark.parametrize('registry', [{}, {'jobs': {}}, {'jobs': []}, {'jobs': [{'schedule': '매 5분'}]},
+                                     {'jobs': [{'key': 'test', 'record_keys': {'invalid': []}}]}])
+def test_invalid_or_empty_scheduler_registry_remains_unknown(tmp_path, monkeypatch, registry):
+    monkeypatch.setattr(local_checks, 'DATA_DIR', str(tmp_path))
+    (tmp_path / 'scheduler_jobs.json').write_text(json.dumps(registry), encoding='utf-8')
+    results = local_checks.check_jobs({})
+    assert [(row.id, row.status) for row in results] == [('job:_registry', 'unknown')]
+    assert '데몬이 한 번도' not in results[0].detail
+
+
+@pytest.mark.parametrize('baseline', [[], {}, {'test': {}}, {'test': 'malformed'}])
+def test_invalid_scheduler_success_baseline_remains_unknown(tmp_path, monkeypatch, baseline):
+    monkeypatch.setattr(local_checks, 'DATA_DIR', str(tmp_path))
+    (tmp_path / 'scheduler_jobs.json').write_text('{"jobs": [{"key": "test"}]}', encoding='utf-8')
+    (tmp_path / 'scheduler_last_run.json').write_text(json.dumps(baseline), encoding='utf-8')
+    assert [(row.id, row.status) for row in local_checks.check_jobs({})] == [('job:_baseline', 'unknown')]

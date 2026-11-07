@@ -312,20 +312,37 @@ def evaluate_job(job: dict[str, Any], last_runs: dict[str, Any], now: datetime, 
                        severity='info', value=round(age / 60, 1))
 
 
+def _valid_job_record(job: Any) -> bool:
+    if not isinstance(job, dict) or not isinstance(job.get('key'), str) or not job['key'].strip():
+        return False
+    record_keys = job.get('record_keys', [])
+    return (isinstance(record_keys, list)
+            and all(isinstance(key, str) and key.strip() for key in record_keys)
+            and all(isinstance(job[field], str) for field in ('record_key', 'label', 'schedule', 'market')
+                    if field in job))
+
+
 def check_jobs(cfg: dict[str, Any], now: datetime | None = None) -> list[CheckResult]:
     now = now or now_kst()
-    jobs = _read_json(os.path.join(DATA_DIR, 'scheduler_jobs.json'))
+    registry_path = os.path.join(DATA_DIR, 'scheduler_jobs.json')
+    registry = _read_json(registry_path)
+    # The daemon writes a wrapped registry. Accept a bare list for old snapshots.
+    jobs = registry.get('jobs') if isinstance(registry, dict) else registry
+    if not isinstance(jobs, list) or not jobs or not all(_valid_job_record(job) for job in jobs):
+        detail = ('잡 목록이 비어 있거나 형식이 올바르지 않음' if os.path.exists(registry_path)
+                  else '잡 목록 파일 없음')
+        return [CheckResult('job:_registry', 'job', '스케줄러 잡 목록', 'unknown', detail)]
+    if len({job['key'] for job in jobs}) != len(jobs):
+        return [CheckResult('job:_registry', 'job', '스케줄러 잡 목록', 'unknown', '중복된 잡 키가 있음')]
     last_runs = _read_json(os.path.join(DATA_DIR, 'scheduler_last_run.json'))
-    if not isinstance(jobs, list):
-        return [CheckResult('job:_registry', 'job', '스케줄러 잡 목록', 'unknown',
-                            'data/scheduler_jobs.json 없음 — 스케줄러 데몬이 한 번도 시작되지 않았거나 경로가 다름', severity='info')]
-    if not isinstance(last_runs, dict):
-        return [CheckResult('job:_baseline', 'job', '스케줄러 성공 기록', 'unknown', '성공 기록을 읽을 수 없음')]
+    if (not isinstance(last_runs, dict) or not last_runs
+            or any(not key.strip() or _parse_ts(value) is None for key, value in last_runs.items())):
+        return [CheckResult('job:_baseline', 'job', '스케줄러 성공 기록', 'unknown',
+                            '유효한 스케줄러 성공 기록 없음')]
     critical = set(cfg.get('critical', []))
     grace = int(cfg.get('grace_minutes', 45))
     ignore = set(cfg.get('ignore', []))
-    return [evaluate_job(j, last_runs, now, grace, critical)
-            for j in jobs if isinstance(j, dict) and j.get('key') not in ignore]
+    return [evaluate_job(job, last_runs, now, grace, critical) for job in jobs if job['key'] not in ignore]
 
 
 # ─────────────────────────── Windows 작업 스케줄러 · 이벤트 로그 ───────────────────────────
