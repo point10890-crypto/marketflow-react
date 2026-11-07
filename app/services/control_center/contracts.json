@@ -184,13 +184,13 @@
   {
    "id": "us_smart_money",
    "label": "US Smart Money",
-   "path": "{us_output}/smart_money_snapshot.json",
+   "path": "{us_output}/smart_money_current.json",
    "max_age_hours": 30,
    "calendar": "us_trading",
    "pages": [
     "/dashboard/us"
    ],
-   "field": "timestamp"
+   "field": "analysis_timestamp"
   },
   {
    "id": "us_decision",
@@ -319,10 +319,17 @@
   },
   {
    "id": "llm_routing",
-   "label": "LLM 라우팅 (Gemini·OpenAI·DeepSeek)",
+   "label": "LLM 실제 호출 기록 (Gemini·OpenAI·DeepSeek)",
    "type": "ai_routing_health",
    "path": "{data}/ai_routing/health.json",
-   "max_age_hours": 26
+   "max_age_hours": 26,
+   "usage_path": "{data}/ai_routing/usage.sqlite3",
+   "usage_max_age_hours": 72,
+   "provider_envs": {
+    "deepseek": ["DEEPSEEK_API_KEY"],
+    "openai": ["OPENAI_API_KEY"],
+    "gemini": ["GEMINI_API_KEY", "GOOGLE_API_KEY"]
+   }
   },
   {
    "id": "kiwoom",

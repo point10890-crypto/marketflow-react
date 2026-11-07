@@ -195,7 +195,8 @@ def run_checks(tier: str, c: dict[str, Any], states: dict[str, dict[str, Any]], 
         results += http_checks.check_public_urls([u for u in c.get('public_urls', []) if u.get('tier', 'standard') == 'standard'])
         results += local_checks.check_data(c['data'], now)
         results += local_checks.check_jobs(c['jobs'], now)
-        results += local_checks.check_windows_tasks(c['windows_tasks'])
+        tasks = local_checks.check_windows_tasks(c['windows_tasks'])
+        results += completed_monitor_task_evidence(tasks, base_dir, now)
         results += local_checks.check_disk(c.get('host', {}).get('disk', {}))
         results += local_checks.check_memory(c.get('host', {}).get('memory', {}))
         return results
@@ -208,6 +209,35 @@ def run_checks(tier: str, c: dict[str, Any], states: dict[str, dict[str, Any]], 
         results += security_static(load_inventory(base_dir), c)
         return results
     raise ValueError(tier)
+
+
+def completed_monitor_task_evidence(results: list[CheckResult], base_dir: str | None,
+                                    now: datetime) -> list[CheckResult]:
+    """A running monitor may inspect itself; show its previous actual completion."""
+    with store.connect(base_dir, read_only=True) as conn:
+        if conn is None:
+            return results
+        for result in results:
+            tiers = {f'task:MarketFlow-ControlCenter-{tier.title()}': tier for tier in TIERS}
+            tier = tiers.get(result.id)
+            if not tier or result.status != 'unknown' or result.detail != '현재 작업 완료 대기':
+                continue
+            started = local_checks._parse_ts((result.value or {}).get('last_run'))
+            # Check the registrar's execution limits as well as prior completion.
+            limit = {'fast': 240, 'standard': 540, 'deep': 900}[tier]
+            if not started or not 0 <= (now - started).total_seconds() <= limit:
+                continue
+            row = conn.execute('''SELECT r.finished_at, x.status FROM runs r
+                JOIN results x ON x.run_id=r.id AND x.check_id=?
+                WHERE r.tier=? AND r.finished_at IS NOT NULL ORDER BY r.id DESC LIMIT 1''',
+                ('monitor:runner_' + tier, tier)).fetchone()
+            finished = local_checks._parse_ts(row['finished_at']) if row else None
+            if (row and row['status'] == 'ok' and finished
+                    and 0 <= (now-finished).total_seconds() <= TIER_MAX_AGE_SEC[tier]):
+                result.status = 'ok'
+                result.detail = '이번 점검 실행 중 · 직전 점검 정상 완료 ' + finished.strftime('%H:%M:%S')
+                result.data['last_completed_at'] = row['finished_at']
+    return results
 
 
 def security_static(inv: dict[str, Any] | None, c: dict[str, Any]) -> list[CheckResult]:

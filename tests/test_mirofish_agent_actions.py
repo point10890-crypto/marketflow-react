@@ -1,10 +1,25 @@
 """Agent action executor tests: bounds, replay gate, rollback, no LLM."""
 
 import json
+from types import SimpleNamespace
 
 import pytest
 
 from app.services.mirofish import agent_actions as aa
+
+
+def test_agent_backtest_refresh_uses_daily_scheduler_bounded_sample(monkeypatch):
+    calls = []
+    report = {'enhanced': {'sample_count': 12}}
+    fake = SimpleNamespace(
+        evaluate_runs=lambda **kwargs: calls.append(kwargs) or report,
+        write_report=lambda value: None,
+        write_rolling_report=lambda **kwargs: None,
+    )
+    monkeypatch.setattr(aa, '_backtest_module', lambda: fake)
+    result = aa._do_refresh_backtest({'action': 'refresh_backtest'}, {})
+    assert result['status'] == 'applied'
+    assert calls == [{'horizon_days': 5, 'limit_runs': 8000}]
 
 
 @pytest.fixture

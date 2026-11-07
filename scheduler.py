@@ -5,7 +5,8 @@ MarketFlow 통합 스케줄러 — US / KR / Crypto
 
 스케줄 (KST):
 ─────────────────────────────────────────────────
-  04:00  US Market  전체 데이터 갱신 → Smart Money Top 5 텔레그램
+  07:00  US Market  전일 NYSE 장 마감 갱신 (토요일 포함, 미국 휴장 제외)
+  08:00  US Market  장 마감 VCP (무LLM)
   09:30  US Market  Track Record 스냅샷 + 성과 추적
   14:50  KR Market  종가베팅 V2 + 수급/AI/리포트 → 텔레그램
   16:00  KR / US    VCP 시그널 업데이트 → 텔레그램
@@ -59,6 +60,8 @@ import signal as signal_module
 import argparse
 import atexit
 from datetime import datetime, timedelta
+from functools import lru_cache
+from zoneinfo import ZoneInfo
 import hashlib
 import re
 from pathlib import Path
@@ -118,6 +121,42 @@ def _kr_non_trading_override_enabled() -> bool:
     return os.environ.get('ALLOW_KR_NON_TRADING_RUN', '').strip().lower() in {
         '1', 'true', 'yes', 'y', 'on',
     }
+
+
+@lru_cache(maxsize=8)
+def _us_session_holidays(year: int):
+    import holidays
+    return holidays.financial_holidays('XNYS', years=[year])
+
+
+def _us_completed_session_for_scheduler(now: datetime | None = None) -> str | None:
+    """The prior KST day's NYSE session, after the 07:00 release window.
+
+    A Friday session is consumed on Saturday. Sunday/Monday and the KST
+    morning following a US holiday have no new session, so never rerun Friday.
+    The NY close is timezone-aware; 07:00 KST is after both DST close times.
+    """
+    current = now or datetime.now()
+    kst = ZoneInfo('Asia/Seoul')
+    current = current.replace(tzinfo=kst) if current.tzinfo is None else current.astimezone(kst)
+    if current.hour < 7:
+        return None
+    session_day = current.date() - timedelta(days=1)
+    if session_day.weekday() >= 5 or session_day in _us_session_holidays(session_day.year):
+        return None
+    close = datetime(session_day.year, session_day.month, session_day.day, 16,
+                     tzinfo=ZoneInfo('America/New_York'))
+    return session_day.isoformat() if current >= close else None
+
+
+def _us_post_close_time(value: str, earliest: str) -> str:
+    """Migrate legacy pre-close overrides without silently missing every run."""
+    if not re.fullmatch(r'(?:[01]\d|2[0-3]):[0-5]\d', value or ''):
+        return earliest
+    return max(value, earliest)
+
+
+_US_POST_CLOSE_JOBS = frozenset({'us_market', 'us_ai_chart', 'us_track', 'us_vcp'})
 
 
 def _is_kr_trading_day_for_scheduler(now: datetime | None = None) -> bool:
@@ -430,8 +469,9 @@ class Config:
     TZ = os.environ.get('KR_MARKET_TZ', 'Asia/Seoul')
 
     # 스케줄 시간 (KST)
-    US_UPDATE_TIME = os.environ.get('US_MARKET_UPDATE_TIME', '04:00')
-    US_TRACK_TIME = os.environ.get('US_MARKET_TRACK_TIME', '09:30')
+    US_UPDATE_TIME = _us_post_close_time(os.environ.get('US_MARKET_UPDATE_TIME', '07:00'), '07:00')
+    US_TRACK_TIME = _us_post_close_time(os.environ.get('US_MARKET_TRACK_TIME', '09:30'), '07:00')
+    US_VCP_TIME = _us_post_close_time(os.environ.get('US_VCP_UPDATE_TIME', '08:00'), '07:00')
     KR_UPDATE_TIME = os.environ.get('KR_MARKET_UPDATE_TIME', '14:50')   # 종가베팅 V2 (14:50 — 장 마감 직전 선제 분석)
     VCP_UPDATE_TIME = os.environ.get('VCP_UPDATE_TIME', '16:00')         # KR·US VCP 시그널
     KR_VCP_MORNING_TIME = os.environ.get('KR_VCP_MORNING_TIME', '11:00') # 평일 오전 KR VCP refresh (주말 후 stale 방지)
@@ -459,7 +499,7 @@ class Config:
     # 기본은 개인 봇만. 구독자 채널로 내보내려면 명시적으로 켠다.
     BUY_SCREEN_TO_CHANNEL = os.environ.get('BUY_SCREEN_TO_CHANNEL', 'false').lower() == 'true'
     AI_CHART_TIME = os.environ.get('AI_CHART_TIME', '14:00')             # AI Chart Analysis KR (Gemini Vision)
-    US_AI_CHART_TIME = os.environ.get('US_AI_CHART_TIME', '04:30')       # AI Chart Analysis US (Gemini Vision) — 04:00 US 마켓갱신과 분리하여 리소스 경합 회피
+    US_AI_CHART_TIME = _us_post_close_time(os.environ.get('US_AI_CHART_TIME', '07:30'), '07:30')
     HISTORY_TIME = os.environ.get('KR_MARKET_HISTORY_TIME', '10:00')
     ALPHA_SCANNER_ENABLED = os.environ.get('ALPHA_SCANNER_ENABLED', 'true').lower() == 'true'
     ALPHA_SCANNER_TELEGRAM_ENABLED = os.environ.get('ALPHA_SCANNER_TELEGRAM_ENABLED', 'false').lower() == 'true'
@@ -2456,6 +2496,11 @@ def run_us_market_update(skip_sync: bool = False):
     return success
 
 
+def run_us_vcp_post_close() -> bool:
+    """Refresh the completed US session independently of paid AI stages."""
+    return run_vcp_enhanced_scan('US')
+
+
 def build_us_smart_money_top5_msg() -> str:
     """US Smart Money Top 5 텔레그램 메시지 생성"""
     today = datetime.now().strftime('%m/%d')
@@ -4073,11 +4118,16 @@ def check_and_run_missed_tasks():
         weekday_tasks = [
             # (예정시각_분, task_key, 실행함수, 라벨, 마감시각_분, weekday_filter)
             # 마감시각: 이 시각 이후에는 실행하지 않음 (다음 작업과 충돌 방지)
-            (4 * 60,       'us_market',        run_us_market_update,        'US 마켓 전체 갱신',  14 * 60, None),
-            (4 * 60 + 30,  'us_ai_chart',      _run_us_ai_chart_analysis,   'US AI Chart 분석',   14 * 60, None),  # 04:00 us_market 와 분리
+            (int(Config.US_UPDATE_TIME[:2]) * 60 + int(Config.US_UPDATE_TIME[3:]),
+             'us_market', run_us_market_update, 'US 마켓 전체 갱신', 14 * 60, set(range(7))),
+            (int(Config.US_AI_CHART_TIME[:2]) * 60 + int(Config.US_AI_CHART_TIME[3:]),
+             'us_ai_chart', _run_us_ai_chart_analysis, 'US AI Chart 분석', 14 * 60, set(range(7))),
+            (int(Config.US_VCP_TIME[:2]) * 60 + int(Config.US_VCP_TIME[3:]),
+             'us_vcp', run_us_vcp_post_close, 'US 장 마감 VCP', 14 * 60, set(range(7))),
             (9 * 60,       'morning_report',   send_morning_status_report,  '일별 상태 리포트',   14 * 60, None),
             (9 * 60 + 5,   'morning_briefing', run_morning_briefing,        'AI 조간 브리핑',     14 * 60, None),
-            (9 * 60 + 30,  'us_track',         save_us_track_record_snapshot,'US Track Record',   14 * 60, None),
+            (int(Config.US_TRACK_TIME[:2]) * 60 + int(Config.US_TRACK_TIME[3:]),
+             'us_track', save_us_track_record_snapshot, 'US Track Record', 14 * 60, set(range(7))),
             (11 * 60,      'kr_vcp_morning',   run_kr_vcp_morning_refresh,  'KR VCP 오전 Refresh', 14 * 60, None),
             (14 * 60,      'ai_chart',         _run_ai_chart_analysis,      'KR AI Chart 분석',   23 * 60, None),
             (14 * 60 + 50, 'kr_jongga',        run_kr_full_update,          'KR 종가베팅',        23 * 60, None),
@@ -4120,6 +4170,9 @@ def check_and_run_missed_tasks():
             else:
                 if weekday not in wd_filter:
                     continue
+
+            if task_key in _US_POST_CLOSE_JOBS and not _us_completed_session_for_scheduler(now):
+                continue
 
             if hour_min < sched_min:
                 continue  # 아직 예정 시각 전 (== 시각이면 catch-up 대상에 포함)
@@ -4439,7 +4492,7 @@ def _run_orphan_file_audit() -> bool:
 
 def _alpha_market_open_now() -> bool:
     now = datetime.now()
-    if now.weekday() >= 5:
+    if now.weekday() >= 5 or not _is_kr_trading_day_for_scheduler(now):
         return False
     minutes = now.hour * 60 + now.minute
     return 9 * 60 <= minutes <= 15 * 60 + 30
@@ -4491,14 +4544,21 @@ def _run_alpha_performance_brief() -> bool:
 def _run_alpha_intraday_watch() -> bool:
     """장중 10분 간격 — 보유 포지션 목표/손절 터치 즉시 신호. 장외 시간은 스킵."""
     if not _alpha_market_open_now():
-        return True
+        return False
     try:
         from app.services.mirofish.paper_orchestrator import run_intraday_watch
         result = run_intraday_watch()
         if result.get('message'):
             send_telegram(result['message'], channel=False)
             logger.info(f"⚡ 알파 장중 청산 신호 {len(result.get('exits', []))}건 발송")
-        return True
+        completed = (result.get('status') == 'completed'
+                     and type(result.get('expected')) is int and result['expected'] >= 0
+                     and type(result.get('checked')) is int and result['checked'] == result['expected']
+                     and result.get('missing_symbols') == [])
+        if not completed:
+            logger.warning('Alpha intraday watch incomplete: checked=%s expected=%s',
+                           result.get('checked'), result.get('expected'))
+        return completed
     except Exception as e:
         logger.error(f"❌ 알파 장중 감시 실패: {e}", exc_info=True)
         return False
@@ -4827,11 +4887,13 @@ def _build_job_registry() -> dict:
         f"평일 {', '.join(Config.LEADING_SCREENER_TIMES)}", 'KR',
         record_keys=[hhmm_key('leading_screener', hm) for hm in Config.LEADING_SCREENER_TIMES])
     add('us_market', 'US 마켓 전체 갱신 + Smart Money', run_us_market_update,
-        f'평일 {Config.US_UPDATE_TIME}', 'US')
+        f'매일 {Config.US_UPDATE_TIME} (미국 거래일 마감 후)', 'US')
+    add('us_vcp', 'US 장 마감 VCP', run_us_vcp_post_close,
+        f'매일 {Config.US_VCP_TIME} (미국 거래일 마감 후)', 'US')
     add('morning_report', '일별 상태 리포트', send_morning_status_report,
         f'평일 {Config.MORNING_REPORT_TIME}', 'System')
     add('us_track', 'US Track Record 스냅샷', save_us_track_record_snapshot,
-        f'평일 {Config.US_TRACK_TIME}', 'US')
+        f'매일 {Config.US_TRACK_TIME} (미국 거래일 마감 후)', 'US')
     add('kr_jongga', '종가베팅 V2 + 수급/AI/리포트', run_kr_full_update,
         f'평일 {Config.KR_UPDATE_TIME}', 'KR')
     add('kr_vcp_morning', 'KR VCP 오전 Refresh', run_kr_vcp_morning_refresh,
@@ -4850,7 +4912,7 @@ def _build_job_registry() -> dict:
         f'평일 {Config.ALPHA_CLOSE_TIME}', 'KR')
     add('alpha_performance_brief', '알파 성과 브리핑', _run_alpha_performance_brief,
         f'평일 {Config.ALPHA_BRIEF_TIME}', 'KR')
-    # 장중 감시는 _with_record 없이 등록되어 정규 슬롯의 실행 기록이 없다 (함수 내부 게이트).
+    # A shared success key tracks the latest fully checked intraday slot.
     add('alpha_intraday_watch', '알파 장중 감시', _run_alpha_intraday_watch,
         '평일 09:05~15:25 (10분)', 'KR')
     add('morning_briefing', 'AI 조간 브리핑', run_morning_briefing,
@@ -4860,7 +4922,7 @@ def _build_job_registry() -> dict:
     add('ai_chart', 'AI 차트 분석 KR (Vision)', _run_ai_chart_analysis,
         f'평일 {Config.AI_CHART_TIME}', 'KR')
     add('us_ai_chart', 'US AI 차트 분석 (Vision)', _run_us_ai_chart_analysis,
-        f'평일 {Config.US_AI_CHART_TIME}', 'US')
+        f'매일 {Config.US_AI_CHART_TIME} (미국 거래일 마감 후)', 'US')
     if Config.ALPHA_SCANNER_ENABLED and Config.ALPHA_SCANNER_TIMES:
         add('alpha_scanner', '알파 스캐너 지정 시각', run_alpha_scanner_monitor,
             f"평일 {', '.join(Config.ALPHA_SCANNER_TIMES)}", 'KR',
@@ -4878,6 +4940,8 @@ def _build_job_registry() -> dict:
     add('crypto', 'Crypto 전체 파이프라인', run_crypto_pipeline,
         f"매 4시간 ({', '.join(Config.CRYPTO_TIMES)})", 'Crypto')
     add('orphan_audit', '고아 파일 감사', _run_orphan_file_audit, '매일 09:00', 'System')
+    for key in _US_POST_CLOSE_JOBS:
+        reg[key]['calendar'] = 'us_post_close'
     return reg
 
 
@@ -4894,6 +4958,7 @@ def describe_jobs() -> list:
             'market': job['market'],
             'record_key': job['record_key'],
             'record_keys': list(job['record_keys']),
+            **({'calendar': job['calendar']} if job.get('calendar') else {}),
         }
         for key, job in JOB_REGISTRY.items()
     ]
@@ -4926,6 +4991,12 @@ class Scheduler:
                    관리자 수동 재실행(run_triggered_job) 전용 — 스케줄 등록에는 쓰지 않는다.
         """
         def wrapper():
+            if not force and task_key in _US_POST_CLOSE_JOBS and not _us_completed_session_for_scheduler():
+                logger.info("US post-close job skipped: no newly completed session (%s)", task_key)
+                return False
+            if task_key == 'alpha_intraday_watch' and not _alpha_market_open_now():
+                return False  # A holiday/out-of-session skip is not a completed price check.
+
             def notify_ops(message: str):
                 try:
                     return send_telegram(message, channel=False)
@@ -4941,6 +5012,7 @@ class Scheduler:
             #   (하루 1회 게이트에 걸리면 10~15분 주기가 하루 1회로 죽는다 — kiwoom_ai_theme 버그 재발 방지)
             # - 그 외: 하루 1회 제한
             interval_cooldowns = {
+                'alpha_intraday_watch': 8 / 60,
                 'alpha_scanner_monitor': max(1 / 60, Config.ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES / 60 * 0.8),
                 'mirofish_workflow_monitor': max(1 / 60, Config.ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES / 60 * 0.8),
                 'omni_news_sweep': max(1 / 60, max(5, Config.OMNI_NEWS_INTERVAL_MINUTES) / 60 * 0.8),
@@ -5207,18 +5279,10 @@ class Scheduler:
                 getattr(schedule.every(), day).at(hm).do(
                     self._with_record(run_leading_screener_refresh, task_key,
                                       max_retries=1, retry_delay=120, verify_fn=leading_verify))
-            # 04:00 — US Market 전체 데이터 갱신 + Smart Money Top 5 텔레그램
-            getattr(schedule.every(), day).at(Config.US_UPDATE_TIME).do(
-                self._with_record(run_us_market_update, 'us_market',
-                                  max_retries=2, retry_delay=900, verify_fn=us_verify))
             # 09:00 — 일별 상태 리포트 텔레그램
             getattr(schedule.every(), day).at(Config.MORNING_REPORT_TIME).do(
                 self._with_record(send_morning_status_report, 'morning_report',
                                   max_retries=1, retry_delay=300))
-            # 09:30 — US Track Record 스냅샷 + 성과 추적
-            getattr(schedule.every(), day).at(Config.US_TRACK_TIME).do(
-                self._with_record(save_us_track_record_snapshot, 'us_track',
-                                  max_retries=1, retry_delay=600, verify_fn=us_track_verify))
             # 14:50 — 종가베팅 V2 + 수급/AI/리포트 (VCP 제외)
             getattr(schedule.every(), day).at(Config.KR_UPDATE_TIME).do(
                 self._with_record(run_kr_full_update, 'kr_jongga',
@@ -5257,7 +5321,8 @@ class Scheduler:
                                   max_retries=1, retry_delay=300))
             # 장중 감시 — 함수 내부에서 장시간(09:00~15:30) 게이트, 신호 시에만 발송
             for hm in Config.ALPHA_INTRADAY_TIMES:
-                getattr(schedule.every(), day).at(hm).do(_run_alpha_intraday_watch)
+                getattr(schedule.every(), day).at(hm).do(
+                    self._with_record(_run_alpha_intraday_watch, 'alpha_intraday_watch', max_retries=0))
             # 09:05 — AI 조간 브리핑 (US 시장 중심)
             getattr(schedule.every(), day).at(Config.MORNING_BRIEFING_TIME).do(
                 self._with_record(run_morning_briefing, 'morning_briefing',
@@ -5272,16 +5337,27 @@ class Scheduler:
             getattr(schedule.every(), day).at(Config.AI_CHART_TIME).do(
                 self._with_record(_run_ai_chart_analysis, 'ai_chart',
                                   max_retries=1, retry_delay=600))
-            # 04:00 — US AI Chart Analysis (Gemini Vision S&P 500)
-            getattr(schedule.every(), day).at(Config.US_AI_CHART_TIME).do(
-                self._with_record(_run_us_ai_chart_analysis, 'us_ai_chart',
-                                  max_retries=1, retry_delay=600))
             if Config.ALPHA_SCANNER_ENABLED:
                 for hm in Config.ALPHA_SCANNER_TIMES:
                     task_key = f"alpha_scanner_{hm.replace(':', '')}"
                     getattr(schedule.every(), day).at(hm).do(
                         self._with_record(run_alpha_scanner_monitor, task_key,
                                           max_retries=1, retry_delay=120))
+
+        # NYSE post-close jobs run on KST Saturday for the Friday session.
+        # _with_record applies the session calendar before running or recording.
+        schedule.every().day.at(Config.US_UPDATE_TIME).do(
+            self._with_record(run_us_market_update, 'us_market',
+                              max_retries=2, retry_delay=900, verify_fn=us_verify))
+        schedule.every().day.at(Config.US_AI_CHART_TIME).do(
+            self._with_record(_run_us_ai_chart_analysis, 'us_ai_chart',
+                              max_retries=1, retry_delay=600))
+        schedule.every().day.at(Config.US_VCP_TIME).do(
+            self._with_record(run_us_vcp_post_close, 'us_vcp',
+                              max_retries=1, retry_delay=600))
+        schedule.every().day.at(Config.US_TRACK_TIME).do(
+            self._with_record(save_us_track_record_snapshot, 'us_track',
+                              max_retries=1, retry_delay=600, verify_fn=us_track_verify))
 
         # 금요일 17:00 — AI 로또 분석 게시
         schedule.every().friday.at(Config.LOTTO_POST_TIME).do(
@@ -5323,9 +5399,10 @@ class Scheduler:
         logger.info("   🔑 평일 08:55  KIS 토큰 웜업 (장 시작 전 자격증명 사전 검증)")
         if Config.GRAPHRAG_BOOTSTRAP_ENABLED:
             logger.info(f"   🔎 매일 {Config.GRAPHRAG_BOOTSTRAP_TIME}  GraphRAG entities.db 부트스트랩 (초성/별칭 검색)")
-        logger.info(f"   🇺🇸 평일 {Config.US_UPDATE_TIME}  US Market 전체 갱신 + Smart Money Top 5")
+        logger.info(f"   🇺🇸 미국 거래일 다음날 {Config.US_UPDATE_TIME}  US Market 전체 갱신 + Smart Money Top 5")
+        logger.info(f"   🇺🇸 미국 거래일 다음날 {Config.US_VCP_TIME}  US 장 마감 VCP")
         logger.info(f"   📋 평일 {Config.MORNING_REPORT_TIME}  일별 상태 리포트 → 텔레그램")
-        logger.info(f"   🇺🇸 평일 {Config.US_TRACK_TIME}  US Track Record 스냅샷")
+        logger.info(f"   🇺🇸 미국 거래일 다음날 {Config.US_TRACK_TIME}  US Track Record 스냅샷")
         logger.info(f"   🇰🇷 평일 {Config.KR_UPDATE_TIME}  종가베팅 V2 + 수급/AI/리포트 → 텔레그램")
         logger.info(f"   📈 평일 {Config.KR_VCP_MORNING_TIME}  KR VCP 오전 Refresh (주말 후 stale 방지)")
         logger.info(f"   📈 평일 {Config.VCP_UPDATE_TIME}  KR·US VCP 시그널 → 텔레그램")
@@ -5337,7 +5414,7 @@ class Scheduler:
                     f"{Config.BUY_SCREEN_VISION_MAX_CALLS}회 → BUY 최대 {Config.BUY_SCREEN_TARGET}종목"
                     " → 텔레그램"
                     f"{' (채널 포함)' if Config.BUY_SCREEN_TO_CHANNEL else ' (개인봇)'}")
-        logger.info(f"   🤖 평일 {Config.US_AI_CHART_TIME}  US AI Chart Analysis (Gemini Vision)")
+        logger.info(f"   🤖 미국 거래일 다음날 {Config.US_AI_CHART_TIME}  US AI Chart Analysis (Gemini Vision)")
         logger.info(f"   📰 평일 {Config.MORNING_BRIEFING_TIME}  AI 조간 브리핑 (Gemini)")
         logger.info(f"   📰 평일 {Config.CLOSING_BRIEFING_TIME}  AI 마감 브리핑 (Gemini)")
         if Config.ALPHA_SCANNER_ENABLED:

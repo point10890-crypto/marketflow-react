@@ -1,10 +1,15 @@
 """Alpha Brain Agent cycle tests with LLM and I/O dependencies mocked."""
 
 import json
+from datetime import datetime, timezone
 
 import pytest
 
 from app.services.mirofish import alpha_brain_agent as agent
+from app.services.mirofish.intelligence import top3_metrics as _top3
+
+_REAL_TOP3_SUMMARY = _top3.top3_metrics_summary
+_REAL_TOP3_READ = _top3.read_top3_metrics
 
 
 @pytest.fixture
@@ -26,14 +31,14 @@ def agent_env(tmp_path, monkeypatch):
         'by_signal_quality': {},
     })
     monkeypatch.setattr(agent, '_advisory_summary', lambda: {
-        'evaluated_count': 12,
+        'evaluated_count': 30,
         'hit_rate_recent': 0.58,
         'by_strategy_tag': {},
         'baseline_hit_rate': 0.5,
         'lookahead_safe': True,
     })
     monkeypatch.setattr(agent, '_read_backtest_daily', lambda: {
-        'generated_at': '2026-06-12T14:00:00+00:00',
+        'generated_at': datetime.now(timezone.utc).isoformat(),
         'lookahead_safe': True,
         'enhanced': {
             'sample_count': 120,
@@ -42,6 +47,13 @@ def agent_env(tmp_path, monkeypatch):
         },
     })
     monkeypatch.setattr(agent.agent_actions, 'enforce_rollbacks', lambda **_kw: [])
+    from app.services.mirofish.intelligence import interactions, dataset, top3_metrics
+    monkeypatch.setattr(interactions, 'read_interaction_map', lambda: {})
+    monkeypatch.setattr(dataset, 'dataset_summary', lambda **_: {})
+    monkeypatch.setattr(top3_metrics, 'top3_metrics_summary', lambda: {'stale': False})
+    monkeypatch.setattr(top3_metrics, 'read_top3_metrics', lambda: {
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+    })
     return tmp_path
 
 
@@ -71,6 +83,7 @@ def test_observation_flags_stale_backtest(agent_env, monkeypatch):
 
 
 def test_maintenance_refreshes_stale_backtest_without_llm(agent_env, monkeypatch):
+    monkeypatch.setattr(agent, '_advisory_summary', lambda: {'evaluated_count': 12})
     monkeypatch.setattr(agent, '_read_backtest_daily', lambda: {
         'generated_at': '2026-06-01T14:00:00+00:00',
         'enhanced': {'sample_count': 30},
@@ -255,3 +268,117 @@ def test_observation_survives_top3_metrics_failure(agent_env, monkeypatch):
 
     assert obs['top3_metrics'] == {}  # isolated: empty, not a crash
     assert 'edge_map' in obs and 'regime_distribution' in obs
+
+
+def _ready_observation(*, stale=False, generated='2026-11-07T23:00:00+00:00'):
+    return {'backtest': {'stale': stale, 'generated_at': generated, 'expectancy_r': 0.4},
+            'outcome': {'evaluated_count': 30}, 'top3_metrics': {'stale': False}}
+
+
+def test_maintenance_error_stops_paid_decision_and_preserves_partial_results(agent_env, monkeypatch):
+    calls = []
+    monkeypatch.setattr(agent, 'build_agent_observation', lambda **_: _ready_observation(stale=True))
+    maintenance = [{'action': 'refresh_backtest', 'status': 'error', 'reason': 'MemoryError'},
+                   {'action': 'refresh_intelligence', 'status': 'applied'}]
+    monkeypatch.setattr(agent, 'run_maintenance', lambda *a, **k: maintenance)
+    monkeypatch.setattr(agent.agent_actions, 'enforce_rollbacks', lambda **k: calls.append('rollback') or [])
+    result = agent.run_agent_cycle('post_backtest', llm_call=lambda _: calls.append('llm'))
+    assert result['status'] == 'failed'
+    assert result['failed_stage'] == 'maintenance'
+    assert result['maintenance'] == maintenance
+    assert result['llm']['status'] == 'skipped_maintenance_failed'
+    assert calls == []
+    state = json.loads((agent_env / 'agent_state.json').read_text())
+    assert state['consecutive_failures'] == 1
+    assert 'last_cycle_at' not in state
+
+
+def test_successful_upkeep_reloads_observation_before_rollback_and_llm(agent_env, monkeypatch):
+    observations = iter([_ready_observation(stale=True, generated='old'),
+                         _ready_observation(generated='refreshed')])
+    monkeypatch.setattr(agent, 'build_agent_observation', lambda **_: next(observations))
+    monkeypatch.setattr(agent, 'run_maintenance', lambda *a, **k: [
+        {'action': 'refresh_backtest', 'status': 'applied'}])
+    rollback_dates = []
+    monkeypatch.setattr(agent.agent_actions, 'enforce_rollbacks',
+                        lambda **k: rollback_dates.append(k['backtest_generated_at']) or [])
+    prompts = []
+    result = agent.run_agent_cycle('post_backtest', llm_call=lambda p: prompts.append(p))
+    assert result['status'] == 'completed'
+    assert rollback_dates == ['refreshed']
+    assert 'refreshed' in prompts[0]
+
+
+def test_applied_upkeep_with_still_stale_backtest_cannot_complete(agent_env, monkeypatch):
+    monkeypatch.setattr(agent, 'build_agent_observation', lambda **_: _ready_observation(stale=True))
+    monkeypatch.setattr(agent, 'run_maintenance', lambda *a, **k: [
+        {'action': 'refresh_backtest', 'status': 'applied'}])
+    result = agent.run_agent_cycle('post_backtest', llm_call=lambda _: pytest.fail('must not call LLM'))
+    assert result['status'] == 'failed'
+    assert result['failed_stage'] == 'maintenance'
+
+
+def test_intelligence_write_failure_cannot_complete_from_in_memory_result(agent_env, monkeypatch):
+    observation = _ready_observation()
+    observation['top3_metrics']['stale'] = True
+    monkeypatch.setattr(agent, 'build_agent_observation', lambda **_: observation)
+    monkeypatch.setattr(agent, 'run_maintenance', lambda *a, **k: [
+        {'action': 'refresh_intelligence', 'status': 'applied'}])
+    result = agent.run_agent_cycle('post_backtest', llm_call=lambda _: None)
+    assert result['status'] == 'failed'
+    assert result['failed_stage'] == 'maintenance'
+
+
+@pytest.mark.parametrize('initial_content', [None, '{corrupt'])
+def test_missing_or_corrupt_top3_write_failure_never_looks_fresh(agent_env, monkeypatch, initial_content):
+    from app.services.mirofish.intelligence import interactions
+    path = agent_env / 'top3_metrics.json'
+    if initial_content is not None:
+        path.write_text(initial_content, encoding='utf-8')
+    monkeypatch.setattr(_top3, 'TOP3_METRICS_PATH', str(path))
+    monkeypatch.setattr(_top3, 'read_top3_metrics', _REAL_TOP3_READ)
+    monkeypatch.setattr(_top3, 'top3_metrics_summary', _REAL_TOP3_SUMMARY)
+    monkeypatch.setattr(_top3, '_load_runs', lambda _: [])
+    writes = []
+
+    def fail_write(*args, **kwargs):
+        writes.append(True)
+        raise OSError('disk full')
+
+    monkeypatch.setattr(_top3, 'write_json_atomic', fail_write)
+    monkeypatch.setattr(interactions, 'build_interaction_map', lambda **_: {'evaluated_count': 0})
+    paid_calls = []
+    result = agent.run_agent_cycle('post_backtest', llm_call=lambda _: paid_calls.append(True))
+    assert writes
+    assert result['status'] == 'failed'
+    assert result['failed_stage'] == 'maintenance'
+    assert paid_calls == []
+
+
+def test_maintenance_only_recovery_skips_llm_and_keeps_rollback_guard(agent_env, monkeypatch):
+    monkeypatch.setattr(agent, 'build_agent_observation', lambda **_: _ready_observation())
+    monkeypatch.setattr(agent, '_default_llm_call', lambda _: pytest.fail('paid LLM must not run'))
+    calls = []
+    monkeypatch.setattr(agent.agent_actions, 'enforce_rollbacks', lambda **k: calls.append('rollback') or [])
+    result = agent.run_agent_cycle('post_backtest', dry_run=True, maintenance_only=True)
+    assert result['status'] == 'completed'
+    assert result['dry_run'] is True
+    assert result['maintenance_only'] is True
+    assert result['llm']['status'] == 'skipped_maintenance_only'
+    assert calls == ['rollback']
+
+
+def test_recovery_retries_only_artifacts_that_remain_stale(agent_env, monkeypatch):
+    first = _ready_observation(stale=True)
+    first['top3_metrics']['stale'] = True
+    calls = []
+
+    def execute(decisions, **kwargs):
+        calls.append([item['action'] for item in decisions])
+        return [{'action': item['action'], 'status': 'error' if item['action'] == 'refresh_backtest' else 'applied'}
+                for item in decisions]
+
+    monkeypatch.setattr(agent.agent_actions, 'execute_decisions', execute)
+    agent.run_maintenance(first, dry_run=True)
+    agent.run_maintenance(_ready_observation(stale=True), dry_run=True)
+    assert calls == [['refresh_backtest', 'refresh_intelligence'], ['refresh_backtest']]

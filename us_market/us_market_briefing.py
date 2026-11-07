@@ -873,6 +873,7 @@ class USMarketBriefing:
         # 1. Real-time market data
         print("\n[1/6] Fetching real-time market data...")
         snapshot = self.data_fetcher.get_market_snapshot()
+        results['timestamp'] = self._require_snapshot_timestamp(snapshot)
         results['market_data'] = snapshot
 
         # 2. VIX
@@ -935,8 +936,22 @@ class USMarketBriefing:
 
     def _has_valid_market_data(self, snapshot: Dict) -> bool:
         """Check if snapshot has valid market data"""
+        if not isinstance(snapshot, dict):
+            return False
         indices = snapshot.get('indices', {})
-        return len(indices) > 0
+        return isinstance(indices, dict) and bool(indices)
+
+    def _require_snapshot_timestamp(self, snapshot: Dict) -> str:
+        """Reject failed collection before paid analysis or artifact writes."""
+        if self._has_valid_market_data(snapshot):
+            timestamp = snapshot.get('timestamp')
+            try:
+                if isinstance(timestamp, str):
+                    datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+                    return timestamp
+            except ValueError:
+                pass
+        raise RuntimeError('Briefing market data refresh failed; previous artifact preserved')
 
     async def generate_quick_briefing(self) -> Dict:
         """Generate quick briefing (market data only, no AI)"""
@@ -957,14 +972,10 @@ class USMarketBriefing:
         print("\n[1/4] Fetching real-time market data...")
         snapshot = self.data_fetcher.get_market_snapshot()
 
-        # Use existing data if new fetch failed
-        if self._has_valid_market_data(snapshot):
-            results['market_data'] = snapshot
-        elif existing.get('market_data'):
-            print("  ⚠️  Using cached market data (fetch failed)")
-            results['market_data'] = existing['market_data']
-        else:
-            results['market_data'] = snapshot
+        # A failed fetch is not a new observation. Leave the last good file and
+        # its timestamp intact instead of making cached indices look fresh.
+        results['timestamp'] = self._require_snapshot_timestamp(snapshot)
+        results['market_data'] = snapshot
 
         # 2. VIX
         print("[2/4] Fetching VIX...")
@@ -1000,6 +1011,7 @@ class USMarketBriefing:
         # Preserve AI analysis from existing if available
         if existing.get('ai_analysis'):
             results['ai_analysis'] = existing['ai_analysis']
+            results['ai_analysis_timestamp'] = existing.get('ai_analysis_timestamp') or existing.get('timestamp')
         if existing.get('sector_rotation'):
             results['sector_rotation'] = existing['sector_rotation']
 

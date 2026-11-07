@@ -220,25 +220,42 @@ def check_data(items: list[dict[str, Any]], now: datetime | None = None) -> list
 
 # ─────────────────────────── 스케줄 작업 (scheduler.py 데몬) ───────────────────────────
 
-_INTERVAL_MIN = re.compile(r'매\s*(\d+)\s*분')
-_INTERVAL_HOUR = re.compile(r'매\s*(\d+)\s*시간')
 _TIMES = re.compile(r'(\d{1,2}):(\d{2})')
+_TIME_LIST = r'\d{1,2}:\d{2}(?:\s*,\s*\d{1,2}:\d{2})*'
+_WEEKDAY_NAMES = '월화수목금토일'
 
 
 def parse_schedule(text: str) -> dict[str, Any]:
-    """'매 5분', '매 2시간', '매일 15:10', '평일 09:00, 13:30' 을 이해한다. 그 밖은 kind=unknown."""
-    text = text or ''
-    if '~' in text:
+    """Parse the daemon's daily, weekday, weekly and intraday-window descriptions."""
+    text = (text or '').strip()
+    m = re.fullmatch(rf'매\s*(\d+)\s*(분|시간)(?:\s*\(({_TIME_LIST})\))?', text)
+    if m:
+        minutes = int(m.group(1)) * (60 if m.group(2) == '시간' else 1)
+        clocks = _TIMES.findall(m.group(3) or '')
+        if minutes > 0 and all(int(h) < 24 and int(mi) < 60 for h, mi in clocks):
+            return {'kind': 'interval', 'minutes': minutes}
         return {'kind': 'unknown'}
-    m = _INTERVAL_MIN.search(text)
-    if m:
-        return {'kind': 'interval', 'minutes': int(m.group(1))}
-    m = _INTERVAL_HOUR.search(text)
-    if m:
-        return {'kind': 'interval', 'minutes': int(m.group(1)) * 60}
-    times = [(int(h), int(mi)) for h, mi in _TIMES.findall(text) if int(h) < 24 and int(mi) < 60]
-    if times and ('평일' in text or '매일' in text):
-        return {'kind': 'times', 'times': times, 'weekdays_only': '평일' in text}
+    m = re.fullmatch(r'(매일|평일|[월화수목금토일]요일)\s+(.+)', text)
+    if not m:
+        return {'kind': 'unknown'}
+    prefix, body = m.groups()
+    days = {'weekdays_only': prefix == '평일'}
+    post_close_suffix = ' (미국 거래일 마감 후)'
+    if body.endswith(post_close_suffix):
+        body = body[:-len(post_close_suffix)]
+        days['calendar'] = 'us_post_close'
+    if prefix.endswith('요일'):
+        days['weekdays'] = [_WEEKDAY_NAMES.index(prefix[0])]
+    window = re.fullmatch(r'(\d{1,2}:\d{2})\s*~\s*(\d{1,2}:\d{2})\s*\((\d+)분\)', body)
+    times = [(int(h), int(mi)) for h, mi in _TIMES.findall(body)]
+    if not times or any(h >= 24 or mi >= 60 for h, mi in times):
+        return {'kind': 'unknown'}
+    if window:
+        minutes = int(window.group(3))
+        if minutes > 0 and times[0] < times[1]:
+            return {'kind': 'window', 'start': times[0], 'end': times[1], 'minutes': minutes, **days}
+    elif re.fullmatch(_TIME_LIST, body) and len(set(times)) == len(times):
+        return {'kind': 'times', 'times': times, **days}
     return {'kind': 'unknown'}
 
 
@@ -248,8 +265,32 @@ def _market_hours(market: str, now: datetime) -> bool:
     return _is_trading_day('kr_trading', now.date()) and (9, 0) <= (now.hour, now.minute) <= (15, 40)
 
 
+def _job_day_allowed(job: dict[str, Any], sched: dict[str, Any], day) -> bool:
+    if (job.get('calendar') or sched.get('calendar')) == 'us_post_close':
+        session = day - timedelta(days=1)
+        if not _is_trading_day('us_trading', session) or not sched.get('times'):
+            return False
+        close = datetime(session.year, session.month, session.day, 16, tzinfo=ZoneInfo('America/New_York'))
+        h, mi = min(sched['times'])
+        release = datetime(day.year, day.month, day.day, h, mi, tzinfo=KST)
+        return close <= release
+    # Weekly maintenance such as Saturday history collection is not restricted
+    # to exchange sessions merely because its output market is KR.
+    if 'weekdays' in sched:
+        return day.weekday() in sched['weekdays']
+    if sched.get('weekdays_only'):
+        return day.weekday() < 5 and (job.get('market') != 'KR' or _is_trading_day('kr_trading', day))
+    return True
+
+
+def _job_slots(now: datetime, day, times: list[tuple[int, int]]) -> list[datetime]:
+    return [now.replace(year=day.year, month=day.month, day=day.day, hour=h, minute=mi,
+                        second=0, microsecond=0) for h, mi in times]
+
+
 def evaluate_job(job: dict[str, Any], last_runs: dict[str, Any], now: datetime, grace_min: int = 45,
                  critical: set[str] | None = None) -> CheckResult:
+    now = now.astimezone(KST)
     key = job.get('key', '?')
     label = job.get('label') or key
     sev = 'critical' if critical and key in critical else 'standard'
@@ -258,9 +299,13 @@ def evaluate_job(job: dict[str, Any], last_runs: dict[str, Any], now: datetime, 
     record_keys = list(job.get('record_keys') or [job.get('record_key') or key])
     runs = {rk: _parse_ts(last_runs.get(rk)) for rk in record_keys}
     latest = max((t for t in runs.values() if t and t <= now), default=None)
-    if sched['kind'] == 'interval':
-        if not _market_hours(str(job.get('market')), now):
+    if sched['kind'] in ('interval', 'window'):
+        in_window = (_job_day_allowed(job, sched, now.date())
+                     and sched['start'] <= (now.hour, now.minute) <= sched['end']) if sched['kind'] == 'window' else True
+        if not in_window or not _market_hours(str(job.get('market')), now):
             return CheckResult(cid, 'job', label, 'skipped', '장외 시간 — 판정 안 함', severity=sev)
+        if any(last_runs.get(rk) is not None and (ran is None or ran > now) for rk, ran in runs.items()):
+            return CheckResult(cid, 'job', label, 'unknown', '실행 기록 시각이 잘못되었거나 미래임', severity=sev)
         if latest is None:
             return CheckResult(cid, 'job', label, 'unknown', '유효한 실행 기록 없음', severity=sev)
         age_min = (now - latest).total_seconds() / 60
@@ -269,42 +314,66 @@ def evaluate_job(job: dict[str, Any], last_runs: dict[str, Any], now: datetime, 
         return CheckResult(cid, 'job', label, st, f'마지막 성공 {_age_text(age_min * 60)} 전 (주기 {sched["minutes"]}분)',
                            severity=sev, value=round(age_min, 1))
     if sched['kind'] == 'times':
-        if sched['weekdays_only'] and (now.weekday() >= 5 or (
-                job.get('market') == 'KR' and not _is_trading_day('kr_trading', now.date()))):
+        today_allowed = _job_day_allowed(job, sched, now.date())
+        if sched['weekdays_only'] and not today_allowed:
             return CheckResult(cid, 'job', label, 'skipped', '비실행일 — 판정 안 함', severity=sev)
+        if any(last_runs.get(rk) is not None and (ran is None or ran > now) for rk, ran in runs.items()):
+            return CheckResult(cid, 'job', label, 'unknown', '실행 기록 시각이 잘못되었거나 미래임', severity=sev)
+        today_slots = _job_slots(now, now.date(), sched['times'])
+        slot_keys = record_keys if len(record_keys) == len(today_slots) else [record_keys[0]] * len(today_slots)
+        grace = timedelta(minutes=max(0, grace_min))
+        early = timedelta(minutes=10)
+        # Before today's first due deadline, the previous scheduled day still
+        # needs a success baseline. Midnight must not erase yesterday's failure.
+        current_evidence = any(runs.get(rk) and slot - early <= runs[rk] <= now
+                               for rk, slot in zip(slot_keys, today_slots))
+        day = now.date()
+        if not today_allowed or not (current_evidence or any(slot + grace <= now for slot in today_slots)):
+            for offset in range(1, 36):
+                candidate = now.date() - timedelta(days=offset)
+                if _job_day_allowed(job, sched, candidate):
+                    day = candidate
+                    break
+            else:
+                return CheckResult(cid, 'job', label, 'unknown', '최근 실행 예정일을 확인할 수 없음', severity=sev)
         missed, pending, done = [], [], []
-        slots = [now.replace(hour=h, minute=mi, second=0, microsecond=0) for h, mi in sched['times']]
+        slots = _job_slots(now, day, sched['times'])
         # A shared record key retains only the latest run. Attribute it to the
         # latest eligible slot, and leave overwritten slots unverified.
         attributable = {}
         for rk, ran in runs.items():
             if ran and ran <= now:
-                attributable[rk] = max((slot for slot in slots if slot - timedelta(minutes=10) <= ran),
+                attributable[rk] = max((slot for slot, key in zip(slots, slot_keys)
+                                        if key == rk and slot - early <= ran),
                                        default=None)
         unverified = []
         for idx, (h, mi) in enumerate(sched['times']):
             slot = slots[idx]
-            rk = record_keys[idx] if len(record_keys) == len(sched['times']) else record_keys[0]
+            rk = slot_keys[idx]
             ran = runs.get(rk)
             label_t = f'{h:02d}:{mi:02d}'
-            shared = len(record_keys) != len(slots)
-            if ran and ran <= now and slot - timedelta(minutes=10) <= ran and (
+            shared = slot_keys.count(rk) > 1
+            if ran and ran <= now and slot - early <= ran and (
                     not shared or attributable.get(rk) == slot):
                 done.append(label_t)
             elif ran and (ran > now or (shared and attributable.get(rk) and attributable[rk] > slot)):
                 unverified.append(label_t)
-            elif now < slot + timedelta(minutes=grace_min):
+            elif now < slot + grace:
                 pending.append(label_t)
             else:
                 missed.append(label_t)
+        if day != now.date() and today_allowed:
+            pending = [slot.strftime('%H:%M') for slot in today_slots if slot + grace > now]
+        value = {'basis_date': day.isoformat(), 'missed': missed, 'done': done,
+                 'pending': pending, 'unverified': unverified}
         if missed:
-            return CheckResult(cid, 'job', label, 'fail', f'오늘 놓친 실행: {", ".join(missed)}', severity=sev,
-                               value={'missed': missed, 'done': done, 'pending': pending})
-        detail = f'오늘 완료 {", ".join(done) or "-"} · 대기 {", ".join(pending) or "-"}'
+            return CheckResult(cid, 'job', label, 'fail', f'{day.isoformat()} 기한 지난 실행 성공 미확인: {", ".join(missed)}',
+                               severity=sev, value=value)
+        detail = f'{day.isoformat()} 완료 {", ".join(done) or "-"} · 대기 {", ".join(pending) or "-"}'
         if unverified:
             detail += f' · 미확인 {", ".join(unverified)}'
         return CheckResult(cid, 'job', label, 'ok' if done and not unverified else 'unknown', detail,
-                           severity=sev, value={'done': done, 'pending': pending, 'unverified': unverified})
+                           severity=sev, value=value)
     if latest is None:
         return CheckResult(cid, 'job', label, 'unknown', '일정 해석 불가 · 실행 기록 없음', severity='info')
     age = (now - latest).total_seconds()
@@ -318,7 +387,7 @@ def _valid_job_record(job: Any) -> bool:
     record_keys = job.get('record_keys', [])
     return (isinstance(record_keys, list)
             and all(isinstance(key, str) and key.strip() for key in record_keys)
-            and all(isinstance(job[field], str) for field in ('record_key', 'label', 'schedule', 'market')
+            and all(isinstance(job[field], str) for field in ('record_key', 'label', 'schedule', 'market', 'calendar')
                     if field in job))
 
 
@@ -338,7 +407,8 @@ def check_jobs(cfg: dict[str, Any], now: datetime | None = None) -> list[CheckRe
                            f'잡 목록 {len(jobs)}개 확인', severity='info', value=len(jobs))]
     last_runs = _read_json(os.path.join(DATA_DIR, 'scheduler_last_run.json'))
     if (not isinstance(last_runs, dict) or not last_runs
-            or any(not key.strip() or _parse_ts(value) is None for key, value in last_runs.items())):
+            or any(not key.strip() or (stamp := _parse_ts(value)) is None or stamp > now
+                   for key, value in last_runs.items())):
         results.append(CheckResult('job:_baseline', 'job', '스케줄러 성공 기록', 'unknown',
                                    '유효한 스케줄러 성공 기록 없음'))
         return results

@@ -429,7 +429,9 @@ def _do_test_hypothesis(decision: dict[str, Any], _backtest: dict[str, Any]) -> 
 
 def _do_refresh_backtest(decision: dict[str, Any], _backtest: dict[str, Any]) -> dict[str, Any]:
     module = _backtest_module()
-    report = module.evaluate_runs(horizon_days=5)
+    # Match the daily scheduler's sample policy; an agent retry must not load
+    # the complete multi-year archive into memory after a daily-job failure.
+    report = module.evaluate_runs(horizon_days=5, limit_runs=8000)
     module.write_report(report)
     module.write_rolling_report(current_report=report)
     enhanced = report.get('enhanced') or report.get('plan_a_false_signal_filter') or {}
