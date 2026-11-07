@@ -16,6 +16,51 @@ interface DataStatus {
     link?: string;
     menu?: string;
     updateType?: string;
+    collection?: CollectionStatus;
+}
+
+interface CollectionStatus {
+    status: 'ok' | 'partial' | 'failed' | 'unknown' | 'stale';
+    requested: number | null;
+    successful: number | null;
+    failed: number | null;
+    skipped: number | null;
+    source_date: string | null;
+    collected_at: string | null;
+    detail: string;
+}
+
+const UNVERIFIED_COLLECTION: CollectionStatus = {
+    status: 'unknown', requested: null, successful: null, failed: null, skipped: null,
+    source_date: null, collected_at: null, detail: '수집 결과를 확인하지 못했습니다. 파일 저장 시각만으로 원본의 정상 여부를 판단하지 않습니다.',
+};
+const collectionOf = (file: DataStatus) => file.collection ?? (file.name === 'Institutional Trend' ? UNVERIFIED_COLLECTION : undefined);
+const COLLECTION_LABELS = { ok: '정상', partial: '부분 실패', failed: '수집 실패', unknown: '확인 필요', stale: '원본 지연' };
+const collectionTime = (value: string | null) => {
+    if (!value) return '미확인';
+    const parsed = new Date(/[Zz]$|[+-]\d{2}:\d{2}$/.test(value) ? value : `${value}+09:00`);
+    if (!Number.isFinite(parsed.getTime())) return '미확인';
+    return `${new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(parsed)} KST`;
+};
+
+function CollectionDetails({ file }: { file: DataStatus }) {
+    const collection = collectionOf(file);
+    if (!collection) return null;
+    return (
+        <div className="my-3 rounded-lg border border-white/10 bg-black/20 p-3 text-xs leading-relaxed">
+            <dl className="space-y-2">
+                <div className="flex flex-wrap justify-between gap-x-3 gap-y-1">
+                    <dt className="text-gray-400">유효 수집 / 요청</dt>
+                    <dd className="font-semibold text-white tabular-nums">{collection.successful != null && collection.requested != null ? `${collection.successful.toLocaleString()} / ${collection.requested.toLocaleString()}종목` : '미확인'}</dd>
+                </div>
+                {collection.failed != null && collection.skipped != null && <div className="text-amber-300">실패 {collection.failed.toLocaleString()} · 이력 부족 {collection.skipped.toLocaleString()}</div>}
+                <div className="flex flex-wrap justify-between gap-x-3 gap-y-1"><dt className="text-gray-400">원본 거래일</dt><dd className="text-white tabular-nums">{collection.source_date || '미확인'}</dd></div>
+                <div className="flex flex-wrap justify-between gap-x-3 gap-y-1"><dt className="text-gray-400">수집 시각</dt><dd className="text-gray-200 tabular-nums break-words">{collectionTime(collection.collected_at)}</dd></div>
+            </dl>
+            <p className="mt-3 text-gray-300">{collection.detail}</p>
+            <p className="mt-2 text-gray-400">저장 행 수에는 이전 결과가 포함될 수 있습니다. 분석 시 원본 거래일과 취득 시각을 검증합니다.</p>
+        </div>
+    );
 }
 
 // Category grouping for section headers
@@ -216,7 +261,14 @@ export default function DataStatusPage() {
         }
     };
 
-    const getStatusColor = (exists: boolean, lastModified: string) => {
+    const getStatusColor = (file: DataStatus) => {
+        const { exists, lastModified } = file;
+        const collection = collectionOf(file);
+        if (collection) {
+            if (collection.status === 'ok') return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+            if (collection.status === 'failed' || collection.status === 'stale') return 'text-red-400 bg-red-500/10 border-red-500/20';
+            return 'text-amber-300 bg-amber-500/10 border-amber-500/20';
+        }
         if (!exists) return 'text-red-400 bg-red-500/10 border-red-500/20';
 
         const date = new Date(lastModified);
@@ -235,6 +287,8 @@ export default function DataStatusPage() {
     const STALE_DAYS = 7;
 
     const isStale = (file: DataStatus) => {
+        const collection = collectionOf(file);
+        if (collection && !['ok', 'partial'].includes(collection.status)) return true;
         if (!file.exists || !file.lastModified) return true;
         const diffMs = Date.now() - new Date(file.lastModified).getTime();
         return diffMs > STALE_DAYS * 24 * 60 * 60 * 1000;
@@ -244,6 +298,11 @@ export default function DataStatusPage() {
     const inactiveFiles = dataFiles.filter(f => isStale(f));
     const activeCount = activeFiles.length;
     const totalCount = dataFiles.length;
+    const attentionCount = dataFiles.filter(f => collectionOf(f) && collectionOf(f)?.status !== 'ok').length;
+    const statusLabel = (file: DataStatus) => {
+        const collection = collectionOf(file);
+        return collection ? COLLECTION_LABELS[collection.status] : file.exists ? 'OK' : 'MISSING';
+    };
 
     const renderSection = (files: DataStatus[], sectionType: 'active' | 'inactive') => {
         return CATEGORY_ORDER.map((cat) => {
@@ -275,7 +334,7 @@ export default function DataStatusPage() {
     };
 
     const renderMobileCard = (file: DataStatus) => (
-        <div key={file.path} className="p-3 rounded-xl bg-[#1c1c1e] border border-white/10 flex flex-col gap-2">
+        <article key={file.path} aria-label={`${file.name} 데이터 상태`} className="min-w-0 p-3 rounded-xl bg-[#1c1c1e] border border-white/10 flex flex-col gap-2">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${file.exists ? 'bg-cyan-500/10 text-cyan-400' : 'bg-red-500/10 text-red-400'}`}>
@@ -286,18 +345,19 @@ export default function DataStatusPage() {
                         {file.menu && <div className="text-[10px] text-gray-600 truncate">{file.menu}</div>}
                     </div>
                 </div>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${getStatusColor(file.exists, file.lastModified)}`}>
-                    {file.exists ? 'OK' : 'MISSING'}
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${getStatusColor(file)}`}>
+                    {statusLabel(file)}
                 </span>
             </div>
             {file.exists && (
-                <div className="flex items-center gap-3 text-[11px] text-gray-500">
+                <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-500">
                     <span className="text-white font-medium">{formatTime(file.lastModified)}</span>
                     <span className="text-gray-700">|</span>
                     <span className="font-mono">{file.size}</span>
                     {file.rowCount != null && (<><span className="text-gray-700">|</span><span className="font-mono">{file.rowCount.toLocaleString()} rows</span></>)}
                 </div>
             )}
+            <CollectionDetails file={file} />
             {(file.updateType || file.link) && (
                 <div className="flex gap-2">
                     {file.updateType && (
@@ -314,24 +374,24 @@ export default function DataStatusPage() {
                     )}
                 </div>
             )}
-        </div>
+        </article>
     );
 
     const renderDesktopCard = (file: DataStatus) => (
-        <div key={file.path} className="p-5 rounded-2xl bg-[#1c1c1e] border border-white/10 hover:border-white/20 transition-all group flex flex-col">
-            <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${file.exists ? 'bg-cyan-500/10 text-cyan-400' : 'bg-red-500/10 text-red-400'}`}>
+        <article key={file.path} aria-label={`${file.name} 데이터 상태`} className="min-w-0 p-5 rounded-2xl bg-[#1c1c1e] border border-white/10 hover:border-white/20 transition-all group flex flex-col">
+            <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
+                <div className="flex min-w-0 items-center gap-3">
+                    <div className={`w-10 h-10 shrink-0 rounded-lg flex items-center justify-center ${file.exists ? 'bg-cyan-500/10 text-cyan-400' : 'bg-red-500/10 text-red-400'}`}>
                         <i className={`fas ${file.exists ? 'fa-file-alt' : 'fa-file-excel'}`}></i>
                     </div>
-                    <div>
-                        <h3 className="text-white font-bold">{file.name}</h3>
+                    <div className="min-w-0">
+                        <h3 className="break-words text-white font-bold">{file.name}</h3>
                         {file.menu && <div className="text-[10px] text-gray-500 mt-0.5 flex items-center gap-1"><i className="fas fa-link text-gray-600"></i> {file.menu}</div>}
                         <p className="text-[10px] text-gray-700 font-mono truncate max-w-[150px] mt-0.5">{file.path}</p>
                     </div>
                 </div>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getStatusColor(file.exists, file.lastModified)}`}>
-                    {file.exists ? 'OK' : 'MISSING'}
+                <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold border ${getStatusColor(file)}`}>
+                    {statusLabel(file)}
                 </span>
             </div>
             {file.exists && (
@@ -341,6 +401,7 @@ export default function DataStatusPage() {
                     {file.rowCount != null && <div className="flex justify-between text-gray-400"><span>Records</span><span className="text-white font-mono text-xs">{file.rowCount.toLocaleString()}</span></div>}
                 </div>
             )}
+            <CollectionDetails file={file} />
             <div className="mt-4 flex gap-2">
                 {file.updateType && (
                     <button onClick={() => triggerSingleUpdate(file.updateType!, file.name)} disabled={updating || !!updatingItem}
@@ -355,7 +416,7 @@ export default function DataStatusPage() {
                     </a>
                 )}
             </div>
-        </div>
+        </article>
     );
 
     const renderCards = (files: DataStatus[]) => files.map((file) => isMobile ? renderMobileCard(file) : renderDesktopCard(file));
@@ -374,7 +435,8 @@ export default function DataStatusPage() {
                         </h2>
                         <p className="text-gray-400 text-sm md:text-lg">
                             <span className="text-emerald-400 font-bold">{activeCount}</span>
-                            <span className="text-gray-600">/{totalCount}</span> 서비스 운영 중
+                            <span className="text-gray-600">/{totalCount}</span> 최근 갱신 파일
+                            {attentionCount > 0 && <span className="ml-2 text-amber-300">· 수집 확인 필요 {attentionCount}</span>}
                             {inactiveFiles.length > 0 && (
                                 <span className="ml-2 text-gray-600">· <span className="text-red-400/60">{inactiveFiles.length}</span> 비활성</span>
                             )}
@@ -439,7 +501,7 @@ export default function DataStatusPage() {
                 <div className="space-y-6">
                     <div className="flex items-center gap-3">
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <h3 className="text-base font-bold text-white">Active Services</h3>
+                        <h3 className="text-base font-bold text-white">최근 갱신 데이터</h3>
                         <span className="text-xs text-emerald-400/60 font-mono">{activeCount}</span>
                     </div>
                     {renderSection(activeFiles, 'active')}
@@ -450,9 +512,9 @@ export default function DataStatusPage() {
                     <div className="space-y-6 mt-8 pt-6 border-t border-white/5">
                         <div className="flex items-center gap-3">
                             <span className="w-2 h-2 rounded-full bg-gray-600"></span>
-                            <h3 className="text-base font-bold text-gray-500">Inactive / Stale</h3>
+                            <h3 className="text-base font-bold text-gray-400">지연 · 확인 필요</h3>
                             <span className="text-xs text-gray-600 font-mono">{inactiveFiles.length}</span>
-                            <span className="text-[10px] text-gray-700">7일 이상 미갱신</span>
+                            <span className="text-[10px] text-gray-500">원본 미검증 또는 파일 미갱신</span>
                         </div>
                         {renderSection(inactiveFiles, 'inactive')}
                     </div>

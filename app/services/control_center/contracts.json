@@ -83,6 +83,19 @@
  ],
  "data": [
   {
+   "id": "kr_institutional",
+   "label": "KR 수급 수집 커버리지",
+   "path": "{data}/institutional_collection_status.json",
+   "check": "institutional_collection",
+   "calendar": "kr_trading",
+   "severity": "standard",
+   "pages": [
+    "/admin/data-status",
+    "/dashboard/kr/vcp",
+    "/dashboard/kr/closing-bet"
+   ]
+  },
+  {
    "id": "kr_jongga",
    "label": "종가베팅 V2",
    "path": "{data}/jongga_v2_latest.json",

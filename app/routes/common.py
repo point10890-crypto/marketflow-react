@@ -579,6 +579,7 @@ def get_market_indices():
 def get_data_status():
     """데이터 파일 상태 조회"""
     from datetime import datetime
+    from app.services.institutional_collection_status import read_institutional_collection
     
 
     
@@ -841,6 +842,8 @@ def get_data_status():
                 'menu': file_info.get('menu', ''),
                 'updateType': file_info.get('updateType', '')
             })
+        if file_info.get('updateType') == 'institutional':
+            files_status[-1]['collection'] = read_institutional_collection(DATA_DIR)
     
     # Check update status (simple implementation)
     update_status = {
