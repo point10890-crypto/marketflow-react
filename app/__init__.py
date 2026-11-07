@@ -389,7 +389,7 @@ def create_app(config=None):
 
         # 독립 이용권에는 AI Brain 화면에 필요한 엔드포인트만 허용한다.
         method = 'GET' if _req.method == 'HEAD' else _req.method
-        if (method, _req.endpoint) in _KONGMING_BUNDLE_ENDPOINTS and user.is_kongming_active:
+        if (method, _req.endpoint) in _KONGMING_BUNDLE_ENDPOINTS and getattr(user, 'is_kongming_active', False):
             _req.current_user = user
             return None
 
