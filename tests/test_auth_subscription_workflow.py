@@ -95,7 +95,7 @@ def test_startup_migration_adds_aibain_columns_to_legacy_db(tmp_path):
     request_cols = {row[1] for row in conn.execute('PRAGMA table_info(subscription_requests)').fetchall()}
     conn.close()
 
-    assert {'aibain_enabled', 'aibain_expires_at', 'aibain_alert_stage', 'pro_paused_at'} <= user_cols
+    assert {'aibain_enabled', 'aibain_expires_at', 'aibain_alert_stage', 'pro_paused_at', 'kongming_expires_at'} <= user_cols
     assert {'depositor_name', 'amount'} <= request_cols
 
 
@@ -132,6 +132,118 @@ def test_pending_user_can_login_and_submit_subscription_request():
     with app.app_context():
         member = User.query.filter_by(email='pending@example.com').first()
         assert member.requested_tier == 'pro'
+
+
+@pytest.mark.parametrize(('tier', 'status', 'prior_bundle_days'), [
+    (None, 'pending', None),
+    ('premium', 'approved', 9),
+    ('pro', 'expired', -3),
+])
+def test_kongming_bundle_is_independent_and_extends_once_on_approval(tier, status, prior_bundle_days):
+    app = _app()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    base_expiry = now - timedelta(days=2) if tier == 'pro' else None
+    addon_expiry = now + timedelta(days=7) if tier == 'premium' else None
+    prior_bundle_expiry = None if prior_bundle_days is None else now + timedelta(days=prior_bundle_days)
+    with app.app_context():
+        member = _user('bundle@example.com', '결합이용권', 'Pass1234!', tier=tier, status=status, pro_expires_at=base_expiry)
+        member.aibain_enabled = addon_expiry is not None
+        member.aibain_expires_at = addon_expiry
+        member.kongming_expires_at = prior_bundle_expiry
+        admin = _user('bundle-admin@example.com', '관리자', 'Pass1234!', role='admin', status='approved')
+        db.session.add_all([member, admin])
+        db.session.commit()
+        member_headers = {'Authorization': f'Bearer {generate_token(member.id)}'}
+        admin_headers = {'Authorization': f'Bearer {generate_token(admin.id)}'}
+
+    client = app.test_client()
+    path = '/api/auth/subscription/request'
+    body = {'plan': 'aibain_kongming', 'depositor_name': '  신청인  ', 'amount': '1원', 'to_tier': 'premium'}
+    submitted = client.post(path, json=body, headers=member_headers)
+    assert submitted.status_code == 201
+    request_body = submitted.get_json()['request']
+    assert request_body['amount'] == '50,000원'
+    assert request_body['depositor_name'] == '신청인'
+    assert request_body['to_tier'] == 'aibain_kongming'
+    assert request_body['request_type'] == ('aibain_kongming_renewal' if prior_bundle_expiry else 'aibain_kongming')
+    assert client.post(path, json=body, headers=member_headers).status_code == 409
+    pending = client.get('/api/auth/subscription/status', headers=member_headers).get_json()
+    assert pending['user']['is_kongming_active'] == (prior_bundle_days == 9)
+    assert pending['kongming_subscription']['state'] == ('renewal_pending' if prior_bundle_expiry else 'activation_pending')
+    assert pending['kongming_subscription']['pending_request']['id'] == request_body['id']
+
+    approve_path = f"/api/admin/subscriptions/{request_body['id']}/approve"
+    approved = client.put(approve_path, headers=admin_headers)
+    assert approved.status_code == 200
+    approved_user = approved.get_json()['user']
+    assert approved_user['is_kongming_active'] is True
+    assert approved_user['status'] == ('approved' if status == 'pending' else status)
+    assert approved_user['tier'] == tier
+    assert approved_user['aibain_enabled'] == (addon_expiry is not None)
+    assert approved_user['aibain_expires_at'] == (addon_expiry.isoformat() if addon_expiry else None)
+    assert approved_user['pro_expires_at'] == (base_expiry.isoformat() if base_expiry else None)
+    assert approved_user['pro_paused_at'] is None
+    expiry = datetime.fromisoformat(approved_user['kongming_expires_at']).replace(tzinfo=None)
+    if prior_bundle_days == 9:
+        assert expiry == prior_bundle_expiry + timedelta(days=30)
+    else:
+        assert now + timedelta(days=30) <= expiry <= datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=30)
+    replay = client.put(approve_path, headers=admin_headers).get_json()
+    assert replay['already_processed'] is True
+    assert replay['user']['kongming_expires_at'] == approved_user['kongming_expires_at']
+
+
+def test_kongming_approval_cannot_restore_a_member_suspended_after_request():
+    app = _app()
+    with app.app_context():
+        member = _user('bundle-suspended@example.com', '신청인', 'Pass1234!')
+        admin = _user('bundle-admin@example.com', '관리자', 'Pass1234!', role='admin', status='approved')
+        db.session.add_all([member, admin])
+        db.session.commit()
+        member_id = member.id
+        member_headers = {'Authorization': f'Bearer {generate_token(member.id)}'}
+        admin_headers = {'Authorization': f'Bearer {generate_token(admin.id)}'}
+
+    client = app.test_client()
+    submitted = client.post('/api/auth/subscription/request', json={
+        'plan': 'aibain_kongming', 'depositor_name': '신청인',
+    }, headers=member_headers)
+    assert submitted.status_code == 201
+    request_id = submitted.get_json()['request']['id']
+    with app.app_context():
+        db.session.get(User, member_id).status = 'suspended'
+        db.session.commit()
+
+    approval = client.put(f'/api/admin/subscriptions/{request_id}/approve', headers=admin_headers)
+    assert approval.status_code == 409
+    with app.app_context():
+        assert db.session.get(User, member_id).kongming_expires_at is None
+        assert db.session.get(User, member_id).status == 'suspended'
+        assert db.session.get(SubscriptionRequest, request_id).status == 'pending'
+
+
+def test_standalone_kongming_access_opens_ai_brain_api_only(monkeypatch):
+    from app.services.mirofish import retrieval
+
+    monkeypatch.setattr(retrieval, 'rag_status', lambda: {'status': 'ready'})
+    app = _app()
+    with app.app_context():
+        member = _user('bundle-api@example.com', '결합이용권', 'Pass1234!', status='approved')
+        member.kongming_expires_at = datetime.now(timezone.utc) + timedelta(days=1)
+        db.session.add(member)
+        db.session.commit()
+        member_id = member.id
+        headers = {'Authorization': f'Bearer {generate_token(member_id)}'}
+
+    client = app.test_client()
+    response = client.get('/api/kr/rag/status', headers=headers)
+    assert response.status_code == 200
+    assert response.get_json() == {'status': 'ready'}
+    assert client.get('/api/kr/market-status', headers=headers).status_code == 403
+    with app.app_context():
+        db.session.get(User, member_id).kongming_expires_at = datetime.now(timezone.utc) - timedelta(seconds=1)
+        db.session.commit()
+    assert client.get('/api/kr/rag/status', headers=headers).status_code == 403
 
 
 @pytest.mark.parametrize('historical_status', [None, 'rejected', 'cancelled'])

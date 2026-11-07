@@ -826,6 +826,8 @@ export interface AdminUser {
     is_aibain_active?: boolean;
     is_aibain_expired?: boolean;
     aibain_days_remaining?: number | null;
+    kongming_expires_at?: string | null;
+    is_kongming_active?: boolean;
     // 회원 본인 텔레그램 알림 연결 여부
     telegram_linked?: boolean;
     telegram_linked_at?: string | null;
@@ -885,7 +887,7 @@ export interface SubscriptionRequest {
     user_name: string;
     request_type: string;
     from_tier: string;  // 'none' | 'pro' | 'premium'
-    to_tier: string;    // 'pro' | 'premium'
+    to_tier: string;    // 'pro' | 'premium' | 'aibain_kongming'
     status: string;
     payment_id: string | null;
     admin_note: string | null;
@@ -1117,6 +1119,11 @@ export const waveAPI = {
 
 // ── User Subscription API (Bearer token 기반) ──
 export const subscriptionAPI = {
+    requestKongming: (token: string, depositorName: string) =>
+        postAuthAPI<{ request: SubscriptionRequest }>('/api/auth/subscription/request', {
+            plan: 'aibain_kongming',
+            depositor_name: depositorName,
+        }, token),
     requestUpgrade: (toTier: string, token?: string, depositorName?: string, includesAibain?: boolean) =>
         postAuthAPI<{ request: SubscriptionRequest }>('/api/auth/subscription/request', {
             to_tier: toTier,

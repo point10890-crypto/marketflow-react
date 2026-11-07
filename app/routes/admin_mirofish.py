@@ -8,6 +8,7 @@ from functools import wraps
 from flask import Blueprint, Response, jsonify, make_response, request
 
 from app.auth.decorators import admin_required, admin_or_aibain_required
+from app.routes.kongming_catalyst import catalyst_response
 from app.services import mirofish
 from app.services.ai_routing.reporting import (
     get_llm_routing_status,
@@ -867,6 +868,18 @@ def aibain_overview():
             'error': f'{type(exc).__name__}: {exc}',
             'service': 'mirofish-aibain-overview',
         }), 500
+
+
+@admin_mirofish_bp.get('/kongming/catalyst-validation')
+@admin_or_aibain_required
+def kongming_catalyst_validation():
+    return catalyst_response()
+
+
+@admin_mirofish_bp.get('/kongming/catalyst-validation-history')
+@admin_or_aibain_required
+def kongming_catalyst_validation_history():
+    return catalyst_response(history=True)
 
 
 @admin_mirofish_bp.route('/targets/resolve', methods=['GET'])

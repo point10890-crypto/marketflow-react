@@ -194,12 +194,14 @@ ${DATA_SHARING_HTML}
     },
     {
         path: '/pricing',
-        title: '요금제 — Pro · Ultra Pro · AI Brain | MarketFlow',
+        title: '요금제 — AI 브레인 + 제갈공명 · Pro · Ultra Pro | MarketFlow',
         description:
-            'MarketFlow 구독 요금제 안내 — Pro(30일), Ultra Pro(무기한), AI Brain 애드온의 기능과 가격, 계좌이체 결제·승인 절차를 확인하세요.',
+            'AI 브레인 + 제갈공명은 30일 50,000원입니다. MarketFlow 구독별 기능과 계좌이체 신청 절차를 확인하세요.',
         body: `
 <h1>요금제</h1>
 <p>계정 생성은 무료이며, 대시보드 전체 이용은 플랜 선택 → 계좌이체 → 관리자 승인 후 시작됩니다.</p>
+<h2>AI 브레인 + 제갈공명 · 50,000원 / 30일</h2>
+<p>AI 브레인 분석과 제갈공명의 뉴스·공시 근거 대조, 재료 판정 및 검증 이력을 이용할 수 있는 독립 플랜입니다.</p>
 <h2>Pro — 시장 관찰과 분석의 기본 (30일)</h2>
 <ul>
 <li>Claw LIVE와 국내 주도주 관찰</li>

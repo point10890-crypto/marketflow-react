@@ -43,6 +43,8 @@ interface AuthUser {
     is_aibain_active?: boolean;        // backend 계산값 (만료 체크 포함)
     is_aibain_expired?: boolean;
     aibain_days_remaining?: number | null;
+    kongming_expires_at?: string | null;
+    is_kongming_active?: boolean;
     // Pro 만료 카운터 일시정지 (AI Brain 활성 중)
     pro_paused_at?: string | null;
     is_pro_paused?: boolean;
@@ -96,6 +98,8 @@ function toAuthUser(d: AuthUserData): AuthUser {
         is_aibain_active: d.is_aibain_active ?? false,
         is_aibain_expired: d.is_aibain_expired ?? false,
         aibain_days_remaining: d.aibain_days_remaining ?? null,
+        kongming_expires_at: d.kongming_expires_at ?? null,
+        is_kongming_active: d.is_kongming_active ?? false,
         // Pro 일시정지 (AI Brain 활성 중)
         pro_paused_at: d.pro_paused_at ?? null,
         is_pro_paused: d.is_pro_paused ?? false,

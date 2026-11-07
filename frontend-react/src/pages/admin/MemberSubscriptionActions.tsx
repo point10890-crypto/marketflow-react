@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { adminAPI, type AdminUser, type SubscriptionRequest } from '@/lib/api';
+import { isKongmingSubscriptionRequest, PLAN_PAYMENT_META } from '@/lib/billingInfo';
+
+const kongmingPlanLabel = PLAN_PAYMENT_META.aibain_kongming.label;
 
 export default function MemberSubscriptionActions({ user, apiToken, onUpdated, onMutationStart, onBusyChange }: {
     user: AdminUser;
@@ -122,6 +125,7 @@ export default function MemberSubscriptionActions({ user, apiToken, onUpdated, o
         <div className="text-sm font-semibold text-white">구독 관리 · {user.name}</div>
         <p className="text-xs text-gray-400 break-all">{user.email} · 회원 #{user.id}</p>
         <p className="text-xs text-gray-400">{user.tier === 'premium' ? 'Ultra Pro (무기한)' : user.tier === 'pro' ? 'Pro' : 'No Tier'} · {statusLabel} · AI Brain {user.is_aibain_active ? '활성' : '비활성'}</p>
+        {user.kongming_expires_at && <p className="text-xs text-cyan-300">{kongmingPlanLabel} · {user.is_kongming_active ? '이용 중' : '만료'} · {new Date(user.kongming_expires_at).toLocaleDateString('ko-KR')}</p>}
         {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
         {refreshNeeded && <button disabled={busy} onClick={() => void run(async () => { updateUser(await adminAPI.getUser(user.id, apiToken)); setRefreshNeeded(false); })} className={buttonClass}>회원 상태 다시 조회</button>}
         {message && <p role="status" className="text-xs text-emerald-400">{message}</p>}
@@ -132,7 +136,7 @@ export default function MemberSubscriptionActions({ user, apiToken, onUpdated, o
                     : requests.length ? <div className="space-y-2">
                         <p className="text-xs text-amber-300">대기 요청을 승인하면 해당 요청과 구독 상태가 함께 처리됩니다.</p>
                         {requests.map(request => <button key={request.id} disabled={busy} onClick={() => approve(request)} className={`${buttonClass} w-full text-left text-amber-300`}>
-                            {request.request_type.includes('renewal') ? '재구독' : '구독'} 요청 #{request.id} 승인 · {request.request_type.startsWith('aibain') ? 'AI Brain' : request.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
+                            {request.request_type.includes('renewal') ? '재구독' : '구독'} 요청 #{request.id} 승인 · {isKongmingSubscriptionRequest(request.request_type) ? kongmingPlanLabel : request.request_type.startsWith('aibain') ? 'AI Brain' : request.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
                         </button>)}
                     </div> : <div className="flex flex-wrap gap-2 items-center">
                         <label className="sr-only" htmlFor={`grant-tier-${user.id}`}>부여할 플랜</label>
@@ -148,7 +152,7 @@ export default function MemberSubscriptionActions({ user, apiToken, onUpdated, o
             </div>}
             <button disabled={busy} onClick={() => setConfirmExpiry(true)} className={`${buttonClass} text-red-400 border border-red-500/20`}>전체 구독 만료</button>
             {confirmExpiry && <div role="dialog" aria-label="전체 구독 만료 확인" className="rounded-lg border border-red-500/30 bg-red-500/5 p-3 space-y-3">
-                <p className="text-xs text-red-300">{user.name} ({user.email})의 Pro · Ultra Pro · AI Brain을 모두 즉시 만료합니다. 회원 계정, 구매·구독 요청 및 관리자 감사 이력은 보존됩니다.</p>
+                <p className="text-xs text-red-300">{user.name} ({user.email})의 Pro · Ultra Pro · AI Brain · 제갈공명 구독을 모두 즉시 만료합니다. 회원 계정, 구매·구독 요청 및 관리자 감사 이력은 보존됩니다.</p>
                 <label className="block text-xs">만료 사유 (선택)<textarea aria-label="만료 사유 (선택)" value={note} disabled={busy} onChange={event => setNote(event.target.value)} className="mt-1 block w-full bg-black/20 border border-white/10 rounded-lg p-2" /></label>
                 <div className="flex flex-wrap gap-2">
                     <button disabled={busy} onClick={() => setConfirmExpiry(false)} className={buttonClass}>취소</button>

@@ -48,10 +48,10 @@ export default function PlanSelectPage() {
             return;
         }
         const isActive = hasActiveBaseSubscription(user, now);
-        if (isActive && !allowChange) {
+        if (isActive && !allowChange && preferredPlan !== 'aibain_kongming') {
             navigate('/dashboard', { replace: true });
         }
-    }, [user, token, loading, navigate, allowChange, signupPath, now]);
+    }, [user, token, loading, navigate, allowChange, signupPath, preferredPlan, now]);
 
     if (loading) {
         return (
@@ -127,7 +127,9 @@ export default function PlanSelectPage() {
                         {isExpired
                             ? '서비스 재개를 위해 다시 이용할 플랜을 선택하세요.'
                             : isUpgrade && user?.tier === 'premium'
-                            ? (user.is_aibain_active ? '최상위 등급과 AI Brain을 이용 중입니다. 추가 등급 업그레이드가 필요하지 않습니다.' : 'Ultra Pro는 최상위 평생 이용 플랜입니다. 기존 등급을 유지하고 AI Brain만 추가할 수 있습니다.')
+                            ? (user.is_aibain_active
+                                ? '추가 등급 업그레이드가 필요하지 않습니다. 제갈공명 결합 플랜은 아래에서 선택할 수 있습니다.'
+                                : 'Ultra Pro는 최상위 평생 이용 플랜입니다. 기존 등급을 유지하고 AI 분석 구독을 선택할 수 있습니다.')
                             : isUpgrade
                             ? '현재 플랜은 승인 전까지 유지됩니다. 상위 등급 또는 AI Brain 추가를 선택하세요.'
                             : isPending
@@ -151,6 +153,8 @@ export default function PlanSelectPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <PlanCard plan="aibain_kongming" onSelect={select} badgeIcon="fa-newspaper" badgeText="AI 분석 · 재료 검증"
+                              isPreferred={preferredPlan === 'aibain_kongming'} isRenewal={!!user?.kongming_expires_at} />
                     <PlanCard plan="pro" onSelect={select} badgeIcon="fa-crown" badgeText="기본"
                               isPrevious={isExpired && user?.tier === 'pro'} isPreferred={preferredPlan === 'pro'}
                               hasActiveBase={hasActiveBase} currentTier={user?.tier} isAiBrainActive={!!user?.is_aibain_active} />
@@ -212,6 +216,7 @@ interface PlanCardProps {
     highlighted?: boolean;
     /** 재구독 화면에서 만료 전 이용하던 플랜 — 원클릭 재시작 대상으로 강조 */
     isPrevious?: boolean;
+    isRenewal?: boolean;
     /** 공개 요금 페이지에서 사용자가 미리 선택한 플랜 */
     isPreferred?: boolean;
     /** 활성 베이스 회원은 같은 tier의 AI Brain만 40,000원 애드온으로 신청한다. */
@@ -231,6 +236,17 @@ const COLOR_STYLES: Record<BillingPlan, {
     btnText: string;
     bgOverlay: string;
 }> = {
+    aibain_kongming: {
+        border: 'border-cyan-500/40',
+        ring: 'ring-cyan-500/25',
+        hoverRing: 'hover:ring-cyan-500/60',
+        badgeBg: 'bg-cyan-500/10',
+        badgeText: 'text-cyan-300',
+        accent: 'text-cyan-300',
+        btn: 'from-cyan-500 to-sky-500',
+        btnText: 'text-black',
+        bgOverlay: 'from-cyan-500/10 to-transparent',
+    },
     pro: {
         border: 'border-amber-500/30',
         ring: 'ring-amber-500/20',
@@ -284,6 +300,7 @@ function PlanCard({
     badgeText,
     highlighted,
     isPrevious,
+    isRenewal,
     isPreferred,
     hasActiveBase,
     currentTier,
@@ -297,8 +314,8 @@ function PlanCard({
     const isBlockedDowngrade = !!hasActiveBase && currentTier === 'premium' && meta.tier === 'pro';
     const isDisabled = isCurrent || isBlockedDowngrade;
     const priceMajor = isAddonOnly ? '40,000' : meta.amountNumber.toLocaleString();
-    const isThirtyDayBase = plan === 'pro' || plan === 'pro_aibain';
-    const priceUnit = isAddonOnly || isThirtyDayBase ? '원 / 30일' : '원';
+    const isThirtyDayPlan = plan === 'pro' || plan === 'pro_aibain' || plan === 'aibain_kongming';
+    const priceUnit = isAddonOnly || isThirtyDayPlan ? '원 / 30일' : '원';
     const displayTitle = isAddonOnly ? 'AI Brain 애드온' : meta.label;
     const displayPeriod = isAddonOnly ? `기존 ${currentTier === 'premium' ? 'Ultra Pro' : 'Pro'} 유지 · AI Brain 30일` : meta.period;
     const displayedFeatures = isAddonOnly
@@ -366,6 +383,8 @@ function PlanCard({
                     <>AI Brain 40,000원으로 추가</>
                 ) : isPrevious ? (
                     <><i className="fas fa-rotate-right mr-1.5" />{meta.label} 다시 시작하기</>
+                ) : isRenewal ? (
+                    `${meta.label} 갱신 신청`
                 ) : (
                     `${meta.label} 선택`
                 )}

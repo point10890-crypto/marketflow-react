@@ -1,4 +1,6 @@
 import { reminderDue } from '@/lib/subscriptionJourney';
+import { hasActiveKongmingSubscription, subscriptionExpiryTime } from '@/lib/auth';
+import { PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -60,6 +62,22 @@ export default function RenewalBanner() {
             }
         }
 
+        if (hasActiveKongmingSubscription(user, now)) {
+            const days = Math.ceil((subscriptionExpiryTime(user.kongming_expires_at) - now) / 86_400_000);
+            if (days > 5) return null;
+            const plan = 'aibain_kongming';
+            return {
+                key: `kongming-${days}`,
+                icon: 'fa-brain',
+                tone: 'border-cyan-400/30 bg-cyan-500/[0.10] text-cyan-100',
+                accent: 'text-cyan-300',
+                message: `${PLAN_PAYMENT_META[plan].label} 이용 기간이 ${days}일 뒤 만료됩니다.`,
+                sub: '지금 갱신 신청하면 승인 시 만료일부터 30일이 이어집니다.',
+                cta: '갱신 신청',
+                to: `/payment-request?${planToQuery(plan)}&renew=1`,
+            };
+        }
+
         // 2. AI Brain 애드온 만료 임박
         if (user.is_aibain_active) {
             const d = daysLeft(user.aibain_expires_at);
@@ -81,7 +99,7 @@ export default function RenewalBanner() {
         return null;
     }, [user, now]);
 
-    const dismissKey = `${DISMISS_KEY}:${user?.id}:${banner?.key}:${user?.pro_expires_at || ''}:${user?.aibain_expires_at || ''}`;
+    const dismissKey = `${DISMISS_KEY}:${user?.id}:${banner?.key}:${user?.pro_expires_at || ''}:${user?.aibain_expires_at || ''}:${user?.kongming_expires_at || ''}`;
     const last = dismissedAt?.key === dismissKey ? dismissedAt.at : safeGetItem('session', dismissKey);
     if (!banner || !reminderDue(last, now)) return null;
 

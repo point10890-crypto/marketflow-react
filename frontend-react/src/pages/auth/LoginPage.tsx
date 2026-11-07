@@ -2,17 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
-import { getUser, subscriptionFunnelTarget } from '@/lib/auth';
+import { getUser, isKongmingOnlyUser, subscriptionFunnelTarget, type FunnelUser } from '@/lib/auth';
 import { useSeo } from '@/lib/seo';
 
-export type LoginUser = {
-    role?: string;
-    status?: string;
-    tier?: string | null;
-    is_pro_expired?: boolean;
-    requested_tier?: string | null;
-    has_pending_subscription?: boolean;
-};
+export type LoginUser = FunnelUser;
 
 export function safeNextPath(value: string | null): string | null {
     if (!value) return null;
@@ -43,8 +36,14 @@ export function nextPathForUser(user: LoginUser, nextPath: string | null): strin
     if (user.role === 'admin') {
         return nextPath?.startsWith('/admin') ? nextPath : '/admin';
     }
+    if (isKongmingOnlyUser(user)) {
+        if (planned) return planned;
+        if (nextPath === '/pending-approval' || nextPath?.startsWith('/dashboard/')) return nextPath;
+        return '/dashboard/ai-bain';
+    }
     const funnel = subscriptionFunnelTarget(user);
     if (funnel === '/pending-approval') return funnel;
+    if (funnel?.includes('plan=aibain_kongming')) return funnel;
     if (user.status === 'expired' || user.is_pro_expired) {
         return resubscribePath(planned);
     }

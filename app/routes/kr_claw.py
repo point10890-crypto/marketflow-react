@@ -6,7 +6,7 @@ mutation 엔드포인트는 두지 않는다
 """
 from flask import Blueprint, current_app, jsonify, request
 
-from app.auth.decorators import admin_or_aibain_required, pro_required
+from app.auth.decorators import admin_or_aibain_required, pro_or_kongming_required
 
 kr_claw_bp = Blueprint('kr_claw', __name__)
 
@@ -68,13 +68,13 @@ def _scorecards_projection(window_days):
 
 
 @kr_claw_bp.route('/overview')
-@pro_required
+@pro_or_kongming_required
 def claw_overview():
     return _project('overview', _overview_projection)
 
 
 @kr_claw_bp.route('/close-leaders')
-@pro_required
+@pro_or_kongming_required
 def claw_close_leaders():
     """마감 기준 주도주 (마스터 플랜 P3). ?day=YYYYMMDD 로 특정 세션 조회."""
     from flask import request
@@ -85,9 +85,7 @@ def claw_close_leaders():
     if day and (len(day) != 8 or not day.isdigit()):
         return jsonify({'error': 'invalid_day'}), 400
     payload = build_close_leaders(day or None)
-    resp = jsonify(payload)
-    resp.headers['Cache-Control'] = 'public, max-age=60'  # 마감 데이터 — 세션당 1회 확정
-    return resp
+    return _no_store(payload)
 
 
 @kr_claw_bp.route('/scorecards')

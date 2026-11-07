@@ -1,5 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { adminAPI, SubscriptionRequest, PendingSignup, ExpiredMember } from '@/lib/api';
+import { isKongmingSubscriptionRequest, PLAN_PAYMENT_META } from '@/lib/billingInfo';
+
+const kongmingPlanLabel = PLAN_PAYMENT_META.aibain_kongming.label;
 
 export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCountChange: (n: number) => void }) {
     const [requests, setRequests] = useState<SubscriptionRequest[]>([]);
@@ -209,19 +212,26 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                     <div className="space-y-3">
                         {pending.map(req => {
                             const isAibainRenewal = req.request_type === 'aibain_renewal';
-                            const isBaseRenewal = req.request_type.includes('renewal') && !isAibainRenewal;
+                            const isKongmingPlan = isKongmingSubscriptionRequest(req.request_type);
+                            const isKongmingRenewal = req.request_type === 'aibain_kongming_renewal';
+                            const isBaseRenewal = req.request_type.includes('renewal') && !isAibainRenewal && !isKongmingPlan;
                             const isAibainOnly = req.request_type === 'aibain_addon' || isAibainRenewal;
+                            const isAiOnly = isAibainOnly || isKongmingPlan;
                             const includesAibain = isAibainOnly || !!(req.admin_note && req.admin_note.includes('AI Brain'));
-                            const cardBorder = isAibainOnly ? 'border-cyan-500/30' : 'border-yellow-500/20';
-                            const iconBg = isAibainOnly ? 'bg-cyan-500/15' : 'bg-yellow-500/10';
-                            const iconColor = isAibainOnly ? 'text-cyan-300' : 'text-yellow-400';
-                            const iconClass = isAibainOnly ? 'fa-robot' : 'fa-arrow-up';
+                            const cardBorder = isAiOnly ? 'border-cyan-500/30' : 'border-yellow-500/20';
+                            const iconBg = isAiOnly ? 'bg-cyan-500/15' : 'bg-yellow-500/10';
+                            const iconColor = isAiOnly ? 'text-cyan-300' : 'text-yellow-400';
+                            const iconClass = isKongmingPlan ? 'fa-newspaper' : isAibainOnly ? 'fa-robot' : 'fa-arrow-up';
                             // 승인 버튼 색상/라벨 분기
                             let btnLabel = req.to_tier === 'premium' ? 'Ultra Pro 승인' : 'Pro 승인';
                             if (isBaseRenewal) btnLabel = req.to_tier === 'premium' ? 'Ultra Pro 재구독 승인' : 'Pro 재구독 승인';
                             let btnIcon = req.to_tier === 'premium' ? 'fa-gem' : 'fa-crown';
                             let btnColor = req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30';
-                            if (isAibainOnly) {
+                            if (isKongmingPlan) {
+                                btnLabel = `${kongmingPlanLabel}${isKongmingRenewal ? ' 갱신' : ''} 승인`;
+                                btnIcon = 'fa-newspaper';
+                                btnColor = 'bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30';
+                            } else if (isAibainOnly) {
                                 btnLabel = isAibainRenewal ? 'AI Brain 재구독 승인' : 'AI Brain 활성화';
                                 btnIcon = 'fa-bolt';
                                 btnColor = 'bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30';
@@ -240,14 +250,14 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                             <div>
                                                 <div className="text-white font-medium flex items-center gap-2 flex-wrap">
                                                     {req.user_name || `User #${req.user_id}`}
-                                                    {isBaseRenewal && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300">재구독</span>}
+                                                    {(isBaseRenewal || isKongmingRenewal) && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300">재구독</span>}
                                                     {isAibainOnly && (
                                                         <span className="text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 uppercase">
                                                             <i className="fas fa-robot text-[8px] mr-0.5" />
                                                             {isAibainRenewal ? 'AI BRAIN RENEWAL' : 'AI BRAIN ADDON'}
                                                         </span>
                                                     )}
-                                                    {!isAibainOnly && includesAibain && (
+                                                    {!isAiOnly && includesAibain && (
                                                         <span className="text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 uppercase">
                                                             <i className="fas fa-robot text-[8px] mr-0.5" />
                                                             +AI BAIN
@@ -258,8 +268,8 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                                 <div className="text-xs text-gray-500 mt-1 flex flex-wrap items-center gap-1">
                                                     <span className={`px-1.5 py-0.5 rounded ${req.from_tier === 'none' ? 'bg-gray-500/20 text-gray-400' : 'bg-amber-500/20 text-amber-400'}`}>{req.from_tier}</span>
                                                     <span className="mx-1">&rarr;</span>
-                                                    <span className={`px-1.5 py-0.5 rounded font-bold ${isAibainOnly ? 'bg-cyan-500/20 text-cyan-300' : req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                                                        {isAibainOnly ? (isAibainRenewal ? 'AI Brain 재구독' : '+AI Brain') : req.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
+                                                    <span className={`px-1.5 py-0.5 rounded font-bold ${isAiOnly ? 'bg-cyan-500/20 text-cyan-300' : req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                                                        {isKongmingPlan ? kongmingPlanLabel : isAibainOnly ? (isAibainRenewal ? 'AI Brain 재구독' : '+AI Brain') : req.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
                                                     </span>
                                                     {req.depositor_name && (
                                                         <button
@@ -273,7 +283,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                                         </button>
                                                     )}
                                                     {req.amount && (
-                                                        <span className={`px-1.5 py-0.5 rounded font-bold ${isAibainOnly ? 'bg-cyan-500/15 text-cyan-300' : 'bg-green-500/10 text-green-400'}`}>
+                                                        <span className={`px-1.5 py-0.5 rounded font-bold ${isAiOnly ? 'bg-cyan-500/15 text-cyan-300' : 'bg-green-500/10 text-green-400'}`}>
                                                             {req.amount}
                                                         </span>
                                                     )}
@@ -436,7 +446,9 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                     <tr key={req.id} className="border-b border-white/5">
                                         <td className="px-4 py-3 text-sm text-white">{req.user_name || `#${req.user_id}`}</td>
                                         <td className="px-4 py-3 text-xs text-gray-400">
-                                            {req.request_type === 'aibain_addon' ? (
+                                            {isKongmingSubscriptionRequest(req.request_type) ? (
+                                                <span className="text-cyan-300"><i className="fas fa-newspaper text-[10px] mr-1" />{kongmingPlanLabel}{req.request_type === 'aibain_kongming_renewal' ? ' 갱신' : ''}</span>
+                                            ) : req.request_type === 'aibain_addon' ? (
                                                 <span className="text-cyan-300"><i className="fas fa-robot text-[10px] mr-1" />+AI Brain</span>
                                             ) : req.request_type === 'aibain_renewal' ? (
                                                 <span className="text-cyan-300"><i className="fas fa-robot text-[10px] mr-1" />AI Brain 재구독</span>

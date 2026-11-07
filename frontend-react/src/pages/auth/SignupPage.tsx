@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE } from '@/lib/api';
+import { isKongmingOnlyUser, subscriptionFunnelTarget } from '@/lib/auth';
 import {
     PLAN_PAYMENT_META,
     planFromQuery,
@@ -55,6 +56,15 @@ export default function SignupPage() {
             navigate('/admin', { replace: true });
             return;
         }
+        if (isKongmingOnlyUser(user)) {
+            navigate('/dashboard/ai-bain', { replace: true });
+            return;
+        }
+        const funnel = subscriptionFunnelTarget(user);
+        if (funnel?.includes('plan=aibain_kongming')) {
+            navigate(funnel, { replace: true });
+            return;
+        }
         if (user.status === 'expired' || user.is_pro_expired) {
             navigate('/plan-select?resubscribe=1&from=expired', { replace: true });
             return;
@@ -80,7 +90,7 @@ export default function SignupPage() {
                 name: name.trim(),
                 email: email.trim(),
                 password,
-                ...(selectedMeta ? { requested_tier: selectedMeta.tier } : {}),
+                ...(selectedMeta && selectedPlan !== 'aibain_kongming' ? { requested_tier: selectedMeta.tier } : {}),
             };
             const res = await fetch(`${API_BASE}/api/auth/register`, {
                 method: 'POST',

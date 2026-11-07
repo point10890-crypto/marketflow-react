@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -96,10 +96,12 @@ describe('public conversion funnel', () => {
         expect(screen.getByText(/자동 주문이나 투자 자문을 수행하지 않습니다/)).toBeInTheDocument();
 
         for (const meta of Object.values(PLAN_PAYMENT_META)) {
-            expect(screen.getByText(meta.label)).toBeInTheDocument();
-            expect(screen.getByText(meta.amount)).toBeInTheDocument();
-            expect(screen.getByText(meta.period)).toBeInTheDocument();
+            const card = screen.getByRole('heading', { name: meta.label }).closest('a')!;
+            expect(within(card).getByText(meta.amount)).toBeInTheDocument();
+            expect(within(card).getByText(meta.period)).toBeInTheDocument();
         }
+        expect(screen.getByRole('heading', { name: 'AI 브레인 + 제갈공명' }).closest('a'))
+            .toHaveAttribute('href', '/signup?plan=aibain_kongming');
 
         // AI Brain 애드온 단독 요금(40,000원/30일) — 기존 구독자용 노출 필수
         expect(screen.getByText('AI Brain 애드온')).toBeInTheDocument();

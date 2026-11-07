@@ -181,6 +181,8 @@ def create_app(config=None):
                     conn.execute(text('ALTER TABLE users ADD COLUMN aibain_expires_at DATETIME'))
                 if 'aibain_alert_stage' not in user_cols:
                     conn.execute(text('ALTER TABLE users ADD COLUMN aibain_alert_stage VARCHAR(10)'))
+                if 'kongming_expires_at' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN kongming_expires_at DATETIME'))
                 if 'pro_paused_at' not in user_cols:
                     conn.execute(text('ALTER TABLE users ADD COLUMN pro_paused_at DATETIME'))
                 # 비밀번호 변경 시각 — 이전 발급 토큰 무효화 근거 (2026-08-11)
@@ -348,6 +350,20 @@ def create_app(config=None):
         # 우연히 잠기지 않도록 명시적으로 예외에 둔다 (tests/test_public_track_record.py).
         '/api/public/',
     )
+    _KONGMING_BUNDLE_ENDPOINTS = {
+        ('GET', 'kr.kr_rag_status'),
+        ('GET', 'kr.kr_decision_search'),
+        ('GET', 'kr.kr_decision_brief'),
+        ('GET', 'kr.kr_decision_deep_status'),
+        ('POST', 'kr.kr_decision_deep_analysis'),
+        ('GET', 'kr_alpha_core.alpha_core_status'),
+        ('GET', 'kr_alpha_core.alpha_core_portfolio'),
+        ('GET', 'kr_alpha_core.alpha_core_risk_decisions'),
+        ('GET', 'kr_alpha_core.alpha_core_hypotheses'),
+        ('GET', 'kr_alpha_core.alpha_core_ledger'),
+        ('GET', 'kr_claw.claw_overview'),
+        ('GET', 'kr_claw.claw_close_leaders'),
+    }
 
     @app.before_request
     def _enforce_pro_access():
@@ -368,6 +384,12 @@ def create_app(config=None):
         if user is None:
             return _jsonify({'error': 'Authentication required'}), 401
         if user.is_admin:
+            _req.current_user = user
+            return None
+
+        # 독립 이용권에는 AI Brain 화면에 필요한 엔드포인트만 허용한다.
+        method = 'GET' if _req.method == 'HEAD' else _req.method
+        if (method, _req.endpoint) in _KONGMING_BUNDLE_ENDPOINTS and getattr(user, 'is_kongming_active', False):
             _req.current_user = user
             return None
 

@@ -16,6 +16,7 @@ import { ClawBrandBar } from '@/components/claw/ClawHero';
 import RenewalBanner from './RenewalBanner';
 import { useClawState } from '@/hooks/useClawState';
 import { useAuth } from '@/contexts/AuthContext';
+import { isKongmingOnlyUser } from '@/lib/auth';
 
 const FILE_LABELS: Record<string, { title: string; message: string; link: string }> = {
     'jongga_v2_latest.json': { title: '종가베팅 업데이트', message: '새로운 종가베팅 시그널이 도착했습니다', link: '/dashboard/kr/closing-bet' },
@@ -36,7 +37,7 @@ export default function DashboardLayout() {
     const location = useLocation();
     const pathname = location.pathname ?? '';
     const { notify } = useNotification();
-    const { token } = useAuth();
+    const { token, user } = useAuth();
     const claw = useClawState(token);
     // 메인 타이틀(브랜드 바)은 모든 대시보드 페이지에 고정. Claw LIVE 페이지는 자체 풀 히어로, W Pattern은 전체화면 캔버스라 제외
     const showBrandBar = pathname !== '/dashboard/kr/claw' && !pathname.startsWith('/dashboard/wave');
@@ -55,7 +56,7 @@ export default function DashboardLayout() {
         () => {}, // 전역 레벨에서는 refetch 안 함 (개별 페이지가 처리)
         WATCH_FILES,
         15000,
-        true,
+        !isKongmingOnlyUser(user),
         handleDataChanged
     );
 

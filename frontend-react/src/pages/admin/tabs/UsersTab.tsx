@@ -1,7 +1,10 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { adminAPI, AdminUser, fetchAuthAPI } from '@/lib/api';
+import { isKongmingSubscriptionRequest, PLAN_PAYMENT_META } from '@/lib/billingInfo';
 import MemberSubscriptionActions from '../MemberSubscriptionActions';
+
+const kongmingPlanLabel = PLAN_PAYMENT_META.aibain_kongming.label;
 
 const TIER_STYLES: Record<string, { label: string; cls: string }> = {
     none: { label: 'No Tier', cls: 'bg-gray-500/20 text-gray-400' },
@@ -635,6 +638,11 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                                             🤖 AI Brain{user.aibain_days_remaining != null && user.aibain_days_remaining <= 3 ? ` D-${user.aibain_days_remaining}` : ''}
                                                         </span>
                                                     )}
+                                                    {user.is_kongming_active && (
+                                                        <span className="text-[9px] px-1 py-0.5 bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 rounded shrink-0 font-bold">
+                                                            {kongmingPlanLabel}
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <div className="text-xs text-gray-500 truncate">{user.email}</div>
                                             </div>
@@ -959,7 +967,7 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                         <div className="space-y-1.5">
                                             {detailUser.subscription_history.map((s: any) => (
                                                 <div key={s.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.03] text-xs">
-                                                    <span className="text-gray-400">{s.from_tier || 'none'} → {s.to_tier}</span>
+                                                    <span className="text-gray-400">{isKongmingSubscriptionRequest(s.request_type) ? kongmingPlanLabel : `${s.from_tier || 'none'} → ${s.to_tier}`}</span>
                                                     <div className="flex items-center gap-2">
                                                         <span className={`px-1.5 py-0.5 rounded ${s.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400' : s.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'}`}>
                                                             {s.status === 'approved' ? '승인' : s.status === 'pending' ? '대기' : '거절'}

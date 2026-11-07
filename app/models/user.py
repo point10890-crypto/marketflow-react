@@ -5,6 +5,11 @@ import bcrypt
 from app.models import db
 
 
+AIBAIN_KONGMING_PLAN = 'aibain_kongming'
+AIBAIN_KONGMING_RENEWAL = 'aibain_kongming_renewal'
+AIBAIN_KONGMING_REQUEST_TYPES = (AIBAIN_KONGMING_PLAN, AIBAIN_KONGMING_RENEWAL)
+
+
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -49,6 +54,8 @@ class User(db.Model):
     aibain_expires_at = db.Column(db.DateTime, nullable=True)
     # AI Brain 만료 D-3/D-1 알림 stage: 'd3' | 'd1' | 'expired' | NULL
     aibain_alert_stage = db.Column(db.String(10), nullable=True)
+    # AI Brain + 제갈공명 이용권은 기본 등급 및 기존 AI Brain 이용권과 별개다.
+    kongming_expires_at = db.Column(db.DateTime, nullable=True)
     # Pro 만료 카운터 일시정지 시각 (AI Brain 활성 중 Pro 기간 보존용).
     # 활성: AI Brain 활성화 시점부터 만료/해제 시까지 NULL 이 아님.
     # AI Brain 만료/해제 시: now - pro_paused_at 만큼 pro_expires_at 연장 후 NULL 처리.
@@ -129,6 +136,16 @@ class User(db.Model):
         return self.aibain_expires_at is not None and not self.is_aibain_active
 
     @property
+    def is_kongming_active(self) -> bool:
+        """기본 구독이 만료되어도 AI Brain + 제갈공명 이용 기간은 유지한다."""
+        if self.status not in ('approved', 'expired') or self.kongming_expires_at is None:
+            return False
+        expiry = self.kongming_expires_at
+        if expiry.tzinfo is None:
+            expiry = expiry.replace(tzinfo=timezone.utc)
+        return expiry > datetime.now(timezone.utc)
+
+    @property
     def is_telegram_linked(self) -> bool:
         """회원 본인 텔레그램 chat_id 가 연결돼 있는지."""
         return bool((self.telegram_chat_id or '').strip())
@@ -182,6 +199,8 @@ class User(db.Model):
             'is_aibain_active': self.is_aibain_active,
             'is_aibain_expired': self.is_aibain_expired,
             'aibain_days_remaining': self.aibain_days_remaining,
+            'kongming_expires_at': self.kongming_expires_at.isoformat() if self.kongming_expires_at else None,
+            'is_kongming_active': self.is_kongming_active,
             # Pro 일시정지 상태 (AI Brain 활성 중 Pro 만료 카운터 보존)
             'pro_paused_at': self.pro_paused_at.isoformat() if self.pro_paused_at else None,
             'is_pro_paused': self.is_pro_paused,
@@ -252,7 +271,7 @@ class SubscriptionRequest(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    # upgrade | downgrade | renewal | aibain_addon | aibain_renewal
+    # upgrade | downgrade | renewal | aibain_addon | aibain_renewal | aibain_kongming | aibain_kongming_renewal
     request_type = db.Column(db.String(50), nullable=False)
     from_tier = db.Column(db.String(20), nullable=False)
     to_tier = db.Column(db.String(20), nullable=False)

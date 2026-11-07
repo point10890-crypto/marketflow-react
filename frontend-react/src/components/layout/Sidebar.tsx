@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { canAccessAiBain, isBaseSubscriptionExpired } from '@/lib/auth';
+import { canAccessAiBain, canAccessKongming, hasActiveKongmingSubscription, isBaseSubscriptionExpired, isKongmingOnlyUser } from '@/lib/auth';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { InstallGuide } from './InstallPrompt';
 
@@ -44,6 +44,7 @@ const globalTools: NavItem[] = [
             { name: 'Goodrich TOP 3', href: '/dashboard/ai-bain/goodrich', color: 'bg-emerald-500' },
             { name: '종목 판단', href: '/dashboard/ai-bain/decision', color: 'bg-teal-500' },
             { name: '차트 유사 사례', href: '/dashboard/ai-bain/chart-predict', color: 'bg-violet-500' },
+            { name: '뉴스·재료 검증', href: '/dashboard/ai-bain/catalyst-validation', color: 'bg-amber-500' },
         ],
     },
     { name: 'AI 주식분석', href: '/dashboard/manual-stock-analysis', icon: 'fa-table-list', color: 'text-orange-300', bg: 'from-orange-500/15 to-rose-600/5', badge: 'LIVE' },
@@ -114,22 +115,26 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
     const userName = user?.name || 'Guest';
     const userTier = user?.tier ?? null;
+    const kongmingOnly = isKongmingOnlyUser(user);
+    const bundleActive = hasActiveKongmingSubscription(user);
     // Guards ensure only pro/premium/admin reach the dashboard, so tier-lock UI is vestigial.
     const isLocked = false;
     const userRole = user?.role || 'user';
     const isLoggedIn = !!user;
-    const tierLabel = userRole === 'admin' ? '관리자' : userTier === 'pro' ? 'Pro' : userTier === 'premium' ? 'Ultra Pro' : '미구독';
+    const tierLabel = userRole === 'admin' ? '관리자' : kongmingOnly ? 'AI 브레인 + 제갈공명' : userTier === 'pro' ? 'Pro' : userTier === 'premium' ? 'Ultra Pro' : '미구독';
     const expired = isBaseSubscriptionExpired(user);
     const pending = user?.has_pending_subscription === true
         || user?.has_pending_subscription !== false && user?.pending_subscription_request?.status === 'pending';
     const membershipAction = userRole === 'admin' ? { label: '관리자 페이지', href: '/admin' }
         : ['suspended', 'rejected'].includes(user?.status || '') ? { label: '계정 상태 확인', href: '/pending-approval' }
         : pending ? { label: '신청 상태 확인', href: '/pending-approval' }
+        : kongmingOnly ? { label: '구독 관리', href: '/dashboard/account' }
         : expired ? { label: '재구독 신청', href: '/plan-select?resubscribe=1&from=expired' }
         : !['pro', 'premium'].includes(userTier || '') ? { label: '구독 신청', href: '/plan-select' }
         : { label: userTier === 'premium' ? '플랜 · AI Brain 관리' : '등급 업그레이드', href: '/plan-select?change=1' };
     const showAiBain = canAccessAiBain(user);
-    const visibleGlobalTools = globalTools.filter((item) => !item.aibainOnly || showAiBain);
+    const visibleGlobalTools = globalTools.filter(item => item.aibainOnly ? showAiBain : !kongmingOnly);
+    const showKongming = canAccessKongming(user);
 
     const handleSidebarInstall = async () => {
         const result = await install();
@@ -139,7 +144,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     return (
         <>
             {/* Brand */}
-            <Link to="/dashboard" className="h-[72px] flex items-center px-5 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer">
+            <Link to={kongmingOnly ? '/dashboard/ai-bain' : '/dashboard'} className="h-[72px] flex items-center px-5 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer">
                 <div className="relative w-10 h-10 bg-gradient-to-br from-[#ff8a6b] via-[#ff5a3c] to-[#b91c1c] rounded-xl flex items-center justify-center text-white font-extrabold text-2xl shadow-lg shadow-[#ff5a3c]/30 mr-3.5 ring-1 ring-[#ff8a6b]/25 drop-shadow-sm">
                     <div className="absolute inset-0.5 rounded-[10px] ring-1 ring-white/10" />
                     <span className="relative">B</span>
@@ -204,7 +209,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                             </Link>
                             {isExpanded && item.children && (
                                 <div className="ml-11 mt-1 space-y-0.5 rounded-xl border border-white/[0.04] bg-white/[0.02] p-1.5">
-                                    {item.children.map((child) => (
+                                    {item.children.filter(child => showKongming || child.href !== '/dashboard/ai-bain/catalyst-validation').map((child) => (
                                         <Link key={child.href} to={child.href} aria-current={pathname === child.href ? "page" : undefined} onClick={onNavigate}
                                             className={`block rounded-lg px-3 py-2 text-[12px] transition-colors ${
                                                 pathname === child.href ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'
@@ -221,6 +226,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                     })}
                 </div>
 
+                {!kongmingOnly && <>
                 {/* ── Markets Section ── */}
                 <div className="flex items-center gap-2 px-2 pt-4 pb-2">
                     <div className="flex-1 h-px bg-white/[0.06]" />
@@ -299,6 +305,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 {/* Divider */}
                 <div className="my-2 mx-2 border-t border-white/[0.06]" />
 
+                </>}
+
                 {/* User Account Section */}
                 {isLoggedIn && (
                     <>
@@ -361,7 +369,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 )}
 
                 {/* Community — inside scroll area */}
-                <Link to="/dashboard/community" onClick={onNavigate}
+                {!kongmingOnly && <Link to="/dashboard/community" onClick={onNavigate}
                     className={`mt-4 flex items-center gap-2.5 p-3 rounded-xl text-[13px] font-bold transition-all border ${
                         pathname.startsWith('/dashboard/community')
                             ? 'text-yellow-400 bg-gradient-to-r from-yellow-500/15 to-amber-500/10 border-yellow-500/20'
@@ -370,7 +378,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 >
                     <i className="fas fa-comments w-5 text-center"></i>
                     <span>커뮤니티</span>
-                </Link>
+                </Link>}
 
                 {/* App Install — inside scroll area */}
                 {canInstall && !isInstalled && (
@@ -397,7 +405,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                             <div className="flex flex-col flex-1 min-w-0">
                                 <span className="text-sm font-bold text-white truncate">{userName}</span>
                                 <span className={`text-[11px] ${userTier === 'pro' || userTier === 'premium' ? 'text-purple-400' : 'text-gray-400'}`}>
-                                    {tierLabel}{userRole !== 'admin' && user?.is_aibain_active && ' · AI Brain'}{userRole !== 'admin' && expired && ' · 만료'}
+                                    {tierLabel}{userRole !== 'admin' && !kongmingOnly && (bundleActive ? ' · AI 브레인 + 제갈공명' : user?.is_aibain_active ? ' · AI Brain' : '')}{userRole !== 'admin' && !kongmingOnly && expired && ' · 만료'}
                                 </span>
                             </div>
                             <div className="flex items-center gap-1.5">

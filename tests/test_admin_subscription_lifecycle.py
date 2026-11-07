@@ -79,6 +79,7 @@ def test_expire_ends_base_and_addon_without_removing_history(lifecycle, tier):
     ctx = lifecycle
     target = _member(tier=tier, aibain_enabled=True,
                      aibain_expires_at=datetime.now(timezone.utc) + timedelta(days=20),
+                     kongming_expires_at=datetime.now(timezone.utc) + timedelta(days=25),
                      pro_paused_at=datetime.now(timezone.utc) - timedelta(days=2),
                      requested_tier=tier)
     target_id = target.id
@@ -107,11 +108,13 @@ def test_expire_ends_base_and_addon_without_removing_history(lifecycle, tier):
     assert payload['user']['tier'] == tier
     assert payload['user']['aibain_enabled'] is False
     assert payload['user']['is_aibain_active'] is False
+    assert payload['user']['is_kongming_active'] is False
     assert payload['user']['pro_paused_at'] is None
     db.session.expire_all()
     target = db.session.get(User, target_id)
     assert target.pro_expires_at < datetime.now(timezone.utc).replace(tzinfo=None)
     assert target.aibain_expires_at < datetime.now(timezone.utc).replace(tzinfo=None)
+    assert target.kongming_expires_at < datetime.now(timezone.utc).replace(tzinfo=None)
     assert target.pro_expiry_alert_stage == target.aibain_alert_stage == 'expired'
     assert db.session.get(SubscriptionRequest, pending_id).status == 'pending'
     assert db.session.get(SubscriptionRequest, pending_id).amount == 'history amount'
@@ -151,6 +154,25 @@ def test_expired_member_can_request_renewal_and_regain_base_and_addon(lifecycle,
                             json={'days': 30})
     assert addon.status_code == 200
     assert addon.get_json()['user']['is_aibain_active'] is True
+
+
+def test_forced_expiry_does_not_restore_bundle_after_account_was_moved_to_pending(lifecycle):
+    user = _member(tier=None, pro_expires_at=None,
+                   kongming_expires_at=datetime.now(timezone.utc) + timedelta(days=10))
+    url = f'/api/admin/users/{user.id}'
+    pending = lifecycle.client.put(f'{url}/status', headers=lifecycle.headers, json={'status': 'pending'})
+    assert pending.status_code == 200
+    assert pending.get_json()['user']['is_kongming_active'] is False
+
+    expired = lifecycle.client.post(f'{url}/expire', headers=lifecycle.headers, json={})
+    assert expired.status_code == 200
+    payload = expired.get_json()['user']
+    assert payload['status'] == 'expired'
+    assert payload['is_kongming_active'] is False
+    expired_at = datetime.fromisoformat(payload['kongming_expires_at'])
+    if expired_at.tzinfo is None:
+        expired_at = expired_at.replace(tzinfo=timezone.utc)
+    assert expired_at < datetime.now(timezone.utc)
 
 
 @pytest.mark.parametrize('status', ['suspended', 'rejected'])
@@ -317,12 +339,14 @@ def test_legacy_revoke_keeps_pro_only_and_does_not_disable_addon(lifecycle):
     premium = _member(tier='premium')
     assert lifecycle.client.post(f'/api/admin/users/{premium.id}/revoke', headers=lifecycle.headers,
                                   json={}).status_code == 400
-    pro = _member(aibain_enabled=True, pro_paused_at=datetime.now(timezone.utc))
+    pro = _member(aibain_enabled=True, pro_paused_at=datetime.now(timezone.utc),
+                  kongming_expires_at=datetime.now(timezone.utc) + timedelta(days=10))
     response = lifecycle.client.post(f'/api/admin/users/{pro.id}/revoke', headers=lifecycle.headers, json={})
     assert response.status_code == 200
     assert response.get_json()['user']['status'] == 'approved'
     assert response.get_json()['user']['is_pro_expired'] is True
     assert response.get_json()['user']['aibain_enabled'] is True
+    assert response.get_json()['user']['is_kongming_active'] is True
 
 
 def test_reject_cannot_overwrite_an_approval_after_a_stale_pending_read(lifecycle, monkeypatch):

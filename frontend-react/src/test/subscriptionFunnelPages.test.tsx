@@ -23,6 +23,7 @@ const mocks = vi.hoisted(() => ({
     fetch: vi.fn(),
     getStatus: vi.fn(async () => ({ requests: [] as any[] })),
     requestUpgrade: vi.fn(async () => ({})),
+    requestKongming: vi.fn(async () => ({})),
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({
@@ -34,6 +35,7 @@ vi.mock('@/lib/api', () => ({
     subscriptionAPI: {
         getStatus: mocks.getStatus,
         requestUpgrade: mocks.requestUpgrade,
+        requestKongming: mocks.requestKongming,
     },
 }));
 
@@ -94,7 +96,7 @@ describe('subscription acquisition funnel', () => {
         expect(screen.getByRole('heading',{name:'승인 대기 중'})).toBeInTheDocument();expect(screen.queryByTestId('location')).not.toBeInTheDocument();
     });
 
-    it('renders four promotional plans and sends a guest to signup with the canonical plan query', async () => {
+    it('shows the base and AI Brain plans and preserves the legacy plan query', async () => {
         renderAt('/pricing', <PricingPage />, '/pricing');
 
         expect(screen.getByRole('heading', { name: 'Pro' })).toBeInTheDocument();
@@ -107,6 +109,39 @@ describe('subscription acquisition funnel', () => {
 
         expect(await screen.findByTestId('location')).toHaveTextContent('/signup?plan=pro&aibain=1');
         expect(mocks.fetch).not.toHaveBeenCalled();
+    });
+
+    it('lists the combined plan at 50,000 won per 30 days and carries it to signup', async () => {
+        renderAt('/pricing', <PricingPage />, '/pricing');
+        const card = screen.getByRole('heading', { name: 'AI 브레인 + 제갈공명' }).closest('article')!;
+        expect(within(card).getByText('50,000원')).toBeInTheDocument();
+        expect(within(card).getByText('30일 이용권')).toBeInTheDocument();
+        fireEvent.click(within(card).getByRole('button', { name: /선택하기/ }));
+        expect(await screen.findByTestId('location')).toHaveTextContent('/signup?plan=aibain_kongming');
+        expect(mocks.requestKongming).not.toHaveBeenCalled();
+    });
+
+    it('lets a member without Pro select the combined plan', async () => {
+        mocks.auth.user = { id: 54, name: '신규 회원', role: 'user', tier: null, status: 'pending' };
+        mocks.auth.token = 'combined-token';
+        renderAt('/plan-select?plan=aibain_kongming', <PlanSelectPage />, '/plan-select');
+        fireEvent.click(screen.getByRole('button', { name: /AI 브레인 \+ 제갈공명.*선택/ }));
+        expect(await screen.findByTestId('location')).toHaveTextContent('/payment-request?plan=aibain_kongming');
+    });
+
+    it('submits the combined plan for active Pro without substituting the legacy AI Brain add-on', async () => {
+        mocks.auth.user = {
+            id: 54, name: '기존 회원', role: 'user', tier: 'pro', status: 'approved', is_aibain_active: true,
+        };
+        mocks.auth.token = 'combined-token';
+        renderAt('/payment-request?plan=aibain_kongming', <PaymentRequestPage />, '/payment-request');
+        expect(await screen.findByText('선택한 플랜: AI 브레인 + 제갈공명')).toBeInTheDocument();
+        expect(screen.getAllByText('50,000원').length).toBeGreaterThan(0);
+        expect(screen.queryByText('40,000원')).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /승인 신청/ }));
+        expect(await screen.findByTestId('location')).toHaveTextContent('/pending-approval');
+        expect(mocks.requestKongming).toHaveBeenCalledWith('combined-token', '기존 회원');
+        expect(mocks.requestUpgrade).not.toHaveBeenCalled();
     });
 
     it('sends a signed-in visitor to change mode without submitting a subscription', async () => {
