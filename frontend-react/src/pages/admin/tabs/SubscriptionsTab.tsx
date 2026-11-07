@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { adminAPI, SubscriptionRequest, PendingSignup, ExpiredMember } from '@/lib/api';
-import { isKongmingSubscriptionRequest, PLAN_PAYMENT_META } from '@/lib/billingInfo';
+import { isAiBundleRequest, subscriptionNote, isKongmingSubscriptionRequest, PLAN_PAYMENT_META } from '@/lib/billingInfo';
 
 const kongmingPlanLabel = PLAN_PAYMENT_META.aibain_kongming.label;
 
@@ -218,6 +218,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                             const isAibainOnly = req.request_type === 'aibain_addon' || isAibainRenewal;
                             const isAiOnly = isAibainOnly || isKongmingPlan;
                             const includesAibain = isAibainOnly || !!(req.admin_note && req.admin_note.includes('AI Brain'));
+                            const aiBundle = isAiBundleRequest(req);
                             const cardBorder = isAiOnly ? 'border-cyan-500/30' : 'border-yellow-500/20';
                             const iconBg = isAiOnly ? 'bg-cyan-500/15' : 'bg-yellow-500/10';
                             const iconColor = isAiOnly ? 'text-cyan-300' : 'text-yellow-400';
@@ -240,6 +241,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                 btnIcon = 'fa-robot';
                                 btnColor = 'bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30';
                             }
+                            if (aiBundle) btnLabel = btnLabel.replace('AI Brain', 'AI Brain·제갈공명');
                             return (
                                 <div key={req.id} className={`apple-glass rounded-xl p-4 border ${cardBorder}`}>
                                     <div className="flex items-center justify-between flex-wrap gap-3">
@@ -292,7 +294,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                                 {req.admin_note && (
                                                     <p className="text-[11px] text-cyan-300/80 mt-1.5 leading-relaxed">
                                                         <i className="fas fa-info-circle text-cyan-400/70 mr-1" />
-                                                        {req.admin_note}
+                                                        {subscriptionNote(req.admin_note)}
                                                     </p>
                                                 )}
                                             </div>
@@ -460,7 +462,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                                             <span className={`text-xs px-2 py-1 rounded ${req.status === 'approved' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>{req.status}</span>
                                         </td>
                                         <td className="px-4 py-3 text-xs text-gray-500">{req.processed_at ? new Date(req.processed_at).toLocaleDateString() : '-'}</td>
-                                        <td className="px-4 py-3 text-xs text-gray-500">{req.admin_note || '-'}</td>
+                                        <td className="px-4 py-3 text-xs text-gray-500">{subscriptionNote(req.admin_note) || '-'}</td>
                                     </tr>
                                 ))}
                             </tbody>

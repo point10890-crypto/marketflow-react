@@ -69,16 +69,16 @@ describe('profile membership upgrade entry', () => {
         mocks.user.tier = 'premium'; show();
         fireEvent.click(screen.getByRole('link', { name: '플랜 · AI Brain 관리' }));
         expect(screen.getByText('현재 이용: Ultra Pro')).toBeInTheDocument();
-        expect(screen.getByRole('heading', { name: 'Pro', level: 3 }).closest('button')).toBeDisabled();
+        expect(screen.queryByRole('heading', { name: 'Pro', level: 3 })).not.toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Ultra Pro', level: 3 }).closest('button')).toBeDisabled();
-        expect(screen.getByRole('button', { name: /AI Brain 40,000원으로 추가/ })).toBeEnabled();
+        expect(screen.getByRole('button', { name: /AI Brain·제갈공명 50,000원으로 추가/ })).toBeEnabled();
     });
 
     it('explains that an Ultra Pro member with AI Brain has no additional tier to buy', () => {
         mocks.user.tier = 'premium'; mocks.user.is_aibain_active = true; show();
         fireEvent.click(screen.getByRole('link', { name: '플랜 · AI Brain 관리' }));
         expect(screen.getByRole('heading', { name: '플랜 · AI Brain 관리', level: 1 })).toBeInTheDocument();
-        expect(screen.getByText(/추가 등급 업그레이드가 필요하지 않습니다/)).toBeInTheDocument();
+        expect(screen.getByText(/기존 등급은 유지됩니다/)).toBeInTheDocument();
         expect(mocks.requestUpgrade).not.toHaveBeenCalled();
     });
 

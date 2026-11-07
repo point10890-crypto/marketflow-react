@@ -1,3 +1,5 @@
+import { hasActiveBaseSubscription } from './auth';
+
 /**
  * 청구/구독 메타데이터.
  *
@@ -22,7 +24,7 @@ export interface PlanMeta {
     label: string;
     tier: BillingPlanTier | 'aibain_kongming'; // 구독 신청 대상
     includesAibain: boolean;     // AI Brain 포함 여부
-    amount: string;              // 표시용 (예: "90,000원")
+    amount: string;              // 표시용 (예: "100,000원")
     amountNumber: number;        // 비교/계산용 (예: 90000)
     color: 'amber' | 'cyan' | 'purple' | 'fuchsia';
     period: string;
@@ -53,17 +55,18 @@ export const PLAN_PAYMENT_META: Record<BillingPlan, PlanMeta> = {
         label: 'Pro + AI Brain',
         tier: 'pro',
         includesAibain: true,
-        amount: '90,000원',
-        amountNumber: 90_000,
+        amount: '100,000원',
+        amountNumber: 100_000,
         color: 'cyan',
-        period: '30일 이용권 (Pro 30일 + AI Brain 30일)',
+        period: 'AI·제갈공명 30일 + 보존되는 Pro 30일',
         baseAmount: 'Pro 50,000원',
-        aibainAmount: 'AI Brain 40,000원',
-        description: 'Pro 50,000원 + AI Brain 40,000원 (30일 갱신)',
+        aibainAmount: 'AI Brain·제갈공명 50,000원',
+        description: 'Pro 5만 원 + AI·제갈공명 5만 원 · AI 이용 중 Pro 기간 일시정지',
         features: [
             'Pro 전체 기능 포함',
             'AI Brain 알파 스캐너 관찰 후보',
             'MCP TOP 3 관찰 알림',
+            '제갈공명 뉴스·공시·시세 검증 포함',
             '그래프RAG 분석 + 스캔 성과',
         ],
     },
@@ -87,17 +90,18 @@ export const PLAN_PAYMENT_META: Record<BillingPlan, PlanMeta> = {
         label: 'Ultra Pro + AI Brain',
         tier: 'premium',
         includesAibain: true,
-        amount: '1,240,000원',
-        amountNumber: 1_240_000,
+        amount: '1,250,000원',
+        amountNumber: 1_250_000,
         color: 'fuchsia',
         period: 'Ultra Pro 평생 + AI Brain 30일 갱신',
         baseAmount: 'Ultra Pro 1,200,000원 (평생)',
-        aibainAmount: 'AI Brain 40,000원/30일',
+        aibainAmount: 'AI Brain·제갈공명 50,000원/30일',
         description: 'Ultra Pro 평생 + AI Brain 30일 갱신',
         features: [
             'Ultra Pro 평생 이용',
             'AI Brain 알파 스캐너 관찰 후보',
             'MCP TOP 3 관찰 알림',
+            '제갈공명 뉴스·공시·시세 검증 포함',
             'AI Brain 만료 시 자동 회귀',
         ],
     },
@@ -109,7 +113,7 @@ export const PLAN_PAYMENT_META: Record<BillingPlan, PlanMeta> = {
         amountNumber: 50_000,
         color: 'cyan',
         period: '30일 이용권',
-        description: 'AI 분석과 뉴스·재료 검증을 함께 이용하는 독립 플랜',
+        description: '기존 단독 이용권 내역 · 신규 신청은 기본 등급에 맞춰 안내',
         features: [
             'AI 브레인 알파 스캐너와 Goodrich TOP 3',
             'AI 종목 판단과 차트 유사 사례',
@@ -122,17 +126,18 @@ export const PLAN_PAYMENT_META: Record<BillingPlan, PlanMeta> = {
 /**
  * AI Brain 애드온 단독 요금 — 활성 Pro/Ultra Pro 회원이 AI Brain 만 추가할 때.
  * 기존 구독에 추가하는 옵션이므로 PLAN_PAYMENT_META와 별도로 노출한다.
- * (실제 금액 계산은 백엔드 aibain_addon/aibain_renewal 경로가 40,000원으로 고정)
+ * (실제 금액 계산은 백엔드 aibain_addon/aibain_renewal 경로가 50,000원으로 고정)
  */
 export const AIBAIN_ADDON_META = {
-    label: 'AI Brain 애드온',
-    amount: '40,000원',
-    amountNumber: 40_000,
+    label: 'AI Brain + 제갈공명',
+    amount: '50,000원',
+    amountNumber: 50_000,
     period: '30일 갱신 · 베이스 플랜 유지',
-    description: '이미 Pro / Ultra Pro 를 이용 중이라면 AI Brain 만 추가할 수 있습니다.',
+    description: 'Pro·Ultra Pro 회원은 5만 원에 AI Brain과 제갈공명을 30일 추가합니다. Pro 잔여기간은 일시정지됩니다.',
     features: [
         'AI Brain 알파 스캐너 관찰 후보',
         'GraphRAG 분석 + TOP 3',
+        '제갈공명 뉴스·공시·시세 검증',
         '스캔 성과·품질 확인 화면',
         '만료 시 베이스 플랜으로 자동 회귀',
     ],
@@ -165,4 +170,28 @@ export function isKongmingSubscriptionRequest(type?: string | null): boolean {
 /** 하위호환 — 기존 'pro' / 'premium' 만 받던 normalize (PaymentRequestPage 기존 호출) */
 export function normalizeBillingPlan(value: unknown): BillingPlanTier | null {
     return value === 'pro' || value === 'premium' ? value : null;
+}
+
+/** Retired standalone URLs are resolved before any deposit instructions are shown. */
+export function aiBundleOffer(user: Parameters<typeof hasActiveBaseSubscription>[0]) {
+    const activeBase = hasActiveBaseSubscription(user);
+    const plan: BillingPlan = activeBase && user?.tier === 'premium' ? 'premium_aibain' : 'pro_aibain';
+    return {
+        plan,
+        label: activeBase ? AIBAIN_ADDON_META.label : 'Pro + AI Brain + 제갈공명',
+        amount: activeBase ? AIBAIN_ADDON_META.amount : PLAN_PAYMENT_META.pro_aibain.amount,
+        payment: `/payment-request?${planToQuery(plan)}`,
+    };
+}
+
+export function resolveBillingPlan(plan: BillingPlan | null, user: Parameters<typeof hasActiveBaseSubscription>[0]): BillingPlan | null {
+    return plan === 'aibain_kongming' ? aiBundleOffer(user).plan : plan;
+}
+
+export function isAiBundleRequest(request: { admin_note?: string | null } | null | undefined): boolean {
+    return !!request?.admin_note?.includes('[ai_bundle_v2]');
+}
+
+export function subscriptionNote(note: string | null | undefined): string {
+    return (note || '').replace('[ai_bundle_v2] ', '');
 }

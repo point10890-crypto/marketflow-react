@@ -5,6 +5,7 @@
 //   Prod: VITE_API_BASE_URL → Cloudflare Tunnel → Flask 5001
 
 import { getToken } from './auth';
+import { AIBAIN_ADDON_META } from './billingInfo';
 
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -1124,17 +1125,19 @@ export const subscriptionAPI = {
             plan: 'aibain_kongming',
             depositor_name: depositorName,
         }, token),
-    requestUpgrade: (toTier: string, token?: string, depositorName?: string, includesAibain?: boolean) =>
+    requestUpgrade: (toTier: string, token?: string, depositorName?: string, includesAibain?: boolean, expectedAmount?: number) =>
         postAuthAPI<{ request: SubscriptionRequest }>('/api/auth/subscription/request', {
             to_tier: toTier,
             depositor_name: depositorName,
             includes_aibain: !!includesAibain,
+            expected_amount: expectedAmount,
         }, token),
     requestAibain: (tier: string, token?: string, depositorName?: string) =>
         postAuthAPI<{ request: SubscriptionRequest }>('/api/auth/subscription/request', {
             to_tier: tier,
             depositor_name: depositorName,
             includes_aibain: true,
+            expected_amount: AIBAIN_ADDON_META.amountNumber,
         }, token),
     getStatus: (token?: string) => fetchAuthAPI<{
         user: AdminUser & { has_pending_subscription?: boolean };

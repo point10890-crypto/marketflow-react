@@ -179,7 +179,7 @@ const FAQS = [
     },
 ];
 
-const PRICING_PLANS: BillingPlan[] = ['aibain_kongming', 'pro', 'pro_aibain', 'premium', 'premium_aibain'];
+const PRICING_PLANS: BillingPlan[] = ['pro', 'pro_aibain', 'premium', 'premium_aibain'];
 
 function AccountActionLink({ action, className = '' }: { action: PublicAccountAction; className?: string }) {
     if (action.disabled) {
@@ -342,7 +342,7 @@ export default function LandingPage() {
         && user.status === 'approved'
         && (user.tier === 'pro' || user.tier === 'premium')
         && !user.is_pro_expired;
-    // AI Brain 애드온(40,000원/30일) 스트립 — 활성 회원은 자기 tier 에 맞는
+    // AI Brain + 제갈공명(50,000원/30일) 스트립 — 활성 회원은 자기 tier 에 맞는
     // 애드온 사전선택으로, 비로그인은 로그인 후 같은 경로로 이어진다.
     const addonPlanQuery = planToQuery(user?.tier === 'premium' ? 'premium_aibain' : 'pro_aibain');
     const addonHref = isActiveMember
@@ -608,7 +608,7 @@ export default function LandingPage() {
                             );
                         })}
                     </div>
-                    {/* AI Brain 애드온 단독 요금 — 기존 구독자용 40,000원/30일 */}
+                    {/* AI Brain + 제갈공명 단독 요금 — 기존 구독자용 50,000원/30일 */}
                     <div className="mt-4 flex flex-col gap-4 rounded-[26px] border border-cyan-400/20 bg-gradient-to-r from-cyan-400/[0.06] via-transparent to-transparent p-5 sm:flex-row sm:items-center sm:p-6">
                         <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-400/10 text-cyan-300">
                             <i className="fas fa-puzzle-piece" aria-hidden />
@@ -621,7 +621,7 @@ export default function LandingPage() {
                             </div>
                             <p className="mt-1 break-keep text-[12.5px] leading-6 text-gray-400">
                                 이미 Pro / Ultra Pro 를 이용 중이라면 베이스 플랜은 그대로 두고
-                                AI Brain 만 40,000원에 추가할 수 있어요. 만료되면 베이스 플랜으로 자동 회귀합니다.
+                                AI Brain 만 50,000원에 추가할 수 있어요. 만료되면 베이스 플랜으로 자동 회귀합니다.
                             </p>
                         </div>
                         {aibainAlreadyActive ? (

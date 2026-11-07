@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
-import { canAccessAiBain, hasActiveKongmingSubscription, subscriptionExpiryTime } from '@/lib/auth';
-import { isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
+import { canAccessAiBain, hasActiveBaseSubscription, hasActiveKongmingSubscription, subscriptionExpiryTime } from '@/lib/auth';
+import { aiBundleOffer, isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
 import { pendingSubscriptionRequest } from '@/lib/subscriptionStatus';
 import AiBainDashboard from '@/pages/dashboard/aibain/AiBainDashboard';
 
@@ -19,7 +19,7 @@ const KONGMING_PLAN = 'aibain_kongming';
  *  - admin (또는 활성 AI Brain) → 심플 구독자 대시보드 (AiBainDashboard:
  *    가상 매매 시그널 · 검출 Top3 · 접힘 상세 분석). 콘솔형 복잡성은
  *    /admin/endpoints 에만 남긴다 — 구독자에게 필요한 정보만 보여준다.
- *  - 활성 Pro/Ultra Pro 비AI Brain → "AI Brain 구독 업그레이드" 안내 (+40,000원/30일)
+ *  - 활성 Pro/Ultra Pro 비AI Brain → "AI Brain 구독 업그레이드" 안내 (+50,000원/30일)
  *  - 그 외 → "구독 신청" CTA → /pricing
  */
 export default function AiBainPage() {
@@ -27,7 +27,7 @@ export default function AiBainPage() {
     const tier = user?.tier ?? null;
     const role = user?.role ?? 'user';
     const isAdmin = role === 'admin';
-    const hasProBase = tier === 'pro' || tier === 'premium';
+    const hasProBase = hasActiveBaseSubscription(user);
     const isAibainActive = !!user?.is_aibain_active;
     // admin 또는 AI Brain 활성 구독자 → 심플 대시보드
     const showFullDashboard = canAccessAiBain(user);
@@ -118,10 +118,10 @@ function FeatureCard({ icon, title, desc }: { icon: string; title: string; desc:
 
 function KongmingPlanLink() {
     const { user } = useAuth();
-    const { amount, label } = PLAN_PAYMENT_META[KONGMING_PLAN];
+    const { amount, label, plan } = aiBundleOffer(user);
     const expires = subscriptionExpiryTime(user?.kongming_expires_at);
     const renewal = Number.isFinite(expires) && expires <= Date.now();
-    const query = `${planToQuery(KONGMING_PLAN)}${renewal ? '&resubscribe=1' : ''}`;
+    const query = `${planToQuery(plan)}${renewal ? '&resubscribe=1' : ''}`;
     return <Link
         to={user ? `/payment-request?${query}` : '/pricing'}
         className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-500/10 px-4 py-2.5 text-sm font-bold text-cyan-200 hover:bg-cyan-500/20"
@@ -229,7 +229,6 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
 
     return (
         <PageShell>
-            <KongmingPlanLink />
             {/* 메인 업그레이드 신청 카드 */}
             <div className="rounded-2xl border border-cyan-500/40 bg-gradient-to-br from-cyan-500/[0.08] via-[#13151f] to-[#1c1c1e] p-6 sm:p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-cyan-500/15 to-transparent rounded-bl-full pointer-events-none" />
@@ -245,10 +244,10 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
                                 {isRenewal ? (
                                     <>만료된 AI Brain을 30일 다시 활성화합니다.</>
                                 ) : (
-                                    <>현재 <span className="text-cyan-300 font-bold">{tierLabel}</span> 구독에 AI Brain 알파 스캐너만 추가합니다.</>
+                                    <>현재 <span className="text-cyan-300 font-bold">{tierLabel}</span> 구독에 AI Brain과 제갈공명 뉴스·재료 검증을 함께 추가합니다.</>
                                 )}
                                 {' '}
-                                기존 베이스 구독은 그대로 유지됩니다.
+                                기존 등급은 유지됩니다. PRO 잔여기간은 AI 이용 중 일시정지되고 AI 만료 후 다시 차감됩니다.
                             </p>
                             {isRenewal && user?.aibain_expires_at && (
                                 <p className="mt-2 text-xs text-rose-300">
@@ -280,13 +279,13 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
                                 <span className="text-gray-500">유지</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>AI Brain 알파 스캐너 (30일)</span>
-                                <span className="font-mono text-white">+40,000원</span>
+                                <span>AI Brain + 제갈공명 (30일)</span>
+                                <span className="font-mono text-white">+50,000원</span>
                             </div>
                             <div className="h-px bg-cyan-400/20 my-2" />
                             <div className="flex justify-between font-bold text-white">
                                 <span>이번 입금 금액</span>
-                                <span className="font-mono text-cyan-300 text-base">40,000원</span>
+                                <span className="font-mono text-cyan-300 text-base">50,000원</span>
                             </div>
                         </div>
                         <p className="mt-2 text-[10px] text-gray-500">
@@ -323,7 +322,7 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
                         {submitting ? (
                             <><i className="fas fa-spinner fa-spin" />처리 중...</>
                         ) : (
-                            <><i className={`fas ${isRenewal ? 'fa-redo' : 'fa-paper-plane'}`} />AI Brain {isRenewal ? '재구독' : '구독'} 신청 (+40,000원/30일)</>
+                            <><i className={`fas ${isRenewal ? 'fa-redo' : 'fa-paper-plane'}`} />AI Brain {isRenewal ? '재구독' : '구독'} 신청 (+50,000원/30일)</>
                         )}
                     </button>
 

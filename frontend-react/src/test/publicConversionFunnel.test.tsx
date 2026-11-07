@@ -95,17 +95,17 @@ describe('public conversion funnel', () => {
         expect(screen.getByText('불확실하면 HOLD')).toBeInTheDocument();
         expect(screen.getByText(/자동 주문이나 투자 자문을 수행하지 않습니다/)).toBeInTheDocument();
 
-        for (const meta of Object.values(PLAN_PAYMENT_META)) {
+        for (const meta of Object.values(PLAN_PAYMENT_META).filter(meta => meta.tier !== 'aibain_kongming')) {
             const card = screen.getByRole('heading', { name: meta.label }).closest('a')!;
             expect(within(card).getByText(meta.amount)).toBeInTheDocument();
             expect(within(card).getByText(meta.period)).toBeInTheDocument();
         }
-        expect(screen.getByRole('heading', { name: 'AI 브레인 + 제갈공명' }).closest('a'))
-            .toHaveAttribute('href', '/signup?plan=aibain_kongming');
+        expect(screen.getByRole('heading', { name: 'Pro + AI Brain' }).closest('a'))
+            .toHaveAttribute('href', '/signup?plan=pro&aibain=1');
 
-        // AI Brain 애드온 단독 요금(40,000원/30일) — 기존 구독자용 노출 필수
-        expect(screen.getByText('AI Brain 애드온')).toBeInTheDocument();
-        expect(screen.getByText('40,000원')).toBeInTheDocument();
+        // AI Brain 애드온 단독 요금(50,000원/30일) — 기존 구독자용 노출 필수
+        expect(screen.getByText('AI Brain + 제갈공명')).toBeInTheDocument();
+        expect(screen.getAllByText('50,000원').length).toBeGreaterThan(0);
     });
 
     it('labels the active-member pricing action as a plan change instead of a dashboard link', () => {

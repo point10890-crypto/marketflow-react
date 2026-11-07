@@ -150,17 +150,17 @@ export default function DashboardTab({ data, onNavigate, apiToken, loading = fal
     ].filter(item => item.count > 0);
 
     // ── 1b. 구독 매출 추정 — 현재 활성 구독 기준 클라이언트 계산 (표시 전용) ──
-    // Pro 50,000원/30일 + AI Brain 40,000원/30일 반복, Ultra Pro 1,200,000원 1회.
+    // Pro 50,000원/30일 + AI Brain 50,000원/30일 반복, Ultra Pro 1,200,000원 1회.
     // 결제 원장이 아닌 회원 수 기반 추정치이므로 라벨에 '추정'을 명시한다.
     const proUsers = data?.pro_users || 0;
     const premiumUsers = data?.premium_users || 0;
     const aibainUsers = data?.aibain_active_users || 0;
-    const recurringMonthly = proUsers * 50_000 + aibainUsers * 40_000;
+    const recurringMonthly = proUsers * 50_000 + aibainUsers * 50_000;
     const lifetimeTotal = premiumUsers * 1_200_000;
     const revenueStats = [
         { label: '월 반복 매출 (추정)', value: `${recurringMonthly.toLocaleString()}원`, sub: `Pro ${proUsers} · AI Brain ${aibainUsers}`, color: 'text-emerald-300', icon: 'fa-arrows-rotate' },
         { label: 'Ultra Pro 누적 (추정)', value: `${lifetimeTotal.toLocaleString()}원`, sub: `Ultra Pro ${premiumUsers}명 × 120만원`, color: 'text-purple-300', icon: 'fa-gem' },
-        { label: '갱신 위험 노출', value: `${((data?.churn?.expiring_d3 ?? 0) * 50_000 + (data?.aibain_expiring_soon ?? 0) * 40_000).toLocaleString()}원`, sub: `D-3 만료 임박 기준`, color: 'text-amber-300', icon: 'fa-triangle-exclamation' },
+        { label: '갱신 위험 노출', value: `${((data?.churn?.expiring_d3 ?? 0) * 50_000 + (data?.aibain_expiring_soon ?? 0) * 50_000).toLocaleString()}원`, sub: `D-3 만료 임박 기준`, color: 'text-amber-300', icon: 'fa-triangle-exclamation' },
     ];
 
     // ── 2. 회원 현황 스트립 ───────────────────────────────────────────

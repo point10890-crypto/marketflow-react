@@ -762,7 +762,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                     </span>
                                 </div>
                                 <p className="text-[13px] sm:text-xs text-gray-400 mt-0.5 leading-tight">
-                                    <span className="text-cyan-300/90">{tierLabel} 구독 유지 + AI Brain</span> · MCP TOP 3 / 신규 5종 시그널 · <span className="text-cyan-200 font-semibold">+40,000원/30일</span>
+                                    <span className="text-cyan-300/90">{tierLabel} 구독 유지 + AI Brain</span> · MCP TOP 3 / 신규 5종 시그널 · <span className="text-cyan-200 font-semibold">+50,000원/30일</span>
                                 </p>
                             </div>
                             <div className="shrink-0 flex items-center gap-2">
@@ -1208,7 +1208,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 <span className="w-2 h-2 rounded-full bg-blue-400" />
                                 <span className="text-gray-400">그래프RAG 분석</span>
                             </span>
-                            <span className="ml-auto text-[11px] text-gray-400">90,000원/30일</span>
+                            <span className="ml-auto text-[11px] text-gray-400">100,000원/30일</span>
                         </div>
 
                         <div className="relative border-t border-white/[0.06] pt-2.5">

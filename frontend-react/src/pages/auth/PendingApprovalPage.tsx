@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { BANK_ACCOUNT, isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
+import { BANK_ACCOUNT, isAiBundleRequest, subscriptionNote, isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
 import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { hasActiveBaseSubscription, hasActiveKongmingSubscription, isBaseSubscriptionExpired, subscriptionFunnelTarget, type AuthUserData } from '@/lib/auth';
@@ -181,6 +181,7 @@ export default function PendingApprovalPage() {
     const rejectedKongming = isKongmingSubscriptionRequest(rejectedSubReq?.request_type);
     const kongmingLabel = PLAN_PAYMENT_META[KONGMING_PLAN].label;
     const includesAibain = !!pendingSubReq?.admin_note?.includes('AI Brain');
+    const aiBundle = isAiBundleRequest(pendingSubReq);
     const subReqAmount = pendingSubReq?.amount || null;
 
     // 색상 테마 — AI Brain 포함이면 cyan, 아니면 amber
@@ -269,7 +270,7 @@ export default function PendingApprovalPage() {
                             </div>
                             <p className="text-xs text-gray-300 mt-1.5 leading-relaxed">
                                 {rejectedSubReq.admin_note
-                                    ? <>사유: {rejectedSubReq.admin_note}</>
+                                    ? <>사유: {subscriptionNote(rejectedSubReq.admin_note)}</>
                                     : '사유가 기재되지 않았습니다. 카카오톡으로 문의해 주세요.'}
                             </p>
                         </div>
@@ -299,7 +300,7 @@ export default function PendingApprovalPage() {
                                     {pendingSubReq.admin_note && (
                                         <p className="text-[11px] text-gray-400 leading-relaxed pl-1">
                                             <i className="fas fa-info-circle mr-1 text-cyan-400/70" />
-                                            {pendingSubReq.admin_note}
+                                            {subscriptionNote(pendingSubReq.admin_note)}
                                         </p>
                                     )}
                                 </div>
@@ -315,7 +316,7 @@ export default function PendingApprovalPage() {
                             <div>
                                 <h2 className="text-white font-bold text-sm">입금 계좌 정보</h2>
                                 <p className="text-gray-400 text-xs mt-0.5">
-                                    {isKongming ? '입금 확인 후 두 서비스를 30일 동안 이용할 수 있습니다.' : isAibainAddon
+                                    {isKongming || aiBundle ? '입금 확인 후 AI Brain과 제갈공명을 30일 함께 이용합니다. PRO 잔여기간은 AI 이용 중 일시정지됩니다.' : isAibainAddon
                                         ? '입금 확인 후 AI Brain 알파 스캐너가 30일간 활성화됩니다.'
                                         : '입금 확인 후 관리자가 구독을 활성화합니다.'}
                                 </p>

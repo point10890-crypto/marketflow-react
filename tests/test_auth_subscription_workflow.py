@@ -26,6 +26,117 @@ def _user(email: str, name: str, password: str, *, status='pending', tier=None, 
     return user
 
 
+@pytest.mark.parametrize('tier,status,with_ai,amount,request_type', [
+    (None, 'pending', False, '50,000원', 'upgrade'),
+    (None, 'pending', True, '100,000원', 'upgrade'),
+    ('pro', 'approved', True, '50,000원', 'aibain_addon'),
+    ('premium', 'approved', True, '50,000원', 'aibain_addon'),
+    ('pro', 'expired', True, '100,000원', 'renewal'),
+])
+def test_tier_pricing_bundle_approval_and_pro_clock(tier, status, with_ai, amount, request_type, monkeypatch):
+    monkeypatch.setattr(auth_routes, '_notify_admin_telegram', lambda *a, **k: None)
+    monkeypatch.setattr(admin_routes, '_notify_admin', lambda *a, **k: None)
+    monkeypatch.setattr(admin_routes, '_notify_member', lambda *a, **k: None)
+    app = _app()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    base_expiry = now + timedelta(days=12) if tier == 'pro' and status == 'approved' else None
+    with app.app_context():
+        member = _user('pricing@example.com', '요금검증', 'Pass1234!', tier=tier, status=status, pro_expires_at=base_expiry)
+        admin = _user('pricing-admin@example.com', '관리자', 'Pass1234!', role='admin', status='approved')
+        db.session.add_all([member, admin])
+        db.session.commit()
+        member_id = member.id
+        headers = {'Authorization': f'Bearer {generate_token(member.id)}'}
+        admin_headers = {'Authorization': f'Bearer {generate_token(admin.id)}'}
+    client = app.test_client()
+    target = 'premium' if tier == 'premium' else 'pro'
+    submitted = client.post('/api/auth/subscription/request', headers=headers, json={
+        'to_tier': target, 'depositor_name': '요금검증', 'includes_aibain': with_ai, 'amount': '1원',
+    })
+    assert submitted.status_code == 201
+    saved = submitted.get_json()['request']
+    assert saved['amount'] == amount
+    assert saved['request_type'] == request_type
+    path = f"/api/admin/subscriptions/{saved['id']}/approve"
+    approved = client.put(path, headers=admin_headers)
+    assert approved.status_code == 200
+    body = approved.get_json()['user']
+    assert body['tier'] == target
+    assert body['is_aibain_active'] is with_ai
+    assert body['is_kongming_active'] is with_ai
+    assert bool(body['pro_paused_at']) is (with_ai and target == 'pro')
+    if with_ai:
+        assert body['aibain_expires_at'] == body['kongming_expires_at']
+    if base_expiry:
+        assert body['pro_expires_at'] == base_expiry.isoformat()
+    repeated = client.put(path, headers=admin_headers).get_json()
+    assert repeated['already_processed'] is True
+    assert repeated['user']['aibain_expires_at'] == body['aibain_expires_at']
+    if with_ai and target == 'pro':
+        with app.app_context():
+            member = db.session.get(User, member_id)
+            expiry = member.aibain_expires_at
+            _apply_aibain_expiry_state(member, expiry)
+            assert member.pro_paused_at is None
+            # Exactly the preserved balance remains when the AI clock ends.
+            remaining = member.pro_expires_at.replace(tzinfo=None) - expiry
+            expected_days = 12 if base_expiry else 30
+            assert abs(remaining.total_seconds() - expected_days * 86400) < 10
+
+
+def test_ai_bundle_extension_preserves_paid_time_and_checks_base_before_approval(monkeypatch):
+    monkeypatch.setattr(auth_routes, '_notify_admin_telegram', lambda *a, **k: None)
+    monkeypatch.setattr(admin_routes, '_notify_admin', lambda *a, **k: None)
+    monkeypatch.setattr(admin_routes, '_notify_member', lambda *a, **k: None)
+    app = _app()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    with app.app_context():
+        member = _user('extend@example.com', '연장', 'Pass1234!', tier='pro', status='approved', pro_expires_at=now+timedelta(days=10))
+        member.aibain_enabled = True
+        member.aibain_expires_at = now + timedelta(days=7)
+        member.kongming_expires_at = now + timedelta(days=9)
+        member.pro_paused_at = now - timedelta(days=3)
+        admin = _user('extend-admin@example.com', '관리자', 'Pass1234!', role='admin', status='approved')
+        db.session.add_all([member, admin])
+        db.session.commit()
+        member_id = member.id
+        headers = {'Authorization': f'Bearer {generate_token(member.id)}'}
+        admin_headers = {'Authorization': f'Bearer {generate_token(admin.id)}'}
+    client = app.test_client()
+    submitted = client.post('/api/auth/subscription/request', headers=headers, json={'to_tier':'pro', 'includes_aibain':True})
+    request_id = submitted.get_json()['request']['id']
+    path = f'/api/admin/subscriptions/{request_id}/approve'
+    with app.app_context():
+        db.session.get(User, member_id).status = 'expired'
+        db.session.commit()
+    assert client.put(path, headers=admin_headers).status_code == 409
+    with app.app_context():
+        assert db.session.get(SubscriptionRequest, request_id).status == 'pending'
+        db.session.get(User, member_id).status = 'approved'
+        db.session.commit()
+    approved = client.put(path, headers=admin_headers).get_json()['user']
+    assert datetime.fromisoformat(approved['aibain_expires_at']) == now + timedelta(days=39)
+    assert approved['aibain_expires_at'] == approved['kongming_expires_at']
+    assert datetime.fromisoformat(approved['pro_paused_at']) == now - timedelta(days=3)
+
+
+def test_changed_price_is_reconfirmed_without_creating_a_request():
+    app = _app()
+    with app.app_context():
+        member = _user('stale-quote@example.com', '만료회원', 'Pass1234!', tier='pro', status='expired')
+        db.session.add(member)
+        db.session.commit()
+        headers = {'Authorization': f'Bearer {generate_token(member.id)}'}
+    client = app.test_client()
+    response = client.post('/api/auth/subscription/request', headers=headers, json={
+        'to_tier': 'pro', 'includes_aibain': True, 'expected_amount': 50_000,
+    })
+    assert response.status_code == 409
+    assert response.get_json()['code'] == 'subscription_price_changed'
+    with app.app_context():
+        assert SubscriptionRequest.query.count() == 0
+
+
 def test_expiry_workers_can_run_when_general_background_workers_are_disabled(monkeypatch):
     started = []
     monkeypatch.setenv('MARKETFLOW_BACKGROUND_WORKERS', 'false')
@@ -159,9 +270,19 @@ def test_kongming_bundle_is_independent_and_extends_once_on_approval(tier, statu
     client = app.test_client()
     path = '/api/auth/subscription/request'
     body = {'plan': 'aibain_kongming', 'depositor_name': '  신청인  ', 'amount': '1원', 'to_tier': 'premium'}
-    submitted = client.post(path, json=body, headers=member_headers)
-    assert submitted.status_code == 201
-    request_body = submitted.get_json()['request']
+    retired = client.post(path, json=body, headers=member_headers)
+    assert retired.status_code == 409
+    assert retired.get_json()['code'] == 'subscription_plan_changed'
+    with app.app_context():
+        member = User.query.filter_by(email='bundle@example.com').one()
+        saved = SubscriptionRequest(
+            user_id=member.id, request_type='aibain_kongming_renewal' if prior_bundle_expiry else 'aibain_kongming',
+            from_tier=tier or 'none', to_tier='aibain_kongming', depositor_name='신청인',
+            amount='50,000원', status='pending',
+        )
+        db.session.add(saved)
+        db.session.commit()
+        request_body = saved.to_dict()
     assert request_body['amount'] == '50,000원'
     assert request_body['depositor_name'] == '신청인'
     assert request_body['to_tier'] == 'aibain_kongming'
@@ -205,11 +326,12 @@ def test_kongming_approval_cannot_restore_a_member_suspended_after_request():
         admin_headers = {'Authorization': f'Bearer {generate_token(admin.id)}'}
 
     client = app.test_client()
-    submitted = client.post('/api/auth/subscription/request', json={
-        'plan': 'aibain_kongming', 'depositor_name': '신청인',
-    }, headers=member_headers)
-    assert submitted.status_code == 201
-    request_id = submitted.get_json()['request']['id']
+    with app.app_context():
+        saved = SubscriptionRequest(user_id=member_id, request_type='aibain_kongming',
+                                    from_tier='none', to_tier='aibain_kongming', amount='50,000원', status='pending')
+        db.session.add(saved)
+        db.session.commit()
+        request_id = saved.id
     with app.app_context():
         db.session.get(User, member_id).status = 'suspended'
         db.session.commit()
@@ -811,7 +933,7 @@ def test_expired_aibain_user_gets_renewal_workflow_without_changing_base_period(
     assert renewal.status_code == 201
     req = renewal.get_json()['request']
     assert req['request_type'] == 'aibain_renewal'
-    assert req['amount'] == '40,000원'
+    assert req['amount'] == '50,000원'
 
     status = client.get(
         '/api/auth/subscription/status',
@@ -931,7 +1053,7 @@ def test_ultra_pro_returns_to_ultra_after_aibain_expiry_and_can_renew(monkeypatc
     assert req['request_type'] == 'aibain_renewal'
     assert req['from_tier'] == 'premium'
     assert req['to_tier'] == 'premium'
-    assert req['amount'] == '40,000원'
+    assert req['amount'] == '50,000원'
 
     approved = client.put(
         f"/api/admin/subscriptions/{req['id']}/approve",
@@ -985,7 +1107,7 @@ def test_expired_pro_with_aibain_is_full_base_renewal_not_addon(monkeypatch):
     assert renewal.status_code == 201
     req = renewal.get_json()['request']
     assert req['request_type'] == 'renewal'
-    assert req['amount'] == '90,000원'
+    assert req['amount'] == '100,000원'
 
     approved = client.put(
         f"/api/admin/subscriptions/{req['id']}/approve",

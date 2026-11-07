@@ -10,7 +10,7 @@ import {
     type BillingPlan,
 } from '@/lib/billingInfo';
 
-const PLAN_ORDER: BillingPlan[] = ['aibain_kongming', 'pro', 'pro_aibain', 'premium', 'premium_aibain'];
+const PLAN_ORDER: BillingPlan[] = ['pro', 'pro_aibain', 'premium', 'premium_aibain'];
 
 const PLAN_STYLE: Record<BillingPlan, {
     badge: string;
@@ -96,7 +96,7 @@ export default function PricingPage() {
 
     useSeo({
         title: '요금제 — AI 브레인 + 제갈공명 · Pro · Ultra Pro | MarketFlow',
-        description: 'AI 브레인 + 제갈공명은 30일 50,000원입니다. MarketFlow 구독별 기능과 계좌이체 신청 절차를 확인하세요.',
+        description: 'PRO 5만 원, PRO+AI Brain·제갈공명 10만 원. 기존 PRO·Ultra Pro 회원은 AI·제갈공명 추가 5만 원입니다. MarketFlow 구독별 기능과 계좌이체 신청 절차를 확인하세요.',
         path: '/pricing',
     });
 
@@ -138,7 +138,7 @@ export default function PricingPage() {
                     ))}
                 </div>
 
-                {/* AI Brain 애드온 단독 요금 — 기존 Pro/Ultra Pro 구독자 전용 40,000원/30일 */}
+                {/* AI Brain 애드온 단독 요금 — 기존 Pro/Ultra Pro 구독자 전용 50,000원/30일 */}
                 <div className="mt-4 rounded-2xl border border-cyan-400/25 bg-gradient-to-r from-cyan-400/[0.07] via-transparent to-transparent p-5 sm:p-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-400/10 text-cyan-300">
