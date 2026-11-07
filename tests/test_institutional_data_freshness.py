@@ -248,6 +248,30 @@ def test_retry_requests_only_failed_codes_and_preserves_other_rows(tmp_path, mon
     assert set(snapshot['ticker']) == {'005930', '000660'}
 
 
+def test_retained_rows_preserve_every_csv_value_without_float_round_trip(tmp_path):
+    import csv
+    analyzer = producer.EnhancedKoreanInstitutionalTrendAnalyzer(data_dir=str(tmp_path))
+    previous = asdict(producer.InstitutionalData(
+        '000660', '2026-09-10', 'naver_finance_enhanced', 20, data_date=''))
+    previous.update(institutional_ratio_60d='0.30000000000000004',
+                    foreign_ratio_10d='2.2250738585072014e-308',
+                    foreign_net_buy_60d='9007199254740993', risk_level='NA')
+    target = tmp_path/'all_institutional_trend_data.csv'
+    with target.open('w', encoding='utf-8-sig', newline='') as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(previous))
+        writer.writeheader(); writer.writerow(previous)
+    with target.open(encoding='utf-8-sig', newline='') as handle:
+        original = next(csv.DictReader(handle))
+    fresh = asdict(producer.InstitutionalData(
+        '005930', '2026-11-08', 'naver_finance_trend_api', 60, data_date='2026-11-06'))
+    assert analyzer.save_institutional_data(pd.DataFrame([fresh]))
+    with target.open(encoding='utf-8-sig', newline='') as handle:
+        stored = {row['ticker']: row for row in csv.DictReader(handle)}
+    assert stored['000660'] == original
+    metadata = pd.read_csv(tmp_path/'all_institutional_metadata.csv').iloc[0]
+    assert metadata['average_data_days'] == 40
+
+
 @pytest.mark.parametrize('changes', [
     {'itemCode': '000660'}, {'bizdate': 'invalid'}, {'organPureBuyQuant': '-'},
     {'foreignerPureBuyQuant': None}, {'accumulatedTradingVolume': 'bad'}, {'closePrice': '0'},
@@ -256,6 +280,25 @@ def test_parser_does_not_replace_missing_numbers_with_zero(tmp_path, changes):
     analyzer = producer.EnhancedKoreanInstitutionalTrendAnalyzer(data_dir=str(tmp_path))
     rows = api_rows(); rows[0].update(changes)
     assert analyzer._extract_trend_json(rows, '005930') == []
+
+
+def test_invalid_history_records_actual_latest_date_and_missing_field(tmp_path, monkeypatch):
+    analyzer = producer.EnhancedKoreanInstitutionalTrendAnalyzer(data_dir=str(tmp_path))
+    payload = api_rows()
+    payload[-1]['accumulatedTradingVolume'] = '-'
+    class Response:
+        def json(self): return payload
+    monkeypatch.setattr(analyzer, '_make_request_with_retry', lambda url: Response())
+    assert analyzer.scrape_naver_institutional_trend_data('005930') is None
+    outcome = analyzer._request_outcomes['005930']
+    assert outcome['status'] == 'failed'
+    assert outcome['reason'] == 'invalid_or_empty_response'
+    assert outcome['data_date'] == '2026-11-06'
+    assert outcome['source_rows'] == 5
+    assert outcome['response_error'] == 'invalid_numeric_value'
+    assert outcome['invalid_field'] == 'accumulatedTradingVolume'
+    assert outcome['invalid_source_date'] == '2026-11-02'
+    assert payload[-1]['accumulatedTradingVolume'] == '-'
 
 
 def test_stock_codes_remain_six_characters(tmp_path):
