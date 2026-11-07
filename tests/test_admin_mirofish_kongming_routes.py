@@ -13,6 +13,7 @@ from app.routes.admin_mirofish import admin_mirofish_bp
 PREFIX = '/api/admin/mirofish/kongming'
 STATUS = PREFIX + '/catalyst-validation'
 HISTORY = PREFIX + '/catalyst-validation-history'
+ARTICLES = PREFIX + '/article-candidates'
 LEGACY_ALLOWLIST = 'KONGMING_CATALYST_ALLOWED_USER_IDS'
 AT = '2026-11-07T09:00:00+09:00'
 
@@ -76,7 +77,7 @@ def gateway(monkeypatch):
     ('legacy_aibain', 403), ('expired_bundle', 403), ('pending_bundle', 403),
     ('rejected_admin', 403),
 ])
-@pytest.mark.parametrize('path', [STATUS, HISTORY])
+@pytest.mark.parametrize('path', [STATUS, HISTORY, ARTICLES])
 def test_denies_anonymous_blocked_or_unentitled_users(gateway, case, status, path):
     client, caller, upstream = gateway
     if case == 'anonymous':
@@ -244,4 +245,23 @@ def test_proxy_registers_only_the_two_read_routes(gateway):
     assert client.get(PREFIX + '/businesspost').status_code == 404
     assert client.post(STATUS).status_code == 405
     assert client.post(HISTORY).status_code == 405
+    assert client.post(ARTICLES).status_code == 405
+    assert not upstream.connections
+
+
+@pytest.mark.parametrize('is_admin', [True, False])
+def test_article_candidates_read_the_local_snapshot_only(gateway, monkeypatch, is_admin):
+    from app.services import kongming_article_candidates
+
+    client, caller, upstream = gateway
+    caller.user.is_admin = is_admin
+    caller.user.is_kongming_active = not is_admin
+    local_view = {'items': [{'id': '1'}], 'operation': {'state': 'ready'}}
+    monkeypatch.setattr(kongming_article_candidates, 'read_view', lambda: local_view)
+
+    response = client.get(ARTICLES)
+
+    assert response.status_code == 200
+    assert response.get_json() == local_view
+    assert 'no-store' in response.headers['Cache-Control']
     assert not upstream.connections

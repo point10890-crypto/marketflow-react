@@ -51,6 +51,7 @@ data/institutional/
 data/admin_mirofish/
 data/ai_routing/
 data/manual_stock_analysis/
+data/kongming_article_candidates/
 data/briefing/*.json
 !data/briefing/.gitkeep
 data/uploads/community/

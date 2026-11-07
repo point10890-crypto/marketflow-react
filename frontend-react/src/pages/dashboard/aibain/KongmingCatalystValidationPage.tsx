@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { ApiError, fetchAPI } from '@/lib/api';
 import { canAccessKongming } from '@/lib/auth';
+import KongmingArticleCandidatesPanel from './KongmingArticleCandidatesPanel';
 
 const endpoint = '/api/admin/mirofish/kongming/catalyst-validation';
 const legacyQuoteExpirySeconds = 60;
@@ -408,6 +409,7 @@ function CatalystPanel({ canRead }: { canRead: boolean }) {
 export default function KongmingCatalystValidationPage() {
     const { token, user } = useAuth();
     const canRead = Boolean(token && canAccessKongming(user));
+    const sessionKey = `${user?.id ?? ''}:${token ?? ''}:${canRead}`;
     return (
         <div className="ai-design min-h-full bg-[#101318] p-3 text-sm text-slate-100 sm:p-6">
             <div className="mx-auto max-w-5xl space-y-4">
@@ -426,7 +428,8 @@ export default function KongmingCatalystValidationPage() {
                         <AiBrainServiceTabs active="kongming" />
                     </div>
                 </section>
-                <CatalystPanel key={`${user?.id ?? ''}:${token ?? ''}:${canRead}`} canRead={canRead} />
+                {canRead && <KongmingArticleCandidatesPanel key={`articles:${sessionKey}`} />}
+                <CatalystPanel key={sessionKey} canRead={canRead} />
             </div>
         </div>
     );
