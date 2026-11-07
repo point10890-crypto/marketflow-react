@@ -1,72 +1,58 @@
-"""Read-only, explicitly authorized bridge to the local Kongming catalyst view."""
+"""Entitlement-gated reads of MarketFlow's stored article and verification data."""
 
-import http.client
-import json
 import math
-from contextlib import closing
+import re
+import sqlite3
 
 from flask import jsonify, request
 
-from app.services import kongming_article_candidates
+from app.services import kongming_article_candidates, kongming_verification
 
 
-_MAX_BODY_BYTES = 8 * 1024 * 1024
-_SOCKET_TIMEOUT_SECONDS = 4
 _NO_STORE = 'private, no-store, no-cache, must-revalidate, max-age=0'
-_ERROR_COUNTS = object()
-_CLAIM_AMOUNT = (str, int, float)
-
-_SETUP = {'label': str, 'complete': bool, 'failed': [str], 'missing': [str]}
-_STYLE = {
-    'state': str, 'technical_pass': bool, 'qualified': bool, 'eligible': bool,
-    'currently_eligible': bool, 'blockers': [str],
-    'quote': {'observed_at': str, 'received_at': str, 'plan': {'valid_until': str}},
+_AMOUNT = (str, int, float)
+_NUMBER = (int, float)
+_PRICE_FIELDS = {
+    'status': str, 'reason': str, 'refresh_status': str, 'source': str, 'market': str,
+    'reference_at': str, 'observed_at': str, 'fetched_at': str, 'session': str,
+    'calendar_source': str, 'calendar_captured_at': str,
+    'window_end_at': str, 'window_complete': bool, 'close': _NUMBER,
+    'latest_close': _NUMBER, 'latest_observed_at': str, 'change_pct': _NUMBER,
 }
 _VALIDATION_FIELDS = {
-    'computed_at': str, 'hash': str, 'history_count': int,
-    'current_eligible_count': int, 'current_eligible_symbol_count': int,
-    'quote_expiry_seconds': int,
+    'source': str, 'computed_at': str, 'history_count': int,
     'live': {
         'last_run_at': str, 'last_change_at': str, 'age_seconds': int,
         'stalled': bool, 'worker_interval_seconds': int,
     },
     'operation': {
-        'state': str, 'market_open': bool, 'task_count': int, 'price_probed': int,
-        'task_errors': _ERROR_COUNTS, 'watch_error': str, 'error_type': str,
-    },
-    'swing_watch': {
-        'source_as_of': str, 'population': int, 'baseline_count': int,
-        'baseline_rows': [{
-            'symbol': str, 'name': str, 'common_pass': bool,
-            'failed_common': [str], 'missing_common': [str],
-        }],
-        'common_watch_count': int,
-        'watch_rows': [{
-            'symbol': str, 'name': str,
-            'setups': {'contraction': _SETUP, 'breakout': _SETUP, 'pullback': _SETUP},
-        }],
-        'common_funnel': [{'label': str, 'count': int}],
+        'state': str, 'task_count': int, 'pending_count': int,
+        'disclosure_checked': int, 'price_checked': int, 'source_error_count': int,
     },
     'items': [{
-        'task_id': str, 'symbol': str, 'name': str, 'article_title': str, 'article_url': str,
-        'article_published_at': str, 'first_seen_at': str, 'checked_at': str,
+        'task_id': str, 'article_id': str, 'symbol': str, 'name': str,
+        'article_title': str, 'article_url': str, 'article_published_at': str,
+        'first_seen_at': str, 'first_seen_source': str, 'checked_at': str,
         'primary': {
-            'status': str,
+            'status': str, 'source': str, 'checked_at': str, 'error_code': str, 'reason': str, 'refresh_status': str,
+            'query_start': str, 'query_end': str,
             'checks': [{
-                'status': str, 'url': str, 'filing': {'report_nm': str},
+                'status': str, 'url': str, 'filing_date_relation': str,
+                'filing': {'report_nm': str, 'rcept_no': str, 'rcept_dt': str, 'corp_name': str},
                 'claims': [{
-                    'metric': str, 'article_amount_krw': _CLAIM_AMOUNT,
-                    'official_amount_krw': _CLAIM_AMOUNT, 'verified': bool,
+                    'metric': str, 'article_amount_krw': _AMOUNT,
+                    'official_amount_krw': _AMOUNT, 'verified': bool, 'period': str, 'basis': str,
                 }],
             }],
         },
-        'styles': {'scalp': _STYLE, 'swing': _STYLE, 'close': _STYLE},
+        'price': _PRICE_FIELDS,
     }],
 }
 _HISTORY_FIELDS = {
+    'source': str,
     'items': [{
-        'id': str, 'checked_at': str, 'name': str, 'symbol': str,
-        'primary': {'status': str}, 'market_state': str, 'buy_eligible': bool,
+        'id': str, 'article_id': str, 'article_title': str, 'checked_at': str, 'name': str, 'symbol': str,
+        'primary': {'status': str}, 'price': {'status': str},
     }],
 }
 
@@ -75,13 +61,6 @@ def _project(value, fields):
     """Keep only UI fields, preserving source types and nullable observations."""
     if value is None:
         return None
-    if fields is _ERROR_COUNTS:
-        if not isinstance(value, dict) or any(
-            not name.isidentifier() or len(name) > 128 or type(count) is not int or count < 0
-            for name, count in value.items()
-        ):
-            raise ValueError('Invalid catalyst error counts')
-        return value
     if isinstance(fields, dict):
         if not isinstance(value, dict):
             raise ValueError('Invalid catalyst object')
@@ -96,21 +75,6 @@ def _project(value, fields):
     return value
 
 
-def _read(path):
-    with closing(http.client.HTTPConnection('127.0.0.1', 8768, timeout=_SOCKET_TIMEOUT_SECONDS)) as connection:
-        connection.request('GET', path, headers={'Accept': 'application/json'})
-        upstream = connection.getresponse()
-        if upstream.status != 200 or upstream.getheader('Content-Type', '').partition(';')[0].strip().lower() != 'application/json':
-            raise ValueError('Unexpected catalyst response')
-        body = upstream.read(_MAX_BODY_BYTES + 1)
-        if len(body) > _MAX_BODY_BYTES:
-            raise ValueError('Oversized catalyst response')
-    payload = json.loads(body)
-    if not isinstance(payload, dict) or not isinstance(payload.get('items'), list):
-        raise ValueError('Invalid catalyst payload')
-    return payload
-
-
 def _response(payload, status):
     response = jsonify(payload)
     response.status_code = status
@@ -118,25 +82,32 @@ def _response(payload, status):
     return response
 
 
-def catalyst_response(*, history=False):
-    """Allow authenticated administrators and active bundle subscribers."""
+def _allowed():
     user = request.current_user
-    if not (user.is_admin or getattr(user, 'is_kongming_active', False)):
+    return user.is_admin or getattr(user, 'is_kongming_active', False)
+
+
+def catalyst_response(*, history=False):
+    """Serve saved verification evidence without calling providers."""
+    if not _allowed():
         return _response({'error': 'kongming_catalyst_forbidden'}, 403)
+    article_id = request.args.get('article_id')
+    if article_id is not None and not re.fullmatch(r'[1-9][0-9]{0,9}', article_id):
+        return _response({'error': 'invalid_article_id'}, 400)
     try:
-        if history:
-            payload = _project(_read('/api/catalyst-validation-history'), _HISTORY_FIELDS)
-        else:
-            payload = _project(_read('/api/catalyst-validation'), _VALIDATION_FIELDS)
-    except (OSError, http.client.HTTPException, ValueError, RecursionError):
-        return _response({'error': 'kongming_catalyst_unavailable'}, 502)
+        read = kongming_verification.read_history if history else kongming_verification.read_dashboard
+        raw = read(article_id=article_id)
+        if not isinstance(raw, dict) or not isinstance(raw.get('items'), list):
+            raise ValueError('Invalid saved verification payload')
+        payload = _project(raw, _HISTORY_FIELDS if history else _VALIDATION_FIELDS)
+    except (OSError, sqlite3.Error, ValueError, KeyError, TypeError, RecursionError):
+        return _response({'error': 'kongming_catalyst_unavailable'}, 503)
     return _response(payload, 200)
 
 
 def article_candidates_response():
     """Read only MarketFlow's own article snapshot using the bundle entitlement."""
-    user = request.current_user
-    if not (user.is_admin or getattr(user, 'is_kongming_active', False)):
+    if not _allowed():
         return _response({'error': 'kongming_catalyst_forbidden'}, 403)
     try:
         payload = kongming_article_candidates.read_view()

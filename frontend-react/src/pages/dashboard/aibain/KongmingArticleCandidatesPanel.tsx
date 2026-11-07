@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { ApiError, fetchAPI } from '@/lib/api';
 
@@ -83,6 +84,10 @@ function articleLabel(labels: Record<string, string>, key: string, fallback: str
     return typeof labels[key] === 'string' ? labels[key] : fallback;
 }
 
+function verificationLink(articleId?: string) {
+    return { search: articleId ? `?${new URLSearchParams({ article_id: articleId })}` : '', hash: '#catalyst-validation' };
+}
+
 function CandidateList({ items, label }: { items: ArticleCandidate[]; label: string }) {
     const [limit, setLimit] = useState(pageSize);
     if (!items.length) return <p className="py-2 text-slate-300">표시할 후보 기사가 없습니다.</p>;
@@ -109,6 +114,8 @@ function CandidateList({ items, label }: { items: ArticleCandidate[]; label: str
                             <span>발행 <ArticleTime value={row.published_at} /></span>
                             <span>{row.provenance === 'kongming_archive' ? '원본 최초 수신' : '최초 수신'} <ArticleTime value={row.first_seen_at} /></span>
                         </div>
+                        <Link className="inline-flex min-h-8 items-center text-xs font-semibold text-sky-300 underline-offset-4 hover:underline focus-visible:underline"
+                            to={verificationLink(row.id)} aria-label={`${row.title} 공시·시세 검증 보기`}>공시·시세 검증 보기</Link>
                     </li>
                 ))}
             </ul>
@@ -179,8 +186,8 @@ export default function KongmingArticleCandidatesPanel() {
                 )}
             </header>
             <p className="text-slate-300">
-                비즈니스포스트 RSS에서 선별한 관찰 후보입니다. MarketFlow가 자동 갱신하며 공시·시세 검증은 별도 단계입니다.
-                {' '}<a href="#catalyst-validation" className="text-sky-300 underline-offset-2 hover:underline">검증 결과 보기</a>
+                비즈니스포스트 RSS에서 선별한 관찰 후보입니다. 각 기사에서 MarketFlow의 공시·시세 검증을 확인할 수 있습니다.
+                {' '}<Link to={verificationLink()} className="text-sky-300 underline-offset-2 hover:underline">전체 검증 결과 보기</Link>
             </p>
             {error === 'access' && <p role="alert" className="text-amber-300">기사 후보 목록의 접근 권한을 확인해 주세요.</p>}
             {error === 'unavailable' && <p role="alert" className="text-amber-300">기사 후보 조회 실패{view ? ' · 이전 목록 표시 중' : ''}</p>}
