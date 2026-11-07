@@ -5,9 +5,13 @@ from __future__ import annotations
 
 import argparse
 import csv
+import heapq
+import importlib.util
 import json
 import math
 import os
+import re
+import stat
 from datetime import datetime, timezone
 from typing import Any
 
@@ -17,6 +21,7 @@ DEFAULT_SCANNER_ROOT = os.path.join(REPO_ROOT, 'data', 'admin_mirofish', 'scanne
 DEFAULT_PRICES = os.path.join(REPO_ROOT, 'data', 'daily_prices.csv')
 DEFAULT_OUTPUT = os.path.join(REPO_ROOT, 'data', 'admin_mirofish', 'alpha_backtest_daily.json')
 DEFAULT_ROLLING_OUTPUT = os.path.join(REPO_ROOT, 'data', 'admin_mirofish', 'alpha_backtest_rolling_7d.json')
+SCANNER_RUN_NAME = re.compile(r'mfas_\d{14}_[a-fA-F0-9]{12}')
 SUCCESS_THRESHOLDS = {
     'expectancy_r_min': 0.30,
     'information_coefficient_min': 0.08,
@@ -40,6 +45,7 @@ def evaluate_runs(
         scanner_root,
         limit_runs=limit_runs,
         mature_cutoff_date=mature_cutoff_date,
+        candidate_fields_only=True,
     )
     candidates = []
     needed_symbols: set[str] = set()
@@ -114,9 +120,14 @@ def evaluate_runs(
 
 
 def write_report(report: dict[str, Any], output_path: str = DEFAULT_OUTPUT) -> None:
-    os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(report, f, ensure_ascii=False, indent=2)
+    # Reuse the repository's fsync/replace/retry helper without importing Flask
+    # or starting application services in this standalone scheduled script.
+    spec = importlib.util.spec_from_file_location(
+        '_alpha_backtest_atomic_json', os.path.join(REPO_ROOT, 'app', 'utils', 'atomic_json.py'),
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.write_json_atomic(output_path, report)
 
 
 def write_rolling_report(
@@ -151,9 +162,7 @@ def write_rolling_report(
         'avg_profit_factor': round(_average([item.get('profit_factor') for item in enhanced]), 4),
         'lookahead_safe': True,
     }
-    os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(rolling, f, ensure_ascii=False, indent=2)
+    write_report(rolling, output_path)
     return rolling
 
 
@@ -217,25 +226,11 @@ def _load_runs(
     *,
     limit_runs: int | None,
     mature_cutoff_date: str | None = None,
+    candidate_fields_only: bool = False,
 ) -> list[dict[str, Any]]:
     if not os.path.isdir(root):
         return []
-    paths: list[tuple[str, float, str]] = []
-    for dirpath, _dirnames, filenames in os.walk(root):
-        if 'run.json' not in filenames:
-            continue
-        path = os.path.join(dirpath, 'run.json')
-        run_date = _run_path_date(path)
-        if mature_cutoff_date and run_date and run_date > mature_cutoff_date:
-            continue
-        try:
-            mtime = os.path.getmtime(path)
-        except OSError:
-            continue
-        paths.append((run_date or '', mtime, path))
-    paths.sort(key=lambda item: (item[0], item[1], item[2]), reverse=True)
-    if limit_runs:
-        paths = paths[:max(0, int(limit_runs))]
+    paths = _select_run_paths(root, limit_runs, mature_cutoff_date)
 
     records = []
     for _run_date, _mtime, path in paths:
@@ -246,11 +241,106 @@ def _load_runs(
             continue
         if not isinstance(run, dict):
             continue
+        if candidate_fields_only:
+            run = _project_backtest_run(run)
         ts = str(run.get('generated_at') or run.get('created_at') or '')
         records.append((ts, path, run))
     records.sort(key=lambda item: (item[0], item[1]), reverse=True)
     runs = [item[2] for item in records]
     return runs[:limit_runs] if limit_runs else runs
+
+
+def _project_backtest_run(run: dict[str, Any]) -> dict[str, Any]:
+    """Retain exactly the inputs used below, not megabytes of graph/evidence.
+
+    Each full JSON is released before the next file is read. Selection, order,
+    duplicate handling, entry/horizon values and false-signal gates are unchanged.
+    """
+    projected = {key: run.get(key) for key in ('id', 'generated_at', 'created_at')}
+    candidates = []
+    for candidate in run.get('candidates') or []:
+        if not isinstance(candidate, dict):
+            continue
+        item = {key: candidate.get(key) for key in (
+            'symbol', 'display_name', 'name', 'action', 'alpha_score',
+            'risk_score', 'ranking_score', 'strategy_tags',
+        )}
+        for key, field in (('replay_context', 'price_date'), ('price', 'date'), ('entry_plan', 'stop_pct')):
+            value = candidate.get(key)
+            item[key] = {field: value.get(field)} if isinstance(value, dict) else value
+        profile = candidate.get('analysis_profile')
+        gates = profile.get('false_signal_gates') if isinstance(profile, dict) else None
+        if isinstance(gates, dict):
+            item['analysis_profile'] = {'false_signal_gates': {
+                'hard_blockers': bool(gates.get('hard_blockers')),
+                'gates': [
+                    {'status': gate.get('status')}
+                    for gate in gates.get('gates') or [] if isinstance(gate, dict)
+                ],
+            }}
+        candidates.append(item)
+    projected['candidates'] = candidates
+    return projected
+
+
+def _select_run_paths(
+    root: str, limit_runs: int | None, mature_cutoff_date: str | None,
+) -> list[tuple[str, float, str]]:
+    """Keep legacy date/mtime/path selection while bounding archive metadata I/O.
+
+    Canonical scanner runs are direct-child leaf directories. A root listing
+    yields their dates without visiting hundreds of thousands of run folders.
+    Read metadata for whole date groups (mtime, not ID time, breaks same-day
+    ties), then stop once older dates cannot enter the selected sample. Legacy
+    noncanonical/nested import folders retain the recursive discovery behavior.
+    """
+    bound = max(0, int(limit_runs)) if limit_runs else None
+    if bound == 0:
+        return []
+    paths: list[tuple[str, float, str]] = []
+
+    def add_path(path: str) -> None:
+        run_date = _run_path_date(path)
+        if mature_cutoff_date and run_date and run_date > mature_cutoff_date:
+            return
+        try:
+            info = os.stat(path)
+        except OSError:
+            return
+        if stat.S_ISREG(info.st_mode):
+            paths.append((run_date or '', info.st_mtime, path))
+
+    def add_tree(directory: str) -> None:
+        for dirpath, _dirnames, filenames in os.walk(directory):
+            if 'run.json' in filenames:
+                add_path(os.path.join(dirpath, 'run.json'))
+
+    if bound is None:
+        add_tree(root)
+        return sorted(paths, reverse=True)
+
+    groups: dict[str, list[str]] = {}
+    with os.scandir(root) as entries:
+        for entry in entries:
+            if entry.is_dir(follow_symlinks=False):
+                if SCANNER_RUN_NAME.fullmatch(entry.name):
+                    path = os.path.join(entry.path, 'run.json')
+                    run_date = _run_path_date(path)
+                    if not mature_cutoff_date or run_date <= mature_cutoff_date:
+                        groups.setdefault(run_date, []).append(path)
+                else:
+                    add_tree(entry.path)
+            elif entry.name == 'run.json' and entry.is_file():
+                add_path(entry.path)
+
+    paths = heapq.nlargest(bound, paths)
+    for run_date in sorted(groups, reverse=True):
+        if len(paths) == bound and run_date < paths[-1][0]:
+            break
+        for path in groups[run_date]:
+            add_path(path)
+        paths = heapq.nlargest(bound, paths)
+    return paths
 
 
 def _run_path_date(path: str) -> str | None:

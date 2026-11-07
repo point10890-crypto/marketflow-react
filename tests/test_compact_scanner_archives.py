@@ -22,11 +22,11 @@ def compact(monkeypatch):
 def _run(root, day='20260912', *, status='completed', complete=True):
     folder = root / 'data' / 'admin_mirofish' / 'scanner_runs' / f'mfas_{day}090000_abcdef012345'
     folder.mkdir(parents=True)
-    header = {'id': folder.name, 'status': status, 'generated_at': f'{day[:4]}-{day[4:6]}-{day[6:]}T09:00:00+00:00'}
+    header = {'id': folder.name, 'status': status, 'generated_at': f'{day[:4]}-{day[4:6]}-{day[6:]}T09:00:00+00:00', 'payload': 'x' * 8192}
     (folder / 'run.json').write_text(json.dumps(header), encoding='utf-8')
     if complete:
         for name in ('feature_vectors.json', 'evidence_ledger.json', 'rejected_candidates.json', 'deepseek_rerank.json'):
-            (folder / name).write_text('{"synthetic": "' + 'x' * 200 + '"}', encoding='utf-8')
+            (folder / name).write_text('{"synthetic": "' + 'x' * 8192 + '"}', encoding='utf-8')
     stamp = datetime(2026, 9, 12).timestamp()
     for path in folder.iterdir():
         os.utime(path, (stamp, stamp))
@@ -95,6 +95,72 @@ def test_already_compressed_files_are_skipped(compact, tmp_path, monkeypatch):
     assert compact.discover_files(_options(compact, root)) == []
 
 
+def test_tiny_rerank_files_do_not_starve_older_uncompressed_runs(compact, tmp_path, monkeypatch):
+    root = _root(tmp_path)
+    older = _run(root)
+    compressed = _run(root, '20260913')
+    tiny = compressed / 'deepseek_rerank.json'
+    stamp = tiny.stat().st_mtime
+    tiny.write_text('{"status":"disabled"}', encoding='utf-8')
+    os.utime(tiny, (stamp, stamp))
+    monkeypatch.setattr(
+        compact, '_physical_size',
+        lambda path: path.stat().st_size // 4 if path.parent == compressed and path != tiny else path.stat().st_size,
+    )
+    files = compact.discover_files(_options(compact, root, max_runs=1))
+    assert len(files) == 5 and all(path.parent == older for path in files)
+
+
+def test_partially_compressed_files_do_not_consume_run_limit(compact, tmp_path, monkeypatch):
+    root = _root(tmp_path)
+    older = _run(root)
+    compressed = _run(root, '20260913')
+    monkeypatch.setattr(
+        compact, '_physical_size',
+        lambda path: int(path.stat().st_size * .75) if path.parent == compressed else path.stat().st_size,
+    )
+    files = compact.discover_files(_options(compact, root, max_runs=1))
+    assert len(files) == 5 and all(path.parent == older for path in files)
+
+
+def test_at_most_one_allocation_unit_is_not_selected(compact, tmp_path):
+    root = _root(tmp_path)
+    cold = _run(root)
+    path = cold / 'deepseek_rerank.json'
+    stamp = path.stat().st_mtime
+    path.write_bytes(b' ' * 4096)
+    os.utime(path, (stamp, stamp))
+    files = compact.discover_files(_options(compact, root))
+    assert path not in files and len(files) == 4
+
+
+def test_second_pass_advances_past_compressed_runs_with_tiny_files(compact, tmp_path, monkeypatch):
+    root = _root(tmp_path)
+    older = _run(root)
+    newer = _run(root, '20260913')
+    for run in (older, newer):
+        tiny = run / 'deepseek_rerank.json'
+        stamp = tiny.stat().st_mtime
+        tiny.write_text('{"status":"disabled"}', encoding='utf-8')
+        os.utime(tiny, (stamp, stamp))
+    compressed = set()
+    monkeypatch.setattr(
+        compact, '_physical_size',
+        lambda path: path.stat().st_size // 4 if path in compressed else path.stat().st_size,
+    )
+    def fake_compact(paths):
+        compressed.update(paths)
+        return SimpleNamespace(returncode=0)
+    monkeypatch.setattr(compact, '_run_compact', fake_compact)
+    options = _options(compact, root, max_runs=1, apply=True)
+    first = compact.execute(options, emit=lambda item: None)
+    second = compact.execute(options, emit=lambda item: None)
+    assert first['verified_files'] == second['verified_files'] == 4
+    assert len(compressed) == 8
+    assert {path.parent for path in compressed} == {older, newer}
+    assert compact.discover_files(options) == []
+
+
 def test_batches_respect_windows_command_line_limit(compact, tmp_path):
     paths = [tmp_path / ('x' * 70 + str(i) + '.json') for i in range(30)]
     batches = list(compact.file_batches(paths, max_chars=500))
@@ -120,6 +186,18 @@ def test_changed_bytes_abort_immediately_and_are_reported(compact, tmp_path, mon
     assert summary['error'] == 'integrity_failed'
     assert len(calls) == 1 and summary['verified_files'] == 0
     assert Path(summary['manifest']).is_file()
+
+
+def test_changed_mtime_after_compact_is_an_integrity_failure(compact, tmp_path, monkeypatch):
+    root = _root(tmp_path)
+    _run(root)
+    def mutate_time(paths):
+        info = paths[0].stat()
+        os.utime(paths[0], ns=(info.st_atime_ns, info.st_mtime_ns + 10_000_000_000))
+        return SimpleNamespace(returncode=0)
+    monkeypatch.setattr(compact, '_run_compact', mutate_time)
+    summary = compact.execute(_options(compact, root, apply=True), emit=lambda item: None)
+    assert summary['status'] == 'aborted' and summary['error'] == 'integrity_failed'
 
 
 def test_free_space_target_stops_after_first_verified_batch(compact, tmp_path, monkeypatch):

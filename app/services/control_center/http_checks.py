@@ -108,6 +108,10 @@ def http_get(url: str, token: str | None = None, timeout: float = DEFAULT_TIMEOU
                     return result
                 body = bytearray()
                 while len(body) <= MAX_BODY:
+                    # A complete Content-Length response closes its socket in
+                    # read1(). Do not touch that socket again to discover EOF.
+                    if resp.length == 0 or resp.isclosed():
+                        break
                     set_remaining(sock)
                     chunk = resp.read1(min(65536, MAX_BODY + 1 - len(body)))
                     if not chunk:

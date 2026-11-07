@@ -31,6 +31,9 @@ GIB = 1024 ** 3
 MAX_BATCH_FILES = 64
 MAX_COMMAND_CHARS = 30000
 MAX_RUNS = 10000
+# Resident/tiny JSONs (notably the 475-byte rerank status) cannot release a
+# useful allocation unit. They must not consume the bounded run budget daily.
+MIN_COMPACT_BYTES = 4096
 RUN_PATTERN = re.compile(r'mfas_(\d{8})\d{6}_[a-fA-F0-9]{12}')
 REQUIRED_FILES = frozenset({
     'run.json', 'feature_vectors.json', 'evidence_ledger.json',
@@ -222,7 +225,13 @@ def discover_files(options: Options) -> list[Path]:
         eligible = []
         for path in json_files:
             logical = path.stat().st_size
-            if logical and _physical_size(path) >= logical * 0.5:
+            if logical <= MIN_COMPACT_BYTES:
+                continue
+            physical = _physical_size(path)
+            # Any measured storage reduction already means compression/sparse
+            # storage is in effect. Recompressing it spends the run budget on
+            # the same files, starving older untouched archives.
+            if physical > MIN_COMPACT_BYTES and physical >= logical:
                 eligible.append(path)
         if eligible:
             selected.extend(eligible)
@@ -378,7 +387,7 @@ def execute(options: Options, *, emit: Callable[[dict], None] | None = None) -> 
                     for path in batch:
                         validate_target(path, archive)
                         after = _fingerprint(path)
-                        if after[:2] != fingerprints[path][:2]:
+                        if after != fingerprints[path]:
                             raise IntegrityError('integrity_failed')
                     summary['batches'] += 1
                     summary['verified_files'] += len(batch)

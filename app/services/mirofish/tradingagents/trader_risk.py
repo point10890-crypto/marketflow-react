@@ -396,15 +396,19 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
             ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     votes = ', '.join(f'{r["role"]}={r["vote"]}' for r in risk_debate)
     regime_block = f'[시장 레짐]\n{regime_line}\n\n' if regime_line else ''
+    fixed_output = {'symbol': symbol or '', 'name': name or target,
+                    'market': market or '', 'analyst_mean': _analyst_mean(debate)}
     prompt = (
         f'{regime_block}'
         f'분석 대상: {target}\n'
         f'트레이더 계획: {trader_plan.get("action_hint", "")}\n'
         f'리스크팀 투표: {votes}\n'
         f'강세 논거: {debate.get("bull_case", "")}\n약세 논거: {debate.get("bear_case", "")}\n'
-        f'애널리스트 평균 점수: {_analyst_mean(debate):+.1f}\n'
-        f'고정 식별자: symbol={symbol or ""}, name={name or target}, market={market or ""}\n'
-        f'EvidencePacket: {json.dumps(evidence_packet or {}, ensure_ascii=False, default=str)}\n\n{_PM_JSON}'
+        f'EvidencePacket: {json.dumps(evidence_packet or {}, ensure_ascii=False, default=str)}\n\n'
+        # Keep exact input numbers beside the schema tail so compact prompts
+        # preserve the same values that the strict validator will compare.
+        f'[고정 출력 값]\n{json.dumps(fixed_output, ensure_ascii=False)}\n'
+        f'위 값은 반올림하거나 다시 계산하지 말고 JSON에 그대로 복사하세요.\n{_PM_JSON}'
     )
     if compact:
         prompt = evidence_packet_mod.bound_compact_prompt(prompt, 'decisive_text')

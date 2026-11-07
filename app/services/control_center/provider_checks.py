@@ -82,6 +82,11 @@ def _kis_token_cache(it: dict[str, Any], now: datetime) -> CheckResult:
 
 
 def _ai_routing_health(it: dict[str, Any], now: datetime) -> CheckResult:
+    if it.get('usage_path'):
+        from app.services.control_center.llm_evidence import routing_evidence
+
+        configured = [name for name, envs in it.get('provider_envs', {}).items() if _configured(envs)]
+        return routing_evidence(it, now, configured)
     data = _read_json(resolve_path(it.get('path', '{data}/ai_routing/health.json')))
     cid = f"provider:{it['id']}"
     label = it.get('label', 'LLM 라우팅')

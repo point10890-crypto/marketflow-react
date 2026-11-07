@@ -190,31 +190,42 @@ def run_close_cycle() -> dict[str, Any]:
 
 def run_intraday_watch() -> dict[str, Any]:
     """장중 보유 포지션 감시 — KIS 현재가 → 목표/손절 즉시 신호."""
+    import math
+
     ledger = pp.load_ledger()
     open_positions = ledger.get('open', [])
     if not open_positions:
-        return {'checked': 0, 'exits': [], 'message': ''}
+        return {'status': 'completed', 'expected': 0, 'checked': 0,
+                'missing_symbols': [], 'exits': [], 'message': ''}
 
+    symbols = {str(position['symbol']).strip() for position in open_positions
+               if isinstance(position, dict) and position.get('symbol')}
+    invalid_positions = sum(not isinstance(position, dict) or not str(position.get('symbol') or '').strip()
+                            for position in open_positions)
+    expected = len(symbols) + invalid_positions
     quotes: dict[str, dict[str, Any]] = {}
     try:
         from app.services.kis_screener import fetch_price_detail, get_token
         token = get_token()
-        for position in open_positions:
-            detail = fetch_price_detail(token, position['symbol']) or {}
-            price = detail.get('stck_prpr')
+        for symbol in sorted(symbols):
             try:
-                quotes[position['symbol']] = {'price': float(price)}
-            except (TypeError, ValueError):
+                detail = fetch_price_detail(token, symbol) or {}
+                price = float(detail.get('stck_prpr'))
+                if math.isfinite(price) and price > 0:
+                    quotes[symbol] = {'price': price}
+            except Exception:
                 continue
     except Exception:
-        quotes = {}
+        pass
 
     exits = pp.intraday_check(quotes) if quotes else []
     lines = [_exit_line(s) for s in exits]
     message = ''
     if exits:
         message = "<b>⚡ 장중 청산 신호</b>\n\n" + "\n".join(lines) + _disclaimer()
-    return {'checked': len(quotes), 'exits': exits, 'message': message}
+    return {'status': 'completed' if len(quotes) == expected else ('partial' if quotes else 'failed'),
+            'expected': expected, 'checked': len(quotes), 'missing_symbols': sorted(symbols - quotes.keys()),
+            'exits': exits, 'message': message}
 
 
 def morning_top_message(top_n: int = 5) -> str:

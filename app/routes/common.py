@@ -575,6 +575,7 @@ def get_market_indices():
 
 
 @common_bp.route('/system/data-status')
+@admin_required
 def get_data_status():
     """데이터 파일 상태 조회"""
     from datetime import datetime
