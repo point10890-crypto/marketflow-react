@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
 import { subscriptionJourney, reminderDue } from '@/lib/subscriptionJourney';
 import { hasPendingSubscription } from '@/lib/subscriptionStatus';
-import { aiBundleOffer, PLAN_PAYMENT_META } from '@/lib/billingInfo';
+import { AI_BUNDLE_CONVERSION, aiBundleConversionExpiry, formatConversionExpiry, aiBundleOffer, PLAN_PAYMENT_META } from '@/lib/billingInfo';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import './subscription-entry.css';
 import { SubscriptionSteps } from './SubscriptionFlow';
@@ -81,13 +81,15 @@ export default function SubscriptionEntry() {
     // A successful status lookup is newer than cached /me flags, including an old pending=true.
     const cachedPending = user?.has_pending_subscription === true || user?.pending_subscription_request?.status === 'pending';
     const state = lookup?.key === lookupKey ? lookup.state : cachedPending ? 'pending' : null;
+    const conversionExpiry = aiBundleConversionExpiry(user, now);
+    const pendingConversion = cachedPending && user?.pending_subscription_request?.request_type === AI_BUNDLE_CONVERSION.plan;
     useEffect(() => {
         if (!eligible || !expired || !pathname.startsWith('/dashboard')) return;
         if (state === 'pending') navigate('/pending-approval', { replace: true });
         else if (state === 'ready') navigate('/plan-select?resubscribe=1&from=expired', { replace: true });
     }, [eligible, expired, pathname, state, navigate]);
     const lastDismissal = dismissedAt?.key === key ? dismissedAt.at : safeGetItem('session', key);
-    const open = eligible && state === 'ready' && reminderDue(lastDismissal, now);
+    const open = eligible && !conversionExpiry && !pendingConversion && state === 'ready' && reminderDue(lastDismissal, now);
     const close = () => {
         const at = String(Date.now());
         safeSetItem('session', key, at);
@@ -102,6 +104,19 @@ export default function SubscriptionEntry() {
         else element.setAttribute('open', '');
         return () => { element.close?.(); previous?.focus(); };
     }, [open]);
+    if (!loading && token && pathname.startsWith('/dashboard') && (conversionExpiry || pendingConversion)) {
+        const pending = pendingConversion || cachedPending;
+        const conversionBanner = <aside className="subscription-entry" aria-label="제갈공명 전환 안내">
+            <div>
+                <strong>{pending ? '구독 신청을 확인하고 있습니다' : `기존 AI Brain 회원 · 제갈공명 전환 ${AI_BUNDLE_CONVERSION.amount}`}</strong>
+                <p>{pending ? '추가 입금 없이 신청 상태를 확인하세요.' : `제갈공명 이용 종료 ${formatConversionExpiry(conversionExpiry)}`}</p>
+            </div>
+            <Link to={pending ? '/pending-approval' : AI_BUNDLE_CONVERSION.payment}>
+                {pending ? '신청 상태 확인' : '제갈공명 전환 신청'}
+            </Link>
+        </aside>;
+        return bannerHost ? createPortal(conversionBanner, bannerHost) : conversionBanner;
+    }
     if (!eligible || !journey || state === 'active' || state === 'blocked') return null;
     const meta = PLAN_PAYMENT_META[journey.plan];
     const payment = journey.payment;

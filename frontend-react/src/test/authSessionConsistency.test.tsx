@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { aiBundleConversionExpiry } from '@/lib/billingInfo';
 import { getToken, getUser, saveUser, setToken, type AuthUserData } from '@/lib/auth';
 
 const api = vi.hoisted(() => ({ fetch: vi.fn(), post: vi.fn() }));
@@ -20,6 +21,8 @@ function Probe() {
     const auth = useAuth();
     return <>
         <output data-testid="session">{auth.user ? `${auth.user.name}:${auth.user.status}` : '로그아웃'}</output>
+        <output data-testid="conversion-offer">{aiBundleConversionExpiry(auth.user) || '자격 없음'}</output>
+        <button onClick={() => { void auth.login(member.email, 'test'); }}>로그인</button>
         <button onClick={() => { void auth.refreshUser(); }}>갱신</button>
         <button onClick={auth.logout}>로그아웃</button>
         <button onClick={() => auth.setSession(token(22), another)}>계정 변경</button>
@@ -86,4 +89,24 @@ it('clears a currently rejected authentication token while retaining sessions on
     fireEvent.click(screen.getByRole('button', { name: '갱신' }));
     await waitFor(() => expect(screen.getByTestId('session')).toHaveTextContent('로그아웃'));
     expect(getToken()).toBeNull();
+});
+
+it('retains a server conversion offer through login and removes it when /me invalidates eligibility', async () => {
+    const expiresAt = new Date(Date.now() + 86_400_000).toISOString();
+    const eligible: AuthUserData = { ...renewed, ai_bundle_conversion: {
+        eligible: true, amount: 10000, expires_at: expiresAt, reason: 'eligible',
+    }};
+    api.fetch.mockResolvedValueOnce(response(member));
+    api.post.mockResolvedValue({ token: token(11), user: eligible });
+    show();
+    await act(async () => {});
+    fireEvent.click(screen.getByRole('button', { name: '로그인' }));
+    await waitFor(() => expect(screen.getByTestId('conversion-offer')).toHaveTextContent(expiresAt));
+    expect(getUser()?.ai_bundle_conversion).toEqual(eligible.ai_bundle_conversion);
+    api.fetch.mockResolvedValueOnce(response({ ...renewed, ai_bundle_conversion: {
+        eligible: false, amount: 10000, expires_at: null, reason: 'pending_request',
+    }}));
+    fireEvent.click(screen.getByRole('button', { name: '갱신' }));
+    await waitFor(() => expect(screen.getByTestId('conversion-offer')).toHaveTextContent('자격 없음'));
+    expect(getUser()?.ai_bundle_conversion?.eligible).toBe(false);
 });

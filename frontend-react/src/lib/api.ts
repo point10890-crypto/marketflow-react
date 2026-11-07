@@ -4,8 +4,8 @@
 //   Dev:  Vite proxy /api/* → Flask 5001 (vite.config.ts)
 //   Prod: VITE_API_BASE_URL → Cloudflare Tunnel → Flask 5001
 
-import { getToken } from './auth';
-import { AIBAIN_ADDON_META } from './billingInfo';
+import { getToken, type AiBundleConversion } from './auth';
+import { AIBAIN_ADDON_META, AI_BUNDLE_CONVERSION } from './billingInfo';
 
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -901,6 +901,7 @@ export interface SubscriptionRequest {
     created_at: string;
     processed_at: string | null;
     archived_at?: string | null;
+    conversion_expires_at?: string | null;
 }
 
 export interface AibainSubscriptionStatus {
@@ -1131,6 +1132,12 @@ export const waveAPI = {
 
 // ── User Subscription API (Bearer token 기반) ──
 export const subscriptionAPI = {
+    requestConversion: (token: string, depositorName: string) =>
+        postAuthAPI<{ request: SubscriptionRequest }>('/api/auth/subscription/request', {
+            plan: AI_BUNDLE_CONVERSION.plan,
+            expected_amount: AI_BUNDLE_CONVERSION.amountNumber,
+            depositor_name: depositorName,
+        }, token),
     requestKongming: (token: string, depositorName: string) =>
         postAuthAPI<{ request: SubscriptionRequest }>('/api/auth/subscription/request', {
             plan: 'aibain_kongming',
@@ -1151,7 +1158,7 @@ export const subscriptionAPI = {
             expected_amount: AIBAIN_ADDON_META.amountNumber,
         }, token),
     getStatus: (token?: string) => fetchAuthAPI<{
-        user: AdminUser & { has_pending_subscription?: boolean };
+        user: AdminUser & { has_pending_subscription?: boolean; ai_bundle_conversion?: AiBundleConversion };
         requests: SubscriptionRequest[];
         pending_request?: SubscriptionRequest | null;
         aibain_subscription?: AibainSubscriptionStatus;

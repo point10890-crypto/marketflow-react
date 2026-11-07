@@ -19,7 +19,8 @@ from flask import Blueprint, request, jsonify, current_app
 from sqlalchemy import or_
 from app.models import db
 from app.models.user import (
-    AIBAIN_KONGMING_REQUEST_TYPES, User, SubscriptionRequest, AdminAuditLog, AdminNotification,
+    AIBAIN_KONGMING_CONVERSION, AIBAIN_KONGMING_REQUEST_TYPES,
+    User, SubscriptionRequest, AdminAuditLog, AdminNotification,
 )
 from app.models.funnel import (
     FunnelEvent, record_funnel_event,
@@ -27,7 +28,7 @@ from app.models.funnel import (
 )
 from app.auth.decorators import admin_required
 from app.services import member_telegram
-from app.services.subscription_plans import is_ai_bundle_request
+from app.services.subscription_plans import conversion_snapshot_is_current, is_ai_bundle_request
 from app.services.subscription_lifecycle import lifecycle_summary, resume_pro_clock, effective_pro_expiry, utc
 
 admin_bp = Blueprint('admin', __name__)
@@ -1383,6 +1384,7 @@ def approve_subscription(req_id):
       - 'aibain_addon': 베이스 tier 유지 + AI Brain 활성화 (+30일). 활성 회원이 AI Brain 만 추가.
       - 'aibain_renewal': 만료된 AI Brain 재활성화 (+30일). 베이스 tier 유지.
       - 'aibain_kongming' / 'aibain_kongming_renewal': 독립 이용권 활성화 및 연장 (+30일).
+      - 'aibain_kongming_conversion': 신청 시 기록한 AI Brain 만료까지 제갈공명만 활성화.
       - 'early_renewal': 활성 Pro 의 만료 전 갱신 — 만료일 기준 +30일 연장 (남은 기간 보존).
       - 'upgrade' / 'downgrade': 기존 동작 — tier 변경 + 만료일 재설정 + status 승급.
 
@@ -1397,6 +1399,7 @@ def approve_subscription(req_id):
     claimed = SubscriptionRequest.query.filter(
         SubscriptionRequest.id == req_id,
         SubscriptionRequest.status == 'pending',
+        SubscriptionRequest.archived_at.is_(None),
     ).update({
         SubscriptionRequest.status: 'approved',
         SubscriptionRequest.processed_at: processed_at,
@@ -1420,6 +1423,7 @@ def approve_subscription(req_id):
     is_aibain_addon = sub_req.request_type in ('aibain_addon', 'aibain_renewal')
     is_kongming = sub_req.request_type in AIBAIN_KONGMING_REQUEST_TYPES
     is_ai_bundle = is_ai_bundle_request(sub_req)
+    is_conversion = sub_req.request_type == AIBAIN_KONGMING_CONVERSION
 
     user = db.session.get(User, sub_req.user_id)
     if is_kongming or is_ai_bundle:
@@ -1429,6 +1433,12 @@ def approve_subscription(req_id):
         if user.status not in ('pending', 'approved', 'expired'):
             db.session.rollback()
             return jsonify({'error': 'Account access denied'}), 409
+    if is_conversion and not conversion_snapshot_is_current(user, sub_req):
+        db.session.rollback()
+        return jsonify({
+            'error': '신청 당시 AI Brain 이용권이 변경되었거나 전환 조건을 충족하지 않습니다.',
+            'code': 'ai_bundle_conversion_unavailable',
+        }), 409
     if is_ai_bundle and is_aibain_addon and (
         user.status != 'approved' or user.tier != sub_req.to_tier
         or user.tier not in ('pro', 'premium') or user.is_pro_expired
@@ -1467,7 +1477,12 @@ def approve_subscription(req_id):
                 'user': user.to_dict(),
             }), 200
 
-        if is_kongming:
+        if is_conversion:
+            user.kongming_expires_at = sub_req.conversion_expires_at
+            audit_action = 'approve_aibain_kongming_conversion'
+            kst_expiry = utc(user.kongming_expires_at).astimezone(timezone(timedelta(hours=9)))
+            summary_text = f'제갈공명 전환 승인 (만료 {kst_expiry:%Y-%m-%d %H:%M} KST)'
+        elif is_kongming:
             current_expiry = user.kongming_expires_at
             if current_expiry is not None and current_expiry.tzinfo is None:
                 current_expiry = current_expiry.replace(tzinfo=timezone.utc)
@@ -1552,10 +1567,13 @@ def approve_subscription(req_id):
             'kongming_expires_at': user.kongming_expires_at.isoformat() if user.kongming_expires_at else None,
         }
 
+    if is_conversion:
+        _record_audit(audit_action, user, before, after, note=f'request_id={req_id}', commit=False)
     db.session.commit()
 
     if user:
-        _record_audit(audit_action, user, before, after)
+        if not is_conversion:
+            _record_audit(audit_action, user, before, after)
         _notify_admin('구독 요청 승인', user, summary_text)
         record_funnel_event(EVENT_APPROVE, user.id, {
             'request_id': sub_req.id,

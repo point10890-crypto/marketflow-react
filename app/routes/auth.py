@@ -13,13 +13,17 @@ from flask import Blueprint, request, jsonify, current_app, has_app_context
 from sqlalchemy import insert, literal, select
 from app.models import db
 from app.models.user import (
-    AIBAIN_KONGMING_PLAN, AIBAIN_KONGMING_RENEWAL, AIBAIN_KONGMING_REQUEST_TYPES,
+    AIBAIN_KONGMING_CONVERSION, AIBAIN_KONGMING_PLAN, AIBAIN_KONGMING_RENEWAL, AIBAIN_KONGMING_REQUEST_TYPES,
     User, SubscriptionRequest,
 )
 from app.models.funnel import record_funnel_event, EVENT_REGISTER, EVENT_SUBSCRIPTION_REQUEST
 from app.auth.decorators import generate_token, login_required
 from app.services import member_telegram
-from app.services.subscription_plans import AI_BUNDLE_AMOUNT, BASE_PLAN_AMOUNTS, AI_BUNDLE_POLICY_MARKER
+from app.services.subscription_lifecycle import utc
+from app.services.subscription_plans import (
+    AI_BUNDLE_AMOUNT, AI_BUNDLE_CONVERSION_AMOUNT, AI_BUNDLE_POLICY_MARKER, BASE_PLAN_AMOUNTS,
+    ai_bundle_conversion_reason, conversion_snapshot_is_current,
+)
 
 
 # ═══════════════════════════════════════════════════════
@@ -471,6 +475,8 @@ def request_subscription():
     if not isinstance(data, dict):
         return jsonify({'error': 'JSON object required'}), 400
     plan = data.get('plan')
+    if plan == AIBAIN_KONGMING_CONVERSION:
+        return _request_ai_bundle_conversion(user, data)
     if plan == AIBAIN_KONGMING_PLAN:
         # Retired standalone checkout must never silently charge a different amount.
         return jsonify({
@@ -593,6 +599,45 @@ def request_subscription():
     if includes_aibain:
         admin_note = f'{AI_BUNDLE_POLICY_MARKER} {admin_note}'
 
+    return _queue_subscription_request(
+        user, req_type, to_tier, depositor_name, amount, admin_note, includes_aibain=includes_aibain,
+    )
+
+
+def _request_ai_bundle_conversion(user: User, data: dict):
+    expected_amount = data.get('expected_amount')
+    if type(expected_amount) is not int or expected_amount != AI_BUNDLE_CONVERSION_AMOUNT:
+        return jsonify({
+            'error': '제갈공명 전환 신청 금액 10,000원을 다시 확인해 주세요.',
+            'code': 'subscription_price_changed',
+        }), 409
+    depositor_name = data.get('depositor_name')
+    if not isinstance(depositor_name, str) or not 1 <= len(depositor_name.strip()) <= 100:
+        return jsonify({'error': '입금자명을 확인해 주세요.'}), 400
+
+    reason = ai_bundle_conversion_reason(user, has_pending=user.get_pending_subscription_request() is not None)
+    if reason != 'eligible':
+        return _conversion_unavailable(reason)
+    return _queue_subscription_request(
+        user, AIBAIN_KONGMING_CONVERSION, user.tier or 'none', depositor_name.strip(),
+        f'{AI_BUNDLE_CONVERSION_AMOUNT:,}원', '기존 AI Brain 회원 제갈공명 전환 신청',
+        includes_aibain=False, conversion_expires_at=utc(user.aibain_expires_at),
+    )
+
+
+def _conversion_unavailable(reason: str):
+    return jsonify({
+        'error': '현재 제갈공명 전환을 신청할 수 없습니다. 이용권 또는 대기 중인 신청을 확인해 주세요.',
+        'code': 'ai_bundle_conversion_unavailable',
+        'reason': reason,
+    }), 409
+
+
+def _queue_subscription_request(
+    user: User, req_type: str, to_tier: str, depositor_name: str | None,
+    amount: str | None, admin_note: str | None, *,
+    includes_aibain: bool, conversion_expires_at: datetime | None = None,
+):
     sub_request = _insert_pending_subscription_request(
         user.id,
         request_type=req_type,
@@ -602,9 +647,19 @@ def request_subscription():
         depositor_name=depositor_name,
         amount=amount,
         admin_note=admin_note,
+        conversion_expires_at=conversion_expires_at,
     )
+    is_conversion = req_type == AIBAIN_KONGMING_CONVERSION
     if sub_request is None:
+        if is_conversion:
+            return _conversion_unavailable('pending_request')
         return jsonify({'error': 'You already have a pending subscription request'}), 409
+    if is_conversion:
+        # The INSERT holds SQLite's write lock. Re-read eligibility before committing.
+        db.session.refresh(user)
+        if not conversion_snapshot_is_current(user, sub_request):
+            db.session.rollback()
+            return _conversion_unavailable('entitlement_changed')
     if user.status == 'pending':
         user.requested_tier = to_tier
     db.session.commit()
@@ -619,10 +674,13 @@ def request_subscription():
 
     # 관리자 텔레그램 + 인앱 알림
     tier_label = {'pro': 'Pro', 'premium': 'Ultra Pro'}.get(to_tier, to_tier)
-    if is_aibain_renewal:
+    if is_conversion:
+        full_label = '기존 AI Brain → 제갈공명 전환'
+        header_emoji = "🤖"
+    elif req_type == 'aibain_renewal':
         full_label = f"{tier_label} → AI Brain 재구독"
         header_emoji = "🤖"
-    elif is_aibain_only:
+    elif req_type == 'aibain_addon':
         # 같은 tier 에 AI Brain 만 추가 (예: 활성 Pro 회원 → +AI Brain)
         full_label = f"{tier_label} → +AI Brain 애드온"
         header_emoji = "🤖"
@@ -641,11 +699,13 @@ def request_subscription():
         target_email=user.email,
     )
     from app.routes.admin import create_admin_notification
+    notification_detail = full_label if is_conversion else f'{user.tier or "none"} → {to_tier}'
+    if includes_aibain:
+        notification_detail += ' [AI Brain 포함]'
     create_admin_notification(
         'subscription_request',
         f'구독 요청: {full_label}',
-        f'{user.name} ({user.email}) — {user.tier or "none"} → {to_tier}'
-        + (' [AI Brain 포함]' if includes_aibain else ''),
+        f'{user.name} ({user.email}) — {notification_detail}',
         related_id=sub_request.id,
     )
 

@@ -33,6 +33,24 @@ async function openManagement() {
 }
 
 describe('admin member subscription management', () => {
+    it('confirms the 10,000 won conversion and displays the captured expiry in history', async () => {
+        const conversion = { ...pending, request_type: 'aibain_kongming_conversion',
+            amount: '10,000원', conversion_expires_at: '2026-12-12T07:00:00Z' };
+        api.getSubscriptions.mockResolvedValue({ requests: [conversion] });
+        api.approveSubscription.mockResolvedValue({ request: { ...conversion, status: 'approved' } });
+        render(<SubscriptionsTab apiToken="admin-token" onCountChange={() => {}} />);
+        const approve = await screen.findByRole('button', { name: '제갈공명 전환 승인' });
+        expect(screen.getByText('10,000원')).toBeInTheDocument();
+        expect(screen.getByText(/제갈공명 이용 종료 .*12월 12일/)).toBeInTheDocument();
+        vi.mocked(window.confirm).mockReturnValueOnce(false);
+        fireEvent.click(approve);
+        expect(window.confirm).toHaveBeenCalledWith(expect.stringMatching(/10,000원[\s\S]*제갈공명 이용 종료.*12월 12일/));
+        expect(api.approveSubscription).not.toHaveBeenCalled();
+        fireEvent.click(approve);
+        expect(await screen.findByText('제갈공명 전환 · 10,000원')).toBeInTheDocument();
+        expect(api.approveSubscription).toHaveBeenCalledOnce();
+        expect(api.approveSubscription).toHaveBeenCalledWith(77, 'admin-token');
+    });
     it('revokes AI and Kongming together while keeping the base membership', async () => {
         api.manageAiBundle.mockResolvedValue({ user: { ...member, is_aibain_active: false, is_kongming_active: false } });
         const panel = await openManagement();

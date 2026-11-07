@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { canAccessAiBain, canAccessKongming, hasActiveKongmingSubscription, isBaseSubscriptionExpired, isKongmingOnlyUser } from '@/lib/auth';
+import { aiBundleConversionExpiry } from '@/lib/billingInfo';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { InstallGuide } from './InstallPrompt';
 
@@ -128,6 +129,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     const membershipAction = userRole === 'admin' ? { label: '관리자 페이지', href: '/admin' }
         : ['suspended', 'rejected'].includes(user?.status || '') ? { label: '계정 상태 확인', href: '/pending-approval' }
         : pending ? { label: '신청 상태 확인', href: '/pending-approval' }
+        : aiBundleConversionExpiry(user) ? { label: '제갈공명 1만 원 전환', href: '/plan-select?change=1' }
         : kongmingOnly ? { label: '구독 관리', href: '/dashboard/account' }
         : expired ? { label: '재구독 신청', href: '/plan-select?resubscribe=1&from=expired' }
         : !['pro', 'premium'].includes(userTier || '') ? { label: '구독 신청', href: '/plan-select' }

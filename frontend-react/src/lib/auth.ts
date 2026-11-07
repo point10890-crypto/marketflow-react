@@ -51,6 +51,13 @@ export function clearToken(): void {
     safeRemoveItem('session', USER_KEY);
 }
 
+export interface AiBundleConversion {
+    eligible: boolean;
+    amount: 10000;
+    expires_at: string | null;
+    reason: string;
+}
+
 export interface AuthUserData {
     id: number | string;
     email: string;
@@ -70,6 +77,7 @@ export interface AuthUserData {
     is_aibain_active?: boolean;
     is_aibain_expired?: boolean;
     aibain_days_remaining?: number | null;
+    ai_bundle_conversion?: AiBundleConversion;
     kongming_expires_at?: string | null;
     is_kongming_active?: boolean;
     // Pro 만료 일시정지 (AI Brain 활성 중)

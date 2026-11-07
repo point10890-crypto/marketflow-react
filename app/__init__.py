@@ -163,6 +163,8 @@ def create_app(config=None):
                     conn.execute(text('ALTER TABLE subscription_requests ADD COLUMN depositor_name VARCHAR(100)'))
                 if 'amount' not in sr_cols:
                     conn.execute(text('ALTER TABLE subscription_requests ADD COLUMN amount VARCHAR(50)'))
+                if 'conversion_expires_at' not in sr_cols:
+                    conn.execute(text('ALTER TABLE subscription_requests ADD COLUMN conversion_expires_at DATETIME'))
 
             # users 테이블 — pro_expires_at, pro_expiry_alert_stage 컬럼 추가
             user_cols = [c['name'] for c in inspector.get_columns('users')]

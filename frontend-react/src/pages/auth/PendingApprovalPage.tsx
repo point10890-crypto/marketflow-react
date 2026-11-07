@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { isAiBundleRequest, subscriptionNote, isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
+import { AI_BUNDLE_CONVERSION, aiBundleConversionExpiry, formatConversionExpiry, isAiBundleRequest, subscriptionNote, isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
 import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
 import SubscriptionFlow, { BankTransferDetails } from '@/components/subscription/SubscriptionFlow';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
-import { hasActiveBaseSubscription, hasActiveKongmingSubscription, isBaseSubscriptionExpired, subscriptionFunnelTarget, type AuthUserData } from '@/lib/auth';
+import { hasActiveBaseSubscription, hasActiveKongmingSubscription, isBaseSubscriptionExpired, subscriptionFunnelTarget, subscriptionExpiryTime, type AuthUserData } from '@/lib/auth';
 import { hasPendingSubscription, pendingSubscriptionRequest } from '@/lib/subscriptionStatus';
 import { useSeo } from '@/lib/seo';
 
@@ -51,8 +51,9 @@ export default function PendingApprovalPage() {
     const refreshedStatus = useRef('');
     const [now, setNow] = useState(Date.now);
     const [snapshot, setSnapshot] = useState<{ identity: string; pending: SubscriptionRequest | null;
-        hasPending: boolean; declined: SubscriptionRequest | null; confirmedUser: AuthUserData | null } | null>(null);
+        hasPending: boolean; declined: SubscriptionRequest | null; confirmedUser: AuthUserData | null; approvedConversion: boolean } | null>(null);
     const currentSnapshot = snapshot?.identity === identity ? snapshot : null;
+    const approvedConversion = currentSnapshot?.approvedConversion === true;
     const pendingSubReq = currentSnapshot?.pending ?? null;
     const rejectedSubReq = currentSnapshot?.declined ?? null;
     const hasPending = currentSnapshot?.hasPending
@@ -79,7 +80,8 @@ export default function PendingApprovalPage() {
             const pending = pendingSubscriptionRequest(resp);
             const pendingExists = hasPendingSubscription(resp);
             const declined = !pendingExists && ['rejected', 'cancelled', 'canceled', 'withdrawn'].includes(reqs[0]?.status) ? reqs[0] : null;
-            setSnapshot({ identity, pending, hasPending: pendingExists, declined, confirmedUser: confirmed });
+            const approvedConversion = reqs[0]?.request_type === AI_BUNDLE_CONVERSION.plan && reqs[0].status === 'approved';
+            setSnapshot({ identity, pending, hasPending: pendingExists, declined, confirmedUser: confirmed, approvedConversion });
             setMessage(''); setStatusError(false);
             if (confirmed && (hasActiveBaseSubscription(confirmed) || hasActiveKongmingSubscription(confirmed)
                 || ['suspended', 'rejected'].includes(confirmed.status))) {
@@ -118,7 +120,8 @@ export default function PendingApprovalPage() {
         // 활성으로 오인하면 대시보드로 튕겨 ApprovedGuard 가 다시 plan-select 로 되돌린다.
         const isActive = hasActiveBaseSubscription(decisionUser, now);
         if (!hasPending && !rejectedSubReq) {
-            if (isActive) navigate('/dashboard', { replace: true });
+            if (approvedConversion && hasActiveKongmingSubscription(decisionUser, now)) navigate('/dashboard/ai-bain', { replace: true });
+            else if (isActive) navigate('/dashboard', { replace: true });
             else if (hasActiveKongmingSubscription(decisionUser, now)) navigate('/dashboard/ai-bain', { replace: true });
             else {
                 const funnel = subscriptionFunnelTarget(decisionUser, now);
@@ -134,7 +137,7 @@ export default function PendingApprovalPage() {
                 navigate(`/plan-select${query.size ? '?' + query.toString() : ''}`, { replace: true });
             }
         }
-    }, [user, decisionUser, navigate, hasPending, subReqLoaded, rejectedSubReq, now, blockedAccount, awaitingAuth]);
+    }, [user, decisionUser, navigate, hasPending, subReqLoaded, rejectedSubReq, now, blockedAccount, awaitingAuth, approvedConversion]);
 
     // 30초 폴링 — user 상태 + sub_req 둘 다 refresh
     useEffect(() => {
@@ -174,6 +177,12 @@ export default function PendingApprovalPage() {
     };
 
     // sub_req 로부터 표시 정보 도출
+    const isConversion = pendingSubReq?.request_type === AI_BUNDLE_CONVERSION.plan;
+    const capturedExpiry = subscriptionExpiryTime(pendingSubReq?.conversion_expires_at);
+    const conversionTransferAllowed = !statusError && confirmedUser?.status === 'approved' && confirmedUser.role !== 'admin'
+        && confirmedUser.is_aibain_active === true && !confirmedUser.is_kongming_active && !confirmedUser.kongming_expires_at
+        && capturedExpiry > now && capturedExpiry === subscriptionExpiryTime(confirmedUser.aibain_expires_at);
+    const rejectedConversion = rejectedSubReq?.request_type === AI_BUNDLE_CONVERSION.plan;
     const isAibainRenewal = pendingSubReq?.request_type === 'aibain_renewal';
     const isAibainAddon = pendingSubReq?.request_type === 'aibain_addon' || isAibainRenewal;
     const isKongming = isKongmingSubscriptionRequest(pendingSubReq?.request_type);
@@ -194,7 +203,7 @@ export default function PendingApprovalPage() {
         || !!rejectedSubReq?.admin_note?.includes('AI Brain');
     const reapplyRenewal = rejectedKongming ? rejectedSubReq?.request_type === 'aibain_kongming_renewal' : expired;
     const reapplyQuery = rejectedKongming ? planToQuery(KONGMING_PLAN) : `plan=${reapplyTier}${reapplyAibain ? '&aibain=1' : ''}`;
-    const reapplyPath = `/payment-request?${reapplyQuery}${reapplyRenewal ? '&resubscribe=1' : ''}`;
+    const reapplyPath = rejectedConversion ? (aiBundleConversionExpiry(decisionUser, now) ? AI_BUNDLE_CONVERSION.payment : '/plan-select?change=1') : `/payment-request?${reapplyQuery}${reapplyRenewal ? '&resubscribe=1' : ''}`;
     let headerTitle = '승인 대기 중';
     let headerSubtitle = '구독 신청이 접수되었습니다. 입금 확인 후 관리자가 서비스를 활성화합니다.';
     if (!hasPending && (!hasExistingAccess || rejectedSubReq)) {
@@ -206,7 +215,10 @@ export default function PendingApprovalPage() {
             headerSubtitle = '계정은 만들어졌지만 아직 구독 신청이 접수되지 않았습니다. 플랜을 선택하면 입금 안내와 승인 신청이 이어집니다.';
         }
     }
-    if (isKongming) {
+    if (isConversion) {
+        headerTitle = '제갈공명 전환 승인 대기 중';
+        headerSubtitle = '입금 확인 후 기존 AI Brain 이용 종료일까지 제갈공명을 이용합니다.';
+    } else if (isKongming) {
         headerTitle = `${kongmingLabel}${isKongmingRenewal ? ' 재구독' : ''} 승인 대기 중`;
         headerSubtitle = '입금 확인 후 관리자가 30일 이용권을 승인합니다.';
     } else if (isAibainAddon) {
@@ -232,7 +244,7 @@ export default function PendingApprovalPage() {
         headerTitle = '잠시 후 다시 확인해 주세요';
         headerSubtitle = '연결 문제로 현재 상태를 확인하지 못했습니다. 다시 신청하거나 입금하지 않아도 됩니다.';
     }
-    const requestedLabel = isKongming ? kongmingLabel : isAibainAddon ? aiBundle ? 'AI 브레인 + 제갈공명' : 'AI Brain'
+    const requestedLabel = isConversion ? AI_BUNDLE_CONVERSION.label : isKongming ? kongmingLabel : isAibainAddon ? aiBundle ? 'AI 브레인 + 제갈공명' : 'AI Brain'
         : `${pendingSubReq?.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}${includesAibain ? ' + AI 브레인·제갈공명' : ''}`;
 
     return <SubscriptionFlow step={3} title={headerTitle} intro={headerSubtitle}>
@@ -251,15 +263,19 @@ export default function PendingApprovalPage() {
             <dl className="subscription-receipt">
                 <dt>신청 서비스</dt><dd>{requestedLabel}</dd>
                 <dt>신청 금액</dt><dd>{subReqAmount || '확인 중'}</dd>
+                {isConversion && <><dt>제갈공명 이용 종료</dt><dd>{formatConversionExpiry(pendingSubReq.conversion_expires_at)}</dd></>}
                 <dt>입금자명</dt><dd>{pendingSubReq.depositor_name || user?.name || '가입 시 이름'}</dd>
                 {user?.email && <><dt>회원 계정</dt><dd>{user.email}</dd></>}
             </dl>
-            {(isKongming || aiBundle) && <p className="mt-4">승인 후 AI 브레인·제갈공명을 30일 이용합니다. PRO 기간은 AI 이용 중 보관됩니다.</p>}
+            {isConversion && !conversionTransferAllowed && <p role="status" className="mt-4">
+                현재 이용권을 확인해야 합니다. 추가 입금 전에 관리자에게 문의해 주세요.
+            </p>}
+            {(!isConversion && (isKongming || aiBundle)) && <p className="mt-4">승인 후 AI 브레인·제갈공명을 30일 이용합니다. PRO 기간은 AI 이용 중 보관됩니다.</p>}
         </section>}
         {message && <p role={statusError ? 'alert' : 'status'} className={statusError ? 'subscription-error' : 'subscription-note'}>{message}</p>}
         <div className="subscription-actions">
             {rejectedSubReq && !hasPending && !statusError && !blockedAccount && !awaitingAuth &&
-                <Link to={reapplyPath} className="subscription-button-primary">{reapplyRenewal ? '재구독 신청' : '다시 신청'}</Link>}
+                <Link to={reapplyPath} className="subscription-button-primary">{rejectedConversion ? '전환 자격 확인' : reapplyRenewal ? '재구독 신청' : '다시 신청'}</Link>}
             {!hasPending && !hasExistingAccess && !rejectedSubReq && subReqLoaded && !blockedAccount && !awaitingAuth &&
                 <button onClick={() => navigate('/plan-select')} className="subscription-button-primary">플랜 선택하기</button>}
             <button onClick={handleCheckStatus} disabled={checking} className="subscription-button-secondary">{checking ? '확인 중...' : '승인 상태 확인'}</button>
@@ -268,7 +284,7 @@ export default function PendingApprovalPage() {
                 <p className="subscription-help !m-0 text-center">대기하는 동안 기존 구독은 계속 이용할 수 있습니다.</p>
             </>}
         </div>
-        {hasPending && !blockedAccount && <details className="subscription-details">
+        {hasPending && pendingSubReq && !blockedAccount && (!isConversion || conversionTransferAllowed) && <details className="subscription-details">
             <summary>입금 계좌를 다시 확인하려면</summary>
             <p className="subscription-help">아직 이체하지 않은 경우에만 확인하세요. 이미 입금했다면 추가 입금은 필요 없습니다.</p>
             <BankTransferDetails />

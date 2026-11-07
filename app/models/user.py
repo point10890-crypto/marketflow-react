@@ -7,7 +7,8 @@ from app.models import db
 
 AIBAIN_KONGMING_PLAN = 'aibain_kongming'
 AIBAIN_KONGMING_RENEWAL = 'aibain_kongming_renewal'
-AIBAIN_KONGMING_REQUEST_TYPES = (AIBAIN_KONGMING_PLAN, AIBAIN_KONGMING_RENEWAL)
+AIBAIN_KONGMING_CONVERSION = 'aibain_kongming_conversion'
+AIBAIN_KONGMING_REQUEST_TYPES = (AIBAIN_KONGMING_PLAN, AIBAIN_KONGMING_RENEWAL, AIBAIN_KONGMING_CONVERSION)
 
 
 class User(db.Model):
@@ -172,8 +173,21 @@ class User(db.Model):
 
     def to_dict(self):
         from app.services.subscription_lifecycle import effective_pro_expiry, lifecycle_summary
+        from app.services.subscription_plans import ai_bundle_conversion_offer
         pending_request = self.get_pending_subscription_request()
         effective_expiry = effective_pro_expiry(self)
+        pending_summary = None
+        if pending_request:
+            pending_summary = {
+                'id': pending_request.id,
+                'request_type': pending_request.request_type,
+                'from_tier': pending_request.from_tier,
+                'to_tier': pending_request.to_tier,
+                'status': pending_request.status,
+                'created_at': pending_request.created_at.isoformat() if pending_request.created_at else None,
+            }
+            if pending_request.request_type == AIBAIN_KONGMING_CONVERSION:
+                pending_summary['conversion_expires_at'] = pending_request.conversion_expiry_iso
         return {
             'id': self.id,
             'email': self.email,
@@ -187,14 +201,7 @@ class User(db.Model):
             'is_pro_expired': self.is_pro_expired,
             'requested_tier': self.requested_tier,
             'has_pending_subscription': pending_request is not None,
-            'pending_subscription_request': {
-                'id': pending_request.id,
-                'request_type': pending_request.request_type,
-                'from_tier': pending_request.from_tier,
-                'to_tier': pending_request.to_tier,
-                'status': pending_request.status,
-                'created_at': pending_request.created_at.isoformat() if pending_request.created_at else None,
-            } if pending_request else None,
+            'pending_subscription_request': pending_summary,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'approved_at': self.approved_at.isoformat() if self.approved_at else None,
             'last_login_at': self.last_login_at.isoformat() if self.last_login_at else None,
@@ -206,6 +213,7 @@ class User(db.Model):
             'aibain_days_remaining': self.aibain_days_remaining,
             'kongming_expires_at': self.kongming_expires_at.isoformat() if self.kongming_expires_at else None,
             'is_kongming_active': self.is_kongming_active,
+            'ai_bundle_conversion': ai_bundle_conversion_offer(self, has_pending=pending_request is not None),
             # Pro 일시정지 상태 (AI Brain 활성 중 Pro 만료 카운터 보존)
             'pro_paused_at': self.pro_paused_at.isoformat() if self.pro_paused_at else None,
             'is_pro_paused': self.is_pro_paused,
@@ -289,9 +297,16 @@ class SubscriptionRequest(db.Model):
     processed_at = db.Column(db.DateTime, nullable=True)
     processed_by = db.Column(db.Integer, nullable=True)  # admin user id
     archived_at = db.Column(db.DateTime, nullable=True)
+    conversion_expires_at = db.Column(db.DateTime, nullable=True)
 
     # Relationship
     user = db.relationship('User', backref=db.backref('subscription_requests', lazy=True))
+
+    @property
+    def conversion_expiry_iso(self) -> str | None:
+        from app.services.subscription_lifecycle import utc
+        expiry = utc(self.conversion_expires_at)
+        return expiry.isoformat() if expiry else None
 
     def to_dict(self):
         return {
@@ -307,6 +322,7 @@ class SubscriptionRequest(db.Model):
             'admin_note': self.admin_note,
             'depositor_name': self.depositor_name,
             'amount': self.amount,
+            'conversion_expires_at': self.conversion_expiry_iso,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'processed_at': self.processed_at.isoformat() if self.processed_at else None,
             'archived_at': self.archived_at.isoformat() if self.archived_at else None,
