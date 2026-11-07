@@ -906,7 +906,7 @@ describe('AlphaLab operational panel', () => {
         await screen.findByRole('article', { name: /삼성전자/ });
         await userEvent.click(screen.getByRole('button', { name: '매수 후보 검출' }));
         expect(screen.getByRole('article', { name: /삼성전자/ })).toBeInTheDocument();
-        expect(screen.getByRole('status')).toHaveTextContent('매수 후보 검출 진행 중');
+        expect(screen.getByText(/매수 후보 검출 진행 중/)).toHaveAttribute('role', 'status');
         expect(screen.getByText(/이전 검증 결과/)).toBeInTheDocument();
     });
     it('retries a failed read and never exposes raw server diagnostics', async () => {

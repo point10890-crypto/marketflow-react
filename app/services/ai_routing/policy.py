@@ -146,6 +146,15 @@ def policy_for(
     now: datetime | None = None,
 ) -> RoutePolicy:
     operation = Operation(operation)
+    if operation in {Operation.NEWS_EVENT_EXTRACT, Operation.CANDIDATE_REVIEW}:
+        review = operation is Operation.CANDIDATE_REVIEW
+        models = _models(decisive=review)
+        models["anthropic"] = _env_model(
+            "AI_ANTHROPIC_REVIEW_MODEL" if review else "AI_ANTHROPIC_EXTRACT_MODEL",
+            "claude-sonnet-5-5" if review else "claude-haiku-5-5",
+        )
+        return RoutePolicy(operation, ("anthropic", "deepseek", "openai"), models,
+                           2400 if review else 1600, "text", 50)
     if operation is Operation.BULK_TEXT:
         return RoutePolicy(operation, ("deepseek", "openai"), _models(), 768, "text", 10)
     if operation is Operation.COMPACT_DEBATE:

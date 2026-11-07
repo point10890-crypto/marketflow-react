@@ -7,6 +7,21 @@ agents instead of paid language-model calls. No new external agent API key is
 required. The existing Flask/React deployment and current trading approvals stay
 separate from this research tournament.
 
+### Saved evidence interpretation
+
+`MarketFlow-Evidence-Review` is a separate five-minute worker for Anthropic
+article interpretation and top-candidate comparison, with bounded existing
+DeepSeek/OpenAI fallback. It reads sealed research output and independent
+MarketFlow article/disclosure/price evidence; it does not change rankings,
+Kelly allocations, original decisions, or forward outcomes. Its GET views do
+not call paid models. When the approved board is empty, a comparison of the
+sealed research watchlist remains explicitly research-only.
+
+See [evidence review operations](anthropic_evidence_review_operations.md) for
+the combined USD 1/day admission ceiling, credit-exhaustion recovery, task
+installation, immutable receipts, partial-claim omissions and acceptance
+evidence. A successful model response does not promote a held strategy.
+
 ## Read and run
 
 - Member screen: `/dashboard/ai-bain/chart-predict`, **에이전트 매매 제안**.

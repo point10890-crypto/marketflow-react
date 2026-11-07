@@ -1,0 +1,24 @@
+{
+  "supplied": {
+    "targets": [{"symbol": "456040", "name": "OCI", "market": "KR"}],
+    "sources": [
+      {"evidence_id": "article:451153", "text": "OCI 저수익 사업 정리 마무리 단계, 이우현 조직개편으로 반도체 소재 성장 추진력 더해", "source": "marketflow_rss_title", "verification_status": "forecast"},
+      {"evidence_id": "price:451153:456040", "text": "{\"reason\":\"saved_price_evidence_missing\",\"status\":\"unavailable\"}", "source": "KIS_saved_post_receipt_prices", "verification_status": "unavailable"},
+      {"evidence_id": "verification:451153:456040", "text": "{\"status\":\"no_matching_filing\"}", "source": "OpenDART_saved_verification_status", "verification_status": "no_matching_filing"}
+    ]
+  },
+  "response": {
+    "rows": [{
+      "symbol": "456040", "name": "OCI", "market": "KR",
+      "strengths": [{"text": "기사 제목상 조직개편이 반도체 소재 성장 동력으로 언급됨", "claim_status": "reported", "evidence_ids": ["article:451153"], "quotes": [{"evidence_id": "article:451153", "quote": "이우현 조직개편으로 반도체 소재 성장 추진력 더해"}]}],
+      "risks": [
+        {"text": "저수익 사업 정리 마무리 여부는 추가 확인 필요", "claim_status": "missing", "evidence_ids": [], "quotes": []},
+        {"text": "기사 본문 미확인, 제목·RSS 발췌만 근거", "claim_status": "missing", "evidence_ids": ["article:451153"], "quotes": []}
+      ],
+      "what_to_watch": [
+        {"text": "일치하는 DART 공시가 없어 공식 확인 필요", "claim_status": "missing", "evidence_ids": ["verification:451153:456040"], "quotes": []},
+        {"text": "기사 후 가격 관측 데이터 부재", "claim_status": "missing", "evidence_ids": ["price:451153:456040"], "quotes": []}
+      ]
+    }]
+  }
+}

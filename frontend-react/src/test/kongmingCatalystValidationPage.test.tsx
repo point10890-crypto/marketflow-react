@@ -85,8 +85,13 @@ function network() {
         return new Response(JSON.stringify(candidateError ? { error: 'Fixture candidate failure' } : candidateData),
             { status: candidateError || 200 });
     });
-    vi.stubGlobal('fetch', (input: string, init?: RequestInit) =>
-        (new URL(input, 'http://localhost').pathname === candidatesEndpoint ? candidateFetch : fetch)(input, init));
+    vi.stubGlobal('fetch', (input: string, init?: RequestInit) => {
+        const path = new URL(input, 'http://localhost').pathname;
+        if (path === '/api/admin/mirofish/kongming/article-evidence-reviews') return Promise.resolve(new Response(JSON.stringify({
+            schema_version: 1, kind: 'article', status: 'waiting', last_run_at: null, items: [],
+        })));
+        return (path === candidatesEndpoint ? candidateFetch : fetch)(input, init);
+    });
     return {
         fetch,
         candidateFetch,

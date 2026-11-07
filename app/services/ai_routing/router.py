@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import json
 import math
 import os
 import random
@@ -17,7 +18,7 @@ from typing import Callable, Mapping
 from uuid import uuid4
 
 from .breaker import CircuitBreaker
-from .budget import BudgetLimits, BudgetManager, BudgetReservation
+from .budget import BudgetLimits, BudgetManager, BudgetReservation, EvidenceReviewBudget
 from .contracts import (
     AnalysisStatus,
     Operation,
@@ -575,6 +576,8 @@ class AIRouter:
 
     def _route_owned(self, request: RoutingRequest) -> RoutingResult:
         policy = self._policy_for(request.operation)
+        if policy.operation in {Operation.NEWS_EVENT_EXTRACT, Operation.CANDIDATE_REVIEW}:
+            return self._route_evidence_review(request)
         if (
             policy.operation is Operation.VISION
             and _vision_payload_bytes(request) > _vision_payload_limit_bytes()
@@ -987,6 +990,141 @@ class AIRouter:
             ),
             retry_reason=primary_retry_reason,
         )
+
+    def _route_evidence_review(self, request: RoutingRequest) -> RoutingResult:
+        """Bounded opt-in analysis, with admission for every provider attempt.
+
+        Legacy operations retain their existing preflight/finalizer behavior.
+        This path never retries a dispatch; unknown charges remain reserved in
+        the same SQLite ledger even if the process dies before settlement.
+        """
+        policy = self._policy_for(request.operation)
+        budget = EvidenceReviewBudget(self.store)
+        output_bound = min(policy.max_output_tokens, max(1, request.max_output_tokens or policy.max_output_tokens))
+        schema_bytes = len(json.dumps(request.response_schema or {}, ensure_ascii=False).encode("utf-8"))
+        # Include schema grammar/message overhead. Enforce the documented cheap
+        # Haiku input tier, and reject images in these saved-text operations.
+        input_bound = estimate_reservation_input_tokens(request) + schema_bytes + 1024
+        if input_bound > 100_000 or request.images:
+            return self._failed_result(policy.operation, "anthropic", (), ProviderErrorClass.PAYLOAD_TOO_LARGE)
+        attempts: list[ProviderAttempt] = []
+        primary_error = None
+        previous_provider = None
+        previous_error = None
+        for provider_index, provider in enumerate(policy.providers):
+            if provider == "openai" and not request.openai_fallback_allowed:
+                continue
+            if self._permit_abort_requested(request):
+                return self._failed_result(policy.operation, "anthropic", tuple(attempts), ProviderErrorClass.BUDGET_EXHAUSTED)
+            model = policy.models[provider]
+            tier = f"evidence:{model}"
+            adapter = self.adapters.get(provider)
+            error = None
+            if adapter is None:
+                error = ProviderErrorClass.CLIENT_UNAVAILABLE
+            elif not self.breaker.allow(provider, "text", tier):
+                error = ProviderErrorClass.BREAKER_OPEN
+            if error is not None:
+                skipped = self._skipped_attempt(request, provider, model, len(attempts) + 1,
+                    output_bound, error, previous_provider, previous_error)
+                skipped = replace(skipped, usage=TokenUsage(input_tokens=0, output_tokens=0),
+                                  estimated_cost_usd=Decimal("0"))
+                attempts.append(skipped)
+                record_attempt(skipped, store=self.store)
+                primary_error = primary_error or error
+                previous_provider, previous_error = provider, error
+                continue
+
+            event_ts = datetime.now(timezone.utc).isoformat()
+            # Reserve the peak DeepSeek rate even if the current slot is cheaper.
+            bound_estimate = _safe_cost_estimate(provider, model,
+                TokenUsage(input_tokens=input_bound, output_tokens=output_bound),
+                "2026-11-09T01:00:00+00:00" if provider == "deepseek" else event_ts)
+            permit = budget.reserve_attempt(request=request, provider=provider,
+                input_tokens=input_bound, output_tokens=output_bound,
+                estimated_cost_usd=bound_estimate.cost, pricing_version=bound_estimate.pricing_version)
+            if not permit.approved:
+                return self._failed_result(policy.operation, "anthropic", tuple(attempts), ProviderErrorClass.BUDGET_EXHAUSTED)
+
+            openai_permit = None
+            dispatched = False
+            response = AdapterResponse(None)
+            estimate = CostEstimate(None, None)
+            started = time.perf_counter()
+            try:
+                if provider == "openai":
+                    openai_permit = self.budget.reserve(
+                        run_id=request.run_id or "", request_id=request.request_id or "",
+                        operation=request.operation, input_tokens=input_bound,
+                        output_tokens=output_bound, estimated_cost_usd=bound_estimate.cost,
+                        cost_pricing_version=bound_estimate.pricing_version,
+                    )
+                    if openai_permit.approved and openai_permit.acquired_by_caller:
+                        openai_permit = self.budget.claim(openai_permit.reservation_id,
+                            run_id=request.run_id or "", request_id=request.request_id or "",
+                            owner_token=openai_permit.owner_token,
+                            input_tokens=input_bound, output_tokens=output_bound)
+                    if not openai_permit.approved or not openai_permit.acquired_by_caller:
+                        return self._failed_result(policy.operation, "anthropic", tuple(attempts), ProviderErrorClass.BUDGET_EXHAUSTED)
+                dispatched = True
+                try:
+                    response = adapter.generate(request, model=model, max_output_tokens=output_bound)
+                    if not isinstance(response, AdapterResponse):
+                        response = AdapterResponse(response if isinstance(response, str) else None)
+                    validation = validate_response(response.text, request)
+                    error = validation.error_class if not validation.valid else None
+                except ProviderCallError as exc:
+                    error, response = exc.error_class, AdapterResponse(None, exc.usage)
+                    validation = validate_response(None, request)
+                except Exception as exc:
+                    error = classify_exception(exc)
+                    validation = validate_response(None, request)
+                estimate = _safe_cost_estimate(provider, model, response.usage, event_ts)
+            finally:
+                if dispatched:
+                    # Unknown usage/cost settles at the reservation, never zero.
+                    settled = budget.settle(permit.reservation_id, response.usage, actual_cost_usd=estimate.cost)
+                    if openai_permit is not None:
+                        settled = self.budget.settle(openai_permit.reservation_id, response.usage,
+                            actual_cost_usd=estimate.cost) and settled
+                    if not settled:
+                        error = ProviderErrorClass.BUDGET_EXHAUSTED
+                else:
+                    budget.release_claimed(permit.reservation_id)
+                    if openai_permit is not None and openai_permit.acquired_by_caller:
+                        self.budget.release_before_dispatch(openai_permit.reservation_id,
+                            owner_token=openai_permit.owner_token)
+            if error is None:
+                self.breaker.record_success(provider, "text", tier)
+            else:
+                self.breaker.record_failure(provider, "text", tier, error)
+            attempt = ProviderAttempt(
+                request_id=request.request_id or "", run_id=request.run_id,
+                provider=provider, model=model, endpoint=response.endpoint or adapter.endpoint,
+                operation=request.operation, attempt_number=len(attempts) + 1,
+                event_ts_utc=event_ts, selected=error is None,
+                status="success" if error is None else "failed",
+                latency_ms=round((time.perf_counter() - started) * 1000, 3),
+                max_output_tokens=output_bound, usage=response.usage,
+                estimated_cost_usd=estimate.cost, pricing_version=estimate.pricing_version,
+                error_class=error, fallback_from=previous_provider, fallback_reason=previous_error,
+                breaker_state=self.breaker.state(provider, "text", tier),
+                symbol=request.symbol, market=request.market, caller_endpoint=request.caller_endpoint,
+            )
+            attempts.append(attempt)
+            record_attempt(attempt, store=self.store)
+            if error is None:
+                return RoutingResult(text=response.text,
+                    analysis_status=AnalysisStatus.SUCCESS_PRIMARY if provider_index == 0 else AnalysisStatus.SUCCESS_FALLBACK,
+                    primary_provider="anthropic", actual_provider=provider, model=model,
+                    fallback_used=provider_index > 0, fallback_reason=primary_error,
+                    evidence_validated=True, numeric_validation=validation.numeric_validation,
+                    usage=response.usage, estimated_cost_usd=estimate.cost, attempts=tuple(attempts))
+            primary_error = primary_error or error
+            previous_provider, previous_error = provider, error
+            if error == ProviderErrorClass.BUDGET_EXHAUSTED:
+                break
+        return self._failed_result(policy.operation, "anthropic", tuple(attempts), primary_error)
 
     @staticmethod
     def _permit_abort_requested(request: RoutingRequest) -> bool:

@@ -114,3 +114,37 @@ def article_candidates_response():
     except (OSError, ValueError, KeyError, TypeError):
         return _response({'error': 'kongming_article_candidates_unavailable'}, 503)
     return _response(payload, 200)
+
+
+_FINDING_FIELDS = {'text': str, 'claim_status': str, 'evidence_ids': [str], 'quotes': [{'evidence_id': str, 'quote': str}]}
+_REVIEW_FIELDS = {
+    'schema_version': int, 'kind': str, 'status': str, 'last_run_at': str, 'empty_reason': str,
+    'items': [{
+        'id': str, 'input_fingerprint': str, 'source_input_fingerprint': str,
+        'decision_id': str, 'article_id': str, 'generated_at': str, 'source_cutoff_at': str,
+        'source_origin_at': str, 'candidate_basis': str, 'original_status': str,
+        'status': str, 'provider': str, 'model': str, 'fallback_reason': str,
+        'omitted_findings': int,
+        'freshness': str, 'review_scope': str,
+        'rows': [{'symbol': str, 'name': str, 'market': str,
+                  'strengths': [_FINDING_FIELDS], 'risks': [_FINDING_FIELDS], 'what_to_watch': [_FINDING_FIELDS]}],
+        'sources': [{'evidence_id': str, 'title': str, 'url': str, 'source': str,
+                     'published_at': str, 'fetched_at': str, 'verification_status': str,
+                     'available_at_original_decision': bool}],
+    }],
+}
+
+
+def evidence_review_response(*, candidate=False):
+    """Serve allowlisted saved interpretations using each product's access gate."""
+    if not candidate and not _allowed():
+        return _response({'error': 'kongming_catalyst_forbidden'}, 403)
+    if request.query_string or request.get_data(cache=True).strip():
+        return _response({'error': 'invalid_evidence_review_request'}, 400)
+    try:
+        from app.services import evidence_review
+        read = evidence_review.read_candidate_review if candidate else evidence_review.read_article_reviews
+        payload = _project(read(), _REVIEW_FIELDS)
+    except (OSError, sqlite3.Error, ValueError, KeyError, TypeError, RecursionError):
+        return _response({'error': 'evidence_review_unavailable'}, 503)
+    return _response(payload, 200)

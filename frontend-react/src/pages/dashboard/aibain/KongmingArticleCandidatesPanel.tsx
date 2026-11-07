@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { ApiError, fetchAPI } from '@/lib/api';
+import EvidenceReviewPanel from '@/components/aibain/EvidenceReviewPanel';
 
 const endpoint = '/api/admin/mirofish/kongming/article-candidates';
 const refreshMs = 30_000;
@@ -218,6 +219,7 @@ export default function KongmingArticleCandidatesPanel() {
                         <summary className="cursor-pointer font-medium text-slate-100">이전 기사 · {archive.length}건</summary>
                         <div className="mt-3"><CandidateList items={archive} label="이전 기사" /></div>
                     </details>
+                    <EvidenceReviewPanel kind="article" articleIds={view.items.map(row => row.id)} />
                 </>
             )}
         </section>

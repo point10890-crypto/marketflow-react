@@ -5,6 +5,7 @@ import AgentDesk from './AgentDesk';
 import CatalystContext from './CatalystContext';
 import AlphaLabEvolutionPanel from './AlphaLabEvolutionPanel';
 import CandidateDeskPanel from './CandidateDeskPanel';
+import EvidenceReviewPanel from './EvidenceReviewPanel';
 import { opportunityClockExpirations } from '@/lib/opportunityEngine';
 import { candidateDeskClockExpirations } from '@/lib/candidateDesk';
 import { fetchAlphaLab, liveAlphaLabMonitoring, startAlphaLab, type AlphaLabAnalystId, type AlphaLabCandidate, type AlphaLabMonitorQuote, type AlphaLabOperations, type AlphaLabOpportunityCandidate, type AlphaLabOpportunityPhase, type AlphaLabProposal, type AlphaLabReport, type AlphaLabStatus } from '@/lib/alphaLabApi';
@@ -445,6 +446,8 @@ export default function AlphaLabPanel({ token, onSelectSymbol, isAdmin = false, 
         {showCandidateDesk && <CandidateDeskPanel desk={visibleSnapshot?.candidate_desk} now={now}
             blocked={blocked || visibleSnapshot?.candidate_desk_unavailable === true} onSelectSymbol={onSelectSymbol} />}
         {showCandidateDesk && !desk && isAdmin && <AdminStockAnalysisPanel />}
+        <EvidenceReviewPanel kind="candidate" token={token} binding={visibleSnapshot?.opportunity_engine ?? null}
+            blocked={blocked || !!visibleSnapshot?.candidate_desk_unavailable} />
         {showCandidateDesk ? <details className="min-w-0 border-t border-[#30363f] pt-2"><summary className={disclosureClass}>기존 실험 · 관측 근거</summary><div className="mt-3">{legacyContent}</div></details> : legacyContent}
     </section>;
 }

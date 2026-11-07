@@ -279,7 +279,7 @@ describe('historical chart analogue member page', () => {
         api.fetchAuthAPI.mockReturnValue(new Promise(() => {}));
         renderPage();
         await screen.findByRole('table', { name: 'TOP3 기간별 비교 관측' });
-        expect(screen.getByRole('status')).toHaveTextContent('과거 유사 사례 조회 중');
+        expect(screen.getByText(/과거 유사 사례 조회 중/)).toHaveAttribute('role', 'status');
         expect(screen.queryByRole('img', { name: /과거 종가/ })).toBeNull();
     });
 

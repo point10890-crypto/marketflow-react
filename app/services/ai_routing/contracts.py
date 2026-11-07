@@ -16,6 +16,8 @@ class Operation(str, Enum):
     VISION = "vision"
     INTERACTIVE_TEXT = "interactive_text"
     SPECIALIZED_GEMINI = "specialized_gemini"
+    NEWS_EVENT_EXTRACT = "news_event_extract"
+    CANDIDATE_REVIEW = "candidate_review"
 
 
 class AnalysisStatus(str, Enum):
