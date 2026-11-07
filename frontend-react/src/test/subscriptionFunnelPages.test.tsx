@@ -76,6 +76,24 @@ describe('subscription acquisition funnel', () => {
         expect(mocks.requestUpgrade).not.toHaveBeenCalled();
     });
 
+    it('returns an active member to plan comparison instead of bouncing to the dashboard', async () => {
+        mocks.auth.user = { id: 91, name: '기존 회원', role: 'user', tier: 'pro', status: 'approved' };
+        mocks.auth.token = 'active-token';
+        renderAt('/payment-request?plan=pro&aibain=1', <PaymentRequestPage />, '/payment-request');
+        fireEvent.click(await screen.findByRole('button', { name: '다른 플랜 선택' }));
+        expect(await screen.findByTestId('location')).toHaveTextContent('/plan-select?change=1&plan=pro&aibain=1');
+        expect(mocks.requestUpgrade).not.toHaveBeenCalled();
+    });
+
+    it('offers a base-only renewal without adding AI or submitting a request on plan selection', async () => {
+        mocks.auth.user = { id: 91, name: '기존 회원', role: 'user', tier: 'pro', status: 'approved' };
+        mocks.auth.token = 'active-token';
+        renderAt('/plan-select?change=1', <PlanSelectPage />, '/plan-select');
+        fireEvent.click(screen.getByRole('button', { name: 'AI 추가 없이 PRO 30일 연장 · 50,000원' }));
+        expect(await screen.findByTestId('location')).toHaveTextContent('/payment-request?plan=pro&renew=1');
+        expect(mocks.requestUpgrade).not.toHaveBeenCalled();
+    });
+
     it.each(['rejected', 'withdrawn'])('keeps a %s Ultra application visible and offers its previous plan directly', async status => {
         mocks.auth.user={id:294,name:'취소회원',email:'cancel@example.test',role:'user',status:'pending',tier:null,requested_tier:'premium',has_pending_subscription:false};
         mocks.auth.token='cancel-token';
@@ -154,7 +172,7 @@ describe('subscription acquisition funnel', () => {
         mocks.auth.token = 'quote-token';
         renderAt('/payment-request?plan=aibain_kongming', <PaymentRequestPage />, '/payment-request');
         expect((await screen.findAllByText(price)).length).toBeGreaterThan(0);
-        expect(screen.getByText(/PRO 잔여기간.*일시정지|Ultra Pro 무기한 이용권/)).toBeInTheDocument();
+        expect(screen.getByText(/PRO 잔여기간이 줄어들지|Ultra PRO 평생 이용권/)).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: /승인 신청/ }));
         await waitFor(() => expect(mocks.requestUpgrade).toHaveBeenCalledWith(target, 'quote-token', '금액 검증', true, Number(price.replace(/[^0-9]/g, ''))));
         expect(mocks.requestKongming).not.toHaveBeenCalled();
@@ -249,7 +267,7 @@ describe('subscription acquisition funnel', () => {
 
         const preferred = screen.getByRole('button', { name: /Ultra Pro \+ AI Brain/ });
         expect(preferred).toHaveAttribute('aria-pressed', 'true');
-        expect(within(preferred).getAllByText('Ultra Pro 평생 + AI Brain 30일 갱신').length).toBeGreaterThan(0);
+        expect(within(preferred).getAllByText('평생 이용 + AI·제갈공명 30일').length).toBeGreaterThan(0);
         expect(within(preferred).queryByText('원 / 30일')).not.toBeInTheDocument();
 
         fireEvent.click(preferred);
@@ -272,8 +290,8 @@ describe('subscription acquisition funnel', () => {
         renderAt('/plan-select?change=1&plan=pro&aibain=1', <PlanSelectPage />, '/plan-select');
 
         const addon = screen.getByRole('button', { name: /AI Brain \+ 제갈공명/ });
-        expect(within(addon).getByText('50,000')).toBeInTheDocument();
-        expect(within(addon).queryByText('100,000')).not.toBeInTheDocument();
+        expect(within(addon).getByText('50,000원')).toBeInTheDocument();
+        expect(within(addon).queryByText('100,000원')).not.toBeInTheDocument();
         expect(within(addon).getByText('AI Brain·제갈공명 50,000원으로 추가')).toBeInTheDocument();
 
         const currentPro = screen.getByRole('heading', { name: 'Pro' }).closest('button');
@@ -303,7 +321,7 @@ describe('subscription acquisition funnel', () => {
         const addon = screen.getByRole('button', { name: /AI Brain \+ 제갈공명/ });
 
         expect(ultraCard).toBeDisabled();
-        expect(within(addon).getByText('50,000')).toBeInTheDocument();
+        expect(within(addon).getByText('50,000원')).toBeInTheDocument();
         expect(addon).toBeEnabled();
     });
 
@@ -314,7 +332,7 @@ describe('subscription acquisition funnel', () => {
         };
         mocks.auth.token = 'parked-token';
         const { unmount } = renderAt('/plan-select', <PlanSelectPage />, '/plan-select');
-        expect(screen.queryByRole('button', { name: /처음으로/ })).toBeNull();
+        expect(screen.queryByRole('button', { name: /이용 화면으로 돌아가기/ })).toBeNull();
         expect(screen.getByRole('button', { name: /로그아웃/ })).toBeInTheDocument();
         unmount();
 
@@ -325,7 +343,7 @@ describe('subscription acquisition funnel', () => {
         };
         mocks.auth.token = 'active-token';
         renderAt('/plan-select?change=1', <PlanSelectPage />, '/plan-select');
-        expect(screen.getByRole('button', { name: /처음으로/ })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /이용 화면으로 돌아가기/ })).toBeInTheDocument();
     });
 
     it('refreshes auth state on mount and window focus so an admin tier grant unparks the user', () => {

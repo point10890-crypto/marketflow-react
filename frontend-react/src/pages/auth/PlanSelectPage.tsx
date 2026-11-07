@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { hasActiveBaseSubscription, isBaseSubscriptionExpired, subscriptionFunnelTarget } from '@/lib/auth';
+import SubscriptionFlow from '@/components/subscription/SubscriptionFlow';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { useSeo } from '@/lib/seo';
 import {
@@ -13,7 +14,6 @@ import {
     type BillingPlan,
 } from '@/lib/billingInfo';
 
-const FLOW_STEPS = ['플랜 선택', '입금 후 신청', '승인 후 이용'];
 
 export default function PlanSelectPage() {
     useSeo({ title: '플랜 선택 | MarketFlow', noindex: true });
@@ -74,336 +74,78 @@ export default function PlanSelectPage() {
         navigate(`/payment-request?${planToQuery(plan)}${isExpired ? '&resubscribe=1' : ''}`);
     };
 
-    return (
-        <div className="min-h-screen min-h-[100dvh] bg-[#09090b] px-4 py-8 sm:px-8 sm:py-10">
-            <div className="mx-auto w-full max-w-5xl">
-                {isExpired && (
-                    <div className="mb-6 rounded-2xl border-2 border-rose-500/40 bg-gradient-to-br from-rose-500/[0.12] via-amber-500/[0.05] to-slate-950/60 p-5 sm:p-6 shadow-[0_8px_40px_rgba(244,63,94,0.18)]">
-                        <div className="flex items-start gap-3">
-                            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-rose-500/20 text-rose-200">
-                                <i className="fas fa-rotate-right" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <h2 className="text-lg sm:text-xl font-black text-rose-100">구독이 만료되었습니다. 재구독 신청을 진행하세요.</h2>
-                                    <span className="inline-flex items-center rounded-full border border-rose-400/40 bg-rose-500/15 px-2 py-0.5 text-[10px] font-black text-rose-100 uppercase tracking-wider">
-                                        재구독
-                                    </span>
-                                </div>
-                                <p className="mt-2 text-sm text-rose-100/75 leading-relaxed">
-                                    기존 계정과 이용 기록은 그대로 유지됩니다. 플랜을 선택하고 입금자명만 확인하면 승인 대기 단계로
-                                    넘어가며, <strong className="text-rose-50">승인 즉시 30일이 새로 시작</strong>됩니다.
-                                </p>
-                                {expiredAt && (
-                                    <p className="mt-1 text-xs text-rose-200/60 tabular-nums">
-                                        만료일: {expiredAt.toLocaleDateString('ko-KR')} {expiredAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                <div className="mb-5 grid grid-cols-3 gap-2">
-                    {FLOW_STEPS.map((step, index) => (
-                        <div
-                            key={step}
-                            className={`rounded-xl border px-2 py-2 text-center text-[10px] font-bold ${
-                                index === 0
-                                    ? 'border-amber-400/40 bg-amber-500/15 text-amber-200'
-                                    : index < 0
-                                    ? 'border-emerald-400/30 bg-emerald-500/10 text-emerald-200'
-                                    : 'border-white/10 bg-white/[0.03] text-gray-500'
-                            }`}
-                        >
-                            <div className="mb-1 text-[11px]">{index + 1}</div>
-                            {step}
-                        </div>
-                    ))}
-                </div>
-
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight mb-4">
-                        {isExpired ? '재구독 플랜 선택' : isUpgrade ? (user?.tier === 'premium' ? '플랜 · AI Brain 관리' : '등급 업그레이드') : '플랜을 선택해 주세요'}
-                    </h1>
-                    <p className="text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
-                        {isExpired
-                            ? '서비스 재개를 위해 다시 이용할 플랜을 선택하세요.'
-                            : isUpgrade && user?.tier === 'premium'
-                            ? (user.is_aibain_active
-                                ? '기존 등급은 유지됩니다. AI Brain·제갈공명 30일 연장을 신청할 수 있습니다.'
-                                : 'Ultra Pro는 최상위 평생 이용 플랜입니다. 기존 등급을 유지하고 AI 분석 구독을 선택할 수 있습니다.')
-                            : isUpgrade
-                            ? '현재 플랜은 승인 전까지 유지됩니다. 상위 등급 또는 AI Brain 추가를 선택하세요.'
-                            : isPending
-                            ? '계정 생성이 끝났습니다. 이제 이용할 플랜을 선택하면 됩니다.'
-                            : '구독 신청을 진행할 플랜을 선택하세요.'}
-                    </p>
-                    {isUpgrade && <p className="mt-3 text-sm font-semibold text-purple-200">
-                        현재 이용: {user?.tier === 'premium' ? 'Ultra Pro' : 'Pro'}{user?.is_aibain_active && ' + AI Brain'}
-                    </p>}
-                    {user && (
-                        <p className="text-gray-600 text-xs mt-2">
-                            로그인 계정: <span className="text-gray-400">{user.email}</span>
-                        </p>
-                    )}
-                    {preferredPlan && (
-                        <div className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-500/[0.08] px-3 py-1.5 text-xs font-bold text-cyan-200">
-                            <i className="fas fa-check-circle" />
-                            요금 안내에서 선택한 {PLAN_PAYMENT_META[preferredPlan].label}을 표시했습니다.
-                        </div>
-                    )}
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {(!hasActiveBase || user?.tier === 'pro') && <>
-                        <PlanCard plan="pro" onSelect={select} badgeIcon="fa-crown" badgeText="기본"
-                                  isPrevious={isExpired && user?.tier === 'pro'} isPreferred={preferredPlan === 'pro'}
-                                  hasActiveBase={hasActiveBase} currentTier={user?.tier} />
-                        <PlanCard plan="pro_aibain" onSelect={select} badgeIcon="fa-robot" badgeText="AI + 제갈공명" highlighted
-                                  isPreferred={preferredPlan === 'pro_aibain'} hasActiveBase={hasActiveBase}
-                                  currentTier={user?.tier} isAiBrainActive={!!user?.is_aibain_active} />
-                    </>}
-                    {hasActiveBase && user?.tier === 'premium' && <>
-                        <PlanCard plan="premium" onSelect={select} badgeIcon="fa-gem" badgeText="현재 기본 등급"
-                                  hasActiveBase currentTier={user.tier} />
-                        <PlanCard plan="premium_aibain" onSelect={select} badgeIcon="fa-robot" badgeText="AI + 제갈공명"
-                                  isPreferred={preferredPlan === 'premium_aibain'} hasActiveBase
-                                  currentTier={user.tier} isAiBrainActive={!!user.is_aibain_active} />
-                    </>}
-                </div>
-
-                <p className="mt-5 text-sm leading-6 text-cyan-100">
-                    AI Brain 추가에는 제갈공명이 포함됩니다. PRO 이용기간은 AI 구독 중 일시정지되고, AI 만료 후 다시 시작됩니다.
-                </p>
-                {user?.tier !== 'premium' && <details className="mt-5 rounded-xl border border-white/10 p-4 text-gray-300">
-                    <summary className="cursor-pointer font-bold">Ultra Pro 평생 이용 플랜 보기</summary>
-                    <div className="mt-4 grid gap-5 sm:grid-cols-2">
-                        <PlanCard plan="premium" onSelect={select} badgeIcon="fa-gem" badgeText="평생 이용" isPreferred={preferredPlan === 'premium'} />
-                        <PlanCard plan="premium_aibain" onSelect={select} badgeIcon="fa-robot" badgeText="평생 + AI·제갈공명" isPreferred={preferredPlan === 'premium_aibain'} />
-                    </div>
-                </details>}
-
-                <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-gray-400 leading-relaxed">
-                    <div className="flex items-start gap-3">
-                        <i className="fas fa-circle-info text-amber-400 mt-1" />
-                        <p>
-                            플랜 선택 후 계좌번호와 입금 금액이 자동으로 표시됩니다. 입금자명은 가입 이름과 같게 입력하면 승인 확인이 빨라집니다.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="mt-5 w-full max-w-md mx-auto">
-                    <KakaoSupportLink />
-                </div>
-
-                <div className="mt-6 flex items-center justify-center gap-4 text-xs">
-                    {/* 퍼널 대상 회원(노티어·만료·승인대기)에게 / 는 FunnelGate 가 곧장 이 퍼널로
-                        되돌리므로 죽은 버튼 → 숨긴다. 활성 구독자(change=1)·비로그인만 노출. */}
-                    {(!user || !subscriptionFunnelTarget(user)) && (
-                        <button type="button" onClick={() => navigate('/')} className="text-gray-500 hover:text-white transition-colors">
-                            <i className="fas fa-arrow-left mr-1" />처음으로
-                        </button>
-                    )}
-                    {user && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                logout();
-                                navigate('/login', { replace: true });
-                            }}
-                            className="text-gray-500 hover:text-red-400 transition-colors"
-                        >
-                            <i className="fas fa-sign-out-alt mr-1" />로그아웃
-                        </button>
-                    )}
-                </div>
-            </div>
+    return <SubscriptionFlow step={1} wide
+        title={isExpired ? '재구독 플랜 선택' : isUpgrade ? (user?.tier === 'premium' ? '플랜 · AI Brain 관리' : '등급 업그레이드') : '플랜을 선택해 주세요'}
+        intro={isExpired ? '기존 계정 그대로 다시 시작하세요. 플랜을 고르면 입금 안내로 이동합니다.'
+            : isUpgrade ? '기존 등급은 유지됩니다. 필요한 서비스만 추가하거나 이용기간을 연장하세요.'
+            : isPending ? '가입이 완료되었습니다. 이용할 서비스를 고르고 다음 단계로 이동하세요.' : '이번에 이용할 서비스를 선택하세요.'}>
+        <section className="subscription-status-box" aria-label="현재 구독 상태">
+            <strong>{isExpired ? '현재 상태: 구독 만료' : hasActiveBase ? `현재 이용: ${user?.tier === 'premium' ? 'Ultra Pro' : 'Pro'}` : '현재 상태: 구독 전'}</strong>
+            <p>{isExpired ? '계정과 이용 기록은 유지됩니다.' : hasActiveBase
+                ? user?.is_aibain_active ? 'AI 브레인·제갈공명 이용 중 · 추가 신청하면 이용기간이 연장됩니다.' : 'AI 브레인과 제갈공명을 5만 원에 함께 추가할 수 있습니다.'
+                : 'PRO만 이용하거나, AI 브레인·제갈공명을 함께 선택할 수 있습니다.'}</p>
+            {isExpired && expiredAt && !Number.isNaN(expiredAt.getTime()) && <p>만료일 {expiredAt.toLocaleDateString('ko-KR')}</p>}
+        </section>
+        <div className="subscription-plan-grid">
+            {(!hasActiveBase || user?.tier === 'pro') && <>
+                <PlanCard plan="pro" onSelect={select} hasActiveBase={hasActiveBase} currentTier={user?.tier}
+                    isPrevious={isExpired && user?.tier === 'pro'} isPreferred={preferredPlan === 'pro'} />
+                <PlanCard plan="pro_aibain" onSelect={select} hasActiveBase={hasActiveBase} currentTier={user?.tier}
+                    isPreferred={preferredPlan === 'pro_aibain'} isAiBrainActive={!!user?.is_aibain_active} />
+            </>}
+            {hasActiveBase && user?.tier === 'premium' && <>
+                <PlanCard plan="premium" onSelect={select} hasActiveBase currentTier={user.tier} />
+                <PlanCard plan="premium_aibain" onSelect={select} hasActiveBase currentTier={user.tier}
+                    isPreferred={preferredPlan === 'premium_aibain'} isAiBrainActive={!!user.is_aibain_active} />
+            </>}
         </div>
-    );
+        <aside className="subscription-note">
+            <strong>AI를 이용하는 동안 PRO 기간은 줄어들지 않아요.</strong>
+            <p>AI 브레인·제갈공명을 30일 함께 이용하고, 종료되면 남겨 둔 PRO 기간이 다시 시작됩니다. Ultra PRO 평생 이용권은 그대로 유지됩니다.</p>
+            {!hasActiveBase && <p>10만 원 플랜은 PRO 5만 원 + AI·제갈공명 5만 원입니다. 승인 후 AI 30일을 이용하는 동안 PRO 30일은 보관됩니다.</p>}
+        </aside>
+        {hasActiveBase && user?.tier === 'pro' && <button className="subscription-button-secondary w-full" onClick={() => navigate('/payment-request?plan=pro&renew=1')}>AI 추가 없이 PRO 30일 연장 · 50,000원</button>}
+        {user?.tier !== 'premium' && <details className="subscription-details" open={preferredPlan === 'premium' || preferredPlan === 'premium_aibain' ? true : undefined}>
+            <summary>Ultra Pro 평생 이용 플랜 보기</summary>
+            <div className="subscription-plan-grid"><PlanCard plan="premium" onSelect={select} isPreferred={preferredPlan === 'premium'} />
+                <PlanCard plan="premium_aibain" onSelect={select} isPreferred={preferredPlan === 'premium_aibain'} /></div>
+        </details>}
+        <p className="subscription-help">플랜을 눌러도 결제되지 않습니다. 다음 화면에서 금액과 입금 계좌를 확인합니다.</p>
+        <KakaoSupportLink />
+        <footer className="subscription-flow-footer">
+            {(!user || !subscriptionFunnelTarget(user)) && <button onClick={() => navigate('/dashboard')}>이용 화면으로 돌아가기</button>}
+            {user && <button onClick={() => { logout(); navigate('/login', { replace: true }); }}>로그아웃</button>}
+        </footer>
+    </SubscriptionFlow>;
 }
 
-interface PlanCardProps {
-    plan: BillingPlan;
-    onSelect: (plan: BillingPlan) => void;
-    badgeIcon: string;
-    badgeText: string;
-    highlighted?: boolean;
-    /** 재구독 화면에서 만료 전 이용하던 플랜 — 원클릭 재시작 대상으로 강조 */
-    isPrevious?: boolean;
-    isRenewal?: boolean;
-    /** 공개 요금 페이지에서 사용자가 미리 선택한 플랜 */
-    isPreferred?: boolean;
-    /** 활성 베이스 회원은 같은 tier의 AI Brain만 50,000원 애드온으로 신청한다. */
-    hasActiveBase?: boolean;
-    currentTier?: string | null;
-    isAiBrainActive?: boolean;
-}
-
-const COLOR_STYLES: Record<BillingPlan, {
-    border: string;
-    ring: string;
-    hoverRing: string;
-    badgeBg: string;
-    badgeText: string;
-    accent: string;
-    btn: string;
-    btnText: string;
-    bgOverlay: string;
-}> = {
-    aibain_kongming: {
-        border: 'border-cyan-500/40',
-        ring: 'ring-cyan-500/25',
-        hoverRing: 'hover:ring-cyan-500/60',
-        badgeBg: 'bg-cyan-500/10',
-        badgeText: 'text-cyan-300',
-        accent: 'text-cyan-300',
-        btn: 'from-cyan-500 to-sky-500',
-        btnText: 'text-black',
-        bgOverlay: 'from-cyan-500/10 to-transparent',
-    },
-    pro: {
-        border: 'border-amber-500/30',
-        ring: 'ring-amber-500/20',
-        hoverRing: 'hover:ring-amber-500/50',
-        badgeBg: 'bg-amber-500/10',
-        badgeText: 'text-amber-400',
-        accent: 'text-amber-400',
-        btn: 'from-amber-500 to-orange-500',
-        btnText: 'text-black',
-        bgOverlay: 'from-amber-500/10 to-transparent',
-    },
-    pro_aibain: {
-        border: 'border-cyan-500/40',
-        ring: 'ring-cyan-500/25',
-        hoverRing: 'hover:ring-cyan-500/60',
-        badgeBg: 'bg-cyan-500/10',
-        badgeText: 'text-cyan-300',
-        accent: 'text-cyan-300',
-        btn: 'from-cyan-500 to-sky-500',
-        btnText: 'text-black',
-        bgOverlay: 'from-cyan-500/10 to-transparent',
-    },
-    premium: {
-        border: 'border-purple-500/30',
-        ring: 'ring-purple-500/20',
-        hoverRing: 'hover:ring-purple-500/50',
-        badgeBg: 'bg-purple-500/10',
-        badgeText: 'text-purple-400',
-        accent: 'text-purple-400',
-        btn: 'from-purple-500 to-fuchsia-500',
-        btnText: 'text-white',
-        bgOverlay: 'from-purple-500/10 to-transparent',
-    },
-    premium_aibain: {
-        border: 'border-fuchsia-500/40',
-        ring: 'ring-fuchsia-500/25',
-        hoverRing: 'hover:ring-fuchsia-500/60',
-        badgeBg: 'bg-fuchsia-500/10',
-        badgeText: 'text-fuchsia-300',
-        accent: 'text-fuchsia-300',
-        btn: 'from-fuchsia-500 via-purple-500 to-cyan-500',
-        btnText: 'text-white',
-        bgOverlay: 'from-fuchsia-500/10 to-transparent',
-    },
-};
-
-function PlanCard({
-    plan,
-    onSelect,
-    badgeIcon,
-    badgeText,
-    highlighted,
-    isPrevious,
-    isRenewal,
-    isPreferred,
-    hasActiveBase,
-    currentTier,
-    isAiBrainActive,
-}: PlanCardProps) {
+function PlanCard({ plan, onSelect, isPrevious, isPreferred, hasActiveBase, currentTier, isAiBrainActive }: {
+    plan: BillingPlan; onSelect: (plan: BillingPlan) => void; isPrevious?: boolean; isPreferred?: boolean;
+    hasActiveBase?: boolean; currentTier?: string | null; isAiBrainActive?: boolean;
+}) {
     const meta = PLAN_PAYMENT_META[plan];
-    const c = COLOR_STYLES[plan];
-    const sameBaseTier = !!hasActiveBase && meta.tier === currentTier;
-    const isAddonOnly = sameBaseTier && meta.includesAibain;
-    const isCurrent = sameBaseTier && !meta.includesAibain;
-    const isBlockedDowngrade = !!hasActiveBase && currentTier === 'premium' && meta.tier === 'pro';
-    const isDisabled = isCurrent || isBlockedDowngrade;
-    const priceMajor = isAddonOnly ? AIBAIN_ADDON_META.amountNumber.toLocaleString() : meta.amountNumber.toLocaleString();
-    const isThirtyDayPlan = plan === 'pro' || plan === 'pro_aibain' || plan === 'aibain_kongming';
-    const priceUnit = isAddonOnly || isThirtyDayPlan ? '원 / 30일' : '원';
-    const displayTitle = isAddonOnly ? AIBAIN_ADDON_META.label : meta.label;
-    const displayPeriod = isAddonOnly ? `기존 ${currentTier === 'premium' ? 'Ultra Pro' : 'Pro'} 유지 · AI Brain 30일` : meta.period;
-    const displayedFeatures = isAddonOnly
-        ? meta.features.filter((feature) => !feature.includes('전체') && !feature.includes('평생'))
-        : meta.features;
-
-    return (
-        <button
-            type="button"
-            onClick={() => onSelect(plan)}
-            disabled={isDisabled}
-            aria-pressed={isPreferred}
-            aria-current={isCurrent ? 'true' : undefined}
-            className={`p-6 rounded-2xl border ${c.border} bg-[#1c1c1e] ${isPrevious ? 'ring-2 ring-emerald-400/60' : isPreferred ? 'ring-2 ring-cyan-300/70' : `ring-1 ${c.ring}`} hover:ring-2 ${c.hoverRing} transition-all text-left relative overflow-hidden disabled:cursor-not-allowed disabled:opacity-60 ${highlighted ? 'sm:scale-[1.02]' : ''}`}
-        >
-            <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${c.bgOverlay} rounded-bl-full pointer-events-none`} />
-            {(isPrevious || isPreferred) && (
-                <div className="absolute right-3 top-3 flex flex-col items-end gap-1">
-                    {isPreferred && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 text-[10px] font-black text-cyan-100">
-                            <i className="fas fa-check" /> 선택됨
-                        </span>
-                    )}
-                    {isPrevious && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-2.5 py-1 text-[10px] font-black text-emerald-200">
-                            <i className="fas fa-history" /> 이전 플랜
-                        </span>
-                    )}
-                </div>
-            )}
-            <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full ${c.badgeBg} ${c.badgeText} text-xs font-bold mb-3`}>
-                <i className={`fas ${badgeIcon}`} /> {badgeText}
-            </div>
-            <h3 className="text-xl font-bold text-white mb-1">{displayTitle}</h3>
-            <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-3xl font-black text-white">{priceMajor}</span>
-                <span className="text-gray-400">{priceUnit}</span>
-            </div>
-            <p className="mb-2 text-[11px] font-semibold text-gray-500">{displayPeriod}</p>
-            {isAddonOnly ? (
-                <p className={`${c.accent} text-[11px] font-semibold mb-5 leading-tight`}>
-                    베이스 플랜은 그대로 유지하고 <strong className="text-white">AI Brain과 제갈공명을 추가</strong>합니다.
-                </p>
-            ) : meta.includesAibain && meta.baseAmount && meta.aibainAmount ? (
-                <p className={`${c.accent} text-[11px] font-semibold mb-5 leading-tight`}>
-                    {meta.baseAmount} + <strong className="text-white">{meta.aibainAmount}</strong>
-                </p>
-            ) : (
-                <p className={`${c.accent} text-xs font-semibold mb-5`}>{meta.description}</p>
-            )}
-            <ul className="space-y-2 mb-6 text-sm text-gray-300">
-                {displayedFeatures.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                        <i className={`fas fa-check ${c.accent} text-xs mt-1`} />
-                        {feature}
-                    </li>
-                ))}
-            </ul>
-            <div className={`w-full py-3 rounded-xl bg-gradient-to-r ${c.btn} ${c.btnText} font-bold text-center text-sm`}>
-                {isBlockedDowngrade ? (
-                    <>Ultra Pro에서는 하향 변경 불가</>
-                ) : isCurrent ? (
-                    <><i className="fas fa-check mr-1.5" />현재 이용 중</>
-                ) : isAddonOnly ? (
-                    <>AI Brain·제갈공명 {AIBAIN_ADDON_META.amount}으로 {isAiBrainActive ? '연장' : '추가'}</>
-                ) : isPrevious ? (
-                    <><i className="fas fa-rotate-right mr-1.5" />{meta.label} 다시 시작하기</>
-                ) : isRenewal ? (
-                    `${meta.label} 갱신 신청`
-                ) : (
-                    `${meta.label} 선택`
-                )}
-            </div>
-        </button>
-    );
+    const sameBase = !!hasActiveBase && meta.tier === currentTier;
+    const addon = sameBase && meta.includesAibain;
+    const current = sameBase && !meta.includesAibain;
+    const amount = addon ? AIBAIN_ADDON_META.amount : meta.amount;
+    const title = addon ? AIBAIN_ADDON_META.label : meta.label;
+    const features = meta.includesAibain
+        ? [...(addon ? [] : [meta.tier === 'premium' ? 'Ultra PRO 평생 이용 포함' : 'PRO 전체 서비스 포함']), 'AI 브레인 종목 분석·검출', '제갈공명 뉴스·공시 검증']
+        : ['국내·해외 주식·코인 정보', '커뮤니티와 기본 분석 서비스'];
+    return <button type="button" className="subscription-plan" disabled={current} onClick={() => onSelect(plan)}
+        aria-pressed={isPreferred || undefined} aria-current={current ? 'true' : undefined} data-featured={meta.includesAibain}>
+        <span className="subscription-plan-badge">{current ? '현재 구독' : addon ? '기존 회원 추가 이용' : meta.includesAibain ? '기본 + AI 분석' : '기본 서비스'}
+            {isPrevious && <em>이전 플랜</em>}{isPreferred && <em>선택한 플랜</em>}</span>
+        <div className="subscription-plan-heading"><h3>{title}</h3>
+            {!current && <span className="subscription-plan-price"><span className="subscription-price-label">이번 입금</span><span className="subscription-price">{amount}</span></span>}
+        </div>
+        {current ? <p className="subscription-plan-summary">{meta.tier === 'premium' ? '평생 이용권을 보유하고 있습니다.' : '현재 PRO 이용권을 유지합니다.'}</p> : <>
+            <p className="subscription-plan-summary">{addon ? 'AI 브레인 + 제갈공명 · 30일'
+                : meta.includesAibain ? meta.tier === 'premium' ? '평생 이용 + AI·제갈공명 30일' : 'AI·제갈공명 30일 + 보관되는 PRO 30일'
+                : meta.tier === 'premium' ? '한 번 결제 · 평생 이용' : '승인 후 30일'}</p>
+            <ul>{features.map(feature => <li key={feature}>{feature}</li>)}</ul>
+        </>}
+        <span className="subscription-plan-cta">{current ? '현재 이용 중' : addon ? `AI Brain·제갈공명 50,000원으로 ${isAiBrainActive ? '연장' : '추가'}`
+            : `${meta.label} ${isPrevious ? '다시 시작하기' : '선택'}`}</span>
+    </button>;
 }

@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { BANK_ACCOUNT, isAiBundleRequest, subscriptionNote, isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
+import { isAiBundleRequest, subscriptionNote, isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
 import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
+import SubscriptionFlow, { BankTransferDetails } from '@/components/subscription/SubscriptionFlow';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { hasActiveBaseSubscription, hasActiveKongmingSubscription, isBaseSubscriptionExpired, subscriptionFunnelTarget, type AuthUserData } from '@/lib/auth';
 import { hasPendingSubscription, pendingSubscriptionRequest } from '@/lib/subscriptionStatus';
 import { useSeo } from '@/lib/seo';
 
-const FLOW_STEPS = ['계정 생성', '플랜 선택', '입금 정보', '승인 대기'];
 const KONGMING_PLAN = 'aibain_kongming';
 
 /** Legacy status responses may omit user facts; only a complete same-member user can confirm access. */
@@ -184,11 +184,6 @@ export default function PendingApprovalPage() {
     const aiBundle = isAiBundleRequest(pendingSubReq);
     const subReqAmount = pendingSubReq?.amount || null;
 
-    // 색상 테마 — AI Brain 포함이면 cyan, 아니면 amber
-    const themeColor = isKongming || includesAibain
-        ? { border: 'border-cyan-500/30', bg: 'bg-cyan-500/10', text: 'text-cyan-300', accentBg: 'bg-cyan-500/[0.06]', accentBorder: 'border-cyan-500/20' }
-        : { border: 'border-amber-500/20', bg: 'bg-amber-500/10', text: 'text-amber-400', accentBg: 'bg-amber-500/[0.06]', accentBorder: 'border-amber-500/20' };
-
     // 헤더 / 안내 문구 분기 — 만료 Pro 재구독은 "활성 업그레이드"가 아니다 (is_pro_expired 체크)
     const isUpgradeFromActive = hasActiveBaseSubscription(decisionUser, now);
     const hasExistingAccess = isUpgradeFromActive || hasActiveKongmingSubscription(decisionUser, now);
@@ -230,197 +225,55 @@ export default function PendingApprovalPage() {
         headerSubtitle = '현재 계정은 새 구독 신청을 진행할 수 없습니다. 고객지원으로 문의해 주세요.';
     }
 
-    return (
-        <div className="min-h-[100dvh] bg-black flex items-center justify-center p-4">
-            <div className="w-full max-w-lg text-center">
-                <div className="mb-4 grid grid-cols-4 gap-2">
-                    {FLOW_STEPS.map((step, index) => (
-                        <div
-                            key={step}
-                            className={`rounded-xl border px-2 py-2 text-center text-[10px] font-bold ${
-                                index === 3
-                                    ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-200'
-                                    : 'border-emerald-400/25 bg-emerald-500/10 text-emerald-200'
-                            }`}
-                        >
-                            <div className="mb-1 text-[11px]">{index + 1}</div>
-                            {step}
-                        </div>
-                    ))}
-                </div>
-                <div className={`p-8 rounded-2xl bg-[#1c1c1e] border ${themeColor.border}`}>
-                    <div className={`w-16 h-16 mx-auto mb-6 ${themeColor.bg} rounded-full flex items-center justify-center`}>
-                        <i className={`${!pendingSubReq && !hasExistingAccess ? 'fas fa-credit-card' : isKongming || isAibainAddon ? 'fas fa-robot' : 'fas fa-hourglass-half'} text-2xl ${themeColor.text}`}></i>
-                    </div>
+    if (!subReqLoaded && !statusError && !hasPending) {
+        headerTitle = '신청 상태 확인 중';
+        headerSubtitle = '접수된 신청과 현재 이용권을 확인하고 있습니다.';
+    } else if (statusError && !hasPending && !blockedAccount) {
+        headerTitle = '잠시 후 다시 확인해 주세요';
+        headerSubtitle = '연결 문제로 현재 상태를 확인하지 못했습니다. 다시 신청하거나 입금하지 않아도 됩니다.';
+    }
+    const requestedLabel = isKongming ? kongmingLabel : isAibainAddon ? aiBundle ? 'AI 브레인 + 제갈공명' : 'AI Brain'
+        : `${pendingSubReq?.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}${includesAibain ? ' + AI 브레인·제갈공명' : ''}`;
 
-                    <h1 className="text-2xl font-bold text-white mb-2">{headerTitle}</h1>
-                    <p className="text-gray-400 text-sm mb-6 leading-relaxed">{headerSubtitle}</p>
-
-                    {rejectedSubReq && !hasPending && (
-                        <div className="p-4 rounded-xl bg-red-500/[0.07] border border-red-500/25 mb-6 text-left">
-                            <div className="flex items-center gap-2 mb-1.5">
-                                <i className="fas fa-circle-xmark text-red-400 text-sm" />
-                                <span className="text-red-300 font-bold text-sm">{cancelled ? '취소된 신청' : '거절된 신청'}</span>
-                                <span className="text-[10px] text-gray-500">
-                                    {rejectedSubReq.processed_at || rejectedSubReq.created_at ? new Date(rejectedSubReq.processed_at || rejectedSubReq.created_at).toLocaleDateString('ko-KR') : ''}
-                                </span>
-                            </div>
-                            <div className="text-xs text-gray-400">
-                                요청 플랜: {rejectedKongming ? kongmingLabel : rejectedSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
-                            </div>
-                            <p className="text-xs text-gray-300 mt-1.5 leading-relaxed">
-                                {rejectedSubReq.admin_note
-                                    ? <>사유: {subscriptionNote(rejectedSubReq.admin_note)}</>
-                                    : '사유가 기재되지 않았습니다. 카카오톡으로 문의해 주세요.'}
-                            </p>
-                        </div>
-                    )}
-                    <p className="text-gray-600 text-[11px] mb-4">
-                        30초마다 자동으로 승인 상태를 확인합니다.
-                    </p>
-
-                    {user && (
-                        <div className="p-3 rounded-lg bg-white/5 mb-6 text-left">
-                            <div className="text-[10px] text-gray-500 mb-1">가입 정보</div>
-                            <div className="text-sm text-white">{user.name}</div>
-                            <div className="text-xs text-gray-400 mb-2">{user.email}</div>
-                            {pendingSubReq && (
-                                <div className="mt-2 pt-2 border-t border-white/5 space-y-1.5">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-[10px] text-gray-500">요청:</span>
-                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${themeColor.bg} ${themeColor.text}`}>
-                                            <i className={`${isKongming || isAibainAddon ? 'fas fa-robot' : pendingSubReq.to_tier === 'premium' ? 'fas fa-gem' : 'fas fa-crown'} mr-1`} />
-                                            {isKongming ? kongmingLabel : isAibainAddon
-                                                ? `${pendingSubReq.from_tier === 'premium' ? 'Ultra Pro' : 'Pro'} → ${isAibainRenewal ? 'AI Brain 재구독' : '+AI Brain 애드온'}`
-                                                : includesAibain
-                                                ? `${pendingSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'} + AI Brain`
-                                                : pendingSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
-                                        </span>
-                                    </div>
-                                    {pendingSubReq.admin_note && (
-                                        <p className="text-[11px] text-gray-400 leading-relaxed pl-1">
-                                            <i className="fas fa-info-circle mr-1 text-cyan-400/70" />
-                                            {subscriptionNote(pendingSubReq.admin_note)}
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {hasPending && !blockedAccount && <div className={`p-4 rounded-xl ${themeColor.accentBg} border ${themeColor.accentBorder} mb-6 text-left`}>
-                        <div className="flex items-start gap-3 mb-4">
-                            <div className={`w-10 h-10 rounded-xl ${themeColor.bg} flex items-center justify-center shrink-0`}>
-                                <i className={`fas fa-university ${themeColor.text}`} />
-                            </div>
-                            <div>
-                                <h2 className="text-white font-bold text-sm">입금 계좌 정보</h2>
-                                <p className="text-gray-400 text-xs mt-0.5">
-                                    {isKongming || aiBundle ? '입금 확인 후 AI Brain과 제갈공명을 30일 함께 이용합니다. PRO 잔여기간은 AI 이용 중 일시정지됩니다.' : isAibainAddon
-                                        ? '입금 확인 후 AI Brain 알파 스캐너가 30일간 활성화됩니다.'
-                                        : '입금 확인 후 관리자가 구독을 활성화합니다.'}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="p-3 rounded-lg bg-black/20 border border-white/[0.06]">
-                                <span className="text-[10px] text-gray-500 uppercase tracking-wider">은행</span>
-                                <p className="text-white font-bold mt-1 text-sm">{BANK_ACCOUNT.bank}</p>
-                            </div>
-                            <div className="p-3 rounded-lg bg-black/20 border border-white/[0.06]">
-                                <span className="text-[10px] text-gray-500 uppercase tracking-wider">예금주</span>
-                                <p className="text-white font-bold mt-1 text-sm">{BANK_ACCOUNT.holder}</p>
-                            </div>
-                            <div className="p-3 rounded-lg bg-black/20 border border-white/[0.06] sm:col-span-2">
-                                <div className="flex items-center justify-between gap-3">
-                                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">계좌번호</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => navigator.clipboard?.writeText(BANK_ACCOUNT.account.replace(/-/g, ''))}
-                                        className="text-[10px] text-gray-400 hover:text-white transition-colors"
-                                    >
-                                        <i className="fas fa-copy mr-1" />복사
-                                    </button>
-                                </div>
-                                <p className="text-white font-bold mt-1 font-mono text-lg tracking-wider">{BANK_ACCOUNT.account}</p>
-                            </div>
-                            <div className={`p-3 rounded-lg ${themeColor.accentBg} border ${themeColor.accentBorder}`}>
-                                <span className="text-[10px] text-gray-500 uppercase tracking-wider">입금 금액</span>
-                                <p className={`font-bold mt-1 text-base ${themeColor.text}`}>
-                                    {subReqAmount || '플랜 선택 후 확정'}
-                                </p>
-                                {(isKongming || isAibainAddon) && (
-                                    <p className="text-[10px] text-gray-500 mt-0.5">{isKongming ? '30일 이용권' : 'AI Brain 30일 갱신'}</p>
-                                )}
-                            </div>
-                            <div className="p-3 rounded-lg bg-black/20 border border-white/[0.06]">
-                                <span className="text-[10px] text-gray-500 uppercase tracking-wider">입금자명</span>
-                                <p className="text-white font-bold mt-1 text-sm">
-                                    {pendingSubReq?.depositor_name || user?.name || '가입 시 이름'}
-                                </p>
-                            </div>
-                        </div>
-
-                        <p className="mt-3 text-[11px] leading-relaxed text-gray-400">
-                            입금자명은 가입 이름과 동일하게 보내 주세요.
-                            {isKongming ? '' : isAibainAddon
-                                ? ' AI Brain 만료 시 별도 갱신 없으면 자동으로 기존 베이스 플랜으로 회귀합니다.'
-                                : pendingSubReq && includesAibain
-                                ? ' AI Brain 알파 스캐너 알림이 30일간 활성화됩니다.'
-                                : !pendingSubReq
-                                ? ' 아직 플랜을 선택하지 않았다면 아래 버튼에서 먼저 플랜을 선택해 주세요.'
-                                : ''}
-                        </p>
-                    </div>}
-
-                    {message && (
-                        <div className={`p-3 rounded-lg mb-4 text-sm ${message.includes('승인되었습니다') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-white/5 text-gray-400'}`}>
-                            {message}
-                        </div>
-                    )}
-
-                    <div className="space-y-3">
-                        {rejectedSubReq && !hasPending && !statusError && !blockedAccount && !awaitingAuth && <Link to={reapplyPath} className="block w-full py-3 rounded-xl bg-amber-400 text-black font-bold">
-                            {reapplyRenewal ? '재구독 신청' : '다시 신청'}
-                        </Link>}
-                        {!hasPending && !hasExistingAccess && !rejectedSubReq && subReqLoaded && !blockedAccount && !awaitingAuth && (
-                            <button
-                                onClick={() => navigate('/plan-select')}
-                                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-bold transition-all flex items-center justify-center gap-2"
-                            >
-                                <i className="fas fa-credit-card" />
-                                플랜 선택하기
-                            </button>
-                        )}
-                        {hasExistingAccess && !awaitingAuth && !blockedAccount && (
-                            <button
-                                onClick={() => navigate(dashboardPath)}
-                                className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-medium transition-all"
-                            >
-                                <i className="fas fa-arrow-left mr-2" />
-                                대시보드로 돌아가기
-                            </button>
-                        )}
-                        <button
-                            onClick={handleCheckStatus}
-                            disabled={checking}
-                            className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium transition-all disabled:opacity-50"
-                        >
-                            {checking ? '확인 중...' : '승인 상태 확인'}
-                        </button>
-                        {!hasExistingAccess && (
-                            <button
-                                onClick={handleLogout}
-                                className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 font-medium transition-all"
-                            >
-                                로그아웃
-                            </button>
-                        )}
-                        <KakaoSupportLink />
-                    </div>
-                </div>
-            </div>
+    return <SubscriptionFlow step={3} title={headerTitle} intro={headerSubtitle}>
+        {hasPending && !blockedAccount && <section className="subscription-status-box" aria-label="신청 접수 안내">
+            <strong>신청 접수 완료 · 입금 확인을 기다리고 있어요</strong>
+            <p>이미 입금했다면 다시 입금하거나 신청하지 마세요. 승인되면 이용 화면으로 자동 이동합니다.</p>
+        </section>}
+        {(subReqLoaded || statusError) && <p className="subscription-help">30초마다 자동으로 승인 상태를 확인합니다.</p>}
+        {rejectedSubReq && !hasPending && <section className="subscription-error">
+            <strong>{cancelled ? '취소된 신청' : '거절된 신청'}</strong>
+            <p className="mt-2">{rejectedSubReq.admin_note ? `사유: ${subscriptionNote(rejectedSubReq.admin_note)}` : '사유가 기재되지 않았습니다. 카카오톡으로 문의해 주세요.'}</p>
+            <p className="mt-2">이미 입금했다면 다시 보내기 전에 고객지원에 확인해 주세요.</p>
+        </section>}
+        {pendingSubReq && !blockedAccount && <section className="subscription-order" aria-label="접수한 신청">
+            <h2 className="text-base font-semibold mb-4">접수한 신청</h2>
+            <dl className="subscription-receipt">
+                <dt>신청 서비스</dt><dd>{requestedLabel}</dd>
+                <dt>신청 금액</dt><dd>{subReqAmount || '확인 중'}</dd>
+                <dt>입금자명</dt><dd>{pendingSubReq.depositor_name || user?.name || '가입 시 이름'}</dd>
+                {user?.email && <><dt>회원 계정</dt><dd>{user.email}</dd></>}
+            </dl>
+            {(isKongming || aiBundle) && <p className="mt-4">승인 후 AI 브레인·제갈공명을 30일 이용합니다. PRO 기간은 AI 이용 중 보관됩니다.</p>}
+        </section>}
+        {message && <p role={statusError ? 'alert' : 'status'} className={statusError ? 'subscription-error' : 'subscription-note'}>{message}</p>}
+        <div className="subscription-actions">
+            {rejectedSubReq && !hasPending && !statusError && !blockedAccount && !awaitingAuth &&
+                <Link to={reapplyPath} className="subscription-button-primary">{reapplyRenewal ? '재구독 신청' : '다시 신청'}</Link>}
+            {!hasPending && !hasExistingAccess && !rejectedSubReq && subReqLoaded && !blockedAccount && !awaitingAuth &&
+                <button onClick={() => navigate('/plan-select')} className="subscription-button-primary">플랜 선택하기</button>}
+            <button onClick={handleCheckStatus} disabled={checking} className="subscription-button-secondary">{checking ? '확인 중...' : '승인 상태 확인'}</button>
+            {hasExistingAccess && !awaitingAuth && !blockedAccount && <>
+                <button onClick={() => navigate(dashboardPath)} className="subscription-button-secondary">대시보드로 돌아가기</button>
+                <p className="subscription-help !m-0 text-center">대기하는 동안 기존 구독은 계속 이용할 수 있습니다.</p>
+            </>}
         </div>
-    );
+        {hasPending && !blockedAccount && <details className="subscription-details">
+            <summary>입금 계좌를 다시 확인하려면</summary>
+            <p className="subscription-help">아직 이체하지 않은 경우에만 확인하세요. 이미 입금했다면 추가 입금은 필요 없습니다.</p>
+            <BankTransferDetails />
+        </details>}
+        <div className="mt-5"><KakaoSupportLink label="입금·승인 문의" /></div>
+        {!hasExistingAccess && <footer className="subscription-flow-footer"><button onClick={handleLogout}>로그아웃</button></footer>}
+    </SubscriptionFlow>;
 }
