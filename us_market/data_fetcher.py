@@ -277,33 +277,26 @@ class USStockDataFetcher:
                         )
 
                     if not data.empty:
-                        if len(batch) == 1:
-                            # Single symbol - different structure
+                        if isinstance(data.columns, pd.MultiIndex):
+                            # Modern yfinance also returns (Price, Ticker)
+                            # columns for a single symbol. Normalize by shape,
+                            # not requested batch size (new listings form their
+                            # own historical start-date batch).
+                            available_tickers = data.columns.get_level_values(1).unique().tolist()
+                            successful_symbols.update(available_tickers)
+
+                            data = data.stack(level=1, future_stack=True)
+                            data.index.names = ['Date', 'Ticker']
+                            data.reset_index(inplace=True)
+                            all_data.append(data)
+                        else:
+                            # Legacy flat columns represent one returned ticker.
                             df_batch = data.copy()
                             df_batch['Ticker'] = batch[0]
                             df_batch.reset_index(inplace=True)
                             if not df_batch.empty:
                                 all_data.append(df_batch)
                                 successful_symbols.add(batch[0])
-                        else:
-                            # Multiple symbols - stacked structure
-                            if isinstance(data.columns, pd.MultiIndex):
-                                available_tickers = data.columns.get_level_values(1).unique().tolist()
-                                successful_symbols.update(available_tickers)
-
-                                data = data.stack(level=1, future_stack=True)
-                                data.index.names = ['Date', 'Ticker']
-                                data.reset_index(inplace=True)
-                                all_data.append(data)
-                            else:
-                                # Single ticker returned
-                                df_batch = data.copy()
-                                df_batch['Ticker'] = batch[0]
-                                df_batch.reset_index(inplace=True)
-                                if not df_batch.empty:
-                                    all_data.append(df_batch)
-                                    successful_symbols.add(batch[0])
-
                         logger.info(f"   ✅ Batch {batch_num}: Got data")
 
                 except Exception as e:

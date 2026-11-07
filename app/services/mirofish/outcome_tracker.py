@@ -11,6 +11,7 @@ import csv
 import json
 import os
 import re
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
@@ -25,6 +26,51 @@ PRICE_HISTORY_PATH = os.path.join(DATA_ROOT, 'daily_prices.csv')
 DEFAULT_HORIZONS = (5, 10, 20)
 DEFAULT_TARGET_RETURN_PCT = 5.0
 DEFAULT_STOP_LOSS_PCT = -7.0
+
+
+class PriceHistoryChangedError(RuntimeError):
+    """The shared source changed, invalidating the remaining feedback batch."""
+
+
+@dataclass(frozen=True)
+class PriceHistorySnapshot:
+    """One feedback cycle's price rows; never retained as a process-wide cache."""
+    path: str
+    signature: tuple[int, int, int] | None
+    symbols: frozenset[str]
+    history: dict[str, list[dict[str, Any]]]
+    source_metadata: dict[str, Any]
+
+
+def workflow_price_symbols(workflow: dict[str, Any]) -> list[str]:
+    return [str(item.get('symbol') or (item.get('candidate') or {}).get('symbol') or '')
+            for item in _workflow_results(workflow)]
+
+
+def _price_signature(path: str) -> tuple[int, int, int] | None:
+    try:
+        info = os.stat(path)
+    except FileNotFoundError:
+        return None
+    return info.st_size, info.st_mtime_ns, info.st_ino
+
+
+def load_price_history_snapshot(
+    symbols: list[str], *, price_history_path: str | None = None,
+) -> PriceHistorySnapshot:
+    """Parse the union once and reject a source replaced during the read."""
+    path = price_history_path or PRICE_HISTORY_PATH
+    signature = _price_signature(path)
+    history = _load_price_history(path, symbols)
+    metadata = _price_history_meta(path, history)
+    if _price_signature(path) != signature:
+        raise PriceHistoryChangedError('price_history_changed_during_snapshot')
+    return PriceHistorySnapshot(
+        path=path, signature=signature,
+        symbols=frozenset(_symbol(value) for value in symbols if _symbol(value)),
+        history=history,
+        source_metadata={key: metadata[key] for key in ('path', 'exists', 'modified_at')},
+    )
 
 
 def read_workflow_outcomes(workflow_id: str) -> dict[str, Any] | None:
@@ -44,6 +90,7 @@ def refresh_workflow_outcomes(
     workflows_root: str | None = None,
     target_return_pct: float = DEFAULT_TARGET_RETURN_PCT,
     stop_loss_pct: float = DEFAULT_STOP_LOSS_PCT,
+    price_history_snapshot: PriceHistorySnapshot | None = None,
 ) -> dict[str, Any]:
     """Recompute forward outcomes for a workflow and persist outcomes.json."""
     record = workflow if isinstance(workflow, dict) else _read_workflow(workflow_id, workflows_root=workflows_root)
@@ -52,9 +99,22 @@ def refresh_workflow_outcomes(
 
     clean_horizons = _clean_horizons(horizons)
     results = _workflow_results(record)
-    symbols = [str(item.get('symbol') or (item.get('candidate') or {}).get('symbol') or '') for item in results]
-    price_path = price_history_path or PRICE_HISTORY_PATH
-    history = _load_price_history(price_path, symbols)
+    symbols = workflow_price_symbols(record)
+    price_path = price_history_path or (price_history_snapshot.path if price_history_snapshot else PRICE_HISTORY_PATH)
+    if price_history_snapshot is None:
+        history = _load_price_history(price_path, symbols)
+    else:
+        if os.path.normcase(os.path.abspath(price_path)) != os.path.normcase(os.path.abspath(price_history_snapshot.path)):
+            raise ValueError('price_history_snapshot_path_mismatch')
+        if _price_signature(price_path) != price_history_snapshot.signature:
+            raise PriceHistoryChangedError('price_history_changed_after_snapshot')
+        clean_symbols = {_symbol(value) for value in symbols if _symbol(value)}
+        if not clean_symbols <= price_history_snapshot.symbols:
+            raise ValueError('price_history_snapshot_missing_symbols')
+        # Keep per-workflow provenance counts/date ranges identical to a direct
+        # read. Other workflows' symbols must not leak into this metadata.
+        history = {symbol: price_history_snapshot.history[symbol] for symbol in clean_symbols
+                   if symbol in price_history_snapshot.history}
     items = [
         evaluate_result_outcome(
             item,
@@ -78,6 +138,10 @@ def refresh_workflow_outcomes(
         'items': items,
         'summary': summarize_outcomes(items),
     }
+    if price_history_snapshot is not None:
+        if _price_signature(price_path) != price_history_snapshot.signature:
+            raise PriceHistoryChangedError('price_history_changed_after_snapshot')
+        outcomes['price_history'].update(price_history_snapshot.source_metadata)
     write_json_atomic(_outcome_path(workflow_id, workflows_root=workflows_root), outcomes, sort_keys=False)
     return outcomes
 

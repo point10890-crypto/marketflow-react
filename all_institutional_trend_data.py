@@ -17,6 +17,7 @@ import json
 import threading
 from dataclasses import dataclass, asdict
 from pathlib import Path
+import tempfile
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -51,6 +52,7 @@ class InstitutionalData:
     scrape_date: str
     data_source: str
     total_days: int
+    data_date: str = ''              # newest source trading date; scrape_date is collection date
 
     # 기관 순매매량
     institutional_net_buy_60d: int = 0
@@ -114,6 +116,8 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
 
         self.all_institutional_csv_path = self.data_dir / 'all_institutional_trend_data.csv'
         self.config = config or TrendConfig()
+        self.collection_summary = None
+        self._request_outcomes = {}
 
         # 세션 설정 (연결 풀링)
         self.session = requests.Session()
@@ -127,7 +131,10 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
         })
 
         # 네이버 금융 URL 패턴
-        self.base_url = "https://finance.naver.com/item/frgn.naver"
+        # The legacy frgn.naver HTML redirects to a table-free React page.
+        # Naver's public trend response contains the original trading dates and
+        # signed investor quantities for the requested 60-session window.
+        self.base_url = "https://m.stock.naver.com/api/stock"
 
         # 캐시 및 성능 최적화
         self._cache = {}
@@ -162,7 +169,8 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
             stock_info_path = self.data_dir / 'korean_stocks_list.csv'
 
             if stock_info_path.exists():
-                df = pd.read_csv(stock_info_path, encoding='utf-8')
+                df = pd.read_csv(stock_info_path, encoding='utf-8', dtype={'ticker': str})
+                df['ticker'] = df['ticker'].str.strip().str.zfill(6)
                 logger.info(f"✅ 전체 주식 정보 로드: {len(df)}개 종목")
 
                 # 캐시 저장
@@ -210,6 +218,7 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
 
     def scrape_naver_institutional_trend_data(self, ticker: str) -> Optional[InstitutionalData]:
         """네이버에서 60일 기관/외국인 순매매 트렌드 데이터 스크래핑 (업그레이드)"""
+        ticker = str(ticker).strip().zfill(6)
         try:
             # 캐시 확인
             cache_key = f"institutional_{ticker}"
@@ -217,25 +226,44 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
                 return self._cache[cache_key]
 
             # 네이버 금융 URL
-            url = f"{self.base_url}?code={ticker}"
+            ticker = str(ticker).strip().zfill(6)
+            url = f"{self.base_url}/{ticker}/trend?pageSize=60"
 
             # 웹페이지 요청
             response = self._make_request_with_retry(url)
             if not response:
+                self._record_request_outcome(ticker, 'failed', 'request_failed')
                 return self._create_fallback_data(ticker)
 
-            # 한글 인코딩 설정
-            response.encoding = 'euc-kr'
-
-            # BeautifulSoup으로 파싱
-            soup = BeautifulSoup(response.text, 'html.parser')
-
-            # 기관/외국인 순매매 테이블 찾기
-            daily_data = self._extract_daily_data(soup)
+            daily_data = self._extract_trend_json(response.json(), ticker)
+            if not daily_data:
+                self._record_request_outcome(ticker, 'failed', 'invalid_or_empty_response')
+                return None
+            source_day = datetime.strptime(daily_data[0]['date'], '%Y.%m.%d').date()
+            from app.services.kis_screener import _is_kr_trading_day
+            today = datetime.now().date()
+            previous = today - timedelta(days=1)
+            while previous.weekday() >= 5 or not _is_kr_trading_day(previous):
+                previous -= timedelta(days=1)
+            facts = {'data_date': source_day.isoformat(), 'total_days': len(daily_data)}
+            if source_day > today or source_day.weekday() >= 5 or not _is_kr_trading_day(source_day):
+                self._record_request_outcome(ticker, 'failed', 'invalid_source_date', **facts)
+                return None
+            if source_day < previous:
+                # A dated HTTP200 response does not establish a trading halt.
+                self._record_request_outcome(ticker, 'failed', 'source_history_not_current', **facts)
+                return None
+            if len(daily_data) < 5:
+                self._record_request_outcome(ticker, 'skipped', 'insufficient_history', **facts)
+                return None
 
             # 트렌드 분석
             if daily_data and len(daily_data) >= 5:  # 최소 5일 데이터 필요
                 institutional_data = self._analyze_comprehensive_trend(ticker, daily_data)
+                if institutional_data is None:
+                    self._record_request_outcome(ticker, 'failed', 'analysis_failed', **facts)
+                    return None
+                self._record_request_outcome(ticker, 'success', 'current_source_history', **facts)
 
                 # 캐시 저장
                 with self._lock:
@@ -249,7 +277,40 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
 
         except Exception as e:
             logger.warning(f"⚠️ {ticker} 스크래핑 실패: {e}")
+            self._record_request_outcome(ticker, 'failed', 'response_or_analysis_error', error_type=type(e).__name__)
             return self._create_fallback_data(ticker)
+
+    def _record_request_outcome(self, ticker, status, reason, **facts):
+        with self._lock:
+            self._request_outcomes[ticker] = {'ticker': ticker, 'status': status, 'reason': reason, **facts}
+
+    def _extract_trend_json(self, payload, ticker: str) -> List[Dict]:
+        """Reject missing/invalid quantities rather than manufacturing zero flow."""
+        if not isinstance(payload, list):
+            return []
+        rows = []
+        try:
+            for item in payload:
+                if not isinstance(item, dict) or str(item.get('itemCode')) != ticker:
+                    return []
+                day = datetime.strptime(str(item['bizdate']), '%Y%m%d')
+                values = {}
+                for source, target in (('closePrice', 'close_price'), ('accumulatedTradingVolume', 'volume'),
+                                       ('organPureBuyQuant', 'institutional_net_buy'),
+                                       ('foreignerPureBuyQuant', 'foreign_net_buy')):
+                    text = str(item[source]).replace(',', '').strip()
+                    if not re.fullmatch(r'[+-]?\d+', text):
+                        return []
+                    values[target] = int(text)
+                if values['close_price'] <= 0 or values['volume'] < 0:
+                    return []
+                rows.append({'date': day.strftime('%Y.%m.%d'), **values})
+        except (KeyError, TypeError, ValueError):
+            return []
+        rows.sort(key=lambda row: row['date'], reverse=True)
+        if len({row['date'] for row in rows}) != len(rows):
+            return []
+        return rows[:60]
 
     def _extract_daily_data(self, soup: BeautifulSoup) -> List[Dict]:
         """일별 데이터 추출"""
@@ -343,6 +404,17 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
         """종합적인 트렌드 분석 (업그레이드)"""
         try:
             df = pd.DataFrame(daily_data)
+            df = df.sort_values('date', ascending=False).drop_duplicates('date')
+            source_day = datetime.strptime(str(df.iloc[0]['date']), '%Y.%m.%d').date()
+            from app.services.kis_screener import _is_kr_trading_day
+            today = datetime.now().date()
+            previous = today - timedelta(days=1)
+            while previous.weekday() >= 5 or not _is_kr_trading_day(previous):
+                previous -= timedelta(days=1)
+            if (len(df) < 5 or source_day < previous or source_day > today
+                    or source_day.weekday() >= 5 or not _is_kr_trading_day(source_day)):
+                logger.warning("%s source trading date is not current: %s", ticker, source_day)
+                return None
 
             # 기간별 데이터 분할
             periods = {
@@ -389,8 +461,9 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
             institutional_data = InstitutionalData(
                 ticker=ticker,
                 scrape_date=datetime.now().strftime('%Y-%m-%d'),
-                data_source='naver_finance_enhanced',
+                data_source='naver_finance_trend_api',
                 total_days=len(df),
+                data_date=source_day.isoformat(),
                 price_change_60d=price_change_60d,
                 **metrics,
                 **trend_analysis,
@@ -715,18 +788,14 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
         else:
             return "강한분산"
 
-    def _create_fallback_data(self, ticker: str) -> InstitutionalData:
-        """스크래핑 실패시 대체 데이터"""
-        return InstitutionalData(
-            ticker=ticker,
-            scrape_date=datetime.now().strftime('%Y-%m-%d'),
-            data_source='fallback_estimation',
-            total_days=0
-        )
+    def _create_fallback_data(self, ticker: str) -> None:
+        """Unavailable flow is missing evidence, never a zero-valued current row."""
+        return None
 
     def download_all_institutional_data(self, max_stocks: int = None,
                                       max_workers: int = 5,
-                                      save_interval: int = 100) -> pd.DataFrame:
+                                      save_interval: int = 100,
+                                      requested_codes: Optional[List[str]] = None) -> pd.DataFrame:
         """전체 주식 기관 데이터 다운로드 (멀티스레딩)"""
         logger.info("🚀 Enhanced 전체 주식 기관/외국인 순매매 트렌드 데이터 다운로드 시작...")
 
@@ -736,6 +805,12 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
         if stock_df.empty:
             logger.error("❌ 주식 정보를 로드할 수 없습니다")
             return pd.DataFrame()
+        stock_df = stock_df.drop_duplicates('ticker')
+        if requested_codes is not None:
+            selected = {str(code).strip().zfill(6) for code in requested_codes}
+            if not selected or selected - set(stock_df['ticker']):
+                raise ValueError('Requested institutional codes must exist in the source universe')
+            stock_df = stock_df[stock_df['ticker'].isin(selected)]
 
         # 최대 종목 수 제한 (테스트용)
         if max_stocks:
@@ -748,6 +823,8 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
         results = []
         success_count = 0
         fail_count = 0
+        skipped_count = 0
+        self._request_outcomes = {}
 
         # 멀티스레딩으로 데이터 수집
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -768,12 +845,21 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
                         if institutional_data and institutional_data.total_days > 0:
                             results.append(asdict(institutional_data))
                             success_count += 1
+                            self._record_request_outcome(ticker, 'success', 'current_source_history',
+                                                         data_date=institutional_data.data_date,
+                                                         total_days=institutional_data.total_days)
                         else:
-                            fail_count += 1
+                            if self._request_outcomes.get(ticker, {}).get('status') == 'skipped':
+                                skipped_count += 1
+                            else:
+                                fail_count += 1
+                                if ticker not in self._request_outcomes:
+                                    self._record_request_outcome(ticker, 'failed', 'no_verified_source_result')
 
                     except Exception as e:
                         logger.warning(f"⚠️ {ticker} 처리 실패: {e}")
                         fail_count += 1
+                        self._record_request_outcome(ticker, 'failed', 'collector_exception', error_type=type(e).__name__)
 
                     pbar.update(1)
 
@@ -783,9 +869,21 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
 
         df = pd.DataFrame(results)
 
-        logger.info(f"✅ Enhanced 전체 기관 데이터 다운로드 완료!")
+        self.collection_summary = {
+            'collected_at': datetime.now().isoformat(), 'attempted': len(tickers),
+            'successful': success_count, 'failed': fail_count, 'skipped': skipped_count,
+            'status': 'failed' if not success_count else ('partial' if fail_count else 'completed'),
+            'usable_results': success_count,
+            'requested_codes': tickers,
+            'failed_codes': [code for code in tickers if self._request_outcomes[code]['status'] == 'failed'],
+            'outcomes': [self._request_outcomes[code] for code in tickers],
+        }
+        from app.utils.atomic_json import write_json_atomic
+        write_json_atomic(str(self.data_dir / 'institutional_collection_status.json'), self.collection_summary)
+        logger.info(f"📊 Enhanced 기관 데이터 수집 종료")
         logger.info(f"   📊 성공: {success_count}개")
         logger.info(f"   ❌ 실패: {fail_count}개")
+        logger.info(f"   ⏭️ 확인된 이력 부족: {skipped_count}개")
         logger.info(f"   📈 성공률: {success_count/(success_count+fail_count)*100:.1f}%" if (success_count+fail_count) > 0 else "성공률: 0%")
 
         return df
@@ -809,12 +907,28 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
 
             # 데이터 정리 및 검증
             df_cleaned = self._clean_and_validate_data(df)
+            snapshot = df_cleaned
+            if self.all_institutional_csv_path.exists():
+                previous = pd.read_csv(self.all_institutional_csv_path, encoding='utf-8-sig', dtype={'ticker': str})
+                previous['ticker'] = previous['ticker'].str.strip().str.zfill(6)
+                retained = previous[~previous['ticker'].isin(df_cleaned['ticker'])]
+                # Retained rows keep their original dates AND values; they are
+                # not cleaned, re-scored or stamped as observations from today.
+                snapshot = pd.concat([df_cleaned, retained], ignore_index=True)
 
             # CSV 파일로 저장
-            df_cleaned.to_csv(self.all_institutional_csv_path, index=False, encoding='utf-8-sig')
+            fd, tmp_name = tempfile.mkstemp(dir=self.data_dir, prefix='.institutional-', suffix='.tmp')
+            os.close(fd)
+            try:
+                snapshot.to_csv(tmp_name, index=False, encoding='utf-8-sig')
+                os.replace(tmp_name, self.all_institutional_csv_path)
+            finally:
+                if os.path.exists(tmp_name):
+                    os.unlink(tmp_name)
 
             # 상세 메타데이터 저장
-            metadata = self._create_metadata(df_cleaned)
+            metadata = self._create_metadata(snapshot)
+            metadata.update(updated_stocks=len(df_cleaned), retained_stocks=len(snapshot) - len(df_cleaned))
             metadata_df = pd.DataFrame([metadata])
             metadata_path = self.data_dir / 'all_institutional_metadata.csv'
             metadata_df.to_csv(metadata_path, index=False, encoding='utf-8-sig')
@@ -876,12 +990,17 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
         return {
             'collection_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'total_stocks': len(df),
-            'data_source': 'naver_finance_enhanced_60day_trend',
+            'data_source': ','.join(sorted(set(df['data_source'].dropna().astype(str)))),
+            'latest_source_date': df['data_date'].dropna().astype(str).max() if 'data_date' in df and df['data_date'].notna().any() else None,
             'description': 'Enhanced 전체 한국 주식 60일 기관/외국인 순매매 트렌드 데이터',
             'version': '2.0',
             'columns_count': len(df.columns),
-            'successful_scrapes': len(df[df['total_days'] > 0]),
-            'failed_scrapes': len(df[df['total_days'] == 0]),
+            'attempted_scrapes': (self.collection_summary or {}).get('attempted', len(df)),
+            'successful_scrapes': (self.collection_summary or {}).get('successful', len(df[df['total_days'] > 0])),
+            'failed_scrapes': (self.collection_summary or {}).get('failed', len(df[df['total_days'] == 0])),
+            'skipped_scrapes': (self.collection_summary or {}).get('skipped', 0),
+            'requested_codes': json.dumps((self.collection_summary or {}).get('requested_codes', [])),
+            'failed_codes': json.dumps((self.collection_summary or {}).get('failed_codes', [])),
             'average_data_days': df['total_days'].mean(),
             'config_used': asdict(self.config)
         }
@@ -953,6 +1072,8 @@ def main():
     if not df.empty:
         # 데이터 저장
         if analyzer.save_institutional_data(df):
+            if (getattr(analyzer, 'collection_summary', None) or {}).get('failed', 0):
+                raise RuntimeError('Partial institutional collection: valid updates saved; failed codes retained for retry')
             print(f"\n🎯 Enhanced 전체 기관/외국인 순매매 트렌드 데이터 다운로드 및 저장 완료!")
             print(f"📊 총 {len(df)}개 종목")
             print(f"📁 저장 위치: {analyzer.all_institutional_csv_path}")
@@ -1027,8 +1148,10 @@ def main():
 
         else:
             print(f"\n❌ Enhanced 기관 데이터 저장 실패!")
+            raise RuntimeError('Institutional snapshot save failed')
     else:
         print(f"\n❌ Enhanced 기관 데이터 다운로드 실패!")
+        raise RuntimeError('No valid institutional data collected; previous snapshot preserved')
 
 if __name__ == "__main__":
     # CLI 단독 실행 시에만 파일 + 콘솔 핸들러 부착 (Flask import 시에는 부착 X)

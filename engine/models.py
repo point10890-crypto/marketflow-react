@@ -73,6 +73,8 @@ class SupplyData:
     # 누적 순매수
     foreign_buy_5d: int = 0            # 외국인 5일 누적 순매수
     inst_buy_5d: int = 0               # 기관 5일 누적 순매수
+    data_source: str = ''             # 원본 수급 공급자 (기존 생성자와 호환)
+    scrape_date: Optional[date] = None # 수집일; date 는 실제 원본 거래일
 
 
 @dataclass

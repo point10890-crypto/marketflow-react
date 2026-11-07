@@ -210,6 +210,42 @@ def _cold_run_files(run: Path, options: Options, archive: Path) -> list[Path] | 
     return json_files
 
 
+def _has_compactable_metadata(run: Path, options: Options) -> bool:
+    """Cheap rejection only, for direct children of the validated archive.
+
+    Already-compressed runs need no JSON reads or repeated ancestor traversal.
+    Reject redirects/hardlinks even on this skip path. A positive result never
+    authorizes compression: discovery and every apply batch still perform the
+    complete existing path, mtime, completion-header and integrity checks.
+    """
+    run_date = _run_date(run)
+    if (run_date is None or run_date >= options.before
+            or (options.after is not None and run_date < options.after) or not run.is_dir()):
+        return False
+    if _is_reparse(run):
+        raise SafetyError('reparse_target_rejected')
+    files = list(run.iterdir())
+    names = {path.name for path in files if path.is_file()}
+    if not REQUIRED_FILES <= names or any(path.suffix.lower() == '.tmp' for path in files):
+        return False
+    metadata = []
+    for path in sorted((p for p in files if p.is_file() and p.suffix.lower() == '.json'), key=lambda p: p.name):
+        if _is_reparse(path):
+            raise SafetyError('reparse_target_rejected')
+        info = path.stat()
+        if info.st_nlink > 1:
+            raise SafetyError('hardlinked_target_rejected')
+        metadata.append((path, info))
+    if any(datetime.fromtimestamp(info.st_mtime).date() >= options.before for _, info in metadata):
+        return False
+    for path, info in metadata:
+        if info.st_size > MIN_COMPACT_BYTES:
+            physical = _physical_size(path)
+            if physical > MIN_COMPACT_BYTES and physical >= info.st_size:
+                return True
+    return False
+
+
 def discover_files(options: Options) -> list[Path]:
     archive = validate_options(options)
     runs = sorted((p for p in archive.iterdir() if _run_date(p)), key=lambda p: p.name, reverse=True)
@@ -218,6 +254,8 @@ def discover_files(options: Options) -> list[Path]:
     selected_runs = 0
     for run in runs:
         if run == latest:
+            continue
+        if not _has_compactable_metadata(run, options):
             continue
         json_files = _cold_run_files(run, options, archive)
         if json_files is None:
