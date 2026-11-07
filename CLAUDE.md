@@ -929,3 +929,14 @@ echo "=== Done ==="
 - miniPC Task: `deploy/register_claw_task.ps1` → `MarketFlow-Claw`(SYSTEM·AtStartup) + `MarketFlow-Claw-Watchdog`(5분, heartbeat 180s). 호스트 가드 `MINIPC-NQYLP`.
 - 텔레그램 봇: `TELEGRAM_CHANNEL_BOT_TOKEN`=@bitman75_bot(사용자 봇). 구 개인봇 @bitmanHermes_bot은 대화방 삭제로 403 → 토큰 교체로 해소(본PC 완료, miniPC는 apply 스크립트).
 - 대시보드 테마: 페이지 JSX 무수정, `frontend-react/src/index.css`의 `.claw-theme` 레이어. 등급/KRX/경고 의미색 유지.
+
+---
+
+## 17. 운영 관제 센터 (Control Center) — 2026-11-08
+
+- 계약과 한계: `docs/control_center_design_2026_11_07.md`.
+- Flask와 별도 관측 프로세스. 관리자 화면 `/admin/control-center`, 조회 API `/api/admin/control-center/*`.
+- 전체 경로는 정적 목록, 실제 HTTP 점검은 검토된 허용 목록만. GET 부작용 때문에 전수 호출 금지.
+- MiniPC 작업 1·10·60분, `deploy/register_control_center_tasks.ps1`, 항상 `--no-alerts`. 자체 복구·주문·결제 없음.
+- 결과 `data/control_center/`는 git 제외. 각 주기 신선도 및 unknown/skipped를 정상과 구분한다.
+- 기존 OpenClaw 설정/권한은 바꾸지 않는다. `scripts/preview_openclaw_ops_agent.py`는 비활성 구성 미리보기다.

@@ -959,7 +959,7 @@ async function _authFetch(url: string, options: RequestInit, timeoutMs: number =
         }
         return response;
     } catch (error) {
-        console.error(`[authFetch Error] ${url}:`, error);
+        if (!options.signal?.aborted) console.error(`[authFetch Error] ${url}:`, error);
         throw error;
     }
 }
@@ -970,10 +970,10 @@ function withToken(extra: Record<string, string> | undefined, apiToken?: string)
     return authHeaders(extra);
 }
 
-export async function fetchAuthAPI<T>(endpoint: string, apiToken?: string, timeoutMs?: number): Promise<T> {
+export async function fetchAuthAPI<T>(endpoint: string, apiToken?: string, timeoutMs?: number, signal?: AbortSignal): Promise<T> {
     const response = await _authFetch(
         `${API_BASE}${endpoint}`,
-        { headers: withToken(undefined, apiToken) },
+        { headers: withToken(undefined, apiToken), signal },
         timeoutMs,
     );
     return response.json();

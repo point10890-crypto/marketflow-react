@@ -336,6 +336,17 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 {/* Admin Section */}
                 {userRole === 'admin' && (
                     <div className="space-y-1 mt-2">
+                        <Link to="/admin/control-center" onClick={onNavigate}
+                            className={`mt-2 flex items-center gap-2.5 p-3 rounded-xl text-[13px] font-bold transition-all border ${
+                                pathname === '/admin/control-center'
+                                    ? 'text-emerald-300 bg-gradient-to-r from-emerald-500/15 to-cyan-500/10 border-emerald-500/25'
+                                    : 'text-emerald-400/80 hover:text-emerald-300 bg-gradient-to-r from-emerald-500/10 to-cyan-500/5 border-emerald-500/10 hover:border-emerald-500/20'
+                            }`}
+                        >
+                            <i className="fas fa-satellite-dish w-5 text-center"></i>
+                            <span>운영 관제 센터</span>
+                            <i className="fas fa-chevron-right text-[10px] ml-auto opacity-50"></i>
+                        </Link>
                         <Link to="/admin/endpoints" onClick={onNavigate}
                             className={`mt-2 flex items-center gap-2.5 p-3 rounded-xl text-[13px] font-bold transition-all border ${
                                 pathname === '/admin/endpoints'

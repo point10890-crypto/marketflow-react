@@ -109,4 +109,8 @@ def register_blueprints(app):
     from app.routes.kr_stock_hub import kr_stock_hub_bp
     app.register_blueprint(kr_stock_hub_bp, url_prefix='/api/kr/stock')
 
+    # 운영 관제 센터 (관리자 전용, 읽기 전용) — 감시는 별도 프로세스, 여기서는 결과 조회
+    from app.routes.control_center import control_center_bp
+    app.register_blueprint(control_center_bp, url_prefix='/api/admin/control-center')
+
     print("[OK] Blueprints registered (KR + US + Crypto + Econ + Auth + Admin + MiroFish + Stripe + StockAnalyzer + ManualStockAnalysis + Wave + Briefing + Community)")

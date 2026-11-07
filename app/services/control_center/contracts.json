@@ -1,0 +1,741 @@
+{
+ "version": 2,
+ "_doc": "Static inventory is not a live probe. Only explicitly audited read-only paths are called. No service identity or alerts enabled by deployment.",
+ "api_base": "http://127.0.0.1:5003",
+ "public_urls": [
+  {
+   "id": "api_tunnel",
+   "label": "공개 API (Cloudflare 터널)",
+   "url": "https://marketflow-api.bit-man.net/healthz",
+   "env": "CONTROL_CENTER_PUBLIC_API_HEALTH",
+   "expect_key": "ok",
+   "severity": "critical",
+   "tier": "fast"
+  },
+  {
+   "id": "web",
+   "label": "웹 화면 (Cloudflare Pages)",
+   "url": "https://bit-man.net/",
+   "env": "CONTROL_CENTER_PUBLIC_WEB",
+   "severity": "critical",
+   "tier": "standard"
+  }
+ ],
+ "ports": [
+  {
+   "id": "flask_primary",
+   "label": "Flask 운영 API",
+   "port": 5003,
+   "severity": "critical"
+  },
+  {
+   "id": "flask_legacy",
+   "label": "Flask KIS 보조",
+   "port": 5001,
+   "severity": "standard"
+  },
+  {
+   "id": "mirofish_mcp",
+   "label": "MiroFish MCP",
+   "port": 8765,
+   "severity": "standard"
+  },
+  {
+   "id": "goodrich",
+   "label": "Goodrich TradingOS",
+   "port": 8000,
+   "severity": "info"
+  }
+ ],
+ "heartbeats": [
+  {
+   "id": "scheduler",
+   "label": "스케줄러 데몬",
+   "path": "{data}/scheduler_heartbeat.json",
+   "field": "ts",
+   "max_age_sec": 180,
+   "severity": "critical"
+  },
+  {
+   "id": "claw",
+   "label": "Claw 장중 루프",
+   "path": "{data}/claw/heartbeat.json",
+   "field": "ts",
+   "max_age_sec": 180,
+   "severity": "standard"
+  }
+ ],
+ "watchdogs": [
+  {
+   "id": "flask_primary",
+   "label": "Flask 5003 워치독",
+   "path": "{data}/flask_watchdog_state.json",
+   "fail_after": 3,
+   "severity": "critical"
+  },
+  {
+   "id": "flask_legacy",
+   "label": "Flask 5001 워치독",
+   "path": "{data}/flask_5001_watchdog_state.json",
+   "fail_after": 3,
+   "severity": "standard"
+  }
+ ],
+ "data": [
+  {
+   "id": "kr_jongga",
+   "label": "종가베팅 V2",
+   "path": "{data}/jongga_v2_latest.json",
+   "max_age_hours": 30,
+   "calendar": "kr_trading",
+   "severity": "critical",
+   "pages": [
+    "/dashboard/kr/closing-bet",
+    "/dashboard/kr",
+    "/dashboard"
+   ],
+   "field": "updated_at"
+  },
+  {
+   "id": "kr_market_gate",
+   "label": "KR 마켓 게이트",
+   "path": "{data}/market_gate_cache.json",
+   "max_age_hours": 30,
+   "calendar": "kr_trading",
+   "pages": [
+    "/dashboard/kr",
+    "/dashboard",
+    "/dashboard/briefing"
+   ],
+   "field": "updated_at"
+  },
+  {
+   "id": "kr_leading",
+   "label": "주도주 LIVE",
+   "path": "{data}/screener_leading_latest.json",
+   "max_age_hours": 30,
+   "calendar": "kr_trading",
+   "pages": [
+    "/dashboard/kr/leading-stocks",
+    "/dashboard"
+   ],
+   "field": "timestamp"
+  },
+  {
+   "id": "kr_vcp",
+   "label": "KR VCP Enhanced",
+   "path": "{data}/vcp_kr_latest.json",
+   "max_age_hours": 30,
+   "calendar": "kr_trading",
+   "pages": [
+    "/dashboard/vcp-enhanced",
+    "/dashboard/kr/vcp"
+   ],
+   "field": "metadata.generated_at"
+  },
+  {
+   "id": "us_vcp",
+   "label": "US VCP Enhanced",
+   "path": "{data}/vcp_us_latest.json",
+   "max_age_hours": 30,
+   "calendar": "us_trading",
+   "pages": [
+    "/dashboard/us/vcp"
+   ],
+   "field": "metadata.generated_at"
+  },
+  {
+   "id": "wave",
+   "label": "Wave 스크리너",
+   "path": "{data}/wave/wave_screener_latest.json",
+   "max_age_hours": 30,
+   "calendar": "kr_trading",
+   "pages": [
+    "/dashboard/wave"
+   ],
+   "field": "updated_at"
+  },
+  {
+   "id": "cumulative",
+   "label": "누적 성과",
+   "path": "{data}/cumulative_performance.json",
+   "max_age_hours": 30,
+   "calendar": "kr_trading",
+   "pages": [
+    "/dashboard/kr/closing-bet/history"
+   ],
+   "optional": true,
+   "on_demand": true
+  },
+  {
+   "id": "us_briefing",
+   "label": "US 마켓 브리핑",
+   "path": "{us_output}/market_briefing.json",
+   "max_age_hours": 30,
+   "calendar": "us_trading",
+   "severity": "critical",
+   "pages": [
+    "/dashboard/us",
+    "/dashboard/briefing",
+    "/dashboard"
+   ],
+   "field": "timestamp"
+  },
+  {
+   "id": "us_smart_money",
+   "label": "US Smart Money",
+   "path": "{us_output}/smart_money_snapshot.json",
+   "max_age_hours": 30,
+   "calendar": "us_trading",
+   "pages": [
+    "/dashboard/us"
+   ],
+   "field": "timestamp"
+  },
+  {
+   "id": "us_decision",
+   "label": "US Decision Signal",
+   "path": "{us_output}/decision_signal_snapshot.json",
+   "max_age_hours": 30,
+   "calendar": "us_trading",
+   "pages": [
+    "/dashboard/us",
+    "/dashboard/briefing"
+   ]
+  },
+  {
+   "id": "us_heatmap",
+   "label": "US 섹터 히트맵",
+   "path": "{us_output}/sector_heatmap.json",
+   "max_age_hours": 30,
+   "calendar": "us_trading",
+   "pages": [
+    "/dashboard/us"
+   ],
+   "field": "timestamp"
+  },
+  {
+   "id": "us_earnings",
+   "label": "US 어닝",
+   "path": "{us_output}/earnings_impact.json",
+   "max_age_hours": 48,
+   "calendar": "us_trading",
+   "pages": [
+    "/dashboard/us"
+   ],
+   "field": "timestamp"
+  },
+  {
+   "id": "crypto_overview",
+   "label": "Crypto 개요",
+   "path": "{crypto_output}/overview_snapshot.json",
+   "max_age_hours": 6,
+   "pages": [
+    "/dashboard/crypto"
+   ],
+   "field": "timestamp"
+  },
+  {
+   "id": "crypto_market_gate",
+   "label": "Crypto 마켓 게이트",
+   "path": "{crypto_output}/market_gate.json",
+   "max_age_hours": 6,
+   "pages": [
+    "/dashboard/crypto"
+   ],
+   "field": "generated_at"
+  },
+  {
+   "id": "crypto_briefing",
+   "label": "Crypto 브리핑",
+   "path": "{crypto_output}/crypto_briefing.json",
+   "max_age_hours": 6,
+   "pages": [
+    "/dashboard/crypto"
+   ],
+   "field": "timestamp"
+  }
+ ],
+ "jobs": {
+  "grace_minutes": 45,
+  "critical": [
+   "kr_jongga",
+   "us_market",
+   "leading_screener",
+   "vcp_all",
+   "crypto"
+  ],
+  "ignore": [
+   "lotto_analysis_recovery",
+   "lotto_results_recovery"
+  ]
+ },
+ "windows_tasks": {
+  "prefixes": [
+   "MarketFlow-",
+   "Goodrich-"
+  ],
+  "critical": [
+   "MarketFlow-Flask",
+   "MarketFlow-Scheduler",
+   "MarketFlow-Flask-Watchdog",
+   "MarketFlow-Scheduler-Watchdog",
+   "MarketFlow-Tunnel-Watchdog",
+   "MarketFlow-ControlCenter-Fast",
+   "MarketFlow-ControlCenter-Standard",
+   "MarketFlow-ControlCenter-Deep"
+  ],
+  "resident": [
+   "MarketFlow-Flask",
+   "Goodrich-TradingOS"
+  ],
+  "ignore": [
+   "MarketFlow-Watchdog"
+  ]
+ },
+ "providers": [
+  {
+   "id": "telegram",
+   "label": "Telegram 개인 봇",
+   "type": "telegram_getme",
+   "env": "TELEGRAM_BOT_TOKEN",
+   "interval_min": 60
+  },
+  {
+   "id": "dart",
+   "label": "OpenDART",
+   "type": "dart_list",
+   "env": "DART_API_KEY",
+   "interval_min": 60
+  },
+  {
+   "id": "kis_token",
+   "label": "KIS 토큰",
+   "type": "kis_token_cache",
+   "envs": [
+    "KIS_APP_KEY"
+   ],
+   "path": "{data}/kis_token_cache.json"
+  },
+  {
+   "id": "llm_routing",
+   "label": "LLM 라우팅 (Gemini·OpenAI·DeepSeek)",
+   "type": "ai_routing_health",
+   "path": "{data}/ai_routing/health.json",
+   "max_age_hours": 26
+  },
+  {
+   "id": "kiwoom",
+   "label": "키움 API 키",
+   "type": "env_present",
+   "envs": [
+    "KIWOOM_APP_KEY"
+   ]
+  },
+  {
+   "id": "fred",
+   "label": "FRED",
+   "type": "env_present",
+   "envs": [
+    "FRED_API_KEY"
+   ]
+  },
+  {
+   "id": "perplexity",
+   "label": "Perplexity",
+   "type": "env_present",
+   "envs": [
+    "PERPLEXITY_API_KEY"
+   ]
+  }
+ ],
+ "host": {
+  "disk": {
+   "warn_gb": 5,
+   "fail_gb": 1
+  },
+  "memory": {
+   "warn_pct": 85,
+   "fail_pct": 95
+  }
+ },
+ "endpoints": {
+  "exclude": [
+   "/api/system/update-data-stream",
+   "/api/system/update-single"
+  ],
+  "public_safe": [
+   "/healthz",
+   "/api/health",
+   "/api/data-version",
+   "/api/public/track-record",
+   "/api/public/community/boards"
+  ],
+  "public_mutation_ok": [
+   "/api/auth/login",
+   "/api/auth/register",
+   "/api/stripe/webhook",
+   "/api/auth/admin/set-tier"
+  ],
+  "public_info_exposure": [
+   "/api/system/data-status",
+   "/api/system/last-update"
+  ],
+  "public_reviewed": [
+   "/api/kr/ai-chart-image/<stock_code>",
+   "/api/us/ai-chart-image/<ticker>",
+   "/api/community/uploads/<filename>",
+   "/api/public/community/boards/<slug>/posts",
+   "/api/public/community/posts/<int:post_id>",
+   "/api/public/community/sitemap"
+  ],
+  "deep": [
+   {
+    "path": "/api/health",
+    "auth": "public",
+    "tier": "fast",
+    "severity": "critical",
+    "pages": [],
+    "expect_keys": [
+     "status"
+    ],
+    "budget_ms": 1500,
+    "label": "API 헬스",
+    "readonly_audited": true
+   },
+   {
+    "path": "/api/admin/control-center/summary",
+    "auth": "admin",
+    "tier": "deep",
+    "severity": "standard",
+    "pages": [
+     "/admin/control-center"
+    ],
+    "label": "관제 요약",
+    "readonly_audited": true,
+    "expect_keys": [
+     "schema",
+     "monitor",
+     "counts"
+    ]
+   },
+   {
+    "path": "/api/admin/control-center/incidents",
+    "auth": "admin",
+    "tier": "deep",
+    "severity": "standard",
+    "pages": [
+     "/admin/control-center"
+    ],
+    "label": "관제 사건",
+    "readonly_audited": true,
+    "expect_keys": [
+     "state",
+     "incidents"
+    ]
+   },
+   {
+    "path": "/api/admin/control-center/routes",
+    "auth": "admin",
+    "tier": "deep",
+    "severity": "standard",
+    "pages": [
+     "/admin/control-center"
+    ],
+    "label": "경로 목록",
+    "readonly_audited": true,
+    "expect_keys": [
+     "totals",
+     "routes"
+    ]
+   }
+  ],
+  "auth_probe_safe": [
+   "/api/admin/control-center/summary",
+   "/api/admin/control-center/incidents",
+   "/api/admin/control-center/routes"
+  ],
+  "public_probe_safe": [
+   "/healthz",
+   "/api/health"
+  ]
+ },
+ "pages": [
+  {
+   "path": "/dashboard",
+   "label": "Summary",
+   "critical": true,
+   "endpoints": [
+    "/api/kr/market-gate",
+    "/api/kr/jongga-v2/today-summary",
+    "/api/kr/screener/leading",
+    "/api/briefing/latest",
+    "/api/us/market-briefing",
+    "/api/kr/vcp-enhanced"
+   ]
+  },
+  {
+   "path": "/dashboard/briefing",
+   "label": "Briefing",
+   "critical": true,
+   "endpoints": [
+    "/api/us/market-briefing",
+    "/api/kr/market-gate",
+    "/api/us/decision-signal",
+    "/api/crypto/dominance",
+    "/api/briefing/morning",
+    "/api/briefing/closing"
+   ]
+  },
+  {
+   "path": "/dashboard/vcp-enhanced",
+   "label": "VCP Enhanced",
+   "critical": false,
+   "endpoints": [
+    "/api/kr/vcp-enhanced",
+    "/api/kr/vcp-enhanced/dates"
+   ]
+  },
+  {
+   "path": "/dashboard/wave",
+   "label": "W Pattern",
+   "critical": false,
+   "endpoints": [
+    "/api/wave/screener/latest"
+   ]
+  },
+  {
+   "path": "/dashboard/ai-bain",
+   "label": "AI Brain 알파 스캐너",
+   "critical": true,
+   "endpoints": [
+    "/api/admin/mirofish/aibain/overview",
+    "/api/admin/mirofish/paper/overview",
+    "/api/admin/mirofish/alpha-lab",
+    "/api/kr/claw/overview",
+    "/api/kr/claw/close-leaders",
+    "/api/kr/alpha-core/status"
+   ]
+  },
+  {
+   "path": "/dashboard/ai-bain/goodrich",
+   "label": "Goodrich TOP 3",
+   "critical": false,
+   "endpoints": [
+    "/api/admin/mirofish/goodrich/fund-manager"
+   ]
+  },
+  {
+   "path": "/dashboard/ai-bain/decision",
+   "label": "종목 판단",
+   "critical": false,
+   "endpoints": [
+    "/api/kr/rag/status"
+   ]
+  },
+  {
+   "path": "/dashboard/ai-bain/chart-predict",
+   "label": "차트 유사 사례",
+   "critical": false,
+   "endpoints": [
+    "/api/admin/mirofish/chart-analogue/top3",
+    "/api/admin/mirofish/chart-analogue/evaluation",
+    "/api/admin/mirofish/alpha-lab"
+   ]
+  },
+  {
+   "path": "/dashboard/ai-bain/catalyst-validation",
+   "label": "뉴스·재료 검증",
+   "critical": false,
+   "endpoints": [
+    "/api/admin/mirofish/kongming/catalyst-validation",
+    "/api/admin/mirofish/kongming/article-candidates"
+   ]
+  },
+  {
+   "path": "/dashboard/manual-stock-analysis",
+   "label": "AI 주식분석",
+   "critical": false,
+   "endpoints": [
+    "/api/manual-stock-analysis/runs",
+    "/api/manual-stock-analysis/scraper-loop"
+   ]
+  },
+  {
+   "path": "/dashboard/kr",
+   "label": "KR Overview",
+   "critical": true,
+   "endpoints": [
+    "/api/kr/market-gate",
+    "/api/kr/signals",
+    "/api/kr/jongga-v2/latest",
+    "/api/kr/vcp-enhanced",
+    "/api/kr/screener/leading",
+    "/api/kr/ai-chart-analysis"
+   ]
+  },
+  {
+   "path": "/dashboard/kr/vcp",
+   "label": "KR VCP Signals",
+   "critical": false,
+   "endpoints": [
+    "/api/kr/vcp-enhanced",
+    "/api/kr/vcp-enhanced/dates"
+   ]
+  },
+  {
+   "path": "/dashboard/kr/leading-stocks",
+   "label": "주도주LIVE",
+   "critical": true,
+   "endpoints": [
+    "/api/kr/screener/leading",
+    "/api/kr/screener/leading/ai-theme"
+   ]
+  },
+  {
+   "path": "/dashboard/kr/claw",
+   "label": "Claw LIVE",
+   "critical": true,
+   "endpoints": [
+    "/api/kr/claw/overview",
+    "/api/kr/claw/scorecards",
+    "/api/kr/claw/quality"
+   ]
+  },
+  {
+   "path": "/dashboard/kr/closing-bet",
+   "label": "종가베팅",
+   "critical": true,
+   "endpoints": [
+    "/api/kr/jongga-v2/latest",
+    "/api/kr/jongga-v2/dates"
+   ]
+  },
+  {
+   "path": "/dashboard/kr/closing-bet/history",
+   "label": "성과 히스토리",
+   "critical": false,
+   "endpoints": [
+    "/api/kr/cumulative-return"
+   ]
+  },
+  {
+   "path": "/dashboard/kr/track-record",
+   "label": "Track Record",
+   "critical": false,
+   "endpoints": [
+    "/api/kr/jongga-v2/performance"
+   ]
+  },
+  {
+   "path": "/dashboard/kr/ai-chart",
+   "label": "KR AI Chart",
+   "critical": false,
+   "endpoints": [
+    "/api/kr/ai-chart-analysis"
+   ]
+  },
+  {
+   "path": "/dashboard/us",
+   "label": "US Overview",
+   "critical": true,
+   "endpoints": [
+    "/api/us/portfolio",
+    "/api/us/market-gate",
+    "/api/us/decision-signal",
+    "/api/us/market-briefing",
+    "/api/us/market-regime",
+    "/api/us/cumulative-performance"
+   ]
+  },
+  {
+   "path": "/dashboard/us/vcp",
+   "label": "US VCP Signals",
+   "critical": false,
+   "endpoints": [
+    "/api/us/vcp-enhanced",
+    "/api/us/vcp-enhanced/dates"
+   ]
+  },
+  {
+   "path": "/dashboard/us/etf",
+   "label": "ETF Flows",
+   "critical": false,
+   "endpoints": [
+    "/api/us/etf-flows"
+   ]
+  },
+  {
+   "path": "/dashboard/us/ai-chart",
+   "label": "US AI Chart",
+   "critical": false,
+   "endpoints": [
+    "/api/us/ai-chart-analysis"
+   ]
+  },
+  {
+   "path": "/dashboard/crypto",
+   "label": "Crypto Overview",
+   "critical": false,
+   "endpoints": [
+    "/api/crypto/overview",
+    "/api/crypto/market-gate",
+    "/api/crypto/dominance",
+    "/api/crypto/briefing"
+   ]
+  },
+  {
+   "path": "/dashboard/crypto/signals",
+   "label": "Crypto VCP Signals",
+   "critical": false,
+   "endpoints": [
+    "/api/crypto/vcp-enhanced",
+    "/api/crypto/vcp-enhanced/dates"
+   ]
+  },
+  {
+   "path": "/dashboard/community",
+   "label": "커뮤니티",
+   "critical": false,
+   "endpoints": [
+    "/api/community/boards"
+   ]
+  },
+  {
+   "path": "/admin",
+   "label": "관리자",
+   "critical": false,
+   "endpoints": [
+    "/api/admin/dashboard",
+    "/api/admin/notifications/unread-count"
+   ]
+  },
+  {
+   "path": "/admin/data-status",
+   "label": "Data Status",
+   "critical": false,
+   "endpoints": [
+    "/api/system/data-status"
+   ]
+  },
+  {
+   "path": "/admin/endpoints",
+   "label": "MiroFish 콘솔",
+   "critical": false,
+   "endpoints": [
+    "/api/admin/mirofish/status",
+    "/api/admin/mirofish/data-sources"
+   ]
+  },
+  {
+   "path": "/admin/control-center",
+   "label": "운영 관제 센터",
+   "endpoints": [
+    "/api/admin/control-center/summary",
+    "/api/admin/control-center/incidents",
+    "/api/admin/control-center/routes"
+   ],
+   "critical": true
+  }
+ ]
+}

@@ -163,6 +163,7 @@ schtask_result.txt
 
 # MarketFlow Claw runtime (db/heartbeat/pid/lock/reports)
 data/claw/
+data/control_center/
 # AlphaClaw shadow/paper runtime (isolated ledger and receipts)
 data/alphaclaw/
 # BUY screen cross-process daily provider budget (runtime state, never source).
