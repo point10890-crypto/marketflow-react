@@ -235,9 +235,10 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
                 self._record_request_outcome(ticker, 'failed', 'request_failed')
                 return self._create_fallback_data(ticker)
 
-            daily_data = self._extract_trend_json(response.json(), ticker)
+            response_facts = {}
+            daily_data = self._extract_trend_json(response.json(), ticker, response_facts)
             if not daily_data:
-                self._record_request_outcome(ticker, 'failed', 'invalid_or_empty_response')
+                self._record_request_outcome(ticker, 'failed', 'invalid_or_empty_response', **response_facts)
                 return None
             source_day = datetime.strptime(daily_data[0]['date'], '%Y.%m.%d').date()
             from app.services.kis_screener import _is_kr_trading_day
@@ -284,32 +285,40 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
         with self._lock:
             self._request_outcomes[ticker] = {'ticker': ticker, 'status': status, 'reason': reason, **facts}
 
-    def _extract_trend_json(self, payload, ticker: str) -> List[Dict]:
+    def _extract_trend_json(self, payload, ticker: str, diagnostics: Optional[Dict] = None) -> List[Dict]:
         """Reject missing/invalid quantities rather than manufacturing zero flow."""
-        if not isinstance(payload, list):
+        facts = diagnostics if diagnostics is not None else {}
+        def reject(reason, **details):
+            facts.update(response_error=reason, **details)
             return []
+        if not isinstance(payload, list) or not payload:
+            return reject('invalid_or_empty_payload')
         rows = []
         try:
+            dates = []
             for item in payload:
                 if not isinstance(item, dict) or str(item.get('itemCode')) != ticker:
-                    return []
-                day = datetime.strptime(str(item['bizdate']), '%Y%m%d')
+                    return reject('symbol_or_row_mismatch')
+                dates.append(datetime.strptime(str(item['bizdate']), '%Y%m%d'))
+            facts.update(data_date=max(dates).date().isoformat(), source_rows=len(payload))
+            if len(set(dates)) != len(dates):
+                return reject('duplicate_source_date')
+            for item, day in zip(payload, dates):
                 values = {}
                 for source, target in (('closePrice', 'close_price'), ('accumulatedTradingVolume', 'volume'),
                                        ('organPureBuyQuant', 'institutional_net_buy'),
                                        ('foreignerPureBuyQuant', 'foreign_net_buy')):
-                    text = str(item[source]).replace(',', '').strip()
+                    text = str(item.get(source)).replace(',', '').strip()
                     if not re.fullmatch(r'[+-]?\d+', text):
-                        return []
+                        return reject('invalid_numeric_value', invalid_field=source,
+                                      invalid_source_date=day.date().isoformat())
                     values[target] = int(text)
                 if values['close_price'] <= 0 or values['volume'] < 0:
-                    return []
+                    return reject('nonpositive_price_or_negative_volume', invalid_source_date=day.date().isoformat())
                 rows.append({'date': day.strftime('%Y.%m.%d'), **values})
         except (KeyError, TypeError, ValueError):
-            return []
+            return reject('invalid_source_date')
         rows.sort(key=lambda row: row['date'], reverse=True)
-        if len({row['date'] for row in rows}) != len(rows):
-            return []
         return rows[:60]
 
     def _extract_daily_data(self, soup: BeautifulSoup) -> List[Dict]:
@@ -909,7 +918,10 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
             df_cleaned = self._clean_and_validate_data(df)
             snapshot = df_cleaned
             if self.all_institutional_csv_path.exists():
-                previous = pd.read_csv(self.all_institutional_csv_path, encoding='utf-8-sig', dtype={'ticker': str})
+                # Preserve every prior CSV value, including float precision and
+                # literal strings such as "NA", while replacing only successes.
+                previous = pd.read_csv(self.all_institutional_csv_path, encoding='utf-8-sig',
+                                       dtype=str, keep_default_na=False)
                 previous['ticker'] = previous['ticker'].str.strip().str.zfill(6)
                 retained = previous[~previous['ticker'].isin(df_cleaned['ticker'])]
                 # Retained rows keep their original dates AND values; they are
@@ -987,6 +999,7 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
 
     def _create_metadata(self, df: pd.DataFrame) -> Dict:
         """메타데이터 생성"""
+        total_days = pd.to_numeric(df['total_days'], errors='coerce')
         return {
             'collection_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'total_stocks': len(df),
@@ -996,12 +1009,12 @@ class EnhancedKoreanInstitutionalTrendAnalyzer:
             'version': '2.0',
             'columns_count': len(df.columns),
             'attempted_scrapes': (self.collection_summary or {}).get('attempted', len(df)),
-            'successful_scrapes': (self.collection_summary or {}).get('successful', len(df[df['total_days'] > 0])),
-            'failed_scrapes': (self.collection_summary or {}).get('failed', len(df[df['total_days'] == 0])),
+            'successful_scrapes': (self.collection_summary or {}).get('successful', int((total_days > 0).sum())),
+            'failed_scrapes': (self.collection_summary or {}).get('failed', int((total_days == 0).sum())),
             'skipped_scrapes': (self.collection_summary or {}).get('skipped', 0),
             'requested_codes': json.dumps((self.collection_summary or {}).get('requested_codes', [])),
             'failed_codes': json.dumps((self.collection_summary or {}).get('failed_codes', [])),
-            'average_data_days': df['total_days'].mean(),
+            'average_data_days': total_days.mean(),
             'config_used': asdict(self.config)
         }
 
