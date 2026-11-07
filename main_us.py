@@ -75,7 +75,9 @@ STOCKS = {
     "GILD": ("Gilead Sciences", "Healthcare"), "SYK": ("Stryker", "Healthcare"),
     "ADI": ("Analog Devices", "Technology"), "BKNG": ("Booking Holdings", "Consumer Cyclical"),
     "ISRG": ("Intuitive Surgical", "Healthcare"), "REGN": ("Regeneron", "Healthcare"),
-    "VRTX": ("Vertex Pharma", "Healthcare"), "MMC": ("Marsh McLennan", "Financial"),
+    # Marsh official notice: MMC -> MRSH effective 2026-01-14 (same legal issuer).
+    # https://www.marsh.com/en/corp/about/news/marsh-mclennan-to-change-nyse-symbol-to-mrsh.html
+    "VRTX": ("Vertex Pharma", "Healthcare"), "MRSH": ("Marsh", "Financial"),
     "CB": ("Chubb", "Financial"), "LRCX": ("Lam Research", "Technology"),
     "ZTS": ("Zoetis", "Healthcare"), "PGR": ("Progressive", "Financial"),
     "CI": ("Cigna", "Healthcare"), "BDX": ("Becton Dickinson", "Healthcare"),

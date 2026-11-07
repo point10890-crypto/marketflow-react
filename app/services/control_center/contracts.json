@@ -138,7 +138,9 @@
    "label": "US VCP Enhanced",
    "path": "{data}/vcp_us_latest.json",
    "max_age_hours": 30,
-   "calendar": "us_trading",
+   "calendar": "us_post_close",
+   "scheduled_time_kst": "08:00",
+   "grace_minutes": 120,
    "pages": [
     "/dashboard/us/vcp"
    ],
@@ -172,7 +174,9 @@
    "label": "US 마켓 브리핑",
    "path": "{us_output}/market_briefing.json",
    "max_age_hours": 30,
-   "calendar": "us_trading",
+   "calendar": "us_post_close",
+   "scheduled_time_kst": "07:00",
+   "grace_minutes": 120,
    "severity": "critical",
    "pages": [
     "/dashboard/us",
@@ -186,7 +190,9 @@
    "label": "US Smart Money",
    "path": "{us_output}/smart_money_current.json",
    "max_age_hours": 30,
-   "calendar": "us_trading",
+   "calendar": "us_post_close",
+   "scheduled_time_kst": "07:00",
+   "grace_minutes": 120,
    "pages": [
     "/dashboard/us"
    ],
@@ -208,7 +214,9 @@
    "label": "US 섹터 히트맵",
    "path": "{us_output}/sector_heatmap.json",
    "max_age_hours": 30,
-   "calendar": "us_trading",
+   "calendar": "us_post_close",
+   "scheduled_time_kst": "07:00",
+   "grace_minutes": 120,
    "pages": [
     "/dashboard/us"
    ],

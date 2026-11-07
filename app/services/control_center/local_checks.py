@@ -167,6 +167,45 @@ def _calendar_allowance(calendar: str, now: datetime) -> float:
     return closed_days * 24
 
 
+def _us_post_close_data_status(item: dict[str, Any], basis: datetime, now: datetime):
+    """Use released exchange sessions, retaining yesterday's overdue baseline in grace."""
+    clock = str(item.get('scheduled_time_kst') or '')
+    grace_min = item.get('grace_minutes', 120)
+    if (not re.fullmatch(r'(?:0[7-9]|1\d|2[0-3]):[0-5]\d', clock)
+            or type(grace_min) is not int or not 0 <= grace_min <= 1440):
+        return 'unknown', '유효한 미국 마감 후 데이터 공개 일정 없음', {}
+    local = now.astimezone(KST)
+    sched = {'times': [tuple(map(int, clock.split(':')))]}
+    grace = timedelta(minutes=grace_min)
+    releases = []
+    for offset in range(36):
+        day = local.date() - timedelta(days=offset)
+        if not _job_day_allowed({'calendar': 'us_post_close'}, sched, day):
+            continue
+        release = _job_slots(local, day, sched['times'])[0]
+        if release + grace > local:
+            continue
+        session = day - timedelta(days=1)
+        close = datetime(session.year, session.month, session.day, 16,
+                         tzinfo=ZoneInfo('America/New_York')).astimezone(KST)
+        releases.append((session, release, close))
+        if len(releases) == 2:
+            break
+    if len(releases) < 2:
+        return 'unknown', '최근 미국 마감 후 데이터 공개 예정일을 확인할 수 없음', {}
+    session, release, close = releases[0]
+    # A post-close manual recovery is valid even before the scheduled release.
+    # Content stamped before NY16:00 cannot prove that session's completed data.
+    status = 'ok' if basis >= close else ('warn' if basis >= releases[1][2] else 'fail')
+    detail = f'미국 {session.isoformat()} 마감 세션 · 공개 기한 {release + grace:%m-%d %H:%M} KST'
+    if status != 'ok':
+        detail += ' · 해당 마감 이후 데이터 미확인'
+    return status, detail, {'calendar': 'us_post_close', 'expected_session': session.isoformat(),
+                            'expected_release_at': release.isoformat(),
+                            'release_deadline_at': (release + grace).isoformat(),
+                            'required_after': close.isoformat(), 'data_timestamp': basis.isoformat()}
+
+
 def check_data(items: list[dict[str, Any]], now: datetime | None = None) -> list[CheckResult]:
     now = now or now_kst()
     out = []
@@ -203,6 +242,15 @@ def check_data(items: list[dict[str, Any]], now: datetime | None = None) -> list
                                    data=metadata))
             continue
         age_h = max(0, (now - basis).total_seconds()) / 3600
+        basis_name = '내용 시각' if field else '파일 수정 시각(메타데이터)'
+        metadata['freshness_basis'] = 'content' if field else 'mtime'
+        if it.get('calendar') == 'us_post_close':
+            st, detail, session_data = _us_post_close_data_status(it, basis, now)
+            metadata.update(session_data)
+            out.append(CheckResult(cid, 'data', it.get('label', it['id']), st,
+                                   f'{detail} · {basis_name} {_age_text(age_h * 3600)} 전', severity=sev,
+                                   value=round(age_h, 2), data=metadata))
+            continue
         limit = float(it.get('max_age_hours', 26)) + _calendar_allowance(it.get('calendar', ''), now)
         if age_h <= limit:
             st = 'ok'
@@ -210,8 +258,6 @@ def check_data(items: list[dict[str, Any]], now: datetime | None = None) -> list
             st = 'warn'
         else:
             st = 'fail'
-        basis_name = '내용 시각' if field else '파일 수정 시각(메타데이터)'
-        metadata['freshness_basis'] = 'content' if field else 'mtime'
         out.append(CheckResult(cid, 'data', it.get('label', it['id']), st,
                                f'{basis_name} 기준 {_age_text(age_h * 3600)} 전 (허용 {limit:.0f}시간)', severity=sev,
                                value=round(age_h, 2), data=metadata))
