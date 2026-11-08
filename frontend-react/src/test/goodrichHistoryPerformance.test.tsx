@@ -1,4 +1,5 @@
 import { advisorFixture } from './fixtures/top3AdvisorFixture';
+vi.mock('@/lib/top3Advisor', () => ({ fetchTop3Advisor: () => Promise.resolve(advisorFixture()) }));
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -11,7 +12,7 @@ const mockApi = vi.hoisted(() => ({
 }));
 
 vi.mock('@/lib/api', () => ({
-    fetchAuthAPI: (...args: unknown[]) => String(args[0]).endsWith('/top3-advisor') ? Promise.resolve(advisorFixture()) : mockApi.fetchAuthAPI(...args),
+    fetchAuthAPI: mockApi.fetchAuthAPI,
     postAuthAPI: mockApi.postAuthAPI,
 }));
 

@@ -1,4 +1,5 @@
 import { advisorFixture } from './fixtures/top3AdvisorFixture';
+vi.mock('@/lib/top3Advisor', () => ({ fetchTop3Advisor: () => Promise.resolve(advisorFixture()) }));
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -9,7 +10,7 @@ import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 const api = vi.hoisted(() => ({ fetchAuthAPI: vi.fn(), fetchEvaluation: vi.fn(), fetchTop3: vi.fn(), postAuthAPI: vi.fn() }));
 // Stock-flow tests keep independent global panel requests separate from symbol forecasts.
 vi.mock('@/lib/api', () => ({
-    fetchAuthAPI: (path: string, token?: string) => path.endsWith('/top3-advisor') ? Promise.resolve(advisorFixture()) : path.endsWith('/alpha-lab') ? Promise.resolve({ schema_version: 1,
+    fetchAuthAPI: (path: string, token?: string) => path.endsWith('/alpha-lab') ? Promise.resolve({ schema_version: 1,
         state: 'missing', generated_at: null, report: null, error: null }) : path.endsWith('/kelly') ? Promise.resolve({ state: 'none', processed: 0, total: 0, started_at: null,
         error: null, freshness: 'missing', report: null }) : path.endsWith('/evaluation') ? api.fetchEvaluation(path, token)
         : path.endsWith('/top3') ? api.fetchTop3(path, token) : api.fetchAuthAPI(path, token),

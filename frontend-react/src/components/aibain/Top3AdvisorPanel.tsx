@@ -47,6 +47,8 @@ function Pick({ pick, view }: { pick: AdvisorPick; view: Top3Advisor }) {
     const findings = [...pick.strengths, ...pick.risks, ...pick.what_to_watch];
     const sources = view.sources.filter(s => s.target_symbols.includes(pick.symbol));
     const money = (v?: number | null) => v == null ? '미확인' : `${Math.round(v).toLocaleString('ko-KR')}원`;
+    const entry = pick.plan?.entry_low != null && pick.plan.entry_high != null
+        ? `${money(pick.plan.entry_low)} ~ ${money(pick.plan.entry_high)}` : money(pick.plan?.entry_price);
     return <article className="min-w-0 space-y-4 rounded-xl border border-[#425565] bg-[#10181f] p-4 [overflow-wrap:anywhere]" aria-label={`어드바이저 ${pick.rank}위 ${pick.name}`}>
         <header className="flex items-start gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-sky-400/30 bg-sky-400/10 text-lg font-bold text-sky-200">{pick.rank}</span>
             <div className="min-w-0"><h3 className="text-lg font-bold text-white">{pick.name}</h3><p className="mt-1 text-xs text-slate-400">{pick.symbol} · 한국 · {pick.basis === 'leadership_watchlist' ? '주도주 관찰' : pick.basis === 'issued_opportunities' ? '저장 제안 비교' : '연구 후보'}</p></div></header>
@@ -54,7 +56,7 @@ function Pick({ pick, view }: { pick: AdvisorPick; view: Top3Advisor }) {
         <Arguments row={pick} />
         <details className="border-t border-slate-700 text-xs text-slate-300"><summary className="flex min-h-11 cursor-pointer items-center font-semibold text-sky-200">가격·진입 조건·출처 보기</summary>
             <div className="space-y-3 pb-2"><p>저장 가격 기준 <Time value={pick.source_at} /> (한국시간)</p><p>참고 기준가 {money(pick.reference_price)}</p>
-                {pick.plan ? <dl className="space-y-2">{([['참고 진입', pick.plan.entry_price], ['참고 손절', pick.plan.stop_price], ['참고 목표', pick.plan.target_price]] as const).map(([label, value]) => <div key={label} className="flex flex-wrap justify-between gap-2"><dt>{label}</dt><dd className="tabular-nums text-white">{money(value)}</dd></div>)}<p className="text-slate-400">원래 결정의 참고 가격입니다. 최신 시세와 체결 가격은 별도로 확인하세요.</p></dl> : <p>저장된 진입·손절·목표 계획이 없습니다.</p>}
+                {pick.plan ? <><dl className="space-y-2">{([['참고 진입', entry], ['참고 손절', money(pick.plan.stop_price)], ['참고 목표', money(pick.plan.target_price)]] as const).map(([label, value]) => <div key={label} className="flex flex-wrap justify-between gap-2"><dt>{label}</dt><dd className="tabular-nums text-white">{value}</dd></div>)}</dl><p className="text-slate-400">원래 결정의 참고 가격입니다. 최신 시세와 체결 가격은 별도로 확인하세요.</p></> : <p>저장된 진입·손절·목표 계획이 없습니다.</p>}
                 {!!pick.hold_reasons.length && <ul className="list-disc space-y-1 pl-4 text-amber-200">{pick.hold_reasons.map(r => <li key={r}>{reasons[r] ?? `추가 검증 조건: ${r}`}</li>)}</ul>}
                 <Sources sources={sources} findings={findings} />
             </div>
@@ -105,7 +107,7 @@ function SavedAdvisor({ token }: { token?: string }) {
                 {view.top3.length > 0 && !view.coverage.with_recent_news && <p className="text-amber-200">비교 후보에 연결된 최근 뉴스가 없습니다. 현재 순위는 저장된 정량 근거를 중심으로 비교한 결과입니다.</p>}
             </div>
             {view.top3.length ? <div className="grid min-w-0 gap-3 lg:grid-cols-3">{view.top3.map(pick => <Pick key={pick.symbol} pick={pick} view={view} />)}</div>
-                : <div className="rounded-lg border border-slate-700 p-4 text-sm leading-6 text-slate-300"><p className="font-semibold text-white">현재 표시할 TOP3가 없습니다.</p><p>{view.status === 'stale' ? '선정 자료가 갱신되어 새 비교를 기다리고 있습니다.' : view.status === 'missing' ? '아직 저장된 분석 자료가 없습니다.' : '자료와 분석 상태를 확인한 뒤 결과를 표시합니다.'}</p></div>}
+                : <div className="rounded-lg border border-slate-700 p-4 text-sm leading-6 text-slate-300"><p className="font-semibold text-white">현재 표시할 TOP3가 없습니다.</p><p>{view.status === 'stale' ? '선정 자료가 오래되어 새 자료와 비교를 기다리고 있습니다.' : view.status === 'missing' ? '아직 저장된 분석 자료가 없습니다.' : '자료와 분석 상태를 확인한 뒤 결과를 표시합니다.'}</p></div>}
             <details className="min-w-0 border-t border-slate-700 text-sm leading-6 text-slate-300 [overflow-wrap:anywhere]"><summary className="flex min-h-11 cursor-pointer items-center font-semibold text-sky-200">에이전트 토론·검증 상태</summary>
                 <div className="space-y-4">{view.debate.stages.map(stage => <div key={stage.role} className="min-w-0 space-y-2 border-t border-slate-700 pt-3"><h3 className="font-semibold text-white">{roles[stage.role]} · <span>{stageLabels[stage.status] ?? '확인 대기'}</span></h3>
                     <p className="text-xs text-slate-400">{stage.provider ?? '모델 대기'}{stage.model ? ` · ${stage.model}` : ''} · <Time value={stage.generated_at} /></p>

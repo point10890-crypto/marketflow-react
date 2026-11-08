@@ -1,4 +1,4 @@
-import { fetchAuthAPI } from './api';
+import { API_BASE, ApiError, authHeaders, fetchWithTimeout } from './api';
 import type { EvidenceFinding } from './evidenceReview';
 
 export interface AdvisorRow {
@@ -73,5 +73,9 @@ export function validateTop3Advisor(value: unknown): Top3Advisor {
 
 /** Saved GET only. Viewing or refreshing never starts paid inference. */
 export async function fetchTop3Advisor(token?: string, signal?: AbortSignal): Promise<Top3Advisor> {
-    return validateTop3Advisor(await fetchAuthAPI<unknown>('/api/admin/mirofish/alpha-lab/top3-advisor', token, 8000, signal));
+    const response = await fetchWithTimeout(`${API_BASE}/api/admin/mirofish/alpha-lab/top3-advisor`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : authHeaders(), signal,
+    }, 8000);
+    if (!response.ok) throw new ApiError('저장된 TOP3 조회 실패', response.status);
+    return validateTop3Advisor(await response.json());
 }

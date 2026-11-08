@@ -6,7 +6,12 @@ import Top3AdvisorPanel from '@/components/aibain/Top3AdvisorPanel';
 import { validateTop3Advisor } from '@/lib/top3Advisor';
 
 const api = vi.hoisted(() => ({ get: vi.fn() }));
-vi.mock('@/lib/api', () => ({ fetchAuthAPI: api.get }));
+vi.mock('@/lib/api', async importOriginal => ({ ...await importOriginal<typeof import('@/lib/api')>(),
+    fetchWithTimeout: async (...args: unknown[]) => {
+        const result = await api.get(...args);
+        return result instanceof Response ? result : new Response(JSON.stringify(result), { status: 200 });
+    },
+}));
 import { advisorFixture as fixture } from './fixtures/top3AdvisorFixture';
 const origin = '2026-11-06T11:31:00Z';
 function show(token = 'member') {
@@ -16,6 +21,15 @@ beforeEach(() => { api.get.mockReset().mockResolvedValue(fixture()); });
 afterEach(() => { cleanup(); vi.useRealTimers(); });
 
 describe('TOP3 advisor dashboard', () => {
+    it('preserves issued entry ranges when there is no single entry_price', async () => {
+        const view = fixture();
+        Object.assign(view.top3[0], { basis: 'issued_opportunities', plan: { entry_low: 95000, entry_high: 101000, stop_price: 90000, target_price: 120000 } });
+        api.get.mockResolvedValue(view); show();
+        const card = await screen.findByRole('article', { name: '어드바이저 1위 코웨이' });
+        fireEvent.click(within(card).getByText('가격·진입 조건·출처 보기'));
+        expect(within(card).getByText('95,000원 ~ 101,000원')).toBeVisible();
+        expect(within(card).getByText('90,000원')).toBeVisible();
+    });
     it('shows all three saved ranks, evidence gaps and held status without claiming buy approval', async () => {
         show();
         const panel = within(screen.getByRole('region', { name: 'TOP3 어드바이저' }));
@@ -27,7 +41,8 @@ describe('TOP3 advisor dashboard', () => {
         expect(panel.queryByText(/BUY|매수 승인/)).toBeNull();
         expect(panel.getByRole('link', { name: '코웨이 차트·가격 조건 보기' })).toHaveAttribute('href', '/dashboard/ai-bain/chart-predict?code=021240');
         expect(panel.getByText(/선정 자료/).querySelector('time')).toHaveAttribute('dateTime', origin);
-        expect(api.get).toHaveBeenCalledWith('/api/admin/mirofish/alpha-lab/top3-advisor', 'member', 8000, expect.any(AbortSignal));
+        expect(api.get).toHaveBeenCalledWith(expect.stringContaining('/api/admin/mirofish/alpha-lab/top3-advisor'),
+            { headers: { Authorization: 'Bearer member' }, signal: expect.any(AbortSignal) }, 8000);
     });
     it('shows partial debate and fallback as incomplete research, with no synthetic third pick', async () => {
         const view = fixture(); view.status = 'degraded'; view.top3 = view.top3.slice(0, 2);
@@ -55,7 +70,7 @@ describe('TOP3 advisor dashboard', () => {
     });
     it.each([401, 403])('clears private results and stops polling after %s', async status => {
         vi.useFakeTimers(); show(); await act(async () => {});
-        api.get.mockRejectedValue(Object.assign(new Error('denied'), { status }));
+        api.get.mockResolvedValue(new Response(JSON.stringify({ error: 'denied' }), { status }));
         await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'TOP3 저장 결과 새로고침' })); });
         expect(screen.getByText(/이용 권한을 확인/)).toBeVisible();
         expect(screen.queryByRole('article')).toBeNull();
