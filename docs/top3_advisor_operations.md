@@ -17,6 +17,21 @@ Use the application's existing Bearer authentication; do not place tokens in URL
 
 `ready` means all three stages completed with primary-provider output and the final ranking is sealed; it is not permission to buy. `degraded` can still provide research picks, with explicit incomplete, fallback or locally recovered debate. `stale`, `missing` and `unavailable` contain no current picks. A locally recovered paid response has unknown provider/cost metadata when that metadata was not durably saved. Token usage and known estimated cost aggregate all attempts in each role, including fallback. Source cutoff/acquisition clocks are preserved from the saved debate input rather than advanced by a GET request.
 
+## Member dashboard display
+
+The saved TOP3 advisor is visible near the top of `/dashboard/ai-bain`,
+`/dashboard/ai-bain/goodrich` and `/dashboard/ai-bain/chart-predict`, with the
+`#top3-advisor` anchor. The same responsive panel shows the sealed research order,
+source/analysis times, evidence coverage, each candidate's argument, risks and next
+check. Original entry holds and plans remain unchanged. Three-role discussion,
+provider fallback and source quotes are expandable; stock links open chart analysis.
+
+Visible pages poll the saved GET every 30 seconds; hidden pages stop polling.
+The refresh button also only reads the saved GET and cannot start paid inference.
+On read failure the current picks are cleared; 401/403 also stops polling. Session
+changes clear the prior user's state. No extra administrator action or subscription
+mutation is required to see this panel under the existing route access guards.
+
 ## Debate and cost
 
 Three genuinely distinct dependent calls: the catalyst analyst evaluates the supplied evidence; the risk critic sees that argument and original evidence; the chair sees both and returns a unique top-three ordering from the permitted candidates. Each statement requires a supplied evidence ID and literal quote associated with that exact symbol. No model can invent prices, Kelly allocations, official confirmation or buy eligibility. Untrusted source text is evidence, never an instruction.

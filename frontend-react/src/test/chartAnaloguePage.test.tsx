@@ -1,3 +1,4 @@
+import { advisorFixture } from './fixtures/top3AdvisorFixture';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -8,7 +9,7 @@ import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 const api = vi.hoisted(() => ({ fetchAuthAPI: vi.fn(), fetchEvaluation: vi.fn(), fetchTop3: vi.fn(), postAuthAPI: vi.fn() }));
 // Stock-flow tests keep independent global panel requests separate from symbol forecasts.
 vi.mock('@/lib/api', () => ({
-    fetchAuthAPI: (path: string, token?: string) => path.endsWith('/alpha-lab') ? Promise.resolve({ schema_version: 1,
+    fetchAuthAPI: (path: string, token?: string) => path.endsWith('/top3-advisor') ? Promise.resolve(advisorFixture()) : path.endsWith('/alpha-lab') ? Promise.resolve({ schema_version: 1,
         state: 'missing', generated_at: null, report: null, error: null }) : path.endsWith('/kelly') ? Promise.resolve({ state: 'none', processed: 0, total: 0, started_at: null,
         error: null, freshness: 'missing', report: null }) : path.endsWith('/evaluation') ? api.fetchEvaluation(path, token)
         : path.endsWith('/top3') ? api.fetchTop3(path, token) : api.fetchAuthAPI(path, token),
@@ -69,6 +70,7 @@ describe('historical chart analogue member page', () => {
         api.fetchAuthAPI.mockResolvedValue(ready);
         renderPage();
         expect(await screen.findByRole('heading', { name: /코리안리/ })).toBeInTheDocument();
+        expect(within(screen.getByRole('region', { name: 'TOP3 어드바이저' })).getAllByRole('article')).toHaveLength(3);
         expect(screen.getByRole('combobox', { name: '종목명 또는 코드' })).toHaveValue('003690');
         expect(api.fetchAuthAPI).toHaveBeenCalledWith('/api/admin/mirofish/chart-analogue/003690', 'member-token');
         const autoTop3 = screen.getByRole('heading', { name: '차트 자동 TOP3' });
