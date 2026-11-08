@@ -1,0 +1,40 @@
+/* Size the navigation by its available space, including beside the sidebar. */
+.ai-brain-menu {
+    container: ai-brain-menu / inline-size;
+}
+
+.ai-brain-menu__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ai-brain-menu__last {
+    grid-column: span 2;
+}
+
+.ai-brain-menu__detail {
+    display: none;
+}
+
+@container ai-brain-menu (min-width: 560px) {
+    .ai-brain-menu__grid--full {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .ai-brain-menu__last {
+        grid-column: auto;
+    }
+
+    .ai-brain-menu__detail {
+        display: block;
+    }
+}
+
+@container ai-brain-menu (min-width: 860px) {
+    .ai-brain-menu__grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .ai-brain-menu__grid--full {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+}
