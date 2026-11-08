@@ -32,7 +32,7 @@ beforeEach(() => {
     mocks.refresh = null;
     mocks.fetch.mockImplementation((url: string) => Promise.resolve(url.endsWith('/overview') ? overview : {}));
 });
-afterEach(() => { cleanup(); vi.useRealTimers(); });
+afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
 describe('Claw cached projection freshness', () => {
     it('labels a cached running snapshot stale and never resets its heartbeat age on repeated fetches', async () => {
@@ -57,9 +57,21 @@ describe('Claw cached projection freshness', () => {
     });
 
     it('does not claim live operation in the global brand bar for cached running data', async () => {
-        await show(<ClawBrandBar data={overview} />);
+        vi.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => { cb(0); return 1; });
+        vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+        await show(<div className="dashboard-shell-scroll" data-testid="brand-scroller"><ClawBrandBar data={overview} /></div>);
         expect(screen.getByText('Claw LIVE · STALE')).toBeInTheDocument();
         expect(screen.queryByText('지금 장을 5초마다 보고 있어요.')).not.toBeInTheDocument();
+        const banner = screen.getByTestId('claw-brand-banner');
+        Object.defineProperty(banner, 'offsetTop', { value: 0 });
+        Object.defineProperty(banner, 'offsetHeight', { value: 200 });
+        const scroller = screen.getByTestId('brand-scroller');
+        scroller.scrollTop = 220;
+        fireEvent.scroll(scroller);
+        // A cached "running" snapshot must remain STALE in the short mobile badge.
+        expect(screen.getByTestId('claw-brand-compact')).toHaveTextContent('STALE');
+        expect(screen.getByTestId('claw-brand-compact')).not.toHaveTextContent('LIVE');
+        expect(screen.getByLabelText('Claw LIVE · STALE', { exact: true })).toBeInTheDocument();
     });
 
     it('shows unavailable observation projections explicitly when the overview is available', async () => {

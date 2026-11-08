@@ -1,15 +1,16 @@
 /**
- * Claw 브랜드 히어로 — 레퍼런스 톤(빨간 크랩 + 붉은 아우라 + ASCII 집게)으로 통일.
+ * Claw LIVE 전용 히어로와 대시보드 공통 BitMan AI 브랜드 바.
  *
  * variant
  *  - full    : Claw LIVE 페이지 상단. 큰 마스코트 + 헤드라인 + 상태 문장 + 신뢰 칩
- *  - compact : 대시보드 전 페이지 공통 브랜드 바(DashboardLayout). 한 줄 높이, 같은 마스코트·헤드라인
+ *  - compact : 대시보드 공통 BitMan AI 타이틀과 실제 Claw 상태. 스크롤 시 한 줄로 접힘.
  * 외부 브랜드 자산·이미지 파일 없음 — 전부 코드로 그린다.
  */
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ClawMascot from '@/components/claw/ClawMascot';
 import ClawAsciiBackdrop from '@/components/claw/ClawAsciiBackdrop';
+import { BitManAgentFlow, BitManAgentNetwork, BitManAgentTitle } from '@/components/claw/BitManAgentBrand';
 import { ClawOverview, fmtAge, isClawProjectionStale } from '@/lib/claw';
 
 const MOOD: Record<string, { line: string; sub: string }> = {
@@ -41,14 +42,15 @@ export function Headline({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
     );
 }
 
-function LiveBadge({ state, stale = false }: { state: string | null; stale?: boolean }) {
+function LiveBadge({ state, stale = false, compact = false }: { state: string | null; stale?: boolean; compact?: boolean }) {
+    const status = stale ? 'STALE' : badgeOf(state);
     return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#ff5a3c]/30 bg-[#ff5a3c]/10 px-3 py-1 text-[11px] font-bold text-[#ffb4a3]">
+        <span aria-label={compact ? `Claw LIVE · ${status}` : undefined} className="inline-flex items-center gap-1.5 rounded-full border border-[#ff5a3c]/30 bg-[#ff5a3c]/10 px-3 py-1 text-[11px] font-bold text-[#ffb4a3]">
             <span className="relative grid h-2 w-2 place-items-center">
                 <span className={`absolute inline-flex h-2 w-2 rounded-full ${state === 'running' ? 'bg-[#ff5a3c]/60 animate-ping' : ''}`} />
                 <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${dotOf(state)}`} />
             </span>
-            Claw LIVE · {stale ? 'STALE' : badgeOf(state)}
+            {compact ? status : `Claw LIVE · ${status}`}
         </span>
     );
 }
@@ -89,7 +91,7 @@ export function ClawHero({ data, heartbeatAge, sourceAge, stale = isClawProjecti
     );
 }
 
-/** 대시보드 전 페이지 공통 타이틀 — 이미지 컨셉(중앙 마스코트 + 양옆 ASCII 집게 + 붉은 아우라).
+/** 대시보드 전 페이지 공통 BitMan AI 타이틀.
  *
  *  스크롤 성능 원칙 (2026-08-23 버벅임 수정):
  *   - 상단 배너(약 172px)는 일반 흐름에 두어 콘텐츠와 함께 자연스럽게 올라간다. 높이·패딩을 애니메이션하지 않는다.
@@ -150,15 +152,15 @@ export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
                 <Link
                     to="/dashboard/kr/claw"
                     tabIndex={compact ? 0 : -1}
-                    className={`claw-brand-compact group ${compact ? 'is-on' : ''}`}
-                    aria-label="Claw LIVE 열기"
+                    className={`claw-brand-compact bitman-agent-compact group ${compact ? 'is-on' : ''}`}
+                    aria-label="BitMan AI 주식분석 에이전트 · Claw LIVE 열기"
                     data-testid="claw-brand-compact"
                 >
                     {compact && (
                         <>
-                            <ClawMascot state={state} size={40} className="shrink-0 drop-shadow-[0_6px_16px_rgba(255,90,60,.35)]" />
-                            <div className="min-w-0 flex-1 truncate"><Headline size="sm" /></div>
-                            <LiveBadge state={state} stale={stale} />
+                            <span className="bitman-agent-compact-mark" aria-hidden="true"><i className="fas fa-brain" /></span>
+                            <BitManAgentTitle />
+                            <span className="bitman-agent-compact-status"><LiveBadge state={state} stale={stale} compact /></span>
                         </>
                     )}
                 </Link>
@@ -168,24 +170,21 @@ export function ClawBrandBar({ data }: { data: ClawOverview | null }) {
             <Link
                 ref={bannerRef}
                 to="/dashboard/kr/claw"
-                className="claw-brand-bar group relative block overflow-hidden rounded-2xl border bg-[#0a0709] transition-[border-color] hover:border-[#ff5a3c]/35"
-                aria-label="Claw LIVE 열기"
+                className="claw-brand-bar bitman-agent-banner group relative block overflow-hidden rounded-2xl border transition-[border-color]"
+                aria-label="BitMan AI 주식분석 에이전트 · Claw LIVE 열기"
                 data-testid="claw-brand-banner"
             >
-                <div className={`claw-brand-inner relative flex flex-col items-center justify-center gap-3 px-4 text-center ${compact ? "invisible" : ""}`}>
-                    <>
-                            <ClawAsciiBackdrop live={state === 'running'} tone={toneOf(state)} />
-                            <div className="claw-brand-aura pointer-events-none absolute inset-0 bg-[radial-gradient(45%_90%_at_50%_40%,rgba(255,90,60,.26),rgba(255,90,60,0)_72%)]" />
-                            <ClawMascot state={state} size={84} className="claw-brand-mascot relative shrink-0 drop-shadow-[0_10px_28px_rgba(255,90,60,.38)]" />
-                            <div className="claw-brand-text relative min-w-0">
-                                <div className="claw-brand-cap font-mono text-[10px] tracking-[0.26em] text-gray-400">관찰 전용 · 사용자 PC에서 실행 · 매매 없음</div>
-                                <div className="claw-brand-headline truncate"><Headline size="sm" /></div>
-                                <div className="claw-brand-mood mt-1 flex flex-wrap items-center justify-center gap-2">
-                                    <LiveBadge state={state} stale={stale} />
-                                    <span className="truncate text-[11px] text-gray-400">{data ? mood.line : '불러오는 중이에요…'}</span>
-                                </div>
-                            </div>
-                    </>
+                <div className={`bitman-agent-inner ${compact ? 'invisible' : ''}`}>
+                    <div className="bitman-agent-copy">
+                        <BitManAgentTitle />
+                        <BitManAgentFlow />
+                        <div className="bitman-agent-status">
+                            <LiveBadge state={state} stale={stale} />
+                            <span>{data ? mood.line : '서비스 상태 확인 중…'}</span>
+                        </div>
+                    </div>
+                    <BitManAgentNetwork />
+                    <span className="bitman-agent-destination">에이전트 현황 <i className="fas fa-arrow-right ml-1" aria-hidden="true" /></span>
                 </div>
             </Link>
         </>

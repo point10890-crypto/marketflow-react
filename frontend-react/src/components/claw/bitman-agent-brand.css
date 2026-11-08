@@ -1,0 +1,74 @@
+/* Scoped identity: coral BitMan accent, ice-blue evidence network, readable at 320px. */
+.claw-brand-bar.bitman-agent-banner,
+.dashboard-theme .claw-brand-bar.bitman-agent-banner,
+.claw-theme .claw-brand-bar.bitman-agent-banner {
+  background: linear-gradient(112deg, #171e28 0%, #111923 58%, #152735 100%);
+  border-color: #344755;
+  box-shadow: none;
+}
+.bitman-agent-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24px;
+  width: 92px;
+  height: 2px;
+  background: #ff8a70;
+}
+.bitman-agent-banner:hover { border-color: #6d9fb2 !important; }
+.bitman-agent-banner:focus-visible,
+.bitman-agent-compact:focus-visible { outline: 2px solid #9de4f3; outline-offset: 3px; }
+.bitman-agent-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 170px;
+  padding: 24px 28px;
+}
+.bitman-agent-copy { position: relative; min-width: 0; z-index: 1; }
+.bitman-agent-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 15px; }
+.bitman-agent-name { color: #f4f8fc; font-size: 34px; font-weight: 800; line-height: 1.15; letter-spacing: -.055em; white-space: nowrap; }
+.bitman-agent-ai { color: #ff927a; font-weight: 500; letter-spacing: -.045em; }
+.bitman-agent-description { color: #e5f3fa; font-size: 25px; font-weight: 650; line-height: 1.3; letter-spacing: -.045em; word-break: keep-all; }
+.bitman-agent-flow { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 13px; color: #a9c1d0; font-size: 12px; font-weight: 500; }
+.bitman-agent-flow i { font-size: 9px; color: #6c91a4; }
+.bitman-agent-status { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-top: 17px; }
+.bitman-agent-status > span:last-child { color: #a9b7c6; font-size: 11px; line-height: 1.5; }
+.bitman-agent-status > span:first-child { white-space: nowrap; }
+.bitman-agent-destination { position: absolute; right: 28px; bottom: 13px; color: #bddae5; font-size: 11px; white-space: nowrap; }
+.bitman-agent-network { position: relative; width: 180px; height: 120px; flex-shrink: 0; margin-left: auto; margin-right: 26px; }
+.bitman-agent-orbit { position: absolute; width: 112px; height: 112px; left: 35px; top: 4px; border: 1px solid #487085; border-radius: 50%; opacity: .55; }
+.bitman-agent-orbit::after { content: ''; position: absolute; inset: 13px; border: 1px dashed #426578; border-radius: 50%; }
+.bitman-agent-core { position: absolute; inset: 34px auto auto 65px; width: 52px; height: 52px; display: grid; place-items: center; color: #b0ecf5; font-size: 24px; background: #1a3544; border: 1px solid #6596a8; border-radius: 15px; box-shadow: 0 0 28px #63c7e013, inset 0 1px #b0ecf51c; }
+.bitman-agent-node { position: absolute; display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid #4f7586; border-radius: 8px; background: #192c38; color: #a7d4e3; font-size: 11px; }
+.bitman-agent-node-a { left: 8px; top: 13px; }
+.bitman-agent-node-b { right: 0; top: 14px; }
+.bitman-agent-node-c { right: 12px; bottom: 0; border-color: #946857; color: #ffb19a; background: #302c2a; }
+.bitman-agent-wire { position: absolute; height: 1px; background: #5a879a; transform-origin: left center; }
+.bitman-agent-wire-a { width: 72px; left: 32px; top: 29px; transform: rotate(28deg); }
+.bitman-agent-wire-b { width: 77px; left: 92px; top: 60px; transform: rotate(-25deg); }
+.bitman-agent-wire-c { width: 76px; left: 92px; top: 62px; transform: rotate(34deg); }
+.claw-brand-compact.bitman-agent-compact { background: #141f2a; border-color: #344755; }
+.bitman-agent-compact .bitman-agent-title { flex: 1; min-width: 0; gap: 0 10px; }
+.bitman-agent-compact .bitman-agent-name { font-size: 19px; }
+.bitman-agent-compact .bitman-agent-description { font-size: 14px; }
+.bitman-agent-compact-mark { flex-shrink: 0; display: grid; place-items: center; width: 30px; height: 30px; color: #b0ecf5; background: #1a3544; border: 1px solid #476e80; border-radius: 8px; font-size: 14px; }
+.bitman-agent-compact-status { flex-shrink: 0; }
+/* At tablet widths the persistent 256px sidebar also reduces the content column. */
+@media (max-width: 1100px) {
+  .bitman-agent-inner { min-height: 172px; padding: 20px 18px; gap: 0; }
+  .bitman-agent-title { display: block; }
+  .bitman-agent-name { display: block; padding-right: 42px; font-size: 29px; }
+  .bitman-agent-description { display: block; margin-top: 5px; font-size: 23px; }
+  .bitman-agent-flow { gap: 8px; margin-top: 11px; font-size: 11px; }
+  .bitman-agent-status { gap: 6px; margin-top: 14px; }
+  .bitman-agent-status > span:last-child { flex-basis: 100%; }
+  .bitman-agent-network { position: absolute; width: 36px; height: 36px; right: 18px; top: 20px; margin: 0; }
+  .bitman-agent-core { inset: 0; width: 36px; height: 36px; font-size: 17px; border-radius: 10px; box-shadow: none; }
+  .bitman-agent-network > :not(.bitman-agent-core), .bitman-agent-destination { display: none; }
+  .bitman-agent-compact .bitman-agent-name { font-size: 17px; padding: 0; }
+  .bitman-agent-compact .bitman-agent-description { font-size: 12px; margin-top: 2px; }
+  .bitman-agent-compact-status > span { padding: 4px 7px; font-size: 10px; }
+}
