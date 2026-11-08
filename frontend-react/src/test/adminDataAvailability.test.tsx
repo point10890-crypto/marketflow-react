@@ -90,7 +90,7 @@ describe('admin data availability', () => {
         show(<SubscriptionsTab onCountChange={() => {}} />);
         expect(await screen.findByRole('alert')).toHaveTextContent(/구독.*불러오지 못/);
         expect(screen.queryByText('대기 중인 구독 요청이 없습니다')).not.toBeInTheDocument();
-        expect(screen.queryByText(/대기 중 \(0\)/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/구독 승인 대기 \(0\)/)).not.toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: /다시 시도/ }));
         expect(await screen.findByText('확인할회원')).toBeInTheDocument();
         expect(screen.queryByRole('alert')).not.toBeInTheDocument();

@@ -37,7 +37,7 @@ describe('DashboardTab 전환 퍼널 카드', () => {
         mocks.getUnreadCount.mockResolvedValue({ unread_count: 0 });
     });
 
-    it('places the funnel and seven working shortcuts before the action queue', async () => {
+    it('places the action queue before the funnel and seven working shortcuts', async () => {
         mocks.getFunnelSummary.mockResolvedValue(null);
         const onNavigate = vi.fn();
         render(<MemoryRouter><DashboardTab data={{ total_users: 0, pro_users: 0, premium_users: 0, no_tier_users: 0,
@@ -50,7 +50,7 @@ describe('DashboardTab 전환 퍼널 카드', () => {
         const funnel = screen.getByTestId('funnel-card');
         const queue = screen.getByText('오늘 처리할 일');
         expect(funnel.compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-        expect(nav.compareDocumentPosition(queue) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(queue.compareDocumentPosition(funnel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         buttons.forEach(button => fireEvent.click(button));
         expect(onNavigate.mock.calls.map(call => call[0])).toEqual([
             'dashboard', 'users', 'subscriptions', 'purchases', 'pro', 'system', 'jobs',
