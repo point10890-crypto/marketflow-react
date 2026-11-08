@@ -203,8 +203,15 @@ body {
   }
 
   .mobile-safe-top-header {
-    height: calc(3.5rem + env(safe-area-inset-top, 0px));
-    padding-top: env(safe-area-inset-top, 0px);
+    height: auto;
+    min-height: calc(3.5rem + env(safe-area-inset-top, 0px));
+    padding-top: calc(0.5rem + env(safe-area-inset-top, 0px));
+  }
+
+  /* Member controls occupy a second 40px row with an 8px gap. Keep runtime
+     notifications below those controls instead of covering the upgrade CTA. */
+  :is(.dashboard-theme, .claw-theme):has(.header-upgrade-action) .notification-toast-stack {
+    top: calc(7rem + env(safe-area-inset-top, 0px));
   }
 
   .mobile-safe-top-sidebar {

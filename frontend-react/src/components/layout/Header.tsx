@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CommandPalette from './CommandPalette';
 import { useNotification } from '@/contexts/NotificationContext';
+import AppBrand from './AppBrand';
 
 interface HeaderProps {
     title?: string;
@@ -106,29 +107,25 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
     return (
         <>
-            <header className="dashboard-header mobile-safe-top-header h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-white/10 md:border-white/5 bg-[#111113] md:bg-[#09090b]/80 md:backdrop-blur-md shrink-0 z-40">
+            <header className="dashboard-header mobile-safe-top-header min-h-14 md:h-16 flex flex-wrap md:flex-nowrap items-center justify-between gap-y-2 py-2 md:py-0 px-3 md:px-6 border-b border-white/10 md:border-white/5 bg-[#111113] md:bg-[#09090b]/80 md:backdrop-blur-md shrink-0 z-40">
                 {/* Left: Hamburger (mobile) + Page Title */}
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 items-center gap-2 md:gap-3">
                     <button
                         aria-label="메뉴 열기"
                         onClick={onMenuClick}
-                        className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95"
+                        className="md:hidden w-9 h-10 shrink-0 flex items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95"
                     >
                         <i className="fas fa-bars text-base"></i>
                     </button>
 
                     <button
+                        aria-label="BitMan AI 주식분석 에이전트 · 메인 대시보드"
                         onClick={() => {
                             if (pathname !== '/dashboard') navigate('/dashboard');
                         }}
                         className="md:hidden flex items-center gap-2 active:scale-95 transition-transform duration-150"
                     >
-                        <div className="relative w-7 h-7 bg-gradient-to-br from-[#ff8a6b] via-[#ff5a3c] to-[#b91c1c] rounded-lg flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-[#ff5a3c]/20 ring-1 ring-[#ff8a6b]/25">
-                            <span className="relative">B</span>
-                        </div>
-                        <span className="text-[15px] font-extrabold tracking-tight">
-                            <span className="bg-gradient-to-r from-[#ffb4a3] via-[#ff7a5c] to-[#ff5a3c] bg-clip-text text-transparent">Bit</span><span className="bg-gradient-to-r from-[#ff7a5c] to-[#ffb4a3] bg-clip-text text-transparent">Man</span>
-                        </span>
+                        <AppBrand compact />
                     </button>
 
                     <div className="hidden md:block">
@@ -156,9 +153,9 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2">
+                <div className={`flex shrink-0 items-center gap-1 md:gap-2 ${user && user.role !== 'admin' ? 'max-md:w-full max-md:justify-end' : ''}`}>
                     {user && user.role !== 'admin' && <button onClick={() => navigate('/plan-select?change=1')}
-                        className="min-h-10 shrink-0 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 text-xs font-bold text-amber-200">
+                        className="header-upgrade-action min-h-10 shrink-0 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 text-xs font-bold text-amber-200">
                         구독·업그레이드
                     </button>}
                     <button

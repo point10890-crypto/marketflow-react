@@ -5,6 +5,7 @@ import { canAccessAiBain, canAccessKongming, hasActiveKongmingSubscription, isBa
 import { aiBundleConversionExpiry } from '@/lib/billingInfo';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { InstallGuide } from './InstallPrompt';
+import AppBrand from './AppBrand';
 
 interface NavItem {
     name: string;
@@ -146,18 +147,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     return (
         <>
             {/* Brand */}
-            <Link to={kongmingOnly ? '/dashboard/ai-bain' : '/dashboard'} className="h-[72px] flex items-center px-5 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer">
-                <div className="relative w-10 h-10 bg-gradient-to-br from-[#ff8a6b] via-[#ff5a3c] to-[#b91c1c] rounded-xl flex items-center justify-center text-white font-extrabold text-2xl shadow-lg shadow-[#ff5a3c]/30 mr-3.5 ring-1 ring-[#ff8a6b]/25 drop-shadow-sm">
-                    <div className="absolute inset-0.5 rounded-[10px] ring-1 ring-white/10" />
-                    <span className="relative">B</span>
-                </div>
-                <div className="flex flex-col leading-none">
-                    <span className="text-[24px] font-extrabold tracking-tight">
-                        <span className="bg-gradient-to-r from-[#ffb4a3] via-[#ff7a5c] to-[#ff5a3c] bg-clip-text text-transparent">Bit</span><span className="bg-gradient-to-r from-[#ff7a5c] to-[#ffb4a3] bg-clip-text text-transparent">Man</span>
-                    </span>
-                    <div className="w-full h-px bg-gradient-to-r from-[#ff5a3c]/50 via-[#ff7a5c]/20 to-transparent mt-1 mb-[3px]" />
-                    <span className="text-[13px] font-semibold tracking-[0.18em] bg-gradient-to-r from-gray-300 via-slate-400 to-gray-500 bg-clip-text text-transparent">MarketFlow</span>
-                </div>
+            <Link to={kongmingOnly ? '/dashboard/ai-bain' : '/dashboard'} aria-label="BitMan AI 주식분석 에이전트 · 메인 대시보드" className="h-[72px] shrink-0 flex items-center px-5 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer">
+                <AppBrand />
             </Link>
 
             {/* Navigation */}
