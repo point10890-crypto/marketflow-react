@@ -1,3 +1,5 @@
+import { advisorFixture } from './fixtures/top3AdvisorFixture';
+vi.mock('@/lib/top3Advisor', () => ({ fetchTop3Advisor: () => Promise.resolve(advisorFixture()) }));
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -69,6 +71,7 @@ describe('historical chart analogue member page', () => {
         api.fetchAuthAPI.mockResolvedValue(ready);
         renderPage();
         expect(await screen.findByRole('heading', { name: /코리안리/ })).toBeInTheDocument();
+        expect(within(screen.getByRole('region', { name: 'TOP3 어드바이저' })).getAllByRole('article')).toHaveLength(3);
         expect(screen.getByRole('combobox', { name: '종목명 또는 코드' })).toHaveValue('003690');
         expect(api.fetchAuthAPI).toHaveBeenCalledWith('/api/admin/mirofish/chart-analogue/003690', 'member-token');
         const autoTop3 = screen.getByRole('heading', { name: '차트 자동 TOP3' });

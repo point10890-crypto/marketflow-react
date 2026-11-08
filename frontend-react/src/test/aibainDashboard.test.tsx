@@ -1,3 +1,5 @@
+import { advisorFixture } from './fixtures/top3AdvisorFixture';
+vi.mock('@/lib/top3Advisor', () => ({ fetchTop3Advisor: () => Promise.resolve(advisorFixture()) }));
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -137,6 +139,8 @@ describe('AiBainDashboard', () => {
     });
     render(<MemoryRouter><AiBainDashboard /></MemoryRouter>);
     expect(await screen.findByRole('region', { name: '유력 종목 데스크' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: '코웨이' })).toBeVisible();
+    expect(screen.getByRole('region', { name: 'TOP3 어드바이저' }).compareDocumentPosition(screen.getByRole('region', { name: '유력 종목 데스크' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(await screen.findByText('데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '저장 결과 새로고침' })).toBeInTheDocument();
   });

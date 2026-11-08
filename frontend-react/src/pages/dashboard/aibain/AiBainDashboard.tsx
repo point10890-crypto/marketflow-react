@@ -12,6 +12,7 @@ import CloseLeadersCard from './CloseLeadersCard';
 import AlphaCoreOpsCard from './AlphaCoreOpsCard';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 import AlphaLabPanel from '@/components/aibain/AlphaLabPanel';
+import Top3AdvisorPanel from '@/components/aibain/Top3AdvisorPanel';
 
 interface AiBainOverview {
     generated_at: string;
@@ -106,6 +107,7 @@ export default function AiBainDashboard() {
 
                 </div>
 
+                <Top3AdvisorPanel token={token ?? undefined} />
                 <AlphaLabPanel desk token={token ?? undefined} onSelectSymbol={openStockDetail} />
 
                 <div className="max-w-3xl mx-auto space-y-5">

@@ -131,7 +131,7 @@ describe('prospective TOP3 comparison panel', () => {
     it('offers its own retry and keeps raw request errors out of the page', async () => {
         api.fetchAuthAPI.mockRejectedValueOnce(new Error('private internal exception')).mockResolvedValueOnce(empty);
         render(<ChartAnalogueEvaluationPanel token="member-token" />);
-        expect(await screen.findByRole('alert')).toHaveTextContent('비교 관측을 불러오지 못했습니다');
+        expect(await within(screen.getByRole('region', { name: 'TOP3 비교 관측' })).findByRole('alert')).toHaveTextContent('비교 관측을 불러오지 못했습니다');
         expect(screen.queryByText(/private internal/)).toBeNull();
         await userEvent.click(screen.getByRole('button', { name: '비교 관측 다시 조회' }));
         expect((await screen.findAllByText('관측 대기')).length).toBeGreaterThan(0);
@@ -152,7 +152,7 @@ describe('prospective TOP3 comparison panel', () => {
         });
         render(<MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><ChartAnaloguePage /></MemoryRouter>);
         expect(await screen.findByRole('img', { name: /과거 종가/ })).toBeInTheDocument();
-        expect(await screen.findByRole('alert')).toHaveTextContent('비교 관측을');
+        expect(await within(screen.getByRole('region', { name: 'TOP3 비교 관측' })).findByRole('alert')).toHaveTextContent('비교 관측을');
     });
 
     it('shows an unavailable report without fabricated counts or returns', async () => {

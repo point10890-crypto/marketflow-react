@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI, postAuthAPI } from '@/lib/api';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
+import Top3AdvisorPanel from '@/components/aibain/Top3AdvisorPanel';
 import GoodrichTop3Charts from '@/components/aibain/GoodrichTop3Charts';
 
 interface GoodrichPick {
@@ -153,6 +154,7 @@ export default function GoodrichFundManagerPage() {
         <div className="ai-design min-h-full bg-[#101318] p-4 text-white sm:p-6 lg:p-8">
             <div className="mx-auto max-w-6xl space-y-5">
                 <AiBrainServiceTabs active="goodrich" />
+                <Top3AdvisorPanel token={token ?? undefined} />
                 <nav className="grid grid-cols-2 gap-3" aria-label="Goodrich 분석 엔드포인트">
                     <a
                         href="#goodrich-history"
