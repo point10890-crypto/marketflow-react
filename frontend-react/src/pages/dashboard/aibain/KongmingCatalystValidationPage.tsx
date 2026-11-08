@@ -1,7 +1,6 @@
 import '@/pages/dashboard/ai-design.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import kongmingBanner from '@/assets/kongming-banner.webp';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
@@ -534,21 +533,7 @@ export default function KongmingCatalystValidationPage() {
     return (
         <div className="ai-design min-h-full bg-[#101318] p-3 text-sm text-slate-100 sm:p-6">
             <div className="mx-auto max-w-5xl space-y-4">
-                <section aria-labelledby="kongming-banner-title"
-                    className="relative isolate overflow-hidden rounded-2xl border border-[#365372] bg-[#0a1420] p-3 sm:p-5">
-                    <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-52 sm:inset-0 sm:h-auto">
-                        <img src={kongmingBanner} alt="" className="h-full w-full object-cover object-[75%_top] sm:object-[center_top]" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a1420] via-[#0a1420]/20 to-transparent" />
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#0a1420]/80 via-transparent to-transparent" />
-                    </div>
-                    <header className="flex min-h-36 flex-col justify-center px-2 pb-4 sm:min-h-40 sm:px-3">
-                        <p className="text-xs font-semibold tracking-widest text-sky-200">AI BRAIN</p>
-                        <h1 id="kongming-banner-title" className="mt-1 text-2xl font-bold text-white sm:text-4xl">제갈공명</h1>
-                    </header>
-                    <div className="max-sm:[&_nav>a[aria-current=page]]:col-span-full">
-                        <AiBrainServiceTabs active="kongming" />
-                    </div>
-                </section>
+                <AiBrainServiceTabs active="kongming" />
                 {canRead && <KongmingArticleCandidatesPanel key={`articles:${sessionKey}`} />}
                 <CatalystPanel key={`${sessionKey}:${articleId ?? ''}`} canRead={canRead} articleId={articleId} />
             </div>

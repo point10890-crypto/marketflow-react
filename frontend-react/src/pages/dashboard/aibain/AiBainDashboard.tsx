@@ -94,10 +94,8 @@ export default function AiBainDashboard() {
     return (
         <div className="ai-design min-h-full bg-[#101318] text-white p-4 sm:p-6 lg:p-8">
             <div className="max-w-6xl mx-auto space-y-5">
+                <AiBrainServiceTabs active="scanner" />
                 <div className="max-w-3xl mx-auto space-y-5">
-                    {/* AI Brain 서비스 고정 네비게이션 — 3개 페이지 공통 */}
-                    <AiBrainServiceTabs active="scanner" />
-
                     <Header
                         hitRatePct={overview?.performance?.hit_rate_pct ?? null}
                         windowDays={overview?.performance?.window_days ?? 30}
