@@ -134,6 +134,36 @@ def alpha_lab_candidate_review():
     return evidence_review_response(candidate=True)
 
 
+@admin_mirofish_bp.get('/alpha-lab/top3-advisor')
+@_chart_analogue_top3_no_store
+@admin_or_aibain_required
+def alpha_lab_top3_advisor():
+    """Read a saved news-grounded debate; never call a provider on this request."""
+    if request.query_string or request.get_data(cache=True).strip():
+        return jsonify({'error': 'invalid_top3_advisor_request'}), 400
+    try:
+        from app.services.mirofish.alpha_lab import advisor
+        return jsonify(advisor.public_projection(advisor.read_view()))
+    except Exception:
+        return jsonify({'error': 'top3_advisor_unavailable'}), 503
+
+
+@admin_mirofish_bp.post('/alpha-lab/top3-advisor')
+@_chart_analogue_top3_no_store
+@admin_required
+def alpha_lab_top3_advisor_refresh():
+    """Queue only. The bounded scheduler owns inference and admission budgets."""
+    raw = request.get_data(cache=True).strip()
+    if request.query_string or (raw and (not request.is_json or request.get_json(silent=True) != {})):
+        return jsonify({'error': 'invalid_top3_advisor_request'}), 400
+    try:
+        from app.services.mirofish.alpha_lab import advisor
+        queued = advisor.request_refresh()
+        return jsonify({key: queued[key] for key in ('status', 'queued_at') if key in queued}), 202
+    except Exception:
+        return jsonify({'error': 'top3_advisor_unavailable'}), 503
+
+
 def _account_plan_body():
     """Bound request-only balances; reject ambiguous/duplicate JSON properties."""
     def unique(pairs):
