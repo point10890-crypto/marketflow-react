@@ -215,11 +215,6 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
     return (
         <>
             {errorNotice}
-            <fieldset disabled={processing.size > 0 || grantingUser.size > 0} className="min-w-0"><SubscriptionMemberDesk apiToken={apiToken} onBusyChange={busy => {
-                setMemberBusy(busy);
-                if (busy) { mutationLocks.current.add('member'); requestSequence.current++; setLoading(false); }
-                else { mutationLocks.current.delete('member'); void loadRequests(true); }
-            }} /></fieldset>
             {loading && <div role="status" className="text-xs text-gray-400">구독 내역을 새로고침하는 중...</div>}
             {actionMsg && (
                 <div className={`p-3 rounded-lg text-sm font-medium ${actionMsg.startsWith('❌') ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
@@ -228,10 +223,10 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
             )}
 
             {/* Pending */}
-            <div>
+            <section aria-labelledby="subscription-pending-heading">
                 <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-lg font-semibold text-yellow-400">
-                        <i className="fas fa-clock mr-2" />대기 중 ({pending.length})
+                    <h2 id="subscription-pending-heading" className="text-lg font-semibold text-yellow-400">
+                        <i className="fas fa-clock mr-2" />구독 승인 대기 ({pending.length})
                     </h2>
                     <button onClick={() => loadRequests()} className="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 transition-colors">
                         <i className="fas fa-sync-alt mr-1" /> 새로고침
@@ -356,7 +351,13 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                         })}
                     </div>
                 )}
-            </div>
+            </section>
+
+            <fieldset disabled={processing.size > 0 || grantingUser.size > 0} className="min-w-0"><SubscriptionMemberDesk apiToken={apiToken} onBusyChange={busy => {
+                setMemberBusy(busy);
+                if (busy) { mutationLocks.current.add('member'); requestSequence.current++; setLoading(false); }
+                else { mutationLocks.current.delete('member'); void loadRequests(true); }
+            }} /></fieldset>
 
             {/* 만료 · 재구독 대기 — 재구독 요청 제출 전인 만료 회원 (이탈 방지 팔로업 대상) */}
             {expiredMembers.length > 0 && (

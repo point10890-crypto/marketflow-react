@@ -6,8 +6,8 @@ import { adminAPI, AdminDashboard, AdminNotification, FunnelSummary } from '@/li
  * 관리자 대시보드 탭 — "오늘 처리할 일" 중심의 간소화 레이아웃.
  *
  * 구성 (위 → 아래):
- *  0. 전환 퍼널과 일곱 관리 바로가기.
- *  1. 처리 대기 큐 — 액션이 필요한 항목만. 전부 0이면 "모두 처리 완료" 한 줄.
+ *  0. 처리 대기 큐 — 구독 승인 대기를 먼저 표시. 전부 0이면 "모두 처리 완료" 한 줄.
+ *  1. 전환 퍼널과 일곱 관리 바로가기.
  *  2. 회원 현황 스트립 — 숫자 5개 한 줄 요약.
  *  4. 최근 알림.
  */
@@ -188,52 +188,12 @@ export default function DashboardTab({ data, onNavigate, apiToken, loading = fal
 
     return (
         <>
-            {/* 2c. 전환 퍼널 (30일) */}
-            <div className="apple-glass rounded-xl overflow-hidden" data-testid="funnel-card">
-                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06]">
-                    <i className="fas fa-filter text-blue-400 text-xs" />
-                    <span className="text-xs font-semibold text-white">전환 퍼널 (30일)</span>
-                    <span className="text-[9px] text-gray-600">가입 → 구독 신청 → 승인 · 고유 회원 기준</span>
-                    {funnelLoading && <span role="status" className="ml-auto text-[9px] text-gray-500">집계 불러오는 중...</span>}
-                </div>
-                {funnelError && <div role="alert" className="flex items-center justify-between gap-3 px-4 py-3 text-xs text-red-400">
-                    <span>{funnelError} {funnel && '이전 조회 결과를 표시하고 있습니다.'}</span>
-                    <button aria-label="전환 퍼널 다시 시도" disabled={funnelLoading} onClick={() => setFunnelRetry(n => n + 1)} className="shrink-0 px-2 py-1 rounded bg-white/5 disabled:opacity-50">다시 시도</button>
-                </div>}
-                <div className="grid grid-cols-4 divide-x divide-white/[0.06]">
-                    {funnelStats.map(s => (
-                        <div key={s.label} className="px-3 py-3 text-center">
-                            <div className={`text-sm sm:text-base font-bold tabular-nums ${s.color}`}>
-                                <i className={`fas ${s.icon} text-[10px] mr-1.5 opacity-70`} />
-                                {s.value}
-                            </div>
-                            <div className="text-[10px] text-gray-500 mt-0.5">{s.label}</div>
-                            <div className="text-[9px] text-gray-600 mt-0.5">{s.sub}</div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* 3. 바로가기 */}
-            <nav aria-label="관리 바로가기" className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-                {ADMIN_TABS.map(s => (
-                    <button
-                        key={s.key}
-                        onClick={() => onNavigate(s.key)}
-                        className="apple-glass rounded-xl py-3 px-2 hover:bg-white/5 hover:border-white/10 transition-colors text-center"
-                    >
-                        <i className={`fas ${s.icon} text-gray-400 text-sm mb-1.5 block`} />
-                        <span className="text-[11px] text-gray-300 font-medium">{s.label}</span>
-                    </button>
-                ))}
-            </nav>
-
             {error ? <div role="alert" className="flex items-center justify-between gap-3 p-3 rounded-lg text-sm bg-red-500/10 border border-red-500/20 text-red-400">
                 <span>{error} {data ? '이전 조회 결과를 표시하고 있습니다.' : '현재 회원 수와 처리 대기 건수를 확인할 수 없습니다.'}</span>
                 {onRetry && <button aria-label="대시보드 다시 시도" onClick={onRetry} disabled={loading} className="shrink-0 px-3 py-1.5 rounded bg-white/5 disabled:opacity-50">다시 시도</button>}
             </div> : (!data || loading) && <div role="status" className="text-sm text-gray-400">대시보드 데이터를 불러오는 중...</div>}
 
-            {data && <>
+            {data && (<>
             {/* 1. 처리 대기 큐 */}
             <div className="apple-glass rounded-xl overflow-hidden">
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06]">
@@ -277,7 +237,49 @@ export default function DashboardTab({ data, onNavigate, apiToken, loading = fal
                     </div>
                 )}
             </div>
+            </>)}
 
+            {/* 2c. 전환 퍼널 (30일) */}
+            <div className="apple-glass rounded-xl overflow-hidden" data-testid="funnel-card">
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06]">
+                    <i className="fas fa-filter text-blue-400 text-xs" />
+                    <span className="text-xs font-semibold text-white">전환 퍼널 (30일)</span>
+                    <span className="text-[9px] text-gray-600">가입 → 구독 신청 → 승인 · 고유 회원 기준</span>
+                    {funnelLoading && <span role="status" className="ml-auto text-[9px] text-gray-500">집계 불러오는 중...</span>}
+                </div>
+                {funnelError && <div role="alert" className="flex items-center justify-between gap-3 px-4 py-3 text-xs text-red-400">
+                    <span>{funnelError} {funnel && '이전 조회 결과를 표시하고 있습니다.'}</span>
+                    <button aria-label="전환 퍼널 다시 시도" disabled={funnelLoading} onClick={() => setFunnelRetry(n => n + 1)} className="shrink-0 px-2 py-1 rounded bg-white/5 disabled:opacity-50">다시 시도</button>
+                </div>}
+                <div className="grid grid-cols-4 divide-x divide-white/[0.06]">
+                    {funnelStats.map(s => (
+                        <div key={s.label} className="px-3 py-3 text-center">
+                            <div className={`text-sm sm:text-base font-bold tabular-nums ${s.color}`}>
+                                <i className={`fas ${s.icon} text-[10px] mr-1.5 opacity-70`} />
+                                {s.value}
+                            </div>
+                            <div className="text-[10px] text-gray-500 mt-0.5">{s.label}</div>
+                            <div className="text-[9px] text-gray-600 mt-0.5">{s.sub}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* 3. 바로가기 */}
+            <nav aria-label="관리 바로가기" className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                {ADMIN_TABS.map(s => (
+                    <button
+                        key={s.key}
+                        onClick={() => onNavigate(s.key)}
+                        className="apple-glass rounded-xl py-3 px-2 hover:bg-white/5 hover:border-white/10 transition-colors text-center"
+                    >
+                        <i className={`fas ${s.icon} text-gray-400 text-sm mb-1.5 block`} />
+                        <span className="text-[11px] text-gray-300 font-medium">{s.label}</span>
+                    </button>
+                ))}
+            </nav>
+
+            {data && <>
             {/* 1b. 구독 매출 추정 스트립 */}
             <div className="apple-glass rounded-xl overflow-hidden">
                 <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06]">
