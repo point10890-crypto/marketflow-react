@@ -35,7 +35,8 @@ def main(argv=None, *, provider=None, monitor_module=None, candidate_monitor_mod
         summary = dict(mode=args.mode, market_state=cadence.get('market_state'),
                        calendar_status=cadence.get('calendar_status'), monitor_status=monitoring.get('status'))
         candidate_failed = False
-        if (args.root/'candidate-desk'/'current.json').is_file():
+        from app.services.mirofish.alpha_lab.desk_selection import directory as desk_directory
+        if (desk_directory(args.root)/'current.json').is_file():
             try:
                 if candidate_monitor_module is None:
                     from app.services.mirofish.alpha_lab import candidate_monitor as candidate_monitor_module

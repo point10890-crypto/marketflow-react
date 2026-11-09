@@ -34,6 +34,8 @@ GROUPS = ('strengths', 'risks', 'what_to_watch')
 SUCCESS = evidence.SUCCESS | {'RECOVERED_RESPONSE'}
 RESPONSE_SCHEMA = evidence.RESPONSE_SCHEMA
 RETRY_COOLDOWN = timedelta(hours=1)
+SEALED_BASES = {'candidate-regular-v1', 'candidate-desk'}
+SOURCE_FIELDS = ('source_basis', 'source_session', 'source_price_basis', 'source_policy')
 _clock, _stamp, _hash, _encode = evidence._clock, evidence._stamp, evidence._hash, evidence._encode
 _read, _write, _serial = evidence._read, evidence._write, evidence._serial
 
@@ -88,7 +90,7 @@ def _operation(role):
 def _stable_input(item):
     stable = {key: deepcopy(item[key]) for key in (
         'status', 'targets', 'sources', 'candidates', 'coverage', 'warnings', 'decision_id',
-        'source_input_fingerprint', 'source_origin_at', 'fingerprint') if key in item}
+        'source_input_fingerprint', 'source_origin_at', 'fingerprint', *SOURCE_FIELDS) if key in item}
     # Polling/capture clocks do not change already-bound substantive evidence.
     stable['sources'] = [{key: value for key, value in source.items() if key != 'fetched_at'}
                          for source in stable.get('sources', [])]
@@ -97,7 +99,7 @@ def _stable_input(item):
 
 def _fingerprint(item):
     return _hash(dict(input=_stable_input(item), prompt_version=PROMPT_VERSION,
-        systems=ROLE_SYSTEM, schema=RESPONSE_SCHEMA,
+        systems={role: _role_system(item, role) for role in ROLES}, schema=RESPONSE_SCHEMA,
         policies={role: _serial(asdict(policy_for(_operation(role)))) for role in ROLES}))
 
 
@@ -210,9 +212,21 @@ def _payload(record, role):
     return dict(_stable_input(record['supplied']), role=role, prior_stages=prior)
 
 
+def _role_system(item, role):
+    if role == 'chair' and item.get('source_basis') in SEALED_BASES:
+        return _COMMON + """
+Explain the fixed shortlist in its supplied order, considering both earlier
+roles. The saved ranks reflect an experimental cost-stress estimate. Explain
+the evidence and risks for each candidate without changing its rank. Return
+only supplied candidates and omit groups with no grounding. Keep missing news
+and filings explicit. Do not interpret estimated returns as realized profit.
+"""
+    return ROLE_SYSTEM[role]
+
+
 def _binding(record, role):
     return _hash(dict(fingerprint=record['fingerprint'], role=role,
-        prompt=_encode(_payload(record, role)), system=ROLE_SYSTEM[role],
+        prompt=_encode(_payload(record, role)), system=_role_system(record['supplied'], role),
         schema=RESPONSE_SCHEMA, policy=_serial(asdict(policy_for(_operation(role)))),
         max_output_tokens=2400 if role == 'chair' else 1600, temperature=0))
 
@@ -370,7 +384,7 @@ def _execute_stage(path, record, role, router, current, *, retry_mode=None):
 
     try:
         result = router.route_text(RoutingRequest(operation=_operation(role),
-            system=ROLE_SYSTEM[role], prompt=_encode(_payload(record, role)),
+            system=_role_system(record['supplied'], role), prompt=_encode(_payload(record, role)),
             response_schema=RESPONSE_SCHEMA, json_mode=True, domain_validator=_domain_validator(record['supplied'], role),
             response_normalizer=capture_response, permit_abort_event=abort,
             request_id=request_id, run_id=run_id,
@@ -492,7 +506,7 @@ def run_once(root=ROOT, *, alpha_root=ALPHA_ROOT, article_root=articles.ROOT,
                 break
         if all(record['stages'].get(role, {}).get('status') in SUCCESS for role in ROLES) and not record.get('final'):
             record['final'] = dict(generated_at=_stamp(current), chair_binding=record['stages']['chair']['binding'],
-                                  ranking=[row['symbol'] for row in record['stages']['chair']['rows']])
+                                  ranking=_ranking(record['supplied'], record['stages']['chair']['rows']))
             _write(path, record)
         with FileLock(str(root/'refresh.lock'), timeout=2):
             pending = _read(root/'refresh.json')
@@ -539,12 +553,17 @@ def _view(item, invalid, record, current, *, warning=None):
     final = (record or {}).get('final')
     complete = bool(valid and final and all(stage['status'] in SUCCESS for stage in stages))
     if complete and final and (final.get('chair_binding') != record['stages']['chair']['binding']
-            or final.get('ranking') != [row['symbol'] for row in stages[2]['rows']]):
+            or final.get('ranking') != _ranking(item, stages[2]['rows'])):
         complete = False
         warning = 'saved_advisor_final_invalid'
     candidates = item.get('candidates') or []
+    sealed = item.get('source_basis') in SEALED_BASES
     if invalid:
         top3 = []
+    elif sealed:
+        findings = {row['symbol']: row for row in stages[2]['rows']} if complete else {}
+        top3 = [dict(row, baseline_rank=row['rank'], **{
+            group: findings.get(row['symbol'], {}).get(group, []) for group in GROUPS}) for row in candidates]
     elif complete:
         lookup = {row['symbol']: row for row in candidates}
         top3 = [dict(lookup[row['symbol']], baseline_rank=lookup[row['symbol']]['rank'], rank=index,
@@ -562,8 +581,10 @@ def _view(item, invalid, record, current, *, warning=None):
     return public_projection(dict(schema_version=1, status=status, generated_at=generated,
         decision_id=item.get('decision_id'), input_fingerprint=None if invalid else _fingerprint(item),
         source_origin_at=snapshot.get('source_origin_at'), source_cutoff_at=snapshot.get('source_cutoff_at'),
+        **{key: snapshot[key] for key in SOURCE_FIELDS if key in snapshot},
         coverage=item.get('coverage') or {}, warnings=warnings, top3=top3,
-        debate=dict(debate_complete=complete, ranking_basis='grounded_debate' if complete else 'deterministic_research', stages=stages),
+        debate=dict(debate_complete=complete, ranking_basis='sealed_contextual' if sealed else
+                    'grounded_debate' if complete else 'deterministic_research', stages=stages),
         sources=snapshot.get('sources') or [], empty_reason=('source_'+invalid if invalid else 'debate_pending_or_unavailable' if not complete else None),
         live_orders=False))
 
@@ -572,7 +593,15 @@ _COVERAGE_KEYS = ('inspected', 'pool', 'shortlisted', 'with_recent_news', 'with_
 _SCORE_KEYS = ('saved_metric_name', 'saved_metric_value', 'saved_metric_percentile', 'leadership_checks_fraction',
     'official_evidence_available', 'price_evidence_available', 'evidence_completeness_score',
     'news_count', 'unverified_news_count', 'negative_news_count')
-_PLAN_KEYS = ('entry_price', 'entry_low', 'entry_high', 'stop_price', 'target_price', 'loss_fraction', 'horizon_sessions')
+def _ranking(item, chair_rows):
+    rows = item['candidates'] if item.get('source_basis') in SEALED_BASES else chair_rows
+    return [row['symbol'] for row in rows]
+
+
+_PLAN_KEYS = ('entry_price', 'entry_low', 'entry_high', 'entry_upper', 'stop_price', 'target_price',
+              'loss_fraction', 'horizon_sessions')
+_RISK_KEYS = ('reference_weight', 'raw_kelly', 'kelly_fraction', 'adjusted_kelly', 'planned_account_loss',
+              'approved_exposure', 'live_orders')
 _USAGE_KEYS = ('input_tokens', 'cached_input_tokens', 'output_tokens', 'reasoning_tokens', 'total_tokens', 'usage_estimated')
 
 
@@ -599,6 +628,8 @@ def _public_rows(rows, *, candidates=False):
             clean.update(score_components=_fields(row.get('score_components'), _SCORE_KEYS),
                 plan=_fields(row.get('plan'), _PLAN_KEYS) if isinstance(row.get('plan'), dict) else None,
                 hold_reasons=_strings(row.get('hold_reasons')), evidence_ids=_strings(row.get('evidence_ids')))
+            if isinstance(row.get('risk'), dict):
+                clean['risk'] = _fields(row['risk'], _RISK_KEYS)
         for group in GROUPS:
             clean[group] = []
             for finding in row.get(group, [])[:1] if isinstance(row.get(group), list) else []:
@@ -616,7 +647,7 @@ def _public_rows(rows, *, candidates=False):
 def public_projection(view):
     """Explicit recursive allowlist, also usable by the HTTP boundary."""
     result = _fields(view, ('schema_version', 'status', 'generated_at', 'decision_id', 'input_fingerprint',
-        'source_origin_at', 'source_cutoff_at', 'empty_reason'))
+        'source_origin_at', 'source_cutoff_at', 'empty_reason', *SOURCE_FIELDS))
     result.update(coverage=_fields(view.get('coverage'), _COVERAGE_KEYS), warnings=_strings(view.get('warnings')),
                   top3=_public_rows(view.get('top3'), candidates=True)[:3], sources=[], live_orders=False)
     debate = view.get('debate') if isinstance(view.get('debate'), dict) else {}

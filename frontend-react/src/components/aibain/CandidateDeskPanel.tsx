@@ -106,7 +106,8 @@ export default function CandidateDeskPanel({ desk, now, blocked = false, onSelec
                 {contextual && row.model_evidence && <LocalModelEvidence name={row.name} evidence={row.model_evidence} />}
                 <div className="mt-3 space-y-1 border-t border-[#30363f] pt-3 text-sm tabular-nums text-gray-400">
                     {entry.state === 'within_band' && entry.quote && <><p className="text-gray-200">현재 관측 {money(entry.quote.price!)} · 시가 {money(entry.quote.opening_price!)}</p><p>시세 시각 {clock(entry.quote.quote_at!)}</p></>}
-                    <p>KIS · KRX · {row.quote_session} 종가</p>
+                    <p>KIS · KRX · {row.quote_session} {view.source.regular_session_verified ? '정규장 09:00–15:30 OHLC 대조' : '종가'}</p>
+                    {view.source.regular_session_verified && <p>거래량·대금: KIS 일별 제공값</p>}
                     <p>전체 자료 수집 완료 {clock(view.source.captured_at)}</p>
                     <p>진입 거래일 {view.entry_session ?? '확인 대기'}</p><p>유효기한 {clock(view.valid_until)}</p>
                 </div>
