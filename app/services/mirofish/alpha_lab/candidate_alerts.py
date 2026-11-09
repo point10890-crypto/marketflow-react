@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from copy import deepcopy
 import html
-from pathlib import Path
 
 from . import candidate_store, store, telegram_alerts
+from .desk_selection import directory as desk_directory
 
 
 def _prepare(root, current):
@@ -18,8 +18,10 @@ def _prepare(root, current):
         return telegram_alerts._result('no_candidates', info), None
     records = candidate_store.read_decisions(root)['records']
     frozen = next(r['desk'] for r in records if r['desk']['decision_id'] == desk['decision_id'])
+    basis = ('KIS 정규장 OHLC 대조' if frozen.get('source', {}).get('regular_session_verified')
+             else 'KIS KRX 일봉')
     lines = ['<b>AlphaLab 실험적 조건부 매수 제안</b>',
-             f'가격 기준: {frozen["latest_session"]} · KIS KRX 일봉',
+             f'가격 기준: {frozen["latest_session"]} · {basis}',
              f'진입 계획: {frozen["entry_session"]} · 최대 10거래일',
              '전향 검증 중 · 사람이 판단하는 참고 계획 · 자동 주문 없음', '']
     for row in frozen['candidates']:
@@ -38,8 +40,8 @@ def _prepare(root, current):
 
 
 def preview_latest(root, now=None):
-    directory = Path(root)/'candidate-desk'
-    if not (directory/'current.json').exists():
+    directory = desk_directory(root)
+    if not any((directory/name).exists() for name in ('current.json', 'attempt.json', 'decisions.json')):
         return telegram_alerts.preview_latest(root, now=now)
     try:
         return _prepare(directory, candidate_store._clock(now))[0]
@@ -48,8 +50,8 @@ def preview_latest(root, now=None):
 
 
 def deliver_latest(root, now=None, enabled=None, request_get=None, request_post=None):
-    directory = Path(root)/'candidate-desk'
-    if not (directory/'current.json').exists():
+    directory = desk_directory(root)
+    if not any((directory/name).exists() for name in ('current.json', 'attempt.json', 'decisions.json')):
         return telegram_alerts.deliver_latest(root, now=now, enabled=enabled,
                                              request_get=request_get, request_post=request_post)
     return telegram_alerts.deliver_latest(directory, now=now, enabled=enabled,

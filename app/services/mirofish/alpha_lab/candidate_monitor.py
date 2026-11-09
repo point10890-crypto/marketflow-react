@@ -169,7 +169,8 @@ def read_view(root, desk, *, now=None):
             return _view(state, current, identity)
         if desk.get('state') != 'ready' or not binding['plans']:
             return _view('held', current, identity)
-        directory = Path(root)/'candidate-desk'/'monitor'
+        from .desk_selection import directory as desk_directory
+        directory = desk_directory(root)/'monitor'
         pointer = _read(directory/'latest.json')
         digest = pointer.get('observation_hash')
         if (pointer.get('schema_version') != 1 or pointer.get('decision_id') != identity or not _hash_valid(digest)):
@@ -212,11 +213,13 @@ def tick(root, provider, *, now=None):
     except (ValueError, TypeError, OverflowError):
         return dict(state='unavailable', checked_at=None, decision_id=None, quotes=[])
     root = Path(root)
-    desk = candidate_store.read_public(root/'candidate-desk', now=_stamp(current))
+    from .desk_selection import directory as desk_directory
+    selected = desk_directory(root)
+    desk = candidate_store.read_public(selected, now=_stamp(current))
     identity = desk.get('decision_id') if isinstance(desk, dict) else None
     try:
         binding = _binding(desk, current)
-        directory = root/'candidate-desk'/'monitor'; directory.mkdir(parents=True, exist_ok=True)
+        directory = selected/'monitor'; directory.mkdir(parents=True, exist_ok=True)
         with FileLock(str(directory/'tick.lock'), timeout=0):
             state = _window(binding, current)
             quotes = []
@@ -246,7 +249,9 @@ def tick(root, provider, *, now=None):
                 if state is None:
                     state = 'failed' if all(row['state'] == 'unavailable' for row in quotes) else 'monitoring'
             current = _clock(now)
-            latest = candidate_store.read_public(root/'candidate-desk', now=_stamp(current))
+            if desk_directory(root) != selected:
+                return _view('held', current, identity)
+            latest = candidate_store.read_public(selected, now=_stamp(current))
             if (not isinstance(latest, dict) or latest.get('decision_id') != identity
                     or _binding(latest, current)['plan_hash'] != binding['plan_hash']):
                 return _view('held', current, identity)

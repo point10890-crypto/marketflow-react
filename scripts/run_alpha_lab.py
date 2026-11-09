@@ -9,20 +9,28 @@ from filelock import FileLock, Timeout
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.services.mirofish.alpha_lab import candidate_service
+from app.services.mirofish.alpha_lab import candidate_service, regular_service
 
 ROOT = candidate_service.ROOT
 
 
-def scan_once(root, *, desk_only=False):
+def scan_once(root, *, desk_only=False, regular_only=False):
     """Own the complete CLI lifecycle, including failures before candidate work."""
     root = Path(root)
+    compose = FileLock(str(root/'regular-compose.lock'), thread_local=False)
     lock = FileLock(str(root/'candidate-compose.lock'), thread_local=False)
     try:
+        compose.acquire(timeout=0)
         lock.acquire(timeout=0)
     except Timeout:
+        if compose.is_locked:
+            compose.release()
         return dict(candidate_service.store.read_status(root), state='running')
     try:
+        if regular_only:
+            previous = candidate_service.store.read_status(root)
+            desk = regular_service.refresh_desk(root)
+            return dict(previous, candidate_desk=desk) if desk is not None else dict(previous, candidate_desk_unavailable=True)
         candidates = candidate_service.candidate_store
         directory = root/'candidate-desk'
         candidates.set_attempt(directory, 'running')
@@ -32,25 +40,32 @@ def scan_once(root, *, desk_only=False):
                         else candidate_service.legacy.scan_once(root))
             if previous.get('state') in ('ready', 'held'):
                 desk = candidate_service.refresh_desk(root)
-                return (dict(previous, candidate_desk=desk) if desk is not None
-                        else dict(previous, candidate_desk_unavailable=True))
+                if desk is not None and desk.get('state') in ('ready', 'held'):
+                    regular = regular_service.refresh_desk(root)
+                    return (dict(previous, candidate_desk=regular) if regular is not None
+                            else dict(previous, candidate_desk_unavailable=True))
+                candidates.set_attempt(root/'candidate-regular-v1', 'failed', error='source_unavailable')
+                return dict(previous, candidate_desk_unavailable=True)
         except Exception:
             previous = dict(state='failed', error='analysis_unavailable', report=None)
         if candidates._load(directory/'attempt.json') == owned_attempt:
             candidates.set_attempt(directory, 'failed', error='analysis_unavailable')
+        candidates.set_attempt(root/'candidate-regular-v1', 'failed', error='source_unavailable')
         return previous
     finally:
         lock.release()
+        compose.release()
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=ROOT, help='Private AlphaLab artifacts and canonical input pointer')
     parser.add_argument('--desk-only', action='store_true', help='Recover only the new candidate stage after completed legacy research')
+    parser.add_argument('--regular-only', action='store_true', help='Recover regular-session collection/analysis only; preserve completed upstream stages')
     args = parser.parse_args(argv)
     from dotenv import load_dotenv
     load_dotenv(Path(__file__).resolve().parents[1]/'.env', override=False)
-    status = scan_once(args.root, desk_only=args.desk_only)
+    status = scan_once(args.root, desk_only=args.desk_only, regular_only=args.regular_only)
     report = status.get('report') or {}
     print(json.dumps(dict(state=status['state'], error=status['error'],
         inspected=(report.get('universe') or {}).get('inspected_count', 0),

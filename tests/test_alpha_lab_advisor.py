@@ -100,6 +100,25 @@ class Router:
             estimated_cost_usd=Decimal('0.001'))
 
 
+def test_contextual_top3_keeps_frozen_order_and_retains_all_candidates_after_debate(service, paths, supplied):
+    supplied.update(source_basis='candidate-regular-v1', source_session='2026-11-06',
+                    source_price_basis='KRX_regular_0900_1530_OHLC')
+    supplied['candidates'] = supplied['candidates'][:3]
+    supplied['targets'] = supplied['targets'][:3]
+    supplied['sources'] = supplied['sources'][:3]
+    supplied['candidates'][0]['plan']['entry_upper'] = 102
+    supplied['candidates'][0]['risk'] = dict(reference_weight=.01, approved_exposure=0., live_orders=False)
+    result = service.run_once(**paths, now=NOW, router=Router())
+    assert result['debate']['debate_complete']
+    assert result['debate']['ranking_basis'] == 'sealed_contextual'
+    assert [row['symbol'] for row in result['top3']] == [row['symbol'] for row in supplied['targets']]
+    assert [row['rank'] for row in result['top3']] == [1, 2, 3]
+    assert result['top3'][1]['strengths'] == []
+    assert result['top3'][0]['plan']['entry_upper'] == 102
+    assert result['top3'][0]['risk']['approved_exposure'] == 0
+    assert result['source_session'] == '2026-11-06'
+
+
 def test_three_calls_are_dependent_and_chair_ranks_only_supplied_research_rows(service, paths, supplied):
     before = deepcopy(supplied)
     router = Router()

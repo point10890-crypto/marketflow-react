@@ -9,7 +9,8 @@ export interface AdvisorPick extends AdvisorRow {
     rank: number; baseline_rank: number; score: number; basis: string; entry_status: string;
     source_at: string | null; reference_price: number | null; hold_reasons: string[]; evidence_ids: string[];
     score_components: { news_count?: number; official_evidence_available?: boolean; price_evidence_available?: boolean };
-    plan: Partial<Record<'entry_price' | 'entry_low' | 'entry_high' | 'stop_price' | 'target_price' | 'loss_fraction' | 'horizon_sessions', number | null>> | null;
+    plan: Partial<Record<'entry_price' | 'entry_low' | 'entry_high' | 'entry_upper' | 'stop_price' | 'target_price' | 'loss_fraction' | 'horizon_sessions', number | null>> | null;
+    risk?: { reference_weight?: number; approved_exposure: 0; live_orders: false };
 }
 export interface AdvisorSource {
     evidence_id: string; title: string; source: string; url: string | null; verification_status: string;
@@ -18,6 +19,10 @@ export interface AdvisorSource {
 export interface Top3Advisor {
     schema_version: 1; status: 'ready' | 'degraded' | 'stale' | 'missing' | 'unavailable';
     generated_at: string | null; source_origin_at: string | null; source_cutoff_at: string | null;
+    source_basis?: 'candidate-regular-v1' | 'candidate-desk';
+    source_session?: string;
+    source_price_basis?: string;
+    source_policy?: string;
     decision_id: string | null; input_fingerprint: string | null; empty_reason: string | null; live_orders: false;
     coverage: Partial<Record<'inspected' | 'pool' | 'shortlisted' | 'with_recent_news' | 'with_verified_filings' | 'with_verified_prices' | 'source_count', number>>;
     warnings: string[]; top3: AdvisorPick[]; sources: AdvisorSource[];
@@ -47,6 +52,12 @@ export function validateTop3Advisor(value: unknown): Top3Advisor {
         && list(s.target_symbols))) return invalid();
     const sources = new Map(value.sources.map(s => [s.evidence_id, s]));
     if (sources.size !== value.sources.length) return invalid();
+    const sealed = value.source_basis === 'candidate-regular-v1' || value.source_basis === 'candidate-desk';
+    if (value.source_basis !== undefined && !sealed) return invalid();
+    if (value.source_session !== undefined && (!text(value.source_session) || !/^\d{4}-\d{2}-\d{2}$/.test(value.source_session)
+        || !Number.isFinite(Date.parse(value.source_session)))) return invalid();
+    if ([value.source_price_basis, value.source_policy].some(field => field !== undefined && !text(field))) return invalid();
+    if (sealed && value.top3.length && (!value.source_session || !value.source_price_basis || !value.source_policy)) return invalid();
     const findings = (v: unknown, symbol: string) => Array.isArray(v) && v.length <= 8 && v.every(f => object(f) && text(f.text)
         && ['reported', 'inference', 'verified', 'missing'].includes(String(f.claim_status)) && list(f.evidence_ids) && f.evidence_ids.length > 0
         && f.evidence_ids.every(id => sources.get(id)?.target_symbols.includes(symbol))
@@ -55,18 +66,24 @@ export function validateTop3Advisor(value: unknown): Top3Advisor {
         && findings(r.strengths, r.symbol) && findings(r.risks, r.symbol) && findings(r.what_to_watch, r.symbol);
     if (!value.top3.every((r, i) => row(r) && r.rank === i + 1 && number(r.baseline_rank) && Number.isInteger(r.baseline_rank) && r.baseline_rank > 0
         && number(r.score) && text(r.basis) && text(r.entry_status) && time(r.source_at)
+        && (!sealed || r.basis === value.source_basis && r.rank === r.baseline_rank && r.entry_status === 'held'
+            && object(r.risk) && r.risk.approved_exposure === 0 && r.risk.live_orders === false
+            && (r.risk.reference_weight === undefined || number(r.risk.reference_weight)
+                && r.risk.reference_weight >= 0 && r.risk.reference_weight <= 1))
         && (r.reference_price === null || number(r.reference_price) && r.reference_price > 0)
         && list(r.hold_reasons) && list(r.evidence_ids) && r.evidence_ids.every((id: string) => sources.has(id)) && object(r.score_components)
         && (r.plan === null || object(r.plan) && Object.values(r.plan).every(v => v === null || number(v) && v >= 0)))) return invalid();
     if (new Set(value.top3.map(r => r.symbol)).size !== value.top3.length
         || !['ready', 'degraded'].includes(String(value.status)) && value.top3.length > 0) return invalid();
     const debate = value.debate;
-    if (typeof debate.debate_complete !== 'boolean' || !['grounded_debate', 'deterministic_research'].includes(String(debate.ranking_basis))
+    if (typeof debate.debate_complete !== 'boolean' || (sealed ? debate.ranking_basis !== 'sealed_contextual'
+        : !['grounded_debate', 'deterministic_research'].includes(String(debate.ranking_basis)))
         || !Array.isArray(debate.stages) || debate.stages.length > 3
         || !debate.stages.every(s => object(s) && ['analyst', 'critic', 'chair'].includes(String(s.role)) && text(s.status)
             && (s.generated_at === undefined || time(s.generated_at)) && Array.isArray(s.rows) && s.rows.length <= 6 && s.rows.every(row))) return invalid();
     if (new Set(debate.stages.map(s => s.role)).size !== debate.stages.length
-        || debate.debate_complete && (debate.stages.length !== 3 || !debate.stages.every(s => completed.has(s.status)) || debate.ranking_basis !== 'grounded_debate')
+        || debate.debate_complete && (debate.stages.length !== 3 || !debate.stages.every(s => completed.has(s.status))
+            || !sealed && debate.ranking_basis !== 'grounded_debate')
         || value.status === 'ready' && !debate.debate_complete) return invalid();
     return value as unknown as Top3Advisor;
 }

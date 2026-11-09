@@ -21,6 +21,24 @@ beforeEach(() => { api.get.mockReset().mockResolvedValue(fixture()); });
 afterEach(() => { cleanup(); vi.useRealTimers(); });
 
 describe('TOP3 advisor dashboard', () => {
+    it('shows the verified regular session, fixed order, entry ceiling and research exposure', async () => {
+        const view = fixture();
+        Object.assign(view, { source_basis: 'candidate-regular-v1', source_session: '2026-11-06',
+            source_price_basis: 'KRX_regular_0900_1530_OHLC', source_policy: 'krx-regular-ohlc-v1' });
+        view.debate.ranking_basis = 'sealed_contextual';
+        view.top3.forEach(row => Object.assign(row, { basis: 'candidate-regular-v1',
+            risk: { reference_weight: .01, approved_exposure: 0, live_orders: false } }));
+        Object.assign(view.top3[0], { plan: { entry_price: 95000, entry_upper: 101000, stop_price: 90000, target_price: 120000 } });
+        api.get.mockResolvedValue(view); show();
+        expect(await screen.findByText('KRX 정규장 OHLC · 2026-11-06')).toBeVisible();
+        expect(screen.getByText('저장된 후보 순위 · 근거 검토 완료')).toBeVisible();
+        const card = screen.getByRole('article', { name: '어드바이저 1위 코웨이' });
+        fireEvent.click(within(card).getByText('가격·진입 조건·출처 보기'));
+        expect(within(card).getByText('95,000원 ~ 101,000원')).toBeVisible();
+        expect(within(card).getByText('참고 비중 1% · 승인 비중 0%')).toBeVisible();
+        Object.assign(view.top3[0], { risk: { approved_exposure: .01, live_orders: false } });
+        expect(() => validateTop3Advisor(view)).toThrow();
+    });
     it('preserves issued entry ranges when there is no single entry_price', async () => {
         const view = fixture();
         Object.assign(view.top3[0], { basis: 'issued_opportunities', plan: { entry_low: 95000, entry_high: 101000, stop_price: 90000, target_price: 120000 } });

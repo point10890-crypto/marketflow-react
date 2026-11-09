@@ -15,8 +15,22 @@ const reasons: Record<string, string> = {
     source_vintage_and_corporate_action_adjustment_not_certified: '당시 자료 시점·기업행사 가격 보정 미확인',
     leadership_watchlist_not_entry_approval: '주도주 관찰 단계 · 진입 승인 전', article_source_unavailable: '뉴스 자료 확인 대기',
     verification_source_unavailable: '공시·시세 검증 자료 확인 대기', forward_validation_pending: '선정 이후 성과 관측 중',
+    candidate_desk_research_only: '실험 모델의 연구 후보',
+    candidate_desk_cash: '이번 분석에서 조건을 충족한 후보가 없습니다.',
+    candidate_desk_refresh_unavailable: '후보 원장 갱신이 완료되면 결과를 표시합니다.',
+    candidate_desk_held: '후보 원장이 보류 상태입니다.',
+    candidate_source_unavailable: '저장된 후보 근거를 검증하지 못했습니다.',
+    source_revision: '후보 선정에 사용한 원본 자료가 수정됐습니다.',
+    candidate_entry_window_expired: '참고 진입 기간이 지났습니다.',
+    candidate_price_session_older_than_72_hours: '가격 기준 세션이 72시간을 지났습니다.',
+    experimental_context_model_not_holdout_validated: '실험 모델이며 선정 후 성과를 관측 중입니다.',
+    legacy_daily_session_basis_unverified: '기존 KIS 일봉의 정규장 가격 기준은 확인되지 않았습니다.',
+    recent_official_filing_verification_missing: '최근 공시 확인 근거가 없는 후보가 있습니다.',
+    recent_independent_news_missing: '최근 독립 뉴스가 없는 후보가 있습니다.',
 };
 const claimLabels = { reported: '보도 내용', inference: '해석', verified: '검증 근거', missing: '미확인' };
+const percent = new Intl.NumberFormat('ko-KR', { style: 'percent', maximumFractionDigits: 2 });
+const sourceLabels = { 'candidate-regular-v1': 'KRX 정규장 OHLC', 'candidate-desk': '기존 KIS 일봉' };
 function Time({ value }: { value?: string | null }) {
     return value ? <time dateTime={value}>{clock.format(Date.parse(value))}</time> : <>미확인</>;
 }
@@ -36,7 +50,7 @@ function Sources({ sources, findings }: { sources: AdvisorSource[]; findings: Ev
         const quotes = [...new Set(findings.flatMap(f => f.quotes).filter(q => q.evidence_id === s.evidence_id).map(q => q.quote))];
         return <li key={s.evidence_id} className="space-y-1 border-t border-slate-700 pt-2">
             {url ? <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-sky-200 underline">{s.title}</a> : <p>{s.title}</p>}
-            <p className="text-slate-400">{s.source} · {s.verification_status === 'sealed' ? '저장 분석' : ['verified', 'verified_numeric_claims'].includes(s.verification_status) ? '대조 완료' : '확인 대기'}</p>
+            <p className="text-slate-400">{s.source} · {['sealed', 'research_not_independent_validation'].includes(s.verification_status) ? '저장 분석' : ['verified', 'verified_numeric_claims'].includes(s.verification_status) ? '대조 완료' : '확인 대기'}</p>
             <p className="text-slate-400">발행 <Time value={s.published_at} /> · 수집 <Time value={s.fetched_at} /></p>
             {typeof s.available_at_original_decision === 'boolean' && <p className="text-slate-400">{s.available_at_original_decision ? '선정 당시 자료' : '선정 이후 추가 자료'}</p>}
             {quotes.map(q => <blockquote key={q} className="border-l-2 border-sky-700 pl-2">“{q}”</blockquote>)}
@@ -47,8 +61,9 @@ function Pick({ pick, view }: { pick: AdvisorPick; view: Top3Advisor }) {
     const findings = [...pick.strengths, ...pick.risks, ...pick.what_to_watch];
     const sources = view.sources.filter(s => s.target_symbols.includes(pick.symbol));
     const money = (v?: number | null) => v == null ? '미확인' : `${Math.round(v).toLocaleString('ko-KR')}원`;
-    const entry = pick.plan?.entry_low != null && pick.plan.entry_high != null
-        ? `${money(pick.plan.entry_low)} ~ ${money(pick.plan.entry_high)}` : money(pick.plan?.entry_price);
+    const entryLow = pick.plan?.entry_low ?? pick.plan?.entry_price;
+    const entryHigh = pick.plan?.entry_upper ?? pick.plan?.entry_high;
+    const entry = entryLow != null && entryHigh != null ? `${money(entryLow)} ~ ${money(entryHigh)}` : money(entryLow);
     return <article className="min-w-0 space-y-4 rounded-xl border border-[#425565] bg-[#10181f] p-4 [overflow-wrap:anywhere]" aria-label={`어드바이저 ${pick.rank}위 ${pick.name}`}>
         <header className="flex items-start gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-sky-400/30 bg-sky-400/10 text-lg font-bold text-sky-200">{pick.rank}</span>
             <div className="min-w-0"><h3 className="text-lg font-bold text-white">{pick.name}</h3><p className="mt-1 text-xs text-slate-400">{pick.symbol} · 한국 · {pick.basis === 'leadership_watchlist' ? '주도주 관찰' : pick.basis === 'issued_opportunities' ? '저장 제안 비교' : '연구 후보'}</p></div></header>
@@ -56,6 +71,7 @@ function Pick({ pick, view }: { pick: AdvisorPick; view: Top3Advisor }) {
         <Arguments row={pick} />
         <details className="border-t border-slate-700 text-xs text-slate-300"><summary className="flex min-h-11 cursor-pointer items-center font-semibold text-sky-200">가격·진입 조건·출처 보기</summary>
             <div className="space-y-3 pb-2"><p>저장 가격 기준 <Time value={pick.source_at} /> (한국시간)</p><p>참고 기준가 {money(pick.reference_price)}</p>
+                {pick.risk && <p>{pick.risk.reference_weight != null && `참고 비중 ${percent.format(pick.risk.reference_weight)} · `}승인 비중 0%</p>}
                 {pick.plan ? <><dl className="space-y-2">{([['참고 진입', entry], ['참고 손절', money(pick.plan.stop_price)], ['참고 목표', money(pick.plan.target_price)]] as const).map(([label, value]) => <div key={label} className="flex flex-wrap justify-between gap-2"><dt>{label}</dt><dd className="tabular-nums text-white">{value}</dd></div>)}</dl><p className="text-slate-400">원래 결정의 참고 가격입니다. 최신 시세와 체결 가격은 별도로 확인하세요.</p></> : <p>저장된 진입·손절·목표 계획이 없습니다.</p>}
                 {!!pick.hold_reasons.length && <ul className="list-disc space-y-1 pl-4 text-amber-200">{pick.hold_reasons.map(r => <li key={r}>{reasons[r] ?? `추가 검증 조건: ${r}`}</li>)}</ul>}
                 <Sources sources={sources} findings={findings} />
@@ -101,13 +117,16 @@ function SavedAdvisor({ token }: { token?: string }) {
         {error && <p role="alert" className="text-sm text-amber-200">{error === 'access' ? 'TOP3 이용 권한을 확인해 주세요. 로그인 상태와 AI 브레인 구독을 확인하세요.' : 'TOP3 조회가 지연되고 있습니다. 잠시 후 저장 결과를 다시 조회해 주세요.'}</p>}
         {view && <>
             <div className="space-y-2 rounded-lg border border-slate-700 bg-[#101318] p-3 text-xs leading-5 text-slate-300">
-                <p className="font-semibold text-sky-200">{view.debate.debate_complete ? '3단계 토론 완료 · 연구 순위' : '저장 지표 순위 · 토론 미완료'}</p>
+                <p className="font-semibold text-sky-200">{view.debate.ranking_basis === 'sealed_contextual'
+                    ? (view.debate.debate_complete ? '저장된 후보 순위 · 근거 검토 완료' : '저장된 후보 순위 · 근거 검토 대기')
+                    : (view.debate.debate_complete ? '3단계 토론 완료 · 연구 순위' : '저장 지표 순위 · 토론 미완료')}</p>
+                {view.source_basis && view.source_session && <p>{sourceLabels[view.source_basis]} · {view.source_session}</p>}
                 <div className="flex flex-wrap gap-x-4 gap-y-1"><span>선정 자료 <Time value={view.source_origin_at} /></span><span>비교 작성 <Time value={view.generated_at} /></span><span>한국시간</span></div>
                 <p>비교 후보 {view.coverage.pool ?? 0}종목 · 최근 뉴스 {view.coverage.with_recent_news ?? 0}종목 · 공시 검증 {view.coverage.with_verified_filings ?? 0}종목 · 시세 검증 {view.coverage.with_verified_prices ?? 0}종목</p>
                 {view.top3.length > 0 && !view.coverage.with_recent_news && <p className="text-amber-200">비교 후보에 연결된 최근 뉴스가 없습니다. 현재 순위는 저장된 정량 근거를 중심으로 비교한 결과입니다.</p>}
             </div>
             {view.top3.length ? <div className="grid min-w-0 gap-3 lg:grid-cols-3">{view.top3.map(pick => <Pick key={pick.symbol} pick={pick} view={view} />)}</div>
-                : <div className="rounded-lg border border-slate-700 p-4 text-sm leading-6 text-slate-300"><p className="font-semibold text-white">현재 표시할 TOP3가 없습니다.</p><p>{view.status === 'stale' ? '선정 자료가 오래되어 새 자료와 비교를 기다리고 있습니다.' : view.status === 'missing' ? '아직 저장된 분석 자료가 없습니다.' : '자료와 분석 상태를 확인한 뒤 결과를 표시합니다.'}</p></div>}
+                : <div className="rounded-lg border border-slate-700 p-4 text-sm leading-6 text-slate-300"><p className="font-semibold text-white">현재 표시할 TOP3가 없습니다.</p><p>{(view.source_basis && reasons[view.warnings[0]]) || (view.status === 'stale' ? '선정 자료가 오래되어 새 자료와 비교를 기다리고 있습니다.' : view.status === 'missing' ? '아직 저장된 분석 자료가 없습니다.' : '자료와 분석 상태를 확인한 뒤 결과를 표시합니다.')}</p></div>}
             <details className="min-w-0 border-t border-slate-700 text-sm leading-6 text-slate-300 [overflow-wrap:anywhere]"><summary className="flex min-h-11 cursor-pointer items-center font-semibold text-sky-200">에이전트 토론·검증 상태</summary>
                 <div className="space-y-4">{view.debate.stages.map(stage => <div key={stage.role} className="min-w-0 space-y-2 border-t border-slate-700 pt-3"><h3 className="font-semibold text-white">{roles[stage.role]} · <span>{stageLabels[stage.status] ?? '확인 대기'}</span></h3>
                     <p className="text-xs text-slate-400">{stage.provider ?? '모델 대기'}{stage.model ? ` · ${stage.model}` : ''} · <Time value={stage.generated_at} /></p>

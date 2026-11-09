@@ -362,6 +362,18 @@ describe('experimental contextual candidate boundary', () => {
 });
 
 describe('experimental contextual candidate cards', () => {
+    it('labels the regular price session separately from published daily trading totals', () => {
+        const raw = contextualCandidateDeskFixture(1);
+        const source = { ...raw.source, acquisition_policy: 'krx-regular-ohlc-v1',
+            regular_session_verified: true, price_basis: 'KRX_regular_0900_1530_OHLC', volume_basis: 'KIS_published_daily' };
+        const desk = candidateDesk.validateCandidateDesk({ ...raw, source }, candidateDeskNow);
+        expect(desk?.source).toEqual(source);
+        expect(candidateDesk.validateCandidateDesk({ ...raw, source: { ...source, volume_basis: undefined } }, candidateDeskNow)).toBeUndefined();
+        render(<CandidateDeskPanel desk={desk} now={candidateDeskNow} />);
+        const card = screen.getByRole('article', { name: '1위 삼성전자 005930' });
+        expect(card).toHaveTextContent('2026-10-22 정규장 09:00–15:30 OHLC 대조');
+        expect(card).toHaveTextContent('거래량·대금: KIS 일별 제공값');
+    });
     it('translates contextual source facts and displays observed losing-majority frequencies honestly', () => {
         const raw = contextualCandidateDeskFixture(2);
         raw.candidates.forEach((row, index) => {

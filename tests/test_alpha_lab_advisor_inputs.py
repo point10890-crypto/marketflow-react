@@ -8,7 +8,7 @@ import json
 import pytest
 
 from app.services import kongming_verification
-from app.services.mirofish.alpha_lab import decision_engine, opportunity_store, store
+from app.services.mirofish.alpha_lab import candidate_store, decision_engine, opportunity_store, store
 from app.utils.atomic_json import write_json_atomic
 
 
@@ -63,6 +63,102 @@ def save_report(paths, report=None):
     report = report or report_fixture()
     store.publish(paths['alpha_root'], report, now=NOW.isoformat(), held=True)
     return report
+
+
+def save_desk(paths, *, directory='candidate-regular-v1', session='2026-11-06',
+              generated=ORIGIN, cash=False, expire=False, previous=None):
+    root = paths['alpha_root']/directory
+    source = dict(provider='KIS', venue='KRX', adjusted_requested=True,
+                  captured_at=(generated-timedelta(minutes=5)).isoformat(),
+                  historical_vintage_verified=False, corporate_action_adjustment_verified=False)
+    if directory == 'candidate-regular-v1':
+        source.update(regular_session_verified=True, price_basis='KRX_regular_0900_1530_OHLC',
+                      acquisition_policy='krx-regular-ohlc-v1')
+    rows = []
+    if not cash:
+        for rank, (symbol, name, value) in enumerate([('005930', '삼성전자', .005), ('000660', 'SK하이닉스', .003)], 1):
+            rows.append(dict(symbol=symbol, name=name, rank=rank, strength_score=80+rank,
+                quote_session=session, reason_facts=['Trend and relative strength'],
+                plan=dict(entry_price=100, entry_upper=102, stop_price=95, target_price=110,
+                          loss_fraction=.05, horizon_sessions=10),
+                risk=dict(reference_weight=.01, approved_exposure=0., live_orders=False),
+                model_evidence=dict(expected_stress_net_return=value, samples=40, block_count=6,
+                                    unique_symbols=8, neighbors_exclude_target=True)))
+    desk = dict(schema_version=1, policy_version=candidate_store.POLICY,
+        state='held' if cash else 'ready', input_fingerprint='a'*64,
+        generated_at=generated.isoformat(), latest_session=session, entry_session='2026-11-09',
+        valid_until=(NOW+timedelta(days=-1 if expire else 1)).isoformat(), source=source,
+        reasons=['no_positive_context_proposals'] if cash else [], candidates=rows,
+        funnel=[dict(id='inspected', count=49)], approved_exposure=0., live_orders=False)
+    desk['decision_id'] = store._hash(desk)
+    record = dict(desk=desk, created_at=desk['generated_at'], source_contract_hash='b'*64, signal_hash='c'*64)
+    record['sha256'] = store._hash(record)
+    candidate_store._save(root/'decisions.json', dict(schema_version=1, records=[previous, record] if previous else [record]))
+    candidate_store._save(root/'current.json', dict(decision_id=desk['decision_id']))
+    candidate_store.set_attempt(root, 'complete', now=generated.isoformat())
+    return root, record
+
+
+@pytest.mark.parametrize('legacy_present', [False, True])
+def test_regular_desk_uses_exact_saved_candidates_even_without_legacy(service, paths, legacy_present):
+    if legacy_present:
+        save_report(paths)
+    _, record = save_desk(paths)
+    result = service.build_input(**paths, now=NOW)
+    desk = record['desk']
+    assert result['decision_id'] == desk['decision_id']
+    assert result['source_basis'] == 'candidate-regular-v1'
+    assert result['source_session'] == desk['latest_session']
+    assert result['source_price_basis'] == desk['source']['price_basis']
+    assert result['coverage']['inspected'] == 49
+    assert [row['symbol'] for row in result['candidates']] == ['005930', '000660']
+    for row, original in zip(result['candidates'], desk['candidates']):
+        assert row['plan'] == original['plan']
+        assert row['risk'] == original['risk']
+        assert row['entry_status'] == 'held'
+
+
+def test_v4_desk_is_compatibility_when_regular_desk_is_absent(service, paths):
+    save_report(paths)
+    _, record = save_desk(paths, directory='candidate-desk')
+    result = service.build_input(**paths, now=NOW)
+    assert result['source_basis'] == 'candidate-desk'
+    assert result['decision_id'] == record['desk']['decision_id']
+
+
+@pytest.mark.parametrize('condition,expected', [
+    ('failed', 'unavailable'), ('running', 'unavailable'), ('attempt_only', 'unavailable'),
+    ('revision', 'unavailable'), ('cash', 'missing'), ('expired', 'stale'),
+    ('bar_stale', 'stale'), ('pointer', 'unavailable'), ('journal_only', 'unavailable'), ('source', 'unavailable'),
+])
+def test_authoritative_desk_never_resurrects_legacy_candidates(service, paths, condition, expected):
+    save_report(paths)
+    save_desk(paths, directory='candidate-desk')
+    root, record = save_desk(paths, cash=condition == 'cash', expire=condition == 'expired',
+        session='2026-11-04' if condition == 'bar_stale' else '2026-11-06')
+    identity = record['desk']['decision_id']
+    if condition in {'failed', 'running', 'attempt_only'}:
+        candidate_store.set_attempt(root, 'running' if condition == 'running' else 'failed', now=NOW.isoformat())
+        if condition == 'attempt_only':
+            (root/'current.json').unlink()
+    elif condition == 'revision':
+        candidate_store._save(root/'observations.json', dict(records={identity: {'revisions': ['changed']}}))
+    elif condition == 'pointer':
+        root, _ = save_desk(paths, session='2026-11-07', previous=record)
+        candidate_store._save(root/'current.json', dict(decision_id=identity))
+    elif condition == 'journal_only':
+        (root/'current.json').unlink()
+        (root/'attempt.json').unlink()
+    elif condition == 'source':
+        record['desk']['source']['regular_session_verified'] = False
+        record['desk']['decision_id'] = store._hash({k:v for k,v in record['desk'].items() if k != 'decision_id'})
+        record['sha256'] = store._hash({k:v for k,v in record.items() if k != 'sha256'})
+        candidate_store._save(root/'decisions.json', dict(schema_version=1, records=[record]))
+        candidate_store._save(root/'current.json', dict(decision_id=record['desk']['decision_id']))
+    result = service.build_input(**paths, now=NOW)
+    assert result['status'] == expected
+    assert result['source_basis'] == 'candidate-regular-v1'
+    assert result['candidates'] == []
 
 
 def article(identifier='1', symbol='032640', name='LG유플러스', **updates):

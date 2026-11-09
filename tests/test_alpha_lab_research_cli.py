@@ -106,7 +106,24 @@ def test_success_composes_once_and_desk_only_never_reruns_legacy(tmp_path, monke
         return deepcopy(first)
 
     monkeypatch.setattr(service, 'refresh_desk', refresh)
+    monkeypatch.setattr(cli.regular_service, 'refresh_desk', lambda *a: calls.append('regular') or deepcopy(first))
     assert cli.main(['--root', str(tmp_path), *(['--desk-only'] if desk_only else [])]) == 0
-    assert calls == (['candidate'] if desk_only else ['legacy','candidate'])
+    assert calls == (['candidate','regular'] if desk_only else ['legacy','candidate','regular'])
     assert candidate_store._load(directory/'attempt.json')['state'] == 'complete'
     assert all(path.read_bytes() == value for path, value in immutable.items())
+
+
+def test_regular_only_recovers_failed_stage_without_touching_completed_upstream(tmp_path, monkeypatch):
+    _, first, immutable = setup_cli(tmp_path, monkeypatch)
+    monkeypatch.setattr(service.store, 'read_status', lambda *a: dict(state='held', error=None, report=None))
+    monkeypatch.setattr(service.legacy, 'scan_once', lambda *a: pytest.fail('reran completed legacy'))
+    monkeypatch.setattr(cli.regular_service, 'refresh_desk', lambda *a: deepcopy(first))
+    assert cli.main(['--root', str(tmp_path), '--regular-only']) == 0
+    assert all(path.read_bytes() == value for path, value in immutable.items())
+
+
+def test_regular_failure_exits_nonzero_even_when_upstream_succeeded(tmp_path, monkeypatch):
+    setup_cli(tmp_path, monkeypatch)
+    monkeypatch.setattr(service.store, 'read_status', lambda *a: dict(state='held', error=None, report=None))
+    monkeypatch.setattr(cli.regular_service, 'refresh_desk', lambda *a: None)
+    assert cli.main(['--root', str(tmp_path), '--regular-only']) == 1

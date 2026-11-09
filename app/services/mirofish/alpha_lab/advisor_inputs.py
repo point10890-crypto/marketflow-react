@@ -1,4 +1,7 @@
-"""Read-only, content-bound research ordering of the current saved candidate pool.
+"""Read-only research view of the latest sealed Candidate Desk.
+
+The desk's costed contextual rank is authoritative. The legacy compatibility
+path uses a separate research ordering:
 
 Score = 70 * saved-metric percentile + 20 * saved leadership-check fraction
       + 5 * verified filing availability + 5 * verified price availability.
@@ -16,7 +19,7 @@ citation permissions here. Only independent marketflow_rss ingestion is used.
 from __future__ import annotations
 
 from copy import deepcopy
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 import json
 import math
 from pathlib import Path
@@ -24,13 +27,17 @@ import re
 import sqlite3
 
 from app.services import evidence_review as evidence
-from . import decision_engine, opportunity_store, store
+from . import candidate_store, decision_engine, opportunity_store, store
+from .desk_selection import directory as select_desk_directory
 
 
 POLICY_VERSION = 'top3-advisor-input-v1'
 MAX_CANDIDATES = 6
 MAX_SOURCES = 80
 MAX_AGE = timedelta(hours=72)
+DESK_BASES = ('candidate-regular-v1', 'candidate-desk')
+REGULAR_PRICE_BASIS = 'KRX_regular_0900_1530_OHLC'
+REGULAR_ACQUISITION_POLICY = 'krx-regular-ohlc-v1'
 METRIC_KEYS = ('score', 'ranking.score', 'trend_quality')
 ORIGINAL_KEYS = ('symbol', 'name', 'market', 'rank', 'strategy_id', 'score', 'plan', 'ranking',
     'risk', 'kelly', 'reference_weight', 'reasons', 'hold_reasons', 'entry_status', 'entry_eligible',
@@ -43,10 +50,10 @@ def _number(value):
     return value if type(value) in (int, float) and math.isfinite(value) else None
 
 
-def _identity(row):
+def _identity(row, *, max_name=100):
     symbol, name, market = row.get('symbol'), row.get('name'), row.get('market', 'KR')
     if (not isinstance(symbol, str) or not re.fullmatch(r'[0-9A-Z]{6}', symbol) or symbol == '000000'
-            or not isinstance(name, str) or not 1 <= len(name) <= 100 or not name.isprintable()
+            or not isinstance(name, str) or not 1 <= len(name) <= max_name or not name.isprintable()
             or market != 'KR'):
         raise ValueError('invalid_candidate_identity')
     return symbol, name, market
@@ -81,9 +88,8 @@ def _finish(result, *, binding=None, pool=None):
 def _empty(current, status='missing', reason='no_current_candidates', **identity):
     return _finish(dict(targets=[], sources=[], candidates=[], coverage=dict(inspected=0, pool=0,
         shortlisted=0, with_recent_news=0, with_verified_filings=0, with_verified_prices=0, source_count=0),
-        warnings=[reason], decision_id=identity.get('decision_id'),
-        source_input_fingerprint=identity.get('source_input_fingerprint'),
-        source_origin_at=identity.get('source_origin_at'), source_cutoff_at=evidence._stamp(current), status=status))
+        warnings=[reason], **{'decision_id': None, 'source_input_fingerprint': None, 'source_origin_at': None, **identity},
+        source_cutoff_at=evidence._stamp(current), status=status))
 
 
 def _decision(alpha_root, current):
@@ -252,7 +258,8 @@ def _sources(row, articles, origin):
     symbol = row['symbol']
     related = [item for item in articles if any(t['symbol'] == symbol for t in item['targets'])][:2]
     result = [_source(f'candidate:{symbol}', row['original_sources'], symbol, origin,
-        source='AlphaLab_sealed_current_report', fetched=row['source_at'])]
+        source='AlphaLab_sealed_candidate_desk' if row['basis'] in DESK_BASES else 'AlphaLab_sealed_current_report',
+        fetched=row['source_at'])]
     for item in related:
         identifier = item['article_id']
         for source in item['sources']:
@@ -287,16 +294,20 @@ def _verified_filing(source):
     return bool(claims) and all(claim.get('verified') is True for claim in claims)
 
 
-def _score(pool, articles, origin):
+def _score(pool, articles, origin, *, sealed=False):
     for row in pool:
         facts = row['original_sources'][row['basis']]
+        if sealed:
+            row['metric'] = 'model_evidence.expected_stress_net_return'
+            row['metric_value'] = facts['model_evidence']['expected_stress_net_return']
+            continue
         metrics = {'score': facts.get('score'), 'ranking.score': (facts.get('ranking') or {}).get('score'),
                    'trend_quality': facts.get('trend_quality')}
         metric = next((key for key in METRIC_KEYS if _number(metrics[key]) is not None), 'none')
         row['metric'], row['metric_value'] = metric, metrics.get(metric)
     for row in pool:
         metric, value = row['metric'], row['metric_value']
-        peers = [r['metric_value'] for r in pool if r['metric'] == metric] if metric != 'none' else []
+        peers = [r['metric_value'] for r in pool if r['metric'] == metric] if not sealed and metric != 'none' else []
         percentile = (sum(v < value for v in peers)+.5*(sum(v == value for v in peers)-1))/(len(peers)-1) if len(peers)>1 else .5 if peers else 0
         checks = row['leadership'].get('checks') or {}
         fraction = sum(checks.get(key) is True for key in ('top3','fresh','trend','near_high'))/4
@@ -305,13 +316,140 @@ def _score(pool, articles, origin):
         prices = any(s['source'] == 'KIS_saved_post_receipt_prices' and s['verification_status']=='verified' for s in sources)
         completeness = 5*int(official)+5*int(prices)
         row['score_components'] = dict(saved_metric_name=metric, saved_metric_value=value,
-            saved_metric_percentile=percentile, leadership_checks_fraction=fraction,
             official_evidence_available=official, price_evidence_available=prices,
-            evidence_completeness_score=completeness, news_count=len(related),
+            news_count=len(related),
             unverified_news_count=len(related), negative_news_count=sum(item['event_type']=='risk' for item in related))
-        row['score'] = round(70*percentile+20*fraction+completeness, 8)
+        if sealed:
+            row['score'] = value
+        else:
+            row['score_components'].update(saved_metric_percentile=percentile, leadership_checks_fraction=fraction,
+                                           evidence_completeness_score=completeness)
+            row['score'] = round(70*percentile+20*fraction+completeness, 8)
         row['sources'] = sources
-    return sorted(pool, key=lambda row: (-row['score'], row['symbol'], row['name'], row['market']))
+    return sorted(pool, key=lambda row: row['rank']) if sealed else sorted(
+        pool, key=lambda row: (-row['score'], row['symbol'], row['name'], row['market']))
+
+
+def _shortlist(pool, article_root, current, origin, identity, warnings, inspected, *, sealed=False, ready=False):
+    articles = _articles(article_root, current, {row['symbol'] for row in pool}, warnings)
+    shortlisted = _score(pool, articles, origin, sealed=sealed)[:MAX_CANDIDATES]
+    sources = {}
+    all_sources = [s for row in shortlisted for s in row['sources']]
+    # Retain one verified filing per covered symbol before optional filings.
+    required_filings = {next((s['evidence_id'] for s in row['sources'] if _verified_filing(s)), None)
+                        for row in shortlisted}
+    for source in sorted(all_sources, key=lambda s: (s['evidence_id'].startswith('filing:'),
+            s['evidence_id'] not in required_filings, s['evidence_id'])):
+        key = source['evidence_id']
+        if key in sources:
+            previous = sources[key]
+            if {k:v for k,v in previous.items() if k!='target_symbols'} != {k:v for k,v in source.items() if k!='target_symbols'}:
+                raise ValueError('conflicting_evidence_identity')
+            previous['target_symbols'] = sorted(set(previous['target_symbols']+source['target_symbols']))
+        elif len(sources) < MAX_SOURCES:
+            sources[key] = deepcopy(source)
+        else:
+            warnings.append('source_capacity_truncated')
+    candidates = []
+    for rank, row in enumerate(shortlisted, 1):
+        candidate = {key: deepcopy(row[key]) for key in ('symbol', 'name', 'market', 'score', 'score_components',
+            'basis', 'entry_status', 'hold_reasons', 'plan', 'source_at', 'reference_price')}
+        if sealed:
+            candidate['risk'] = deepcopy(row['risk'])
+        candidate.update(rank=row['rank'] if sealed else rank,
+            evidence_ids=sorted(key for key, source in sources.items() if row['symbol'] in source['target_symbols']))
+        candidates.append(candidate)
+    if any(not r['score_components']['news_count'] for r in candidates):
+        warnings.append('recent_independent_news_missing')
+    if sealed and any(not r['score_components']['official_evidence_available'] for r in candidates):
+        warnings.append('recent_official_filing_verification_missing')
+    return dict(**identity, source_cutoff_at=evidence._stamp(current), candidates=candidates,
+        targets=[{key:r[key] for key in ('symbol','name','market')} for r in candidates],
+        sources=sorted(sources.values(), key=lambda s:s['evidence_id']), warnings=sorted(set(warnings)),
+        status='ready' if ready and all(r['entry_status']=='ready' for r in candidates) else 'held',
+        coverage=dict(inspected=inspected, pool=len(pool), shortlisted=len(candidates), source_count=len(sources),
+            with_recent_news=sum(r['score_components']['news_count']>0 for r in candidates),
+            with_verified_filings=sum(r['score_components']['official_evidence_available'] for r in candidates),
+            with_verified_prices=sum(r['score_components']['price_evidence_available'] for r in candidates)))
+
+
+def _desk_input(directory, article_root, current):
+    identity = dict(source_basis=directory.name)
+    try:
+        attempt = candidate_store._load(directory/'attempt.json') or {}
+        if attempt and (attempt['state'] != 'complete' or evidence._clock(attempt['at']) > current):
+            return _empty(current, 'unavailable', 'candidate_desk_refresh_unavailable', **identity)
+        records = candidate_store.read_decisions(directory)['records']
+        if not records:
+            raise ValueError('missing_candidate_journal')
+        record = max(records, key=lambda item: item['desk']['latest_session'])
+        desk = candidate_store.read_public(directory, now=evidence._stamp(current))
+        if desk is None or desk['decision_id'] != record['desk']['decision_id']:
+            raise ValueError('candidate_current_pointer_mismatch')
+        source = desk['source']
+        regular = directory.name == DESK_BASES[0]
+        if (desk['policy_version'] != candidate_store.POLICY or source['provider'] != 'KIS'
+                or source['venue'] != 'KRX' or source['adjusted_requested'] is not True
+                or desk['approved_exposure'] != 0 or desk['live_orders'] is not False):
+            raise ValueError('invalid_candidate_desk_policy')
+        if regular and (source.get('regular_session_verified') is not True
+                or source.get('price_basis') != REGULAR_PRICE_BASIS
+                or source.get('acquisition_policy') != REGULAR_ACQUISITION_POLICY):
+            raise ValueError('regular_session_evidence_missing')
+        origin = evidence._clock(desk['generated_at'])
+        captured = evidence._clock(source['captured_at'])
+        session = desk['latest_session']
+        session_close = datetime.combine(date.fromisoformat(session), time(15, 30), candidate_store.KST)
+        if not session_close <= captured <= origin <= current or evidence._clock(record['created_at']) != origin:
+            raise ValueError('candidate_source_clock_mismatch')
+        identity.update(decision_id=desk['decision_id'], source_input_fingerprint=desk['input_fingerprint'],
+            source_origin_at=evidence._stamp(origin), source_session=session,
+            source_price_basis=source['price_basis'] if regular else 'KIS:J:D:adjusted_requested',
+            source_policy=source['acquisition_policy'] if regular else desk['policy_version'])
+        if desk['state'] in ('failed', 'running') or 'source_revision' in desk['reasons']:
+            return _empty(current, 'unavailable', 'candidate_desk_refresh_unavailable'
+                if desk['state'] in ('failed', 'running') else 'source_revision', **identity)
+        if current-session_close > MAX_AGE:
+            return _empty(current, 'stale', 'candidate_price_session_older_than_72_hours', **identity)
+        if 'entry_window_unavailable' in desk['reasons'] and desk['valid_until'] is not None:
+            return _empty(current, 'stale', 'candidate_entry_window_expired', **identity)
+        if not desk['candidates']:
+            return _empty(current, 'missing', 'candidate_desk_cash', **identity)
+        if desk['state'] != 'ready':
+            return _empty(current, 'unavailable', 'candidate_desk_held', **identity)
+        if (len(desk['candidates']) > 3
+                or sorted(row['rank'] for row in desk['candidates']) != list(range(1, len(desk['candidates'])+1))):
+            raise ValueError('invalid_candidate_ranks')
+        pool, symbols = [], set()
+        for row in desk['candidates']:
+            symbol, name, market = _identity(row, max_name=120)
+            if (not symbol.isascii() or not symbol.isdecimal() or symbol in symbols or row['quote_session'] != session
+                    or row['risk']['approved_exposure'] != 0 or row['risk']['live_orders'] is not False
+                    or _number(row['model_evidence']['expected_stress_net_return']) is None):
+                raise ValueError('invalid_candidate_desk_row')
+            symbols.add(symbol)
+            facts = {key: deepcopy(row[key]) for key in ('symbol', 'name', 'rank', 'quote_session', 'strength_score',
+                                                        'reason_facts', 'model_evidence', 'plan', 'risk')}
+            facts.update(price_basis=identity['source_price_basis'], source_policy=identity['source_policy'])
+            if len(evidence._encode(facts)) > 12000:
+                raise ValueError('candidate_source_capacity')
+            pool.append(dict(symbol=symbol, name=name, market=market, rank=row['rank'], basis=directory.name,
+                entry_status='held', hold_reasons=[*_reasons(desk, row), 'candidate_desk_research_only'],
+                reference_price=row['plan']['entry_price'], plan=row['plan'], risk=row['risk'],
+                source_at=evidence._stamp(captured), original_sources={directory.name: facts}, leadership={}))
+        inspected = next((row['count'] for row in desk['funnel'] if row['id']=='inspected'), len(pool))
+        warnings = ['research_order_not_profit_probability', 'news_alone_never_approves_entry',
+                    'experimental_context_model_not_holdout_validated']
+        if not regular:
+            warnings.append('legacy_daily_session_basis_unverified')
+        if source.get('historical_vintage_verified') is not True:
+            warnings.append('historical_vintage_unverified')
+        if source.get('corporate_action_adjustment_verified') is not True:
+            warnings.append('price_adjustment_unverified')
+        result = _shortlist(pool, article_root, current, origin, identity, warnings, inspected, sealed=True)
+        return _finish(result, binding=dict(policy=desk['policy_version'], source_contract_hash=record['source_contract_hash']))
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, OverflowError):
+        return _empty(current, 'unavailable', 'candidate_source_unavailable', **identity)
 
 
 def build_input(*, alpha_root, article_root, now=None):
@@ -323,6 +461,9 @@ def build_input(*, alpha_root, article_root, now=None):
     """
     current = evidence._clock(now)
     try:
+        directory = select_desk_directory(alpha_root)
+        if any((directory/name).exists() for name in ('current.json', 'attempt.json', 'decisions.json')):
+            return _desk_input(directory, article_root, current)
         loaded = _decision(alpha_root, current)
         if loaded is None:
             return _empty(current)
@@ -344,48 +485,11 @@ def build_input(*, alpha_root, article_root, now=None):
                 warnings.append(warning)
         if provenance.get('current_cohort_bias') is True:
             warnings.append('current_cohort_bias')
-        articles = _articles(article_root, current, {row['symbol'] for row in pool}, warnings)
-        ordered = _score(pool, articles, origin)
-        shortlisted = ordered[:MAX_CANDIDATES]
-        # Mandatory candidate and missing/status sources precede optional filings;
-        # the cap never silently removes a candidate's original eligibility.
-        sources = {}
-        all_sources = [s for row in shortlisted for s in row['sources']]
-        # Keep one verified filing for each awarded candidate before filling the
-        # remaining filing budget, so score evidence is always present to cite.
-        required_filings = {next((s['evidence_id'] for s in row['sources'] if _verified_filing(s)), None)
-                            for row in shortlisted}
-        for source in sorted(all_sources, key=lambda s: (s['evidence_id'].startswith('filing:'),
-                s['evidence_id'] not in required_filings, s['evidence_id'])):
-            key = source['evidence_id']
-            if key in sources:
-                previous = sources[key]
-                if {k:v for k,v in previous.items() if k!='target_symbols'} != {k:v for k,v in source.items() if k!='target_symbols'}:
-                    raise ValueError('conflicting_evidence_identity')
-                previous['target_symbols'] = sorted(set(previous['target_symbols']+source['target_symbols']))
-            elif len(sources) < MAX_SOURCES:
-                sources[key] = deepcopy(source)
-            else:
-                warnings.append('source_capacity_truncated')
-        candidates = []
-        for rank, row in enumerate(shortlisted, 1):
-            candidate = {key: deepcopy(row[key]) for key in ('symbol','name','market','score','score_components',
-                'basis','entry_status','hold_reasons','plan','source_at','reference_price')}
-            candidate.update(rank=rank, evidence_ids=sorted(key for key, source in sources.items() if row['symbol'] in source['target_symbols']))
-            candidates.append(candidate)
-        if any(not r['score_components']['news_count'] for r in candidates):
-            warnings.append('recent_independent_news_missing')
         inspected = (board.get('coverage') or {}).get('inspected', (leadership.get('cohort') or {}).get('inspected', len(pool)))
         if type(inspected) is not int or inspected < 0:
             inspected = len(pool)
-        result = dict(**identity, source_cutoff_at=evidence._stamp(current), candidates=candidates,
-            targets=[{key:r[key] for key in ('symbol','name','market')} for r in candidates],
-            sources=sorted(sources.values(), key=lambda s:s['evidence_id']), warnings=sorted(set(warnings)),
-            status='ready' if saved['state']=='ready' and all(r['entry_status']=='ready' for r in candidates) else 'held',
-            coverage=dict(inspected=inspected,pool=len(pool),shortlisted=len(candidates),source_count=len(sources),
-                with_recent_news=sum(r['score_components']['news_count']>0 for r in candidates),
-                with_verified_filings=sum(r['score_components']['official_evidence_available'] for r in candidates),
-                with_verified_prices=sum(r['score_components']['price_evidence_available'] for r in candidates)))
+        result = _shortlist(pool, article_root, current, origin, identity, warnings, inspected,
+                            ready=saved['state']=='ready')
         binding = dict(board={key:deepcopy(board.get(key)) for key in ('decision_id','input_fingerprint','source_audit_hash','policy_version','status','reasons')},
             provenance=deepcopy(report.get('provenance')), approval=deepcopy(report.get('approval')))
         pool_facts = [{key:row[key] for key in ('symbol','name','market','basis','entry_status','hold_reasons','original_sources')}

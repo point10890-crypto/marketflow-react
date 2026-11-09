@@ -16,8 +16,8 @@ REPORT = {'status': 'ready', 'candidates': [{'symbol': '042700', 'target': 'í•œë
 
 
 def test_production_dispatch_includes_additive_candidate_desk():
-    from app.services.mirofish.alpha_lab import candidate_service
-    assert routes._alpha_lab_service() is candidate_service
+    from app.services.mirofish.alpha_lab import regular_service
+    assert routes._alpha_lab_service() is regular_service
 
 
 def envelope(state='none'):

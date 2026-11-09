@@ -23,12 +23,20 @@ export interface DeskCandidate {
     risk: { reference_weight: number; kelly_fraction: .25; raw_kelly: number; approved_exposure: 0; live_orders: false };
     model_evidence?: CandidateModelEvidence;
 }
+const regularSource = {
+    acquisition_policy: 'krx-regular-ohlc-v1',
+    regular_session_verified: true,
+    price_basis: 'KRX_regular_0900_1530_OHLC',
+    volume_basis: 'KIS_published_daily',
+} as const;
+const regularSourceFields = Object.entries(regularSource);
+
 export interface CandidateDesk {
     schema_version: 1; policy_version: 'cross-sectional-candidates-v3' | 'contextual-candidates-v4'; state: 'ready' | 'held' | 'failed' | 'running';
     decision_id: string; input_fingerprint: string; generated_at: string; latest_session: string;
     entry_session: string | null; valid_until: string | null;
     source: { provider: 'KIS'; venue: 'KRX'; adjusted_requested: true; captured_at: string;
-        historical_vintage_verified: false; corporate_action_adjustment_verified: false };
+        historical_vintage_verified: false; corporate_action_adjustment_verified: false } & Partial<typeof regularSource>;
     candidates: DeskCandidate[]; funnel: Array<{ id: string; label: string; count: number }>;
     evidence: { formation: CandidateDeskPhase; confirmation: CandidateDeskPhase }; reasons: string[];
     model?: CandidateDeskModel;
@@ -153,6 +161,9 @@ export function validateCandidateDesk(value: unknown, now = Date.now()): Candida
         || !texts(value.reasons) || value.live_orders !== false || value.approved_exposure !== 0) return undefined;
     const v = value as unknown as CandidateDesk;
     const contextual = v.policy_version === 'contextual-candidates-v4';
+    const source = value.source;
+    const regular = regularSourceFields.some(([key]) => Object.prototype.hasOwnProperty.call(source, key));
+    if (regular && (!contextual || !regularSourceFields.every(([key, expected]) => source[key] === expected))) return undefined;
     if (contextual && (!contextualModel(value.model, v.latest_session)
         || !v.candidates.every(row => localEvidence(row.model_evidence, (value.model as CandidateDeskModel).training_end)))) return undefined;
     if (new Set(v.candidates.map(row => row.symbol)).size !== v.candidates.length
@@ -169,7 +180,8 @@ export function validateCandidateDesk(value: unknown, now = Date.now()): Candida
         input_fingerprint: v.input_fingerprint, generated_at: v.generated_at, latest_session: v.latest_session,
         entry_session: v.entry_session, valid_until: v.valid_until,
         source: { provider: 'KIS', venue: 'KRX', adjusted_requested: true, captured_at: v.source.captured_at,
-            historical_vintage_verified: false, corporate_action_adjustment_verified: false },
+            historical_vintage_verified: false, corporate_action_adjustment_verified: false,
+            ...(regular ? regularSource : {}) },
         candidates: v.candidates.map(row => ({ symbol: row.symbol, name: row.name, rank: row.rank, strength_score: row.strength_score,
             quote_session: row.quote_session, reason_facts: [...row.reason_facts],
             plan: { entry_price: row.plan.entry_price, entry_upper: row.plan.entry_upper, stop_price: row.plan.stop_price,

@@ -1,5 +1,30 @@
 # AlphaLab: independent stock-detection agents
 
+## 2026-11-10 regular-session acquisition overlay
+
+The authoritative new desk is `data/alpha_lab/candidate-regular-v1/`. It reuses
+the validated daily acquisition and reconstructs only the newest session's
+09:00–15:30 KRX J OHLC from date-addressed KIS minute evidence. Daily published
+volume/turnover remain explicitly separate. This is same-provider cross-endpoint
+verification, not independent KRX or historical corporate-action certification.
+See `docs/alpha_reliable_top3_research_2026_11_10.md` for the live diagnosis.
+
+`scripts/run_alpha_lab.py` now composes regular collection/analysis after the
+completed existing stages. `--regular-only` recovers just this stage, preserving
+the earlier successful collection and first decisions. The existing weekday
+20:30 research task automatically runs it; GET never performs acquisition.
+The new source contract includes implementation identity. Its separate 60-session
+decision / 10-session maturation protocol starts after declaration; bootstrap is
+not forward performance. Do not silently reset the protocol after changing code.
+
+Every raw symbol object and OHLC difference receipt is replay-validated. A failed
+symbol is retried without recollecting successful ones. No partial snapshot is
+published. Inputs older than 72 hours after their 20:30 cutoff are refused.
+Monitor, notifications and TOP3 prefer this desk once any attempt/current/journal
+marker exists; failure/cash/expiry must not revive an older desk. Sealed contextual
+ranks and plans remain unchanged by AI debate. Existing v4 journals continue as
+controls; original decisions and closed results remain immutable.
+
 AlphaLab compares four fixed strategies on the current financial-quality subset
 of the market-cap TOP100: momentum, liquidity breakout, mean reversion, and a
 ridge model trained on completed costed bracket outcomes. It uses deterministic
