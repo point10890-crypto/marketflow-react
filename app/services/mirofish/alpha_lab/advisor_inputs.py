@@ -246,8 +246,8 @@ def _articles(article_root, current, symbols, warnings):
     return sorted(items, key=lambda item: (item['source_origin_at'], item['article_id']), reverse=True)
 
 
-def _source(identifier, content, symbol, origin, *, source='AlphaLab_saved_evidence_availability', fetched=None):
-    row = evidence._source(identifier, evidence._encode(content), title=f'{symbol} 저장된 근거 상태',
+def _source(identifier, content, symbol, origin, *, source='AlphaLab_saved_evidence_availability', fetched=None, title=None):
+    row = evidence._source(identifier, evidence._encode(content), title=title or f'{symbol} 저장된 근거 상태',
         source=source, fetched=fetched, status='research_not_independent_validation' if source.startswith('AlphaLab_sealed') else 'unavailable')
     row['target_symbols'] = [symbol]
     row['available_at_original_decision'] = bool(fetched and evidence._clock(fetched) <= origin)
@@ -256,10 +256,24 @@ def _source(identifier, content, symbol, origin, *, source='AlphaLab_saved_evide
 
 def _sources(row, articles, origin):
     symbol = row['symbol']
-    related = [item for item in articles if any(t['symbol'] == symbol for t in item['targets'])][:2]
+    def verified_for_target(item):
+        return any((source['evidence_id'].startswith(f'filing:{symbol}:') and _verified_filing(source))
+            or (source['evidence_id'] == f'price:{item["article_id"]}:{symbol}'
+                and source['source'] == 'KIS_saved_post_receipt_prices' and source['verification_status']=='verified')
+            for source in item['sources'])
+    # Preserve existing per-issuer validation when newer unverified titles join.
+    related = sorted((item for item in articles if any(t['symbol'] == symbol for t in item['targets'])),
+        key=lambda item: (verified_for_target(item), item['source_origin_at'], item['article_id']), reverse=True)[:2]
     result = [_source(f'candidate:{symbol}', row['original_sources'], symbol, origin,
         source='AlphaLab_sealed_candidate_desk' if row['basis'] in DESK_BASES else 'AlphaLab_sealed_current_report',
         fetched=row['source_at'])]
+    if row['basis'] in DESK_BASES and _number(row.get('reference_price')) is not None and row['reference_price'] > 0:
+        facts = row['original_sources'][row['basis']]
+        result.append(_source(f'price_context:{symbol}', dict(scope='sealed_reference_price', status='available',
+            reference_price=row['reference_price'], source_at=row['source_at'], quote_session=facts['quote_session'],
+            price_basis=facts['price_basis'], source_policy=facts['source_policy'],
+            not_live_quote=True, post_receipt_price_verification=False), symbol, origin,
+            source='AlphaLab_sealed_reference_price', fetched=row['source_at'], title=f'{row["name"]} 저장 기준가격'))
     for item in related:
         identifier = item['article_id']
         for source in item['sources']:
@@ -267,6 +281,12 @@ def _sources(row, articles, origin):
             if (key.startswith(f'article:{identifier}') or key in (f'price:{identifier}:{symbol}', f'verification:{identifier}:{symbol}')
                     or key.startswith(f'filing:{symbol}:')):
                 source = deepcopy(source)
+                if source['source'] == 'KIS_saved_post_receipt_prices':
+                    price = json.loads(source['text'])
+                    price['scope'] = 'article_post_receipt_price_response'
+                    if price.get('reason') == 'saved_price_evidence_missing':
+                        price['reason'] = 'post_receipt_price_evidence_missing'
+                    source['text'] = evidence._encode(price)
                 if key.startswith(f'filing:{symbol}:'):
                     # A filing can be checked against different article claims;
                     # keep both comparisons and their capture clocks distinct.
@@ -278,11 +298,17 @@ def _sources(row, articles, origin):
         if not any(s['evidence_id'] == f'verification:{identifier}:{symbol}' for s in result):
             result.append(_source(f'verification:{identifier}:{symbol}',
                 dict(status='unavailable', reason='official_verification_unavailable'), symbol, origin))
+        if not any(s['evidence_id'] == f'price:{identifier}:{symbol}' for s in result):
+            result.append(_source(f'price:{identifier}:{symbol}', dict(status='unavailable',
+                scope='article_post_receipt_price_response', reason='post_receipt_price_evidence_missing'),
+                symbol, origin, title=f'{row["name"]} 기사 후 가격 반응 확인 상태'))
     if not related:
         result.extend([
             _source(f'news_status:{symbol}', dict(status='unavailable', reason='no_recent_articles'), symbol, origin),
             _source(f'verification_status:{symbol}', dict(status='unavailable', reason='official_verification_unavailable'), symbol, origin),
-            _source(f'price_status:{symbol}', dict(status='unavailable', reason='saved_price_evidence_missing'), symbol, origin),
+            _source(f'price_status:{symbol}', dict(status='unavailable', scope='article_post_receipt_price_response',
+                reason='no_recent_articles_for_post_receipt_price_check'), symbol, origin,
+                title=f'{row["name"]} 기사 후 가격 반응 확인 상태'),
         ])
     return result, related
 
@@ -313,6 +339,8 @@ def _score(pool, articles, origin, *, sealed=False):
         fraction = sum(checks.get(key) is True for key in ('top3','fresh','trend','near_high'))/4
         sources, related = _sources(row, articles, origin)
         official = any(_verified_filing(source) for source in sources)
+        # Compatibility field: this measures article-response observations,
+        # separately from a sealed candidate's stored reference price.
         prices = any(s['source'] == 'KIS_saved_post_receipt_prices' and s['verification_status']=='verified' for s in sources)
         completeness = 5*int(official)+5*int(prices)
         row['score_components'] = dict(saved_metric_name=metric, saved_metric_value=value,
@@ -331,7 +359,26 @@ def _score(pool, articles, origin, *, sealed=False):
 
 
 def _shortlist(pool, article_root, current, origin, identity, warnings, inspected, *, sealed=False, ready=False):
+    from .advisor_news import read_news
     articles = _articles(article_root, current, {row['symbol'] for row in pool}, warnings)
+    additional = read_news(Path(article_root).parent/'omni/omni.db',
+        [{key: row[key] for key in ('symbol', 'name', 'market')} for row in pool], current, warnings)
+    # Keep richer existing article/filing bindings for duplicate publications.
+    known = {(target['symbol'], ' '.join(item['sources'][0]['text'].split()).casefold())
+             for item in articles for target in item['targets']}
+    known_urls = {(target['symbol'], item['sources'][0]['url'])
+                  for item in articles for target in item['targets'] if item['sources'][0].get('url')}
+    for item in additional:
+        item['targets'] = [target for target in item['targets'] if
+            (target['symbol'], ' '.join(item['sources'][0]['text'].split()).casefold()) not in known
+            and (target['symbol'], item['sources'][0].get('url')) not in known_urls]
+        if item['targets']:
+            articles.append(item)
+            known.update((target['symbol'], ' '.join(item['sources'][0]['text'].split()).casefold())
+                         for target in item['targets'])
+            if item['sources'][0].get('url'):
+                known_urls.update((target['symbol'], item['sources'][0]['url']) for target in item['targets'])
+    articles.sort(key=lambda item: (item['source_origin_at'], item['article_id']), reverse=True)
     shortlisted = _score(pool, articles, origin, sealed=sealed)[:MAX_CANDIDATES]
     sources = {}
     all_sources = [s for row in shortlisted for s in row['sources']]

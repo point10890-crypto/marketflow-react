@@ -1,5 +1,27 @@
 # News-grounded TOP3 advisor operations
 
+## 2026-11-10 operational correction
+
+See [the operational audit](top3_advisor_operations_audit_2026_11_10.md).
+The advisor also reads existing independently collected MarketFlow Omni articles
+with strict 72-hour publication/receipt and issuer checks; this is not a new
+collector, paid search, or official claim verification. Original publisher links
+remain accessible. Producer poll freshness remains explicitly unknown when no
+reliable producer receipt exists. The `with_verified_prices` count refers only
+to **article post-receipt price reaction**, distinct from the sealed reference
+price provided by the original candidate desk. Sealed ranks and plans remain
+unchanged. New run events record their actual elapsed completion times, and
+recovered responses count as completed stages without pretending provider usage
+is known.
+
+Optional `scheduled_evidence_review` article extraction stops up to nine calls
+before the configured shared daily call limit. Priority comparisons and TOP3
+can use that headroom, still within the original call and dollar caps. With the
+default 100-call cap, article admission stops once total shared usage reaches
+91. Small custom caps reserve `min(9, cap)`; they do not secretly raise the cap.
+Previously charged calls cannot be reclaimed: a release after exhaustion waits
+for the UTC-day reset (09:00 KST) and its existing bounded retry schedule.
+
 ## Purpose and boundary
 
 This endpoint provides a current research shortlist with supporting evidence, counterarguments and a final relative ranking. It joins MarketFlow's saved independent RSS/OpenDART/KIS verification with sealed AlphaLab research and leadership records. It is not a new full-market scan, calibrated profit probability, automated order service or replacement for CIO approval. Candidate coverage and original hold reasons remain visible. Zero to three valid research picks may be returned; the service never invents stocks to fill three slots.

@@ -33,7 +33,7 @@ def main(argv=None):
             summary['selected_count'] = len(result['top3'])
         if isinstance(result.get('debate'), dict):
             summary['debate_complete'] = result['debate'].get('debate_complete', False)
-            summary['completed_stages'] = sum(stage.get('status') in {'SUCCESS_PRIMARY', 'SUCCESS_FALLBACK'}
+            summary['completed_stages'] = sum(stage.get('status') in advisor.SUCCESS
                                               for stage in result['debate'].get('stages', []))
         print(json.dumps(summary, ensure_ascii=True))
         return 1 if result.get('status') in {'failed', 'unavailable'} else 0

@@ -21,6 +21,32 @@ beforeEach(() => { api.get.mockReset().mockResolvedValue(fixture()); });
 afterEach(() => { cleanup(); vi.useRealTimers(); });
 
 describe('TOP3 advisor dashboard', () => {
+    it('keeps a safe independent publisher link and rejects local links', async () => {
+        const view = fixture();
+        Object.assign(view.sources[0], { source: 'MarketFlow_Omni_saved_news', title: '연합뉴스 저장 기사',
+            url: 'https://www.yna.co.kr/view/AKR202611100001' });
+        api.get.mockResolvedValue(view); show();
+        await screen.findByRole('heading', { name: '코웨이' });
+        expect(screen.getAllByRole('link', { name: '연합뉴스 저장 기사', hidden: true })[0])
+            .toHaveAttribute('href', 'https://www.yna.co.kr/view/AKR202611100001');
+    });
+    it('distinguishes stored reference prices from article response validation and fallback causes', async () => {
+        const view = fixture(); view.debate.stages[0].status = 'SUCCESS_FALLBACK';
+        Object.assign(view.debate.stages[0], { fallback_reason: 'invalid_json' });
+        api.get.mockResolvedValue(view); show();
+        expect(await screen.findByText(/기사 후 가격 검증 0종목/)).toBeVisible();
+        expect(screen.getByText(/응답 형식·근거 검증을 통과하지 못해 대체 모델/)).toBeInTheDocument();
+        expect(screen.queryByText(/기본 모델 이용 제한/)).toBeNull();
+        expect(screen.getByText(/기사 후 가격 검증은 보도 이후의 가격 반응/)).toBeVisible();
+    });
+    it('shows budget waiting prominently without claiming completed debate', async () => {
+        const view = fixture(); view.status = 'degraded'; view.debate.debate_complete = false;
+        view.debate.ranking_basis = 'deterministic_research'; view.debate.stages[0].status = 'UNVERIFIED';
+        Object.assign(view.debate.stages[0], { fallback_reason: 'budget_exhausted' });
+        api.get.mockResolvedValue(view); show();
+        expect(await screen.findByText(/분석 호출 한도에 도달했습니다/)).toBeVisible();
+        expect(screen.queryByText('3단계 토론 완료 · 연구 순위')).toBeNull();
+    });
     it('shows the verified regular session, fixed order, entry ceiling and research exposure', async () => {
         const view = fixture();
         Object.assign(view, { source_basis: 'candidate-regular-v1', source_session: '2026-11-06',

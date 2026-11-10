@@ -43,6 +43,17 @@ def test_cli_failed_status_is_nonzero(monkeypatch,capsys):
     assert json.loads(capsys.readouterr().out)['status']=='failed'
 
 
+def test_cli_counts_recovered_validated_stage_as_completed(monkeypatch,capsys):
+    from app.services.mirofish.alpha_lab import advisor
+    monkeypatch.setattr(advisor,'run_once',lambda **_:dict(status='degraded',debate=dict(
+        debate_complete=True,stages=[dict(status=status) for status in
+            ('SUCCESS_PRIMARY','RECOVERED_RESPONSE','SUCCESS_FALLBACK')])))
+    assert run_top3_advisor.main([])==0
+    summary=json.loads(capsys.readouterr().out)
+    assert summary['debate_complete'] is True and summary['completed_stages']==3
+    assert summary['status']=='degraded'
+
+
 def test_cli_uses_same_configured_roots_as_read_api(tmp_path,monkeypatch,capsys):
     from app.services.mirofish.alpha_lab import advisor
     seen={}
