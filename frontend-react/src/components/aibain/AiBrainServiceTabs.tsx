@@ -53,7 +53,7 @@ const services = [
         icon: 'fa-newspaper',
         eyebrow: '제갈공명',
         title: '뉴스·재료 검증',
-        description: '기사와 공식 근거 대조',
+        description: '급등 이유·기사·공시 역추적',
         iconClass: 'bg-amber-400/15 text-amber-300',
     },
 ];
