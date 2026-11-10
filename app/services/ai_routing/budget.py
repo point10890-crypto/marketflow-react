@@ -740,6 +740,8 @@ class EvidenceReviewBudget(BudgetManager):
     Existing OpenAI budgets remain an additional constraint on that fallback.
     """
 
+    _TOP3_CALL_RESERVE = 9  # Three dependent roles, at most three providers each.
+
     def __init__(self, store: RoutingStore | None = None) -> None:
         super().__init__(store, pool="evidence_review", provider="all")
 
@@ -797,6 +799,12 @@ class EvidenceReviewBudget(BudgetManager):
                 cost += Decimal(str(value))
             if calls + 1 > max_calls or cost + estimate > max_cost:
                 return BudgetReservation(False, reason="daily_hard_cap")
+            # Optional article backlog must leave room for a new TOP3 debate.
+            # This shares the same atomic counter and never raises either cap.
+            if (request.caller_endpoint == "scheduled_evidence_review"
+                    and Operation(request.operation) is Operation.NEWS_EVENT_EXTRACT
+                    and calls + 1 > max_calls - min(self._TOP3_CALL_RESERVE, max_calls)):
+                return BudgetReservation(False, reason="top3_capacity_reserved")
             reservation_id, owner_token = str(uuid4()), str(uuid4())
             connection.execute(
                 """INSERT INTO budget_reservations (

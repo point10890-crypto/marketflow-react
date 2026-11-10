@@ -47,6 +47,11 @@ symbol AND whose evidence_id occurs in that candidate's evidence_ids. A filing
 for another company cannot substantiate this company's claim. Missing evidence
 and negative news must stay explicit. Preserve entry status and original plans;
 do not output prices, probabilities, scores, quantities, or approval fields.
+Price evidence has distinct scopes: sealed_reference_price is the original
+stored reference price; article_post_receipt_price_response is a separate check
+of the price reaction after an article was received. A missing article response
+check does not mean the original stored reference price is absent. A stored
+reference price is not independent verification of the current price or reaction.
 Return only the rows schema. Keep each literal quote short.
 """
 ROLE_SYSTEM = {
@@ -258,7 +263,7 @@ def _metadata(result):
         estimated_cost_usd=cost, cost_known=known)
 
 
-def _recover(stage, record, role, current):
+def _recover(stage, record, role, clock):
     if stage.get('receipt_failed') or stage.get('status') not in {'IN_PROGRESS', 'UNKNOWN'}:
         return False
     if stage.get('binding') != _binding(record, role):
@@ -271,7 +276,7 @@ def _recover(stage, record, role, current):
             value = _normalize(json.loads(receipt['raw']), record['supplied'], role, rejections=rejected)
         except (ValueError, KeyError, TypeError):
             continue
-        stage.update(status='RECOVERED_RESPONSE', rows=value['rows'], generated_at=_stamp(current),
+        stage.update(status='RECOVERED_RESPONSE', rows=value['rows'], generated_at=_stamp(clock()),
             omitted_findings=len(rejected), retry_new_request_allowed=False,
             metadata=dict(provider=None, model=None, usage=_empty_usage(), estimated_cost_usd=None,
                 cost_known=False, fallback_reason='recovered_response_metadata_unavailable'))
@@ -333,7 +338,7 @@ def _retry_ledger_proof(router, stage):
     return dict(reason=None, has_settled_zero=bool(rows))
 
 
-def _execute_stage(path, record, role, router, current, *, retry_mode=None):
+def _execute_stage(path, record, role, router, clock, *, retry_mode=None):
     previous = record['stages'].get(role)
     binding = _binding(record, role)
     same_identity = previous is not None and (retry_mode or _retry_mode(previous)) == 'same'
@@ -347,7 +352,7 @@ def _execute_stage(path, record, role, router, current, *, retry_mode=None):
         run_id += f'-admission-{role}-{sequence}'
     stage = dict(role=role, binding=binding, request_id=request_id, status='IN_PROGRESS',
         run_id=run_id, request_sequence=sequence, retry_mode=None,
-        requested_at=_stamp(current), generated_at=None, rows=[], omitted_findings=0,
+        requested_at=_stamp(clock()), generated_at=None, rows=[], omitted_findings=0,
         retry_new_request_allowed=False, retry_after=None, raw_receipts=[],
         history=(deepcopy((previous or {}).get('history', [])) + ([{key: deepcopy(previous[key])
             for key in ('request_id', 'status', 'metadata', 'result') if key in previous}] if previous else []))[-20:],
@@ -359,7 +364,7 @@ def _execute_stage(path, record, role, router, current, *, retry_mode=None):
 
     def capture_response(raw):
         receipt = dict(sequence=len(stage['raw_receipts'])+1, request_id=request_id, binding=binding,
-                       received_at=_stamp(current), raw=raw)
+                       received_at=_stamp(clock()), raw=raw)
         stage['raw_receipts'].append(receipt)
         try:
             _write(path, record)  # The raw receipt MUST precede even local validation.
@@ -413,7 +418,7 @@ def _execute_stage(path, record, role, router, current, *, retry_mode=None):
                 raise ValueError('selected_response_not_validated')
             valid = _validate(selected['normalized'], record['supplied'], role)
             stage.update(rows=valid['rows'], status=_serial(result.analysis_status),
-                         omitted_findings=selected['omitted_findings'], generated_at=_stamp(current),
+                         omitted_findings=selected['omitted_findings'], generated_at=_stamp(clock()),
                          retry_new_request_allowed=False)
         else:
             stage['metadata']['fallback_reason'] = stage['metadata']['fallback_reason'] or 'providers_unavailable'
@@ -425,7 +430,7 @@ def _execute_stage(path, record, role, router, current, *, retry_mode=None):
     stage['retry_mode'] = _retry_mode(stage)
     stage['retry_new_request_allowed'] = stage['retry_mode'] == 'new'
     if stage['retry_mode'] is not None:
-        stage['retry_after'] = _stamp(current+RETRY_COOLDOWN)
+        stage['retry_after'] = _stamp(clock()+RETRY_COOLDOWN)
     _write(path, record)
 
 
@@ -447,7 +452,12 @@ def run_once(root=ROOT, *, alpha_root=ALPHA_ROOT, article_root=articles.ROOT,
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     current = _clock(now)
-    stop = min(deadline, time.monotonic()+210) if deadline is not None else time.monotonic()+210
+    started = time.monotonic()
+    # Anchor event times to the supplied/real start clock and advance only by
+    # elapsed time. Wall-clock corrections cannot reorder durable events.
+    def clock():
+        return current+timedelta(seconds=max(0, time.monotonic()-started))
+    stop = min(deadline, started+210) if deadline is not None else started+210
     with FileLock(str(root/'worker.lock'), timeout=0):
         item, invalid = _input(alpha_root, article_root, current)
         if invalid:
@@ -475,11 +485,11 @@ def run_once(root=ROOT, *, alpha_root=ALPHA_ROOT, article_root=articles.ROOT,
                 except (ValueError, KeyError, TypeError):
                     return _view(item, None, None, current, warning='saved_advisor_stage_invalid')
                 continue
-            if stage and _recover(stage, record, role, current):
+            if stage and _recover(stage, record, role, clock):
                 _write(path, record)
                 continue
             if stage and (_retry_mode(stage) is None
-                or current < _clock(stage.get('retry_after') or (_clock(stage['requested_at'])+RETRY_COOLDOWN))):
+                or clock() < _clock(stage.get('retry_after') or (_clock(stage['requested_at'])+RETRY_COOLDOWN))):
                 break
             # Existing router has at most three 30s provider attempts. Leave
             # room to seal the receipt; the next role can run in another tick.
@@ -493,7 +503,7 @@ def run_once(root=ROOT, *, alpha_root=ALPHA_ROOT, article_root=articles.ROOT,
                 proof = _retry_ledger_proof(router, stage)
                 if proof['reason']:
                     stage['metadata']['fallback_reason'] = proof['reason']
-                    stage['retry_after'] = _stamp(current+RETRY_COOLDOWN)
+                    stage['retry_after'] = _stamp(clock()+RETRY_COOLDOWN)
                     _write(path, record)
                     break
                 # A real settled zero-use reservation would make the native
@@ -501,18 +511,18 @@ def run_once(root=ROOT, *, alpha_root=ALPHA_ROOT, article_root=articles.ROOT,
                 # proves EVERY provider/pool reservation is settled at zero.
                 # Empty admission ledgers still retain the original identity.
                 retry_mode = 'new' if proof['has_settled_zero'] else _retry_mode(stage)
-            _execute_stage(path, record, role, router, current, retry_mode=retry_mode)
+            _execute_stage(path, record, role, router, clock, retry_mode=retry_mode)
             if record['stages'][role]['status'] not in SUCCESS:
                 break
         if all(record['stages'].get(role, {}).get('status') in SUCCESS for role in ROLES) and not record.get('final'):
-            record['final'] = dict(generated_at=_stamp(current), chair_binding=record['stages']['chair']['binding'],
+            record['final'] = dict(generated_at=_stamp(clock()), chair_binding=record['stages']['chair']['binding'],
                                   ranking=_ranking(record['supplied'], record['stages']['chair']['rows']))
             _write(path, record)
         with FileLock(str(root/'refresh.lock'), timeout=2):
             pending = _read(root/'refresh.json')
             if pending and pending.get('status') == 'queued':
-                _write(root/'refresh.json', dict(pending, status='processed', processed_at=_stamp(current)))
-        return _view(item, None, record, current)
+                _write(root/'refresh.json', dict(pending, status='processed', processed_at=_stamp(clock())))
+        return _view(item, None, record, clock())
 
 
 def read_view(root=ROOT, *, alpha_root=ALPHA_ROOT, article_root=articles.ROOT, now=None):
@@ -646,6 +656,7 @@ def _public_rows(rows, *, candidates=False):
 
 def public_projection(view):
     """Explicit recursive allowlist, also usable by the HTTP boundary."""
+    from app.services.surge_trace.common import safe_url
     result = _fields(view, ('schema_version', 'status', 'generated_at', 'decision_id', 'input_fingerprint',
         'source_origin_at', 'source_cutoff_at', 'empty_reason', *SOURCE_FIELDS))
     result.update(coverage=_fields(view.get('coverage'), _COVERAGE_KEYS), warnings=_strings(view.get('warnings')),
@@ -665,6 +676,7 @@ def public_projection(view):
             continue
         projected = _fields(source, ('evidence_id', 'title', 'source', 'published_at', 'fetched_at',
             'verification_status', 'available_at_original_decision'))
-        projected.update(url=evidence._safe_url(source.get('url')), target_symbols=_strings(source.get('target_symbols'), 6))
+        projected.update(url=(safe_url(source.get('url')) if source.get('source') == 'MarketFlow_Omni_saved_news'
+                              else evidence._safe_url(source.get('url'))), target_symbols=_strings(source.get('target_symbols'), 6))
         result['sources'].append(projected)
     return result

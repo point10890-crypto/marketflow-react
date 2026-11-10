@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 import importlib
 import importlib.util
 import json
+import sqlite3
 
 import pytest
 
@@ -118,12 +119,142 @@ def test_regular_desk_uses_exact_saved_candidates_even_without_legacy(service, p
         assert row['entry_status'] == 'held'
 
 
+def test_saved_multi_publisher_news_joins_without_rewriting_desk_or_inventing_validation(service, paths):
+    root, record = save_desk(paths)
+    before = (root/'decisions.json').read_bytes()
+    database = paths['article_root'].parent/'omni/omni.db'
+    database.parent.mkdir(parents=True)
+    con = sqlite3.connect(database)
+    con.execute('CREATE TABLE news_events(title,link,source,published_ts,collected_at,symbols)')
+    con.execute('INSERT INTO news_events VALUES (?,?,?,?,?,?)', (
+        '삼성전자 공급 계약 발표', 'https://www.yna.co.kr/view/AKR1', 'yonhap_economy',
+        (NOW-timedelta(hours=1)).isoformat(), (NOW-timedelta(minutes=30)).isoformat(), '["005930"]'))
+    con.commit(); con.close()
+    result = service.build_input(**paths, now=NOW)
+    assert result['coverage']['with_recent_news'] == 1
+    assert result['coverage']['with_verified_filings'] == result['coverage']['with_verified_prices'] == 0
+    source = next(s for s in result['sources'] if s['source']=='MarketFlow_Omni_saved_news')
+    assert source['target_symbols'] == ['005930'] and source['available_at_original_decision'] is False
+    price = next(s for s in result['sources'] if s['evidence_id'].startswith('price:') and s['target_symbols']==['005930'])
+    assert json.loads(price['text']) == dict(status='unavailable', scope='article_post_receipt_price_response',
+        reason='post_receipt_price_evidence_missing')
+    assert price['verification_status'] == 'unavailable'
+    assert price['fetched_at'] is None
+    assert [r['symbol'] for r in result['candidates']] == [r['symbol'] for r in record['desk']['candidates']]
+    assert (root/'decisions.json').read_bytes() == before
+    assert result['fingerprint'] == service.build_input(**paths, now=NOW+timedelta(minutes=1))['fingerprint']
+
+
+@pytest.mark.parametrize('kind,target_matches', [('official', True), ('price', True), ('official', False), ('price', False)])
+def test_new_unverified_news_cannot_displace_same_issuer_verified_bindings(service, paths, monkeypatch, kind, target_matches):
+    save_desk(paths)
+    item = article(symbol='005930', name='삼성전자', entities=[dict(symbol='005930', name='삼성전자'),
+        dict(symbol='000660', name='SK하이닉스')])
+    save_articles(paths, [item])
+    task = verified_task(item, symbol='005930' if target_matches else '000660')
+    task['price' if kind == 'official' else 'primary'] = {}
+    monkeypatch.setattr(kongming_verification, 'read_dashboard', lambda *a, **k: dict(items=[task]))
+    from app.services.mirofish.alpha_lab import advisor_news
+    def news(identifier, minutes):
+        stamp = (NOW-timedelta(minutes=minutes)).isoformat()
+        title = f'삼성전자 신규 계약 {identifier}'
+        return dict(article_id=f'omni-{identifier}', source_origin_at=stamp, event_type='contract',
+            targets=[dict(symbol='005930', name='삼성전자', market='KR')], sources=[service.evidence._source(
+                f'article:omni-{identifier}', title, title=title, source='MarketFlow_Omni_saved_news',
+                published=stamp, fetched=stamp, status='reported_unverified')])
+    monkeypatch.setattr(advisor_news, 'read_news', lambda *a, **k: [news('older', 20), news('latest', 10)])
+    result = service.build_input(**paths, now=NOW)
+    row = next(row for row in result['candidates'] if row['symbol']=='005930')
+    assert ('article:1' in row['evidence_ids']) is target_matches
+    assert 'article:omni-latest' in row['evidence_ids']
+    assert ('article:omni-older' in row['evidence_ids']) is not target_matches
+    assert row['score_components']['news_count'] == 2
+    assert row['score_components']['official_evidence_available'] is (kind == 'official' and target_matches)
+    assert row['score_components']['price_evidence_available'] is (kind == 'price' and target_matches)
+    assert row['rank'] == 1 and row['score'] == .005
+
+
+def test_same_article_url_with_revised_title_keeps_one_richer_binding(service, paths, monkeypatch):
+    save_desk(paths)
+    item = article(symbol='005930', name='삼성전자')
+    save_articles(paths, [item])
+    from app.services.mirofish.alpha_lab import advisor_news
+    stamp = (NOW-timedelta(minutes=5)).isoformat()
+    title = item['title']+' [종합]'
+    duplicate = dict(article_id='omni-revised', source_origin_at=stamp, event_type='risk',
+        targets=[dict(symbol='005930', name='삼성전자', market='KR')], sources=[service.evidence._source(
+            'article:omni-revised', title, title=title, source='MarketFlow_Omni_saved_news',
+            published=stamp, fetched=stamp, url=item['url'], status='reported_unverified')])
+    monkeypatch.setattr(advisor_news, 'read_news', lambda *a, **k: [deepcopy(duplicate)])
+    result = service.build_input(**paths, now=NOW)
+    row = next(row for row in result['candidates'] if row['symbol']=='005930')
+    assert row['score_components']['news_count'] == 1
+    assert 'article:1' in row['evidence_ids']
+    assert 'article:omni-revised' not in row['evidence_ids']
+
+
 def test_v4_desk_is_compatibility_when_regular_desk_is_absent(service, paths):
     save_report(paths)
     _, record = save_desk(paths, directory='candidate-desk')
     result = service.build_input(**paths, now=NOW)
     assert result['source_basis'] == 'candidate-desk'
     assert result['decision_id'] == record['desk']['decision_id']
+
+
+@pytest.mark.parametrize('directory', ['candidate-regular-v1', 'candidate-desk'])
+def test_sealed_reference_price_is_distinct_from_missing_article_response(service, paths, directory):
+    _, record = save_desk(paths, directory=directory)
+    result = service.build_input(**paths, now=NOW)
+    sources = {source['evidence_id']: source for source in result['sources']}
+    for row, original in zip(result['candidates'], record['desk']['candidates']):
+        missing = json.loads(sources[f'price_status:{row["symbol"]}']['text'])
+        assert missing['reason'] == 'no_recent_articles_for_post_receipt_price_check'
+        assert missing['scope'] == 'article_post_receipt_price_response'
+        context = sources[f'price_context:{row["symbol"]}']
+        price = json.loads(context['text'])
+        assert price['scope'] == 'sealed_reference_price'
+        assert price['status'] == 'available'
+        assert price['reference_price'] == 100
+        assert price['quote_session'] == '2026-11-06'
+        assert price['source_at'] == row['source_at'] == context['fetched_at']
+        assert price['price_basis'] == result['source_price_basis']
+        assert price['source_policy'] == result['source_policy']
+        assert price['not_live_quote'] is True
+        assert price['post_receipt_price_verification'] is False
+        assert context['verification_status'] == 'research_not_independent_validation'
+        assert context['target_symbols'] == [row['symbol']]
+        assert context['evidence_id'] in row['evidence_ids']
+        assert context['available_at_original_decision'] is True
+        assert row['score_components']['price_evidence_available'] is False
+        assert row['rank'] == original['rank']
+        assert row['score'] == original['model_evidence']['expected_stress_net_return']
+        assert row['plan'] == original['plan']
+    assert result['coverage']['with_verified_prices'] == 0
+    assert service.build_input(**paths, now=NOW+timedelta(minutes=5))['fingerprint'] == result['fingerprint']
+
+
+@pytest.mark.parametrize('verified', [False, True])
+def test_article_price_scope_does_not_reclassify_saved_reference_as_verified(service, paths, monkeypatch, verified):
+    save_desk(paths)
+    item = article(symbol='005930', name='삼성전자')
+    save_articles(paths, [item])
+    tasks = [verified_task(item, symbol='005930')] if verified else []
+    monkeypatch.setattr(kongming_verification, 'read_dashboard', lambda *a, **k: dict(items=tasks))
+    result = service.build_input(**paths, now=NOW)
+    row = next(row for row in result['candidates'] if row['symbol'] == '005930')
+    source = next(source for source in result['sources'] if source['evidence_id'] == 'price:1:005930')
+    price = json.loads(source['text'])
+    assert price['scope'] == 'article_post_receipt_price_response'
+    if verified:
+        assert price['latest_close'] == 99
+        assert source['verification_status'] == 'verified'
+    else:
+        assert price['reason'] == 'post_receipt_price_evidence_missing'
+        assert source['verification_status'] == 'unavailable'
+    assert row['score_components']['price_evidence_available'] is verified
+    assert result['coverage']['with_verified_prices'] == int(verified)
+    assert row['reference_price'] == row['plan']['entry_price'] == 100
+    assert row['rank'] == 1 and row['score'] == .005
 
 
 @pytest.mark.parametrize('condition,expected', [

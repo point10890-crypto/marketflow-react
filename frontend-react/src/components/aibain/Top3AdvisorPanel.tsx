@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { evidenceSourceUrl, type EvidenceFinding } from '@/lib/evidenceReview';
+import { surgeSourceUrl } from '@/lib/surgeTrace';
 import { fetchTop3Advisor, type AdvisorPick, type AdvisorRow, type AdvisorSource, type Top3Advisor } from '@/lib/top3Advisor';
 
 const clock = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
@@ -27,7 +28,15 @@ const reasons: Record<string, string> = {
     legacy_daily_session_basis_unverified: '기존 KIS 일봉의 정규장 가격 기준은 확인되지 않았습니다.',
     recent_official_filing_verification_missing: '최근 공시 확인 근거가 없는 후보가 있습니다.',
     recent_independent_news_missing: '최근 독립 뉴스가 없는 후보가 있습니다.',
+    omni_archive_freshness_unknown: '다른 매체의 저장 기사도 대조합니다. 해당 수집기의 최신 점검 시각은 별도 확인이 필요합니다.',
+    omni_news_source_unavailable: '다른 매체의 저장 기사 자료를 읽을 수 없어 기존 뉴스 자료로 비교합니다.',
 };
+function fallbackMessage(reason: string) {
+    if (reason === 'invalid_json') return '응답 형식·근거 검증을 통과하지 못해 대체 모델 또는 저장 근거를 사용합니다.';
+    if (reason === 'budget_exhausted') return '일일 분석 호출·비용 한도에 도달해 추가 분석을 기다립니다. 완료된 단계는 보존합니다.';
+    if (reason === 'insufficient_balance') return '기본 모델 크레딧 부족으로 대체 분석 또는 저장 근거를 사용합니다.';
+    return '기본 모델 응답을 사용할 수 없어 대체 분석 또는 저장 근거를 사용합니다.';
+}
 const claimLabels = { reported: '보도 내용', inference: '해석', verified: '검증 근거', missing: '미확인' };
 const percent = new Intl.NumberFormat('ko-KR', { style: 'percent', maximumFractionDigits: 2 });
 const sourceLabels = { 'candidate-regular-v1': 'KRX 정규장 OHLC', 'candidate-desk': '기존 KIS 일봉' };
@@ -46,7 +55,7 @@ function Arguments({ row }: { row: AdvisorRow }) {
 }
 function Sources({ sources, findings }: { sources: AdvisorSource[]; findings: EvidenceFinding[] }) {
     return <ul className="space-y-3 text-xs leading-5">{sources.map(s => {
-        const url = evidenceSourceUrl(s.url);
+        const url = s.source === 'MarketFlow_Omni_saved_news' ? surgeSourceUrl(s.url) : evidenceSourceUrl(s.url);
         const quotes = [...new Set(findings.flatMap(f => f.quotes).filter(q => q.evidence_id === s.evidence_id).map(q => q.quote))];
         return <li key={s.evidence_id} className="space-y-1 border-t border-slate-700 pt-2">
             {url ? <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-sky-200 underline">{s.title}</a> : <p>{s.title}</p>}
@@ -122,7 +131,9 @@ function SavedAdvisor({ token }: { token?: string }) {
                     : (view.debate.debate_complete ? '3단계 토론 완료 · 연구 순위' : '저장 지표 순위 · 토론 미완료')}</p>
                 {view.source_basis && view.source_session && <p>{sourceLabels[view.source_basis]} · {view.source_session}</p>}
                 <div className="flex flex-wrap gap-x-4 gap-y-1"><span>선정 자료 <Time value={view.source_origin_at} /></span><span>비교 작성 <Time value={view.generated_at} /></span><span>한국시간</span></div>
-                <p>비교 후보 {view.coverage.pool ?? 0}종목 · 최근 뉴스 {view.coverage.with_recent_news ?? 0}종목 · 공시 검증 {view.coverage.with_verified_filings ?? 0}종목 · 시세 검증 {view.coverage.with_verified_prices ?? 0}종목</p>
+                <p>비교 후보 {view.coverage.pool ?? 0}종목 · 최근 뉴스 {view.coverage.with_recent_news ?? 0}종목 · 공시 검증 {view.coverage.with_verified_filings ?? 0}종목 · 기사 후 가격 검증 {view.coverage.with_verified_prices ?? 0}종목</p>
+                <p className="text-slate-400">기사 후 가격 검증은 보도 이후의 가격 반응입니다. 종목 카드의 저장 기준가격과 구분합니다.</p>
+                {!view.debate.debate_complete && view.debate.stages.some(stage => stage.fallback_reason === 'budget_exhausted') && <p className="text-amber-200">분석 호출 한도에 도달했습니다. 한도 갱신 후 자동 재개하며, 아래는 저장된 정량 후보입니다.</p>}
                 {view.top3.length > 0 && !view.coverage.with_recent_news && <p className="text-amber-200">비교 후보에 연결된 최근 뉴스가 없습니다. 현재 순위는 저장된 정량 근거를 중심으로 비교한 결과입니다.</p>}
             </div>
             {view.top3.length ? <div className="grid min-w-0 gap-3 lg:grid-cols-3">{view.top3.map(pick => <Pick key={pick.symbol} pick={pick} view={view} />)}</div>
@@ -130,7 +141,7 @@ function SavedAdvisor({ token }: { token?: string }) {
             <details className="min-w-0 border-t border-slate-700 text-sm leading-6 text-slate-300 [overflow-wrap:anywhere]"><summary className="flex min-h-11 cursor-pointer items-center font-semibold text-sky-200">에이전트 토론·검증 상태</summary>
                 <div className="space-y-4">{view.debate.stages.map(stage => <div key={stage.role} className="min-w-0 space-y-2 border-t border-slate-700 pt-3"><h3 className="font-semibold text-white">{roles[stage.role]} · <span>{stageLabels[stage.status] ?? '확인 대기'}</span></h3>
                     <p className="text-xs text-slate-400">{stage.provider ?? '모델 대기'}{stage.model ? ` · ${stage.model}` : ''} · <Time value={stage.generated_at} /></p>
-                    {stage.fallback_reason && <p className="text-xs text-amber-200">기본 모델 이용 제한으로 대체 분석 또는 저장 근거를 사용합니다.</p>}
+                    {stage.fallback_reason && <p className="text-xs text-amber-200">{fallbackMessage(stage.fallback_reason)}</p>}
                     {stage.rows.map(row => <details key={row.symbol} className="rounded-lg border border-slate-700 px-3"><summary className="flex min-h-11 cursor-pointer items-center text-sky-200">{row.name} · {row.symbol}</summary><div className="pb-3"><Arguments row={row} /></div></details>)}
                 </div>)}
                 {!!view.warnings.length && <div><h3 className="font-semibold">자료 검증 사항</h3><ul className="list-disc pl-4 text-xs text-amber-200">{view.warnings.map(w => <li key={w}>{reasons[w] ?? w}</li>)}</ul></div>}

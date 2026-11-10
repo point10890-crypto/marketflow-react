@@ -10,6 +10,12 @@ If the saved opportunity board has no approved candidates, comparison may use th
 
 ## Cost and continuity
 
+From the 2026-11-10 operational correction, optional scheduled article
+extraction leaves `min(9, daily_call_cap)` calls of shared headroom for priority
+candidate/TOP3 comparisons. The atomic shared ledger still enforces the same
+USD 1/day and 100-attempt maximum, including fallback. No existing charged or
+unknown reservation is released to create headroom.
+
 Only the two new operations use Anthropic first. Haiku extracts article evidence; Sonnet compares a bounded group. Existing DeepSeek/OpenAI routing for other work remains unchanged. The feature's combined default admission ceiling is USD 1 per UTC day and 100 provider attempts per day, including fallback. Token/output caps and content-addressed reuse reduce actual spend below that ceiling. Pending or unknown usage retains its conservative reservation; unknown cost is not reported as zero. There is no automatic payment or credit top-up.
 
 The read endpoints return stored results only. Refreshing a page never submits paid inference. A separate worker checks for new evidence, retaining completed stages. Credit/authentication/model failures open the provider circuit; eligible existing providers can continue within the same feature cap. If all providers fail, the view displays an unverified/delayed state and never fabricates a successful analysis. Recovery checks are bounded; repeated scheduler ticks must not repeatedly charge identical inputs.

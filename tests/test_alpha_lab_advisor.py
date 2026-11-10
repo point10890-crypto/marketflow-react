@@ -143,6 +143,52 @@ def test_three_calls_are_dependent_and_chair_ranks_only_supplied_research_rows(s
     assert view['debate']['stages'][0]['estimated_cost_usd'] == '0.001'
 
 
+@pytest.mark.parametrize('supplied_now', [NOW, None])
+def test_stage_clocks_record_dispatch_receipt_and_completion_without_rewriting_saved_work(service, paths, supplied, monkeypatch, supplied_now):
+    elapsed = [100.0]
+    monkeypatch.setattr(service.time, 'monotonic', lambda: elapsed[0])
+    original_clock = service._clock
+    # A wall-clock jump after dispatch must not become a future completion.
+    monkeypatch.setattr(service, '_clock', lambda value=None: original_clock(value) if value is not None
+                        else NOW+timedelta(days=elapsed[0]-100))
+
+    class TimedRouter(Router):
+        def route_text(self, request):
+            elapsed[0] += 4
+            result = super().route_text(request)
+            elapsed[0] += 6
+            return result
+
+    view = service.run_once(**paths, now=supplied_now, router=TimedRouter())
+    path = next((paths['root']/'runs').glob('*.json'))
+    record = service._read(path)
+    for index, role in enumerate(service.ROLES):
+        stage = record['stages'][role]
+        assert stage['requested_at'] == service._stamp(NOW+timedelta(seconds=index*10))
+        assert stage['raw_receipts'][0]['received_at'] == service._stamp(NOW+timedelta(seconds=index*10+4))
+        assert stage['generated_at'] == service._stamp(NOW+timedelta(seconds=(index+1)*10))
+    assert view['generated_at'] == record['final']['generated_at'] == service._stamp(NOW+timedelta(seconds=30))
+    original = path.read_bytes()
+    later = Router()
+    service.run_once(**paths, now=NOW+timedelta(minutes=5), router=later)
+    assert later.calls == [] and path.read_bytes() == original
+
+
+def test_retry_cooldown_starts_after_failed_request_finishes(service, paths, supplied, monkeypatch):
+    elapsed = [0.0]
+    monkeypatch.setattr(service.time, 'monotonic', lambda: elapsed[0])
+
+    class SlowFailure(Router):
+        def route_text(self, request):
+            result = super().route_text(request)
+            elapsed[0] += 30
+            return result
+
+    service.run_once(**paths, now=NOW, router=SlowFailure(failure='analyst'))
+    record = service._read(next((paths['root']/'runs').glob('*.json')))
+    assert record['stages']['analyst']['retry_after'] == service._stamp(NOW+timedelta(hours=1, seconds=30))
+
+
 def test_reads_and_refresh_never_infer_write_or_reset_completed_work(service, paths, supplied, monkeypatch):
     first = Router()
     service.run_once(**paths, now=NOW, router=first)

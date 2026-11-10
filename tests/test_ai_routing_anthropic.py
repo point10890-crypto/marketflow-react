@@ -1,7 +1,7 @@
 import json
 from dataclasses import replace
 from types import SimpleNamespace
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from decimal import Decimal
 
 import httpx2 as httpx
@@ -241,6 +241,83 @@ def test_unknown_usage_is_conservatively_reserved_and_cannot_be_replayed(tmp_pat
     assert not restart.reserve_attempt(**kwargs).approved
     assert not restart.reserve_attempt(**{**kwargs, 'request': request(request_id='another'),
                                           'estimated_cost_usd': Decimal('0.3')}).approved
+
+
+def _review_permit(manager, identifier, *, caller='scheduled_evidence_review', operation='news_event_extract', provider='anthropic', cost=Decimal('0.001')):
+    return manager.reserve_attempt(request=replace(request(operation, identifier), caller_endpoint=caller),
+        provider=provider, input_tokens=100, output_tokens=20, estimated_cost_usd=cost, pricing_version='fixture')
+
+
+def test_optional_articles_leave_nine_calls_for_all_top3_role_fallbacks(tmp_path, monkeypatch):
+    from app.services.ai_routing.budget import EvidenceReviewBudget
+    monkeypatch.setenv('AI_EVIDENCE_REVIEW_DAILY_MAX_CALLS', '100')
+    monkeypatch.setenv('AI_EVIDENCE_REVIEW_DAILY_BUDGET_USD', '1')
+    store = RoutingStore(tmp_path/'usage.sqlite3')
+    manager = EvidenceReviewBudget(store)
+    assert all(_review_permit(manager, f'article-{index}').approved for index in range(91))
+    denied = _review_permit(manager, 'article-overflow')
+    assert not denied.approved and denied.reason == 'top3_capacity_reserved'
+    assert len(ledger(store)) == 91
+
+    primary = FixedAdapter(good_response('invalid-json'))
+    fallback = FixedAdapter(good_response('invalid-json'))
+    final = FixedAdapter(good_response())
+    router = AIRouter({'anthropic': primary, 'deepseek': fallback, 'openai': final}, store=store)
+    article_blocked = router.route_text(replace(request(request_id='blocked-article'),
+        caller_endpoint='scheduled_evidence_review'))
+    assert article_blocked.fallback_reason == ProviderErrorClass.BUDGET_EXHAUSTED
+    assert (primary.calls, fallback.calls, final.calls) == (0, 0, 0)
+    for role, operation in [('analyst','news_event_extract'), ('critic','news_event_extract'), ('chair','candidate_review')]:
+        result = router.route_text(replace(request(operation, role), run_id='top3-debate',
+            caller_endpoint='scheduled_top3_advisor', max_output_tokens=100))
+        assert result.analysis_status == AnalysisStatus.SUCCESS_FALLBACK and result.actual_provider == 'openai'
+    assert (primary.calls, fallback.calls, final.calls) == (3, 3, 3)
+    assert len(ledger(store)) == 100
+    blocked = router.route_text(replace(request(request_id='another-top3'), caller_endpoint='scheduled_top3_advisor'))
+    assert blocked.fallback_reason == ProviderErrorClass.BUDGET_EXHAUSTED
+    assert (primary.calls, fallback.calls, final.calls) == (3, 3, 3)
+
+
+@pytest.mark.parametrize('cap,article_allowance', [(0,0), (1,0), (9,0), (10,1)])
+def test_top3_reserve_respects_small_configured_caps(tmp_path, monkeypatch, cap, article_allowance):
+    from app.services.ai_routing.budget import EvidenceReviewBudget
+    monkeypatch.setenv('AI_EVIDENCE_REVIEW_DAILY_MAX_CALLS', str(cap))
+    manager = EvidenceReviewBudget(RoutingStore(tmp_path/'usage.sqlite3'))
+    assert sum(_review_permit(manager, f'article-{index}').approved for index in range(12)) == article_allowance
+    assert sum(_review_permit(manager, f'top3-{index}', caller='scheduled_top3_advisor').approved
+               for index in range(12)) == cap-article_allowance
+
+
+@pytest.mark.parametrize('caller,operation', [
+    ('scheduled_evidence_review','candidate_review'),
+    ('scheduled_top3_advisor','news_event_extract'),
+    ('manual_review','news_event_extract'),
+    (None,'news_event_extract'),
+])
+def test_top3_reserve_does_not_change_other_review_callers_or_operations(tmp_path, monkeypatch, caller, operation):
+    from app.services.ai_routing.budget import EvidenceReviewBudget
+    monkeypatch.setenv('AI_EVIDENCE_REVIEW_DAILY_MAX_CALLS', '1')
+    manager = EvidenceReviewBudget(RoutingStore(tmp_path/'usage.sqlite3'))
+    assert _review_permit(manager, 'allowed', caller=caller, operation=operation).approved
+    assert not _review_permit(manager, 'capped', caller=caller, operation=operation).approved
+
+
+def test_article_priority_admission_remains_atomic_and_preserves_charge_fences(tmp_path, monkeypatch):
+    from app.services.ai_routing.budget import EvidenceReviewBudget
+    monkeypatch.setenv('AI_EVIDENCE_REVIEW_DAILY_MAX_CALLS', '11')
+    store = RoutingStore(tmp_path/'usage.sqlite3')
+    store.initialize()
+    manager = EvidenceReviewBudget(store)
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        permits = list(executor.map(lambda index: _review_permit(manager, f'article-{index}'), range(8)))
+    assert sum(permit.approved for permit in permits) == 2
+    rows = ledger(store)
+    # A claimed/unknown paid attempt cannot use the reserve as a replay escape.
+    existing = rows[0]['request_id']
+    duplicate = _review_permit(manager, existing, caller='scheduled_top3_advisor')
+    assert not duplicate.approved and duplicate.reason == 'duplicate_request'
+    assert _review_permit(manager, 'unknown-cost', caller='scheduled_top3_advisor', cost=None).reason == 'daily_cost_unknown'
+    assert len(ledger(store)) == 2
 
 
 def test_invalid_json_still_accounts_for_billable_native_usage(tmp_path):
