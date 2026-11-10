@@ -370,7 +370,138 @@ def test_later_oil_price_stock_report_is_post_report_not_prior_cause(tmp_path, m
     monkeypatch.setattr(sources.EvidenceSources, 'collect', lambda self, source, obs, now, deadline: reports if source == 'google_news' else [])
     item = service.run_once(tmp_path / 'traces', project_root=tmp_path, now=datetime.fromisoformat(received))['items'][0]
     assert len(item['evidence']) == 1
-    assert item['evidence'][0]['category'] == 'price_movement'
+    assert item['evidence'][0]['category'] == 'reported_driver'
     assert item['evidence'][0]['timing'] == 'after_observation'
     assert item['status'] == 'post_report'
     assert '재료 후보' not in item['summary'] and '사후 보도' in item['summary']
+
+
+@pytest.mark.parametrize('title', [
+    "'젠슨 황 스캔들 파장'에 미국의 중국 반도체 규제 강화되나, 삼성전자·SK하이닉스 메모리 영향 '촉각'",
+    '삼성전자 신규 공급계약 체결되나',
+    '삼성전자 반도체 허가 받을까?',
+    '삼성전자 공급계약 무산 우려',
+    '삼성전자 반도체 규제 강화',
+    '삼성전자 수출통제 강화 영향 촉각',
+    '중국 관영매체 "삼성전자 SK하이닉스 중국 반도체 공장 역할 중요, 미국 규제로 한국 기업 피해"',
+    '삼성전자 “반도체 소부장 2027년 실적 성장성 봐야”…주목',
+    '삼성전자 내년 실적 성장',
+    '삼성전자 내년 영업이익 100조로 증가',
+])
+def test_uncertainty_and_regulatory_risk_cannot_become_upward_material(tmp_path, monkeypatch, title):
+    setup_source(tmp_path)
+    monkeypatch.setattr(sources.EvidenceSources, 'collect', lambda self, source, obs, now, deadline:
+                        [news(title)] if source == 'omni' else [])
+    row = service.run_once(tmp_path / 'traces', project_root=tmp_path, now=NOW)['items'][0]
+    assert row['status'] == 'unresolved'
+    assert '관련 재료 후보' not in row['summary']
+    assert row['evidence'][0]['category'] == 'opinion' or row['evidence'][0]['direction'] in {'negative', 'mixed'}
+
+
+@pytest.mark.parametrize('title', ['삼성전자 공급계약 체결', '삼성전자 영업이익 426%↑', '삼성전자 반도체 규제 완화 확정',
+                                  '삼성전자 내년 시설투자 승인'])
+def test_factual_positive_events_survive_conservative_filter(tmp_path, monkeypatch, title):
+    setup_source(tmp_path)
+    monkeypatch.setattr(sources.EvidenceSources, 'collect', lambda self, source, obs, now, deadline:
+                        [news(title)] if source == 'omni' else [])
+    row = service.run_once(tmp_path / 'traces', project_root=tmp_path, now=NOW)['items'][0]
+    assert row['status'] == 'prior_material'
+    assert row['evidence'][0]['direction'] not in {'negative', 'mixed'}
+
+
+def test_neutral_material_remains_evidence_but_not_an_upward_driver(tmp_path, monkeypatch):
+    setup_source(tmp_path)
+    monkeypatch.setattr(sources.EvidenceSources, 'collect', lambda self, source, obs, now, deadline:
+                        [news('삼성전자 반도체 공장 규제 논의')] if source == 'omni' else [])
+    row = service.run_once(tmp_path / 'traces', project_root=tmp_path, now=NOW)['items'][0]
+    assert len(row['evidence']) == 1 and row['evidence'][0]['direction'] == 'neutral'
+    assert row['status'] == 'unresolved'
+
+
+@pytest.mark.parametrize('title,expected', [
+    ('삼성전자, 국제유가 급락에 주가 상승세', 'reported_driver'),
+    ('삼성전자 주가 급등...환율 하락 영향', 'reported_driver'),
+    ('삼성전자, 금리 인하에 주가 강세', 'reported_driver'),
+    ('삼성전자 주가 11% 급등', 'price_movement'),
+    ('삼성전자, 유가 하락에도 주가 급등', 'price_movement'),
+    ('삼성전자, 유가 하락과 주가 급등', 'price_movement'),
+    ('금리 인하에 채권 상승, 삼성전자 투자자 관심', 'other'),
+    ('삼성전자 투자자 관심, 유가 하락에 금값 급등', 'price_movement'),
+    ('유가 하락, 삼성전자 주가 급등...주주 영향', 'price_movement'),
+    ('금리 인하에 은행주 상승, 삼성전자 보합', 'other'),
+    ('삼성전자 실적 발표, 금리 인하에 은행주 강세', 'earnings'),
+    ('삼성전자 등 반도체주, 금리 인하에 급등', 'reported_driver'),
+])
+def test_reported_driver_requires_explicit_reported_link_not_sector_inference(tmp_path, monkeypatch, title, expected):
+    setup_source(tmp_path)
+    monkeypatch.setattr(sources.EvidenceSources, 'collect', lambda self, source, obs, now, deadline:
+                        [news(title)] if source == 'omni' else [])
+    row = service.run_once(tmp_path / 'traces', project_root=tmp_path, now=NOW)['items'][0]
+    assert row['evidence'][0]['category'] == expected
+    if expected == 'reported_driver':
+        assert row['status'] == 'prior_material'
+        assert row['evidence'][0]['direction'] == 'neutral'
+        assert '보도된 상승 배경' in row['summary']
+    else:
+        assert row['status'] == 'unresolved'
+
+
+def test_same_day_reported_driver_is_preferred_to_other_event_title(tmp_path, monkeypatch):
+    setup_source(tmp_path)
+    reports = [news('삼성전자 시설투자', url='https://example.com/capacity'),
+               news('삼성전자 공급계약 체결', url='https://example.com/contract'),
+               news('삼성전자, 국제유가 급락에 주가 상승세', url='https://example.com/oil')]
+    monkeypatch.setattr(sources.EvidenceSources, 'collect', lambda self, source, obs, now, deadline:
+                        reports if source == 'omni' else [])
+    row = service.run_once(tmp_path / 'traces', project_root=tmp_path, now=NOW)['items'][0]
+    assert '국제유가' in row['summary'] and '보도된 상승 배경' in row['summary']
+
+
+def test_read_reclassifies_saved_risk_without_calls_writes_or_clock_changes(tmp_path, monkeypatch):
+    source = setup_source(tmp_path)
+    setup_source(tmp_path, rows=[{**source['candidate_pool'][0], 'code': '000660', 'name': 'SK하이닉스'}])
+    title = "'젠슨 황 스캔들 파장'에 미국의 중국 반도체 규제 강화되나, 삼성전자·SK하이닉스 메모리 영향 '촉각'"
+    monkeypatch.setattr(sources.EvidenceSources, 'collect', lambda self, source, obs, now, deadline:
+                        [news(title)] if source == 'omni' else [])
+    root = tmp_path / 'traces'
+    service.run_once(root, project_root=tmp_path, now=NOW)
+    path = root / 'snapshot.json'
+    saved = json.loads(path.read_text(encoding='utf-8'))
+    original = next(iter(saved['observations'].values()))
+    original['evidence'][0].update(category='regulatory', direction='neutral')
+    original.update(status='prior_material', summary=title + ' 관련 재료 후보')
+    path.write_text(json.dumps(saved, ensure_ascii=False), encoding='utf-8')
+    before = {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in root.rglob('*.json')}
+    def forbidden(*args, **kwargs):
+        raise AssertionError('read_view must not fetch')
+    monkeypatch.setattr(sources.EvidenceSources, 'collect', forbidden)
+    row = service.read_view(root, now=NOW + timedelta(minutes=1))['items'][0]
+    assert row['status'] == 'unresolved'
+    assert row['evidence'][0]['category'] == 'opinion' and row['evidence'][0]['direction'] == 'negative'
+    assert (row['id'], row['first_detected_at'], row['price_observed_at']) == (
+        original['id'], original['first_detected_at'], original['price_observed_at'])
+    for key in ('id', 'published_at', 'first_received_at', 'timing', 'discovered_after_observation'):
+        assert row['evidence'][0][key] == original['evidence'][0][key]
+    assert before == {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in root.rglob('*.json')}
+
+
+def test_missing_disclosure_issuer_mapping_is_an_explicit_coverage_limitation(tmp_path, monkeypatch):
+    setup_source(tmp_path)
+    def collect(self, source, obs, now, deadline):
+        if source == 'dart':
+            raise sources.SourceUnavailable('issuer_mapping_unavailable')
+        return []
+    monkeypatch.setattr(sources.EvidenceSources, 'collect', collect)
+    row = service.run_once(tmp_path / 'traces', project_root=tmp_path, now=NOW)['items'][0]
+    assert row['status'] == 'source_incomplete'
+    assert 'issuer_mapping_unavailable' in row['limitations']
+
+
+@pytest.mark.parametrize('title', [
+    '국제유가 급락에 대한항공 등 항공주 급등',
+    '[ET특징주]대한항공, 국제유가 급락에 상승세',
+    '[특징주] 국제유가 급락에 항공주 급등…대한항공 9%대↑',
+])
+def test_actual_oil_headline_formats_link_the_named_issuer_to_the_upward_reaction(title):
+    item = service._evidence(news(title), {'name': '대한항공', 'price_observed_at': NOW.isoformat()}, NOW)
+    assert item['category'] == 'reported_driver' and item['direction'] == 'neutral'

@@ -21,6 +21,18 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); sessionStorage.clear(); });
 
 describe('surge trace dashboard', () => {
+    it('labels reported drivers and archived publishers without claiming confirmed causes', async () => {
+        const view = surgeTraceFixture();
+        view.items[0].evidence[0].category = 'reported_driver';
+        view.items[0].evidence[0].publisher = 'yonhap_economy';
+        view.items[0].evidence[0].direction = 'neutral';
+        payload = view;
+        show(); const card = await screen.findByRole('article', { name: '삼성전자 급등 이유' });
+        fireEvent.click(within(card).getByText('재료 근거·발표 시각 보기'));
+        expect(within(card).getByText(/연합뉴스.*보도된 상승 배경/)).toBeVisible();
+        expect(within(card).getByText('방향 중립')).toBeVisible();
+        expect(within(card).getByText(/상승 원인을 입증하지 않습니다/)).toBeVisible();
+    });
     it('renders exact observed values and separate price/discovery clocks from saved authenticated GET', async () => {
         show();
         const card = await screen.findByRole('article', { name: '삼성전자 급등 이유' });

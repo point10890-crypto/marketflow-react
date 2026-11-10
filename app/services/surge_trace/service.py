@@ -21,6 +21,7 @@ ROW_FIELDS = ('id', 'symbol', 'name', 'market', 'session', 'first_detected_at',
               'price_observed_at', 'price', 'change_pct', 'trading_value',
               'status', 'summary', 'evidence', 'checks', 'limitations')
 GROUPS = {
+    'reported_driver': (),
     'contract': ('수주', '공급계약', '판매계약', '계약 체결', '계약체결', '계약 취소', '계약취소'),
     'earnings': ('실적', '매출', '영업이익', '순이익', '분기보고서', '반기보고서', '사업보고서'),
     'regulatory': ('허가', '승인', '규제', '제재', '인허가'),
@@ -28,6 +29,8 @@ GROUPS = {
     'capital_policy': ('자사주', '자기주식', '소각', '배당', '증자', '전환사채'),
     'risk': ('취소', '소송', '횡령', '배임', '적자', '하향', '유출', '회생', '영업정지'),
 }
+DRIVER_MOVE = re.compile(r'(?:국제\s*)?(?:유가|원유(?:\s*가격)?|원자재(?:\s*가격)?|환율|달러|금리)\s*'
+                         r'(?:급락|하락|인하|급등|상승|인상|약세|강세)')
 
 
 def _read(root):
@@ -53,20 +56,55 @@ def _due(stage, now):
     return now >= stamp(stage['checked_at']) + timedelta(minutes=ttl)
 
 
-def _category(title):
-    if any(term in title for term in ('기대', '전망', '예상', '가능성', '검토', '추정', '목표주가')):
+def _reported_driver(title, issuer=None):
+    """Recognize an explicit headline attribution, never infer a sector effect."""
+    moves = list(DRIVER_MOVE.finditer(title))
+    if not moves or re.search(r'에도|불구|반면|무관', title):
+        return False
+    # The upward reaction must remain after removing the external price move.
+    reaction = DRIVER_MOVE.sub('', title)
+    stock_reaction = False
+    if issuer and issuer in reaction:
+        issuer_end = reaction.index(issuer) + len(issuer)
+        stock_reaction = any(
+            0 <= match.start() - issuer_end <= 60 and not re.search(
+                r'금값|금\s*가격|채권|비트코인|원자재|유가|원유|환율|달러|금리|보합|하락|약세', reaction[issuer_end:match.start()])
+            and (not re.search(r'[가-힣A-Z]{2,12}주(?=\s|[‘’\'"·,]|$)', reaction[issuer_end:match.start()])
+                 or bool(re.match(r'\s*등\b', reaction[issuer_end:match.start()])))
+            for match in re.finditer(r'급등|상승|강세|↑', reaction))
+    if not stock_reaction:
+        return False
+    return any(re.match(r'\s*(?:에(?!도)|(?:으)?로|덕(?:분)?에|영향|여파|수혜|덕분|때문)',
+                        title[move.end():]) for move in moves)
+
+
+def _category(title, issuer=None):
+    if (any(term in title for term in ('기대', '전망', '예상', '가능성', '검토', '추정', '목표주가',
+                                       '촉각', '우려', '불확실', '의문', '성장성', '봐야', '주목'))
+            or (re.search(r'내년|내후년|다음\s*(?:해|분기)', title)
+                and re.search(r'실적|영업이익|순이익|매출', title))
+            or re.search(r'[?？]|(?:되나|될까|할까|일까|인가|받을까|올까)(?=$|[\s,?!…])', title)):
         return 'opinion'
+    if _reported_driver(title, issuer):
+        return 'reported_driver'
     return next((kind for kind, terms in GROUPS.items() if any(term in title for term in terms)),
                 'price_movement' if any(term in title for term in ('주가', '급등', '상한가', '급락', '상승률')) else 'other')
 
 
-def _direction(title):
-    negative = any(term in title for term in ('취소', '감소', '적자', '하락', '하향', '소송', '횡령', '배임', '유출',
+def _direction(title, issuer=None):
+    reported_driver = _reported_driver(title, issuer)
+    direction_text = DRIVER_MOVE.sub('', title) if reported_driver else title
+    negative = any(term in direction_text for term in ('취소', '감소', '적자', '하락', '하향', '소송', '횡령', '배임', '유출',
                                               '회생', '영업정지', '악화', '해지', '실패', '급감', '철회', '불허',
-                                              '미승인', '감익', '손실', '부인', '중단', '불발', '반토막', '쇼크'))
+                                              '미승인', '감익', '손실', '부인', '중단', '불발', '반토막', '쇼크',
+                                              '스캔들', '무산', '피해', '↓')) or bool(re.search(
+        r'(?:규제|수출통제|제재)\s*(?:강화|확대)|수출\s*(?:금지|제한)', title))
     # A failed order/approval is not simultaneously a positive order/approval.
-    positive_text = re.sub(r'(?:수주|계약|승인|체결)\s*(?:실패|해지|취소|불발)|미승인', '', title)
-    positive = any(term in positive_text for term in ('증가', '흑자', '성장', '최대', '개선', '상향', '승인', '수주', '체결'))
+    positive_text = re.sub(r'(?:수주|계약|승인|체결)\s*(?:실패|해지|취소|불발)|미승인', '', direction_text)
+    positive = any(term in positive_text for term in ('증가', '흑자', '성장', '최대', '개선', '상향', '승인', '수주', '체결', '↑')) or bool(
+        re.search(r'(?:규제|수출통제|제재)\s*완화', positive_text))
+    if reported_driver and not negative:
+        return 'neutral'  # Attribution in a report is not independently verified direction.
     return 'mixed' if negative and positive else 'negative' if negative else 'positive' if positive else 'neutral'
 
 
@@ -117,7 +155,7 @@ def _evidence(raw, observation, now):
             'published_at': published, 'published_precision': precision,
             'first_received_at': receipt.isoformat() if receipt else None, 'timing': timing,
             'discovered_after_observation': receipt > observed if receipt else None,
-            'category': _category(title), 'direction': _direction(title),
+            'category': _category(title, observation['name']), 'direction': _direction(title, observation['name']),
             'verification': str(raw.get('verification') or 'unverified')[:100], 'duplicate_count': 1,
             '_revision': bool(raw.get('_revision'))}
 
@@ -157,19 +195,32 @@ def _merge_evidence(existing, incoming, history=None):
 
 
 def _refresh_row(row):
+    # Classification is derived, unlike the sealed observation/source clocks.
+    # Recompute old snapshots immediately when interpretation rules change.
+    for item in row['evidence']:
+        item['category'] = _category(item['title'], row['name'])
+        item['direction'] = _direction(item['title'], row['name'])
     stages = row.get('_stages', {})
     row['checks'] = [{'source': name, 'status': stages.get(name, {}).get('status', 'pending'),
                       'checked_at': stages.get(name, {}).get('checked_at'),
                       'count': stages.get(name, {}).get('count', 0)} for name in sources.SOURCE_NAMES]
-    material = [item for item in row['evidence'] if item['category'] in GROUPS
-                and item['direction'] not in {'negative', 'mixed'} and item['category'] != 'risk']
-    before = [item for item in material if item['timing'] == 'before_observation']
+    material = [item for item in row['evidence'] if
+                (item['category'] == 'reported_driver' and item['direction'] == 'neutral') or
+                (item['category'] in GROUPS and item['category'] not in {'risk', 'reported_driver'}
+                 and item['direction'] == 'positive')]
+    before = sorted((item for item in material if item['timing'] == 'before_observation'),
+                    key=lambda item: (item['category'] == 'reported_driver' and
+                                      (item.get('published_at') or '')[:10] == row['session'],
+                                      item.get('published_at') or ''), reverse=True)
     if before:
         row['status'] = 'prior_material'
-        row['summary'] = f'{before[0]["title"]} 관련 재료 후보'
+        row['summary'] = (f'{before[0]["title"]} (보도된 상승 배경)' if before[0]['category'] == 'reported_driver'
+                          else f'{before[0]["title"]} 관련 재료 후보')
     elif material:
         row['status'] = 'post_report' if any(item['timing'] == 'after_observation' for item in material) else 'unresolved'
-        row['summary'] = '발표 선후 미확인 또는 관측 이후 보도된 재료 후보'
+        row['summary'] = ('관측 이후 나온 상승 배경의 사후 보도입니다. 인과관계는 확인되지 않았습니다.'
+                          if any(item['category'] == 'reported_driver' and item['timing'] == 'after_observation' for item in material)
+                          else '발표 선후 미확인 또는 관측 이후 보도된 재료 후보')
     elif any(item['category'] == 'price_movement' and item['timing'] == 'after_observation' for item in row['evidence']):
         row['status'] = 'post_report'
         row['summary'] = '관측 이후 주가 움직임을 설명한 사후 보도입니다. 상승 원인은 입증되지 않았습니다.'
@@ -191,6 +242,8 @@ def _refresh_row(row):
         limitations.append('evidence_revision_timing_unknown')
     if any(check['status'] == 'error' for check in row['checks']):
         limitations.append('source_errors')
+    if any(stage.get('error_code') == 'issuer_mapping_unavailable' for stage in stages.values()):
+        limitations.append('issuer_mapping_unavailable')
     if any(check['status'] in {'error', 'pending'} for check in row['checks']):
         row['status'] = 'source_incomplete'
     row['limitations'] = limitations
@@ -203,7 +256,9 @@ def _view(state, now):
                   key=lambda row: (row['session'], row['first_detected_at'], row['change_pct']), reverse=True)[:20]
     items = []
     for row in rows:
-        item = {key: deepcopy(row[key]) for key in ROW_FIELDS}
+        current = deepcopy(row)
+        _refresh_row(current)
+        item = {key: current[key] for key in ROW_FIELDS}
         item['evidence'] = [{key: value for key, value in evidence.items() if not key.startswith('_')}
                             for evidence in sorted(item['evidence'], key=lambda e: e.get('first_received_at') or '', reverse=True)[:80]]
         items.append(item)
