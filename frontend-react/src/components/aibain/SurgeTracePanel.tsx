@@ -10,13 +10,15 @@ const labels: Record<string, string> = { prior_material: '유력 재료 후보',
 const states: Record<string, string> = { ready: '저장 결과', partial: '일부 출처 확인 미완료', stale: '시세 자료 갱신 필요', no_surge: '조건에 맞는 급등 관측 없음', unavailable: '자료 이용 불가', waiting: '수집 대기' };
 const sourceStates: Record<string, string> = { fresh: '관측 자료 확인', historical: '장외 저장 관측 · 현재 시세가 아닙니다.', stale: '오래된 관측 자료 · 최신 시세 확인 필요', future: '관측 시각 확인 필요', paper: '실제 시장 시세 확인 필요', incomplete: '시세 자료 일부 미확인', unavailable: '시세 자료 이용 불가', regressed: '시세 자료 시각 역행 · 확인 필요', identity_unavailable: '종목 정보 대조 미완료', source_conflict: '시세 자료 간 불일치', unverified_quote_mode: '시세 조회 방식 확인 필요', unknown_market_status: '시장 운영 상태 미확인' };
 const sourceNames: Record<string, string> = { omni: 'Omni 뉴스', businesspost: '비즈니스포스트', kongming: '제갈공명 기사', google_news: 'Google 뉴스', google_rss: 'Google 뉴스', opendart: 'OpenDART', dart: 'OpenDART' };
+const publisherNames: Record<string, string> = { yonhap_economy: '연합뉴스', yonhap_market: '연합뉴스', yonhap_industry: '연합뉴스', hankyung_economy: '한국경제', hankyung_finance: '한국경제', mk_economy: '매일경제', mk_stock: '매일경제', mk_company: '매일경제', mt_stock: '머니투데이', asiae_stock: '아시아경제' };
 const checks: Record<string, string> = { ready: '확인 완료', empty: '관련 자료 없음', error: '수집 실패', pending: '확인 대기' };
 const timing = { before_observation: '관측 전 발표', after_observation: '관측 후 보도', same_day_unknown: '당일 선후 미확인', unknown: '발표 선후 미확인' };
 const direction = { positive: '긍정 재료', negative: '부정 재료', neutral: '방향 중립', mixed: '호재·위험 혼재' };
-const categories: Record<string, string> = { contract: '계약', earnings: '실적', risk: '위험', policy: '정책', investment: '투자', product: '제품', approval: '승인', financing: '자금 조달', ownership: '지분', regulatory: '인허가·규제', capacity: '시설·생산능력', capital_policy: '자본 정책', price_movement: '주가 동향', other: '기타 사건' };
+const categories: Record<string, string> = { reported_driver: '보도된 상승 배경', opinion: '전망·추측', contract: '계약', earnings: '실적', risk: '위험', policy: '정책', investment: '투자', product: '제품', approval: '승인', financing: '자금 조달', ownership: '지분', regulatory: '인허가·규제', capacity: '시설·생산능력', capital_policy: '자본 정책', price_movement: '주가 동향', other: '기타 사건' };
 const verification: Record<string, string> = { reported_unverified: '보도 내용 · 추가 확인 필요', issuer_matched: '공시 대상 기업 일치', issuer_verified: '공시 대상 기업 일치', issuer_symbol_and_title_match: '종목 코드·기사 제목 대조', issuer_title_match: '기사 제목의 기업명 대조', issuer_registry_match: '공시 기업 등록정보 대조', official_disclosure: '공식 공시', verified: '출처 대조 완료', unverified: '확인 대기' };
 const limitations: Record<string, string> = {
     source_universe_partial: '스크리너가 확보한 관측 범위이며 전 종목 조사 결과는 아닙니다.',
+    issuer_mapping_unavailable: '공시 발행사와 해당 종목의 연결 정보가 없어 공시 대조를 완료하지 못했습니다.',
     historical_observation: '저장된 시세 관측이며 현재 시세가 아닙니다.',
     causality_unproven: '상승과 재료 사이의 인과관계는 입증되지 않았습니다.',
     retrospective_discovery: '시세 관측 이후 확보한 자료가 포함돼 있습니다.',
@@ -35,7 +37,7 @@ function Evidence({ item }: { item: SurgeEvidence }) {
     return <li className="min-w-0 space-y-2 border-t border-slate-700 py-3 [overflow-wrap:anywhere]">
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs"><span className="font-semibold text-sky-200">{timing[item.timing]}</span><span className={['negative', 'mixed'].includes(item.direction) ? 'font-semibold text-amber-200' : 'text-slate-300'}>{direction[item.direction]}</span></div>
         {url ? <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-sm font-semibold leading-6 text-sky-200 underline decoration-sky-200/40 underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300">{item.title}</a> : <p className="text-sm font-semibold leading-6 text-slate-200">{item.title}</p>}
-        <p className="text-xs text-slate-400">{item.kind === 'disclosure' ? '공시' : '뉴스'} · {item.publisher ?? '발행처 미확인'} · {item.source ? sourceNames[item.source] ?? item.source : '수집 출처 미확인'}{item.category && ` · ${categories[item.category] ?? '사건 유형 미확인'}`}</p>
+        <p className="text-xs text-slate-400">{item.kind === 'disclosure' ? '공시' : '뉴스'} · {item.publisher ? publisherNames[item.publisher] ?? item.publisher : '발행처 미확인'} · {item.source ? sourceNames[item.source] ?? item.source : '수집 출처 미확인'}{item.category && ` · ${categories[item.category] ?? '사건 유형 미확인'}`}</p>
         <dl className="grid gap-2 text-xs sm:grid-cols-2"><div><dt className="text-slate-400">발표</dt><dd className="mt-1 text-slate-200">{item.published_precision === 'date' && item.published_at ? `${item.published_at} (시간 미확인)` : <Time value={item.published_at} />}</dd></div>
             <div><dt className="text-slate-400">최초 수신</dt><dd className="mt-1 text-slate-200"><Time value={item.first_received_at} /></dd></div></dl>
         {item.discovered_after_observation === true && <p className="text-xs font-semibold text-amber-200">관측 후 확보한 자료</p>}
