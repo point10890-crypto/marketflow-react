@@ -420,7 +420,7 @@ def test_neutral_material_remains_evidence_but_not_an_upward_driver(tmp_path, mo
 
 @pytest.mark.parametrize('title,expected', [
     ('삼성전자, 국제유가 급락에 주가 상승세', 'reported_driver'),
-    ('삼성전자 주가 급등...환율 하락 영향', 'reported_driver'),
+    ('삼성전자 주가 급등...환율 하락 영향', 'price_movement'),
     ('삼성전자, 금리 인하에 주가 강세', 'reported_driver'),
     ('삼성전자 주가 11% 급등', 'price_movement'),
     ('삼성전자, 유가 하락에도 주가 급등', 'price_movement'),
@@ -431,6 +431,13 @@ def test_neutral_material_remains_evidence_but_not_an_upward_driver(tmp_path, mo
     ('금리 인하에 은행주 상승, 삼성전자 보합', 'other'),
     ('삼성전자 실적 발표, 금리 인하에 은행주 강세', 'earnings'),
     ('삼성전자 등 반도체주, 금리 인하에 급등', 'reported_driver'),
+    ('삼성전자 실적 발표…국제유가 급락에 대한항공 급등', 'earnings'),
+    ('삼성전자 실적 발표, 국제유가 급락에 대한항공 급등', 'earnings'),
+    ('삼성전자 실적 발표 국제유가 급락에 대한항공 급등', 'earnings'),
+    ('삼성전자, 국제유가 급락에 대한항공 급등', 'price_movement'),
+    ('삼성전자 공급망 점검 금리 인하에 현대차 상승', 'other'),
+    ('삼성전자 급등…국제유가 급락에 대한항공 급등', 'price_movement'),
+    ('국제유가 급락에 대한항공 급등, 삼성전자 급등', 'price_movement'),
 ])
 def test_reported_driver_requires_explicit_reported_link_not_sector_inference(tmp_path, monkeypatch, title, expected):
     setup_source(tmp_path)

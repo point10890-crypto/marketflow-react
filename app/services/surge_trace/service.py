@@ -31,6 +31,19 @@ GROUPS = {
 }
 DRIVER_MOVE = re.compile(r'(?:국제\s*)?(?:유가|원유(?:\s*가격)?|원자재(?:\s*가격)?|환율|달러|금리)\s*'
                          r'(?:급락|하락|인하|급등|상승|인상|약세|강세)')
+DRIVER_REACTION_GAP = re.compile(
+    r'\s*(?:은|는|이|가)?\s*'
+    r'(?:등\s+[가-힣A-Z]{2,12}주\s*)?'
+    r'(?:주가(?:는|가|도)?\s*)?[,，:]?\s*'
+    r'(?:(?:에|(?:으)?로|덕(?:분)?에|영향(?:으로)?|여파(?:로)?|수혜(?:로)?|때문(?:에)?)\s*)?'
+    r'(?:주가(?:는|가|도)?\s*)?'
+    r'(?:[+-]?\d+(?:\.\d+)?\s*%\s*(?:대|넘게|이상)?\s*)?'
+    r'[\'"‘“]*\s*'
+)
+DRIVER_TO_TARGET = re.compile(
+    r'\s*(?:에|(?:으)?로|덕(?:분)?에|영향으로|여파로|수혜로|때문에)\s*'
+    r'(?:[가-힣A-Z]{2,12}주\s*[\'"‘“]*(?:급등|상승|강세|↑)[\'"’”]*[\s,….-]*)?'
+)
 
 
 def _read(root):
@@ -59,23 +72,29 @@ def _due(stage, now):
 def _reported_driver(title, issuer=None):
     """Recognize an explicit headline attribution, never infer a sector effect."""
     moves = list(DRIVER_MOVE.finditer(title))
-    if not moves or re.search(r'에도|불구|반면|무관', title):
+    if not moves or not issuer or issuer not in title or re.search(r'에도|불구|반면|무관', title):
         return False
-    # The upward reaction must remain after removing the external price move.
-    reaction = DRIVER_MOVE.sub('', title)
-    stock_reaction = False
-    if issuer and issuer in reaction:
-        issuer_end = reaction.index(issuer) + len(issuer)
-        stock_reaction = any(
-            0 <= match.start() - issuer_end <= 60 and not re.search(
-                r'금값|금\s*가격|채권|비트코인|원자재|유가|원유|환율|달러|금리|보합|하락|약세', reaction[issuer_end:match.start()])
-            and (not re.search(r'[가-힣A-Z]{2,12}주(?=\s|[‘’\'"·,]|$)', reaction[issuer_end:match.start()])
-                 or bool(re.match(r'\s*등\b', reaction[issuer_end:match.start()])))
-            for match in re.finditer(r'급등|상승|강세|↑', reaction))
-    if not stock_reaction:
-        return False
-    return any(re.match(r'\s*(?:에(?!도)|(?:으)?로|덕(?:분)?에|영향|여파|수혜|덕분|때문)',
-                        title[move.end():]) for move in moves)
+    issuer_start = title.index(issuer)
+    issuer_end = issuer_start + len(issuer)
+    for rise in re.finditer(r'급등|상승|강세|↑', title):
+        if (not issuer_end <= rise.start() <= issuer_end + 100
+                or any(move.start() <= rise.start() < move.end() for move in moves)):
+            continue
+        # The selected rise must belong to the named target under a closed
+        # grammar, not another issuer or arbitrary text in a following clause.
+        gap = DRIVER_MOVE.sub('', title[issuer_end:rise.start()])
+        if not DRIVER_REACTION_GAP.fullmatch(gap):
+            continue
+        for move in moves:
+            if move.end() > rise.start() or not re.match(
+                    r'\s*(?:에(?!도)|(?:으)?로|덕(?:분)?에|영향|여파|수혜|덕분|때문)', title[move.end():]):
+                continue
+            # The cause either occurs within the target's own reaction clause
+            # or directly introduces it (including an explicit sector lead-in).
+            if issuer_end <= move.start() or (move.end() <= issuer_start and
+                    DRIVER_TO_TARGET.fullmatch(title[move.end():issuer_start])):
+                return True
+    return False
 
 
 def _category(title, issuer=None):
