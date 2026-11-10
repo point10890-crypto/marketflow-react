@@ -116,6 +116,45 @@ def article_candidates_response():
     return _response(payload, 200)
 
 
+_SURGE_FIELDS = {
+    'schema_version': int, 'status': str, 'generated_at': str, 'source_as_of': str,
+    'threshold': {'change_pct': _NUMBER, 'trading_value': _NUMBER},
+    'operation': {'state': str, 'last_run_at': str, 'source_status': str,
+                  'processed': int, 'pending': int},
+    'items': [{
+        'id': str, 'symbol': str, 'name': str, 'market': str, 'session': str,
+        'first_detected_at': str, 'price_observed_at': str, 'price': _NUMBER,
+        'change_pct': _NUMBER, 'trading_value': _NUMBER, 'status': str, 'summary': str,
+        'evidence': [{
+            'id': str, 'kind': str, 'title': str, 'url': str, 'source': str,
+            'publisher': str, 'published_at': str, 'published_precision': str,
+            'first_received_at': str, 'timing': str, 'discovered_after_observation': bool,
+            'category': str, 'direction': str, 'verification': str, 'duplicate_count': int,
+        }],
+        'checks': [{'source': str, 'status': str, 'checked_at': str, 'count': int, 'error': str}],
+        'limitations': [str],
+    }],
+}
+
+
+def surge_traces_response():
+    """Serve the standalone trace worker's saved result; never trigger lookup."""
+    if not _allowed():
+        return _response({'error': 'kongming_catalyst_forbidden'}, 403)
+    if request.args:
+        return _response({'error': 'invalid_surge_trace_query'}, 400)
+    from app.services.surge_trace import service
+    try:
+        raw = service.read_view()
+        if (not isinstance(raw, dict) or raw.get('schema_version') != 1
+                or not isinstance(raw.get('status'), str) or not isinstance(raw.get('items'), list)):
+            raise ValueError('Invalid saved trace')
+        payload = _project(raw, _SURGE_FIELDS)
+    except (OSError, sqlite3.Error, ValueError, KeyError, TypeError, RecursionError):
+        return _response({'error': 'surge_trace_unavailable'}, 503)
+    return _response(payload, 200)
+
+
 _FINDING_FIELDS = {'text': str, 'claim_status': str, 'evidence_ids': [str], 'quotes': [{'evidence_id': str, 'quote': str}]}
 _REVIEW_FIELDS = {
     'schema_version': int, 'kind': str, 'status': str, 'last_run_at': str, 'empty_reason': str,

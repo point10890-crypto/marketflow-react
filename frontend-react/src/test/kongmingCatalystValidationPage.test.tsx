@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import KongmingCatalystValidationPage from '@/pages/dashboard/aibain/KongmingCatalystValidationPage';
+import { surgeTraceFixture } from './fixtures/surgeTraceFixture';
 
 vi.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({ token: 'fixture-token', user: { id: 7, role: 'admin' } }),
@@ -87,6 +88,9 @@ function network() {
     });
     vi.stubGlobal('fetch', (input: string, init?: RequestInit) => {
         const path = new URL(input, 'http://localhost').pathname;
+        if (path === '/api/admin/mirofish/kongming/surge-traces') return Promise.resolve(new Response(JSON.stringify({
+            ...surgeTraceFixture(), status: 'waiting', items: [],
+        })));
         if (path === '/api/admin/mirofish/kongming/article-evidence-reviews') return Promise.resolve(new Response(JSON.stringify({
             schema_version: 1, kind: 'article', status: 'waiting', last_run_at: null, items: [],
         })));

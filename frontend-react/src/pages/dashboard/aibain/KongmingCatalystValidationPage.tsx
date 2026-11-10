@@ -2,6 +2,7 @@ import '@/pages/dashboard/ai-design.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
+import SurgeTracePanel from '@/components/aibain/SurgeTracePanel';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { ApiError, fetchAPI } from '@/lib/api';
@@ -534,6 +535,7 @@ export default function KongmingCatalystValidationPage() {
         <div className="ai-design min-h-full bg-[#101318] p-3 text-sm text-slate-100 sm:p-6">
             <div className="mx-auto max-w-5xl space-y-4">
                 <AiBrainServiceTabs active="kongming" />
+                {canRead && <SurgeTracePanel key={`surge:${sessionKey}`} token={token ?? undefined} />}
                 {canRead && <KongmingArticleCandidatesPanel key={`articles:${sessionKey}`} />}
                 <CatalystPanel key={`${sessionKey}:${articleId ?? ''}`} canRead={canRead} articleId={articleId} />
             </div>
