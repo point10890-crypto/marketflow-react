@@ -21,8 +21,8 @@ from app.auth.decorators import generate_token, login_required
 from app.services import member_telegram
 from app.services.subscription_lifecycle import utc
 from app.services.subscription_plans import (
-    AI_BUNDLE_AMOUNT, AI_BUNDLE_CONVERSION_AMOUNT, AI_BUNDLE_POLICY_MARKER, BASE_PLAN_AMOUNTS,
-    ai_bundle_conversion_reason, conversion_snapshot_is_current,
+    AI_BUNDLE_AMOUNT, AI_BUNDLE_POLICY_MARKER, BASE_PLAN_AMOUNTS,
+    conversion_snapshot_is_current,
 )
 
 
@@ -561,7 +561,7 @@ def request_subscription():
     depositor_name = (data.get('depositor_name') or '').strip() or None
 
     # 입금 금액 계산
-    # - aibain_addon: 50,000원 (AI Brain 만)
+    # - aibain_addon: 50,000원 (AI Brain + 제갈공명, 기존 기본등급 유지)
     # - else + aibain: 베이스 + 50,000 (전체)
     # - else:         베이스 (50k 또는 1.2M)
     base_amount_map = BASE_PLAN_AMOUNTS
@@ -605,24 +605,14 @@ def request_subscription():
 
 
 def _request_ai_bundle_conversion(user: User, data: dict):
-    expected_amount = data.get('expected_amount')
-    if type(expected_amount) is not int or expected_amount != AI_BUNDLE_CONVERSION_AMOUNT:
-        return jsonify({
-            'error': '제갈공명 전환 신청 금액 10,000원을 다시 확인해 주세요.',
-            'code': 'subscription_price_changed',
-        }), 409
-    depositor_name = data.get('depositor_name')
-    if not isinstance(depositor_name, str) or not 1 <= len(depositor_name.strip()) <= 100:
-        return jsonify({'error': '입금자명을 확인해 주세요.'}), 400
-
-    reason = ai_bundle_conversion_reason(user, has_pending=user.get_pending_subscription_request() is not None)
-    if reason != 'eligible':
-        return _conversion_unavailable(reason)
-    return _queue_subscription_request(
-        user, AIBAIN_KONGMING_CONVERSION, user.tier or 'none', depositor_name.strip(),
-        f'{AI_BUNDLE_CONVERSION_AMOUNT:,}원', '기존 AI Brain 회원 제갈공명 전환 신청',
-        includes_aibain=False, conversion_expires_at=utc(user.aibain_expires_at),
-    )
+    # Reject stale clients before payment validation or any write. Previously
+    # recorded pending requests retain their independent approval contract.
+    return jsonify({
+        'error': '제갈공명 1만원 전환 플랜의 신규 신청이 종료되었습니다. AI 브레인에는 제갈공명이 포함됩니다. 현재 플랜을 확인해 주세요.',
+        'code': 'subscription_plan_changed',
+        'reason': 'plan_retired',
+        'redirect': '/plan-select?change=1',
+    }), 409
 
 
 def _conversion_unavailable(reason: str):

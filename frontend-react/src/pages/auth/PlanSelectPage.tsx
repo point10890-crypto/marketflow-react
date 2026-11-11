@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { hasActiveBaseSubscription, isBaseSubscriptionExpired, subscriptionFunnelTarget } from '@/lib/auth';
 import SubscriptionFlow from '@/components/subscription/SubscriptionFlow';
@@ -8,9 +8,6 @@ import { useSeo } from '@/lib/seo';
 import {
     PLAN_PAYMENT_META,
     AIBAIN_ADDON_META,
-    AI_BUNDLE_CONVERSION,
-    aiBundleConversionExpiry,
-    formatConversionExpiry,
     resolveBillingPlan,
     planFromQuery,
     planToQuery,
@@ -29,7 +26,6 @@ export default function PlanSelectPage() {
     const preferredQuery = preferredPlan ? planToQuery(preferredPlan) : '';
     const signupPath = preferredQuery ? `/signup?${preferredQuery}` : '/signup';
     const [now, setNow] = useState(Date.now);
-    const conversionExpiry = aiBundleConversionExpiry(user, now);
 
     // 이 페이지에 머무는 동안 관리자가 tier 를 직접 부여하면 (CLAUDE.md §12-A) stale user 로
     // 계속 플랜 선택에 갇힌다 → 마운트 + 창 포커스 시 /api/auth/me 재조회로 즉시 반영.
@@ -54,10 +50,10 @@ export default function PlanSelectPage() {
             return;
         }
         const isActive = hasActiveBaseSubscription(user, now);
-        if (isActive && !allowChange && !preferredPlan && !conversionExpiry) {
+        if (isActive && !allowChange && !preferredPlan) {
             navigate('/dashboard', { replace: true });
         }
-    }, [user, token, loading, navigate, allowChange, signupPath, preferredPlan, now, conversionExpiry]);
+    }, [user, token, loading, navigate, allowChange, signupPath, preferredPlan, now]);
 
     if (loading) {
         return (
@@ -86,21 +82,10 @@ export default function PlanSelectPage() {
         <section className="subscription-status-box" aria-label="현재 구독 상태">
             <strong>{isExpired ? '현재 상태: 구독 만료' : hasActiveBase ? `현재 이용: ${user?.tier === 'premium' ? 'Ultra Pro' : 'Pro'}` : '현재 상태: 구독 전'}</strong>
             <p>{isExpired ? '계정과 이용 기록은 유지됩니다.' : hasActiveBase
-                ? conversionExpiry ? 'AI 브레인 이용 중 · 남은 기간에 제갈공명을 추가할 수 있습니다.'
-                    : user?.is_aibain_active ? 'AI 브레인 이용 중 · 5만 원 플랜으로 AI 브레인과 제갈공명 이용기간을 연장할 수 있습니다.' : 'AI 브레인과 제갈공명을 5만 원에 함께 추가할 수 있습니다.'
+                ? user?.is_aibain_active ? 'AI 브레인 이용 중 · 50,000원으로 AI 브레인과 제갈공명을 30일 함께 연장할 수 있습니다.' : 'AI 브레인 추가 구독은 50,000원 / 30일이며, 제갈공명이 포함됩니다.'
                 : 'PRO만 이용하거나, AI 브레인·제갈공명을 함께 선택할 수 있습니다.'}</p>
             {isExpired && expiredAt && !Number.isNaN(expiredAt.getTime()) && <p>만료일 {expiredAt.toLocaleDateString('ko-KR')}</p>}
         </section>
-        {conversionExpiry && <section className="subscription-plan mb-4" data-featured="true" aria-label="기존 AI Brain 회원 전환">
-            <span className="subscription-plan-badge">기존 AI Brain 회원 전용</span>
-            <div className="subscription-plan-heading">
-                <h3>{AI_BUNDLE_CONVERSION.label}</h3>
-                <span className="subscription-price">{AI_BUNDLE_CONVERSION.amount}</span>
-            </div>
-            <p className="subscription-plan-summary">기존 AI Brain 만료일까지 제갈공명을 이용합니다.</p>
-            <p className="subscription-plan-summary">제갈공명 이용 종료 {formatConversionExpiry(conversionExpiry)}</p>
-            <Link className="subscription-button-primary" to={AI_BUNDLE_CONVERSION.payment}>제갈공명 전환 신청</Link>
-        </section>}
         <div className="subscription-plan-grid">
             {(!hasActiveBase || user?.tier === 'pro') && <>
                 <PlanCard plan="pro" onSelect={select} hasActiveBase={hasActiveBase} currentTier={user?.tier}
@@ -116,8 +101,8 @@ export default function PlanSelectPage() {
         </div>
         <aside className="subscription-note">
             <strong>AI를 이용하는 동안 PRO 기간은 줄어들지 않아요.</strong>
-            <p>AI 브레인·제갈공명을 30일 함께 이용하고, 종료되면 남겨 둔 PRO 기간이 다시 시작됩니다. Ultra PRO 평생 이용권은 그대로 유지됩니다.</p>
-            {!hasActiveBase && <p>10만 원 플랜은 PRO 5만 원 + AI·제갈공명 5만 원입니다. 승인 후 AI 30일을 이용하는 동안 PRO 30일은 보관됩니다.</p>}
+            <p>AI 브레인·제갈공명을 30일 함께 이용합니다. AI 이용 중에도 PRO 전체 서비스를 계속 이용하며, 남은 PRO 기간은 보존되어 AI 종료 후 다시 시작됩니다. Ultra PRO 평생 이용권은 그대로 유지됩니다.</p>
+            {!hasActiveBase && <p>PRO + AI 브레인·제갈공명 결합 플랜은 100,000원입니다. PRO 50,000원 + AI·제갈공명 50,000원이며, 승인 후 AI 30일을 이용하는 동안 PRO 30일은 보관됩니다.</p>}
         </aside>
         {hasActiveBase && user?.tier === 'pro' && <button className="subscription-button-secondary w-full" onClick={() => navigate('/payment-request?plan=pro&renew=1')}>AI 추가 없이 PRO 30일 연장 · 50,000원</button>}
         {user?.tier !== 'premium' && <details className="subscription-details" open={preferredPlan === 'premium' || preferredPlan === 'premium_aibain' ? true : undefined}>

@@ -44,7 +44,7 @@ it('moves the banner into the dashboard host after authentication hydrates',asyn
  finally {view.unmount();host.remove();}
 });
 
-it('promotes the conversion on the dashboard only for eligible members', () => {
+it('never promotes a retired conversion even when cached eligibility is true', () => {
     m.auth.user = { ...m.auth.user, tier: 'pro', ai_bundle_conversion: {
         eligible: false, amount: 10000, expires_at: new Date(Date.now() + 86_400_000).toISOString(),
     }};
@@ -53,9 +53,15 @@ it('promotes the conversion on the dashboard only for eligible members', () => {
     hidden.unmount();
     m.auth.user.ai_bundle_conversion.eligible = true;
     show('/dashboard');
-    const banner = screen.getByLabelText('제갈공명 전환 안내');
-    expect(banner).toHaveTextContent('10,000원');
-    expect(within(banner).getByRole('link', { name: '제갈공명 전환 신청' }))
-        .toHaveAttribute('href', '/payment-request?plan=aibain_kongming_conversion');
+    expect(screen.queryByLabelText('제갈공명 전환 안내')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '제갈공명 전환 신청' })).not.toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+});
+
+it('preserves the status entry for an already pending legacy conversion', () => {
+    m.auth.user = { ...m.auth.user, tier: 'pro', has_pending_subscription: true,
+        pending_subscription_request: { id: 9, status: 'pending', request_type: 'aibain_kongming_conversion' } };
+    show('/dashboard');
+    expect(screen.getByRole('link', { name: '신청 상태 확인' })).toHaveAttribute('href', '/pending-approval');
+    expect(screen.queryByRole('link', { name: '제갈공명 전환 신청' })).not.toBeInTheDocument();
 });

@@ -91,7 +91,7 @@ it('clears a currently rejected authentication token while retaining sessions on
     expect(getToken()).toBeNull();
 });
 
-it('retains a server conversion offer through login and removes it when /me invalidates eligibility', async () => {
+it('never enables retired conversion offers from login or refreshed session data', async () => {
     const expiresAt = new Date(Date.now() + 86_400_000).toISOString();
     const eligible: AuthUserData = { ...renewed, ai_bundle_conversion: {
         eligible: true, amount: 10000, expires_at: expiresAt, reason: 'eligible',
@@ -101,12 +101,13 @@ it('retains a server conversion offer through login and removes it when /me inva
     show();
     await act(async () => {});
     fireEvent.click(screen.getByRole('button', { name: '로그인' }));
-    await waitFor(() => expect(screen.getByTestId('conversion-offer')).toHaveTextContent(expiresAt));
+    await waitFor(() => expect(screen.getByTestId('session')).toHaveTextContent('approved'));
+    expect(screen.getByTestId('conversion-offer')).toHaveTextContent('자격 없음');
     expect(getUser()?.ai_bundle_conversion).toEqual(eligible.ai_bundle_conversion);
     api.fetch.mockResolvedValueOnce(response({ ...renewed, ai_bundle_conversion: {
         eligible: false, amount: 10000, expires_at: null, reason: 'pending_request',
     }}));
     fireEvent.click(screen.getByRole('button', { name: '갱신' }));
-    await waitFor(() => expect(screen.getByTestId('conversion-offer')).toHaveTextContent('자격 없음'));
-    expect(getUser()?.ai_bundle_conversion?.eligible).toBe(false);
+    await waitFor(() => expect(getUser()?.ai_bundle_conversion?.eligible).toBe(false));
+    expect(screen.getByTestId('conversion-offer')).toHaveTextContent('자격 없음');
 });

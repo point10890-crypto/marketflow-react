@@ -77,13 +77,14 @@ describe('subscription acquisition funnel', () => {
         eligible: true, amount: 10000, expires_at: new Date(Date.now() + 7 * 86_400_000).toISOString(), reason: '',
     });
 
-    it('shows a separate 10,000 won offer next to the regular 50,000 won renewal', async () => {
+    it('offers only the current 50,000 won add-on even with cached conversion eligibility', async () => {
         mocks.auth.user = { ...conversionUser, ai_bundle_conversion: conversionQuote() };
         mocks.auth.token = 'conversion-token';
         renderAt('/plan-select?change=1', <PlanSelectPage />, '/plan-select');
-        expect(screen.getByRole('link', { name: /제갈공명 전환 신청/ })).toHaveAttribute('href', conversionPath);
-        expect(screen.getByText('10,000원')).toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: /제갈공명 전환 신청/ })).not.toBeInTheDocument();
+        expect(screen.queryByText('10,000원')).not.toBeInTheDocument();
         expect(within(screen.getByRole('button', { name: /AI Brain \+ 제갈공명/ })).getByText('50,000원')).toBeInTheDocument();
+        expect(screen.getByText(/AI 이용 중에도 PRO 전체 서비스를 계속 이용/)).toBeInTheDocument();
     });
 
     it.each(['ineligible', 'missing user', 'different member', 'expired quote'])('keeps bank details hidden for a %s fresh status', async condition => {
@@ -98,23 +99,46 @@ describe('subscription acquisition funnel', () => {
         };
         mocks.getStatus.mockResolvedValue({ requests: [], user: latest } as any);
         renderAt(conversionPath, <PaymentRequestPage />, '/payment-request');
-        expect(await screen.findByText(/전환 신청 자격을 확인할 수 없습니다/)).toBeInTheDocument();
+        expect(await screen.findByText(/전환 상품의 신규 신청이 종료되었습니다/)).toBeInTheDocument();
         expect(screen.queryByText('국민은행')).not.toBeInTheDocument();
         expect(mocks.requestConversion).not.toHaveBeenCalled();
     });
 
-    it('quotes conversion from the current server even if cached eligibility is absent', async () => {
+    it('retires the conversion URL even when the server still returns eligible=true', async () => {
         mocks.auth.user = conversionUser;
         mocks.auth.token = 'conversion-token';
         mocks.getStatus.mockResolvedValue({ requests: [], user: { ...conversionUser, ai_bundle_conversion: conversionQuote() } } as any);
         renderAt(conversionPath, <PaymentRequestPage />, '/payment-request');
-        expect(await screen.findByText('10,000원')).toBeInTheDocument();
-        expect(screen.getByText(/제갈공명 이용 종료/)).toBeInTheDocument();
-        expect(screen.getByText('국민은행')).toBeInTheDocument();
-        fireEvent.click(screen.getByRole('button', { name: /승인 신청/ }));
-        expect(await screen.findByTestId('location')).toHaveTextContent('/pending-approval');
-        expect(mocks.requestConversion).toHaveBeenCalledWith('conversion-token', '기존회원');
+        expect(await screen.findByText(/전환 상품의 신규 신청이 종료되었습니다/)).toBeInTheDocument();
+        expect(screen.queryByText('10,000원')).not.toBeInTheDocument();
+        expect(screen.queryByText('국민은행')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /승인 신청/ })).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: '현재 플랜 선택' })).toHaveAttribute('href', '/plan-select?change=1');
+        expect(mocks.requestConversion).not.toHaveBeenCalled();
         expect(mocks.requestUpgrade).not.toHaveBeenCalled();
+    });
+
+    it('checks pending status before explaining retirement and retries without showing bank details', async () => {
+        mocks.auth.user = { ...conversionUser, ai_bundle_conversion: conversionQuote() };
+        mocks.auth.token = 'conversion-token';
+        mocks.getStatus.mockRejectedValueOnce(new Error('offline'));
+        renderAt(conversionPath, <PaymentRequestPage />, '/payment-request');
+        expect(screen.getByText(/기존 구독 신청을 확인하고 있습니다/)).toBeInTheDocument();
+        expect(screen.queryByText('국민은행')).not.toBeInTheDocument();
+        fireEvent.click(await screen.findByRole('button', { name: '다시 확인' }));
+        expect(await screen.findByRole('link', { name: '현재 플랜 선택' })).toBeInTheDocument();
+        expect(screen.queryByText('국민은행')).not.toBeInTheDocument();
+    });
+
+    it.each(['rejected', 'withdrawn'])('routes a %s legacy conversion to current plans despite stale eligibility', async status => {
+        mocks.auth.user = { ...conversionUser, ai_bundle_conversion: conversionQuote() };
+        mocks.auth.token = 'conversion-token';
+        mocks.getStatus.mockResolvedValue({ requests: [{ id: 10, status,
+            request_type: 'aibain_kongming_conversion', amount: '10,000원',
+        }] });
+        renderAt('/pending-approval', <PendingApprovalPage />, '/pending-approval');
+        expect(await screen.findByRole('link', { name: '현재 플랜 선택' })).toHaveAttribute('href', '/plan-select?change=1');
+        expect(screen.queryByRole('link', { name: '전환 자격 확인' })).not.toBeInTheDocument();
     });
 
     it('keeps a pending conversion in the existing queue and shows its captured expiry', async () => {
@@ -191,8 +215,8 @@ describe('subscription acquisition funnel', () => {
         expect(await screen.findByTestId('location')).toHaveTextContent('/dashboard/ai-bain');
     });
 
-    it('returns the existing member to the conversion link after login', () => {
-        expect(nextPathForUser(conversionUser, conversionPath)).toBe(conversionPath);
+    it('routes the retired conversion login destination to current plans while preserving pending requests', () => {
+        expect(nextPathForUser(conversionUser, conversionPath)).toBe('/plan-select?change=1');
         expect(nextPathForUser({ ...conversionUser, has_pending_subscription: true }, conversionPath)).toBe('/pending-approval');
     });
 
