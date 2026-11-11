@@ -9,6 +9,7 @@ from flask import Blueprint, Response, jsonify, make_response, request
 
 from app.auth.decorators import admin_required, admin_or_aibain_required
 from app.routes.kongming_catalyst import article_candidates_response, catalyst_response, evidence_review_response, surge_traces_response
+from app.routes.catalyst_outcomes import catalyst_outcomes_response
 from app.services import mirofish
 from app.services.ai_routing.reporting import (
     get_llm_routing_status,
@@ -934,6 +935,12 @@ def kongming_article_evidence_reviews():
 @admin_or_aibain_required
 def kongming_surge_traces():
     return surge_traces_response()
+
+
+@admin_mirofish_bp.get('/kongming/catalyst-outcomes')
+@admin_or_aibain_required
+def kongming_catalyst_outcomes():
+    return catalyst_outcomes_response()
 
 
 @admin_mirofish_bp.route('/targets/resolve', methods=['GET'])
