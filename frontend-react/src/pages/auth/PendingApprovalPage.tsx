@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { AI_BUNDLE_CONVERSION, aiBundleConversionExpiry, formatConversionExpiry, isAiBundleRequest, subscriptionNote, isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
+import { AI_BUNDLE_CONVERSION, formatConversionExpiry, isAiBundleRequest, subscriptionNote, isKongmingSubscriptionRequest, PLAN_PAYMENT_META, planToQuery } from '@/lib/billingInfo';
 import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
 import SubscriptionFlow, { BankTransferDetails } from '@/components/subscription/SubscriptionFlow';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
@@ -203,7 +203,7 @@ export default function PendingApprovalPage() {
         || !!rejectedSubReq?.admin_note?.includes('AI Brain');
     const reapplyRenewal = rejectedKongming ? rejectedSubReq?.request_type === 'aibain_kongming_renewal' : expired;
     const reapplyQuery = rejectedKongming ? planToQuery(KONGMING_PLAN) : `plan=${reapplyTier}${reapplyAibain ? '&aibain=1' : ''}`;
-    const reapplyPath = rejectedConversion ? (aiBundleConversionExpiry(decisionUser, now) ? AI_BUNDLE_CONVERSION.payment : '/plan-select?change=1') : `/payment-request?${reapplyQuery}${reapplyRenewal ? '&resubscribe=1' : ''}`;
+    const reapplyPath = rejectedConversion ? '/plan-select?change=1' : `/payment-request?${reapplyQuery}${reapplyRenewal ? '&resubscribe=1' : ''}`;
     let headerTitle = '승인 대기 중';
     let headerSubtitle = '구독 신청이 접수되었습니다. 입금 확인 후 관리자가 서비스를 활성화합니다.';
     if (!hasPending && (!hasExistingAccess || rejectedSubReq)) {
@@ -275,7 +275,7 @@ export default function PendingApprovalPage() {
         {message && <p role={statusError ? 'alert' : 'status'} className={statusError ? 'subscription-error' : 'subscription-note'}>{message}</p>}
         <div className="subscription-actions">
             {rejectedSubReq && !hasPending && !statusError && !blockedAccount && !awaitingAuth &&
-                <Link to={reapplyPath} className="subscription-button-primary">{rejectedConversion ? '전환 자격 확인' : reapplyRenewal ? '재구독 신청' : '다시 신청'}</Link>}
+                <Link to={reapplyPath} className="subscription-button-primary">{rejectedConversion ? '현재 플랜 선택' : reapplyRenewal ? '재구독 신청' : '다시 신청'}</Link>}
             {!hasPending && !hasExistingAccess && !rejectedSubReq && subReqLoaded && !blockedAccount && !awaitingAuth &&
                 <button onClick={() => navigate('/plan-select')} className="subscription-button-primary">플랜 선택하기</button>}
             <button onClick={handleCheckStatus} disabled={checking} className="subscription-button-secondary">{checking ? '확인 중...' : '승인 상태 확인'}</button>

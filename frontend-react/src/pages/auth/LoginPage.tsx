@@ -38,7 +38,7 @@ export function nextPathForUser(user: LoginUser, nextPath: string | null): strin
         return nextPath?.startsWith('/admin') ? nextPath : '/admin';
     }
     if (nextPath === AI_BUNDLE_CONVERSION.payment && ['approved', 'expired'].includes(user.status || '')) {
-        return user.has_pending_subscription ? '/pending-approval' : nextPath;
+        return user.has_pending_subscription ? '/pending-approval' : '/plan-select?change=1';
     }
     if (isKongmingOnlyUser(user)) {
         if (planned) return planned;

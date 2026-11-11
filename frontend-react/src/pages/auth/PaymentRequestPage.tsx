@@ -3,10 +3,10 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
 import { hasPendingSubscription } from '@/lib/subscriptionStatus';
-import { PLAN_PAYMENT_META, AIBAIN_ADDON_META, AI_BUNDLE_CONVERSION, aiBundleConversionExpiry, formatConversionExpiry, resolveBillingPlan, planFromQuery, planToQuery, type BillingPlan } from '@/lib/billingInfo';
+import { PLAN_PAYMENT_META, AIBAIN_ADDON_META, AI_BUNDLE_CONVERSION, resolveBillingPlan, planFromQuery, planToQuery, type BillingPlan } from '@/lib/billingInfo';
 import SubscriptionFlow, { BankTransferDetails } from '@/components/subscription/SubscriptionFlow';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
-import { hasActiveBaseSubscription, subscriptionExpiryTime } from '@/lib/auth';
+import { hasActiveBaseSubscription } from '@/lib/auth';
 import { useSeo } from '@/lib/seo';
 
 /**
@@ -41,13 +41,12 @@ export default function PaymentRequestPage() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [checkResult, setCheckResult] = useState<{
-        identity: string; state: 'ready' | 'error'; conversionExpiry?: string | null;
+        identity: string; state: 'ready' | 'error';
     } | null>(null);
     const [checkAttempt, setCheckAttempt] = useState(0);
     const userId = user?.id;
     const checkIdentity = JSON.stringify([token, userId, isConversion, checkAttempt]);
     const checked = !loading && checkResult?.identity === checkIdentity ? checkResult : null;
-    const conversionExpiry = checked?.conversionExpiry;
     useEffect(() => {
         if (!token || loading || userId == null) return;
         let current = true;
@@ -58,20 +57,10 @@ export default function PaymentRequestPage() {
                 navigate('/pending-approval', { replace: true });
                 return;
             }
-            const conversionExpiry = isConversion && data.user?.id != null && String(data.user.id) === String(userId)
-                ? aiBundleConversionExpiry(data.user) : null;
-            setCheckResult({ identity: checkIdentity, state: 'ready', conversionExpiry });
+            setCheckResult({ identity: checkIdentity, state: 'ready' });
         }).catch(() => { if (current) setCheckResult({ identity: checkIdentity, state: 'error' }); });
         return () => { current = false; };
     }, [token, userId, loading, navigate, checkIdentity, isConversion]);
-
-    useEffect(() => {
-        if (!isConversion || !conversionExpiry) return;
-        const delay = subscriptionExpiryTime(conversionExpiry) - Date.now();
-        if (delay <= 0) return;
-        const timer = window.setTimeout(() => setCheckAttempt(v => v + 1), Math.min(delay, 2_147_483_647));
-        return () => window.clearTimeout(timer);
-    }, [isConversion, conversionExpiry]);
 
     // 이 페이지에 머무는 동안 관리자가 tier 를 직접 부여하면 (CLAUDE.md §12-A) stale user 로
     // 400 루프에 빠진다 → 마운트 + 창 포커스 시 /api/auth/me 재조회, 아래 가드가 대시보드로 보낸다.
@@ -135,14 +124,17 @@ export default function PaymentRequestPage() {
             </div>
         </main>;
     }
-    const conversionAvailable = !!conversionExpiry && subscriptionExpiryTime(conversionExpiry) > Date.now();
-    if (isConversion && !conversionAvailable) {
-        return <SubscriptionFlow step={2} title="제갈공명 전환" intro="전환 신청 자격을 확인할 수 없습니다.">
-            {error && <p role="alert" className="subscription-error">{error}</p>}
+    if (isConversion) {
+        return <SubscriptionFlow step={2} title="구독 상품 변경 안내" intro="제갈공명 전환 상품의 신규 신청이 종료되었습니다.">
+            <aside className="subscription-note">
+                <p>기존 PRO·Ultra PRO 회원의 AI 브레인 추가 구독은 50,000원 / 30일이며, 제갈공명이 포함됩니다.</p>
+                <p>PRO + AI 브레인·제갈공명 신규 결합 플랜은 100,000원입니다.</p>
+                <p>AI 이용 중에도 PRO 전체 서비스를 계속 이용하며, PRO 잔여기간은 보존되어 AI 종료 후 다시 시작됩니다.</p>
+            </aside>
             <div className="subscription-actions">
-                <Link className="subscription-button-secondary" to="/plan-select?change=1">다른 플랜 보기</Link>
+                <Link className="subscription-button-primary" to="/plan-select?change=1">현재 플랜 선택</Link>
             </div>
-            <KakaoSupportLink label="전환 자격 문의" />
+            <KakaoSupportLink label="구독 문의" />
         </SubscriptionFlow>;
     }
 
@@ -156,18 +148,14 @@ export default function PaymentRequestPage() {
         && meta?.tier === user.tier
         && meta?.tier === 'pro'
         && !meta.includesAibain;
-    const displayLabel = isConversion ? AI_BUNDLE_CONVERSION.label : isAiBrainAddonOnly ? AIBAIN_ADDON_META.label
+    const displayLabel = isAiBrainAddonOnly ? AIBAIN_ADDON_META.label
         : isEarlyRenewal ? 'Pro 갱신 (만료 전)' : meta?.label;
-    const displayAmount = isConversion ? AI_BUNDLE_CONVERSION.amount : isAiBrainAddonOnly ? AIBAIN_ADDON_META.amount : meta?.amount;
-    const displayPeriod = isConversion ? '제갈공명 이용 종료 ' + formatConversionExpiry(conversionExpiry) : isAiBrainAddonOnly ? 'AI Brain·제갈공명 30일 · 기존 이용 중이면 만료일부터 연장'
+    const displayAmount = isAiBrainAddonOnly ? AIBAIN_ADDON_META.amount : meta?.amount;
+    const displayPeriod = isAiBrainAddonOnly ? 'AI Brain·제갈공명 30일 · 기존 이용 중이면 만료일부터 연장'
         : isEarlyRenewal || (isKongmingPlan && user.is_kongming_active) ? '승인 시 기존 만료일부터 +30일' : meta?.period;
 
     const handleSubmit = async () => {
         if (submitting) return;
-        if (isConversion && !(subscriptionExpiryTime(conversionExpiry) > Date.now())) {
-            setCheckAttempt(v => v + 1);
-            return;
-        }
         setError('');
         if (!depositorName.trim()) {
             setError('입금자명을 입력해 주세요.');
@@ -175,9 +163,7 @@ export default function PaymentRequestPage() {
         }
         setSubmitting(true);
         try {
-            if (isConversion) {
-                await subscriptionAPI.requestConversion(token, depositorName.trim());
-            } else if (isKongmingPlan) {
+            if (isKongmingPlan) {
                 await subscriptionAPI.requestKongming(token, depositorName.trim());
             } else if (meta) {
                 await subscriptionAPI.requestUpgrade(meta.tier, token, depositorName.trim(), meta.includesAibain, isAiBrainAddonOnly ? AIBAIN_ADDON_META.amountNumber : meta.amountNumber);
@@ -199,7 +185,6 @@ export default function PaymentRequestPage() {
             }
             setError(msg || '승인 신청 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
             setSubmitting(false);
-            if (isConversion) setCheckAttempt(v => v + 1);
         }
     };
 
@@ -208,7 +193,7 @@ export default function PaymentRequestPage() {
             <p>선택한 플랜: {displayLabel}</p>
             <div className="subscription-price">{displayAmount}</div>
             <p>{displayPeriod}</p>
-            {isConversion ? <p>기존 AI Brain 만료일까지 제갈공명을 이용합니다.</p> : isAiBrainAddonOnly ? <p>기존 {user.tier === 'premium' ? 'Ultra Pro' : 'Pro'} 구독은 유지합니다.</p>
+            {isAiBrainAddonOnly ? <p>기존 {user.tier === 'premium' ? 'Ultra Pro' : 'Pro'} 구독은 유지합니다.</p>
                 : meta?.includesAibain && meta.baseAmount && <p>{meta.baseAmount} + {meta.aibainAmount}</p>}
         </section>
         <form onSubmit={event => { event.preventDefault(); void handleSubmit(); }}>
@@ -223,7 +208,7 @@ export default function PaymentRequestPage() {
             {meta?.includesAibain && <aside className="subscription-note">
                 <strong>승인 후 어떻게 이용하나요?</strong>
                 <p>AI 브레인과 제갈공명을 30일 함께 이용합니다.
-                    {meta.tier === 'premium' ? ' Ultra PRO 평생 이용권은 유지됩니다.' : ' 이 기간에는 PRO 잔여기간이 줄어들지 않고, AI 이용이 끝나면 다시 시작됩니다.'}</p>
+                    {meta.tier === 'premium' ? ' Ultra PRO 평생 이용권은 유지됩니다.' : ' AI 이용 중에도 PRO 전체 서비스를 계속 이용합니다. PRO 잔여기간이 줄어들지 않고, AI 이용이 끝나면 다시 시작됩니다.'}</p>
                 {(isAiBrainAddonOnly && user.is_aibain_active) && <p>이용 중인 AI 기간이 남아 있으면 기존 만료일부터 30일을 더합니다.</p>}
             </aside>}
             {error && <p role="alert" className="subscription-error">{error}</p>}
@@ -233,7 +218,7 @@ export default function PaymentRequestPage() {
                 </button>
                 <p className="subscription-help !m-0 text-center">이 버튼으로 자동 결제되지는 않습니다. 관리자 입금 확인 후 이용할 수 있습니다.</p>
                 <button type="button" className="subscription-button-secondary" disabled={submitting}
-                    onClick={() => navigate(isConversion ? '/plan-select?change=1' : `/plan-select?${hasActiveBaseSubscription(user) ? 'change=1&' : ''}${selectedQuery}`)}>
+                    onClick={() => navigate(`/plan-select?${hasActiveBaseSubscription(user) ? 'change=1&' : ''}${selectedQuery}`)}>
                     다른 플랜 선택
                 </button>
             </div>

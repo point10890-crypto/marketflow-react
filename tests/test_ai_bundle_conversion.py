@@ -52,6 +52,37 @@ def submit(client, headers, **changes):
     return client.post(APPLY, headers=headers, json={**payload, **changes})
 
 
+def legacy_pending(app, member_id):
+    """A request recorded before retirement, not a new checkout bypass."""
+    with app.app_context():
+        member = db.session.get(User, member_id)
+        row = SubscriptionRequest(
+            user_id=member.id, request_type=PLAN, from_tier=member.tier, to_tier=member.tier,
+            status='pending', amount='10,000원', depositor_name='Member',
+            admin_note='기존 AI Brain 회원 제갈공명 전환 신청',
+            conversion_expires_at=member.aibain_expires_at,
+            created_at=datetime.now(timezone.utc)-timedelta(days=1),
+        )
+        db.session.add(row); db.session.commit()
+        return row.to_dict()
+
+
+def test_new_conversion_is_retired_even_with_stale_eligible_quote(checkout):
+    client, app, member_id, headers, _ = checkout
+    before = client.get(STATUS, headers=headers).json['user']
+    assert before['ai_bundle_conversion']['eligible'] is False
+    assert before['ai_bundle_conversion']['reason'] == 'plan_retired'
+    response = submit(client, headers)
+    assert response.status_code == 409
+    assert response.json['code'] == 'subscription_plan_changed'
+    assert response.json['redirect'] == '/plan-select?change=1'
+    with app.app_context():
+        assert SubscriptionRequest.query.count() == 0
+        member = db.session.get(User, member_id)
+        assert member.kongming_expires_at is None
+        assert member.aibain_expires_at.isoformat() == before['aibain_expires_at']
+
+
 def test_conversion_changes_only_kongming_and_uses_captured_expiry(checkout, monkeypatch):
     client, app, member_id, headers, admin_headers = checkout
     monkeypatch.setattr(kongming_verification, 'read_dashboard', lambda **kw: {'items': []})
@@ -59,17 +90,15 @@ def test_conversion_changes_only_kongming_and_uses_captured_expiry(checkout, mon
     before = client.get(STATUS, headers=headers).json['user']
     offer = before['ai_bundle_conversion']
     expected_expiry = datetime.fromisoformat(before['aibain_expires_at']).replace(tzinfo=timezone.utc)
-    assert offer == {'eligible': True, 'amount': 10000,
-                     'expires_at': expected_expiry.isoformat(), 'reason': 'eligible'}
+    assert offer == {'eligible': False, 'amount': 10000,
+                     'expires_at': None, 'reason': 'plan_retired'}
     assert client.get(CATALYST, headers=headers).status_code == 403
 
-    response = submit(client, headers, amount='1원')
-    assert response.status_code == 201
-    saved = response.json['request']
+    saved = legacy_pending(app, member_id)
     assert saved['request_type'] == PLAN
     assert saved['amount'] == '10,000원'
     assert saved['depositor_name'] == 'Member'
-    assert saved['conversion_expires_at'] == expected_expiry.isoformat()
+    assert datetime.fromisoformat(saved['conversion_expires_at']).replace(tzinfo=timezone.utc) == expected_expiry
     assert submit(client, headers).status_code == 409
     pending = client.get(STATUS, headers=headers).json
     assert pending['kongming_subscription']['state'] == 'activation_pending'
@@ -103,8 +132,8 @@ def test_conversion_changes_only_kongming_and_uses_captured_expiry(checkout, mon
     ({'expected_amount': None}, 409),
     ({'expected_amount': 1}, 409),
     ({'expected_amount': '10000'}, 409),
-    ({'depositor_name': '  '}, 400),
-    ({'depositor_name': 1}, 400),
+    ({'depositor_name': '  '}, 409),
+    ({'depositor_name': 1}, 409),
 ])
 def test_conversion_rejects_invalid_payment_details(checkout, changes, status):
     client, app, _, headers, _ = checkout
@@ -150,15 +179,17 @@ def test_archived_approved_entitlement_remains_conversion_history(checkout, requ
     assert submit(client, headers).status_code == 409
 
 
-def test_rejected_conversion_can_be_resubmitted(checkout):
-    client, _, _, headers, admin_headers = checkout
-    first = submit(client, headers).json['request']['id']
+def test_legacy_rejected_conversion_cannot_be_resubmitted(checkout):
+    client, app, member_id, headers, admin_headers = checkout
+    first = legacy_pending(app, member_id)['id']
     rejected = client.put(f'/api/admin/subscriptions/{first}/reject', headers=admin_headers, json={})
     assert rejected.status_code == 200
-    assert client.get(STATUS, headers=headers).json['user']['ai_bundle_conversion']['eligible'] is True
+    assert client.get(STATUS, headers=headers).json['user']['ai_bundle_conversion']['eligible'] is False
     second = submit(client, headers)
-    assert second.status_code == 201
-    assert second.json['request']['id'] != first
+    assert second.status_code == 409
+    with app.app_context():
+        assert SubscriptionRequest.query.count() == 1
+        assert db.session.get(SubscriptionRequest, first).status == 'rejected'
 
 
 @pytest.mark.parametrize('field,value', [
@@ -170,7 +201,7 @@ def test_rejected_conversion_can_be_resubmitted(checkout):
 ])
 def test_pending_conversion_cannot_approve_changed_entitlement(checkout, field, value):
     client, app, member_id, headers, admin_headers = checkout
-    request_id = submit(client, headers).json['request']['id']
+    request_id = legacy_pending(app, member_id)['id']
     with app.app_context():
         setattr(db.session.get(User, member_id), field, value)
         db.session.commit()
@@ -236,8 +267,10 @@ def test_concurrent_conversion_submissions_and_approvals_grant_once(checkout):
             return [future.result(timeout=10) for future in futures]
 
     submitted = concurrent_calls(lambda client: submit(client, headers))
-    assert sorted(response.status_code for response in submitted) == [201, 409]
-    saved = next(response.json['request'] for response in submitted if response.status_code == 201)
+    assert [response.status_code for response in submitted] == [409, 409]
+    with app.app_context():
+        assert SubscriptionRequest.query.count() == 0
+    saved = legacy_pending(app, member_id)
     approved = concurrent_calls(lambda client: client.put(
         f"/api/admin/subscriptions/{saved['id']}/approve", headers=admin_headers,
     ))
@@ -252,7 +285,7 @@ def test_concurrent_conversion_submissions_and_approvals_grant_once(checkout):
 
 def test_elapsed_captured_expiry_prevents_approval(checkout, monkeypatch):
     client, app, member_id, headers, admin_headers = checkout
-    saved = submit(client, headers).json['request']
+    saved = legacy_pending(app, member_id)
     expiry = datetime.fromisoformat(saved['conversion_expires_at']).replace(tzinfo=None)
 
     class ClockAtExpiry(datetime):

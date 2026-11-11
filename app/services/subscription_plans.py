@@ -18,7 +18,7 @@ def is_ai_bundle_request(subscription_request):
 def ai_bundle_conversion_reason(
     user: User, *, has_pending: bool, exclude_request_id: int | None = None,
 ) -> str:
-    """Evaluate eligibility using current entitlements and the full approval history."""
+    """Validate legacy pending approvals, not eligibility for a new checkout."""
     if user.is_admin or not user.is_approved:
         return 'account_ineligible'
     if not user.is_aibain_active:
@@ -44,13 +44,16 @@ def ai_bundle_conversion_reason(
 
 
 def ai_bundle_conversion_offer(user: User, *, has_pending: bool) -> dict:
-    reason = ai_bundle_conversion_reason(user, has_pending=has_pending)
-    expiry = utc(user.aibain_expires_at) if reason == 'eligible' else None
+    """Retired for new requests; retain the response shape for older clients.
+
+    Historical pending conversions still use their captured terms at approval.
+    Do not retire conversion_snapshot_is_current with this public offer.
+    """
     return {
-        'eligible': reason == 'eligible',
+        'eligible': False,
         'amount': AI_BUNDLE_CONVERSION_AMOUNT,
-        'expires_at': expiry.isoformat() if expiry else None,
-        'reason': reason,
+        'expires_at': None,
+        'reason': 'plan_retired',
     }
 
 

@@ -33,6 +33,14 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('profile membership upgrade entry', () => {
+    it('keeps the current plan entry when a stale profile advertises the retired conversion', () => {
+        mocks.user.ai_bundle_conversion = { eligible: true, amount: 10000,
+            expires_at: new Date(Date.now() + 86_400_000).toISOString() };
+        show();
+        expect(screen.queryAllByRole('link', { name: /1만 원 전환/ })).toHaveLength(0);
+        expect(screen.getByRole('link', { name: '등급 업그레이드' })).toHaveAttribute('href', '/plan-select?change=1');
+    });
+
     it.each([false, true])('opens the existing upgrade flow and closes the mobile menu (%s)', async mobile => {
         const onClose = vi.fn(); show({ mobile, onClose });
         const grade = screen.getByRole('link', { name: '현재 등급 Pro, 등급 업그레이드' });

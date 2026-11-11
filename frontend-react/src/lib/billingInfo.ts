@@ -22,15 +22,12 @@ export const AI_BUNDLE_CONVERSION = {
     amountNumber: 10_000,
 } as const;
 
+/** Retired offer: old cached/server eligibility must never enable a new purchase. */
 export function aiBundleConversionExpiry(
-    user: Pick<AuthUserData, 'ai_bundle_conversion' | 'role' | 'status'> | null | undefined,
-    now = Date.now(),
+    _user: Pick<AuthUserData, 'ai_bundle_conversion' | 'role' | 'status'> | null | undefined,
+    _now = Date.now(),
 ): string | null {
-    const quote = user?.ai_bundle_conversion;
-    if (!user || user.role === 'admin' || !['approved', 'expired'].includes(user.status)
-        || quote?.eligible !== true || quote.amount !== AI_BUNDLE_CONVERSION.amountNumber
-        || typeof quote.expires_at !== 'string' || !(subscriptionExpiryTime(quote.expires_at) > now)) return null;
-    return quote.expires_at;
+    return null;
 }
 
 export function formatConversionExpiry(value?: string | null): string {
@@ -91,7 +88,7 @@ export const PLAN_PAYMENT_META: Record<BillingPlan, PlanMeta> = {
         period: 'AI·제갈공명 30일 + 보존되는 Pro 30일',
         baseAmount: 'Pro 50,000원',
         aibainAmount: 'AI Brain·제갈공명 50,000원',
-        description: 'Pro 5만 원 + AI·제갈공명 5만 원 · AI 이용 중 Pro 기간 일시정지',
+        description: 'PRO 5만 원 + AI Brain·제갈공명 5만 원 · AI 이용 중 PRO 서비스 유지, 잔여기간 보존',
         features: [
             'Pro 전체 기능 포함',
             'AI Brain 알파 스캐너 관찰 후보',
@@ -162,8 +159,8 @@ export const AIBAIN_ADDON_META = {
     label: 'AI Brain + 제갈공명',
     amount: '50,000원',
     amountNumber: 50_000,
-    period: '30일 갱신 · 베이스 플랜 유지',
-    description: 'Pro·Ultra Pro 회원은 5만 원에 AI Brain과 제갈공명을 30일 추가합니다. Pro 잔여기간은 일시정지됩니다.',
+    period: 'AI Brain·제갈공명 30일 · 기본 플랜 유지',
+    description: 'PRO·Ultra PRO 회원은 50,000원에 AI Brain과 제갈공명을 30일 추가합니다. AI 이용 중에도 PRO 전체 서비스를 계속 이용하며, PRO 잔여기간은 보존되어 AI 종료 후 다시 시작됩니다.',
     features: [
         'AI Brain 알파 스캐너 관찰 후보',
         'GraphRAG 분석 + TOP 3',
