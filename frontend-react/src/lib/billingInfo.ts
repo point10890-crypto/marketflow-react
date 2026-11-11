@@ -200,8 +200,8 @@ export function normalizeBillingPlan(value: unknown): BillingPlanTier | null {
 }
 
 /** Retired standalone URLs are resolved before any deposit instructions are shown. */
-export function aiBundleOffer(user: Parameters<typeof hasActiveBaseSubscription>[0]) {
-    const activeBase = hasActiveBaseSubscription(user);
+export function aiBundleOffer(user: Parameters<typeof hasActiveBaseSubscription>[0], now = Date.now()) {
+    const activeBase = hasActiveBaseSubscription(user, now);
     const plan: BillingPlan = activeBase && user?.tier === 'premium' ? 'premium_aibain' : 'pro_aibain';
     return {
         plan,

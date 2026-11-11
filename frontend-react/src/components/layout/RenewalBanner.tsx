@@ -1,4 +1,4 @@
-import { reminderDue } from '@/lib/subscriptionJourney';
+import { reminderDue, subscriptionExpiryReminder } from '@/lib/subscriptionJourney';
 import { hasActiveKongmingSubscription, subscriptionExpiryTime } from '@/lib/auth';
 import { aiBundleOffer } from '@/lib/billingInfo';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
@@ -18,10 +18,10 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const DISMISS_KEY = 'renewal-banner:v2';
 
-function daysLeft(iso: string | null | undefined): number | null {
+function daysLeft(iso: string | null | undefined, now: number): number | null {
     if (!iso) return null;
-    const diff = new Date(iso).getTime() - Date.now();
-    if (Number.isNaN(diff)) return null;
+    const diff = subscriptionExpiryTime(iso) - now;
+    if (!Number.isFinite(diff) || diff <= 0) return null;
     return Math.ceil(diff / 86_400_000);
 }
 
@@ -37,13 +37,15 @@ export default function RenewalBanner() {
     }, []);
 
     const banner = useMemo(() => {
-        if (!user || user.role === 'admin' || user.has_pending_subscription) return null;
+        if (!user || user.role === 'admin' || !['approved', 'expired'].includes(user.status) || user.has_pending_subscription || user.pending_subscription_request?.status === 'pending') return null;
+        // SubscriptionEntry owns the D-1 alert and confirms pending requests before showing it.
+        if (subscriptionExpiryReminder(user, now)) return null;
 
         // 1. Pro 베이스 만료 임박 (premium 은 무기한).
         //    AI Brain 활성 중에는 Pro 카운터가 일시정지(is_pro_paused)되고 pro_expires_at 은
         //    동결값이라 실제 만료 임박이 아니다 → 가짜 경고 금지.
         if (user.tier === 'pro' && !user.is_pro_expired && !user.is_pro_paused) {
-            const d = daysLeft(user.pro_expires_at);
+            const d = daysLeft(user.pro_effective_expires_at || user.pro_expires_at, now);
             if (d !== null && d >= 0 && d <= 7) {
                 return {
                     key: `pro-${d}`,
@@ -80,7 +82,7 @@ export default function RenewalBanner() {
 
         // 2. AI Brain 애드온 만료 임박
         if (user.is_aibain_active) {
-            const d = daysLeft(user.aibain_expires_at);
+            const d = daysLeft(user.aibain_expires_at, now);
             if (d !== null && d >= 0 && d <= 5) {
                 return {
                     key: `aibain-${d}`,
