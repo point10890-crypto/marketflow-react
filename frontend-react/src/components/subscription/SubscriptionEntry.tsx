@@ -26,6 +26,7 @@ export default function SubscriptionEntry() {
     const expired = journey?.kind === 'base-expired';
     const brain = journey?.kind === 'aibain-expired';
     const kongming = journey?.kind === 'kongming-expired';
+    const expiring = journey?.kind === 'expiring';
     const key = `subscription-entry:v2:${journey?.fingerprint}`;
     const [lookup, setLookup] = useState<{ key: string; state: 'ready' | 'pending' | 'active' | 'blocked' | 'error' } | null>(null);
     const refreshedStatus = useRef('');
@@ -65,7 +66,11 @@ export default function SubscriptionEntry() {
             let next: 'ready' | 'pending' | 'active' | 'blocked' = hasPendingSubscription(data) ? 'pending' : 'ready';
             if (latest?.id != null) {
                 if (['suspended', 'rejected'].includes(latest.status)) next = 'blocked';
-                else if (next !== 'pending' && !subscriptionJourney({ ...user, ...latest }, Date.now())) next = 'active';
+                else if (next !== 'pending') {
+                    const confirmedJourney = subscriptionJourney({ ...user, ...latest }, Date.now());
+                    // Do not put an old expiry/price on a freshly renewed entitlement.
+                    if (!confirmedJourney || expiring && confirmedJourney.fingerprint !== journey?.fingerprint) next = 'active';
+                }
             }
             setLookup({ key: lookupKey, state: next });
             if (next === 'active' || next === 'blocked') {
@@ -117,7 +122,7 @@ export default function SubscriptionEntry() {
     const meta = PLAN_PAYMENT_META[journey.plan];
     const payment = journey.payment;
     const destination = journey.destination;
-    const banner = <aside className="subscription-entry" aria-label="구독 안내">
+    const banner = <aside className="subscription-entry" aria-label="구독 안내" role={expiring && state === 'ready' ? 'alert' : undefined}>
             <div><strong>{state === 'pending' ? '구독 신청을 확인하고 있습니다' : journey.title}</strong>
                 <p>{state === 'pending' ? '추가 입금 없이 신청 상태를 확인하세요.' : state === 'error' ? '신청 내역을 불러오지 못했습니다. 다시 확인해 주세요.' : journey.message}</p></div>
             {state === 'error' ? <button onClick={() => setRetry(v => v + 1)}>다시 확인</button>
@@ -128,16 +133,17 @@ export default function SubscriptionEntry() {
         {bannerHost ? createPortal(banner, bannerHost) : banner}
         {open && <dialog ref={dialog} className="subscription-entry-dialog" aria-labelledby="subscription-entry-title" onCancel={close}>
             <div className="subscription-entry-body">
-                <p className="subscription-entry-eyebrow">{kongming ? '재구독 안내' : brain ? 'AI Brain 재구독' : expired ? '다시 시작하기' : '구독 신청 · 다음 단계'}</p>
-                <h2 id="subscription-entry-title">{kongming ? journey.title : brain ? 'AI Brain을 다시 이용하세요' : expired ? '기존 계정으로 바로 재구독하세요' : '구독을 시작해 보세요'}</h2>
-                <p>{kongming ? journey.message : brain ? '기본 등급을 유지하고 AI Brain·제갈공명을 30일 재구독합니다. PRO 잔여기간은 일시정지됩니다.' : expired ? '계정과 이용 기록은 그대로 유지됩니다. 이용할 플랜을 선택해 다시 신청해 주세요.' : '어디서 신청할지 찾지 않아도 됩니다. 아래에서 플랜을 고르면 입금 안내로 바로 연결됩니다.'}</p>
+                <p className="subscription-entry-eyebrow">{expiring ? 'D-1 · 구독 만료 알림' : kongming ? '재구독 안내' : brain ? 'AI Brain 재구독' : expired ? '다시 시작하기' : '구독 신청 · 다음 단계'}</p>
+                <h2 id="subscription-entry-title">{expiring || kongming ? journey.title : brain ? 'AI Brain을 다시 이용하세요' : expired ? '기존 계정으로 바로 재구독하세요' : '구독을 시작해 보세요'}</h2>
+                <p>{expiring || kongming ? journey.message : brain ? '기본 등급을 유지하고 AI Brain·제갈공명을 30일 재구독합니다. PRO 잔여기간은 일시정지됩니다.' : expired ? '계정과 이용 기록은 그대로 유지됩니다. 이용할 플랜을 선택해 다시 신청해 주세요.' : '어디서 신청할지 찾지 않아도 됩니다. 아래에서 플랜을 고르면 입금 안내로 바로 연결됩니다.'}</p>
+                {expiring && journey.expiresAt && <p className="subscription-entry-expiry">이용 종료<br /><time dateTime={journey.expiresAt}>{new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(journey.expiresAt))}</time> (한국시간)</p>}
                 <SubscriptionSteps step={1} />
                 <Link className="subscription-entry-primary" to={brain || kongming ? payment : destination} onClick={close}>
-                    <span>{brain ? 'AI Brain·제갈공명 재구독' : kongming ? `${meta.label} 재구독` : expired ? '재구독 플랜 선택' : '플랜 선택하기'}</span>
-                    <span>{brain || kongming ? `${aiBundleOffer(user).amount} · AI 브레인 + 제갈공명 30일` : `PRO ${PLAN_PAYMENT_META.pro.amount} / AI·제갈공명 포함 ${PLAN_PAYMENT_META.pro_aibain.amount}`}</span>
+                    <span>{expiring ? journey.cta : brain ? 'AI Brain·제갈공명 재구독' : kongming ? `${meta.label} 재구독` : expired ? '재구독 플랜 선택' : '플랜 선택하기'}</span>
+                    <span>{expiring ? `${journey.amount} · 30일 연장` : brain || kongming ? `${aiBundleOffer(user).amount} · AI 브레인 + 제갈공명 30일` : `PRO ${PLAN_PAYMENT_META.pro.amount} / AI·제갈공명 포함 ${PLAN_PAYMENT_META.pro_aibain.amount}`}</span>
                 </Link>
                 <p className="subscription-entry-note">버튼을 눌러도 결제되지 않습니다. 다음 화면에서 금액·계좌·입금자명을 확인한 뒤 신청합니다.</p>
-                {(brain || kongming) && <Link className="subscription-entry-secondary" to="/plan-select?change=1" onClick={close}>다른 플랜 보기</Link>}
+                {(expiring || brain || kongming) && <Link className="subscription-entry-secondary" to="/plan-select?change=1" onClick={close}>다른 플랜 보기</Link>}
                 <button className="subscription-entry-dismiss" onClick={close}>나중에 보기</button><p className="subscription-entry-note">신청 전까지 안내 카드는 계속 표시됩니다. 팝업은 30분 뒤 다시 알려드립니다.</p>
             </div>
         </dialog>}

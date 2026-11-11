@@ -44,13 +44,14 @@ describe('member renewal state transitions', () => {
         expect(subscriptionJourney(user)?.kind).toBe('aibain-expired');
         expect(subscriptionJourney(user)?.payment).toBe('/payment-request?plan=pro&aibain=1');
     });
-    it('rechecks the clock while open so timestamp expiry reveals the existing renewal popup', async () => {
+    it('replaces the D-1 reminder with the expired renewal popup at the expiry timestamp', async () => {
         vi.useFakeTimers(); vi.setSystemTime(now);
         m.auth.user = { ...base, pro_expires_at: '2026-11-05T00:00:30Z' };
         showEntry(); await act(async () => {});
-        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toHaveTextContent('D-1');
         await act(async () => { await vi.advanceTimersByTimeAsync(60_000); });
         expect(screen.getByRole('dialog')).toHaveTextContent('재구독');
+        expect(screen.getByRole('dialog')).not.toHaveTextContent('D-1');
     });
     it('lets a confirmed server nonpending result override an old cached pending flag', async () => {
         m.auth.user = { ...expired, has_pending_subscription: true };
