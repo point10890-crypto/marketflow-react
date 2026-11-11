@@ -4,6 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import KongmingCatalystValidationPage from '@/pages/dashboard/aibain/KongmingCatalystValidationPage';
 import { surgeTraceFixture } from './fixtures/surgeTraceFixture';
 
+// This independent saved-output panel has its own transport and polling suite.
+vi.mock('@/components/aibain/CatalystOutcomesPanel', () => ({ default: () => null }));
+
 vi.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({ token: 'fixture-token', user: { id: 7, role: 'admin' } }),
 }));
