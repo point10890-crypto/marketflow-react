@@ -746,6 +746,23 @@ def search_stocks():
     return jsonify(results[:20])
 
 
+def _server_display_name(ticker: str, result: dict | None = None) -> str:
+    """표시용 종목명을 서버 데이터로만 정한다.
+
+    클라이언트가 보낸 name 은 LLM 프롬프트와 공유 캐시에 들어가므로 신뢰하지 않는다.
+    우선순위: KR 티커 맵 → US 인기 종목 표 → 조회 결과의 key_stats.name → 티커.
+    """
+    for stock in _load_kr_stocks():
+        if stock.get('yahoo') == ticker and stock.get('name'):
+            return stock['name']
+    upper = ticker.upper()
+    for symbol, english_name, _korean_name in _US_POPULAR:
+        if symbol == upper:
+            return english_name
+    source_name = str(((result or {}).get('key_stats') or {}).get('name') or '').strip()
+    return source_name[:80] if source_name else ticker
+
+
 _ANALYZE_CACHE_DIR = os.path.join(_DATA_DIR, 'stock_analyzer_cache')
 os.makedirs(_ANALYZE_CACHE_DIR, exist_ok=True)
 
@@ -793,11 +810,12 @@ def _save_analysis_cache(ticker: str, response: dict):
 def analyze_stock():
     """종목 분석 — yfinance + Gemini AI
 
-    Request body: { "ticker": "005930.KS" | "AAPL", "name": "삼성전자" }
+    Request body: { "ticker": "005930.KS" | "AAPL" }  (name 은 무시하고 서버가 정한다)
     """
     data = request.json or {}
     ticker = data.get('ticker', '').strip()
-    name = data.get('name', ticker)
+    # 클라이언트의 name 은 쓰지 않는다 (_server_display_name 참고).
+    name = _server_display_name(ticker)
 
     if not ticker:
         return jsonify({'error': '티커가 없습니다.'}), 400
@@ -830,6 +848,7 @@ def analyze_stock():
         elapsed = round(time.time() - start, 1)
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
+        name = _server_display_name(ticker, result)
         recommendation = result.get('recommendation')
         if not recommendation:
             if result.get('current_price'):
