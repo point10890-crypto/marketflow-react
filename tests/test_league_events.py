@@ -53,11 +53,27 @@ def test_non_positive_entry_is_an_error():
         events.evaluate_e1([_bar(2, 0, 1, 0, 1)], cost_pct=0.0)
 
 
+def test_low_exactly_at_the_stop_is_a_stop():
+    """1000 * 0.93 은 부동소수로 929.9999999999999 다. 가상 매매 엔진처럼 4자리로 반올림해 930 으로 본다."""
+    result = events.evaluate_e1([_bar(2, 1000, 1010, 930, 990), _bar(3, 990, 1090, 985, 1085)], cost_pct=0.0)
+    assert (result['outcome'], result['exit_reason'], result['exit_date']) == (0, 'stop', '2026-01-02')
+    assert result['exit_price'] == 930.0
+
+
+def test_high_exactly_at_the_target_is_a_hit():
+    """225 * 1.08 은 부동소수로 243.00000000000003 이다."""
+    result = events.evaluate_e1([_bar(2, 225, 243, 224, 240), _bar(3, 240, 241, 200, 205)], cost_pct=0.0)
+    assert (result['outcome'], result['exit_reason'], result['exit_date']) == (1, 'target', '2026-01-02')
+    assert result['exit_price'] == 243.0
+
+
 @pytest.mark.parametrize('bars', [
     [_bar(2, 100, 104, 98, 103), _bar(3, 103, 108.5, 102, 107)],
     [_bar(2, 100, 101, 92.5, 94)],
     [_bar(2, 100, 110, 92, 105)],
     FLAT[:7] + [_bar(9, 100, 104, 99, 104)],
+    [_bar(2, 1000, 1010, 930, 990), _bar(3, 990, 1090, 985, 1085)],
+    [_bar(2, 225, 243, 224, 240), _bar(3, 240, 241, 200, 205)],
 ])
 def test_matches_the_paper_position_engine(tmp_path, monkeypatch, bars):
     """CIO SELL 청산이 없는 사례에서 가상 매매 엔진과 같은 입력에 같은 결과."""

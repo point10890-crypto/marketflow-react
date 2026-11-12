@@ -31,6 +31,29 @@ def test_invalid_bars_are_not_stored(league_conn, over):
     assert league_conn.execute('SELECT COUNT(*) FROM bars').fetchone()[0] == 0
 
 
+@pytest.mark.parametrize('over', [dict(high=float('inf')), dict(close=float('nan')), dict(open=float('nan')),
+                                   dict(low=float('nan'))])
+@pytest.mark.parametrize('basis, replace', [(bars.BASIS_REGULAR, False), (bars.BASIS_UNIVERSE, False),
+                                            (bars.BASIS_UNIVERSE, True)])
+def test_non_finite_bars_are_not_stored(league_conn, over, basis, replace):
+    assert _put(league_conn, basis=basis, replace=replace, **over) is False
+    assert league_conn.execute('SELECT COUNT(*) FROM bars').fetchone()[0] == 0
+
+
+def test_non_finite_bar_does_not_replace_a_stored_universe_bar(league_conn):
+    _put(league_conn, basis=bars.BASIS_UNIVERSE)
+    assert _put(league_conn, basis=bars.BASIS_UNIVERSE, close=float('nan'), replace=True) is False
+    assert _put(league_conn, basis=bars.BASIS_UNIVERSE, high=float('inf'), replace=True) is False
+    assert bars.get_bars(league_conn, '005930', bars.BASIS_UNIVERSE, '2026-11-01')[0]['close'] == 105.0
+
+
+@pytest.mark.parametrize('stock_code', ['', '5930', '0059300', 'ABCDEF', 5930, None, '005930\n'])
+@pytest.mark.parametrize('replace', [False, True])
+def test_bar_without_a_six_digit_stock_code_is_not_stored(league_conn, stock_code, replace):
+    assert _put(league_conn, stock_code=stock_code, basis=bars.BASIS_UNIVERSE, replace=replace) is False
+    assert league_conn.execute('SELECT COUNT(*) FROM bars').fetchone()[0] == 0
+
+
 def test_bars_are_returned_in_date_order_within_the_range(league_conn):
     for day in ('2026-11-13', '2026-11-11', '2026-11-12'):
         _put(league_conn, session_date=day)

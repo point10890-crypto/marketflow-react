@@ -5,6 +5,8 @@ provider_daily 공급자 일봉. 정규장 보증이 없어 기준선의 입력 
 """
 from __future__ import annotations
 
+import math
+import re
 import sqlite3
 from datetime import date
 from typing import Any
@@ -13,6 +15,7 @@ BASIS_REGULAR = 'krx_regular'
 BASIS_UNIVERSE = 'provider_daily'
 REGULAR_SOURCE_VERSION = 'krx_regular/kis-regular-j-minute-v1'
 _BASES = frozenset({BASIS_REGULAR, BASIS_UNIVERSE})
+_STOCK_CODE = re.compile(r'[0-9]{6}')
 
 
 def _valid(session_date: str, basis: str, open_: float, high: float, low: float, close: float) -> bool:
@@ -20,7 +23,9 @@ def _valid(session_date: str, basis: str, open_: float, high: float, low: float,
         if basis not in _BASES or date.fromisoformat(session_date).isoformat() != session_date:
             return False
         open_, high, low, close = float(open_), float(high), float(low), float(close)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
+        return False
+    if not all(math.isfinite(value) for value in (open_, high, low, close)):
         return False
     return min(open_, high, low, close) > 0 and low <= min(open_, close) and high >= max(open_, close)
 
@@ -31,6 +36,8 @@ def put_bar(conn: sqlite3.Connection, *, stock_code: str, session_date: str, bas
     """저장했으면 True. 값이 봉으로 성립하지 않거나 이미 있으면 False."""
     if replace and basis == BASIS_REGULAR:
         raise ValueError('regular-session bars are never replaced')
+    if not isinstance(stock_code, str) or _STOCK_CODE.fullmatch(stock_code) is None:
+        return False
     if not _valid(session_date, basis, open, high, low, close):
         return False
     verb = 'INSERT OR REPLACE' if replace else 'INSERT OR IGNORE'

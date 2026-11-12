@@ -19,8 +19,9 @@ def evaluate_e1(bars: list[dict[str, Any]], *, cost_pct: float) -> dict[str, Any
     entry = float(bars[0]['open'])
     if entry <= 0:
         raise ValueError('entry open must be positive')
-    target = entry * (1 + E1_TARGET_PCT / 100.0)
-    stop = entry * (1 - E1_STOP_PCT / 100.0)
+    # 가상 매매 엔진(paper_positions)과 같은 자리수로 반올림한다. 안 하면 정확히 닿은 가격에서 판정이 갈린다.
+    target = round(entry * (1 + E1_TARGET_PCT / 100.0), 4)
+    stop = round(entry * (1 - E1_STOP_PCT / 100.0), 4)
 
     def done(outcome: int, reason: str, exit_price: float, bar: dict[str, Any]) -> dict[str, Any]:
         gross = (exit_price / entry - 1) * 100.0
