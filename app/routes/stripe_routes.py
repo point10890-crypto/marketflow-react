@@ -47,6 +47,10 @@ def create_checkout():
 
 @stripe_bp.route('/webhook', methods=['POST'])
 def webhook():
+    if not STRIPE_WEBHOOK_SECRET:
+        # 빈 시크릿으로도 서명 검증이 통과하므로, 미설정 호스트에서는 웹훅을 받지 않는다.
+        current_app.logger.warning("[Stripe] Webhook rejected: STRIPE_WEBHOOK_SECRET is not set")
+        return jsonify({'error': 'Stripe webhook is not configured'}), 503
     payload = request.get_data()
     sig = request.headers.get('Stripe-Signature', '')
 
