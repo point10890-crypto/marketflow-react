@@ -6,6 +6,8 @@ from typing import Any, Callable
 
 from app.services.forecast_league import baselines, candidates, clock, price_sources, resolver, scorecards
 
+MIN_TARGETS_FOR_OUTAGE = 5
+
 
 def _sync_universe(conn: sqlite3.Connection, args: dict[str, Any]) -> dict[str, Any]:
     return price_sources.sync_universe_bars(conn, today=args['today'])
@@ -20,7 +22,12 @@ def _submit_baselines(conn: sqlite3.Connection, args: dict[str, Any]) -> dict[st
 def _collect_regular(conn: sqlite3.Connection, args: dict[str, Any]) -> dict[str, Any]:
     from app.services.mirofish.alpha_lab.regular_source import KISRegularProvider
     targets = price_sources.needed_regular_targets(conn, now=clock.now_utc())
-    return price_sources.collect_regular_bars(conn, provider=KISRegularProvider(), targets=targets)
+    summary = price_sources.collect_regular_bars(conn, provider=KISRegularProvider(), targets=targets)
+    if len(targets) >= MIN_TARGETS_FOR_OUTAGE and summary['stored'] == 0:
+        # 한 건도 못 받았으면 공급자 장애로 보고 잡을 실패시켜 재시도·알림이 걸리게 한다.
+        raise RuntimeError(f"regular bars: 0 of {len(targets)} targets stored, "
+                           f"failed={len(summary['failed'])} sample={summary['failed'][:3]}")
+    return summary
 
 
 def _resolve(conn: sqlite3.Connection, args: dict[str, Any]) -> dict[str, Any]:

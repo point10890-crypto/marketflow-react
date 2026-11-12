@@ -48,7 +48,15 @@ def collect_regular_bars(conn: sqlite3.Connection, *, provider: Any,
         try:
             result = provider.fetch_session(code, session)
             bar = result['bar']
-            pages = json.dumps(result.get('pages'), sort_keys=True, ensure_ascii=False).encode('utf-8')
+            # 저장되지 않을 봉의 근거 캡슐을 남기지 않도록 먼저 확인한다.
+            if not bars.is_valid_bar(stock_code=code, session_date=session, basis=bars.BASIS_REGULAR,
+                                     open=bar['open'], high=bar['high'], low=bar['low'], close=bar['close']):
+                failed.append([code, session, 'invalid_bar'])
+                continue
+            # 응답만 해시한다. 수집 시각이 섞이면 같은 자료를 다시 받아도 해시가 달라져 재검증할 수 없다.
+            responses = [page.get('response') if isinstance(page, dict) else page
+                         for page in (result.get('pages') or [])]
+            pages = json.dumps(responses, sort_keys=True, ensure_ascii=False).encode('utf-8')
             evidence = capsules.put_capsule(conn, {
                 'stock_code': code, 'session': session, 'bar': bar, 'captured_at': result['captured_at'],
                 'source_version': (result.get('source') or {}).get('version'),
@@ -75,23 +83,38 @@ def _read_daily(code: str, start: str, end: str):
 
 
 def sync_universe_bars(conn: sqlite3.Connection, *, today: str, codes: Iterable[str] | None = None,
-                       reader: Callable[[str, str, str], Any] | None = None) -> dict[str, int]:
-    """어제까지의 공급자 일봉을 받아 저장한다. 최근 창은 덮어쓴다."""
+                       reader: Callable[[str, str, str], Any] | None = None,
+                       trading_day: clock.TradingDay | None = None) -> dict[str, int]:
+    """어제까지의 공급자 일봉을 받아 저장한다. 최근 창은 덮어쓴다.
+
+    아무것도 저장하지 못했거나 절반 넘는 종목이 실패·빈 응답이면 RuntimeError 를 낸다.
+    그 전에 저장한 봉은 남는다.
+    """
     read = reader or _read_daily
+    is_trading_day = trading_day or clock.is_trading_day
     selected = [code for code in (codes if codes is not None else _listed_codes())
                 if _STOCK_CODE.fullmatch(str(code))]
-    has_any = conn.execute('SELECT 1 FROM bars WHERE basis = ? LIMIT 1', (bars.BASIS_UNIVERSE,)).fetchone()
+    # 종목마다 정한다. 전체 기준이면 첫 수집에서 실패한 종목이 끝내 긴 이력을 받지 못한다.
+    known = {row[0] for row in conn.execute('SELECT DISTINCT stock_code FROM bars WHERE basis = ?',
+                                            (bars.BASIS_UNIVERSE,))}
     day = date.fromisoformat(today)
-    start = (day - timedelta(days=REFRESH_DAYS if has_any else INITIAL_DAYS)).isoformat()
+    refresh_start = (day - timedelta(days=REFRESH_DAYS)).isoformat()
+    initial_start = (day - timedelta(days=INITIAL_DAYS)).isoformat()
     end = (day - timedelta(days=1)).isoformat()
     captured = clock.iso(_now())
-    stored = failed = 0
+    stored = failed = empty = 0
     for index, code in enumerate(selected, start=1):
         try:
-            frame = read(code, start, end)
-            for stamp, row in (frame.iterrows() if frame is not None else ()):
+            frame = read(code, refresh_start if code in known else initial_start, end)
+            if frame is None or len(frame) == 0:
+                empty += 1
+                continue
+            for stamp, row in frame.iterrows():
                 session = stamp.strftime('%Y-%m-%d')
                 if session >= today:
+                    continue
+                # 거래일이 아닌 날짜의 봉 하나가 '최근 21거래일' 창을 밀어내 전 종목의 모멘텀을 막는다.
+                if not is_trading_day(date.fromisoformat(session)):
                     continue
                 if bars.put_bar(conn, stock_code=code, session_date=session, basis=bars.BASIS_UNIVERSE,
                                 open=row['Open'], high=row['High'], low=row['Low'], close=row['Close'],
@@ -99,7 +122,11 @@ def sync_universe_bars(conn: sqlite3.Connection, *, today: str, codes: Iterable[
                     stored += 1
         except Exception:
             failed += 1
-        if index % 200 == 0:
-            conn.commit()
+        finally:
+            if index % 200 == 0:
+                conn.commit()
     conn.commit()
-    return {'codes': len(selected), 'stored': stored, 'failed': failed}
+    summary = {'codes': len(selected), 'stored': stored, 'failed': failed, 'empty': empty}
+    if stored == 0 or (failed + empty) * 2 > len(selected):
+        raise RuntimeError('universe sync incomplete: ' + ' '.join(f'{key}={value}' for key, value in summary.items()))
+    return summary

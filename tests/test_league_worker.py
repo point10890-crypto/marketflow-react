@@ -106,3 +106,31 @@ def test_cli_dispatches_drain_and_enqueue(tmp_path, monkeypatch, clock_at, capsy
     assert worker.main(['enqueue', 'evening']) == 0
     assert worker.main(['status']) == 0
     assert '"queued": 3' in capsys.readouterr().out
+
+
+def _collect_with(monkeypatch, targets, summary):
+    from app.services.forecast_league import price_sources
+    from app.services.mirofish.alpha_lab import regular_source
+    monkeypatch.setattr(regular_source, 'KISRegularProvider', lambda: object())
+    monkeypatch.setattr(price_sources, 'needed_regular_targets', lambda conn, now: targets)
+    monkeypatch.setattr(price_sources, 'collect_regular_bars', lambda conn, provider, targets: summary)
+
+
+def test_collect_regular_raises_when_nothing_was_stored_for_five_targets(league_conn, monkeypatch):
+    targets = [(f'{index:06d}', '2026-11-13') for index in range(1, 6)]
+    failed = [[code, session, 'timeout'] for code, session in targets]
+    _collect_with(monkeypatch, targets, {'stored': 0, 'failed': failed})
+    with pytest.raises(RuntimeError) as error:
+        handlers.HANDLERS['collect_regular'](league_conn, {'today': '2026-11-13'})
+    assert '5' in str(error.value) and 'timeout' in str(error.value)
+
+
+def test_collect_regular_does_not_raise_without_targets_or_below_the_floor(league_conn, monkeypatch):
+    _collect_with(monkeypatch, [], {'stored': 0, 'failed': []})
+    assert handlers.HANDLERS['collect_regular'](league_conn, {'today': '2026-11-13'}) == {'stored': 0, 'failed': []}
+    four = [(f'{index:06d}', '2026-11-13') for index in range(1, 5)]
+    _collect_with(monkeypatch, four, {'stored': 0, 'failed': []})
+    assert handlers.HANDLERS['collect_regular'](league_conn, {'today': '2026-11-13'})['stored'] == 0
+    five = four + [('000005', '2026-11-13')]
+    _collect_with(monkeypatch, five, {'stored': 1, 'failed': []})
+    assert handlers.HANDLERS['collect_regular'](league_conn, {'today': '2026-11-13'})['stored'] == 1

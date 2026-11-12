@@ -30,15 +30,22 @@ def _valid(session_date: str, basis: str, open_: float, high: float, low: float,
     return min(open_, high, low, close) > 0 and low <= min(open_, close) and high >= max(open_, close)
 
 
+def is_valid_bar(*, stock_code: str, session_date: str, basis: str,
+                 open: float, high: float, low: float, close: float) -> bool:
+    """put_bar 가 받아들일 봉인지. 저장 전에 근거부터 남기는 호출자가 먼저 확인한다."""
+    if not isinstance(stock_code, str) or _STOCK_CODE.fullmatch(stock_code) is None:
+        return False
+    return _valid(session_date, basis, open, high, low, close)
+
+
 def put_bar(conn: sqlite3.Connection, *, stock_code: str, session_date: str, basis: str,
             open: float, high: float, low: float, close: float, captured_at: str,
             evidence_hash: str | None = None, replace: bool = False) -> bool:
     """저장했으면 True. 값이 봉으로 성립하지 않거나 이미 있으면 False."""
     if replace and basis == BASIS_REGULAR:
         raise ValueError('regular-session bars are never replaced')
-    if not isinstance(stock_code, str) or _STOCK_CODE.fullmatch(stock_code) is None:
-        return False
-    if not _valid(session_date, basis, open, high, low, close):
+    if not is_valid_bar(stock_code=stock_code, session_date=session_date, basis=basis,
+                        open=open, high=high, low=low, close=close):
         return False
     verb = 'INSERT OR REPLACE' if replace else 'INSERT OR IGNORE'
     cursor = conn.execute(

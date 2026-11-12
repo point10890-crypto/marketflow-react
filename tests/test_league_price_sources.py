@@ -1,3 +1,5 @@
+import hashlib
+import json
 from datetime import datetime, timezone
 
 import pandas as pd
@@ -82,9 +84,9 @@ def test_universe_sync_never_stores_todays_bar(league_conn, monkeypatch):
                              'Close': [105, 105, 105]}, index=index)
 
     summary = price_sources.sync_universe_bars(league_conn, today='2026-11-13', codes=['005930', 'ABCDEF'],
-                                               reader=reader)
+                                               reader=reader, trading_day=WEEKDAYS)
     assert requested == [('005930', '2025-09-19', '2026-11-12')]              # 처음: 420일, 어제까지
-    assert summary == {'codes': 1, 'stored': 1, 'failed': 0}                   # 11-12 는 시가 0, 11-13 은 오늘
+    assert summary == {'codes': 1, 'stored': 1, 'failed': 0, 'empty': 0}       # 11-12 는 시가 0, 11-13 은 오늘
     assert [row['session_date'] for row in league_conn.execute('SELECT session_date FROM bars')] == ['2026-11-11']
 
 
@@ -92,17 +94,134 @@ def test_universe_sync_refreshes_a_recent_window_and_survives_reader_errors(leag
     monkeypatch.setattr(price_sources, '_now', lambda: datetime(2026, 11, 12, 22, 30, tzinfo=timezone.utc))
     bars.put_bar(league_conn, stock_code='005930', session_date='2026-11-11', basis=bars.BASIS_UNIVERSE,
                  open=100, high=110, low=95, close=105, captured_at='t')
-    requested = []
+    requested = {}
 
     def reader(code, start, end):
-        requested.append(start)
+        requested[code] = start
         if code == '000660':
             raise RuntimeError('network')
         return pd.DataFrame({'Open': [50], 'High': [55], 'Low': [45], 'Close': [52]},
                             index=pd.to_datetime(['2026-11-11']))
 
     summary = price_sources.sync_universe_bars(league_conn, today='2026-11-13', codes=['005930', '000660'],
-                                               reader=reader)
-    assert set(requested) == {'2026-09-29'}                                     # 45일 창
-    assert summary == {'codes': 2, 'stored': 1, 'failed': 1}
+                                               reader=reader, trading_day=WEEKDAYS)
+    assert requested['005930'] == '2026-09-29'                                  # 봉이 있는 종목은 45일 창
+    assert summary == {'codes': 2, 'stored': 1, 'failed': 1, 'empty': 0}
     assert league_conn.execute('SELECT close FROM bars').fetchone()[0] == 52.0  # 덮어씀
+
+
+def _frame(dates, open_=100):
+    count = len(dates)
+    return pd.DataFrame({'Open': [open_] * count, 'High': [110] * count, 'Low': [95] * count,
+                         'Close': [105] * count}, index=pd.to_datetime(dates))
+
+
+@pytest.fixture
+def sync_clock(monkeypatch):
+    monkeypatch.setattr(price_sources, '_now', lambda: datetime(2026, 11, 12, 22, 30, tzinfo=timezone.utc))
+
+
+def test_universe_sync_picks_the_window_per_stock(league_conn, sync_clock):
+    bars.put_bar(league_conn, stock_code='005930', session_date='2026-11-11', basis=bars.BASIS_UNIVERSE,
+                 open=100, high=110, low=95, close=105, captured_at='t')
+    bars.put_bar(league_conn, stock_code='000660', session_date='2026-11-11', basis=bars.BASIS_REGULAR,
+                 open=100, high=110, low=95, close=105, captured_at='t')        # 정규장 봉은 이력으로 치지 않는다
+    requested = {}
+
+    def reader(code, start, end):
+        requested[code] = start
+        return _frame(['2026-11-12'])
+
+    price_sources.sync_universe_bars(league_conn, today='2026-11-13', codes=['005930', '000660'],
+                                     reader=reader, trading_day=WEEKDAYS)
+    assert requested == {'005930': '2026-09-29', '000660': '2025-09-19'}        # 있는 종목 45일, 없는 종목 420일
+
+
+def test_universe_sync_raises_when_every_reader_returns_nothing(league_conn, sync_clock):
+    frames = iter([_frame([]), None, _frame([])])
+    with pytest.raises(RuntimeError) as error:
+        price_sources.sync_universe_bars(league_conn, today='2026-11-13', codes=['005930', '000660', '035720'],
+                                         reader=lambda code, start, end: next(frames), trading_day=WEEKDAYS)
+    assert 'empty=3' in str(error.value) and 'stored=0' in str(error.value)
+
+
+def test_universe_sync_raises_when_more_than_half_fail_but_keeps_stored_bars(league_conn, sync_clock):
+    def reader(code, start, end):
+        if code == '005930':
+            return _frame(['2026-11-12'])
+        if code == '000660':
+            raise RuntimeError('network')
+        return _frame([])
+
+    with pytest.raises(RuntimeError) as error:
+        price_sources.sync_universe_bars(league_conn, today='2026-11-13', codes=['005930', '000660', '035720'],
+                                         reader=reader, trading_day=WEEKDAYS)
+    assert 'failed=1' in str(error.value) and 'empty=1' in str(error.value) and 'codes=3' in str(error.value)
+    league_conn.rollback()
+    assert league_conn.execute('SELECT COUNT(*) FROM bars').fetchone()[0] == 1   # 이미 커밋된 봉은 남는다
+
+
+def test_universe_sync_reports_empty_codes_without_raising_at_half(league_conn, sync_clock):
+    summary = price_sources.sync_universe_bars(
+        league_conn, today='2026-11-13', codes=['005930', '000660'], trading_day=WEEKDAYS,
+        reader=lambda code, start, end: _frame(['2026-11-12'] if code == '005930' else []))
+    assert summary == {'codes': 2, 'stored': 1, 'failed': 0, 'empty': 1}
+
+
+def test_universe_sync_skips_rows_on_non_trading_days(league_conn, sync_clock):
+    summary = price_sources.sync_universe_bars(
+        league_conn, today='2026-11-13', codes=['005930'], trading_day=WEEKDAYS,
+        reader=lambda code, start, end: _frame(['2026-11-06', '2026-11-07', '2026-11-09']))   # 금, 토, 월
+    assert summary['stored'] == 2
+    assert [row[0] for row in league_conn.execute('SELECT session_date FROM bars ORDER BY session_date')] == [
+        '2026-11-06', '2026-11-09']
+
+
+def test_universe_sync_uses_the_league_calendar_by_default(league_conn, sync_clock, monkeypatch):
+    monkeypatch.setattr(price_sources.clock, 'is_trading_day', lambda day: day.isoformat() != '2026-11-10')
+    price_sources.sync_universe_bars(league_conn, today='2026-11-13', codes=['005930'],
+                                     reader=lambda code, start, end: _frame(['2026-11-09', '2026-11-10']))
+    assert [row[0] for row in league_conn.execute('SELECT session_date FROM bars')] == ['2026-11-09']
+
+
+class StaticProvider:
+    def __init__(self, bar=None, captured=None):
+        self.bar = bar or {'open': 100.0, 'high': 110.0, 'low': 95.0, 'close': 105.0}
+        self.captured = iter(captured or [])
+
+    def fetch_session(self, symbol, session):
+        captured = next(self.captured, '2026-11-13T11:45:00Z')
+        return {'captured_at': captured, 'bar': dict(self.bar),
+                'pages': [{'params': {'hour': '153000'}, 'captured_at': captured, 'response': {'output2': [1, 2]}},
+                          {'params': {'hour': '120000'}, 'captured_at': captured, 'response': {'output2': [3]}}],
+                'source': {'version': 'kis-regular-j-minute-v1'}}
+
+
+def test_collect_reports_an_invalid_bar_and_leaves_no_capsule(league_conn):
+    provider = StaticProvider(bar={'open': 0, 'high': 110.0, 'low': 95.0, 'close': 105.0})
+    summary = price_sources.collect_regular_bars(league_conn, provider=provider, targets=[('005930', '2026-11-13')])
+    assert summary == {'stored': 0, 'failed': [['005930', '2026-11-13', 'invalid_bar']]}
+    assert league_conn.execute('SELECT COUNT(*) FROM capsules').fetchone()[0] == 0
+    assert league_conn.execute('SELECT COUNT(*) FROM bars').fetchone()[0] == 0
+
+
+def test_collect_does_not_report_an_existing_bar_as_failed(league_conn):
+    bars.put_bar(league_conn, stock_code='005930', session_date='2026-11-13', basis=bars.BASIS_REGULAR,
+                 open=1, high=1, low=1, close=1, captured_at='t')
+    summary = price_sources.collect_regular_bars(league_conn, provider=StaticProvider(),
+                                                 targets=[('005930', '2026-11-13')])
+    assert summary == {'stored': 0, 'failed': []}
+    assert league_conn.execute('SELECT open FROM bars').fetchone()[0] == 1.0
+
+
+def test_evidence_hash_depends_only_on_the_provider_responses(league_conn):
+    provider = StaticProvider(captured=['2026-11-13T11:45:00Z', '2026-11-14T02:00:00Z'])
+    price_sources.collect_regular_bars(league_conn, provider=provider,
+                                       targets=[('005930', '2026-11-13'), ('000660', '2026-11-13')])
+    evidence = [capsules.get_capsule(league_conn, row[0])
+                for row in league_conn.execute('SELECT evidence_hash FROM bars ORDER BY stock_code')]
+    assert [item['captured_at'] for item in evidence] == ['2026-11-14T02:00:00Z', '2026-11-13T11:45:00Z']
+    assert evidence[0]['pages_sha256'] == evidence[1]['pages_sha256']
+    expected = hashlib.sha256(json.dumps([{'output2': [1, 2]}, {'output2': [3]}], sort_keys=True,
+                                         ensure_ascii=False).encode('utf-8')).hexdigest()
+    assert evidence[0]['pages_sha256'] == expected
