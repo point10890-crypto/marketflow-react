@@ -13,13 +13,14 @@ SESSIONS = ['2026-11-13', '2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19'
 def forecast(league_conn, monkeypatch):
     moment = datetime(2026, 11, 12, 11, 0, tzinfo=timezone.utc)
     monkeypatch.setattr(ledger, '_now', lambda: moment)
+    monkeypatch.setattr(ledger, '_is_trading_day', WEEKDAYS)
     monkeypatch.setattr(resolver, '_now', lambda: datetime(2026, 12, 1, tzinfo=timezone.utc))
     monkeypatch.delenv('MIROFISH_SLIPPAGE_PCT', raising=False)
     ledger.register_forecaster(league_conn, 'fx', '1', 'engine', 'native')
     return ledger.submit_forecast(
         league_conn, forecaster_id='fx', version='1', stock_code='005930',
         asof_ts='2026-11-12T15:30:00+09:00', event_id='E1', probability=0.4,
-        capsule_hash=capsules.put_capsule(league_conn, {'k': 1}), trading_day=WEEKDAYS)
+        capsule_hash=capsules.put_capsule(league_conn, {'k': 1}))
 
 
 def _bar(conn, day, open_=100.0, high=103.0, low=97.0, close=100.0, basis=bars.BASIS_REGULAR):

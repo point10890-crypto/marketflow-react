@@ -23,10 +23,41 @@ def test_forecasts_and_capsules_cannot_be_changed(league_conn):
     league_conn.execute("INSERT INTO capsules VALUES ('h', x'00', 't')")
     league_conn.execute(
         "INSERT INTO forecasts VALUES ('f1','fx','1','005930','2026-11-12T06:30:00Z','E1',0.5,NULL,'h','',1,'t')")
+    league_conn.execute("INSERT INTO capsules VALUES ('unreferenced', x'00', 't')")
     for statement in ("UPDATE forecasts SET probability=0.9", "DELETE FROM forecasts",
-                      "UPDATE capsules SET payload=x'01'", "DELETE FROM capsules"):
-        with pytest.raises(sqlite3.DatabaseError):
+                      "UPDATE capsules SET payload=x'01'", "DELETE FROM capsules",
+                      "DELETE FROM capsules WHERE capsule_hash='unreferenced'"):
+        with pytest.raises(sqlite3.DatabaseError, match='append-only'):
             league_conn.execute(statement)
+    assert league_conn.execute('SELECT COUNT(*) FROM capsules').fetchone()[0] == 2
+
+
+def test_insert_or_replace_cannot_overwrite_a_forecast_or_capsule(league_conn):
+    league_conn.execute("INSERT INTO forecasters VALUES ('fx','1','engine','native','t')")
+    league_conn.execute("INSERT INTO capsules VALUES ('h', x'00', 't')")
+    league_conn.execute("INSERT INTO capsules VALUES ('unreferenced', x'00', 't')")
+    league_conn.execute(
+        "INSERT INTO forecasts VALUES ('f1','fx','1','005930','2026-11-12T06:30:00Z','E1',0.5,NULL,'h','',1,'t')")
+    with pytest.raises(sqlite3.DatabaseError, match='append-only'):
+        league_conn.execute(
+            "INSERT OR REPLACE INTO forecasts VALUES "
+            "('f1','fx','1','005930','2026-11-12T06:30:00Z','E1',0.9,NULL,'h','',1,'later')")
+    for capsule_hash in ('h', 'unreferenced'):
+        with pytest.raises(sqlite3.DatabaseError, match='append-only'):
+            league_conn.execute("INSERT OR REPLACE INTO capsules VALUES (?, x'01', 'later')", (capsule_hash,))
+    row = league_conn.execute("SELECT probability, created_at FROM forecasts WHERE forecast_id = 'f1'").fetchone()
+    assert tuple(row) == (0.5, 't')
+    rows = league_conn.execute('SELECT capsule_hash, payload, created_at FROM capsules ORDER BY capsule_hash').fetchall()
+    assert [tuple(r) for r in rows] == [('h', b'\x00', 't'), ('unreferenced', b'\x00', 't')]
+
+
+def test_schema_rejects_a_probability_outside_the_submission_range(league_conn):
+    league_conn.execute("INSERT INTO forecasters VALUES ('fx','1','engine','native','t')")
+    league_conn.execute("INSERT INTO capsules VALUES ('h', x'00', 't')")
+    with pytest.raises(sqlite3.IntegrityError):
+        league_conn.execute(
+            "INSERT INTO forecasts VALUES ('f1','fx','1','005930','2026-11-12T06:30:00Z','E1',5.0,NULL,'h','',1,'t')")
+    assert league_conn.execute('SELECT COUNT(*) FROM forecasts').fetchone()[0] == 0
 
 
 def test_connect_rolls_back_on_error(tmp_path, monkeypatch):

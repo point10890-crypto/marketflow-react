@@ -72,8 +72,7 @@ def momentum_ranks(conn: sqlite3.Connection, asof_date: str, *,
     return {code: index / (len(ordered) - 1) for index, code in enumerate(ordered)}
 
 
-def submit_baselines(conn: sqlite3.Connection, *, asof_date: str, stock_codes: Iterable[str],
-                     trading_day: clock.TradingDay | None = None) -> dict[str, int]:
+def submit_baselines(conn: sqlite3.Connection, *, asof_date: str, stock_codes: Iterable[str]) -> dict[str, int]:
     if conn.execute('SELECT 1 FROM bars WHERE basis = ? AND session_date = ? LIMIT 1',
                     (bars.BASIS_UNIVERSE, asof_date)).fetchone() is None:
         raise UniverseBarsMissing(asof_date)
@@ -95,7 +94,7 @@ def submit_baselines(conn: sqlite3.Connection, *, asof_date: str, stock_codes: I
             ledger.submit_forecast(conn, forecaster_id=forecaster_id, version=VERSION, stock_code=code,
                                    asof_ts=asof_ts, event_id=EVENT_ID, probability=probability,
                                    raw_score=raw_score, capsule_hash=capsules.put_capsule(conn, capsule),
-                                   source_ref=f'baseline:{asof_date}', trading_day=trading_day)
+                                   source_ref=f'baseline:{asof_date}')
             summary['submitted'] += 1
         except ledger.SubmissionRejected as rejected:
             if rejected.code == 'duplicate':

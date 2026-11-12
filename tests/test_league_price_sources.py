@@ -27,12 +27,13 @@ class FakeProvider:
 @pytest.fixture
 def forecast(league_conn, monkeypatch):
     monkeypatch.setattr(ledger, '_now', lambda: datetime(2026, 11, 12, 11, 0, tzinfo=timezone.utc))
+    monkeypatch.setattr(ledger, '_is_trading_day', WEEKDAYS)
     ledger.register_forecaster(league_conn, 'fx', '1', 'engine', 'native')
     capsule = capsules.put_capsule(league_conn, {'k': 1})
     for code in ('005930', '000660'):
         ledger.submit_forecast(league_conn, forecaster_id='fx', version='1', stock_code=code,
                                asof_ts='2026-11-12T15:30:00+09:00', event_id='E1', probability=0.4,
-                               capsule_hash=capsule, trading_day=WEEKDAYS)
+                               capsule_hash=capsule)
 
 
 def _targets(conn, now_kst):

@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS capsules (
 CREATE TABLE IF NOT EXISTS forecasts (
   forecast_id TEXT PRIMARY KEY, forecaster_id TEXT NOT NULL, version TEXT NOT NULL,
   stock_code TEXT NOT NULL, asof_ts TEXT NOT NULL, event_id TEXT NOT NULL,
-  probability REAL NOT NULL, raw_score REAL, capsule_hash TEXT NOT NULL,
+  probability REAL NOT NULL CHECK (probability >= 0.02 AND probability <= 0.98), raw_score REAL, capsule_hash TEXT NOT NULL,
   source_ref TEXT NOT NULL DEFAULT '', official INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL,
   UNIQUE (forecaster_id, version, stock_code, asof_ts, event_id),
@@ -83,6 +83,8 @@ def connect(path: str | None = None) -> Iterator[sqlite3.Connection]:
         conn.execute('PRAGMA journal_mode=WAL')
         conn.execute('PRAGMA busy_timeout=5000')
         conn.execute('PRAGMA foreign_keys=ON')
+        # REPLACE 충돌 해소가 지우는 행에도 DELETE 트리거가 걸리게 한다 (INSERT OR REPLACE 우회 차단).
+        conn.execute('PRAGMA recursive_triggers=ON')
         conn.executescript(SCHEMA)
         yield conn
         conn.commit()

@@ -8,6 +8,11 @@ WEEKDAYS = lambda day: day.weekday() < 5  # noqa: E731
 ASOF = '2026-11-12T15:30:00+09:00'          # 목요일 종가
 
 
+@pytest.fixture(autouse=True)
+def weekday_calendar(monkeypatch):
+    monkeypatch.setattr(ledger, '_is_trading_day', WEEKDAYS)
+
+
 def _at(monkeypatch, text):
     moment = datetime.fromisoformat(text).astimezone(timezone.utc)
     monkeypatch.setattr(ledger, '_now', lambda: moment)
@@ -20,7 +25,7 @@ def _ready(conn):
 
 def _submit(conn, capsule, **over):
     args = dict(forecaster_id='fx', version='1', stock_code='005930', asof_ts=ASOF, event_id='E1',
-                probability=0.4, capsule_hash=capsule, trading_day=WEEKDAYS)
+                probability=0.4, capsule_hash=capsule)
     args.update(over)
     return ledger.submit_forecast(conn, **args)
 
@@ -107,6 +112,61 @@ def test_forecaster_registration_is_idempotent_but_not_mutable(league_conn):
         ledger.register_forecaster(league_conn, 'fx', '1', 'engine', 'derived')
     with pytest.raises(ValueError):
         ledger.register_forecaster(league_conn, 'fy', '1', 'robot', 'native')
+
+
+def test_caller_cannot_supply_the_trading_calendar(league_conn, monkeypatch):
+    capsule = _ready(league_conn)
+    _at(monkeypatch, '2026-11-13T09:00:00+09:00')
+    with pytest.raises(TypeError):
+        _submit(league_conn, capsule, trading_day=lambda day: day.isoformat() == '2026-11-20')
+    assert league_conn.execute('SELECT COUNT(*) FROM forecasts').fetchone()[0] == 0
+
+
+@pytest.mark.parametrize('forecaster_id, version', [
+    ('a|b', '1'), ('fx', '1|2'), ('', '1'), ('fx', ''), ('fx', 1), (None, '1'), ('x' * 65, '1'), ('fx', 'v 1'),
+    ('fx\n', '1'),
+])
+def test_forecaster_ids_are_restricted_to_a_safe_alphabet(league_conn, forecaster_id, version):
+    with pytest.raises(ValueError):
+        ledger.register_forecaster(league_conn, forecaster_id, version, 'engine', 'native')
+    assert league_conn.execute('SELECT COUNT(*) FROM forecasters').fetchone()[0] == 0
+
+
+def test_forecaster_ids_may_use_letters_digits_and_separators(league_conn):
+    ledger.register_forecaster(league_conn, 'Engine_a.b-1', '2026.11-rc_1', 'engine', 'native')
+    assert league_conn.execute('SELECT COUNT(*) FROM forecasters').fetchone()[0] == 1
+
+
+@pytest.mark.parametrize('raw_score', ['11', True, float('nan'), float('inf'), 10 ** 400, [1.0]])
+def test_invalid_raw_score_is_rejected(league_conn, monkeypatch, raw_score):
+    _at(monkeypatch, '2026-11-12T20:00:00+09:00')
+    with pytest.raises(ledger.SubmissionRejected) as error:
+        _submit(league_conn, _ready(league_conn), raw_score=raw_score)
+    assert error.value.code == 'invalid_raw_score'
+    assert league_conn.execute('SELECT COUNT(*) FROM forecasts').fetchone()[0] == 0
+
+
+def test_integer_raw_score_is_accepted(league_conn, monkeypatch):
+    _at(monkeypatch, '2026-11-12T20:00:00+09:00')
+    forecast_id = _submit(league_conn, _ready(league_conn), raw_score=11)
+    assert league_conn.execute('SELECT raw_score FROM forecasts WHERE forecast_id = ?',
+                               (forecast_id,)).fetchone()[0] == 11.0
+
+
+def test_huge_integer_probability_is_rejected_as_invalid(league_conn, monkeypatch):
+    _at(monkeypatch, '2026-11-12T20:00:00+09:00')
+    with pytest.raises(ledger.SubmissionRejected) as error:
+        _submit(league_conn, _ready(league_conn), probability=10 ** 400)
+    assert error.value.code == 'invalid_probability'
+    assert league_conn.execute('SELECT COUNT(*) FROM forecasts').fetchone()[0] == 0
+
+
+def test_asof_that_overflows_on_conversion_is_rejected_as_invalid(league_conn, monkeypatch):
+    _at(monkeypatch, '2026-11-12T20:00:00+09:00')
+    with pytest.raises(ledger.SubmissionRejected) as error:
+        _submit(league_conn, _ready(league_conn), asof_ts='0001-01-01T00:00:00+09:00')
+    assert error.value.code == 'invalid_asof'
+    assert league_conn.execute('SELECT COUNT(*) FROM forecasts').fetchone()[0] == 0
 
 
 def test_abstention_is_recorded_once(league_conn):

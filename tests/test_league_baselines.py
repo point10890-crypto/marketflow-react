@@ -27,6 +27,11 @@ def _series(conn, code, days, *, start=100.0, step=0.0, spike_every=0):
         price += step
 
 
+@pytest.fixture(autouse=True)
+def weekday_calendar(monkeypatch):
+    monkeypatch.setattr(ledger, '_is_trading_day', WEEKDAYS)
+
+
 @pytest.fixture
 def at_evening(monkeypatch):
     moment = datetime(2026, 11, 12, 22, 30, tzinfo=timezone.utc)   # 11-13 07:30 KST
@@ -65,8 +70,7 @@ def test_baselines_submit_one_forecast_each_per_candidate(league_conn, at_evenin
     days = _sessions(60)
     for code in ('000001', '000002', '000003'):
         _series(league_conn, code, days, step=0.1, spike_every=3)
-    summary = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001', '000002'],
-                                         trading_day=WEEKDAYS)
+    summary = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001', '000002'])
     assert summary == {'submitted': 4, 'abstained': 0, 'duplicate': 0}
     rows = league_conn.execute('SELECT forecaster_id, stock_code, probability, raw_score, capsule_hash, asof_ts '
                                'FROM forecasts ORDER BY forecaster_id, stock_code').fetchall()
@@ -87,8 +91,8 @@ def test_rerun_does_not_add_forecasts(league_conn, at_evening):
     days = _sessions(60)
     _series(league_conn, '000001', days, spike_every=3)
     _series(league_conn, '000002', days, step=0.1, spike_every=3)
-    baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'], trading_day=WEEKDAYS)
-    again = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'], trading_day=WEEKDAYS)
+    baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'])
+    again = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'])
     assert again == {'submitted': 0, 'abstained': 0, 'duplicate': 2}
     assert league_conn.execute('SELECT COUNT(*) FROM forecasts').fetchone()[0] == 2
 
@@ -96,7 +100,7 @@ def test_rerun_does_not_add_forecasts(league_conn, at_evening):
 def test_short_history_abstains(league_conn, at_evening):
     _series(league_conn, '000001', _sessions(60), spike_every=3)
     _series(league_conn, '000009', _sessions(5))
-    summary = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000009'], trading_day=WEEKDAYS)
+    summary = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000009'])
     assert summary == {'submitted': 1, 'abstained': 1, 'duplicate': 0}
     row = league_conn.execute('SELECT forecaster_id, reason FROM abstentions').fetchone()
     assert tuple(row) == ('baseline_momentum', 'momentum_history_short')
@@ -104,7 +108,7 @@ def test_short_history_abstains(league_conn, at_evening):
 
 def test_too_few_base_rate_samples_abstains_for_both(league_conn, at_evening):
     _series(league_conn, '000001', _sessions(21))
-    summary = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'], trading_day=WEEKDAYS)
+    summary = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'])
     assert summary == {'submitted': 0, 'abstained': 2, 'duplicate': 0}
     assert {row['reason'] for row in league_conn.execute('SELECT reason FROM abstentions')} == {'base_rate_insufficient'}
 
@@ -113,7 +117,7 @@ def test_late_run_records_abstentions_instead_of_forecasts(league_conn, monkeypa
     _series(league_conn, '000001', _sessions(60), spike_every=3)
     _series(league_conn, '000002', _sessions(60), step=0.1, spike_every=3)
     monkeypatch.setattr(ledger, '_now', lambda: datetime(2026, 11, 13, 0, 0, tzinfo=timezone.utc))  # 09:00 KST
-    summary = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'], trading_day=WEEKDAYS)
+    summary = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'])
     assert summary == {'submitted': 0, 'abstained': 2, 'duplicate': 0}
     assert {row['reason'] for row in league_conn.execute('SELECT reason FROM abstentions')} == {'late_submission'}
 
@@ -121,7 +125,7 @@ def test_late_run_records_abstentions_instead_of_forecasts(league_conn, monkeypa
 def test_missing_universe_bars_for_the_asof_date_raises(league_conn, at_evening):
     _series(league_conn, '000001', _sessions(60, end='2026-11-11'))
     with pytest.raises(baselines.UniverseBarsMissing):
-        baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'], trading_day=WEEKDAYS)
+        baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'])
 
 
 def test_jongga_candidates_reads_the_daily_result_file(tmp_path):
