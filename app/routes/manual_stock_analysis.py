@@ -6,7 +6,7 @@ from io import BytesIO
 
 from flask import Blueprint, jsonify, request, send_file
 
-from app.auth.decorators import pro_required
+from app.auth.decorators import admin_required, pro_required
 from app.services import manual_stock_analysis as service
 
 
@@ -26,7 +26,7 @@ def list_manual_runs():
 
 
 @manual_stock_analysis_bp.route("/runs/source", methods=["POST"])
-@pro_required
+@admin_required
 def create_pending_run():
     payload = request.get_json(silent=True) or {}
     try:
@@ -42,7 +42,7 @@ def create_pending_run():
 
 
 @manual_stock_analysis_bp.route("/runs/scrape", methods=["POST"])
-@pro_required
+@admin_required
 def scrape_manual_run():
     payload = request.get_json(silent=True) or {}
     try:
@@ -69,7 +69,7 @@ def get_scraper_loop():
 
 
 @manual_stock_analysis_bp.route("/scraper-loop/start", methods=["POST"])
-@pro_required
+@admin_required
 def start_scraper_loop():
     payload = request.get_json(silent=True) or {}
     try:
@@ -84,7 +84,7 @@ def start_scraper_loop():
 
 
 @manual_stock_analysis_bp.route("/scraper-loop/stop", methods=["POST"])
-@pro_required
+@admin_required
 def stop_scraper_loop():
     return jsonify(service.stop_scraper_loop())
 
@@ -114,7 +114,7 @@ def search_manual_stock_history():
 
 
 @manual_stock_analysis_bp.route("/runs/upload", methods=["POST"])
-@pro_required
+@admin_required
 def upload_manual_result():
     file = request.files.get("file")
     if file is None:
