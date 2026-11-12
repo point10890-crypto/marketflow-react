@@ -111,7 +111,9 @@ def submit_forecast(conn: sqlite3.Connection, *, forecaster_id: str, version: st
 
 
 def record_abstention(conn: sqlite3.Connection, *, forecaster_id: str, version: str, stock_code: str,
-                      asof_ts: str, event_id: str, reason: str) -> None:
-    conn.execute('INSERT OR IGNORE INTO abstentions VALUES (?, ?, ?, ?, ?, ?, ?)',
-                 (forecaster_id, version, stock_code, clock.iso(_asof(asof_ts)), event_id,
-                  str(reason)[:200], clock.iso(_now())))
+                      asof_ts: str, event_id: str, reason: str) -> bool:
+    """새로 기록했으면 True. 같은 키의 기권이 이미 있으면 False."""
+    cursor = conn.execute('INSERT OR IGNORE INTO abstentions VALUES (?, ?, ?, ?, ?, ?, ?)',
+                          (forecaster_id, version, stock_code, clock.iso(_asof(asof_ts)), event_id,
+                           str(reason)[:200], clock.iso(_now())))
+    return cursor.rowcount == 1

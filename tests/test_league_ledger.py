@@ -178,6 +178,13 @@ def test_abstention_is_recorded_once(league_conn):
     assert [tuple(row) for row in rows] == [('2026-11-12T06:30:00Z', 'tool_failure')]
 
 
+def test_abstention_reports_whether_a_row_was_inserted(league_conn):
+    ledger.register_forecaster(league_conn, 'fx', '1', 'engine', 'native')
+    args = dict(forecaster_id='fx', version='1', stock_code='005930', asof_ts=ASOF, event_id='E1')
+    assert ledger.record_abstention(league_conn, reason='tool_failure', **args) is True
+    assert ledger.record_abstention(league_conn, reason='late_submission', **args) is False
+
+
 def test_module_exposes_no_way_to_change_a_forecast():
     public = [name for name in dir(ledger) if not name.startswith('_')]
     assert not [name for name in public if any(word in name.lower() for word in

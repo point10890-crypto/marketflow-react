@@ -38,14 +38,23 @@ def at_evening(monkeypatch):
     monkeypatch.setattr(ledger, '_now', lambda: moment)
 
 
-def test_universe_base_rate_counts_decided_paths_only(league_conn):
+def test_universe_base_rate_counts_complete_paths_only(league_conn):
     days = _sessions(30)
     _series(league_conn, '000001', days, spike_every=1)     # 매일 +10% 고가 → 모든 경로 적중
     _series(league_conn, '000002', days)                    # 한 번도 닿지 않음 → 8일 만기 실패
     result = baselines.universe_base_rate(league_conn, ASOF_DATE)
-    assert result['hits'] == 29                              # 000001: 신호일 29개 모두 다음 날 적중
-    assert result['n'] == 29 + 22                            # 000002: 8거래일이 남은 신호일만 판정
-    assert result['rate'] == pytest.approx(29 / 51)
+    assert result['hits'] == 22                              # 000001: 뒤에 8거래일이 다 있는 신호일 22개만
+    assert result['n'] == 22 + 22                            # 000002 도 같은 22개 — 일찍 끝난 경로만 세지 않는다
+    assert result['rate'] == pytest.approx(0.5)
+
+
+def test_universe_base_rate_lookback_bounds_the_window(league_conn):
+    days = _sessions(40)
+    _series(league_conn, '000001', days[:15], spike_every=1)     # 적중은 모두 창 밖(앞쪽 15일)
+    _series(league_conn, '000001', days[15:])
+    assert baselines.universe_base_rate(league_conn, ASOF_DATE)['hits'] > 0
+    bounded = baselines.universe_base_rate(league_conn, ASOF_DATE, lookback=10)
+    assert bounded == {'rate': 0.0, 'n': 11, 'hits': 0}          # 창 19거래일 → 완결 경로 11개
 
 
 def test_universe_base_rate_ignores_bars_after_the_asof_date(league_conn):
@@ -128,6 +137,55 @@ def test_missing_universe_bars_for_the_asof_date_raises(league_conn, at_evening)
         baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'])
 
 
+def test_rerun_after_the_deadline_reports_duplicates_not_abstentions(league_conn, at_evening, monkeypatch):
+    _series(league_conn, '000001', _sessions(60), spike_every=3)
+    _series(league_conn, '000002', _sessions(60), step=0.1, spike_every=3)
+    first = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'])
+    assert first == {'submitted': 2, 'abstained': 0, 'duplicate': 0}
+    monkeypatch.setattr(ledger, '_now', lambda: datetime(2026, 11, 13, 0, 5, tzinfo=timezone.utc))  # 09:05 KST
+    again = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'])
+    assert again == {'submitted': 0, 'abstained': 0, 'duplicate': 2}
+    assert league_conn.execute('SELECT COUNT(*) FROM abstentions').fetchone()[0] == 0
+    assert league_conn.execute('SELECT COUNT(*) FROM forecasts').fetchone()[0] == 2
+
+
+def test_second_late_run_does_not_report_abstentions_again(league_conn, monkeypatch):
+    _series(league_conn, '000001', _sessions(60), spike_every=3)
+    _series(league_conn, '000002', _sessions(60), step=0.1, spike_every=3)
+    monkeypatch.setattr(ledger, '_now', lambda: datetime(2026, 11, 13, 0, 5, tzinfo=timezone.utc))  # 09:05 KST
+    first = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'])
+    assert first == {'submitted': 0, 'abstained': 2, 'duplicate': 0}
+    again = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=['000001'])
+    assert again == {'submitted': 0, 'abstained': 0, 'duplicate': 0}
+    assert league_conn.execute('SELECT COUNT(*) FROM abstentions').fetchone()[0] == 2
+
+
+def _universe_with_asof_coverage(conn, covered):
+    """전일에는 10종목, 기준일에는 covered 종목만 봉이 있다."""
+    codes = [f'{index:06d}' for index in range(1, 11)]
+    for code in codes:
+        _series(conn, code, _sessions(60, end='2026-11-11'), spike_every=3)
+    for code in codes[:covered]:
+        _series(conn, code, [ASOF_DATE])
+    return codes
+
+
+def test_partial_universe_on_the_asof_date_raises(league_conn, at_evening):
+    codes = _universe_with_asof_coverage(league_conn, 8)
+    with pytest.raises(baselines.UniverseBarsMissing) as error:
+        baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=codes[:1])
+    assert '8' in str(error.value) and '10' in str(error.value)
+    assert league_conn.execute('SELECT COUNT(*) FROM forecasts').fetchone()[0] == 0
+    assert league_conn.execute('SELECT COUNT(*) FROM abstentions').fetchone()[0] == 0
+
+
+def test_universe_at_the_coverage_threshold_is_accepted(league_conn, at_evening):
+    assert baselines.MIN_UNIVERSE_COVERAGE == 0.9
+    codes = _universe_with_asof_coverage(league_conn, 9)
+    summary = baselines.submit_baselines(league_conn, asof_date=ASOF_DATE, stock_codes=codes[:1])
+    assert summary == {'submitted': 2, 'abstained': 0, 'duplicate': 0}
+
+
 def test_jongga_candidates_reads_the_daily_result_file(tmp_path):
     path = tmp_path / 'jongga_v2_results_20261112.json'
     path.write_text(json.dumps({'signals': [{'stock_code': '005930'}, {'stock_code': '000660'},
@@ -135,4 +193,11 @@ def test_jongga_candidates_reads_the_daily_result_file(tmp_path):
     assert candidates.jongga_candidates('2026-11-12', data_dir=str(tmp_path)) == ['000660', '005930']
     assert candidates.jongga_candidates('2026-11-13', data_dir=str(tmp_path)) == []
     path.write_text('not json', encoding='utf-8')
+    assert candidates.jongga_candidates('2026-11-12', data_dir=str(tmp_path)) == []
+
+
+@pytest.mark.parametrize('signals', [5, 'text', {'stock_code': '005930'}, None])
+def test_jongga_candidates_ignores_signals_that_are_not_a_list(tmp_path, signals):
+    path = tmp_path / 'jongga_v2_results_20261112.json'
+    path.write_text(json.dumps({'signals': signals}), encoding='utf-8')
     assert candidates.jongga_candidates('2026-11-12', data_dir=str(tmp_path)) == []

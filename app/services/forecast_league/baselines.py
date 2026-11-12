@@ -18,10 +18,16 @@ LOOKBACK_SESSIONS = 250
 MOMENTUM_SESSIONS = 20
 MIN_BASE_SAMPLES = 30
 MOMENTUM_BIN_EDGES = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+MIN_UNIVERSE_COVERAGE = 0.9           # 기준일 봉 수가 직전 거래일의 이 비율에 못 미치면 수집이 덜 끝난 것으로 본다
 
 
 class UniverseBarsMissing(RuntimeError):
-    """기준일의 유니버스 봉이 아직 없다. 수집 뒤에 다시 실행한다."""
+    """기준일의 유니버스 봉이 아직 없거나 일부만 있다. 수집 뒤에 다시 실행한다."""
+
+
+def _bar_count(conn: sqlite3.Connection, session_date: str) -> int:
+    return conn.execute('SELECT COUNT(*) FROM bars WHERE basis = ? AND session_date = ?',
+                        (bars.BASIS_UNIVERSE, session_date)).fetchone()[0]
 
 
 def _recent_sessions(conn: sqlite3.Connection, asof_date: str, count: int) -> list[str]:
@@ -42,13 +48,17 @@ def _series(conn: sqlite3.Connection, start: str, end: str) -> dict[str, list[di
 
 def universe_base_rate(conn: sqlite3.Connection, asof_date: str, *,
                        lookback: int = LOOKBACK_SESSIONS) -> dict[str, Any]:
-    """직전 lookback 거래일의 전 종목 E1 적중률. 기준일까지의 봉으로 판정이 끝난 경로만 센다."""
+    """직전 lookback 거래일의 전 종목 E1 적중률.
+
+    기준일까지 뒤따르는 8거래일 봉이 모두 있는 신호일만 센다. 일찍 끝난 경로만 세면
+    최근 신호일에서 만기 실패가 빠져 적중률이 부풀려진다.
+    """
     sessions = _recent_sessions(conn, asof_date, lookback + events.E1_MAX_SESSIONS + 1)
     if not sessions:
         return {'rate': None, 'n': 0, 'hits': 0}
     n = hits = 0
     for series in _series(conn, sessions[0], asof_date).values():
-        for signal in range(len(series) - 1):
+        for signal in range(len(series) - events.E1_MAX_SESSIONS):
             result = events.evaluate_e1(series[signal + 1:signal + 1 + events.E1_MAX_SESSIONS], cost_pct=0.0)
             if result is not None:
                 n += 1
@@ -73,23 +83,42 @@ def momentum_ranks(conn: sqlite3.Connection, asof_date: str, *,
 
 
 def submit_baselines(conn: sqlite3.Connection, *, asof_date: str, stock_codes: Iterable[str]) -> dict[str, int]:
-    if conn.execute('SELECT 1 FROM bars WHERE basis = ? AND session_date = ? LIMIT 1',
-                    (bars.BASIS_UNIVERSE, asof_date)).fetchone() is None:
+    n_asof = _bar_count(conn, asof_date)
+    if n_asof == 0:
         raise UniverseBarsMissing(asof_date)
+    previous = conn.execute('SELECT MAX(session_date) FROM bars WHERE basis = ? AND session_date < ?',
+                            (bars.BASIS_UNIVERSE, asof_date)).fetchone()[0]
+    n_prev = _bar_count(conn, previous) if previous else 0
+    if n_prev > 0 and n_asof < MIN_UNIVERSE_COVERAGE * n_prev:
+        raise UniverseBarsMissing(f'{asof_date}: {n_asof} bars, previous session {previous} has {n_prev}')
     ledger.register_forecaster(conn, BASE_RATE_ID, VERSION, 'baseline', 'native')
     ledger.register_forecaster(conn, MOMENTUM_ID, VERSION, 'baseline', 'derived')
     asof_ts = clock.close_ts(asof_date)
+    asof_key = clock.iso(clock.parse_ts(asof_ts))
     base = universe_base_rate(conn, asof_date)
     ranks = momentum_ranks(conn, asof_date)
     summary = {'submitted': 0, 'abstained': 0, 'duplicate': 0}
 
+    def already_forecast(forecaster_id: str, code: str) -> bool:
+        """이미 예측이 있는 키는 시각과 무관하게 중복으로만 센다. 기권도 남기지 않는다."""
+        if conn.execute('SELECT 1 FROM forecasts WHERE forecaster_id = ? AND version = ? AND stock_code = ? '
+                        'AND asof_ts = ? AND event_id = ?',
+                        (forecaster_id, VERSION, code, asof_key, EVENT_ID)).fetchone() is None:
+            return False
+        summary['duplicate'] += 1
+        return True
+
     def abstain(forecaster_id: str, code: str, reason: str) -> None:
-        ledger.record_abstention(conn, forecaster_id=forecaster_id, version=VERSION, stock_code=code,
-                                 asof_ts=asof_ts, event_id=EVENT_ID, reason=reason)
-        summary['abstained'] += 1
+        if already_forecast(forecaster_id, code):
+            return
+        if ledger.record_abstention(conn, forecaster_id=forecaster_id, version=VERSION, stock_code=code,
+                                    asof_ts=asof_ts, event_id=EVENT_ID, reason=reason):
+            summary['abstained'] += 1
 
     def submit(forecaster_id: str, code: str, probability: float, raw_score: float | None,
                capsule: dict[str, Any]) -> None:
+        if already_forecast(forecaster_id, code):
+            return
         try:
             ledger.submit_forecast(conn, forecaster_id=forecaster_id, version=VERSION, stock_code=code,
                                    asof_ts=asof_ts, event_id=EVENT_ID, probability=probability,
@@ -100,7 +129,9 @@ def submit_baselines(conn: sqlite3.Connection, *, asof_date: str, stock_codes: I
             if rejected.code == 'duplicate':
                 summary['duplicate'] += 1
             elif rejected.code == 'late_submission':
-                abstain(forecaster_id, code, 'late_submission')
+                if ledger.record_abstention(conn, forecaster_id=forecaster_id, version=VERSION, stock_code=code,
+                                            asof_ts=asof_ts, event_id=EVENT_ID, reason='late_submission'):
+                    summary['abstained'] += 1
             else:
                 raise
 

@@ -21,5 +21,7 @@ def jongga_candidates(asof_date: str, data_dir: str | None = None) -> list[str]:
     except (OSError, ValueError):
         return []
     signals = payload.get('signals') if isinstance(payload, dict) else None
-    codes = {str(item.get('stock_code') or '') for item in (signals or []) if isinstance(item, dict)}
+    if not isinstance(signals, list):
+        return []
+    codes = {str(item.get('stock_code') or '') for item in signals if isinstance(item, dict)}
     return sorted(code for code in codes if _STOCK_CODE.fullmatch(code))
