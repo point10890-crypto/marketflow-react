@@ -1402,6 +1402,24 @@ def _with_benchmark_tickers(tickers, names_map):
     return tickers, names_map
 
 
+def _enqueue_league_slot(slot: str) -> bool:
+    """예측 리그 잡을 큐에 넣기만 한다. 실행은 league_worker 프로세스가 한다."""
+    from app.services.forecast_league import clock as league_clock, db as league_db
+    from app.services.league_worker import schedule as league_schedule
+    with league_db.connect() as conn:
+        added = league_schedule.enqueue_slot(conn, slot, datetime.now(league_clock.KST).date())
+    logger.info(f"📒 예측 리그 {slot} 잡 {added}건 큐 등록")
+    return True
+
+
+def run_league_morning():
+    return _enqueue_league_slot('morning')
+
+
+def run_league_evening():
+    return _enqueue_league_slot('evening')
+
+
 def update_daily_prices():
     """일별 가격 데이터 업데이트 — FDR listing + pykrx OHLCV 수집 (벤치마크 ETF 포함)"""
     import pandas as pd
@@ -5262,6 +5280,13 @@ class Scheduler:
                                   max_retries=1, retry_delay=300))
 
         for day in weekdays:
+            # 07:30 / 20:45 — 예측 리그 잡 큐 등록 (기준선 제출 / 정규장 봉 수집·해소·채점)
+            getattr(schedule.every(), day).at('07:30').do(
+                self._with_record(run_league_morning, 'league_morning',
+                                  max_retries=1, retry_delay=300))
+            getattr(schedule.every(), day).at('20:45').do(
+                self._with_record(run_league_evening, 'league_evening',
+                                  max_retries=1, retry_delay=300))
             # 08:55 — KIS 토큰 웜업 (장 시작 5분 전 자격증명/네트워크 사전 검증)
             getattr(schedule.every(), day).at('08:55').do(
                 self._with_record(_run_kis_token_warmup, 'kis_token_warmup',
