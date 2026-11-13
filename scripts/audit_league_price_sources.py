@@ -45,6 +45,15 @@ def compare_bases(conn, session: str) -> dict:
         'JOIN bars u ON u.stock_code = r.stock_code AND u.session_date = r.session_date '
         'WHERE r.basis = ? AND u.basis = ? AND r.session_date = ?',
         (bars.BASIS_REGULAR, bars.BASIS_UNIVERSE, session)).fetchall()
+    from app.services.forecast_league import saved_universe
+    _, sealed = saved_universe.snapshot(conn, session)
+    if sealed is not None:
+        rows = []
+        for regular in conn.execute('SELECT * FROM bars WHERE basis=? AND session_date=?', (bars.BASIS_REGULAR, session)):
+            daily = next((bar for bar in sealed['prices_by_symbol'].get(regular['stock_code'], []) if bar['date'] == session), None)
+            if daily is not None:
+                rows.append({**{'r'+field[0]: regular[field] for field in FIELDS},
+                             **{'u'+field[0]: daily[field] for field in FIELDS}})
     mismatch = {field: 0 for field in FIELDS}
     for row in rows:
         for field in FIELDS:

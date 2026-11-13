@@ -25,7 +25,7 @@ def _seed(conn, forecaster, count, *, score, outcome, exit_date='2026-05-01', st
 
 
 def _resolve(conn, forecast_id, outcome, exit_date):
-    conn.execute("INSERT INTO resolutions VALUES (?, 'resolved', ?, 't', ?, 100, ?, 100, 'expiry', 0, 'v')",
+    conn.execute("INSERT INTO resolutions VALUES (?, 'resolved', ?, '2026-05-30T20:00:00+09:00', ?, 100, ?, 100, 'expiry', 0, 'v')",
                  (forecast_id, outcome, exit_date, exit_date))
 
 
@@ -108,3 +108,22 @@ def test_own_samples_without_a_raw_score_are_ignored(league_conn):
     _seed(league_conn, 'fx', 30, score=0.9, outcome=1)
     _seed(league_conn, 'fx', 30, score=None, outcome=0, start=30, day='2026-01-02')
     assert _derive(league_conn, 0.2) == (0.98, 'forecaster_overall')
+
+
+def test_results_recorded_after_cutoff_cannot_rewrite_probability(league_conn):
+    _seed(league_conn, 'fx', 30, score=0.9, outcome=1)
+    league_conn.execute("UPDATE resolutions SET resolved_at='2026-06-03T00:00:00Z'")
+    assert _derive(league_conn, 0.8) == (0.2, 'fallback')
+
+
+def test_future_void_does_not_close_a_past_cohort(league_conn):
+    _seed(league_conn, 'fx', 30, score=0.9, outcome=1)
+    ids = _seed(league_conn, 'fx', 1, score=0.9, outcome=None, start=30)
+    league_conn.execute("INSERT INTO resolutions (forecast_id,status,resolved_at,price_source_version) VALUES (?, 'void', ?, 'v')",
+                        (ids[0], '2026-06-03T00:00:00Z'))
+    assert _derive(league_conn, 0.8) == (0.2, 'fallback')
+
+
+def test_unofficial_own_results_do_not_train_official_probability(league_conn):
+    _seed(league_conn, 'fx', 30, score=0.9, outcome=1, official=0)
+    assert _derive(league_conn, 0.8) == (0.2, 'fallback')

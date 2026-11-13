@@ -2,13 +2,14 @@ import re
 from pathlib import Path
 
 import scheduler
-from app.services.forecast_league import db
+from app.services.forecast_league import db, clock
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
 def test_scheduler_only_enqueues_league_jobs(tmp_path, monkeypatch):
     monkeypatch.setenv('FORECAST_LEAGUE_DIR', str(tmp_path / 'league'))
+    monkeypatch.setattr(clock, 'is_trading_day', lambda day: True)
     assert scheduler.run_league_morning() is True
     assert scheduler.run_league_evening() is True
     with db.connect() as conn:
@@ -29,3 +30,9 @@ def test_register_script_targets_the_drain_command():
     assert '-X utf8 -m app.services.league_worker drain' in script
     assert "MINIPC-NQYLP" in script and "'SYSTEM'" in script
     assert 'Unregister-ScheduledTask' not in script
+
+
+def test_admin_job_registry_exposes_both_research_slots():
+    registered = {job['key']: job for job in scheduler.describe_jobs()}
+    assert registered['league_morning']['schedule'] == '평일 07:30'
+    assert registered['league_evening']['schedule'] == '평일 20:45'

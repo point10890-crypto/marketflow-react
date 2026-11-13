@@ -91,3 +91,10 @@ def test_matches_the_paper_position_engine(tmp_path, monkeypatch, bars):
     assert league['exit_date'] == paper['exit_date']
     assert league['exit_price'] == pytest.approx(paper['exit_price'], abs=1e-3)
     assert league['gross_return_pct'] == pytest.approx(paper['return_pct'], abs=0.006)
+
+
+def test_gap_down_does_not_claim_a_stop_price_that_never_traded():
+    result = events.evaluate_e1([_bar(2, 100, 103, 97, 100), _bar(3, 80, 82, 77, 81)], cost_pct=0.23)
+    assert result['outcome'] == 0
+    assert result['exit_price'] == 80
+    assert result['net_return_pct'] == pytest.approx(-20.23)

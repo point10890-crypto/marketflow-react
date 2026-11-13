@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
-from app.services.forecast_league import bars, baselines, candidates, capsules, ledger
+from app.services.forecast_league import clock, bars, baselines, candidates, capsules, ledger
 
 WEEKDAYS = lambda day: day.weekday() < 5  # noqa: E731
 ASOF_DATE = '2026-11-12'
@@ -30,6 +30,7 @@ def _series(conn, code, days, *, start=100.0, step=0.0, spike_every=0):
 @pytest.fixture(autouse=True)
 def weekday_calendar(monkeypatch):
     monkeypatch.setattr(ledger, '_is_trading_day', WEEKDAYS)
+    monkeypatch.setattr(clock, 'is_trading_day', WEEKDAYS)
 
 
 @pytest.fixture
@@ -191,13 +192,32 @@ def test_jongga_candidates_reads_the_daily_result_file(tmp_path):
     path.write_text(json.dumps({'signals': [{'stock_code': '005930'}, {'stock_code': '000660'},
                                             {'stock_code': '005930'}, {'stock_code': 'ABC'}, {}]}), encoding='utf-8')
     assert candidates.jongga_candidates('2026-11-12', data_dir=str(tmp_path)) == ['000660', '005930']
-    assert candidates.jongga_candidates('2026-11-13', data_dir=str(tmp_path)) == []
+    with pytest.raises(candidates.CandidateSourceUnavailable):
+        candidates.jongga_candidates('2026-11-13', data_dir=str(tmp_path))
     path.write_text('not json', encoding='utf-8')
-    assert candidates.jongga_candidates('2026-11-12', data_dir=str(tmp_path)) == []
+    with pytest.raises(candidates.CandidateSourceUnavailable):
+        candidates.jongga_candidates('2026-11-12', data_dir=str(tmp_path))
 
 
 @pytest.mark.parametrize('signals', [5, 'text', {'stock_code': '005930'}, None])
 def test_jongga_candidates_ignores_signals_that_are_not_a_list(tmp_path, signals):
     path = tmp_path / 'jongga_v2_results_20261112.json'
     path.write_text(json.dumps({'signals': signals}), encoding='utf-8')
+    with pytest.raises(candidates.CandidateSourceUnavailable):
+        candidates.jongga_candidates('2026-11-12', data_dir=str(tmp_path))
+
+
+def test_missing_session_cannot_extend_the_eight_session_horizon(league_conn, monkeypatch):
+    from app.services.forecast_league import clock
+    monkeypatch.setattr(clock, 'is_trading_day', WEEKDAYS)
+    days = _sessions(10, end='2026-05-29')
+    _series(league_conn, '000001', days)
+    _series(league_conn, '000002', [day for day in days if day != '2026-05-20'])
+    league_conn.execute("UPDATE bars SET high=110 WHERE stock_code='000002' AND session_date='2026-05-29'")
+    result = baselines.universe_base_rate(league_conn, days[-1])
+    assert result == {'rate': 0.0, 'n': 2, 'hits': 0}
+
+
+def test_legitimate_empty_candidates_remain_successful(tmp_path):
+    (tmp_path / 'jongga_v2_results_20261112.json').write_text('{"signals": []}', encoding='utf-8')
     assert candidates.jongga_candidates('2026-11-12', data_dir=str(tmp_path)) == []

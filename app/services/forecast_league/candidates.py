@@ -13,15 +13,19 @@ from app.utils.paths import DATA_DIR
 _STOCK_CODE = re.compile(r'[0-9]{6}')
 
 
+class CandidateSourceUnavailable(RuntimeError):
+    """A source error must retry, never become a successful empty scan."""
+
+
 def jongga_candidates(asof_date: str, data_dir: str | None = None) -> list[str]:
     path = os.path.join(data_dir or DATA_DIR, f"jongga_v2_results_{asof_date.replace('-', '')}.json")
     try:
         with open(path, 'r', encoding='utf-8') as handle:
             payload = json.load(handle)
     except (OSError, ValueError):
-        return []
+        raise CandidateSourceUnavailable('candidate_file_unavailable') from None
     signals = payload.get('signals') if isinstance(payload, dict) else None
     if not isinstance(signals, list):
-        return []
+        raise CandidateSourceUnavailable('candidate_schema_invalid')
     codes = {str(item.get('stock_code') or '') for item in signals if isinstance(item, dict)}
     return sorted(code for code in codes if _STOCK_CODE.fullmatch(code))

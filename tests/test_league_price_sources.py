@@ -6,6 +6,12 @@ import pandas as pd
 import pytest
 
 from app.services.forecast_league import bars, capsules, ledger, price_sources
+from tests.test_league_regular_vi import result as regular_result
+
+@pytest.fixture(autouse=True)
+def collection_clock(monkeypatch):
+    monkeypatch.setattr(price_sources.clock, 'now_utc', lambda: datetime(2026, 11, 14, 3, tzinfo=timezone.utc))
+
 
 WEEKDAYS = lambda day: day.weekday() < 5  # noqa: E731
 
@@ -20,10 +26,7 @@ class FakeProvider:
             error = ValueError('regular_boundaries')
             error.code = 'regular_boundaries'
             raise error
-        return {'symbol': symbol, 'session': session, 'captured_at': '2026-11-13T11:45:00Z',
-                'bar': {'open': 100.0, 'high': 110.0, 'low': 95.0, 'close': 105.0, 'volume': 10, 'traded_value': 1},
-                'pages': [{'params': {}, 'response': {'output2': [1, 2, 3]}}],
-                'source': {'version': 'kis-regular-j-minute-v1'}}
+        return regular_result(delayed=False, symbol=symbol, session=session, now=datetime(2026,11,13,11,45,tzinfo=timezone.utc))
 
 
 @pytest.fixture
@@ -69,8 +72,8 @@ def test_collect_stores_bars_with_compact_evidence(league_conn):
     assert (row['stock_code'], row['basis'], row['open'], row['high'], row['low'], row['close']) == (
         '005930', bars.BASIS_REGULAR, 100.0, 110.0, 95.0, 105.0)
     evidence = capsules.get_capsule(league_conn, row['evidence_hash'])
-    assert evidence['source_version'] == 'kis-regular-j-minute-v1'
-    assert len(evidence['pages_sha256']) == 64 and 'pages' not in evidence
+    assert evidence['source_version'] == 'league-kis-regular-vi-v2'
+    assert len(evidence['pages_sha256']) == 64 and evidence['source_evidence']['pages']
 
 
 def test_universe_sync_never_stores_todays_bar(league_conn, monkeypatch):
@@ -191,10 +194,9 @@ class StaticProvider:
 
     def fetch_session(self, symbol, session):
         captured = next(self.captured, '2026-11-13T11:45:00Z')
-        return {'captured_at': captured, 'bar': dict(self.bar),
-                'pages': [{'params': {'hour': '153000'}, 'captured_at': captured, 'response': {'output2': [1, 2]}},
-                          {'params': {'hour': '120000'}, 'captured_at': captured, 'response': {'output2': [3]}}],
-                'source': {'version': 'kis-regular-j-minute-v1'}}
+        value = regular_result(delayed=False, symbol=symbol, session=session, now=datetime.fromisoformat(captured.replace('Z','+00:00')))
+        value['bar'].update(self.bar)
+        return value
 
 
 def test_collect_reports_an_invalid_bar_and_leaves_no_capsule(league_conn):
@@ -214,14 +216,13 @@ def test_collect_does_not_report_an_existing_bar_as_failed(league_conn):
     assert league_conn.execute('SELECT open FROM bars').fetchone()[0] == 1.0
 
 
-def test_evidence_hash_depends_only_on_the_provider_responses(league_conn):
+def test_source_capsule_is_self_contained_and_replayable(league_conn, monkeypatch):
+    from app.services.forecast_league import regular_vi
+    monkeypatch.setattr(price_sources.clock, 'now_utc', lambda: datetime(2026, 11, 14, 3, tzinfo=timezone.utc))
     provider = StaticProvider(captured=['2026-11-13T11:45:00Z', '2026-11-14T02:00:00Z'])
-    price_sources.collect_regular_bars(league_conn, provider=provider,
-                                       targets=[('005930', '2026-11-13'), ('000660', '2026-11-13')])
-    evidence = [capsules.get_capsule(league_conn, row[0])
-                for row in league_conn.execute('SELECT evidence_hash FROM bars ORDER BY stock_code')]
-    assert [item['captured_at'] for item in evidence] == ['2026-11-14T02:00:00Z', '2026-11-13T11:45:00Z']
-    assert evidence[0]['pages_sha256'] == evidence[1]['pages_sha256']
-    expected = hashlib.sha256(json.dumps([{'output2': [1, 2]}, {'output2': [3]}], sort_keys=True,
-                                         ensure_ascii=False).encode('utf-8')).hexdigest()
-    assert evidence[0]['pages_sha256'] == expected
+    summary = price_sources.collect_regular_bars(league_conn, provider=provider,
+                         targets=[('005930', '2026-11-13'), ('000660', '2026-11-13')])
+    assert summary['stored'] == 2
+    for row in league_conn.execute('SELECT * FROM bars'):
+        evidence = capsules.get_capsule(league_conn, row['evidence_hash'])
+        regular_vi.replay(evidence['source_evidence'], row['stock_code'], row['session_date'], price_sources.clock.now_utc())

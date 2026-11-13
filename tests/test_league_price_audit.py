@@ -36,3 +36,12 @@ def test_compare_bases_counts_field_mismatches(league_conn):
     put('035420', bars.BASIS_REGULAR)                    # 한쪽에만 있음 → 비교하지 않음
     assert audit.compare_bases(league_conn, '2026-11-12') == {
         'session': '2026-11-12', 'compared': 2, 'mismatch': {'open': 0, 'high': 0, 'low': 1, 'close': 1}}
+
+
+def test_compare_uses_sealed_quality_inputs(league_conn):
+    from app.services.forecast_league import capsules
+    digest = capsules.put_capsule(league_conn, {'prices_by_symbol': {'005930': [dict(date='2026-11-12', open=100, high=110, low=95, close=104)]}})
+    league_conn.execute('INSERT INTO universe_snapshots VALUES (?,?)', ('2026-11-12', digest))
+    bars.put_bar(league_conn, stock_code='005930', session_date='2026-11-12', basis=bars.BASIS_REGULAR,
+                 open=100, high=110, low=95, close=105, captured_at='t')
+    assert audit.compare_bases(league_conn, '2026-11-12')['mismatch'] == {'open':0,'high':0,'low':0,'close':1}

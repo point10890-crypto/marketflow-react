@@ -13,7 +13,7 @@ from typing import Any
 
 BASIS_REGULAR = 'krx_regular'
 BASIS_UNIVERSE = 'provider_daily'
-REGULAR_SOURCE_VERSION = 'krx_regular/kis-regular-j-minute-v1'
+REGULAR_SOURCE_VERSION = 'krx_regular/league-kis-regular-vi-v2'
 _BASES = frozenset({BASIS_REGULAR, BASIS_UNIVERSE})
 _STOCK_CODE = re.compile(r'[0-9]{6}')
 

@@ -91,3 +91,8 @@ def test_trading_day_helpers():
     assert clock.previous_trading_day(date(2026, 11, 16), WEEKDAYS) == date(2026, 11, 13)
     assert clock.close_ts('2026-11-12') == '2026-11-12T15:30:00+09:00'
     assert clock.kst_date(clock.parse_ts('2026-11-12T16:00:00Z')) == '2026-11-13'
+
+
+def test_announced_csat_session_has_a_later_submission_deadline():
+    assert clock.close_ts('2026-11-19') == '2026-11-19T16:30:00+09:00'
+    assert clock.iso(clock.next_session_open_after(clock.parse_ts('2026-11-19T09:15:00+09:00'), WEEKDAYS)) == '2026-11-19T01:00:00Z'

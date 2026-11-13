@@ -1,3 +1,5 @@
+> **2026-11-13 운영 인계 보완:** 아래 원안의 Task 14 전종목 FDR 수집, 종가베팅만 후보 선정, 기본 텔레그램 알림, v1 정규장 소스 가정은 [최신 인계 기록](../../forecast_league_handoff_2026_11_13.md)의 결정을 따른다. 기존 사용자 승인 범위에서 검증·통합하며 첫 자연 실행과 성과 성숙은 구분한다.
+
 # 예측 리그 1단계 (원장·채점기·기준선·워커) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

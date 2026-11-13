@@ -245,3 +245,22 @@ def test_recomputing_does_not_add_rows(league_conn):
     assert len(first) == len(second) == 1
     assert league_conn.execute('SELECT COUNT(*) FROM scorecards').fetchone()[0] == 1
     assert _card(league_conn, 'fx')[1] == before
+
+
+def test_baseline_comparison_requires_the_same_entry_session(league_conn):
+    _register(league_conn, 'fx')
+    _register(league_conn, scorecards.BASELINE_ID)
+    own = _add(league_conn, 'fx', '2026-05-18', time='08:00:00')
+    ref = _add(league_conn, scorecards.BASELINE_ID, '2026-05-18')
+    league_conn.execute("UPDATE resolutions SET entry_date='2026-05-19' WHERE forecast_id=?", (ref,))
+    rows = scorecards._scored(scorecards._rows(league_conn, 'fx', '1', 'E1'))
+    assert scorecards._baseline(league_conn, 'fx', 'E1', rows) is None
+
+
+def test_baseline_comparison_rejects_contradictory_outcomes(league_conn):
+    _register(league_conn, 'fx')
+    _register(league_conn, scorecards.BASELINE_ID)
+    _add(league_conn, 'fx', '2026-05-18', outcome=1)
+    _add(league_conn, scorecards.BASELINE_ID, '2026-05-18', outcome=0)
+    rows = scorecards._scored(scorecards._rows(league_conn, 'fx', '1', 'E1'))
+    assert scorecards._baseline(league_conn, 'fx', 'E1', rows) is None

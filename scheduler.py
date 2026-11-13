@@ -4899,6 +4899,8 @@ def _build_job_registry() -> dict:
         add('alpha_brain_agent_night', '알파 브레인 에이전트 (야간)', run_alpha_brain_agent_night,
             f'매일 {Config.MIROFISH_AGENT_NIGHT_TIME}', 'KR')
 
+    add('league_morning', '예측 리그 입력·기록 (연구)', run_league_morning, '평일 07:30', 'KR')
+    add('league_evening', '예측 리그 가격·성과 검증 (연구)', run_league_evening, '평일 20:45', 'KR')
     add('kis_token_warmup', 'KIS 토큰 웜업', _run_kis_token_warmup, '평일 08:55', 'KR')
     add('kiwoom_ai_theme', '키움 AI 테마 TOP15', _run_kiwoom_ai_theme, '평일 09:10~15:25 (15분)', 'KR')
     add('leading_screener', '주도주 LIVE 스크리너', run_leading_screener_refresh,

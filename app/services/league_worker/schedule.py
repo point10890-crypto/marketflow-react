@@ -11,6 +11,10 @@ from app.services.league_worker import jobs
 def enqueue_slot(conn: sqlite3.Connection, slot: str, today: date,
                  trading_day: clock.TradingDay | None = None) -> int:
     day = today.isoformat()
+    if slot not in ('morning', 'evening'):
+        raise ValueError(f'unknown slot: {slot}')
+    if not (trading_day or clock.is_trading_day)(today):
+        return 0
     if slot == 'morning':
         asof = clock.previous_trading_day(today, trading_day).isoformat()
         planned = [('sync_universe', {'today': day}, f'sync_universe:{day}'),
@@ -19,4 +23,8 @@ def enqueue_slot(conn: sqlite3.Connection, slot: str, today: date,
         planned = [(kind, {'today': day}, f'{kind}:{day}') for kind in ('collect_regular', 'resolve', 'score')]
     else:
         raise ValueError(f'unknown slot: {slot}')
-    return sum(1 for kind, args, key in planned if jobs.enqueue(conn, kind, args, key))
+    added, parent = 0, None
+    for kind, args, key in planned:
+        added += jobs.enqueue(conn, kind, args, key, depends_on=parent, require_success=kind != 'resolve')
+        parent = key
+    return added

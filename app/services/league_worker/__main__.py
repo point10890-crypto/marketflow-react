@@ -9,10 +9,14 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import sys
 from datetime import datetime
+from pathlib import Path
 
-from app.services.forecast_league import clock, db
+from filelock import FileLock, Timeout
+
+from app.services.forecast_league import clock, db, paths
 from app.services.league_worker import handlers, jobs, schedule
 
 logger = logging.getLogger('league_worker')
@@ -21,6 +25,8 @@ MAX_JOBS_PER_RUN = 50
 
 def _alert(message: str) -> None:
     """시스템 메시지 — 개인봇으로만 보낸다."""
+    if os.environ.get('FORECAST_LEAGUE_ALERTS_ENABLED') != '1':
+        return
     try:
         from app.utils.scheduler import _send_telegram
         _send_telegram(message, channel=False)
@@ -30,6 +36,16 @@ def _alert(message: str) -> None:
 
 def drain() -> int:
     """실행한 잡 수를 반환한다."""
+    directory = Path(paths.league_dir())
+    directory.mkdir(parents=True, exist_ok=True)
+    try:
+        with FileLock(str(directory / 'worker.lock'), timeout=0):
+            return _drain_locked()
+    except Timeout:
+        return 0
+
+
+def _drain_locked() -> int:
     ran = 0
     with db.connect() as conn:
         jobs.recover_running(conn)
@@ -56,6 +72,9 @@ def drain() -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    from dotenv import load_dotenv
+    from app.utils.paths import BASE_DIR
+    load_dotenv(Path(BASE_DIR) / '.env', override=False)
     parser = argparse.ArgumentParser(prog='python -m app.services.league_worker')
     commands = parser.add_subparsers(dest='command', required=True)
     commands.add_parser('drain')

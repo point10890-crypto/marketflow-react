@@ -16,13 +16,25 @@ from app.services.forecast_league.ledger import clamp_probability
 MIN_SAMPLES = 30
 
 
-def _usable(rows: Sequence[sqlite3.Row], asof_date: str) -> list[dict[str, Any]]:
+def _usable(rows: Sequence[sqlite3.Row], asof_ts: str) -> list[dict[str, Any]]:
     """기준일 전에 전원 청산이 끝난 코호트의 resolved 행."""
     def cohort(row: dict[str, Any]) -> tuple[str, str, str]:
         return row['forecaster_id'], row['version'], clock.kst_date(clock.parse_ts(row['asof_ts']))
 
+    cutoff = clock.parse_ts(asof_ts)
+    asof_date = clock.kst_date(cutoff)
+    known = []
+    for original in rows:
+        row = dict(original)
+        try:
+            available = clock.parse_ts(row['resolved_at']) < cutoff
+        except (ValueError, TypeError, AttributeError):
+            available = False
+        if not available:
+            row['status'] = None  # A later resolution/void cannot close an earlier cohort.
+        known.append(row)
     samples: list[dict[str, Any]] = []
-    for members in metrics.closed_cohorts([dict(row) for row in rows], cohort):
+    for members in metrics.closed_cohorts(known, cohort):
         resolved = [row for row in members if row['status'] == 'resolved']
         if all(row['exit_date'] is not None and row['exit_date'] < asof_date for row in resolved):
             samples.extend(resolved)
@@ -33,12 +45,11 @@ def derived_probability(conn: sqlite3.Connection, *, forecaster_id: str, version
                         raw_score: float, asof_ts: str, bin_edges: Sequence[float],
                         fallback: float) -> tuple[float, str]:
     """(확률, 근거) 를 반환한다. 근거: score_bin / forecaster_overall / league_base_rate / fallback."""
-    asof_date = clock.kst_date(clock.parse_ts(asof_ts))
-    columns = ('SELECT f.forecaster_id, f.version, f.asof_ts, f.raw_score, r.status, r.outcome, r.exit_date '
+    columns = ('SELECT f.forecaster_id, f.version, f.asof_ts, f.raw_score, r.status, r.outcome, r.exit_date, r.resolved_at '
                'FROM forecasts f LEFT JOIN resolutions r ON r.forecast_id = f.forecast_id ')
     own = [row for row in _usable(conn.execute(
-        columns + 'WHERE f.forecaster_id = ? AND f.version = ? AND f.event_id = ?',
-        (forecaster_id, version, event_id)).fetchall(), asof_date) if row['raw_score'] is not None]
+        columns + 'WHERE f.forecaster_id = ? AND f.version = ? AND f.event_id = ? AND f.official = 1',
+        (forecaster_id, version, event_id)).fetchall(), asof_ts) if row['raw_score'] is not None]
     target = bisect_right(bin_edges, raw_score)
     same_bin = [row['outcome'] for row in own if bisect_right(bin_edges, row['raw_score']) == target]
     if len(same_bin) >= MIN_SAMPLES:
@@ -46,7 +57,7 @@ def derived_probability(conn: sqlite3.Connection, *, forecaster_id: str, version
     if len(own) >= MIN_SAMPLES:
         return clamp_probability(sum(row['outcome'] for row in own) / len(own)), 'forecaster_overall'
     league = _usable(conn.execute(columns + 'WHERE f.event_id = ? AND f.official = 1', (event_id,)).fetchall(),
-                     asof_date)
+                     asof_ts)
     if len(league) >= MIN_SAMPLES:
         return clamp_probability(sum(row['outcome'] for row in league) / len(league)), 'league_base_rate'
     return clamp_probability(fallback), 'fallback'

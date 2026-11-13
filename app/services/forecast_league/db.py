@@ -55,11 +55,24 @@ CREATE TABLE IF NOT EXISTS bars (
   PRIMARY KEY (stock_code, session_date, basis)
 );
 CREATE INDEX IF NOT EXISTS ix_bars_basis_date ON bars (basis, session_date);
+CREATE TABLE IF NOT EXISTS universe_snapshots (
+  asof_date TEXT PRIMARY KEY, capsule_hash TEXT NOT NULL REFERENCES capsules(capsule_hash)
+);
+CREATE TRIGGER IF NOT EXISTS universe_no_update BEFORE UPDATE ON universe_snapshots
+BEGIN SELECT RAISE(ABORT, 'universe snapshots are append-only'); END;
+CREATE TRIGGER IF NOT EXISTS universe_no_delete BEFORE DELETE ON universe_snapshots
+BEGIN SELECT RAISE(ABORT, 'universe snapshots are append-only'); END;
 CREATE TABLE IF NOT EXISTS jobs (
   job_id INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, args TEXT NOT NULL,
   dedupe_key TEXT NOT NULL UNIQUE, status TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0,
   not_before TEXT NOT NULL, result TEXT, last_error TEXT,
   created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS job_dependencies (
+  job_id INTEGER NOT NULL REFERENCES jobs(job_id),
+  parent_id INTEGER NOT NULL REFERENCES jobs(job_id),
+  require_success INTEGER NOT NULL DEFAULT 1,
+  PRIMARY KEY (job_id, parent_id)
 );
 CREATE TRIGGER IF NOT EXISTS forecasts_no_update BEFORE UPDATE ON forecasts
 BEGIN SELECT RAISE(ABORT, 'forecasts are append-only'); END;
@@ -86,6 +99,8 @@ def connect(path: str | None = None) -> Iterator[sqlite3.Connection]:
         # REPLACE 충돌 해소가 지우는 행에도 DELETE 트리거가 걸리게 한다 (INSERT OR REPLACE 우회 차단).
         conn.execute('PRAGMA recursive_triggers=ON')
         conn.executescript(SCHEMA)
+        if 'require_success' not in {row[1] for row in conn.execute('PRAGMA table_info(job_dependencies)')}:
+            conn.execute('ALTER TABLE job_dependencies ADD COLUMN require_success INTEGER NOT NULL DEFAULT 1')
         yield conn
         conn.commit()
     except BaseException:

@@ -16,31 +16,46 @@ def _now():
     return clock.now_utc()
 
 
-def enqueue(conn: sqlite3.Connection, kind: str, args: dict[str, Any], dedupe_key: str) -> bool:
+def enqueue(conn: sqlite3.Connection, kind: str, args: dict[str, Any], dedupe_key: str,
+            *, depends_on: str | None = None, require_success: bool = True) -> bool:
     stamp = clock.iso(_now())
     cursor = conn.execute(
         'INSERT OR IGNORE INTO jobs (kind, args, dedupe_key, status, attempts, not_before, created_at, updated_at) '
         "VALUES (?, ?, ?, 'queued', 0, ?, ?, ?)",
         (kind, json.dumps(args, sort_keys=True), dedupe_key, stamp, stamp, stamp))
-    return cursor.rowcount == 1
+    added = cursor.rowcount == 1
+    if depends_on:
+        parent = conn.execute('SELECT job_id FROM jobs WHERE dedupe_key=?', (depends_on,)).fetchone()
+        if parent is None:
+            raise ValueError('missing job dependency')
+        child = conn.execute('SELECT job_id FROM jobs WHERE dedupe_key=?', (dedupe_key,)).fetchone()
+        conn.execute('INSERT OR IGNORE INTO job_dependencies VALUES (?,?,?)', (child[0], parent[0], int(require_success)))
+    return added
 
 
 def recover_running(conn: sqlite3.Connection) -> int:
     """중단된 실행이 남긴 running 잡을 대기 상태로 되돌린다."""
-    cursor = conn.execute("UPDATE jobs SET status = 'queued', updated_at = ? WHERE status = 'running'",
-                          (clock.iso(_now()),))
+    cursor = conn.execute("UPDATE jobs SET status = CASE WHEN attempts >= ? THEN 'failed' ELSE 'queued' END, "
+                          "updated_at = ? WHERE status = 'running'", (MAX_ATTEMPTS, clock.iso(_now())))
     return cursor.rowcount
 
 
 def claim_next(conn: sqlite3.Connection) -> dict[str, Any] | None:
     stamp = clock.iso(_now())
-    row = conn.execute("SELECT * FROM jobs WHERE status = 'queued' AND not_before <= ? ORDER BY job_id LIMIT 1",
-                       (stamp,)).fetchone()
+    # Propagate terminal prerequisite failure; unrelated/new-date jobs stay runnable.
+    while conn.execute("UPDATE jobs SET status='blocked', last_error='prerequisite_failed', updated_at=? "
+                       "WHERE status='queued' AND EXISTS (SELECT 1 FROM job_dependencies d JOIN jobs p "
+                       "ON p.job_id=d.parent_id WHERE d.job_id=jobs.job_id AND d.require_success=1 AND p.status IN ('failed','blocked'))",
+                       (stamp,)).rowcount:
+        pass
+    row = conn.execute("UPDATE jobs SET status='running', attempts=attempts+1, updated_at=? WHERE job_id=("
+                       "SELECT j.job_id FROM jobs j WHERE j.status='queued' AND j.not_before<=? "
+                       "AND j.attempts<? AND NOT EXISTS (SELECT 1 FROM job_dependencies d JOIN jobs p "
+                       "ON p.job_id=d.parent_id WHERE d.job_id=j.job_id AND p.status!='done' AND (d.require_success=1 OR p.status NOT IN ('failed','blocked'))) "
+                       "ORDER BY j.job_id LIMIT 1) RETURNING *", (stamp, stamp, MAX_ATTEMPTS)).fetchone()
     if row is None:
         return None
-    conn.execute("UPDATE jobs SET status = 'running', attempts = attempts + 1, updated_at = ? WHERE job_id = ?",
-                 (stamp, row['job_id']))
-    return {**dict(row), 'status': 'running', 'attempts': row['attempts'] + 1}
+    return dict(row)
 
 
 def complete(conn: sqlite3.Connection, job_id: int, result: Any) -> None:

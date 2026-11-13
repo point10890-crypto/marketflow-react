@@ -31,7 +31,7 @@ def evaluate_e1(bars: list[dict[str, Any]], *, cost_pct: float) -> dict[str, Any
 
     for held, bar in enumerate(bars[:E1_MAX_SESSIONS], start=1):
         if float(bar['low']) <= stop:
-            return done(0, 'stop', stop, bar)
+            return done(0, 'stop', min(stop, float(bar['open'])), bar)
         if float(bar['high']) >= target:
             return done(1, 'target', target, bar)
         if held >= E1_MAX_SESSIONS:

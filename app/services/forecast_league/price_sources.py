@@ -12,7 +12,7 @@ import sqlite3
 from datetime import date, datetime, time, timedelta
 from typing import Any, Callable, Iterable
 
-from app.services.forecast_league import bars, capsules, clock, events, resolver
+from app.services.forecast_league import bars, capsules, clock, events, resolver, regular_vi
 
 REGULAR_READY = time(20, 40)          # 공급자의 수집 가능 시각(20:30)에 여유 10분
 INITIAL_DAYS = 420
@@ -46,6 +46,8 @@ def collect_regular_bars(conn: sqlite3.Connection, *, provider: Any,
     stored, failed = 0, []
     for code, session in targets:
         try:
+            if conn.execute('SELECT 1 FROM bars WHERE stock_code=? AND session_date=? AND basis=?', (code, session, bars.BASIS_REGULAR)).fetchone():
+                continue
             result = provider.fetch_session(code, session)
             bar = result['bar']
             # 저장되지 않을 봉의 근거 캡슐을 남기지 않도록 먼저 확인한다.
@@ -53,6 +55,7 @@ def collect_regular_bars(conn: sqlite3.Connection, *, provider: Any,
                                      open=bar['open'], high=bar['high'], low=bar['low'], close=bar['close']):
                 failed.append([code, session, 'invalid_bar'])
                 continue
+            result = regular_vi.replay(result, code, session, clock.now_utc())
             # 응답만 해시한다. 수집 시각이 섞이면 같은 자료를 다시 받아도 해시가 달라져 재검증할 수 없다.
             responses = [page.get('response') if isinstance(page, dict) else page
                          for page in (result.get('pages') or [])]
@@ -60,7 +63,7 @@ def collect_regular_bars(conn: sqlite3.Connection, *, provider: Any,
             evidence = capsules.put_capsule(conn, {
                 'stock_code': code, 'session': session, 'bar': bar, 'captured_at': result['captured_at'],
                 'source_version': (result.get('source') or {}).get('version'),
-                'pages_sha256': hashlib.sha256(pages).hexdigest()})
+                'pages_sha256': hashlib.sha256(pages).hexdigest(), 'source_evidence': result})
             if bars.put_bar(conn, stock_code=code, session_date=session, basis=bars.BASIS_REGULAR,
                             open=bar['open'], high=bar['high'], low=bar['low'], close=bar['close'],
                             captured_at=result['captured_at'], evidence_hash=evidence):

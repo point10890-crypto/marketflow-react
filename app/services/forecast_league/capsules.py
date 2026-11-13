@@ -26,4 +26,7 @@ def get_capsule(conn: sqlite3.Connection, capsule_hash: str) -> Any | None:
     row = conn.execute('SELECT payload FROM capsules WHERE capsule_hash = ?', (capsule_hash,)).fetchone()
     if row is None:
         return None
-    return json.loads(zlib.decompress(row['payload']).decode('utf-8'))
+    body = zlib.decompress(row['payload'])
+    if hashlib.sha256(body).hexdigest() != capsule_hash:
+        raise ValueError('capsule_integrity')
+    return json.loads(body.decode('utf-8'))

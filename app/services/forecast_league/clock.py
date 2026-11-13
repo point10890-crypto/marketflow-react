@@ -31,8 +31,19 @@ def kst_date(value: datetime) -> str:
     return value.astimezone(KST).date().isoformat()
 
 
+# Announced 2027 CSAT day; do not extrapolate this exception into other years.
+# https://www.yna.co.kr/amp/view/AKR20261105065500008
+SPECIAL_HOURS = {'2026-11-19': ('100000', '163000')}
+
+
+def session_hours(session_date: str) -> tuple[str, str]:
+    return SPECIAL_HOURS.get(session_date, ('090000', '153000'))
+
+
 def close_ts(session_date: str) -> str:
-    return f'{session_date}T15:30:00+09:00'
+    closing = session_hours(session_date)[1]
+    return f'{session_date}T{closing[:2]}:{closing[2:4]}:{closing[4:]}+09:00'
+
 
 
 def is_trading_day(day: date) -> bool:
@@ -52,7 +63,8 @@ def next_session_open_after(ts: datetime, trading_day: TradingDay | None = None)
     local = ts.astimezone(KST)
     day = local.date()
     for _ in range(30):
-        opening = datetime.combine(day, SESSION_OPEN, KST)
+        hms = session_hours(day.isoformat())[0]
+        opening = datetime.combine(day, time(int(hms[:2]), int(hms[2:4])), KST)
         if check(day) and local < opening:
             return opening.astimezone(timezone.utc)
         day += timedelta(days=1)

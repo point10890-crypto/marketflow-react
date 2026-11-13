@@ -9,7 +9,7 @@
 - metrics_json 의 n_scored: 실제 채점에 쓴 행 수. 100건 관문은 이 값에 건다.
 - scorecards.n_resolved 컬럼: 이름은 그대로지만 **n_scored** (채점에 쓴 행 수)를 저장한다.
 - 신뢰 구간은 진입일이 metrics.MIN_BLOCKS 개보다 적으면 null 이다 (n_entry_dates 참고).
-- 기준선 비교는 가장 최근에 등록된 기준선 버전 하나에 고정하고, (종목, asof_ts 의 KST 날짜)로 짝을 맞춘다.
+- 기준선 비교는 가장 최근에 등록된 기준선 버전 하나에 고정하고, (종목, 같은 이벤트의 실제 진입일)로 짝을 맞춘다.
 """
 from __future__ import annotations
 
@@ -61,18 +61,21 @@ def _ci(rows: list[dict[str, Any]], stat: Any) -> list[float] | None:
 
 def _baseline(conn: sqlite3.Connection, forecaster_id: str, event_id: str,
               scored: list[dict[str, Any]]) -> dict[str, Any] | None:
-    """같은 (종목, KST 날짜)에 기준선도 채점된 행만 놓고 본 Brier 차이. 음수면 기준선보다 낫다."""
+    """같은 (종목, 실제 진입일)에 기준선도 채점된 행만 놓고 본 Brier 차이. 음수면 기준선보다 낫다."""
     if forecaster_id == BASELINE_ID:
         return None
     latest = conn.execute('SELECT version FROM forecasters WHERE forecaster_id = ? '
                           'ORDER BY registered_at DESC, version DESC LIMIT 1', (BASELINE_ID,)).fetchone()
     if latest is None:
         return None
-    # 기준선이 같은 날 같은 종목을 여러 번 냈다면 그날의 마지막 예측을 쓴다 (_rows 가 시각 순).
-    reference = {(row['stock_code'], row['day']): row['probability']
+    # Compare the identical event instance, not merely the same display day.
+    reference = {(row['stock_code'], row['entry_date']): row
                  for row in _scored(_rows(conn, BASELINE_ID, latest['version'], event_id))}
-    matched = [(row, reference[(row['stock_code'], row['day'])]) for row in scored
-               if (row['stock_code'], row['day']) in reference]
+    matched = []
+    for row in scored:
+        other = reference.get((row['stock_code'], row['entry_date']))
+        if other is not None and row['entry_date'] and other['outcome'] == row['outcome']:
+            matched.append((row, other['probability']))
     if not matched:
         return None
     own = metrics.brier([(row['probability'], row['outcome']) for row, _ in matched])

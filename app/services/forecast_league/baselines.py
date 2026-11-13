@@ -8,11 +8,11 @@ import sqlite3
 from collections import defaultdict
 from typing import Any, Iterable
 
-from app.services.forecast_league import bars, capsules, clock, derive, events, ledger
+from app.services.forecast_league import bars, capsules, clock, derive, events, ledger, saved_universe
 
 BASE_RATE_ID = 'baseline_base_rate'
 MOMENTUM_ID = 'baseline_momentum'
-VERSION = '1'
+VERSION = '2-sealed-quality'
 EVENT_ID = 'E1'
 LOOKBACK_SESSIONS = 250
 MOMENTUM_SESSIONS = 20
@@ -26,17 +26,26 @@ class UniverseBarsMissing(RuntimeError):
 
 
 def _bar_count(conn: sqlite3.Connection, session_date: str) -> int:
+    _, sealed = saved_universe.snapshot(conn, session_date)
+    if sealed is not None:
+        return sum(bool(rows) and rows[-1]['date'] == session_date for rows in sealed['prices_by_symbol'].values())
     return conn.execute('SELECT COUNT(*) FROM bars WHERE basis = ? AND session_date = ?',
                         (bars.BASIS_UNIVERSE, session_date)).fetchone()[0]
 
 
 def _recent_sessions(conn: sqlite3.Connection, asof_date: str, count: int) -> list[str]:
+    _, sealed = saved_universe.snapshot(conn, asof_date)
+    if sealed is not None:
+        return sorted({row['date'] for rows in sealed['prices_by_symbol'].values() for row in rows if row['date'] <= asof_date})[-count:]
     rows = conn.execute('SELECT DISTINCT session_date FROM bars WHERE basis = ? AND session_date <= ? '
                         'ORDER BY session_date DESC LIMIT ?', (bars.BASIS_UNIVERSE, asof_date, count)).fetchall()
     return [row[0] for row in reversed(rows)]
 
 
 def _series(conn: sqlite3.Connection, start: str, end: str) -> dict[str, list[dict[str, Any]]]:
+    _, sealed = saved_universe.snapshot(conn, end)
+    if sealed is not None:
+        return {code: [row for row in rows if start <= row['date'] <= end and row.get('tradable', True) and not row.get('quality_flags')] for code, rows in sealed['prices_by_symbol'].items()}
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in conn.execute(
             'SELECT stock_code, session_date AS date, open, high, low, close FROM bars '
@@ -56,10 +65,15 @@ def universe_base_rate(conn: sqlite3.Connection, asof_date: str, *,
     sessions = _recent_sessions(conn, asof_date, lookback + events.E1_MAX_SESSIONS + 1)
     if not sessions:
         return {'rate': None, 'n': 0, 'hits': 0}
+    sessions = clock.trading_days(sessions[0], asof_date)
     n = hits = 0
     for series in _series(conn, sessions[0], asof_date).values():
-        for signal in range(len(series) - events.E1_MAX_SESSIONS):
-            result = events.evaluate_e1(series[signal + 1:signal + 1 + events.E1_MAX_SESSIONS], cost_pct=0.0)
+        by_date = {row['date']: row for row in series}
+        for signal in range(len(sessions) - events.E1_MAX_SESSIONS):
+            window = sessions[signal:signal + 1 + events.E1_MAX_SESSIONS]
+            if any(day not in by_date for day in window):
+                continue
+            result = events.evaluate_e1([by_date[day] for day in window[1:]], cost_pct=0.0)
             if result is not None:
                 n += 1
                 hits += result['outcome']
@@ -135,12 +149,18 @@ def submit_baselines(conn: sqlite3.Connection, *, asof_date: str, stock_codes: I
             else:
                 raise
 
+    digest, sealed = saved_universe.snapshot(conn, asof_date)
+    captures = (sealed or {}).get('capture_audit', {})
+    information_cutoff = max((v['last'] for v in captures.values()), default=None)
     for code in sorted(set(stock_codes)):
         if base['n'] < MIN_BASE_SAMPLES:
             abstain(BASE_RATE_ID, code, 'base_rate_insufficient')
             abstain(MOMENTUM_ID, code, 'base_rate_insufficient')
             continue
-        inputs = {'asof_date': asof_date, 'price_basis': bars.BASIS_UNIVERSE,
+        inputs = {'input_capsule_hash': digest, 'information_cutoff': information_cutoff,
+                  'asof_semantics': 'feature_session_close_not_information_availability',
+                  'cohort_bias': 'current_quality_cohort_not_historical_point_in_time',
+                  'asof_date': asof_date, 'price_basis': bars.BASIS_UNIVERSE,
                   'lookback_sessions': LOOKBACK_SESSIONS, 'base_rate': base}
         submit(BASE_RATE_ID, code, ledger.clamp_probability(base['rate']), None,
                {'forecaster': BASE_RATE_ID, **inputs})
