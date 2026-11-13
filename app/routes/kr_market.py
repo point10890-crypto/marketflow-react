@@ -1955,7 +1955,10 @@ def kr_decision_technical_profile(symbol):
         return response({'error': 'invalid_technical_request'}, 400)
     # The selected decision already provides a canonical code. Fuzzy name
     # resolution here can turn a foreign ticker into an unrelated KR stock.
-    code = decision_brief.normalize_symbol(symbol)
+    try:
+        code = decision_brief.normalize_symbol(symbol)
+    except ValueError:
+        return response({'error': 'invalid_technical_request'}, 400)
     if request.method == 'GET':
         return response(decision_technical.read_analysis(code))
     if not decision_technical.is_domestic_symbol(code):

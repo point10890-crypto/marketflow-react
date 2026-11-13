@@ -115,6 +115,14 @@ def test_invalid_profile_queue_does_not_acquire(runtime, monkeypatch, path, body
     assert client.post('/api/kr/decision'+path,json=body).status_code==400
 
 
+@pytest.mark.parametrize('method', ['GET', 'POST'])
+def test_profile_rejects_blank_code(runtime, method):
+    client, _, _, _ = runtime
+    response = client.open('/api/kr/decision/%20/technical-profile', method=method,
+                           json={} if method == 'POST' else None)
+    assert response.status_code == 400
+
+
 def test_profile_queue_failure_is_bounded(runtime, monkeypatch):
     client, _, _, service=runtime
     def fail(*a,**kw): raise OSError('private path and credentials')
