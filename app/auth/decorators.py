@@ -207,6 +207,7 @@ def admin_required(f):
 
 
 _KONGMING_ANALYSIS_POSTS = frozenset({
+    'admin_mirofish.kongming_technical_profiles',
     'admin_mirofish.alpha_lab',
     'admin_mirofish.alpha_lab_account_plan',
     'admin_mirofish.chart_analogue_kelly',

@@ -8,7 +8,7 @@ from functools import wraps
 from flask import Blueprint, Response, jsonify, make_response, request
 
 from app.auth.decorators import admin_required, admin_or_aibain_required
-from app.routes.kongming_catalyst import article_candidates_response, catalyst_response, evidence_review_response, surge_traces_response
+from app.routes.kongming_catalyst import article_candidates_response, catalyst_response, evidence_review_response, surge_traces_response, technical_profiles_response
 from app.routes.catalyst_outcomes import catalyst_outcomes_response
 from app.services import mirofish
 from app.services.ai_routing.reporting import (
@@ -929,6 +929,12 @@ def kongming_article_candidates():
 @admin_or_aibain_required
 def kongming_article_evidence_reviews():
     return evidence_review_response()
+
+
+@admin_mirofish_bp.route('/kongming/technical-profiles', methods=['GET', 'POST'])
+@admin_or_aibain_required
+def kongming_technical_profiles():
+    return technical_profiles_response()
 
 
 @admin_mirofish_bp.get('/kongming/surge-traces')

@@ -192,3 +192,55 @@ def evidence_review_response(*, candidate=False):
     except (OSError, sqlite3.Error, ValueError, KeyError, TypeError, RecursionError):
         return _response({'error': 'evidence_review_unavailable'}, 503)
     return _response(payload, 200)
+
+
+_TECHNICAL_ZONE = {'index': int, 'low': _NUMBER, 'high': _NUMBER, 'volume': _NUMBER,
+                   'volume_pct': _NUMBER, 'traded_value': _NUMBER}
+_TECHNICAL_FIELDS = {
+    'schema_version': int, 'agent': str, 'status': str, 'last_run_at': str,
+    'items': [{
+        'symbol': str, 'name': str, 'status': str, 'reason': str, 'as_of': str,
+        'fetched_at': str, 'window_start': str, 'window_end': str,
+        'sessions_required': int, 'sessions_used': int, 'reference_price': _NUMBER,
+        'total_volume': _NUMBER, 'total_traded_value': _NUMBER,
+        'poc': _TECHNICAL_ZONE, 'support': _TECHNICAL_ZONE, 'resistance': _TECHNICAL_ZONE,
+        'current_zone': _TECHNICAL_ZONE, 'bins': [_TECHNICAL_ZONE], 'method': str,
+        'source': str, 'calendar_source': str, 'price_basis': str, 'limitations': [str],
+        'fingerprint': str, 'retry_at': str,
+    }],
+}
+
+
+def technical_profiles_response():
+    """A saved read or queue admission only; never fetch market data in HTTP."""
+    if not _allowed():
+        return _response({'error': 'kongming_catalyst_forbidden'}, 403)
+    from filelock import Timeout
+    from app.services.mirofish.kongming_technical import service
+    try:
+        if request.method == 'POST':
+            if request.args or len(request.get_data(cache=True)) > 128:
+                raise ValueError('invalid_request')
+            body = request.get_json(silent=True)
+            if not isinstance(body, dict) or set(body) != {'symbol'}:
+                raise ValueError('invalid_request')
+            symbol = service.validate_symbol(body['symbol'])
+        else:
+            if (set(request.args) - {'symbol'} or len(request.args.getlist('symbol')) > 1
+                    or request.get_data(cache=True).strip()):
+                raise ValueError('invalid_request')
+            symbol = request.args.get('symbol')
+            if symbol is not None:
+                service.validate_symbol(symbol)
+    except ValueError:
+        return _response({'error': 'invalid_technical_request'}, 400)
+    try:
+        if request.method == 'POST':
+            return _response(service.enqueue(symbol), 202)
+        return _response(_project(service.read_view(symbol=symbol), _TECHNICAL_FIELDS), 200)
+    except ValueError as exc:
+        if str(exc) == 'technical_queue_full':
+            return _response({'error': 'technical_queue_full'}, 429)
+        return _response({'error': 'technical_profiles_unavailable'}, 503)
+    except (OSError, KeyError, TypeError, RecursionError, Timeout):
+        return _response({'error': 'technical_profiles_unavailable'}, 503)
