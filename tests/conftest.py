@@ -123,3 +123,12 @@ def _isolate_llm_cost_ledger(tmp_path_factory, monkeypatch):
 
     path = tmp_path_factory.mktemp('llm_cost') / 'llm_cost_ledger.json'
     monkeypatch.setattr(llm_cost_ledger, 'LEDGER_PATH', str(path))
+
+
+@pytest.fixture
+def league_conn(tmp_path, monkeypatch):
+    """격리된 예측 리그 DB 연결."""
+    monkeypatch.setenv('FORECAST_LEAGUE_DIR', str(tmp_path / 'league'))
+    from app.services.forecast_league import db
+    with db.connect() as conn:
+        yield conn

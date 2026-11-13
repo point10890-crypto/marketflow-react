@@ -940,3 +940,15 @@ echo "=== Done ==="
 - MiniPC 작업 1·10·60분, `deploy/register_control_center_tasks.ps1`, 항상 `--no-alerts`. 자체 복구·주문·결제 없음.
 - 결과 `data/control_center/`는 git 제외. 각 주기 신선도 및 unknown/skipped를 정상과 구분한다.
 - 기존 OpenClaw 설정/권한은 바꾸지 않는다. `scripts/preview_openclaw_ops_agent.py`는 비활성 구성 미리보기다.
+
+---
+
+## 18. 예측 리그 (Forecast League) 1단계 — 2026-11-12
+
+- 설계: `docs/superpowers/specs/2026-11-12-forecast-league-design.md` · 계획: `docs/superpowers/plans/2026-11-12-forecast-league-phase1-ledger.md`
+- `app/services/forecast_league/` = 예측을 시점 고정으로 기록하고 표준 사건 `E1`(다음 거래일 시가 진입, 8거래일 내 +8%, −7% 먼저면 실패)으로 채점하는 원장. 저장소는 `data/forecast_league/league.db` 하나(git 제외).
+- 쓰기는 `ledger.submit_forecast()`뿐이다. 수정·삭제 함수와 HTTP 쓰기 경로는 없다. `forecasts`·`capsules`는 트리거로 수정·삭제가 막혀 있다.
+- **채점 가격은 `daily_prices.csv`가 아니다.** 그 파일은 14:50대 장중 수집분이 교정 없이 남는다. 채점은 `bars` 테이블의 `krx_regular` 봉(기존 `KISRegularProvider` 분봉 재구성)만 쓴다. `provider_daily` 봉은 기준선 입력 전용이다.
+- 워커: `python -m app.services.league_worker {drain|enqueue <morning|evening>|status}`. miniPC 작업 `MarketFlow-LeagueWorker`(SYSTEM, 5분 주기, `deploy/register_league_worker_task.ps1`)가 `drain`을 실행한다.
+- `scheduler.py`는 평일 07:30(`league_morning`)과 20:45(`league_evening`)에 잡을 큐에 넣기만 한다.
+- 해소 표본이 100건 미만인 예측자의 성적표는 `insufficient`다. 주문·매매 경로는 없다.
