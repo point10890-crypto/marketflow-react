@@ -95,3 +95,34 @@ def test_saved_omission_count_is_public_but_rejection_text_stays_private(gateway
     assert response.status_code == 200
     assert response.json['items'] == [dict(omitted_findings=1)]
     assert 'private' not in response.get_data(as_text=True)
+
+
+@pytest.mark.parametrize('path,reader', [(ARTICLE, 'read_article_reviews'), (CANDIDATE, 'read_candidate_review')])
+def test_budget_hold_exposes_current_basic_checks_and_retry_without_private_data(gateway, monkeypatch, path, reader):
+    client, _, _ = gateway
+    basic = dict(input_fingerprint='a'*64, checked_at='2026-11-13T02:00:00Z',
+                 rows=[dict(symbol='0162D0', name='동원파츠', disclosure_status='no_matching_filing', price_status='verified')])
+    public = dict(status='UNVERIFIED', fallback_reason='budget_exhausted',
+                  budget_hold_reason='top3_capacity_reserved', next_retry_at='2026-11-14T00:00:00Z', basic_checks=basic)
+    raw = dict(public, raw='private response', request_id='private request',
+               basic_checks=dict(basic, private_error='private error', rows=[dict(basic['rows'][0], raw='private source')]))
+    monkeypatch.setattr(evidence_review, reader, lambda: dict(schema_version=1, items=[raw]))
+    response = client.get(path)
+    assert response.status_code == 200
+    assert response.json['items'] == [public]
+    assert 'private' not in response.get_data(as_text=True)
+
+
+@pytest.mark.parametrize('value', [None, '2026-11-14T00:00:00Z'])
+def test_review_retry_timestamp_accepts_nullable_saved_contract(gateway, monkeypatch, value):
+    client, _, _ = gateway
+    monkeypatch.setattr(evidence_review, 'read_article_reviews', lambda: dict(items=[dict(next_retry_at=value)]))
+    assert client.get(ARTICLE).json['items'] == [dict(next_retry_at=value)]
+
+
+def test_invalid_basic_check_shape_is_not_served(gateway, monkeypatch):
+    client, _, _ = gateway
+    monkeypatch.setattr(evidence_review, 'read_article_reviews', lambda: dict(items=[dict(basic_checks=dict(rows='private malformed source'))]))
+    response = client.get(ARTICLE)
+    assert response.status_code == 503
+    assert 'private' not in response.get_data(as_text=True)
