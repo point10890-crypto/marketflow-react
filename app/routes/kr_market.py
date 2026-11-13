@@ -1997,7 +1997,7 @@ def kr_decision_brief(symbol):
 
     # 완전 열화 브리프(신호 0 + 소스 오류)는 일간 캐시에 넣지 않는다 — 일시 장애
     # 결과를 하루 종일 서빙하면 안 된다(deep 경로가 실패를 캐시하지 않는 것과 같은 정책).
-    if payload.get('signals') or not payload.get('errors'):
+    if not payload.get('pending_sources') and (payload.get('signals') or not payload.get('errors')):
         decision_cache.cache_put('brief', key, payload)
     resp = jsonify(_with_decision_technical(payload))
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'

@@ -91,6 +91,7 @@ interface DecisionBrief {
     cached?: boolean;
     cached_at?: string;
     technical_analysis?: unknown;
+    pending_sources?: string[];
 }
 
 const SOURCE_LABEL: Record<string, { name: string; desc: string }> = {
@@ -663,6 +664,9 @@ function BriefBody({ brief, onRefresh, refreshing, technical }: {
             {/* 근거 대조 */}
             <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151f] p-5">
                 <h3 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-gray-500">근거 대조</h3>
+                {Array.isArray(brief.pending_sources) && brief.pending_sources.includes('scanner') && <p role="status" className="mb-3 text-sm leading-6 text-amber-200">
+                    스캐너 기록을 백그라운드에서 확인 중입니다. 준비된 다른 근거와 매물대를 먼저 표시합니다. 잠시 후 결과를 새로고침해 주세요.
+                </p>}
                 {technical}
                 {brief.signals.length === 0 ? (
                     <p className="py-3 text-sm text-gray-500">이 종목에 대한 근거가 하나도 없습니다.</p>

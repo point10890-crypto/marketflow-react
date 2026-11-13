@@ -92,6 +92,15 @@ describe('DecisionBriefPage — 선택 종목 매물대', () => {
     expect(mockApi.postAuthAPI).not.toHaveBeenCalled();
   });
 
+  it('스캐너 배경 조회 중에도 매물대를 표시하며 전체 분석을 반복하지 않는다', async () => {
+    mockApi.fetchAuthAPI.mockImplementation((path: string) => Promise.resolve(path.includes('/search')
+      ? { candidates: [] } : { ...brief, pending_sources: ['scanner'], technical_analysis: envelope() }));
+    render(<DecisionBriefPage />); await submit();
+    expect(screen.getByText(/스캐너 기록을 백그라운드에서 확인 중/)).toBeInTheDocument();
+    expect(screen.getByLabelText('최대 거래량 구간 · POC')).toBeVisible();
+    expect(mockApi.fetchAuthAPI.mock.calls.filter(call => call[0] === '/api/kr/decision/009150')).toHaveLength(1);
+  });
+
   it.each(['insufficient_history', 'price_event_review'])('%s 자료는 근거 제외 상태를 밝힌다', async status => {
     mockBrief(envelope(status)); render(<DecisionBriefPage />); await submit();
     expect(screen.getByText(/최신 판단 근거에서 제외/)).toBeInTheDocument();

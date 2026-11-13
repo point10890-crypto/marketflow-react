@@ -283,17 +283,17 @@ def test_build_scanner_reference_is_bounded_and_preserves_reader_registry(tmp_pa
 
 
 def test_default_scanner_reader_keeps_normal_latest_contract(monkeypatch):
-    from app.services.mirofish import alpha_scanner
+    from app.services.mirofish import alpha_scanner, decision_scanner
     calls = []
-    monkeypatch.setattr(alpha_scanner, 'read_latest_scanner_candidates',
-                        lambda **kwargs: calls.append(kwargs) or {'generated_at': 'latest',
+    monkeypatch.setattr(decision_scanner, 'read_snapshot',
+                        lambda: calls.append('saved_snapshot') or {'generated_at': 'latest',
                         'candidates': [{'symbol': '005930', 'rank': 1, 'action': 'HOLD', 'alpha_score': 77}]})
     monkeypatch.setattr(alpha_scanner, 'read_scanner_candidates', lambda *args: pytest.fail('default must use latest'))
     _stub_sources(monkeypatch, {'scanner': db._src_scanner})
     _regime_stub(monkeypatch)
     result = db.build_decision_brief('005930')
     scanner = next(signal for signal in result['signals'] if signal['source'] == 'scanner')
-    assert calls == [{'limit': 20}]
+    assert calls == ['saved_snapshot']
     assert scanner['as_of'] == 'latest'
     assert scanner['detail'] == {'rank': 1, 'action': 'HOLD', 'alpha_score': 77, 'risk_score': None}
 

@@ -70,6 +70,21 @@ def test_uncached_route_includes_profile_when_builder_is_older(runtime, monkeypa
     assert response.json['technical_analysis']['symbol'] == '005930'
 
 
+def test_partial_background_sources_do_not_poison_daily_cache(runtime, monkeypatch):
+    client, _, _, _ = runtime
+    writes=[]
+    monkeypatch.setattr(decision_cache, 'cache_put', lambda *a, **kw: writes.append(a))
+    monkeypatch.setattr(brief, 'build_decision_brief', lambda s: {
+        'symbol':s, 'signals':[{'source':'price'}],
+        'errors':{'scanner':'SnapshotPending: scanner_snapshot_refresh_pending'},
+        'pending_sources':['scanner'],
+    })
+    response=client.get('/api/kr/decision/005930')
+    assert response.status_code==200
+    assert response.json['technical_analysis']['symbol']=='005930'
+    assert writes==[]
+
+
 @pytest.mark.parametrize('role,code', [('admin',200),('ai',200),('bundle',200),('none',403),('blocked',403),('anonymous',401)])
 @pytest.mark.parametrize('method', ['GET','POST'])
 def test_profile_endpoint_follows_decision_access(runtime, monkeypatch, role, code, method):
@@ -137,3 +152,22 @@ def test_new_deep_analysis_uses_one_bounded_profile_context(monkeypatch):
     result=brief.run_deep_analysis_for('005930')
     assert len(calls)==1 and calls[0]['context_line']=='EXISTING_NEWS\nPROFILE_CONTEXT'
     assert result['technical_profile_used']==dict(fingerprint='f'*64,as_of='2026-11-12',fetched_at='2026-11-13T06:00:00Z',context_text='PROFILE_CONTEXT')
+
+
+@pytest.mark.parametrize('failure_name', ['SnapshotPending','SnapshotUnavailable'])
+def test_scanner_background_gap_keeps_technical_result_and_marks_transient(monkeypatch, failure_name):
+    from app.services.mirofish import decision_scanner, decision_technical
+    def unavailable():
+        raise getattr(decision_scanner, failure_name)()
+    monkeypatch.setattr(decision_scanner, 'read_snapshot', unavailable)
+    monkeypatch.setattr(brief, 'resolve_symbol', lambda raw: ('005930','삼성전자'))
+    monkeypatch.setattr(brief, 'SOURCE_READERS', {'scanner':brief._src_scanner,
+        'price':lambda code:{'stance':'positive','grade':'A'}})
+    monkeypatch.setattr(brief, '_read_news', lambda code:{'count':0,'items':[]})
+    monkeypatch.setattr(brief, '_read_regime', lambda:{'phase':None,'conflict':False})
+    monkeypatch.setattr(decision_technical, 'read_analysis', lambda *a,**kw:envelope(status='ready'))
+    result=brief.build_decision_brief('005930')
+    assert result['pending_sources']==['scanner']
+    assert result['data_gaps']==['scanner']
+    assert result['technical_analysis']['status']=='ready'
+    assert [row['source'] for row in result['signals']]==['price']
