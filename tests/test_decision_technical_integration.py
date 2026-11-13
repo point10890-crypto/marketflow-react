@@ -115,12 +115,35 @@ def test_invalid_profile_queue_does_not_acquire(runtime, monkeypatch, path, body
     assert client.post('/api/kr/decision'+path,json=body).status_code==400
 
 
+@pytest.mark.parametrize('method', ['GET', 'POST'])
+def test_profile_rejects_blank_code(runtime, method):
+    client, _, _, _ = runtime
+    response = client.open('/api/kr/decision/%20/technical-profile', method=method,
+                           json={} if method == 'POST' else None)
+    assert response.status_code == 400
+
+
 def test_profile_queue_failure_is_bounded(runtime, monkeypatch):
     client, _, _, service=runtime
     def fail(*a,**kw): raise OSError('private path and credentials')
     monkeypatch.setattr(service,'enqueue',fail)
     response=client.post('/api/kr/decision/005930/technical-profile',json={})
     assert response.status_code==503 and 'private' not in response.get_data(as_text=True)
+
+
+@pytest.mark.parametrize('symbol,expected_status', [('AAPL',400), ('0162D0',202)])
+def test_profile_uses_canonical_code_without_fuzzy_name_resolution(runtime, monkeypatch, symbol, expected_status):
+    client, _, technical, service = runtime
+    monkeypatch.setattr(brief, 'resolve_symbol', lambda raw: ('005930', 'wrong fuzzy match'))
+    reads, queued = [], []
+    monkeypatch.setattr(technical, 'read_analysis', lambda code: reads.append(code) or envelope(code))
+    monkeypatch.setattr(service, 'enqueue', lambda code: queued.append(code) or {'status':'queued'})
+    result = client.get(f'/api/kr/decision/{symbol}/technical-profile')
+    assert result.status_code == 200 and result.json['symbol'] == symbol
+    result = client.post(f'/api/kr/decision/{symbol}/technical-profile', json={})
+    assert result.status_code == expected_status
+    assert all(code == symbol for code in reads)
+    assert queued == ([symbol] if expected_status == 202 else [])
 
 
 def test_brief_profile_never_changes_votes_or_confidence(monkeypatch):
