@@ -1937,7 +1937,7 @@ def _with_decision_technical(payload):
 def kr_decision_technical_profile(symbol):
     """Same decision entitlement; saved read or bounded price-only queue."""
     from filelock import Timeout
-    from app.services.mirofish import decision_technical
+    from app.services.mirofish import decision_brief, decision_technical
     from app.services.mirofish.kongming_technical import service
 
     def response(body, status=200):
@@ -1953,7 +1953,9 @@ def kr_decision_technical_profile(symbol):
         return response({'error': 'invalid_technical_request'}, 400)
     if request.method == 'POST' and raw and request.get_json(silent=True) != {}:
         return response({'error': 'invalid_technical_request'}, 400)
-    code = _decision_cache_key(symbol)
+    # The selected decision already provides a canonical code. Fuzzy name
+    # resolution here can turn a foreign ticker into an unrelated KR stock.
+    code = decision_brief.normalize_symbol(symbol)
     if request.method == 'GET':
         return response(decision_technical.read_analysis(code))
     if not decision_technical.is_domestic_symbol(code):
