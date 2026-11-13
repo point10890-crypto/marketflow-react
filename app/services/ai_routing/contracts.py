@@ -213,6 +213,7 @@ class RoutingResult:
     estimated_cost_usd: Decimal | None = None
     attempts: tuple[ProviderAttempt, ...] = ()
     cache_hit: bool = False
+    budget_hold_reason: str | None = None
 
 
 @dataclass(frozen=True)

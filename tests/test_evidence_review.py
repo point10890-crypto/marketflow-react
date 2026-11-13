@@ -608,3 +608,114 @@ def test_all_invalid_findings_are_still_unverified_and_fallback_omissions_are_no
     assert record['raw_responses'][1]['omitted_findings'] == 0
     for group in ('strengths', 'risks', 'what_to_watch'):
         assert item['rows'][0][group] == json.loads(record['raw_responses'][1]['raw'])['rows'][0][group]
+
+
+class DailyBudget:
+    def __init__(self, blocked=True):
+        self.blocked = blocked
+
+    def daily_summary(self, *, now):
+        reset = (now+timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        return dict(status='ok', hold_reason='top3_capacity_reserved' if self.blocked else None,
+                    resets_at_utc=reset.isoformat())
+
+
+def test_daily_call_hold_continues_basic_checks_for_all_articles_without_ai(service, paths):
+    save_articles(paths, [article(str(i)) for i in range(1, 13)])
+    router = Router()
+    result = service.run_once(**paths, now=NOW, router=router, budget=DailyBudget())
+    view = service.read_article_reviews(**paths, now=NOW)
+    assert not router.calls and result['article_attempts'] == 0
+    assert len(view['items']) == 12
+    for item in view['items']:
+        assert item['status'] == 'UNVERIFIED'
+        assert item['budget_hold_reason'] == 'top3_capacity_reserved'
+        assert item['next_retry_at'] == '2026-11-09T00:00:00Z'
+        assert item['basic_checks']['rows'][0] == dict(symbol='005930', name='삼성전자',
+            disclosure_status='unavailable', price_status='unavailable')
+        assert item['rows'][0]['strengths'] == []
+    before = {str(p): p.read_bytes() for p in paths['root'].rglob('*.json')}
+    service.read_article_reviews(**paths, now=NOW+timedelta(minutes=1))
+    assert before == {str(p): p.read_bytes() for p in paths['root'].rglob('*.json')}
+
+
+def test_budget_reset_retries_same_request_identity_with_new_day_cache_key(service, paths):
+    save_articles(paths, [article()])
+    class Denied(Router):
+        def route_text(self, request):
+            self.calls.append(request)
+            return RoutingResult(text=None, analysis_status=AnalysisStatus.FAILED_TECHNICAL,
+                primary_provider='anthropic', fallback_reason='budget_exhausted',
+                budget_hold_reason='daily_hard_cap')
+    denied = Denied()
+    service.run_once(**paths, now=NOW, router=denied)
+    service.run_once(**paths, now=NOW+timedelta(hours=7), router=denied)
+    assert len(denied.calls) == 1
+    recovered = Router()
+    service.run_once(**paths, now=NOW+timedelta(days=1), router=recovered)
+    assert len(recovered.calls) == 1
+    assert denied.calls[0].request_id == recovered.calls[0].request_id
+    assert denied.calls[0].run_id != recovered.calls[0].run_id
+
+
+def test_live_price_ticks_do_not_rebill_until_window_completes(service, paths, monkeypatch):
+    save_articles(paths, [article()])
+    task = dict(article_id='1', symbol='005930', article_title=article()['title'],
+        price=dict(status='verified', source='KIS:J:FHKST03010230', symbol='005930', close=100, latest_close=101,
+            observed_at=(NOW-timedelta(minutes=30)).isoformat(), latest_observed_at=NOW.isoformat(),
+            fetched_at=NOW.isoformat(), change_pct=1, window_complete=False,
+            window_end_at=(NOW+timedelta(minutes=30)).isoformat()))
+    monkeypatch.setattr(kongming_verification, 'read_dashboard', lambda *a, **k: dict(items=[task]))
+    router = Router()
+    service.run_once(**paths, now=NOW, router=router)
+    task['price'].update(latest_close=102, change_pct=2,
+        latest_observed_at=(NOW+timedelta(minutes=5)).isoformat(), fetched_at=(NOW+timedelta(minutes=5)).isoformat())
+    service.run_once(**paths, now=NOW+timedelta(minutes=5), router=router)
+    assert len(router.calls) == 1
+    source = next(s for s in json.loads(router.calls[0].prompt)['sources'] if s['evidence_id'].startswith('price:'))
+    assert source['verification_status'] == 'awaiting_window_completion'
+    assert 'latest_close' not in json.loads(source['text'])
+    task['price'].update(window_complete=True, latest_observed_at=(NOW+timedelta(minutes=30)).isoformat(),
+                         fetched_at=(NOW+timedelta(minutes=30)).isoformat())
+    service.run_once(**paths, now=NOW+timedelta(minutes=30), router=router)
+    assert len(router.calls) == 2
+    final_source = next(s for s in json.loads(router.calls[-1].prompt)['sources'] if s['evidence_id'].startswith('price:'))
+    assert json.loads(final_source['text'])['latest_close'] == 102
+
+
+def test_basic_checks_use_current_saved_status_without_rewriting_previous_ai(service, paths, monkeypatch):
+    save_articles(paths, [article()])
+    router = Router(); service.run_once(**paths, now=NOW, router=router)
+    before = {str(p): p.read_bytes() for p in paths['root'].rglob('*.json')}
+    task = dict(article_id='1', symbol='005930', article_title=article()['title'],
+                primary=dict(status='issuer_name_conflict', checked_at=NOW.isoformat()))
+    monkeypatch.setattr(kongming_verification, 'read_dashboard', lambda *a, **k: dict(items=[task]))
+    item = service.read_article_reviews(**paths, now=NOW)['items'][0]
+    assert item['freshness'] == 'stale'
+    assert item['basic_checks']['rows'][0]['disclosure_status'] == 'issuer_name_conflict'
+    assert item['status'] == 'SUCCESS_PRIMARY'
+    assert before == {str(p): p.read_bytes() for p in paths['root'].rglob('*.json')}
+
+
+def test_known_zero_failure_survives_budget_hold_and_rotates_only_dispatched_identity(service, paths):
+    save_articles(paths, [article()])
+    rejected = Router(fail=True)
+    service.run_once(**paths, now=NOW, router=rejected)
+    service.run_once(**paths, now=NOW+timedelta(hours=2), router=Router(), budget=DailyBudget())
+    success = Router()
+    service.run_once(**paths, now=NOW+timedelta(days=1), router=success, budget=DailyBudget(False))
+    assert len(success.calls) == 1
+    assert success.calls[0].request_id != rejected.calls[0].request_id
+
+
+def test_first_preflight_hold_keeps_zero_charge_recovery_eligibility(service, paths):
+    save_articles(paths, [article()])
+    service.run_once(**paths, now=NOW, router=Router(), budget=DailyBudget())
+    receipt = service._read(next((paths['root']/'runs').glob('*.json')))
+    rejected = Router(fail=True)
+    service.run_once(**paths, now=NOW+timedelta(days=1), router=rejected, budget=DailyBudget(False))
+    assert rejected.calls[0].request_id == receipt['request_id']
+    success = Router()
+    service.run_once(**paths, now=NOW+timedelta(days=1, hours=2), router=success, budget=DailyBudget(False))
+    assert len(success.calls) == 1
+    assert success.calls[0].request_id != rejected.calls[0].request_id

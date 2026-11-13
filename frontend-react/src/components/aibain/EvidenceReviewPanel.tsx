@@ -8,6 +8,12 @@ interface Props {
 }
 const timeFormat = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 const providers: Record<string, string> = { anthropic: 'Anthropic', deepseek: 'DeepSeek', openai: 'OpenAI' };
+const budgetReasons: Record<string, string> = {
+    top3_capacity_reserved: '오늘 기사 AI 분석 횟수 소진 · TOP3 비교용 한도는 유지합니다.',
+    daily_call_cap: '오늘 AI 분석 횟수 한도에 도달했습니다.', daily_usd_cap: '오늘 AI 분석 비용 한도에 도달했습니다.',
+    daily_hard_cap: '오늘 AI 분석 한도에 도달했습니다.', daily_cost_unknown: '이전 AI 사용량 확인 대기',
+    ledger_unavailable: 'AI 사용량 기록 확인 대기', duplicate_request: '이전 요청의 과금·응답 확인 대기 · 중복 결제 차단',
+};
 const fallbackReasons: Record<string, string> = {
     insufficient_balance: '기본 모델 크레딧 부족', authentication: '기본 모델 연결 확인 필요',
     model_unavailable: '기본 모델 이용 불가', breaker_open: '기본 모델 연결 지연', budget_exhausted: '설정한 분석 예산 도달',
@@ -17,7 +23,10 @@ const fallbackReasons: Record<string, string> = {
     timeout: '기본 모델 응답 지연', provider_unavailable: '기본 모델 연결 지연', circuit_open: '기본 모델 연결 지연',
 };
 const sourceStatus: Record<string, string> = { reported_unverified: '보도 내용 · 확인 대기', verified_numeric_claims: '공시 수치 대조 완료',
-    verified: '대조 완료', unverified: '확인 대기', no_matching_filing: '대응 공시 확인 대기', sealed: '저장된 정량 분석' };
+    verified: '대조 완료', unverified: '확인 대기', no_matching_filing: '대응 공시 확인 대기', sealed: '저장된 정량 분석',
+    unavailable: '저장 근거 확인 대기', source_unavailable: '공시 연결 재확인 대기',
+    related_filing_found: '관련 공시 발견 · 기사 주장 확정 아님', issuer_name_conflict: '회사명 불일치 · 연결 확인 필요',
+    awaiting_window_completion: '가격 관측 구간 진행 중', pending: '검증 대기' };
 const claimStatus: Record<EvidenceFinding['claim_status'], string> = { reported: '원문 보고', inference: 'AI 해석', verified: '공시 수치 대조', missing: '미확인' };
 function Time({ value }: { value: string | null }) {
     return value ? <time dateTime={value}>{timeFormat.format(Date.parse(value))}</time> : <span>미확인</span>;
@@ -35,12 +44,24 @@ function Review({ review, kind }: { review: EvidenceReview; kind: ReviewKind }) 
         {kind === 'candidate' && <p className="text-sm font-semibold text-slate-100">{review.candidate_basis === 'research_watchlist' ? `연구 후보 ${review.rows.length}종목 비교` : `상위 후보 ${review.rows.length}종목 비교`}</p>}
         <div className="space-y-1 text-xs leading-5">
             <p className={successful ? 'text-sky-200' : 'text-amber-200'}>{review.status === 'SUCCESS_FALLBACK' ? '대체 분석' : review.status === 'SUCCESS_PRIMARY' ? 'AI 분석' : review.status === 'IN_PROGRESS' ? '분석 준비 중' : 'AI 확인 미완료 · 저장 근거'}{successful ? ` · ${provider} · ${review.model}` : ''}</p>
-            {review.fallback_reason && <p className="text-amber-200">{fallbackReasons[review.fallback_reason] ?? '기본 모델 분석을 완료하지 못해 저장 가능한 근거를 표시합니다.'}</p>}
+            {review.fallback_reason && <p className="text-amber-200">{budgetReasons[review.budget_hold_reason ?? ''] ?? fallbackReasons[review.fallback_reason] ?? '기본 모델 분석을 완료하지 못해 저장 가능한 근거를 표시합니다.'}</p>}
+            {!successful && review.basic_checks && <p className="text-sky-200">공시·시세 기본 검증은 계속됩니다. AI 해석과 별도로 저장 근거를 자동 점검합니다.</p>}
+            {!successful && review.next_retry_at && <p className="text-slate-300">AI 재확인 예정 <Time value={review.next_retry_at} /> 이후 · 한국시간</p>}
             {(review.omitted_findings ?? 0) > 0 && <p className="text-amber-200">근거 검증을 통과하지 못한 해석 {review.omitted_findings}개 제외</p>}
             {review.freshness === 'stale' && <p className="text-amber-200">이전 자료 기준 · 최신 자료 반영 대기</p>}
             {review.candidate_basis === 'research_watchlist' && <p className="text-slate-300">연구 관찰 후보의 근거 비교입니다. 기존 판단{review.original_status === 'held' ? ' 보류 상태' : ''}와 가격·비중을 유지합니다.</p>}
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-slate-400"><span>분석 작성 <Time value={review.generated_at} /></span><span>자료 기준 <Time value={review.source_cutoff_at} /></span>{kind === 'candidate' && review.source_origin_at && <span>선정 기준 <Time value={review.source_origin_at} /></span>}<span>한국시간</span></div>
         </div>
+        {kind === 'article' && review.basic_checks && <div className="min-w-0 rounded-lg bg-slate-900/40 p-3 text-xs leading-6">
+            <p className="font-semibold text-sky-200">자동 기본 검증 · <Time value={review.basic_checks.checked_at} /></p>
+            {review.basic_checks.rows.map(row => <div key={row.symbol} className="mt-1">
+                <p className="text-slate-100">{row.name} · {row.symbol}</p>
+                <dl className="grid grid-cols-[3rem_minmax(0,1fr)] gap-x-2 text-slate-300">
+                    <dt>공시</dt><dd>{sourceStatus[row.disclosure_status] ?? '검증 상태 확인 필요'}</dd>
+                    <dt>시세</dt><dd>{sourceStatus[row.price_status] ?? '관측 상태 확인 필요'}</dd>
+                </dl>
+            </div>)}
+        </div>}
         <ol className="space-y-3">{review.rows.map((row, index) => <li key={row.symbol} className="min-w-0 border-t border-[#30363f] pt-3">
             <h5 className="mb-2 text-sm font-semibold text-slate-100">{kind === 'candidate' ? `${index + 1}. ` : ''}{row.name} <span className="font-normal text-slate-400">{row.symbol} · 한국</span></h5>
             <dl className="grid min-w-0 gap-3 text-sm leading-6 md:grid-cols-3"><Findings title="주목할 근거" items={row.strengths} /><Findings title="주의할 점" items={row.risks} /><Findings title="다음 확인" items={row.what_to_watch} /></dl>

@@ -168,7 +168,7 @@ def _evidence(raw, observation, now):
         return None
     if raw.get('_revision'):
         timing = 'unknown'
-    return {'id': digest(f'{kind}|{url}|{title}|{published}'), 'kind': kind, 'title': title, 'url': url,
+    evidence = {'id': digest(f'{kind}|{url}|{title}|{published}'), 'kind': kind, 'title': title, 'url': url,
             'source': str(raw.get('source') or 'unknown')[:80],
             'publisher': str(raw['publisher'])[:200] if raw.get('publisher') else None,
             'published_at': published, 'published_precision': precision,
@@ -177,6 +177,20 @@ def _evidence(raw, observation, now):
             'category': _category(title, observation['name']), 'direction': _direction(title, observation['name']),
             'verification': str(raw.get('verification') or 'unverified')[:100], 'duplicate_count': 1,
             '_revision': bool(raw.get('_revision'))}
+    mapping = raw.get('issuer_mapping')
+    if (kind == 'disclosure' and raw.get('source') == 'dart' and isinstance(mapping, dict)
+            and mapping.get('stock_code') == observation['symbol']
+            and isinstance(mapping.get('corp_code'), str) and re.fullmatch(r'[0-9]{8}', mapping['corp_code'])
+            and mapping.get('source') in {'data/dart_corp_codes.json', 'https://opendart.fss.or.kr/api/corpCode.xml'}
+            and (mapping.get('corp_name') is None
+                 or normalized_name(mapping['corp_name']) == normalized_name(observation['name']))):
+        evidence['issuer_mapping'] = {
+            key: value for key, value in mapping.items()
+            if key in {'source', 'stock_code', 'corp_code', 'corp_name', 'modify_date', 'fetched_at',
+                       'sha256', 'retry_at', 'stale', 'cache_updated_at'}
+            and (value is None or isinstance(value, bool) or isinstance(value, str) and len(value) <= 500)
+        }
+    return evidence
 
 
 def _title_key(title):

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import os
+import sqlite3
+from contextlib import closing
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
@@ -755,6 +757,88 @@ class EvidenceReviewBudget(BudgetManager):
             return min(Decimal(1), usd), min(100, calls)
         except (InvalidOperation, ValueError, TypeError):
             return Decimal(0), 0
+
+    def daily_summary(self, *, now: datetime | None = None) -> dict[str, object]:
+        """Project aggregate article capacity without initializing or writing the ledger.
+
+        This is advisory: admission still atomically checks the next attempt's
+        cost bound and request identity. Missing ledgers are empty; unreadable
+        or incompatible ledgers never advertise spendable capacity.
+        """
+        current = now or _utc_now_datetime()
+        if current.tzinfo is None:
+            current = current.replace(tzinfo=timezone.utc)
+        current = current.astimezone(timezone.utc)
+        day = current.date().isoformat()
+        reset = (current + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        max_cost, max_calls = self.daily_limits()
+        summary: dict[str, object] = {
+            "status": "unavailable",
+            "billing_day_utc": day,
+            "resets_at_utc": reset.isoformat(),
+            "max_calls": max_calls,
+            "max_cost_usd": str(max_cost),
+            "used_calls": None,
+            "used_cost_usd": None,
+            "remaining_calls": None,
+            "remaining_cost_usd": None,
+            "article_remaining_calls": None,
+            "unknown_cost_rows": None,
+            "hold_reason": "ledger_unavailable",
+        }
+        try:
+            rows = []
+            if self.store.db_path.exists():
+                uri = self.store.db_path.resolve().as_uri() + "?mode=ro"
+                with closing(sqlite3.connect(uri, uri=True, timeout=2.0)) as connection:
+                    connection.row_factory = sqlite3.Row
+                    connection.execute("PRAGMA query_only=ON")
+                    rows = connection.execute(
+                        "SELECT reserved_calls,actual_calls,reserved_cost_usd,actual_cost_usd,status "
+                        "FROM budget_reservations WHERE pool=? AND billing_day_utc=? AND status!='released'",
+                        (self.pool, day),
+                    ).fetchall()
+            calls, unknown_cost_rows = 0, 0
+            cost = Decimal(0)
+            for row in rows:
+                settled = row["status"] in {"settled", "breached"}
+                counted_calls = int(
+                    row["actual_calls"] if settled and row["actual_calls"] is not None
+                    else row["reserved_calls"]
+                )
+                if counted_calls < 0:
+                    return summary
+                calls += counted_calls
+                value = row["actual_cost_usd"] if settled and row["actual_cost_usd"] is not None else row["reserved_cost_usd"]
+                try:
+                    amount = Decimal(str(value))
+                    if not amount.is_finite() or amount < 0:
+                        raise InvalidOperation
+                except InvalidOperation:
+                    unknown_cost_rows += 1
+                else:
+                    cost += amount
+        except (OSError, sqlite3.Error, TypeError, ValueError):
+            return summary
+        article_remaining = max(0, max_calls - min(self._TOP3_CALL_RESERVE, max_calls) - calls)
+        hold_reason = None
+        if unknown_cost_rows:
+            hold_reason = "daily_cost_unknown"
+        elif calls >= max_calls:
+            hold_reason = "daily_call_cap"
+        elif cost >= max_cost:
+            hold_reason = "daily_usd_cap"
+        elif article_remaining == 0:
+            hold_reason = "top3_capacity_reserved"
+        summary.update(
+            status="ok", used_calls=calls,
+            used_cost_usd=None if unknown_cost_rows else str(cost),
+            remaining_calls=max(0, max_calls - calls),
+            remaining_cost_usd=None if unknown_cost_rows else str(max(Decimal(0), max_cost - cost)),
+            article_remaining_calls=article_remaining,
+            unknown_cost_rows=unknown_cost_rows, hold_reason=hold_reason,
+        )
+        return summary
 
     def reserve_attempt(
         self, *, request: RoutingRequest, provider: str, input_tokens: int,

@@ -10,6 +10,10 @@ export interface EvidenceReview {
     review_scope: 'current_evidence_not_original_decision';
     candidate_basis?: 'research_watchlist' | 'issued_opportunities' | null; original_status?: string | null;
     omitted_findings?: number;
+    budget_hold_reason?: string | null; next_retry_at?: string | null;
+    basic_checks?: { input_fingerprint: string; checked_at: string; rows: Array<{
+        symbol: string; name: string; disclosure_status: string; price_status: string;
+    }> };
     rows: Array<{ symbol: string; name: string; market: 'KR'; strengths: EvidenceFinding[]; risks: EvidenceFinding[]; what_to_watch: EvidenceFinding[] }>;
     sources: Array<{ evidence_id: string; title: string; url: string | null; published_at: string | null;
         fetched_at: string | null; source: string; verification_status: string; available_at_original_decision?: boolean }>;
@@ -43,6 +47,8 @@ function validReview(value: unknown, kind: ReviewKind): value is EvidenceReview 
         || !['SUCCESS_PRIMARY', 'SUCCESS_FALLBACK', 'UNVERIFIED', 'IN_PROGRESS'].includes(String(value.status))
         || !['current', 'stale'].includes(String(value.freshness)) || value.review_scope !== 'current_evidence_not_original_decision'
         || !nullableText(value.provider) || !nullableText(value.model) || !nullableText(value.fallback_reason)
+        || value.budget_hold_reason !== undefined && !nullableText(value.budget_hold_reason)
+        || value.next_retry_at !== undefined && !nullableTime(value.next_retry_at)
         || value.omitted_findings !== undefined && (typeof value.omitted_findings !== 'number'
             || !Number.isInteger(value.omitted_findings) || value.omitted_findings < 0 || value.omitted_findings > 24)
         || !Array.isArray(value.rows) || value.rows.length > 8 || !Array.isArray(value.sources) || value.sources.length > 80) return false;
@@ -50,6 +56,11 @@ function validReview(value: unknown, kind: ReviewKind): value is EvidenceReview 
         || !['research_watchlist', 'issued_opportunities'].includes(String(value.candidate_basis)) || value.rows.length > 3)
         || kind === 'article' && !text(value.article_id, 160)) return false;
     if (['SUCCESS_PRIMARY', 'SUCCESS_FALLBACK'].includes(String(value.status)) && (!text(value.provider) || !text(value.model))) return false;
+    if (value.basic_checks !== undefined && (!object(value.basic_checks)
+        || !hash(value.basic_checks.input_fingerprint) || !timestamp(value.basic_checks.checked_at)
+        || !Array.isArray(value.basic_checks.rows) || value.basic_checks.rows.length > 8
+        || !value.basic_checks.rows.every(row => object(row) && typeof row.symbol === 'string' && /^[0-9A-Z]{6}$/.test(row.symbol)
+            && text(row.name, 100) && text(row.disclosure_status, 100) && text(row.price_status, 100)))) return false;
     if (!value.sources.every(source => object(source) && text(source.evidence_id, 200) && text(source.title)
         && nullableText(source.url) && nullableTime(source.published_at) && nullableTime(source.fetched_at)
         && (source.available_at_original_decision === undefined || typeof source.available_at_original_decision === 'boolean')
