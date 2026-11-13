@@ -47,6 +47,26 @@ def test_roundtrip_returns_the_stored_payload(cache_db):
     assert hit['status'] == 'neutral'
 
 
+def test_prewarm_cannot_store_pending_source_brief(cache_db):
+    dc.cache_put('brief', '005930', dict(PAYLOAD, pending_sources=['scanner']), now=CLOSED)
+    assert dc.cache_get('brief', '005930', now=CLOSED) is None
+
+
+def test_legacy_pending_source_cache_is_ignored(cache_db):
+    import json
+    dc.cache_put('brief', '005930', PAYLOAD, now=CLOSED)
+    with sqlite3.connect(cache_db) as conn:
+        conn.execute('UPDATE decision_cache SET payload=?', (json.dumps(dict(PAYLOAD, pending_sources=['scanner'])),))
+    assert dc.cache_get('brief', '005930', now=CLOSED) is None
+
+
+def test_pending_refresh_does_not_replace_completed_cache(cache_db):
+    dc.cache_put('brief', '005930', PAYLOAD, now=CLOSED)
+    dc.cache_put('brief', '005930', dict(PAYLOAD, pending_sources=['scanner']), now=CLOSED)
+    assert dc.cache_get('brief', '005930', now=CLOSED)['status']=='neutral'
+    assert not dc.cache_get('brief', '005930', now=CLOSED).get('pending_sources')
+
+
 def test_hit_is_marked_as_cached_with_a_timestamp(cache_db):
     """사용자가 캐시본을 보고 있다는 사실을 숨기지 않는다."""
     dc.cache_put('deep', '005930', PAYLOAD, now=CLOSED)

@@ -363,10 +363,11 @@ def _src_jongga(symbol: str) -> dict[str, Any] | None:
 
 def _src_scanner(symbol: str, *, scanner_run_id: str | None = None) -> dict[str, Any] | None:
     """알파 스캐너 최신 후보 (alpha/risk/RS)."""
-    from app.services.mirofish.alpha_scanner import read_latest_scanner_candidates, read_scanner_run, _safe_run_id
+    from app.services.mirofish.alpha_scanner import read_scanner_run, _safe_run_id
 
     if scanner_run_id is None:
-        data = read_latest_scanner_candidates(limit=20) or {}
+        from app.services.mirofish.decision_scanner import read_snapshot
+        data = read_snapshot() or {}
     else:
         if _safe_run_id(scanner_run_id) != scanner_run_id:
             raise ValueError('scanner_reference_invalid_id')
@@ -734,12 +735,15 @@ def run_deep_analysis_for(symbol: Any, *, rounds: int | None = None) -> dict[str
     code, resolved_name = resolve_symbol(symbol)
     target = resolved_name or code
     stamp = datetime.now(timezone.utc).isoformat()
+    from app.services.mirofish import decision_technical
+    technical = decision_technical.read_analysis(code, now=stamp)
     out: dict[str, Any] = {
         'schema_version': 'mirofish.deep_analysis.v1',
         'generated_at': stamp, 'symbol': code, 'name': resolved_name,
         'status': 'neutral', 'analysts': [], 'debate': None, 'risk': None,
         'verdict': None, 'verification': None, 'method': None,
         'run_id': None, 'error': None, 'citations': [], 'retrieval': None,
+        'technical_analysis': technical,
         'disclaimer': '정보 제공 목적이며 투자 권유가 아닙니다. 매매 실행 경로는 시스템에 존재하지 않습니다.',
     }
 
@@ -757,6 +761,12 @@ def run_deep_analysis_for(symbol: Any, *, rounds: int | None = None) -> dict[str
     except Exception as exc:  # noqa: BLE001 — 검색 실패가 분석을 막지 않는다
         out['retrieval'] = {'error': f'{type(exc).__name__}: {exc}'}
 
+    # Same price-derived evidence: supplement the existing debate, never add an
+    # independent source vote or invoke another model. Historical input is sealed.
+    technical_context = decision_technical.format_context(technical)
+    if technical_context:
+        context_line = '\n'.join(part for part in (context_line, technical_context) if part)
+
     try:
         from app.services.mirofish.tradingagents import engine
 
@@ -765,6 +775,13 @@ def run_deep_analysis_for(symbol: Any, *, rounds: int | None = None) -> dict[str
     except Exception as exc:  # noqa: BLE001 — 실패해도 화면이 죽지 않게 사유를 돌려준다
         out['error'] = f'{type(exc).__name__}: {exc}'
         return out
+
+    if technical_context:
+        profile = technical['profile']
+        out['technical_profile_used'] = {
+            'fingerprint': profile['fingerprint'], 'as_of': profile['as_of'],
+            'fetched_at': profile['fetched_at'], 'context_text': technical_context,
+        }
 
     reports = run.get('analyst_reports') or []
     out['analysts'] = [{
@@ -822,6 +839,8 @@ def build_decision_brief(symbol: Any, *, now: datetime | None = None,
     by_source: dict[str, dict[str, Any]] = {}
     data_gaps: list[str] = []
     errors: dict[str, str] = {}
+    pending_sources: list[str] = []
+    from app.services.mirofish.decision_scanner import SnapshotPending, SnapshotUnavailable
     name: str | None = resolved_name
     # 프로덕션 병목 자가진단 — 어느 소스가 느린지 응답이 스스로 말한다 (2026-08-31 75초 장애).
     timings_ms: dict[str, int] = {}
@@ -838,6 +857,8 @@ def build_decision_brief(symbol: Any, *, now: datetime | None = None,
         except Exception as exc:  # noqa: BLE001 — 소스 장애가 판단 전체를 막지 않는다
             errors[source] = f'{type(exc).__name__}: {exc}'
             data_gaps.append(source)
+            if isinstance(exc, (SnapshotPending, SnapshotUnavailable)):
+                pending_sources.append(source)
             continue
         finally:
             timings_ms[source] = int((time.perf_counter() - t0) * 1000)
@@ -881,8 +902,13 @@ def build_decision_brief(symbol: Any, *, now: datetime | None = None,
         agreement=agreement, regime_conflict=bool(regime.get('conflict')),
         verification=verification)
 
+    from app.services.mirofish import decision_technical
+    technical = decision_technical.read_analysis(code, now=now)
+
     return {
         'schema_version': SCHEMA_VERSION,
+        'technical_analysis': technical,
+        'pending_sources': pending_sources,
         'generated_at': stamp,
         'symbol': code,
         'name': name,

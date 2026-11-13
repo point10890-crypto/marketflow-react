@@ -1923,6 +1923,52 @@ def kr_decision_search():
     return resp
 
 
+def _with_decision_technical(payload):
+    """Read current saved price context without changing cached decisions/jobs."""
+    from copy import deepcopy
+    from app.services.mirofish import decision_technical
+    out = deepcopy(payload)
+    out['technical_analysis'] = decision_technical.read_analysis(out.get('symbol', ''))
+    return out
+
+
+@kr_bp.route('/decision/<symbol>/technical-profile', methods=['GET', 'POST'])
+@admin_or_aibain_required
+def kr_decision_technical_profile(symbol):
+    """Same decision entitlement; saved read or bounded price-only queue."""
+    from filelock import Timeout
+    from app.services.mirofish import decision_technical
+    from app.services.mirofish.kongming_technical import service
+
+    def response(body, status=200):
+        result = jsonify(body)
+        result.status_code = status
+        result.headers['Cache-Control'] = 'private, no-store, no-cache, must-revalidate'
+        return result
+
+    if request.args:
+        return response({'error': 'invalid_technical_request'}, 400)
+    raw = request.get_data(cache=True)
+    if len(raw) > 128 or (request.method == 'GET' and raw.strip()):
+        return response({'error': 'invalid_technical_request'}, 400)
+    if request.method == 'POST' and raw and request.get_json(silent=True) != {}:
+        return response({'error': 'invalid_technical_request'}, 400)
+    code = _decision_cache_key(symbol)
+    if request.method == 'GET':
+        return response(decision_technical.read_analysis(code))
+    if not decision_technical.is_domestic_symbol(code):
+        return response({'error': 'unsupported_technical_symbol'}, 400)
+    try:
+        receipt = service.enqueue(code)
+    except ValueError as exc:
+        if str(exc) == 'technical_queue_full':
+            return response({'error': 'technical_queue_full'}, 429)
+        return response({'error': 'technical_profile_unavailable'}, 503)
+    except (OSError, Timeout):
+        return response({'error': 'technical_profile_unavailable'}, 503)
+    return response(dict(decision_technical.read_analysis(code), queue_status=receipt['status']), 202)
+
+
 @kr_bp.route('/decision/<symbol>', methods=['GET'])
 @admin_or_aibain_required
 def kr_decision_brief(symbol):
@@ -1936,7 +1982,7 @@ def kr_decision_brief(symbol):
     if not _decision_force_requested():
         hit = decision_cache.cache_get('brief', key)
         if hit is not None:
-            resp = jsonify(hit)
+            resp = jsonify(_with_decision_technical(hit))
             resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
             return resp
 
@@ -1951,9 +1997,9 @@ def kr_decision_brief(symbol):
 
     # 완전 열화 브리프(신호 0 + 소스 오류)는 일간 캐시에 넣지 않는다 — 일시 장애
     # 결과를 하루 종일 서빙하면 안 된다(deep 경로가 실패를 캐시하지 않는 것과 같은 정책).
-    if payload.get('signals') or not payload.get('errors'):
+    if not payload.get('pending_sources') and (payload.get('signals') or not payload.get('errors')):
         decision_cache.cache_put('brief', key, payload)
-    resp = jsonify(payload)
+    resp = jsonify(_with_decision_technical(payload))
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return resp
 
@@ -1975,7 +2021,7 @@ def kr_decision_deep_analysis(symbol):
     if not force:
         hit = decision_cache.cache_get('deep', key)
         if hit is not None:
-            resp = jsonify(hit)
+            resp = jsonify(_with_decision_technical(hit))
             resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
             return resp
 
@@ -2022,6 +2068,8 @@ def kr_decision_deep_status(symbol):
         hit = decision_cache.cache_get('deep', key)
         if hit is not None:
             st = {'state': 'done', 'key': key, 'payload': hit}
+    if st.get('state') == 'done' and isinstance(st.get('payload'), dict):
+        st = dict(st, payload=_with_decision_technical(st['payload']))
     resp = jsonify(st)
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return resp

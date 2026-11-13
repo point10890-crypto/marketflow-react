@@ -113,6 +113,8 @@ def cache_get(kind: str, symbol: Any, *, now: datetime | None = None) -> dict[st
 
     if not isinstance(payload, dict) or not _is_fresh(str(kind), created, when):
         return None
+    if str(kind) == 'brief' and payload.get('pending_sources'):
+        return None
 
     payload['cached'] = True
     payload['cached_at'] = created.isoformat()
@@ -123,6 +125,10 @@ def cache_put(kind: str, symbol: Any, payload: Any, *,
               now: datetime | None = None) -> None:
     """계산 결과를 저장한다. 원본 payload 는 건드리지 않는다."""
     if _disabled() or not isinstance(payload, dict):
+        return
+    # Includes service-guard prewarming: a partial background lookup must not
+    # replace a completed decision or become an all-day postmarket cache hit.
+    if str(kind) == 'brief' and payload.get('pending_sources'):
         return
     when = now or _now_kst()
     body = {k: v for k, v in payload.items() if k not in {'cached', 'cached_at'}}
