@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 import SurgeTracePanel from '@/components/aibain/SurgeTracePanel';
+import KongmingTechnicalPanel from '@/components/aibain/KongmingTechnicalPanel';
 import CatalystOutcomesPanel from '@/components/aibain/CatalystOutcomesPanel';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
@@ -538,6 +539,7 @@ export default function KongmingCatalystValidationPage() {
                 <AiBrainServiceTabs active="kongming" />
                 {canRead && <CatalystOutcomesPanel key={`outcomes:${sessionKey}`} token={token ?? undefined} />}
                 {canRead && <SurgeTracePanel key={`surge:${sessionKey}`} token={token ?? undefined} />}
+                {canRead && <KongmingTechnicalPanel key={`technical:${sessionKey}`} token={token ?? undefined} initialSymbol={params.get('technical_symbol')?.toUpperCase()} />}
                 {canRead && <KongmingArticleCandidatesPanel key={`articles:${sessionKey}`} />}
                 <CatalystPanel key={`${sessionKey}:${articleId ?? ''}`} canRead={canRead} articleId={articleId} />
             </div>
