@@ -214,6 +214,7 @@ _KONGMING_ANALYSIS_POSTS = frozenset({
     'admin_mirofish.chart_analogue_top3',
     'admin_mirofish_goodrich.run_fund_manager_research',
     'kr.kr_decision_deep_analysis',
+    'kr.kr_decision_technical_profile',
 })
 
 

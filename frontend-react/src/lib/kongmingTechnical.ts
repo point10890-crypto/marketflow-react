@@ -37,7 +37,7 @@ const zone = (value: unknown): value is TechnicalZone => object(value) && number
     && number(value.volume_pct) && value.volume_pct <= 100 && number(value.traded_value);
 const nullableZone = (value: unknown) => value === null || zone(value);
 const statuses: string[] = ['ready', 'pending', 'insufficient_history', 'source_unavailable', 'price_event_review', 'stale'];
-function profile(value: unknown): value is TechnicalProfile {
+export function isTechnicalProfile(value: unknown): value is TechnicalProfile {
     if (!object(value) || !text(value.symbol) || !isTechnicalSymbol(value.symbol) || !text(value.name)
         || !text(value.status) || !statuses.includes(value.status) || !nullableText(value.reason)
         || !nullableDate(value.as_of) || !timestamp(value.fetched_at) || !nullableDate(value.window_start) || !nullableDate(value.window_end)
@@ -62,7 +62,7 @@ function profile(value: unknown): value is TechnicalProfile {
 }
 export function validateTechnicalProfiles(value: unknown): TechnicalProfileView {
     if (!object(value) || value.schema_version !== 1 || value.agent !== 'volume_profile_20d_v1' || !text(value.status)
-        || !timestamp(value.last_run_at) || !Array.isArray(value.items) || value.items.length > 500 || !value.items.every(profile)
+        || !timestamp(value.last_run_at) || !Array.isArray(value.items) || value.items.length > 500 || !value.items.every(isTechnicalProfile)
         || new Set(value.items.map(row => row.symbol)).size !== value.items.length) throw new Error('Invalid technical profile response');
     return value as unknown as TechnicalProfileView;
 }

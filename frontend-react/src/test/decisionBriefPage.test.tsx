@@ -1,14 +1,18 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { kongmingTechnicalFixture } from './fixtures/kongmingTechnicalFixture';
+import { StrictMode } from 'react';
 
 import DecisionBriefPage from '@/pages/dashboard/aibain/DecisionBriefPage';
 
 const mockApi = vi.hoisted(() => ({ fetchAuthAPI: vi.fn(), postAuthAPI: vi.fn() }));
+const mockAuth = vi.hoisted(() => ({ token: 't' as string | null }));
+beforeEach(() => { mockAuth.token = 't'; });
 
 vi.mock('@/lib/api', () => ({ fetchAuthAPI: mockApi.fetchAuthAPI, postAuthAPI: mockApi.postAuthAPI }));
 vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => ({ user: { id: 1, tier: 'pro', is_aibain_active: true }, token: 't' }),
+  useAuth: () => ({ user: { id: 1, tier: 'pro', is_aibain_active: true }, token: mockAuth.token }),
 }));
 vi.mock('@/components/aibain/AiBrainServiceTabs', () => ({
   default: () => <nav data-testid="tabs" />,
@@ -42,6 +46,254 @@ const brief = {
   errors: {},
   disclaimer: '정보 제공 목적이며 투자 권유가 아닙니다.',
 };
+
+describe('DecisionBriefPage — 선택 종목 매물대', () => {
+  const profile = () => ({ ...kongmingTechnicalFixture().items[0], symbol: '009150', name: '삼성전기' });
+  const envelope = (status = 'ready', symbol = '009150') => ({
+    schema_version: 1, agent: 'volume_profile_20d_v1', symbol, market: 'KR', status,
+    profile: ['ready', 'stale'].includes(status) ? { ...profile(), symbol, name: symbol === '005930' ? '삼성전자' : '삼성전기', status } : null,
+    summary: status === 'ready' ? '기준 종가 아래에 지지 후보가 있습니다.' : '최신 매물대 자료를 확인하고 있습니다.',
+    observations: status === 'ready' ? ['최대 거래량 구간을 함께 확인하세요.'] : [], independent_evidence: false,
+  });
+  const technicalCalls = () => mockApi.fetchAuthAPI.mock.calls.filter(call => String(call[0]).endsWith('/technical-profile'));
+  async function submit(symbol = '009150') {
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText('종목 코드'), { target: { value: symbol } });
+      fireEvent.click(screen.getByRole('button', { name: /판단 조회/ }));
+    });
+  }
+  function mockBrief(technical: unknown = envelope()) {
+    mockApi.fetchAuthAPI.mockImplementation((path: string) => Promise.resolve(path.includes('/search')
+      ? { candidates: [] } : { ...brief, technical_analysis: technical }));
+  }
+  beforeEach(() => { mockApi.fetchAuthAPI.mockReset(); mockApi.postAuthAPI.mockReset(); });
+  afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
+
+  it('응답 종목의 POC·지지·저항과 거래량을 판단 근거에 표시한다', async () => {
+    mockBrief(); render(<DecisionBriefPage />); await submit('삼성전기');
+    const area = screen.getByRole('region', { name: '20일 매물대 분석' });
+    expect(within(area).getByText(/009150/)).toBeInTheDocument();
+    expect(within(area).getByLabelText('최대 거래량 구간 · POC')).toHaveTextContent('70,400원');
+    expect(within(area).getByLabelText('지지 후보')).toHaveTextContent('1,000주');
+    expect(within(area).getByLabelText('저항 후보')).toHaveTextContent('4.17%');
+    expect(within(area).getByLabelText('저항 후보')).toHaveTextContent('거래대금');
+    expect(within(area).getByText('기준 종가 아래에 지지 후보가 있습니다.')).toBeInTheDocument();
+    expect(screen.getByText('25%')).toBeInTheDocument(); expect(screen.getByText('2개')).toBeInTheDocument();
+    expect(mockApi.postAuthAPI).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText('기술 분석 종목명 또는 코드')).toBeNull();
+    expect(area.querySelector('details[data-profile-bins]')).not.toHaveAttribute('open');
+  });
+
+  it('다른 종목 매물대를 응답에 섞으면 숫자를 표시하지 않는다', async () => {
+    mockBrief({ ...envelope(), profile: { ...profile(), symbol: '005930', name: '삼성전자' } });
+    render(<DecisionBriefPage />); await submit();
+    expect(screen.queryByLabelText('최대 거래량 구간 · POC')).toBeNull();
+    expect(screen.getByText(/매물대 응답을 확인할 수 없습니다/)).toBeInTheDocument();
+    expect(mockApi.postAuthAPI).not.toHaveBeenCalled();
+  });
+
+  it.each(['insufficient_history', 'price_event_review'])('%s 자료는 근거 제외 상태를 밝힌다', async status => {
+    mockBrief(envelope(status)); render(<DecisionBriefPage />); await submit();
+    expect(screen.getByText(/최신 판단 근거에서 제외/)).toBeInTheDocument();
+    expect(screen.queryByLabelText('최대 거래량 구간 · POC')).toBeNull();
+    expect(mockApi.postAuthAPI).not.toHaveBeenCalled();
+  });
+
+  it('한 번 수집 요청하고 30초 뒤 매물대만 조회해 완료 결과를 보여준다', async () => {
+    vi.useFakeTimers();
+    mockApi.fetchAuthAPI.mockImplementation((path: string) => Promise.resolve(path.endsWith('/technical-profile')
+      ? envelope() : path.includes('/search') ? { candidates: [] } : { ...brief, technical_analysis: envelope('not_requested') }));
+    mockApi.postAuthAPI.mockResolvedValue({ ...envelope('pending'), queue_status: 'queued' });
+    render(<DecisionBriefPage />); await submit();
+    expect(mockApi.postAuthAPI).toHaveBeenCalledExactlyOnceWith('/api/kr/decision/009150/technical-profile', {}, 't', 15000);
+    expect(screen.queryByLabelText('최대 거래량 구간 · POC')).toBeNull();
+    await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    expect(screen.getByLabelText('최대 거래량 구간 · POC')).toHaveTextContent('70,400원');
+    await act(async () => { await vi.advanceTimersByTimeAsync(60000); });
+    expect(technicalCalls()).toHaveLength(1);
+    expect(mockApi.fetchAuthAPI.mock.calls.filter(call => call[0] === '/api/kr/decision/009150')).toHaveLength(1);
+    expect(mockApi.postAuthAPI).toHaveBeenCalledTimes(1);
+  });
+
+  it('StrictMode에서 수집 응답이 무효화돼도 재요청 없이 저장 결과 조회로 복구한다', async () => {
+    vi.useFakeTimers();
+    mockApi.fetchAuthAPI.mockImplementation((path: string) => Promise.resolve(path.endsWith('/technical-profile')
+      ? envelope() : path.includes('/search') ? { candidates: [] } : { ...brief, technical_analysis: envelope('not_requested') }));
+    mockApi.postAuthAPI.mockResolvedValue({ ...envelope('pending'), queue_status: 'queued' });
+    render(<StrictMode><DecisionBriefPage /></StrictMode>); await submit();
+    expect(mockApi.postAuthAPI).toHaveBeenCalledTimes(1);
+    await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    expect(screen.getByLabelText('지지 후보')).toBeInTheDocument();
+    expect(technicalCalls()).toHaveLength(1); expect(mockApi.postAuthAPI).toHaveBeenCalledTimes(1);
+  });
+
+  it('수집 요청 중 다른 종목 조회가 실패하면 원래 종목의 저장 결과 조회를 복구한다', async () => {
+    vi.useFakeTimers(); let finishQueue: (value: unknown) => void = () => {};
+    mockApi.fetchAuthAPI.mockImplementation((path: string) => path === '/api/kr/decision/005930'
+      ? Promise.reject(new Error('offline')) : Promise.resolve(path.endsWith('/technical-profile')
+        ? envelope() : path.includes('/search') ? { candidates: [] } : { ...brief, technical_analysis: envelope('not_requested') }));
+    mockApi.postAuthAPI.mockReturnValue(new Promise(resolve => { finishQueue = resolve; }));
+    render(<DecisionBriefPage />); await submit(); await submit('005930');
+    await act(async () => { finishQueue({ ...envelope('pending'), queue_status: 'queued' }); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    expect(screen.getByLabelText('지지 후보')).toBeInTheDocument();
+    expect(technicalCalls()).toHaveLength(1);
+    expect(technicalCalls()[0][0]).toBe('/api/kr/decision/009150/technical-profile');
+    expect(mockApi.postAuthAPI).toHaveBeenCalledTimes(1);
+  });
+
+  it('이전 자료는 갱신 동안 과거 기준일과 근거 제외를 표시한다', async () => {
+    mockBrief(envelope('stale')); mockApi.postAuthAPI.mockReturnValue(new Promise(() => {}));
+    render(<DecisionBriefPage />); await submit();
+    expect(screen.getByText(/최신 판단 근거에서 제외/)).toBeInTheDocument();
+    expect(screen.getByText('이전 저장 결과 · 갱신 필요')).toBeInTheDocument();
+    expect(mockApi.postAuthAPI).toHaveBeenCalledTimes(1);
+  });
+
+  it('구형 캐시 브리프는 자동 수집 없이 수동 요청할 수 있다', async () => {
+    mockApi.fetchAuthAPI.mockResolvedValue({ ...brief, cached: true });
+    mockApi.postAuthAPI.mockResolvedValue({ ...envelope(), queue_status: 'cached' });
+    render(<DecisionBriefPage />); await submit();
+    expect(screen.getByTestId('cache-badge')).toBeInTheDocument(); expect(mockApi.postAuthAPI).not.toHaveBeenCalled();
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: '매물대 조회 요청' })); });
+    expect(screen.getByLabelText('최대 거래량 구간 · POC')).toBeInTheDocument();
+  });
+
+  it('요청 실패는 같은 종목을 다시 요청할 수 있다', async () => {
+    mockBrief(envelope('not_requested'));
+    mockApi.postAuthAPI.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce({ ...envelope(), queue_status: 'cached' });
+    render(<DecisionBriefPage />); await submit();
+    expect(screen.getByText(/매물대 요청에 실패/)).toBeInTheDocument();
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: '매물대 다시 요청' })); });
+    expect(screen.getByLabelText('지지 후보')).toBeInTheDocument();
+    expect(mockApi.postAuthAPI.mock.calls.every(call => call[0] === '/api/kr/decision/009150/technical-profile')).toBe(true);
+  });
+
+  it('새 종목 조회 중에도 이전 매물대에 늦은 응답을 붙이지 않는다', async () => {
+    let finishQueue: (value: unknown) => void = () => {}; let finishBrief: (value: unknown) => void = () => {};
+    mockApi.fetchAuthAPI.mockImplementation((path: string) => path === '/api/kr/decision/005930'
+      ? new Promise(resolve => { finishBrief = resolve; })
+      : Promise.resolve(path.includes('/search') ? { candidates: [] } : { ...brief, technical_analysis: envelope('not_requested') }));
+    mockApi.postAuthAPI.mockReturnValue(new Promise(resolve => { finishQueue = resolve; }));
+    render(<DecisionBriefPage />); await submit(); await submit('005930');
+    await act(async () => { finishQueue({ ...envelope(), queue_status: 'cached' }); });
+    expect(screen.queryByLabelText('최대 거래량 구간 · POC')).toBeNull();
+    await act(async () => { finishBrief({ ...brief, symbol: '005930', name: '삼성전자', technical_analysis: envelope('ready', '005930') }); });
+    expect(within(screen.getByRole('region', { name: '20일 매물대 분석' })).getByText(/005930/)).toBeInTheDocument();
+    expect(screen.queryByRole('article', { name: '삼성전기 20일 매물대' })).toBeNull();
+  });
+
+  it('로그아웃 시 진행 중 응답을 버리고 자동 조회도 종료한다', async () => {
+    vi.useFakeTimers(); let finishQueue: (value: unknown) => void = () => {};
+    mockBrief(envelope('pending')); mockApi.postAuthAPI.mockReturnValue(new Promise(resolve => { finishQueue = resolve; }));
+    const { rerender } = render(<DecisionBriefPage />); await submit(); mockAuth.token = null; rerender(<DecisionBriefPage />);
+    await act(async () => { finishQueue({ ...envelope(), queue_status: 'cached' }); await vi.advanceTimersByTimeAsync(60000); });
+    expect(screen.queryByLabelText('최대 거래량 구간 · POC')).toBeNull();
+    expect(technicalCalls()).toHaveLength(0); expect(mockApi.postAuthAPI).toHaveBeenCalledTimes(1);
+  });
+
+  it('다른 종목 조회가 실패해도 마지막 종목의 수동 매물대 요청은 복구된다', async () => {
+    mockApi.fetchAuthAPI.mockImplementation((path: string) => path === '/api/kr/decision/005930'
+      ? Promise.reject(new Error('brief offline')) : Promise.resolve(brief));
+    mockApi.postAuthAPI.mockResolvedValue({ ...envelope(), queue_status: 'cached' });
+    render(<DecisionBriefPage />); await submit(); await submit('005930');
+    expect(screen.getByText(/조회에 실패했습니다/)).toBeInTheDocument();
+    const retry = screen.getByRole('button', { name: '매물대 조회 요청' });
+    expect(retry).toBeEnabled();
+    await act(async () => { fireEvent.click(retry); });
+    expect(screen.getByLabelText('지지 후보')).toBeInTheDocument();
+    expect(mockApi.postAuthAPI).toHaveBeenCalledWith('/api/kr/decision/009150/technical-profile', {}, 't', 15000);
+  });
+
+  it('숨긴 화면은 폴링을 멈추고 다시 보일 때 저장 결과만 확인한다', async () => {
+    vi.useFakeTimers(); mockBrief(envelope('pending'));
+    mockApi.postAuthAPI.mockResolvedValue({ ...envelope('pending'), queue_status: 'queued' });
+    render(<DecisionBriefPage />); await submit();
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    await act(async () => { fireEvent(document, new Event('visibilitychange')); await vi.advanceTimersByTimeAsync(60000); });
+    expect(technicalCalls()).toHaveLength(0);
+    mockApi.fetchAuthAPI.mockResolvedValue(envelope());
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    await act(async () => { fireEvent(document, new Event('visibilitychange')); });
+    expect(screen.getByLabelText('지지 후보')).toBeInTheDocument();
+    expect(technicalCalls()).toHaveLength(1); expect(mockApi.postAuthAPI).toHaveBeenCalledTimes(1);
+  });
+
+  it('계정 토큰이 바뀌면 이전 조회 응답으로 수집을 시작하지 않는다', async () => {
+    let finishBrief: (value: unknown) => void = () => {};
+    mockApi.fetchAuthAPI.mockReturnValue(new Promise(resolve => { finishBrief = resolve; }));
+    const { rerender } = render(<DecisionBriefPage />); await submit();
+    mockAuth.token = 'new-account-token'; rerender(<DecisionBriefPage />);
+    await act(async () => { finishBrief({ ...brief, technical_analysis: envelope('pending') }); });
+    expect(screen.queryByRole('region', { name: '20일 매물대 분석' })).toBeNull();
+    expect(mockApi.postAuthAPI).not.toHaveBeenCalled();
+  });
+
+  it('권한 거부 후에는 자동 조회나 재요청을 반복하지 않는다', async () => {
+    vi.useFakeTimers(); mockBrief(envelope('pending'));
+    mockApi.postAuthAPI.mockRejectedValue(Object.assign(new Error('forbidden'), { status: 403 }));
+    render(<DecisionBriefPage />); await submit();
+    expect(screen.getByText(/종목 판단 이용 권한/)).toBeInTheDocument();
+    await act(async () => { await vi.advanceTimersByTimeAsync(60000); });
+    expect(technicalCalls()).toHaveLength(0); expect(mockApi.postAuthAPI).toHaveBeenCalledTimes(1);
+  });
+
+  it('미국 종목에는 국내 매물대 수집 요청을 보내지 않는다', async () => {
+    vi.useFakeTimers(); mockApi.fetchAuthAPI.mockResolvedValue({ ...brief, symbol: 'AAPL', name: 'Apple', technical_analysis: {
+      ...envelope('unsupported_market', 'AAPL'), market: 'unsupported', summary: '국내 종목만 지원합니다.',
+    } });
+    render(<DecisionBriefPage />); await submit('AAPL');
+    await act(async () => { await vi.advanceTimersByTimeAsync(60000); });
+    expect(mockApi.postAuthAPI).not.toHaveBeenCalled(); expect(technicalCalls()).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: '매물대 조회 요청' })).toBeNull();
+  });
+
+  const usedProfile = {
+    fingerprint: 'a'.repeat(64), as_of: '2026-11-10', fetched_at: '2026-11-10T20:31:00+09:00',
+    context_text: '[20거래일 매물대 · 009150 · 2026-11-10]\n과거 분석에 입력된 자료',
+  };
+  async function showDeep(used?: unknown) {
+    mockBrief();
+    mockApi.postAuthAPI.mockResolvedValue({
+      symbol: '009150', name: '삼성전기', status: 'neutral', analysts: [], debate: null,
+      risk: null, verdict: { verdict: 'HOLD', confidence: 55 }, verification: null,
+      citations: [], retrieval: null, method: 'llm', error: null, cached: true,
+      cached_at: '2026-11-10T22:00:00+09:00', ...(used === undefined ? {} : { technical_profile_used: used }),
+    });
+    render(<DecisionBriefPage />); await submit();
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /심층 분석 실행/ })); });
+  }
+
+  it('최신 매물대 위의 구형 심층 캐시는 매물대 사용 기록이 없음을 알린다', async () => {
+    await showDeep();
+    expect(screen.getByLabelText('지지 후보')).toBeInTheDocument();
+    expect(within(screen.getByTestId('deep-call')).getByText('이 심층 분석에 매물대가 사용된 기록은 없습니다.')).toBeInTheDocument();
+    expect(within(screen.getByTestId('deep-call')).queryByText(/매물대 입력 기준일/)).toBeNull();
+  });
+
+  it('심층 결과는 최신 화면 자료가 아닌 실제 입력 자료의 기준일과 수집 시각을 표시한다', async () => {
+    await showDeep(usedProfile);
+    const result = within(screen.getByTestId('deep-call'));
+    expect(result.getByText(/매물대 입력 기준일/)).toHaveTextContent('2026-11-10');
+    expect(result.getByText(/매물대 입력 기준일/)).not.toHaveTextContent('2026-11-12');
+    expect(result.getByText(/수집 시각/)).toHaveTextContent('2026-11-10 20:31');
+    expect(result.getByText(/수집 시각/)).toHaveTextContent('한국시간');
+    expect(result.queryByText(/사용된 기록은 없습니다/)).toBeNull();
+  });
+
+  it.each([
+    { ...usedProfile, as_of: '2026-02-30' },
+    { ...usedProfile, fetched_at: 'not-a-time' },
+    { ...usedProfile, fetched_at: '2026-11-10T20:31:00' },
+    { ...usedProfile, fingerprint: '' },
+    { ...usedProfile, context_text: {} },
+  ])('손상된 심층 매물대 사용 기록은 유효한 입력으로 표시하지 않는다 (%j)', async used => {
+    await showDeep(used);
+    const result = within(screen.getByTestId('deep-call'));
+    expect(result.queryByText(/매물대 입력 기준일/)).toBeNull();
+    expect(result.getByText('이 심층 분석의 매물대 사용 기록을 확인할 수 없습니다.')).toBeInTheDocument();
+  });
+});
 
 describe('DecisionBriefPage', () => {
   beforeEach(() => {

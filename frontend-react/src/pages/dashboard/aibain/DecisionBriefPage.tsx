@@ -7,11 +7,15 @@ import '@/pages/dashboard/ai-design.css';
  * 신뢰를 어디까지 둘 수 있는지를 보여주는 것이 이 화면의 전부다.
  * 매수/매도를 지시하지 않는다 — 상태는 watch | neutral | avoid_data_gap 뿐이다.
  */
-import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { FormEvent, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI, postAuthAPI } from '@/lib/api';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 import RagStatusCard from './RagStatusCard';
+import { TechnicalProfileCard } from '@/components/aibain/KongmingTechnicalPanel';
+import { fetchDecisionTechnical, needsTechnicalRefresh, queueDecisionTechnical, readTechnicalProfileUsed, validateDecisionTechnical, type DecisionTechnicalAnalysis } from '@/lib/decisionTechnical';
+import { isTechnicalSymbol } from '@/lib/kongmingTechnical';
+import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 
 const ENDPOINT = '/api/kr/decision';
 
@@ -36,6 +40,7 @@ interface DeepAnalysis {
     error: string | null;
     cached?: boolean;
     cached_at?: string;
+    technical_profile_used?: { fingerprint: string; as_of: string; fetched_at: string; context_text: string } | null;
 }
 
 type Stance = 'positive' | 'negative' | 'neutral' | 'absent' | string;
@@ -85,6 +90,7 @@ interface DecisionBrief {
     disclaimer?: string;
     cached?: boolean;
     cached_at?: string;
+    technical_analysis?: unknown;
 }
 
 const SOURCE_LABEL: Record<string, { name: string; desc: string }> = {
@@ -215,8 +221,12 @@ function safeHref(link: string | null | undefined): string | null {
 
 export default function DecisionBriefPage() {
     const { token } = useAuth();
+    const currentToken = useRef(token);
+    currentToken.current = token;
     const [input, setInput] = useState('');
     const [brief, setBrief] = useState<DecisionBrief | null>(null);
+    const [briefEpoch, setBriefEpoch] = useState(0);
+    const [briefToken, setBriefToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [deep, setDeep] = useState<DeepAnalysis | null>(null);
@@ -225,16 +235,24 @@ export default function DecisionBriefPage() {
     const [suggestions, setSuggestions] = useState<Candidate[]>([]);
     const suppress = useRef(false);   // 후보를 골라 넣은 직후엔 다시 조회하지 않는다
     const lookupSeq = useRef(0);      // 조회 시퀀스 — 늦게 도착한 응답이 최신 브리프를 덮지 않게 한다
+    const lookupPending = useRef(false);
     const briefSymbol = useRef<string | null>(null);  // 지금 화면에 떠 있는 브리프의 종목
     const deepRunId = useRef(0);      // 심층 분석 실행 시퀀스 — 새 실행·언마운트가 이전 폴링을 무효화한다
 
     // 언마운트되면 진행 중인 조회 응답과 심층 분석 폴링을 모두 무효화한다.
     useEffect(() => () => { lookupSeq.current += 1; deepRunId.current += 1; }, []);
+    useEffect(() => {
+        setBrief(null); setDeep(null); setLoading(false); setDeepLoading(false);
+        briefSymbol.current = null;
+        lookupPending.current = false;
+        return () => { lookupSeq.current += 1; deepRunId.current += 1; };
+    }, [token]);
 
     const lookup = useCallback(async (raw: string, force = false) => {
         const symbol = raw.trim();
         if (!symbol) return;
         const seq = ++lookupSeq.current;   // 이보다 늦게 시작한 조회가 있으면 이 응답은 버린다
+        lookupPending.current = true;
         setLoading(true);
         setError('');
         try {
@@ -242,9 +260,11 @@ export default function DecisionBriefPage() {
             // 캐시 미적중 조회는 프로덕션 실측 6~45초로 흔들린다(백그라운드 워커 경합).
             // 30초로는 첫 조회가 그대로 실패했다. 엣지 프록시 한계(100초) 아래로 잡는다.
             const res = await fetchAuthAPI<unknown>(path, token ?? undefined, 90000);
-            if (lookupSeq.current !== seq) return;   // 그 사이 다른 조회가 시작됐다 — 낡은 응답
+            if (lookupSeq.current !== seq || currentToken.current !== token) return;
             if (isDecisionBrief(res)) {
                 setBrief(res);
+                setBriefEpoch(seq);
+                setBriefToken(token ?? null);
                 briefSymbol.current = res.symbol;
                 setDeep(null);
             } else {
@@ -256,7 +276,7 @@ export default function DecisionBriefPage() {
             // 강제 새로고침이 실패해도 마지막 정상 브리프를 그대로 둔다
             setError('조회에 실패했습니다. 종목 코드를 확인하고 다시 시도해 주세요.');
         } finally {
-            if (lookupSeq.current === seq) setLoading(false);
+            if (lookupSeq.current === seq) { lookupPending.current = false; setLoading(false); }
         }
     }, [token]);
 
@@ -278,7 +298,7 @@ export default function DecisionBriefPage() {
         const runId = ++deepRunId.current;
         // 이 실행의 결과는 (1) 더 새 실행·언마운트가 없고 (2) 시작한 종목의 브리프가
         // 그대로 떠 있을 때만 반영한다 — A의 폴링 결과가 B의 브리프 밑에 붙지 않게.
-        const fresh = () => deepRunId.current === runId && briefSymbol.current === symbol;
+        const fresh = () => deepRunId.current === runId && briefSymbol.current === symbol && currentToken.current === token;
         setDeepLoading(true);
         setDeepPhase('분석 요청 중…');
         setError('');   // 이전 실패 배너가 새 결과 옆에 남지 않게 지운다
@@ -368,6 +388,7 @@ export default function DecisionBriefPage() {
         setSuggestions([]);
         void lookup(input);
     };
+    const lookupEpoch = lookupSeq.current;
 
     return (
         <div className="ai-design min-h-full bg-[#101318] p-4 text-white sm:p-6 lg:p-8">
@@ -449,7 +470,10 @@ export default function DecisionBriefPage() {
                 <RagStatusCard />
 
                 {brief && <BriefBody brief={brief} onRefresh={() => void lookup(brief.symbol, true)}
-                    refreshing={loading} />}
+                    refreshing={loading} technical={token && token === briefToken ?
+                        <DecisionTechnicalEvidence key={`${token}:${briefEpoch}`} symbol={brief.symbol}
+                            initial={brief.technical_analysis} token={token} active={!loading} lookupEpoch={lookupEpoch}
+                            isCurrent={() => !lookupPending.current && lookupSeq.current === lookupEpoch && briefSymbol.current === brief.symbol && currentToken.current === token} /> : null} />}
 
                 {brief && (
                     <div className="ai-panel rounded-2xl border border-teal-400/20 bg-[#13151f] p-5">
@@ -480,8 +504,100 @@ export default function DecisionBriefPage() {
     );
 }
 
-function BriefBody({ brief, onRefresh, refreshing }: {
-    brief: DecisionBrief; onRefresh: () => void; refreshing: boolean;
+/** A technical supplement for the accepted brief, never another stock picker or vote. */
+function DecisionTechnicalEvidence({ symbol, initial, token, active, lookupEpoch, isCurrent }: {
+    symbol: string; initial: unknown; token: string; active: boolean; lookupEpoch: number; isCurrent: () => boolean;
+}) {
+    const [initialResult] = useState(() => {
+        if (initial === undefined || initial === null) return { analysis: null, invalid: false };
+        try { return { analysis: validateDecisionTechnical(initial, symbol), invalid: false }; }
+        catch { return { analysis: null, invalid: true }; }
+    });
+    const [analysis, setAnalysis] = useState<DecisionTechnicalAnalysis | null>(initialResult.analysis);
+    const [error, setError] = useState(initialResult.invalid ? '매물대 응답을 확인할 수 없습니다. 해당 종목 자료를 다시 요청해 주세요.' : '');
+    const [denied, setDenied] = useState(false);
+    const [queuing, setQueuing] = useState(false);
+    const [collectionRequested, setCollectionRequested] = useState(false);
+    const live = useRef(false);
+    const attempted = useRef(false);
+    const inFlight = useRef(false);
+    const requestEpoch = useRef(0);
+    const controller = useRef<AbortController | null>(null);
+    const current = useRef(isCurrent);
+    current.current = isCurrent;
+    const supported = analysis?.market === 'KR' || (!analysis && isTechnicalSymbol(symbol) && /\d/.test(symbol));
+
+    useEffect(() => {
+        live.current = active;
+        setQueuing(false);
+        return () => {
+            live.current = false; requestEpoch.current += 1; inFlight.current = false;
+            controller.current?.abort();
+        };
+    }, [active, lookupEpoch]);
+
+    const request = useCallback(async (queue: boolean) => {
+        if (!live.current || !current.current() || inFlight.current || !supported || denied) return;
+        if (!queue && document.visibilityState !== 'visible') return;
+        inFlight.current = true;
+        const epoch = ++requestEpoch.current;
+        const contextIsCurrent = current.current;
+        const fresh = () => live.current && contextIsCurrent() && requestEpoch.current === epoch;
+        if (queue) { attempted.current = true; setCollectionRequested(true); setQueuing(true); }
+        setError('');
+        controller.current = new AbortController();
+        try {
+            const next = queue ? await queueDecisionTechnical(symbol, token)
+                : await fetchDecisionTechnical(symbol, token, controller.current.signal);
+            if (fresh()) setAnalysis(next);
+        } catch (failure) {
+            if (!fresh()) return;
+            const access = failure instanceof Error && 'status' in failure && [401, 403].includes(Number(failure.status));
+            if (queue) setCollectionRequested(false);
+            if (access) { setDenied(true); setAnalysis(null); }
+            setError(access ? '종목 판단 이용 권한을 확인해 주세요. 로그인 상태와 구독을 확인하세요.'
+                : queue ? '매물대 요청에 실패했습니다. 잠시 후 다시 요청해 주세요.'
+                : '매물대 결과 갱신이 지연되고 있습니다. 잠시 후 다시 확인합니다.');
+        } finally {
+            if (requestEpoch.current === epoch) { inFlight.current = false; if (live.current) setQueuing(false); }
+        }
+    }, [symbol, token, supported, denied]);
+
+    useEffect(() => {
+        if (active && !attempted.current && initialResult.analysis?.market === 'KR'
+            && needsTechnicalRefresh(initialResult.analysis.status)) void request(true);
+    }, [active, initialResult, request]);
+    const polling = ['pending', 'stale', 'source_unavailable'].includes(analysis?.status ?? '')
+        || (collectionRequested || analysis?.queue_status === 'queued') && (!analysis || analysis.status === 'not_requested');
+    useAutoRefresh(() => request(false), 30000, active && supported && !denied && !queuing && polling);
+
+    if (!supported && !analysis && !initialResult.invalid) return null;
+    const ready = analysis?.status === 'ready';
+    return <section aria-label="20일 매물대 분석" aria-busy={queuing}
+        className="mb-5 min-w-0 space-y-3 rounded-xl border border-[#365372] bg-[#10181f] p-3 [overflow-wrap:anywhere] sm:p-4">
+        <header className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-base font-bold text-sky-100">20일 매물대 분석</h3>
+            {supported && !ready && !denied && <button type="button" disabled={!active || queuing}
+                onClick={() => void request(true)}
+                className="min-h-11 rounded-lg border border-[#526a83] px-3 py-2 text-sm font-semibold text-sky-200 hover:bg-sky-400/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300 disabled:opacity-50">
+                {queuing ? '매물대 요청 중…' : attempted.current || error ? '매물대 다시 요청' : '매물대 조회 요청'}
+            </button>}
+        </header>
+        {error && <p role="alert" className="text-sm leading-6 text-amber-200">{error}</p>}
+        <p className="text-sm leading-6 text-slate-200">{analysis?.summary || (initialResult.invalid
+            ? '선택 종목과 일치하는 자료를 확인한 뒤 표시합니다.' : '이 판단 결과에는 매물대 자료가 아직 없습니다. 선택한 종목의 자료를 요청할 수 있습니다.')}</p>
+        {!ready && supported && <p className="text-xs leading-5 text-amber-200">완료된 최신 자료가 아니므로 최신 판단 근거에서 제외됩니다.</p>}
+        {analysis?.observations.length ? <ul className="list-disc space-y-1 pl-4 text-sm leading-6 text-slate-300">
+            {analysis.observations.map((line, index) => <li key={index}>{line}</li>)}
+        </ul> : null}
+        {analysis?.profile && <TechnicalProfileCard row={analysis.profile} compact />}
+        {supported && <p className="text-xs leading-5 text-slate-400">가격·거래량 근거를 보완하는 분석입니다. 독립 근거 수와 신뢰 상한에 중복 가산하지 않습니다.</p>}
+        {polling && !denied && <p role="status" className="text-xs leading-5 text-slate-400">수집 결과를 기다리는 동안 화면이 보일 때 30초마다 이 종목의 매물대만 확인합니다.</p>}
+    </section>;
+}
+
+function BriefBody({ brief, onRefresh, refreshing, technical }: {
+    brief: DecisionBrief; onRefresh: () => void; refreshing: boolean; technical: ReactNode;
 }) {
     const verdict = VERDICT_STYLE[brief.agreement.verdict] ?? VERDICT_STYLE.mixed;
     const status = STATUS_STYLE[brief.status] ?? STATUS_STYLE.neutral;
@@ -547,6 +663,7 @@ function BriefBody({ brief, onRefresh, refreshing }: {
             {/* 근거 대조 */}
             <section className="ai-panel rounded-2xl border border-[#30363f] bg-[#13151f] p-5">
                 <h3 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-gray-500">근거 대조</h3>
+                {technical}
                 {brief.signals.length === 0 ? (
                     <p className="py-3 text-sm text-gray-500">이 종목에 대한 근거가 하나도 없습니다.</p>
                 ) : (
@@ -667,6 +784,10 @@ function DeepBody({ deep, onRerun, rerunning }: {
     };
     const call = callStyle(deep.verdict?.verdict);
     const conf = deep.verdict?.confidence;
+    const usedProfile = readTechnicalProfileUsed(deep.technical_profile_used);
+    const usedFetchedAt = usedProfile ? new Intl.DateTimeFormat('sv-SE', {
+        timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
+    }).format(Date.parse(usedProfile.fetched_at)) : null;
     return (
         <div className="mt-5 space-y-4 border-t border-white/[0.06] pt-4">
             {/* 참고 판정 — 토론 결과의 결론. 매매 지시가 아님을 같은 블록에 명시한다. */}
@@ -694,6 +815,15 @@ function DeepBody({ deep, onRerun, rerunning }: {
                     <CacheNote at={deep.cached_at} label="오늘 분석한 결과"
                         action="다시 분석" onAct={onRerun} busy={rerunning} />
                 )}
+                <div className="mt-3 space-y-1 border-t border-white/10 pt-2 text-xs leading-5 text-slate-300">
+                    {usedProfile ? <>
+                        <p>매물대 입력 기준일 <time dateTime={usedProfile.as_of}>{usedProfile.as_of}</time></p>
+                        <p>수집 시각 <time dateTime={usedProfile.fetched_at}>{usedFetchedAt}</time> · 한국시간</p>
+                        <p className="text-slate-400">이 심층 분석에 실제 사용한 자료입니다. 위의 최신 매물대와 기준일이 다를 수 있습니다.</p>
+                    </> : <p>{deep.technical_profile_used == null
+                        ? '이 심층 분석에 매물대가 사용된 기록은 없습니다.'
+                        : '이 심층 분석의 매물대 사용 기록을 확인할 수 없습니다.'}</p>}
+                </div>
             </div>
 
             {/* 애널리스트 4인 */}
