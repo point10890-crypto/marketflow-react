@@ -45,6 +45,16 @@ Preflight: the production account's read-only `/v1/models` request returned HTTP
 
 ## Runtime controls
 
+### Continuity correction, 2026-11-13
+
+- Observed at 10:22 KST: USD 0.142397208 spent/reserved for this UTC day, 91 article provider calls (68 Anthropic, 20 DeepSeek, 3 OpenAI). The article call allowance, not the dollar limit or proven depleted credit, caused the hold. At 10:23, today's receipts included 76 article records for only 27 distinct articles; 50 price inputs were still in an unfinished observation window.
+- An unfinished saved KIS price window now supplies an explicit `awaiting_window_completion` state to AI interpretation. Intermediate tick prices remain in the independent price dashboard. Completion supplies the saved final observation, changing the AI input fingerprint once. Article edits, filing changes and final-price corrections still change that fingerprint. Previously completed receipts are preserved.
+- Read-only daily ledger aggregation distinguishes call/cost limits, reserved TOP3 capacity and unknown usage. The ceilings remain USD 1 / 100 calls, with nine calls reserved for TOP3. Preflight holds do not call providers or reserve spend; the atomic admission check still guards every actual request.
+- Budget-held article entries retain current deterministic disclosure/price checks, shown as **자동 기본 검증**, separate from AI findings. This is a saved-source projection, not confirmation of a news claim or successful AI interpretation. `basic_checks.input_fingerprint` / `checked_at` bind that current projection independently of older AI text.
+- Daily cap holds retry after the next UTC reset (09:00 KST, on the next worker tick). A date-specific in-memory run key retains the original durable request identity. Charged/uncertain requests cannot bypass the persistent provider fence. Unknown ledger/cost states retain bounded recovery and are never treated as free capacity.
+- Missing newly listed issuer codes now trigger a bounded official OpenDART `corpCode.xml` refresh. Isolated cache: `data/kongming/dart_issuer_registry.json`; no overwrite of `data/dart_corp_codes.json`. Cross-process lock, atomic writes, one-day successful miss cooldown and 15-minute failure cooldown preserve the last valid mapping and prevent repeated full-corpus downloads.
+- Official read-only verification on 2026-11-13 matched `0162D0 / 동원파츠 / 00784184`, registry modification date `20261110`. Filing `20261112000362` also matched the company identity. Mapping recovery does not by itself confirm the article's market-price claim.
+
 - Worker: `python -X utf8 -m scripts.run_evidence_review`; production scheduled task `MarketFlow-Evidence-Review`, startup and every five minutes, SYSTEM, overlapping instances ignored, four-minute hard limit. The worker has a 210-second internal deadline and reserves time to persist completed stages.
 - New-operation provider requests have a 30-second timeout and SDK retries disabled. The worker only begins another routed stage with at least 100 seconds remaining.
 - `AI_EVIDENCE_REVIEW_DAILY_BUDGET_USD` defaults to `1` and is clamped to 0–1; `AI_EVIDENCE_REVIEW_DAILY_MAX_CALLS` defaults to `100` and is clamped to 0–100. Invalid limits disable new paid admission. These are UTC-day caps for this feature on its shared production routing ledger, not the entire application's spend.

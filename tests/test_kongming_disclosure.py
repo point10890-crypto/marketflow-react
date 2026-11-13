@@ -198,3 +198,186 @@ def test_request_errors_hide_provider_credentials(project):
     assert result['status'] == 'source_unavailable'
     assert result['error_code'] == 'request_failed'
     assert 'marketflow-test-only' not in json.dumps(result)
+
+
+NEW_ENTITY = {'symbol': '0162D0', 'name': '동원파츠'}
+NEW_CORP = '00784184'
+
+
+def _registry_xml(*entries):
+    rows = ''.join(
+        '<list><corp_code>{}</corp_code><corp_name>{}</corp_name>'
+        '<corp_eng_name>EXAMPLE CO LTD</corp_eng_name><stock_code>{}</stock_code>'
+        '<modify_date>20261110</modify_date></list>'.format(corp, name, symbol)
+        for symbol, corp, name in entries
+    )
+    return _zip('CORPCODE', '<?xml version="1.0" encoding="UTF-8"?><result>' + rows + '</result>')
+
+
+class _RegistryDart(_Dart):
+    def __init__(self, registry=None, **kwargs):
+        super().__init__(**kwargs)
+        self.registry = registry if registry is not None else _registry_xml(
+            (NEW_ENTITY['symbol'], NEW_CORP, NEW_ENTITY['name']),
+            (ENTITY['symbol'], CORP, ENTITY['name']),
+        )
+
+    def __call__(self, url, params, **kwargs):
+        if url.endswith('/corpCode.xml'):
+            self.calls.append(('registry',))
+            if isinstance(self.registry, Exception):
+                raise self.registry
+            return self.registry
+        return super().__call__(url, params, **kwargs)
+
+
+def _new_article(entity=NEW_ENTITY):
+    return _article(entity['name'] + ' 지분 공시', entities=[entity], event={'type': 'capital_policy'})
+
+
+def test_missing_alphanumeric_symbol_refreshes_official_registry_and_survives_restart(project):
+    original_map = (project / 'data/dart_corp_codes.json').read_bytes()
+    filing = _filing(corp_name=NEW_ENTITY['name'], corp_code=NEW_CORP,
+                     stock_code=NEW_ENTITY['symbol'], report_nm='임원ㆍ주요주주특정증권등소유상황보고서')
+    dart = _RegistryDart(rows=[filing])
+    result = DisclosureVerifier(project, transport=dart).verify(_new_article(), NEW_ENTITY, NOW)
+    assert result['status'] == 'related_filing_found'
+    mapping = result['issuer_mapping']
+    assert mapping['corp_code'] == NEW_CORP
+    assert mapping['stock_code'] == '0162D0'
+    assert mapping['corp_name'] == '동원파츠'
+    assert mapping['source'] == 'https://opendart.fss.or.kr/api/corpCode.xml'
+    assert mapping['fetched_at'] == NOW.isoformat()
+    assert len(mapping['sha256']) == 64
+    restarted = DisclosureVerifier(project, transport=dart).verify(_new_article(), NEW_ENTITY, NOW)
+    assert restarted['status'] == 'related_filing_found'
+    assert [call for call in dart.calls if call[0] == 'registry'] == [('registry',)]
+    assert (project / 'data/dart_corp_codes.json').read_bytes() == original_map
+
+
+def test_missing_registry_file_can_recover_without_replacing_shared_map(project):
+    (project / 'data/dart_corp_codes.json').unlink()
+    result = DisclosureVerifier(project, transport=_RegistryDart(status='013')).verify(_new_article(), NEW_ENTITY, NOW)
+    assert result['status'] == 'no_matching_filing'
+    assert not (project / 'data/dart_corp_codes.json').exists()
+
+
+def test_unlisted_symbol_does_not_download_corpus_each_worker_run(project):
+    entity = {'symbol': '9999Z0', 'name': '미등록회사'}
+    dart = _RegistryDart(status='013')
+    for minutes in (0, 1, 10, 60):
+        result = DisclosureVerifier(project, transport=dart).verify(_new_article(entity), entity, NOW + timedelta(minutes=minutes))
+        assert result['error_code'] == 'issuer_mapping_unavailable'
+    assert dart.calls == [('registry',)]
+    assert result['issuer_mapping']['retry_at'] == (NOW + timedelta(days=1)).isoformat()
+
+
+def test_failed_refresh_retries_after_cooldown_without_losing_valid_mapping(project):
+    good = _RegistryDart(status='013')
+    assert DisclosureVerifier(project, transport=good).verify(_new_article(), NEW_ENTITY, NOW)['status'] == 'no_matching_filing'
+    entity = {'symbol': '9999Z0', 'name': '미등록회사'}
+    future = NOW + timedelta(days=2)
+    failed = _RegistryDart(registry=Timeout('secret-key-in-provider-url'), status='013')
+    first = DisclosureVerifier(project, transport=failed).verify(_new_article(entity), entity, future)
+    assert first['status'] == 'source_unavailable'
+    again = DisclosureVerifier(project, transport=failed).verify(_new_article(entity), entity, future + timedelta(minutes=1))
+    assert again['status'] == 'source_unavailable'
+    assert failed.calls == [('registry',)]
+    kept = DisclosureVerifier(project, transport=failed).verify(_new_article(), NEW_ENTITY, future)
+    assert kept['status'] == 'no_matching_filing'
+    assert kept['issuer_mapping']['fetched_at'] == NOW.isoformat()
+    assert kept['issuer_mapping']['stale'] is True
+    DisclosureVerifier(project, transport=failed).verify(_new_article(entity), entity, future + timedelta(minutes=16))
+    assert len([call for call in failed.calls if call[0] == 'registry']) == 2
+    assert 'secret-key' not in json.dumps(first)
+    assert 'secret-key' not in (project / 'data/kongming/dart_issuer_registry.json').read_text(encoding='utf-8')
+
+
+def test_registry_refresh_consumes_the_existing_request_budget(project):
+    dart = _RegistryDart(status='013')
+    zero = DisclosureVerifier(project, transport=dart, max_requests=0).verify(_new_article(), NEW_ENTITY, NOW)
+    assert zero['status'] == 'pending'
+    assert dart.calls == []
+    one = DisclosureVerifier(project, transport=dart, max_requests=1).verify(_new_article(), NEW_ENTITY, NOW)
+    assert one['status'] == 'pending'
+    assert dart.calls == [('registry',)]
+    assert DisclosureVerifier(project, transport=dart).verify(_new_article(), NEW_ENTITY, NOW)['status'] == 'no_matching_filing'
+
+
+def test_official_mapping_name_conflict_never_queries_another_issuer(project):
+    dart = _RegistryDart(registry=_registry_xml(('0162D0', NEW_CORP, '동원산업')), status='013')
+    result = DisclosureVerifier(project, transport=dart).verify(_new_article(), NEW_ENTITY, NOW)
+    assert result['status'] == 'issuer_name_conflict'
+    assert dart.calls == [('registry',)]
+
+
+@pytest.mark.parametrize('archive', [
+    b'not a zip file',
+    _zip('CORPCODE', '<!DOCTYPE result [<!ENTITY x "unsafe">]><result>&x;</result>'),
+    _zip('CORPCODE', '<result><list>'),
+    _registry_xml(('0162D0', 'invalid', '동원파츠')),
+    _registry_xml(('0162D0', NEW_CORP, '동원파츠'), ('0162D0', CORP, '한미약품')),
+], ids=['not_zip', 'entity_declaration', 'truncated_xml', 'bad_corp_code', 'duplicate_symbol'])
+def test_invalid_registry_is_not_accepted_or_refetched_every_minute(project, archive):
+    dart = _RegistryDart(registry=archive, status='013')
+    first = DisclosureVerifier(project, transport=dart).verify(_new_article(), NEW_ENTITY, NOW)
+    assert first['status'] == 'source_unavailable'
+    assert first['error_code'] == 'issuer_registry_invalid'
+    assert DisclosureVerifier(project, transport=dart).verify(_article(), ENTITY, NOW)['status'] == 'no_matching_filing'
+    DisclosureVerifier(project, transport=dart).verify(_new_article(), NEW_ENTITY, NOW + timedelta(minutes=1))
+    assert len([call for call in dart.calls if call[0] == 'registry']) == 1
+
+
+def test_registry_refresh_lock_defers_other_worker_without_duplicate_download(project):
+    from filelock import FileLock
+
+    cache = project / 'data/kongming/dart_issuer_registry.json'
+    cache.parent.mkdir(parents=True)
+    dart = _RegistryDart(status='013')
+    with FileLock(str(cache) + '.lock', timeout=0):
+        result = DisclosureVerifier(project, transport=dart).verify(_new_article(), NEW_ENTITY, NOW)
+    assert result['status'] == 'pending'
+    assert dart.calls == []
+    assert DisclosureVerifier(project, transport=dart).verify(_new_article(), NEW_ENTITY, NOW)['status'] == 'no_matching_filing'
+
+
+def test_registry_quota_error_is_preserved_and_stops_later_requests(project):
+    dart = _RegistryDart(registry=b'<?xml version="1.0"?><result><status>020</status><message>quota</message></result>')
+    provider = DisclosureVerifier(project, transport=dart)
+    result = provider.verify(_new_article(), NEW_ENTITY, NOW)
+    assert result['error_code'] == 'dart_status_020'
+    assert result['issuer_mapping']['retry_at'] == (NOW + timedelta(minutes=15)).isoformat()
+    assert provider.verify(_article(), ENTITY, NOW)['error_code'] == 'dart_status_020'
+    assert dart.calls == [('registry',)]
+    again = DisclosureVerifier(project, transport=dart).verify(_new_article(), NEW_ENTITY, NOW + timedelta(minutes=1))
+    assert again['error_code'] == 'dart_status_020'
+
+
+def test_missing_symbol_is_recovered_when_next_daily_registry_includes_it(project):
+    old = _RegistryDart(registry=_registry_xml((ENTITY['symbol'], CORP, ENTITY['name'])))
+    assert DisclosureVerifier(project, transport=old).verify(_new_article(), NEW_ENTITY, NOW)['error_code'] == 'issuer_mapping_unavailable'
+    updated = _RegistryDart(status='013')
+    result = DisclosureVerifier(project, transport=updated).verify(_new_article(), NEW_ENTITY, NOW + timedelta(days=1))
+    assert result['status'] == 'no_matching_filing'
+    assert result['issuer_mapping']['fetched_at'] == (NOW + timedelta(days=1)).isoformat()
+
+
+def test_oversized_registry_is_rejected_before_extracting_xml(project, monkeypatch):
+    from app.services import kongming_dart_registry
+
+    monkeypatch.setattr(kongming_dart_registry, 'XML_LIMIT', 100)
+    result = DisclosureVerifier(project, transport=_RegistryDart()).verify(_new_article(), NEW_ENTITY, NOW)
+    assert result['error_code'] == 'issuer_registry_invalid'
+
+
+def test_registry_cache_write_failure_does_not_trigger_uncached_download(project, monkeypatch):
+    from app.services import kongming_dart_registry
+
+    def full_disk(*args, **kwargs):
+        raise OSError('disk full')
+
+    monkeypatch.setattr(kongming_dart_registry, 'write_json_atomic', full_disk)
+    dart = _RegistryDart()
+    result = DisclosureVerifier(project, transport=dart).verify(_new_article(), NEW_ENTITY, NOW)
+    assert result['error_code'] == 'issuer_registry_cache_unavailable'
+    assert dart.calls == []

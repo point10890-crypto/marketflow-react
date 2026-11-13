@@ -1044,7 +1044,10 @@ class AIRouter:
                 input_tokens=input_bound, output_tokens=output_bound,
                 estimated_cost_usd=bound_estimate.cost, pricing_version=bound_estimate.pricing_version)
             if not permit.approved:
-                return self._failed_result(policy.operation, "anthropic", tuple(attempts), ProviderErrorClass.BUDGET_EXHAUSTED)
+                return self._failed_result(
+                    policy.operation, "anthropic", tuple(attempts), ProviderErrorClass.BUDGET_EXHAUSTED,
+                    budget_hold_reason=permit.reason,
+                )
 
             openai_permit = None
             dispatched = False
@@ -1065,7 +1068,10 @@ class AIRouter:
                             owner_token=openai_permit.owner_token,
                             input_tokens=input_bound, output_tokens=output_bound)
                     if not openai_permit.approved or not openai_permit.acquired_by_caller:
-                        return self._failed_result(policy.operation, "anthropic", tuple(attempts), ProviderErrorClass.BUDGET_EXHAUSTED)
+                        return self._failed_result(
+                            policy.operation, "anthropic", tuple(attempts), ProviderErrorClass.BUDGET_EXHAUSTED,
+                            budget_hold_reason=openai_permit.reason,
+                        )
                 dispatched = True
                 try:
                     response = adapter.generate(request, model=model, max_output_tokens=output_bound)
@@ -1209,6 +1215,7 @@ class AIRouter:
         attempts: tuple[ProviderAttempt, ...],
         fallback_reason: ProviderErrorClass | str | None = None,
         retry_reason: ProviderErrorClass | str | None = None,
+        budget_hold_reason: str | None = None,
     ) -> RoutingResult:
         if operation is Operation.DECISIVE_TEXT:
             status = AnalysisStatus.HOLD_REVIEW
@@ -1224,6 +1231,7 @@ class AIRouter:
             fallback_reason=fallback_reason,
             retry_reason=retry_reason,
             attempts=attempts,
+            budget_hold_reason=budget_hold_reason,
         )
 
 

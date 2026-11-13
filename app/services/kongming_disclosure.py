@@ -19,6 +19,8 @@ from zlib import error as ZlibError
 from dotenv import dotenv_values
 import requests
 
+from app.services.kongming_dart_registry import DartIssuerRegistry, RegistryError
+
 
 _KST = timezone(timedelta(hours=9))
 _API = 'https://opendart.fss.or.kr/api/'
@@ -241,20 +243,18 @@ class DisclosureVerifier:
         self._catalogues = {}
         self._documents = {}
         self._blocked = None
-        try:
-            self._registry = json.loads((self.root / 'data/dart_corp_codes.json').read_bytes())
-            if not isinstance(self._registry, dict):
-                self._registry = None
-        except (OSError, ValueError):
-            self._registry = None
+        self._registry = DartIssuerRegistry(self.root)
 
-    def _get(self, endpoint, limit, **params):
+    def _ready(self):
         if self._blocked:
             raise _SourceError(self._blocked)
         if not self._key:
             raise _SourceError('dart_key_missing')
         if self._remaining <= 0 or time.monotonic() >= self._deadline:
             raise _BudgetSpent()
+
+    def _get(self, endpoint, limit, **params):
+        self._ready()
         self._remaining -= 1
         try:
             return self._transport(
@@ -315,11 +315,12 @@ class DisclosureVerifier:
                     or not any(row.get('symbol') == symbol and row.get('name') == issuer
                                for row in article['entities'] if isinstance(row, dict))):
                 raise ValueError('invalid_candidate')
-            if self._registry is None:
-                raise _SourceError('issuer_registry_unavailable')
-            corp = self._registry.get(symbol)
-            if not isinstance(corp, str) or not re.fullmatch(r'[0-9]{8}', corp):
-                raise _SourceError('issuer_mapping_unavailable')
+            mapping, provenance = self._registry.resolve(symbol, now, self._get, self._ready)
+            result['issuer_mapping'] = provenance
+            corp = mapping['corp_code']
+            if mapping.get('corp_name') is not None and _name(mapping['corp_name']) != _name(issuer):
+                result['status'] = 'issuer_name_conflict'
+                return result
             day = published.astimezone(_KST).date()
             start, end = day - _WINDOW, min(day + _WINDOW, now.astimezone(_KST).date())
             rows, digest = self._catalogue(corp, start, end)
@@ -333,6 +334,11 @@ class DisclosureVerifier:
                     break
         except _BudgetSpent:
             result['status'] = 'pending'
+        except RegistryError as exc:
+            if str(exc) in {'dart_status_' + status for status in _GLOBAL_STATUS}:
+                self._blocked = str(exc)
+            result.update(status='pending' if str(exc) == 'issuer_registry_refresh_in_progress' else 'source_unavailable',
+                          error_code=str(exc), issuer_mapping=exc.metadata)
         except _SourceError as exc:
             result.update(status='source_unavailable', error_code=str(exc))
         except (KeyError, TypeError, ValueError):

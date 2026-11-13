@@ -56,6 +56,21 @@ beforeEach(() => {
 afterEach(() => { cleanup(); sessionStorage.clear(); vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); });
 
 describe('saved article AI evidence', () => {
+    it('keeps basic verification visible during a daily article AI hold with a concrete retry time', async () => {
+        const gateway = network(); const payload = reviewFixture(); payload.status = 'degraded';
+        Object.assign(payload.items[0], { status: 'UNVERIFIED', provider: null, model: null,
+            fallback_reason: 'budget_exhausted', budget_hold_reason: 'top3_capacity_reserved',
+            next_retry_at: '2026-11-09T00:00:00Z', basic_checks: { input_fingerprint: 'd'.repeat(64), checked_at: generated,
+                rows: [{ symbol: '005930', name: '삼성전자', disclosure_status: 'no_matching_filing', price_status: 'awaiting_window_completion' }] } });
+        payload.items[0].rows[0].strengths = []; payload.items[0].rows[0].risks = []; payload.items[0].rows[0].what_to_watch = [];
+        gateway.setPayload(payload); renderArticles();
+        expect(await screen.findByText(/오늘 기사 AI 분석 횟수 소진/)).toBeVisible();
+        expect(screen.getByText(/기본 검증은 계속/)).toBeVisible();
+        expect(screen.getByText('대응 공시 확인 대기')).toBeVisible();
+        expect(screen.getByText('가격 관측 구간 진행 중')).toBeVisible();
+        expect(screen.getByText(/AI 재확인 예정/).querySelector('time')).toHaveAttribute('dateTime', '2026-11-09T00:00:00Z');
+        expect(screen.queryByText(/AI 분석 · Anthropic/)).toBeNull();
+    });
     it('accepts the collector alphanumeric article symbol contract', () => {
         const review = reviewFixture(); review.items[0].rows[0].symbol = '12345A';
         expect(validateEvidenceReviews(review, 'article').items[0].rows[0].symbol).toBe('12345A');
@@ -142,6 +157,13 @@ describe('saved article AI evidence', () => {
 });
 
 describe('evidence provenance boundary', () => {
+    it('rejects malformed current basic verification or retry clocks', () => {
+        const value = reviewFixture(); Object.assign(value.items[0], { next_retry_at: 'not-a-date' });
+        expect(() => validateEvidenceReviews(value, 'article')).toThrow();
+        Object.assign(value.items[0], { next_retry_at: null, basic_checks: { input_fingerprint: 'd'.repeat(64), checked_at: generated,
+            rows: [{ symbol: 'invalid', name: '삼성전자', disclosure_status: 'verified', price_status: 'verified' }] } });
+        expect(() => validateEvidenceReviews(value, 'article')).toThrow();
+    });
     it.each([-1, 1.5, 25, null, '2', NaN])('rejects invalid omitted finding count %s', count => {
         const review = reviewFixture(); Object.assign(review.items[0], { omitted_findings: count });
         expect(() => validateEvidenceReviews(review, 'article')).toThrow();

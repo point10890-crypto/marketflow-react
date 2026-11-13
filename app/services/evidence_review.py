@@ -37,6 +37,7 @@ ALPHA_ROOT = Path(os.environ.get('MARKETFLOW_ALPHA_LAB_ROOT', Path(DATA_DIR)/'al
 SUCCESS = {'SUCCESS_PRIMARY', 'SUCCESS_FALLBACK'}
 FAILURE_COOLDOWN = timedelta(hours=1)
 UNCERTAIN_COOLDOWN = timedelta(hours=6)
+DAILY_BUDGET_HOLDS = {None, 'daily_hard_cap', 'daily_call_cap', 'daily_usd_cap', 'top3_capacity_reserved'}
 MAX_BYTES = 2_000_000
 PROMPT_VERSION = 'saved-evidence-review-v3'
 VERIFIED_TEMPLATE = '공식 공시의 수치 대조 항목이 일치합니다.'
@@ -202,6 +203,11 @@ def _price_source(article_id, target, task, now):
                 and price['close'] > 0 and price['latest_close'] > 0):
             content = {key: price[key] for key in ('status', 'source', 'close', 'latest_close', 'change_pct',
                 'observed_at', 'latest_observed_at', 'reference_at', 'window_end_at', 'window_complete') if key in price}
+            if price.get('window_complete') is False:
+                # Live observations remain in the price dashboard. Do not bill
+                # another interpretation on every tick of an unfinished window.
+                content = dict(status='awaiting_window_completion', source=price['source'],
+                    window_complete=False, window_end_at=price.get('window_end_at'))
             fetched = _stamp(capture)
     except (KeyError, ValueError, TypeError):
         pass
@@ -515,11 +521,42 @@ def _public(item, fingerprint, now):
         sources=[{key: value for key, value in row.items() if key != 'text'} for row in item['sources']])
 
 
-def run_once(root=ROOT, *, article_root=articles.ROOT, alpha_root=ALPHA_ROOT, now=None, router=None, deadline=None):
+def _next_budget_day(now):
+    return (now.astimezone(timezone.utc)+timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def _basic_checks(item, fingerprint):
+    """Current deterministic status projection; never a substitute AI verdict."""
+    sources = {source['evidence_id']: source for source in item['sources']}
+    rows = []
+    for target in item['targets']:
+        symbol = target['symbol']
+        prefix = item['article_id']
+        primary = sources.get(f'verification:{prefix}:{symbol}', {})
+        price = sources.get(f'price:{prefix}:{symbol}', {})
+        rows.append(dict(symbol=symbol, name=target['name'],
+            disclosure_status=primary.get('verification_status', 'unavailable'),
+            price_status=price.get('verification_status', 'unavailable')))
+    return dict(input_fingerprint=fingerprint, checked_at=item['source_cutoff_at'], rows=rows)
+
+
+def _retry_at(record):
+    public = record['public']
+    if public.get('fallback_reason') == 'budget_exhausted' and public.get('budget_hold_reason') in DAILY_BUDGET_HOLDS:
+        # Old generic budget holds also retry with their SAME durable identity.
+        # A changed day bypasses only the in-memory result cache, not billing fences.
+        return _next_budget_day(_clock(public['generated_at']))
+    return _clock(record['retry_after'])
+
+
+def run_once(root=ROOT, *, article_root=articles.ROOT, alpha_root=ALPHA_ROOT, now=None, router=None, deadline=None, budget=None):
     """At most eight recent articles and one sealed top-three comparison per tick."""
     root = Path(root); root.mkdir(parents=True, exist_ok=True)
     current = _clock(now)
     stop = deadline if deadline is not None else time.monotonic()+210
+    if budget is None and router is None:
+        from app.services.ai_routing.budget import EvidenceReviewBudget
+        budget = EvidenceReviewBudget()
     with FileLock(str(root/'worker.lock'), timeout=0):
         inputs, errors = _inputs(Path(article_root), Path(alpha_root), current)
         state = _read(root/'state.json', dict(entries={}, last_run_at=None))
@@ -527,19 +564,17 @@ def run_once(root=ROOT, *, article_root=articles.ROOT, alpha_root=ALPHA_ROOT, no
         _write(root/'state.json', state)
         # Reserve time for the comparison before the optional article backlog.
         inputs.sort(key=lambda item: (item['kind'] == 'candidate', item['source_origin_at']), reverse=True)
-        articles_done = candidates_done = successful = unverified = 0
+        articles_done = candidates_done = successful = unverified = budget_held = 0
+        budget_summary = budget.daily_summary(now=current) if budget is not None else None
+        state['budget'] = budget_summary
         for item in inputs:
-            # The router bounds three sequential provider attempts to 90s.
-            # Do not start a fresh paid stage without room to persist its result.
-            if time.monotonic()+100 >= stop:
-                break
-            if item['kind'] == 'article' and (articles_done >= 8 or current-_clock(item['source_origin_at']) > timedelta(hours=72)):
+            if item['kind'] == 'article' and current-_clock(item['source_origin_at']) > timedelta(hours=72):
                 continue
             fingerprint = _fingerprint(item)
             path = root/'runs'/f'{fingerprint}.json'
             record = _read(path)
             key = f"{item['kind']}:{item['article_id'] or item['decision_id']}"
-            if record and (record['public']['status'] in SUCCESS or current < _clock(record['retry_after'])):
+            if record and (record['public']['status'] in SUCCESS or current < _retry_at(record)):
                 if state['entries'].get(key) != fingerprint:
                     state['entries'][key] = fingerprint
                     _write(root/'state.json', state)
@@ -547,12 +582,37 @@ def run_once(root=ROOT, *, article_root=articles.ROOT, alpha_root=ALPHA_ROOT, no
                     successful += 1
                 else:
                     unverified += 1
+                    if record['public'].get('fallback_reason') == 'budget_exhausted':
+                        budget_held += 1
+                continue
+            hold_reason = (budget_summary or {}).get('hold_reason')
+            if hold_reason == 'top3_capacity_reserved' and item['kind'] != 'article':
+                hold_reason = None
+            if hold_reason:
+                # No provider is called and no fresh billing identity is minted.
+                public = _public(item, fingerprint, current)
+                public.update(status='UNVERIFIED', fallback_reason='budget_exhausted', budget_hold_reason=hold_reason)
+                record = dict(record or {}, public=public, supplied=item,
+                    request_id=(record or {}).get('request_id') or fingerprint,
+                    retry_after=_stamp(_next_budget_day(current) if hold_reason in DAILY_BUDGET_HOLDS else current+FAILURE_COOLDOWN), pending_request_id=None,
+                    retry_new_request_allowed=record is None or record.get('retry_new_request_allowed', False))
+                _write(path, record)
+                state['entries'][key] = fingerprint
+                unverified += 1
+                budget_held += 1
+                continue
+            # Reserve time for paid inference, while inexpensive checks above
+            # remain available for the rest of the backlog after a budget hold.
+            if (time.monotonic()+100 >= stop or (item['kind'] == 'article' and articles_done >= 8)):
                 continue
             public = _public(item, fingerprint, current)
             previous_attempts = (record or {}).get('attempts', [])[-20:]
             previous_responses = (record or {}).get('raw_responses', [])[-20:]
             safe_retry = record is None or record.get('retry_new_request_allowed', False)
-            request_id = (f'{fingerprint}-{uuid4().hex}' if record and safe_retry else
+            # Admission-only holds have never dispatched this identity. Preserve
+            # it until a known-zero dispatched failure actually needs a retry ID.
+            zero_dispatch = any(attempt.get('result', {}).get('attempts') for attempt in previous_attempts)
+            request_id = (f'{fingerprint}-{uuid4().hex}' if record and safe_retry and zero_dispatch else
                           (record or {}).get('request_id') or fingerprint)
             record = dict(public=public, supplied=item, attempts=previous_attempts,
                 raw_responses=previous_responses,
@@ -596,7 +656,7 @@ def run_once(root=ROOT, *, article_root=articles.ROOT, alpha_root=ALPHA_ROOT, no
                     system=SYSTEM, prompt=_encode(item), response_schema=RESPONSE_SCHEMA, json_mode=True,
                     domain_validator=_domain_validator(item), response_normalizer=capture_response,
                     permit_abort_event=abort, request_id=record['pending_request_id'],
-                    run_id=f'evidence-review-{fingerprint}', evidence_fingerprint=fingerprint,
+                    run_id=f'evidence-review-{fingerprint}-{current.astimezone(timezone.utc).date()}', evidence_fingerprint=fingerprint,
                     caller_endpoint='scheduled_evidence_review', max_output_tokens=1600 if item['kind'] == 'article' else 2400,
                     temperature=0, max_primary_attempts=1))
                 metadata = _serial(asdict(result))
@@ -605,12 +665,15 @@ def run_once(root=ROOT, *, article_root=articles.ROOT, alpha_root=ALPHA_ROOT, no
                 # Only definitive zero-usage failures may get a new identity.
                 # Unknown/charged attempts retain their id forever; the router's
                 # durable ledger then prevents replay even after a worker crash.
-                record['retry_new_request_allowed'] = safe_retry and not raw and bool(result.attempts) and all(
+                no_charge = bool(result.attempts) and all(
                     attempt.estimated_cost_usd == 0 and attempt.usage.input_tokens == 0
                     and attempt.usage.output_tokens == 0 for attempt in result.attempts)
+                admission_only = not result.attempts and getattr(result, 'budget_hold_reason', None) in (DAILY_BUDGET_HOLDS - {None})
+                record['retry_new_request_allowed'] = safe_retry and not raw and (no_charge or admission_only)
                 status = _serial(result.analysis_status)
                 public.update(provider=result.actual_provider, model=result.model,
-                              fallback_reason=_serial(result.fallback_reason))
+                              fallback_reason=_serial(result.fallback_reason),
+                              budget_hold_reason=getattr(result, 'budget_hold_reason', None))
                 if receipt_failed:
                     public.update(status='UNVERIFIED', fallback_reason='response_receipt_unavailable')
                 elif status in SUCCESS and raw:
@@ -636,15 +699,22 @@ def run_once(root=ROOT, *, article_root=articles.ROOT, alpha_root=ALPHA_ROOT, no
                 public.update(status='UNVERIFIED', fallback_reason='evidence_validation_failed' if record['attempts'] else 'provider_error')
             cooldown = FAILURE_COOLDOWN if record['retry_new_request_allowed'] else UNCERTAIN_COOLDOWN
             record.update(retry_after=_stamp(current+cooldown), pending_request_id=None)
+            if public.get('fallback_reason') == 'budget_exhausted' and public.get('budget_hold_reason') in DAILY_BUDGET_HOLDS:
+                record['retry_after'] = _stamp(_next_budget_day(current))
             _write(path, record)
+            if budget is not None:
+                budget_summary = budget.daily_summary(now=current)
+                state['budget'] = budget_summary
             if public['status'] in SUCCESS:
                 successful += 1
             else:
                 unverified += 1
+                if public.get('fallback_reason') == 'budget_exhausted':
+                    budget_held += 1
         source_failure = any(reason.endswith('unavailable') for reason in errors.values())
-        status = ('partial' if successful else 'failed') if unverified or source_failure else 'complete'
+        status = ('partial' if successful or budget_held and not source_failure else 'failed') if unverified or source_failure else 'complete'
         summary = dict(status=status, article_attempts=articles_done, candidate_attempts=candidates_done,
-                       successful=successful, unverified=unverified, source_errors=errors)
+                       successful=successful, unverified=unverified, budget_held=budget_held, source_errors=errors)
         state['last_run_summary'] = summary
         _write(root/'state.json', state)
         return summary
@@ -667,6 +737,8 @@ def _read_view(kind, root, article_root, alpha_root, now):
         public.setdefault('omitted_findings', 0)
         age = current-_clock(public['source_origin_at'])
         public['freshness'] = 'stale' if fingerprint != _fingerprint(item) or age > timedelta(hours=72) else 'current'
+        public['basic_checks'] = _basic_checks(item, _fingerprint(item))
+        public['next_retry_at'] = None if public['status'] in SUCCESS else _stamp(_retry_at(record))
         result.append(public)
     result.sort(key=lambda item: item['generated_at'], reverse=True)
     result = result[:100 if kind == 'article' else 1]
