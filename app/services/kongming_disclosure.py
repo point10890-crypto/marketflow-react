@@ -265,6 +265,24 @@ class DisclosureVerifier:
             self._blocked = 'request_failed'
             raise _SourceError(self._blocked) from None
 
+    def resolve_issuer(self, symbol, issuer, now, *, deadline=None):
+        """Resolve exact issuer identity using this client's shared request budget."""
+        if (not isinstance(symbol, str) or not re.fullmatch(r'[0-9A-Z]{6}', symbol) or symbol == '000000'
+                or not isinstance(issuer, str) or not _name(issuer)
+                or not isinstance(now, datetime) or now.tzinfo is None):
+            raise _SourceError('invalid_candidate')
+        if deadline is not None:
+            self._deadline = min(self._deadline, deadline)
+        try:
+            mapping, provenance = self._registry.resolve(symbol, now, self._get, self._ready)
+        except RegistryError as exc:
+            if str(exc) in {'dart_status_' + status for status in _GLOBAL_STATUS}:
+                self._blocked = str(exc)
+            raise
+        if mapping.get('corp_name') is not None and _name(mapping['corp_name']) != _name(issuer):
+            raise RegistryError('issuer_name_conflict', provenance)
+        return provenance
+
     def _catalogue(self, corp_code, start, end):
         key = (corp_code, start, end)
         if key not in self._catalogues:
@@ -315,12 +333,9 @@ class DisclosureVerifier:
                     or not any(row.get('symbol') == symbol and row.get('name') == issuer
                                for row in article['entities'] if isinstance(row, dict))):
                 raise ValueError('invalid_candidate')
-            mapping, provenance = self._registry.resolve(symbol, now, self._get, self._ready)
+            provenance = self.resolve_issuer(symbol, issuer, now)
             result['issuer_mapping'] = provenance
-            corp = mapping['corp_code']
-            if mapping.get('corp_name') is not None and _name(mapping['corp_name']) != _name(issuer):
-                result['status'] = 'issuer_name_conflict'
-                return result
+            corp = provenance['corp_code']
             day = published.astimezone(_KST).date()
             start, end = day - _WINDOW, min(day + _WINDOW, now.astimezone(_KST).date())
             rows, digest = self._catalogue(corp, start, end)
@@ -335,9 +350,8 @@ class DisclosureVerifier:
         except _BudgetSpent:
             result['status'] = 'pending'
         except RegistryError as exc:
-            if str(exc) in {'dart_status_' + status for status in _GLOBAL_STATUS}:
-                self._blocked = str(exc)
-            result.update(status='pending' if str(exc) == 'issuer_registry_refresh_in_progress' else 'source_unavailable',
+            status = {'issuer_registry_refresh_in_progress': 'pending', 'issuer_name_conflict': 'issuer_name_conflict'}
+            result.update(status=status.get(str(exc), 'source_unavailable'),
                           error_code=str(exc), issuer_mapping=exc.metadata)
         except _SourceError as exc:
             result.update(status='source_unavailable', error_code=str(exc))

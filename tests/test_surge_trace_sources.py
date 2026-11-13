@@ -2,6 +2,8 @@ import json
 import sqlite3
 import time
 from datetime import datetime, timedelta, timezone
+from io import BytesIO
+from zipfile import ZipFile
 
 import pytest
 
@@ -100,6 +102,7 @@ def test_dart_matches_all_issuer_fields_and_keeps_date_precision(tmp_path, monke
     assert len(result) == 1 and result[0]['published_at'] == '2026-11-10'
     assert result[0]['published_precision'] == 'date'
     assert result[0]['verification'] == 'issuer_registry_match'
+    assert result[0]['issuer_mapping']['source'] == 'data/dart_corp_codes.json'
 
 
 def test_google_short_ambiguous_issuer_does_not_match_generic_words(tmp_path, monkeypatch):
@@ -142,3 +145,97 @@ def test_google_sports_publisher_result_is_excluded_but_business_contract_is_ret
     obs = {**OBS, 'symbol': '003490', 'name': '대한항공'}
     rows = sources.EvidenceSources(tmp_path, now=NOW).google_news(obs, NOW, time.monotonic() + 8)
     assert [row['title'] for row in rows] == ['대한항공, 프로배구 후원 계약 체결']
+
+
+DONGWON = {**OBS, 'symbol': '0162D0', 'name': '동원파츠'}
+
+
+def _registry_transport(monkeypatch, *, name='동원파츠', registry_error=None):
+    from app.services import kongming_disclosure
+
+    archive = BytesIO()
+    with ZipFile(archive, 'w') as zipped:
+        zipped.writestr('CORPCODE.xml', '<result><list><corp_code>00784184</corp_code>'
+                        f'<corp_name>{name}</corp_name><stock_code>0162D0</stock_code>'
+                        '<modify_date>20261110</modify_date></list></result>')
+    calls = []
+
+    def transport(url, params, *, limit, deadline):
+        calls.append({'endpoint': url.rsplit('/', 1)[-1], 'corp_code': params.get('corp_code'),
+                      'deadline': deadline})
+        if url.endswith('/corpCode.xml'):
+            if registry_error:
+                raise registry_error
+            return archive.getvalue()
+        assert url.endswith('/list.json') and params['corp_code'] == '00784184'
+        row = {'corp_code': '00784184', 'stock_code': '0162D0', 'corp_name': name,
+               'report_nm': '단일판매ㆍ공급계약체결', 'rcept_no': '20261110000001', 'rcept_dt': '20261110'}
+        return json.dumps({'status': '000', 'total_page': 1, 'list': [row]}).encode()
+
+    monkeypatch.setattr(kongming_disclosure, '_credentials', lambda root: 'test-secret')
+    monkeypatch.setattr(kongming_disclosure, '_http_get', transport)
+    return calls
+
+
+def test_dart_recovers_new_symbol_and_preserves_mapping_provenance_in_saved_evidence(tmp_path, monkeypatch):
+    calls = _registry_transport(monkeypatch)
+    for _ in range(2):
+        result = sources.EvidenceSources(tmp_path, now=NOW).collect('dart', DONGWON, NOW, time.monotonic() + 8)
+        assert len(result) == 1
+        mapping = result[0]['issuer_mapping']
+        assert mapping['corp_code'] == '00784184' and mapping['stock_code'] == '0162D0'
+        assert mapping['corp_name'] == '동원파츠'
+        assert mapping['source'] == 'https://opendart.fss.or.kr/api/corpCode.xml'
+        assert mapping['fetched_at'] == NOW.isoformat() and len(mapping['sha256']) == 64
+        assert service._evidence(result[0], DONGWON, NOW)['issuer_mapping'] == mapping
+    assert [call['endpoint'] for call in calls] == ['corpCode.xml', 'list.json', 'list.json']
+    assert not (tmp_path / 'data/dart_corp_codes.json').exists()
+
+
+def test_dart_missing_symbol_reuses_daily_negative_registry_cache(tmp_path, monkeypatch):
+    calls = _registry_transport(monkeypatch)
+    for minutes in (0, 1, 15):
+        with pytest.raises(sources.SourceUnavailable, match='^issuer_mapping_unavailable$'):
+            sources.EvidenceSources(tmp_path, now=NOW).collect(
+                'dart', OBS, NOW + timedelta(minutes=minutes), time.monotonic() + 8)
+    assert [call['endpoint'] for call in calls] == ['corpCode.xml']
+
+
+def test_dart_registry_failure_uses_backoff_and_hides_transport_details(tmp_path, monkeypatch):
+    from requests.exceptions import Timeout
+
+    calls = _registry_transport(monkeypatch, registry_error=Timeout('crtfc_key=test-secret'))
+    for minutes in (0, 1, 16):
+        with pytest.raises(sources.SourceUnavailable, match='^request_failed$'):
+            sources.EvidenceSources(tmp_path, now=NOW).collect(
+                'dart', DONGWON, NOW + timedelta(minutes=minutes), time.monotonic() + 8)
+    assert [call['endpoint'] for call in calls] == ['corpCode.xml', 'corpCode.xml']
+
+
+def test_dart_rejects_conflicting_registry_name_before_catalogue_query(tmp_path, monkeypatch):
+    calls = _registry_transport(monkeypatch, name='동원산업')
+    with pytest.raises(sources.SourceUnavailable, match='^issuer_name_conflict$'):
+        sources.EvidenceSources(tmp_path, now=NOW).collect('dart', DONGWON, NOW, time.monotonic() + 8)
+    assert [call['endpoint'] for call in calls] == ['corpCode.xml']
+
+
+def test_dart_registry_refresh_shares_source_request_budget(tmp_path, monkeypatch):
+    from app.services.kongming_disclosure import DisclosureVerifier
+
+    calls = _registry_transport(monkeypatch)
+    adapter = sources.EvidenceSources(tmp_path, now=NOW)
+    adapter._dart = DisclosureVerifier(tmp_path, max_requests=1)
+    with pytest.raises(sources.SourceUnavailable, match='^request_budget_exhausted$'):
+        adapter.collect('dart', DONGWON, NOW, time.monotonic() + 8)
+    assert [call['endpoint'] for call in calls] == ['corpCode.xml']
+
+
+def test_dart_reused_client_obeys_callers_shorter_deadline(tmp_path, monkeypatch):
+    from app.services.kongming_disclosure import DisclosureVerifier
+
+    calls = _registry_transport(monkeypatch)
+    adapter = sources.EvidenceSources(tmp_path, now=NOW)
+    adapter._dart = DisclosureVerifier(tmp_path, max_seconds=35)
+    deadline = time.monotonic() + 2
+    assert len(adapter.collect('dart', DONGWON, NOW, deadline)) == 1
+    assert all(call['deadline'] <= deadline for call in calls)

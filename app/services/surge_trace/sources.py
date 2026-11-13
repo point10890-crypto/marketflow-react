@@ -213,18 +213,22 @@ class EvidenceSources:
         return sorted(result, key=lambda row: row['published_at'], reverse=True)[:10]
 
     def dart(self, observation, now, deadline):
-        from app.services.kongming_disclosure import DisclosureVerifier
+        from app.services.kongming_disclosure import DisclosureVerifier, RegistryError, _BudgetSpent, _SourceError
         if self._dart is None:
             self._dart = DisclosureVerifier(self.project_root, max_requests=5,
                                            max_seconds=max(.1, min(35, deadline - time.monotonic())))
         verifier = self._dart
-        registry = verifier._registry or {}
-        corp = registry.get(observation['symbol'])
-        if not isinstance(corp, str) or not re.fullmatch(r'[0-9]{8}', corp):
-            raise SourceUnavailable('issuer_mapping_unavailable')
         end = now.date()
         start = end - timedelta(days=7)
-        rows, _ = verifier._catalogue(corp, start, end)
+        try:
+            mapping = verifier.resolve_issuer(observation['symbol'], observation['name'], now, deadline=deadline)
+            corp = mapping['corp_code']
+            rows, _ = verifier._catalogue(corp, start, end)
+        except _BudgetSpent:
+            raise SourceUnavailable('request_budget_exhausted') from None
+        except (RegistryError, _SourceError) as exc:
+            # Both exceptions expose controlled diagnostic codes, never URLs.
+            raise SourceUnavailable(str(exc)) from None
         result = []
         for row in rows:
             if (row.get('corp_code') != corp or row.get('stock_code') != observation['symbol']
@@ -241,5 +245,5 @@ class EvidenceSources:
                            'url': f'https://dart.fss.or.kr/dsaf001/main.do?rcpNo={receipt}',
                            'source': 'dart', 'publisher': 'OpenDART', 'published_at': published,
                            'published_precision': 'date', 'first_received_at': clock(self._clock_override).isoformat(),
-                           'verification': 'issuer_registry_match'})
+                           'verification': 'issuer_registry_match', 'issuer_mapping': mapping})
         return result[:30]
