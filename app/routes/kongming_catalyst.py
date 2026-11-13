@@ -163,6 +163,11 @@ _REVIEW_FIELDS = {
         'decision_id': str, 'article_id': str, 'generated_at': str, 'source_cutoff_at': str,
         'source_origin_at': str, 'candidate_basis': str, 'original_status': str,
         'status': str, 'provider': str, 'model': str, 'fallback_reason': str,
+        'budget_hold_reason': str, 'next_retry_at': str,
+        'basic_checks': {
+            'input_fingerprint': str, 'checked_at': str,
+            'rows': [{'symbol': str, 'name': str, 'disclosure_status': str, 'price_status': str}],
+        },
         'omitted_findings': int,
         'freshness': str, 'review_scope': str,
         'rows': [{'symbol': str, 'name': str, 'market': str,
