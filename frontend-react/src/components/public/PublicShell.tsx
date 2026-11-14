@@ -66,7 +66,7 @@ export function getPublicAccountAction(
     return { to: '/pending-approval', label: '승인 상태', hint: '구독 승인 상태를 확인합니다.' };
 }
 
-export function PublicShell({ children, section }: { children: ReactNode; section?: string }) {
+export function PublicShell({ children, section, landing = false }: { children: ReactNode; section?: string; landing?: boolean }) {
     return (
         <div className="pub-root flex min-h-[100dvh] flex-col bg-[#09090b] text-gray-300">
             <a
@@ -76,27 +76,36 @@ export function PublicShell({ children, section }: { children: ReactNode; sectio
                 본문으로 건너뛰기
             </a>
             <div className="pub-glow" aria-hidden />
-            <PublicHeader section={section} />
+            <PublicHeader section={section} landing={landing} />
             <main id="main-content" tabIndex={-1} className="relative z-[1] w-full flex-1 outline-none">
                 {children}
             </main>
-            <PublicFooter />
+            <PublicFooter landing={landing} />
         </div>
     );
 }
 
-export function PublicHeader({ section }: { section?: string }) {
+export function PublicHeader({ section, landing = false }: { section?: string; landing?: boolean }) {
     const { user, loading } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const action = getPublicAccountAction(user, loading);
+    const navLinks = landing ? [
+        { to: '#automation', label: '시장 분석' },
+        { to: '#ai-brain', label: 'AI 브레인' },
+        { to: '#pricing', label: '요금제' },
+        { to: '/guide', label: '가이드' },
+    ] : NAV_LINKS;
 
     return (
-        <header className="pub-header sticky top-0 z-20 border-b border-white/[0.06] bg-[#09090b] sm:bg-[#09090b]/90 sm:backdrop-blur-md">
+        <header className={`pub-header sticky top-0 z-20 border-b border-white/[0.06] bg-[#09090b] sm:bg-[#09090b]/90 sm:backdrop-blur-md${landing ? ' bm-header' : ''}`}>
             <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
-                <Link to="/" className="flex min-w-0 items-baseline gap-2" aria-label="MarketFlow 홈">
-                    <span className="text-[18px] font-black tracking-tight text-white">
-                        Market<span className="text-[#ff6b57]">Flow</span>
-                    </span>
+                <Link to="/" className="flex min-w-0 items-center gap-2" aria-label={landing ? 'BitMan 홈' : 'MarketFlow 홈'}>
+                    {landing ? (
+                        <>
+                            <img src="/favicon.svg" width={32} height={32} alt="" />
+                            <span className="text-xl font-black tracking-tight text-white">BitMan</span>
+                        </>
+                    ) : <span className="text-[18px] font-black tracking-tight text-white">Market<span className="text-[#ff6b57]">Flow</span></span>}
                     {section && (
                         <span className="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-gray-600 sm:inline">
                             //{section}
@@ -105,7 +114,7 @@ export function PublicHeader({ section }: { section?: string }) {
                 </Link>
 
                 <nav className="hidden items-center gap-6 md:flex" aria-label="공개 페이지">
-                    {NAV_LINKS.map((item) => (
+                    {navLinks.map((item) => (
                         <a
                             key={item.to}
                             href={item.to}
@@ -120,7 +129,7 @@ export function PublicHeader({ section }: { section?: string }) {
                     {!user && !loading && (
                         <Link
                             to="/login"
-                            className="hidden min-h-[44px] items-center rounded-lg px-3 text-[12px] font-semibold text-gray-400 transition-colors hover:text-white sm:inline-flex"
+                            className={`${landing ? 'inline-flex px-1.5 sm:px-3' : 'hidden px-3 sm:inline-flex'} min-h-[44px] items-center rounded-lg text-[12px] font-semibold text-gray-300 transition-colors hover:text-white`}
                         >
                             로그인
                         </Link>
@@ -135,7 +144,7 @@ export function PublicHeader({ section }: { section?: string }) {
                     ) : (
                         <Link
                             to={action.to}
-                            className="inline-flex min-h-[44px] items-center rounded-lg bg-[#ff6b57] px-3.5 text-[12px] font-black text-[#190704] transition-colors hover:bg-[#ff8a76]"
+                            className={`inline-flex min-h-[44px] items-center rounded-lg bg-[#ff6b57] px-3.5 text-[12px] font-black text-[#190704] transition-colors hover:bg-[#ff8a76]${landing ? ' bm-nav-cta' : ''}`}
                         >
                             {action.label}
                         </Link>
@@ -156,7 +165,7 @@ export function PublicHeader({ section }: { section?: string }) {
             {menuOpen && (
                 <nav id="public-mobile-menu" aria-label="모바일 공개 페이지" className="border-t border-white/[0.06] px-4 py-3 md:hidden">
                     <div className="mx-auto grid max-w-6xl grid-cols-2 gap-2">
-                        {NAV_LINKS.map((item) => (
+                        {navLinks.map((item) => (
                             <a
                                 key={item.to}
                                 href={item.to}
@@ -173,15 +182,15 @@ export function PublicHeader({ section }: { section?: string }) {
     );
 }
 
-export function PublicFooter() {
+export function PublicFooter({ landing = false }: { landing?: boolean }) {
     const year = new Date().getFullYear();
     return (
-        <footer className="relative z-[1] mt-16 border-t border-white/[0.06] bg-[#0b0b0e]">
+        <footer className={`relative z-[1] border-t border-white/[0.06] bg-[#0b0b0e]${landing ? '' : ' mt-16'}`}>
             <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
                     <div>
                         <div className="text-base font-black tracking-tight text-white">
-                            Market<span className="text-[#ff6b57]">Flow</span>
+                            {landing ? 'BitMan' : <>Market<span className="text-[#ff6b57]">Flow</span></>}
                         </div>
                         <p className="mt-2 max-w-[34ch] text-[12px] leading-relaxed text-gray-500">
                             시장 데이터를 관찰하고 의미 있는 변화를 검출해 근거·품질·사후 기록과 함께 보여주는 AI 분석 서비스.
@@ -216,12 +225,12 @@ export function PublicFooter() {
                 </div>
                 <div className="mt-8 border-t border-white/[0.05] pt-5">
                     <p className="font-mono text-[10px] leading-relaxed text-gray-600">
-                        DISCLOSURE — MarketFlow는 관찰·분석 정보를 제공하며 자동 주문이나 투자 자문을 수행하지 않습니다.
+                        {landing ? 'BitMan은' : 'MarketFlow는'} 관찰·분석 정보를 제공하며 자동 주문이나 투자 자문을 수행하지 않습니다.
                         데이터 제공처와 네트워크 상황에 따라 갱신이 지연되거나 일부 기능이 일시 중단될 수 있습니다.
                         모든 정보는 투자 판단을 위한 참고 자료이며, 최종 결정과 책임은 투자자 본인에게 있습니다.
                         과거의 결과는 미래 수익을 보장하지 않습니다.
                     </p>
-                    <p className="mt-3 text-[11px] text-gray-600">© {year} MarketFlow</p>
+                    <p className="mt-3 text-[11px] text-gray-600">© {year} {landing ? 'BitMan' : 'MarketFlow'}</p>
                 </div>
             </div>
         </footer>

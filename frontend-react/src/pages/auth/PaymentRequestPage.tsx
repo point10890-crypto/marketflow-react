@@ -79,7 +79,9 @@ export default function PaymentRequestPage() {
     useEffect(() => {
         if (loading) return;
         if (!user || !token) {
-            navigate(isConversion ? '/login?next=' + encodeURIComponent(AI_BUNDLE_CONVERSION.payment) : isKongmingPlan ? `/signup?${selectedQuery}` : '/signup', { replace: true });
+            const signup = selectedQuery ? `/signup?${selectedQuery}` : '/signup';
+            const target = isConversion ? '/login?next=' + encodeURIComponent(AI_BUNDLE_CONVERSION.payment) : signup;
+            navigate(target, { replace: true });
             return;
         }
         if (user.role === 'admin') {

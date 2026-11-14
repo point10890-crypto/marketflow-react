@@ -2,72 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
-import { getUser, isKongmingOnlyUser, subscriptionFunnelTarget, type FunnelUser } from '@/lib/auth';
-import { AI_BUNDLE_CONVERSION } from '@/lib/billingInfo';
+import { getUser } from '@/lib/auth';
+import { nextPathForUser, safeNextPath, signupPathForPlan } from '@/lib/authNavigation';
 import { useSeo } from '@/lib/seo';
 
-export type LoginUser = FunnelUser;
-
-export function safeNextPath(value: string | null): string | null {
-    if (!value) return null;
-    try {
-        const decoded = decodeURIComponent(value);
-        if (!decoded.startsWith('/') || decoded.startsWith('//') || decoded.includes('\\')) return null;
-        return decoded;
-    } catch {
-        return null;
-    }
-}
-
-function planSelectNext(nextPath: string | null): string | null {
-    return nextPath === '/plan-select' || nextPath?.startsWith('/plan-select?') ? nextPath : null;
-}
-
-function resubscribePath(nextPath: string | null): string {
-    const planned = planSelectNext(nextPath);
-    const query = new URLSearchParams(planned?.split('?')[1] || '');
-    query.delete('change');
-    query.set('resubscribe', '1');
-    query.set('from', 'expired');
-    return `/plan-select?${query.toString()}`;
-}
-
-export function nextPathForUser(user: LoginUser, nextPath: string | null): string {
-    const planned = planSelectNext(nextPath);
-    if (user.role === 'admin') {
-        return nextPath?.startsWith('/admin') ? nextPath : '/admin';
-    }
-    if (nextPath === AI_BUNDLE_CONVERSION.payment && ['approved', 'expired'].includes(user.status || '')) {
-        return user.has_pending_subscription ? '/pending-approval' : '/plan-select?change=1';
-    }
-    if (isKongmingOnlyUser(user)) {
-        if (planned) return planned;
-        if (nextPath === '/pending-approval' || nextPath?.startsWith('/dashboard/')) return nextPath;
-        return '/dashboard/ai-bain';
-    }
-    const funnel = subscriptionFunnelTarget(user);
-    if (funnel === '/pending-approval') return funnel;
-    if (funnel?.includes('plan=aibain_kongming')) return funnel;
-    if (user.status === 'expired' || user.is_pro_expired) {
-        return resubscribePath(planned);
-    }
-    if (!user.tier) {
-        // 구독 신청(입금)까지 제출한 회원(requested_tier 기록됨)은 재입금 안내가 되는
-        // /plan-select 대신 승인 대기로 (subscriptionFunnelTarget 과 동일 기준).
-        return planned || funnel || '/plan-select';
-    }
-    if (user.status !== 'approved') {
-        return '/pending-approval';
-    }
-    if (user.tier !== 'pro' && user.tier !== 'premium') {
-        return planned || '/plan-select';
-    }
-    if (planned && new URLSearchParams(planned.split('?')[1] || '').get('change') === '1') return planned;
-    return nextPath?.startsWith('/dashboard') ? nextPath : '/dashboard';
-}
+export { nextPathForUser, safeNextPath } from '@/lib/authNavigation';
 
 export default function LoginPage() {
-    useSeo({ title: '로그인 | MarketFlow', noindex: true });
+    useSeo({ title: '로그인 | BitMan', noindex: true });
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [remember, setRemember] = useState(true);
@@ -106,8 +48,8 @@ export default function LoginPage() {
         <main className="min-h-screen min-h-[100dvh] bg-[#09090b] px-4 py-8 text-gray-300 sm:px-6">
             <div className="mx-auto grid min-h-[calc(100dvh-4rem)] w-full max-w-5xl items-center gap-10 lg:grid-cols-[1fr_28rem]">
                 <section className="hidden lg:block">
-                    <Link to="/" className="inline-flex items-center gap-2 text-lg font-black tracking-tight text-white">
-                        Market<span className="-ml-2 text-[#ff6b4a]">Flow</span>
+                    <Link to="/" className="inline-flex min-h-11 items-center gap-2 text-lg font-extrabold tracking-tight text-white" aria-label="BitMan 홈">
+                        <span className="grid size-8 place-items-center rounded-md bg-[#ffa786] text-[#211511]" aria-hidden="true">B</span> BitMan
                     </Link>
                     <p className="mt-8 font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-[#ff8067]">Welcome back</p>
                     <h1 className="mt-4 max-w-xl text-4xl font-black leading-[1.15] tracking-[-0.04em] text-white">
@@ -127,8 +69,8 @@ export default function LoginPage() {
 
                 <section className="w-full">
                     <div className="mb-7 lg:hidden">
-                        <Link to="/" className="text-xl font-black tracking-tight text-white">
-                            Market<span className="text-[#ff6b4a]">Flow</span>
+                        <Link to="/" className="inline-flex min-h-11 items-center gap-2 text-lg font-extrabold tracking-tight text-white" aria-label="BitMan 홈">
+                            <span className="grid size-8 place-items-center rounded-md bg-[#ffa786] text-[#211511]" aria-hidden="true">B</span> BitMan
                         </Link>
                     </div>
                     <div className="rounded-[1.75rem] border border-white/[0.08] bg-[#111216] p-6 shadow-2xl shadow-black/30 sm:p-8">
@@ -164,7 +106,7 @@ export default function LoginPage() {
                         </form>
 
                         <div className="mt-6 border-t border-white/[0.06] pt-5 text-center text-sm text-gray-500">
-                            처음 오셨나요? <Link to="/signup" className="font-bold text-[#ff8067] hover:text-[#ff9b86]">계정 만들기</Link>
+                            처음 오셨나요? <Link to={signupPathForPlan(nextPath)} className="font-bold text-[#ff8067] hover:text-[#ff9b86]">계정 만들기</Link>
                         </div>
                     </div>
                     <KakaoSupportLink className="mt-3" />

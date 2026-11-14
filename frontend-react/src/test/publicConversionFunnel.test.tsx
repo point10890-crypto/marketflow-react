@@ -83,24 +83,26 @@ describe('public conversion funnel', () => {
             </MemoryRouter>,
         );
 
-        expect(screen.getByRole('heading', { name: /에이전트는 시장을 분석합니다/ })).toBeInTheDocument();
-        expect(screen.getByText('화면 예시 · 실제 종목 아님')).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: /AI Brain 알아보기/ })).toHaveAttribute('href', '#ai-brain');
-        // AI Brain 플래그십 섹션 — 자율 학습 사이클 + 퍼널 사전선택 CTA
-        expect(screen.getByRole('heading', { name: /스스로 배우는 분석 두뇌/ })).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: /AI Brain 포함 플랜으로 시작하기/ })).toHaveAttribute(
+        const main = screen.getByRole('main');
+        expect(within(main).getByRole('heading', { level: 1, name: /세 시장을 살피고.*종목의 근거를 찾다/ })).toBeInTheDocument();
+        for (const market of ['국내주식', '미국주식', '가상자산']) {
+            expect(within(main).getByRole('heading', { name: market })).toBeInTheDocument();
+        }
+        expect(within(main).getByRole('link', { name: 'AI 브레인 알아보기' })).toHaveAttribute('href', '#ai-brain');
+        expect(within(main).getByRole('link', { name: /AI 브레인으로 시작/ })).toHaveAttribute(
             'href',
             '/signup?plan=pro&aibain=1',
         );
-        expect(screen.getByText('불확실하면 HOLD')).toBeInTheDocument();
+        expect(within(main).getByRole('heading', { name: '입금 후 신청' })).toBeInTheDocument();
+        expect(within(main).getByRole('heading', { name: '승인 후 이용' })).toBeInTheDocument();
         expect(screen.getByText(/자동 주문이나 투자 자문을 수행하지 않습니다/)).toBeInTheDocument();
 
         for (const meta of Object.values(PLAN_PAYMENT_META).filter(meta => meta.tier !== 'aibain_kongming')) {
-            const card = screen.getByRole('heading', { name: meta.label }).closest('a')!;
+            const card = within(main).getByRole('article', { name: meta.label });
             expect(within(card).getByText(meta.amount)).toBeInTheDocument();
             expect(within(card).getByText(meta.period)).toBeInTheDocument();
         }
-        expect(screen.getByRole('heading', { name: 'Pro + AI Brain' }).closest('a'))
+        expect(within(main).getByRole('link', { name: 'Pro + AI Brain 선택' }))
             .toHaveAttribute('href', '/signup?plan=pro&aibain=1');
 
         // AI Brain 애드온 단독 요금(50,000원/30일) — 기존 구독자용 노출 필수
@@ -121,6 +123,30 @@ describe('public conversion funnel', () => {
             'href',
             '/plan-select?change=1',
         );
+    });
+
+    it('pairs the active Ultra Pro offer with its add-on price and tier', () => {
+        mocks.auth.user = { role: 'user', status: 'approved', tier: 'premium' };
+        mocks.auth.loading = false;
+        render(<MemoryRouter><LandingPage /></MemoryRouter>);
+
+        const main = within(screen.getByRole('main'));
+        expect(main.queryByRole('article', { name: /^Pro$/ })).not.toBeInTheDocument();
+        const addon = within(main.getByRole('article', { name: 'AI Brain + 제갈공명' }));
+        expect(addon.getByText('50,000원')).toBeInTheDocument();
+        expect(addon.getByRole('link', { name: 'AI 브레인 추가·연장' }))
+            .toHaveAttribute('href', '/plan-select?change=1&plan=premium&aibain=1');
+    });
+
+    it('sends a legacy active AI member straight to their existing service', () => {
+        mocks.auth.user = {
+            role: 'user', status: 'approved', tier: null,
+            is_kongming_active: true, kongming_expires_at: new Date(Date.now() + 86400000).toISOString(),
+        };
+        mocks.auth.loading = false;
+        render(<MemoryRouter><LandingPage /></MemoryRouter>);
+
+        expect(screen.getByRole('link', { name: 'AI 브레인 열기' })).toHaveAttribute('href', '/dashboard/ai-bain');
     });
 
     it('keeps legacy hype, ads, and nested landing scrollers out of the page', () => {
