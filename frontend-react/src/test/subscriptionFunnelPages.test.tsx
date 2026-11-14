@@ -8,7 +8,7 @@ import PlanSelectPage from '@/pages/auth/PlanSelectPage';
 import SignupPage from '@/pages/auth/SignupPage';
 import PaymentRequestPage from '@/pages/auth/PaymentRequestPage';
 import PendingApprovalPage from '@/pages/auth/PendingApprovalPage';
-import { nextPathForUser, safeNextPath } from '@/pages/auth/LoginPage';
+import LoginPage, { nextPathForUser, safeNextPath } from '@/pages/auth/LoginPage';
 import PricingPage from '@/pages/static/PricingPage';
 
 const mocks = vi.hoisted(() => ({
@@ -405,6 +405,37 @@ describe('subscription acquisition funnel', () => {
         expect(await screen.findByTestId('location')).toHaveTextContent('/plan-select?plan=premium&aibain=1');
     });
 
+    it('keeps the AI plan when switching from login to account creation', () => {
+        const next = encodeURIComponent('/plan-select?change=1&plan=pro&aibain=1');
+        renderAt(`/login?next=${next}`, <LoginPage />, '/login');
+
+        expect(screen.getByRole('link', { name: '계정 만들기' }))
+            .toHaveAttribute('href', '/signup?plan=pro&aibain=1');
+    });
+
+    it('shows the pending status when a no-tier member reopens the signup link', async () => {
+        mocks.auth.user = { role: 'user', status: 'pending', tier: null, has_pending_subscription: true };
+        mocks.auth.token = 'pending-token';
+        renderAt('/signup?plan=pro&aibain=1', <SignupPage />, '/signup');
+
+        expect(await screen.findByTestId('location')).toHaveTextContent('/pending-approval');
+    });
+
+    it('keeps an active Ultra Pro member on their own tier when selecting AI Brain', async () => {
+        mocks.auth.user = { role: 'user', status: 'approved', tier: 'premium', is_pro_expired: false };
+        mocks.auth.token = 'active-token';
+        renderAt('/signup?plan=pro&aibain=1', <SignupPage />, '/signup');
+
+        expect(await screen.findByTestId('location')).toHaveTextContent('/plan-select?change=1&plan=premium&aibain=1');
+    });
+
+    it('preserves a chosen plan when a signed-out visitor opens a payment link', async () => {
+        renderAt('/payment-request?plan=pro&aibain=1', <PaymentRequestPage />, '/payment-request');
+
+        expect(await screen.findByTestId('location')).toHaveTextContent('/signup?plan=pro&aibain=1');
+        expect(mocks.getStatus).not.toHaveBeenCalled();
+    });
+
     it('marks the preferred plan and keeps the lifetime base period honest', async () => {
         mocks.auth.user = {
             id: 41,
@@ -600,6 +631,14 @@ describe('subscription acquisition funnel', () => {
         );
         expect(safeNextPath('https://evil.example/plan-select')).toBeNull();
         expect(safeNextPath('//evil.example/plan-select')).toBeNull();
+    });
+
+    it('honors existing membership and pending applications when logging in from the AI offer', () => {
+        const offer = '/plan-select?change=1&plan=pro&aibain=1';
+        const user = { status: 'approved', tier: 'premium' };
+        expect(nextPathForUser(user, offer)).toBe('/plan-select?change=1&plan=premium&aibain=1');
+        expect(nextPathForUser({ ...user, has_pending_subscription: true }, offer)).toBe('/pending-approval');
+        expect(nextPathForUser({ ...user, has_pending_subscription: true }, null)).toBe('/dashboard');
     });
 
     it('keeps promotional pricing mutation-free and auth pages on document scrolling', () => {
