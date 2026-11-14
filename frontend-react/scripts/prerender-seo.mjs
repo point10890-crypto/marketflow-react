@@ -354,6 +354,23 @@ function renderRoute(template, route) {
         html = html.replace('</head>', `    <script type="application/ld+json" data-seo="jsonld">${json}</script>\n</head>`);
     }
 
+    // Pages also serves the root HTML for app routes. Hide the public snapshot before
+    // first paint there and while a returning member's stored session is checked.
+    if (route.path === '/') {
+        html = html.replace('</head>', `<script>
+(function () {
+    function readToken(name) {
+        try { return window[name].getItem('auth_token'); } catch (_) { return null; }
+    }
+    if (location.pathname !== '/' || readToken('localStorage') || readToken('sessionStorage')) {
+        document.documentElement.classList.add('skip-home-snapshot');
+    }
+})();
+</script>
+<style>.skip-home-snapshot #seo-content{display:none}</style>
+</head>`);
+    }
+
     // Keep the public text readable even when external CSS/JS is unavailable.
     html = html.replace('</head>', `<style>
 body{background:#09090b}

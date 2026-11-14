@@ -1,7 +1,7 @@
 import SubscriptionEntry from '@/components/subscription/SubscriptionEntry';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { canAccessAiBain, canAccessKongming, isKongmingOnlyUser, subscriptionFunnelTarget } from '@/lib/auth';
+import { canAccessAiBain, canAccessKongming, getToken, hasActiveBaseSubscription, isKongmingOnlyUser, subscriptionFunnelTarget } from '@/lib/auth';
 import { useSeo } from '@/lib/seo';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -128,7 +128,21 @@ export function ApprovedGuard({ children }: { children: React.ReactNode }) {
 // 라우트 표기 호환을 위해 별칭으로 유지.
 const ProGuard = ApprovedGuard;
 
-// 구독 전환 게이트 — 랜딩/공개 커뮤니티/프라이싱 (교육 가이드는 항상 공개)에 로그인한 "비구독 회원"
+// 앱 시작 주소만 기존 가입 상태에 맞춰 이동시킨다. 공개 가이드와 요금제는 직접 열 수 있다.
+export function AppHomeGate({ children }: { children: React.ReactNode }) {
+    const { user, loading } = useAuth();
+    if ((loading && (user || getToken())) || user?.status === 'unknown') {
+        return <LoadingFallback />;
+    }
+
+    const target = subscriptionFunnelTarget(user)
+        ?? (user?.role === 'admin' ? '/admin'
+            : isKongmingOnlyUser(user) ? '/dashboard/ai-bain'
+            : hasActiveBaseSubscription(user) ? '/dashboard' : null);
+    return target ? <Navigate to={target} replace /> : <>{children}</>;
+}
+
+// 구독 전환 게이트 — 공개 커뮤니티/프라이싱 (교육 가이드는 항상 공개)에 로그인한 "비구독 회원"
 // (노티어·만료·승인대기)이 들어오면 구독 퍼널로 돌려보낸다. 비로그인 방문자와
 // 활성 구독자·admin 은 그대로 열람 (AdSense 크롤러는 비로그인이므로 영향 없음).
 function FunnelGate({ children }: { children: React.ReactNode }) {
@@ -211,9 +225,7 @@ export default function App() {
             <NotificationProvider>
                 <SubscriptionEntry />
                 <Routes>
-                    {/* Public routes — FunnelGate: 로그인한 비구독 회원(노티어·만료·승인대기)은
-                        공개 페이지에 머물지 않고 구독 퍼널로 리다이렉트 (비로그인·활성 구독자·admin 은 그대로) */}
-                    <Route path="/" element={<FunnelGate><LandingPage /></FunnelGate>} />
+                    <Route path="/" element={<AppHomeGate><LandingPage /></AppHomeGate>} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     {/* 구독 신청 3단계 플로우 — 신규 가입 + 만료 재구독 공용 */}
