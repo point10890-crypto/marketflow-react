@@ -101,8 +101,15 @@ def test_handlers_cover_every_scheduled_kind():
 
 
 def test_cli_dispatches_drain_and_enqueue(tmp_path, monkeypatch, clock_at, capsys):
+    class FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return clock_at['now'].astimezone(tz)
+
     monkeypatch.setenv('FORECAST_LEAGUE_DIR', str(tmp_path / 'league'))
     monkeypatch.setattr(handlers, 'HANDLERS', {})
+    monkeypatch.setattr(worker, 'datetime', FixedDateTime)
+    monkeypatch.setattr(schedule.clock, 'is_trading_day', WEEKDAYS)
     assert worker.main(['enqueue', 'evening']) == 0
     assert worker.main(['status']) == 0
     assert '"queued": 3' in capsys.readouterr().out
