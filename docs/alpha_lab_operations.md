@@ -13,6 +13,22 @@ See `docs/alpha_reliable_top3_research_2026_11_10.md` for the live diagnosis.
 completed existing stages. `--regular-only` recovers just this stage, preserving
 the earlier successful collection and first decisions. The existing weekday
 20:30 research task automatically runs it; GET never performs acquisition.
+The scheduled wrapper uses `--candidate-attempts 3` for bounded recovery of failed
+candidate/regular stages, with a 15-second pause between failed attempts. Manual
+CLI calls default to one attempt. Legacy research runs once per invocation, and
+a completed daily desk is reused when only the regular stage needs recovery.
+Both composition locks remain held during recovery. Exhausted attempts retain
+their failed public state and nonzero exit status, and busy runs return exit 2.
+An existing regular acquisition receipt for the current canonical session and
+source contract permits acquisition retries for transport, API, token, provider or
+busy failures. Structural validation failures and corrupt receipts stop recovery.
+Missing receipts or a completed acquisition with no failures retain bounded retries
+for downstream analysis and calendar failures. The fixed normal-session
+source still requires a separate source contract to support special trading hours.
+On 2026-11-19, the official stock session was 10:00–16:30 KST while v1 expected
+09:00–15:30. Its empty 09:00 pre-open page produced `regular_page_size`, which
+stops scheduled retries. Supporting that session requires new source verification.
+[KRX session notice](https://kind.krx.co.kr/external/2026/11/05/000141/20261105000216/99303.htm)
 The new source contract includes implementation identity. Its separate 60-session
 decision / 10-session maturation protocol starts after declaration; bootstrap is
 not forward performance. Do not silently reset the protocol after changing code.
