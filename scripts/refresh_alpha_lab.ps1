@@ -25,6 +25,6 @@ $sourceExit = $LASTEXITCODE
 if ($sourceExit -ne 0) {
     Write-Warning 'AlphaLab input refresh held; previous immutable snapshot retained. Research will expose that fallback.'
 }
-& $pythonPath $researchPath
+& $pythonPath $researchPath --candidate-attempts 3
 if ($LASTEXITCODE -ne 0) { throw 'AlphaLab research failed; previous saved report retained.' }
 if ($sourceExit -ne 0) { exit 2 }
